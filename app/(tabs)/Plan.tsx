@@ -10,7 +10,11 @@ import { Svg, Circle } from "react-native-svg";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 
-const BookItem = ({ title, completed, total }) => {
+const BookItem = ({ title, completed, total }: { 
+  title: string;
+  completed: number;
+  total: number;
+}) => {
   const progress = (completed / total) * 100;
 
   return (

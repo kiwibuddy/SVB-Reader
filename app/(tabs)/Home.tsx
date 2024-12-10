@@ -79,7 +79,7 @@ const HomeScreen = () => {
           <Text style={styles.buttonText}>Read Next Segment</Text>
           <Text
             style={styles.buttonRefText}
-          >{`(${nextSegData.book[0]} ${nextSegData.ref})`}</Text>
+          >{`(${nextSegData.book[0]} ${nextSegData.Segment})`}</Text>
         </Pressable>
       </View>
     </>

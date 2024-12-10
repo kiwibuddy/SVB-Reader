@@ -1,5 +1,5 @@
 import { FlatList, View, Text, Pressable, StyleSheet } from "react-native";
-import Accordion from "@/components/navigation/NavBook";
+import Accordion, { AccordionItem, accordionColor } from "@/components/navigation/NavBook";
 import Books from "@/assets/data/BookChapterList.json";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useContext, useMemo } from "react";
@@ -45,10 +45,10 @@ const Navigation = () => {
   const readingPlanData = useMemo(() => {
     const rPDataFull = ReadingPlansChallenges.plans.find((item) => item.id === readingPlan);
     const data = rPDataFull?.segments ? Object.keys(rPDataFull.segments).map((key) => ({
-      djhBook: key, // Include the key as a value for djhBook
-      bookName: Books[key as SegmentIds]?.bookName ?? "Unknown Book", // Use optional chaining and provide a default value
-      segments: rPDataFull?.segments[key as SegmentIds]?.segments ?? [], // Use optional chaining and provide a default value
-    })) : []; // Return an empty array if rPDataFull is undefined
+      djhBook: key as keyof typeof accordionColor,
+      bookName: Books[key as SegmentIds]?.bookName ?? "Unknown Book",
+      segments: (rPDataFull?.segments[key as SegmentIds]?.segments ?? []) as SegmentKey[],
+    })) : [];
     return data;
   }, [readingPlan]);
 
@@ -87,7 +87,7 @@ const Navigation = () => {
       </View> */}
       <FlatList
         data={readingPlanData}
-        renderItem={({ item }) => {
+        renderItem={({ item }: { item: AccordionItem }) => {
           const bookIndex = booksArray.findIndex(
             (book) => book === item.djhBook
           );
