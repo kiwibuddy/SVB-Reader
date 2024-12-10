@@ -81,7 +81,7 @@ const imageMap: { [key: string]: any } = {
   Rev: require('@/assets/images/BibleIcons/revelation-free-bible-icon.png')
 };
 
-const accordionColor = {
+export const accordionColor = {
   Gen: "#f3e2e2",
   Exo: "#f3e2e2",
   Lev: "#f3e2e2",
@@ -167,13 +167,16 @@ interface BibleData {
 // Import and type the Bible data
 const Bible: BibleData = require('@/assets/data/newBibleNLT1.json');
 
+export interface AccordionItem {
+  djhBook: keyof typeof accordionColor;
+  bookName: string;
+  segments: SegmentKey[];
+}
+
 export interface AccordionProps {
+  item: AccordionItem;
   bookIndex: number;
-  item: {
-    bookName: string; // Name of the book
-    segments: SegmentKey[]; // Change this line to use SegmentKey[]
-    djhBook: AccordionColorKey; // Update this line to use AccordionColorKey
-}}
+}
 
 // Define a type for the structure of SegmentTitles
 export interface SegmentTitle {
@@ -189,7 +192,7 @@ const SegmentTitles: Record<SegmentKey, SegmentTitle> = require('@/assets/data/S
 // Define a type for the keys of accordionColor
 type AccordionColorKey = keyof typeof accordionColor;
 
-const Accordion = ({ item, bookIndex }: AccordionProps) => {
+const Accordion: React.FC<AccordionProps> = ({ item, bookIndex }) => {
   const [isOpen, setIsOpen] = useState(false);
   const flatListRef = useRef<FlatList<SegmentKey>>(null); // Create a ref for FlatList
 
