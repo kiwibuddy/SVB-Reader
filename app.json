@@ -36,6 +36,12 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "fonts": [
+      {
+        "asset": "assets/fonts/Mistrully.ttf",
+        "family": "Mistrully"
+      }
+    ]
   }
 }
