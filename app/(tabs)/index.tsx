@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native"; // Import useNavigation
 import { Link, useRouter } from "expo-router";
+import { Video, ResizeMode } from 'expo-av'; // Add this import at the top with other imports
 
 const IndexScreen = () => {
   const router = useRouter(); // Initialize the router
@@ -9,9 +10,13 @@ const IndexScreen = () => {
   return (
     <View style={styles.container}>
       {/* Placeholder for the background image */}
-      <Image
-        source={require("../../assets/images/island.jpg")} // Use require for local images
+      <Video
+        source={require("../../assets/images/Welcome-Screen.mp4")}
         style={styles.backgroundImage}
+        isLooping
+        shouldPlay
+        resizeMode={ResizeMode.CONTAIN}
+        isMuted={true}
       />
 
       {/* Logo and Text Section */}
@@ -76,20 +81,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 32,
+    fontSize: 40,
     fontWeight: "bold",
     color: "#FFFFFF",
-    textShadowColor: "#000000", // Add black shadow
-    textShadowOffset: { width: 1, height: 1 }, // Offset for the shadow
-    textShadowRadius: 1, // Radius of the shadow
   },
   subtitle: {
-    fontSize: 28,
+    fontSize: 38,
+    fontFamily: "Mistrully",
     color: "#A7FF00",
     marginBottom: 20,
-    textShadowColor: "#000000", // Add black shadow
-    textShadowOffset: { width: 1, height: 1 }, // Offset for the shadow
-    textShadowRadius: 1, // Radius of the shadow
   },
   titleContainer: {
     marginBottom: 100,
@@ -98,28 +98,22 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: "bold",
     color: "#FFFFFF",
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: 10,
-    textShadowColor: "#000000", // Add black shadow
-    textShadowOffset: { width: 1, height: 1 }, // Offset for the shadow
-    textShadowRadius: 1, // Radius of the shadow
   },
   subheading: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#CCCCCC",
-    textAlign: "center",
-    marginBottom: 30,
-    textShadowColor: "#000000", // Add black shadow
-    textShadowOffset: { width: 1, height: 1 }, // Offset for the shadow
-    textShadowRadius: 1, // Radius of the shadow
+    textAlign: "left",
+    marginBottom: 10,
   },
   button: {
     backgroundColor: "#FF5733",
     paddingVertical: 15,
     paddingHorizontal: 50,
     borderRadius: 25,
-    marginTop: 50
+    marginTop: 10
   },
   buttonText: {
     fontSize: 20,
