@@ -1,0 +1,841 @@
+{
+  "Gen": {
+    "verseCount": 1533,
+    "bookName": "Genesis",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50",
+    "FCBH": "Gen",
+    "YV": "GEN",
+    "segments": [
+      "I001",
+      "S001",
+      "S002",
+      "S003",
+      "S004",
+      "S005",
+      "S006",
+      "S007",
+      "S008",
+      "S009",
+      "S010",
+      "S011",
+      "S012",
+      "S013",
+      "S014",
+      "S015",
+      "S016",
+      "S017",
+      "S018"
+    ]
+  },
+  "Exo": {
+    "verseCount": 1213,
+    "bookName": "Exodus",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40",
+    "FCBH": "Exod",
+    "YV": "EXO",
+    "segments": [
+      "I002",
+      "S019",
+      "S020",
+      "S021",
+      "S022",
+      "S023",
+      "S024",
+      "S025",
+      "S026",
+      "S027",
+      "S028",
+      "S029",
+      "S030",
+      "S031",
+      "S032"
+    ]
+  },
+  "Lev": {
+    "verseCount": 859,
+    "bookName": "Leviticus",
+    "FCBH": "Lev",
+    "YV": "LEV",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27",
+    "segments": [
+      "I003",
+      "S033",
+      "S034",
+      "S035",
+      "S036",
+      "S037",
+      "S038",
+      "S039",
+      "S040",
+      "S041",
+      "S042",
+      "S043"
+    ]
+  },
+  "Num": {
+    "verseCount": 1288,
+    "bookName": "Numbers",
+    "FCBH": "Num",
+    "YV": "NUM",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36",
+    "segments": [
+      "I004",
+      "S044",
+      "S045",
+      "S046",
+      "S047",
+      "S048",
+      "S049",
+      "S050",
+      "S051",
+      "S052",
+      "S053",
+      "S054",
+      "S055",
+      "S056"
+    ]
+  },
+  "Deu": {
+    "verseCount": 959,
+    "bookName": "Deuteronomy",
+    "FCBH": "Deut",
+    "YV": "DEU",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34",
+    "segments": [
+      "I005",
+      "S057",
+      "S058",
+      "S059",
+      "S060",
+      "S061",
+      "S062",
+      "S063",
+      "S064",
+      "S065",
+      "S066",
+      "S067",
+      "S068"
+    ]
+  },
+  "Jos": {
+    "verseCount": 658,
+    "bookName": "Joshua",
+    "FCBH": "Josh",
+    "YV": "JOS",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24",
+    "segments": [
+      "I006",
+      "S069",
+      "S070",
+      "S071",
+      "S072",
+      "S073",
+      "S074",
+      "S075",
+      "S076"
+    ]
+  },
+  "Jdg": {
+    "verseCount": 618,
+    "bookName": "Judges",
+    "FCBH": "Judg",
+    "YV": "JDG",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21",
+    "segments": [
+      "I007",
+      "S077",
+      "S078",
+      "S079",
+      "S080",
+      "S081",
+      "S082",
+      "S083",
+      "S084"
+    ]
+  },
+  "Rut": {
+    "verseCount": 85,
+    "bookName": "Ruth",
+    "FCBH": "Ruth",
+    "YV": "RUT",
+    "chapters": "1,2,3,4",
+    "segments": ["I008", "S085"]
+  },
+  "1Sa": {
+    "verseCount": 810,
+    "bookName": "1 Samuel",
+    "FCBH": "1Sam",
+    "YV": "1SA",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31",
+    "segments": [
+      "I009",
+      "S086",
+      "S087",
+      "S088",
+      "S089",
+      "S090",
+      "S091",
+      "S092",
+      "S093",
+      "S094",
+      "S095",
+      "S096"
+    ]
+  },
+  "2Sa": {
+    "verseCount": 695,
+    "bookName": "2 Samuel",
+    "FCBH": "2Sam",
+    "YV": "2SA",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24",
+    "segments": [
+      "I010",
+      "S097",
+      "S098",
+      "S099",
+      "S100",
+      "S101",
+      "S102",
+      "S103",
+      "S104"
+    ]
+  },
+  "1Ki": {
+    "verseCount": 816,
+    "bookName": "1 Kings",
+    "FCBH": "1Kgs",
+    "YV": "1KI",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22",
+    "segments": [
+      "I011",
+      "S105",
+      "S106",
+      "S107",
+      "S108",
+      "S109",
+      "S110",
+      "S111",
+      "S112",
+      "S113",
+      "S114",
+      "S115"
+    ]
+  },
+  "2Ki": {
+    "verseCount": 719,
+    "bookName": "2 Kings",
+    "FCBH": "2Kgs",
+    "YV": "2KI",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25",
+    "segments": [
+      "I012",
+      "S116",
+      "S117",
+      "S118",
+      "S119",
+      "S120",
+      "S121",
+      "S122",
+      "S123",
+      "S124"
+    ]
+  },
+  "1Ch": {
+    "verseCount": 942,
+    "bookName": "1 Chronicles",
+    "FCBH": "1Chr",
+    "YV": "1CH",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
+    "segments": [
+      "I013",
+      "S125",
+      "S126",
+      "S127",
+      "S128",
+      "S129",
+      "S130",
+      "S131",
+      "S132",
+      "S133"
+    ]
+  },
+  "2Ch": {
+    "verseCount": 822,
+    "bookName": "2 Chronicles",
+    "FCBH": "2Chr",
+    "YV": "2CH",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36",
+    "segments": [
+      "I014",
+      "S134",
+      "S135",
+      "S136",
+      "S137",
+      "S138",
+      "S139",
+      "S140",
+      "S141",
+      "S142",
+      "S143",
+      "S144"
+    ]
+  },
+  "Ezr": {
+    "verseCount": 280,
+    "bookName": "Ezra",
+    "FCBH": "Ezra",
+    "YV": "EZR",
+    "chapters": "1,2,3,4,5,6,7,8,9,10",
+    "segments": ["I015", "S145", "S146", "S147", "S148"]
+  },
+  "Neh": {
+    "verseCount": 406,
+    "bookName": "Nehemiah",
+    "FCBH": "Neh",
+    "YV": "NEH",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13",
+    "segments": ["I016", "S149", "S150", "S151", "S152"]
+  },
+  "Est": {
+    "verseCount": 167,
+    "bookName": "Esther",
+    "FCBH": "Esth",
+    "YV": "EST",
+    "chapters": "1,2,3,4,5,6,7,8,9,10",
+    "segments": ["I017", "S153", "S154"]
+  },
+  "Job": {
+    "verseCount": 1070,
+    "bookName": "Job",
+    "FCBH": "Job",
+    "YV": "JOB",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42",
+    "segments": ["I018", "S155", "S156", "S157", "S158", "S159", "S160", "S161"]
+  },
+  "Psa": {
+    "verseCount": 2461,
+    "bookName": "Psalms",
+    "FCBH": "Ps",
+    "YV": "PSA",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150",
+    "segments": [
+      "I019",
+      "S162",
+      "S163",
+      "S164",
+      "S165",
+      "S166",
+      "S167",
+      "S168",
+      "S169",
+      "S170",
+      "S171",
+      "S172",
+      "S173",
+      "S174",
+      "S175",
+      "S176",
+      "S177",
+      "S178",
+      "S179"
+    ]
+  },
+  "Pro": {
+    "verseCount": 915,
+    "bookName": "Proverbs",
+    "FCBH": "Prov",
+    "YV": "PRO",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31",
+    "segments": ["I020", "S180", "S181", "S182", "S183", "S184", "S185", "S186"]
+  },
+  "Ecc": {
+    "verseCount": 222,
+    "bookName": "Ecclesiastes",
+    "FCBH": "Eccl",
+    "YV": "ECC",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12",
+    "segments": ["I021", "S187", "S188"]
+  },
+  "SoS": {
+    "verseCount": 117,
+    "bookName": "Song of Songs",
+    "FCBH": "Song",
+    "YV": "SNG",
+    "chapters": "1,2,3,4,5,6,7,8",
+    "segments": ["I022", "S189"]
+  },
+  "Isa": {
+    "verseCount": 1292,
+    "bookName": "Isaiah",
+    "FCBH": "Isa",
+    "YV": "ISA",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66",
+    "segments": [
+      "I023",
+      "S190",
+      "S191",
+      "S192",
+      "S193",
+      "S194",
+      "S195",
+      "S196",
+      "S197",
+      "S198",
+      "S199",
+      "S200",
+      "S201",
+      "S202",
+      "S203",
+      "S204",
+      "S205"
+    ]
+  },
+  "Jer": {
+    "verseCount": 1364,
+    "bookName": "Jeremiah",
+    "FCBH": "Jer",
+    "YV": "JER",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52",
+    "segments": [
+      "I024",
+      "S206",
+      "S207",
+      "S208",
+      "S209",
+      "S210",
+      "S211",
+      "S212",
+      "S213",
+      "S214",
+      "S215",
+      "S216",
+      "S217",
+      "S218",
+      "S219",
+      "S220",
+      "S221",
+      "S222",
+      "S223",
+      "S224"
+    ]
+  },
+  "Lam": {
+    "verseCount": 154,
+    "bookName": "Lamentations",
+    "FCBH": "Lam",
+    "YV": "LAM",
+    "chapters": "1,2,3,4,5",
+    "segments": ["I025", "S225", "S226"]
+  },
+  "Eze": {
+    "verseCount": 1273,
+    "bookName": "Ezekiel",
+    "FCBH": "Ezek",
+    "YV": "EZK",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48",
+    "segments": [
+      "I026",
+      "S227",
+      "S228",
+      "S229",
+      "S230",
+      "S231",
+      "S232",
+      "S233",
+      "S234",
+      "S235",
+      "S236",
+      "S237",
+      "S238",
+      "S239",
+      "S240",
+      "S241",
+      "S242",
+      "S243"
+    ]
+  },
+  "Dan": {
+    "verseCount": 357,
+    "bookName": "Daniel",
+    "FCBH": "Dan",
+    "YV": "DAN",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12",
+    "segments": ["I027", "S244", "S245", "S246", "S247", "S248"]
+  },
+  "Hos": {
+    "verseCount": 197,
+    "bookName": "Hosea",
+    "FCBH": "Hos",
+    "YV": "HOS",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14",
+    "segments": ["I028", "S249", "S250"]
+  },
+  "Joe": {
+    "verseCount": 73,
+    "bookName": "Joel",
+    "FCBH": "Joel",
+    "YV": "JOL",
+    "chapters": "1,2,3",
+    "segments": ["I029", "S251"]
+  },
+  "Amo": {
+    "verseCount": 146,
+    "bookName": "Amos",
+    "FCBH": "Amos",
+    "YV": "AMO",
+    "chapters": "1,2,3,4,5,6,7,8,9",
+    "segments": ["I030", "S252", "S253"]
+  },
+  "Oba": {
+    "verseCount": 21,
+    "bookName": "Obadiah",
+    "FCBH": "Obad",
+    "YV": "OBA",
+    "chapters": "1",
+    "segments": ["I031", "S254"]
+  },
+  "Jon": {
+    "verseCount": 48,
+    "bookName": "Jonah",
+    "FCBH": "Jonah",
+    "YV": "JON",
+    "chapters": "1,2,3,4",
+    "segments": ["I032", "S255"]
+  },
+  "Mic": {
+    "verseCount": 105,
+    "bookName": "Micah",
+    "FCBH": "Mic",
+    "YV": "MIC",
+    "chapters": "1,2,3,4,5,6,7",
+    "segments": ["I033", "S256", "S257"]
+  },
+  "Nah": {
+    "verseCount": 47,
+    "bookName": "Nahum",
+    "FCBH": "Nah",
+    "YV": "NAH",
+    "chapters": "1,2,3",
+    "segments": ["I034", "S258"]
+  },
+  "Hab": {
+    "verseCount": 56,
+    "bookName": "Habakkuk",
+    "FCBH": "Hab",
+    "YV": "HAB",
+    "chapters": "1,2,3",
+    "segments": ["I035", "S259"]
+  },
+  "Zep": {
+    "verseCount": 53,
+    "bookName": "Zephaniah",
+    "FCBH": "Zep",
+    "YV": "ZEP",
+    "chapters": "1,2,3",
+    "segments": ["I036", "S260"]
+  },
+  "Hag": {
+    "verseCount": 38,
+    "bookName": "Haggai",
+    "FCBH": "Hag",
+    "YV": "HAG",
+    "chapters": "1,2",
+    "segments": ["I037", "S261"]
+  },
+  "Zec": {
+    "verseCount": 211,
+    "bookName": "Zechariah",
+    "FCBH": "Zech",
+    "YV": "ZEC",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14",
+    "segments": ["I038", "S262", "S263", "S264"]
+  },
+  "Mal": {
+    "verseCount": 55,
+    "bookName": "Malachi",
+    "FCBH": "Mal",
+    "YV": "MAL",
+    "chapters": "1,2,3,4",
+    "segments": ["I039", "S265"]
+  },
+  "Mat": {
+    "verseCount": 1071,
+    "bookName": "Matthew",
+    "FCBH": "Matt",
+    "YV": "MAT",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28",
+    "segments": [
+      "I040",
+      "S266",
+      "S267",
+      "S268",
+      "S269",
+      "S270",
+      "S271",
+      "S272",
+      "S273",
+      "S274",
+      "S275",
+      "S276"
+    ]
+  },
+  "Mar": {
+    "verseCount": 678,
+    "bookName": "Mark",
+    "FCBH": "Mark",
+    "YV": "MRK",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16",
+    "segments": [
+      "I041",
+      "S277",
+      "S278",
+      "S279",
+      "S280",
+      "S281",
+      "S282",
+      "S283",
+      "S284"
+    ]
+  },
+  "Luk": {
+    "verseCount": 1151,
+    "bookName": "Luke",
+    "FCBH": "Luke",
+    "YV": "LUK",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24",
+    "segments": [
+      "I042",
+      "S285",
+      "S286",
+      "S287",
+      "S288",
+      "S289",
+      "S290",
+      "S291",
+      "S292",
+      "S293",
+      "S294",
+      "S295",
+      "S296",
+      "S297"
+    ]
+  },
+  "Joh": {
+    "verseCount": 879,
+    "bookName": "John",
+    "FCBH": "John",
+    "YV": "JHN",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21",
+    "segments": [
+      "I043",
+      "S298",
+      "S299",
+      "S300",
+      "S301",
+      "S302",
+      "S303",
+      "S304",
+      "S305",
+      "S306",
+      "S307"
+    ]
+  },
+  "Act": {
+    "verseCount": 1007,
+    "bookName": "Acts",
+    "FCBH": "Acts",
+    "YV": "ACT",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28",
+    "segments": [
+      "I044",
+      "S308",
+      "S309",
+      "S310",
+      "S311",
+      "S312",
+      "S313",
+      "S314",
+      "S315",
+      "S316",
+      "S317",
+      "S318",
+      "S319"
+    ]
+  },
+  "Rom": {
+    "verseCount": 433,
+    "bookName": "Romans",
+    "FCBH": "Rom",
+    "YV": "ROM",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16",
+    "segments": ["I045", "S320", "S321", "S322", "S323", "S324", "S325"]
+  },
+  "1Co": {
+    "verseCount": 437,
+    "bookName": "1 Corinthians",
+    "FCBH": "1Cor",
+    "YV": "1CO",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16",
+    "segments": ["I046", "S326", "S327", "S328", "S329", "S330"]
+  },
+  "2Co": {
+    "verseCount": 257,
+    "bookName": "2 Corinthians",
+    "FCBH": "2Cor",
+    "YV": "2CO",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13",
+    "segments": ["I047", "S331", "S332", "S333", "S334"]
+  },
+  "Gal": {
+    "verseCount": 149,
+    "bookName": "Galatians",
+    "FCBH": "Gal",
+    "YV": "GAL",
+    "chapters": "1,2,3,4,5,6",
+    "segments": ["I048", "S335", "S336"]
+  },
+  "Eph": {
+    "verseCount": 155,
+    "bookName": "Ephesians",
+    "FCBH": "Eph",
+    "YV": "EPH",
+    "chapters": "1,2,3,4,5,6",
+    "segments": ["I049", "S337", "S338"]
+  },
+  "Php": {
+    "verseCount": 104,
+    "bookName": "Philippians",
+    "FCBH": "Phil",
+    "YV": "PHP",
+    "chapters": "1,2,3,4",
+    "segments": ["I050", "S339"]
+  },
+  "Col": {
+    "verseCount": 95,
+    "bookName": "Colossians",
+    "FCBH": "Col",
+    "YV": "COL",
+    "chapters": "1,2,3,4",
+    "segments": ["I051", "S340"]
+  },
+  "1Th": {
+    "verseCount": 89,
+    "bookName": "1 Thessalonians",
+    "FCBH": "1Thess",
+    "YV": "1TH",
+    "chapters": "1,2,3,4,5",
+    "segments": ["I052", "S341"]
+  },
+  "2Th": {
+    "verseCount": 47,
+    "bookName": "2 Thessalonians",
+    "FCBH": "2Thess",
+    "YV": "2TH",
+    "chapters": "1,2,3",
+    "segments": ["I053", "S342"]
+  },
+  "1Ti": {
+    "verseCount": 113,
+    "bookName": "1 Timothy",
+    "FCBH": "1Tim",
+    "YV": "1TI",
+    "chapters": "1,2,3,4,5,6",
+    "segments": ["I054", "S343"]
+  },
+  "2Ti": {
+    "verseCount": 83,
+    "bookName": "2 Timothy",
+    "FCBH": "2Tim",
+    "YV": "2TI",
+    "chapters": "1,2,3,4",
+    "segments": ["I055", "S344"]
+  },
+  "Tit": {
+    "verseCount": 46,
+    "bookName": "Titus",
+    "FCBH": "Titus",
+    "YV": "TIT",
+    "chapters": "1,2,3",
+    "segments": ["I056", "S345"]
+  },
+  "Phm": {
+    "verseCount": 25,
+    "bookName": "Philemon",
+    "FCBH": "Phlm",
+    "YV": "PHM",
+    "chapters": "1",
+    "segments": ["I057", "S346"]
+  },
+  "Heb": {
+    "verseCount": 303,
+    "bookName": "Hebrews",
+    "FCBH": "Heb",
+    "YV": "HEB",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13",
+    "segments": ["I058", "S347", "S348", "S349", "S350", "S351"]
+  },
+  "Jam": {
+    "verseCount": 108,
+    "bookName": "James",
+    "FCBH": "Jas",
+    "YV": "JAS",
+    "chapters": "1,2,3,4,5",
+    "segments": ["I059", "S352"]
+  },
+  "1Pe": {
+    "verseCount": 105,
+    "bookName": "1 Peter",
+    "FCBH": "1Pet",
+    "YV": "1PE",
+    "chapters": "1,2,3,4,5",
+    "segments": ["I060", "S353"]
+  },
+  "2Pe": {
+    "verseCount": 61,
+    "bookName": "2 Peter",
+    "FCBH": "2Pet",
+    "YV": "2PE",
+    "chapters": "1,2,3",
+    "segments": ["I061", "S354"]
+  },
+  "1Jn": {
+    "verseCount": 105,
+    "bookName": "1 John",
+    "FCBH": "1John",
+    "YV": "1JN",
+    "chapters": "1,2,3,4,5",
+    "segments": ["I062", "S355"]
+  },
+  "2Jn": {
+    "verseCount": 13,
+    "bookName": "2 John",
+    "FCBH": "2John",
+    "YV": "2JN",
+    "chapters": "1",
+    "segments": ["I063", "S356"]
+  },
+  "3Jn": {
+    "verseCount": 14,
+    "bookName": "3 John",
+    "FCBH": "3John",
+    "YV": "3JN",
+    "chapters": "1",
+    "segments": ["I064", "S357"]
+  },
+  "Jud": {
+    "verseCount": 25,
+    "bookName": "Jude",
+    "FCBH": "Jude",
+    "YV": "JUD",
+    "chapters": "1",
+    "segments": ["I065", "S358"]
+  },
+  "Rev": {
+    "verseCount": 404,
+    "bookName": "Revelation",
+    "FCBH": "Rev",
+    "YV": "REV",
+    "chapters": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22",
+    "segments": ["I066", "S359", "S360", "S361", "S362", "S363", "S364", "S365"]
+  }
+}
