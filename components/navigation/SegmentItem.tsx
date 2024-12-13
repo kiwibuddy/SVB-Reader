@@ -1,13 +1,21 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import CheckCircle from "../CheckCircle";
 import { useAppContext } from "@/context/GlobalContext";
 import { useRouter } from "expo-router";
 import { useModal } from "@/context/NavContext";
 import DonutChart from "../DonutChart";
 
+interface ColorData {
+  total: number;
+  black: number;
+  red: number;
+  green: number;
+  blue: number;
+}
+
 interface BibleData {
-  [key: string]: { colors: string[] }; // Adjust the structure based on actual data
+  [key: string]: { colors: ColorData }; // Changed from string[]
 }
 
 export default function SegmentItem({
@@ -31,8 +39,19 @@ export default function SegmentItem({
     router.push(`/${segment.id}`); // Navigate to the Bible Segment tab
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      padding: 10,
+      borderTopWidth: 1,
+      borderColor: '#E5E5E5',
+      backgroundColor: 'transparent',
+      alignItems: 'center',
+    },
+  });
+
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: 'white', padding: 5 }}>
+    <View style={[styles.container, { backgroundColor: "#FFF" }]}>
       {/* <CheckCircle segmentId={segID} iconSize={24} /> */}
       {segID[0] !== "I" ? <DonutChart colorData={colors} /> : null}
       <Pressable style={{marginLeft: 5, flex: 1, flexWrap: "nowrap"}} onPress={handlePress}>
