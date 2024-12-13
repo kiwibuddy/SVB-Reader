@@ -41,7 +41,8 @@
     "react-native-web": "~0.19.13",
     "victory-native": "^41.4.0",
     "expo-symbols": "~0.2.0",
-    "expo-av": "~15.0.1"
+    "expo-av": "~15.0.1",
+    "expo-video": "~2.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

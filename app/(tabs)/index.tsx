@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native"; // Import useNavigation
 import { Link, useRouter } from "expo-router";
-import { Video, ResizeMode } from 'expo-av'; // Add this import at the top with other imports
+import { Video, ResizeMode } from 'expo-av';
 
 const IndexScreen = () => {
   const router = useRouter(); // Initialize the router

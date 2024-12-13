@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "y"
     },
     "android": {
       "adaptiveIcon": {
@@ -32,7 +33,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-av"
     ],
     "experiments": {
       "typedRoutes": true
@@ -42,6 +44,16 @@
         "asset": "assets/fonts/Mistrully.ttf",
         "family": "Mistrully"
       }
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "4b89909c-ac28-498a-9e46-5591000b8616"
+      }
+    },
+    "owner": "nathanielbaldock@gmail.com",
+    "privacy": "public"
   }
 }
