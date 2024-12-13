@@ -7,7 +7,8 @@ import {
   ScrollView,
   StyleSheet,
   Pressable,
-  FlatList
+  FlatList,
+  ImageBackground
 } from "react-native";
 import Card from "@/components/Card";
 import ReadingPlansChallenges from "../../assets/data/ReadingPlansChallenges.json";
@@ -45,27 +46,94 @@ const HomeScreen = () => {
         {/* Square Buttons Layout */}
         <View style={styles.buttonGrid}>
           <Pressable
-            style={[styles.squareButton, { backgroundColor: "#3B82F6" }]}
+            style={[styles.squareButton, { backgroundColor: 'transparent' }]}
           >
-            <Text style={styles.squareButtonText}>Reading Plans</Text>
+            <ImageBackground
+              source={require("@/assets/images/button1.png")}
+              style={styles.buttonBackground}
+              resizeMode="cover"
+            >
+              <Text style={styles.squareButtonText}>Reading Plans</Text>
+            </ImageBackground>
           </Pressable>
           <Pressable
             style={[styles.squareButton, { backgroundColor: "#FF66B3" }]}
           >
-            <Text style={styles.squareButtonText}>Reading Challenges</Text>
+            <ImageBackground
+              source={require("@/assets/images/button2.png")}
+              style={styles.buttonBackground}
+              resizeMode="cover"
+            >
+              <Text style={styles.squareButtonText}>Reading Challenges</Text>
+            </ImageBackground>
           </Pressable>
           <Pressable
-            style={[styles.squareButton, { backgroundColor: "#A0FFB3" }]}
+            style={[styles.squareButton, { backgroundColor: 'transparent' }]}
           >
-            <Text style={styles.squareButtonText}>Emoji Reactions</Text>
+            <ImageBackground
+              source={require("@/assets/images/button4.png")}
+              style={styles.buttonBackground}
+              resizeMode="cover"
+            >
+              <Text style={styles.squareButtonText}>Emoji Reactions</Text>
+            </ImageBackground>
           </Pressable>
           <Pressable
-            style={[styles.squareButton, { backgroundColor: "#FF7851" }]}
+            style={[styles.squareButton, { backgroundColor: 'transparent' }]}
           >
-            <Text style={styles.squareButtonText}>
-              How to start a Bible Reading Group
-            </Text>
+            <ImageBackground
+              source={require("@/assets/images/button11.jpg")}
+              style={styles.buttonBackground}
+              resizeMode="cover"
+            >
+              <Text style={styles.squareButtonText}>
+                How to start a Bible Reading Group
+              </Text>
+            </ImageBackground>
           </Pressable>
+        </View>
+
+        {/* Added Welcome Text Section */}
+        <View style={styles.textContainer}>
+          <Text style={styles.welcomeTitle}>Welcome to SourceView Youth Bible</Text>
+          <Text style={styles.welcomeText}>
+            Experience the Bible as a dynamic conversation. Dive into God's Word with your friends and watch it come alive!
+          </Text>
+
+          <Text style={styles.sectionTitle}>Read with Friends 👥</Text>
+          <Text style={styles.sectionText}>
+            Gather your group and dive into Scripture together. Choose your reading role and watch your parts light up, transforming Bible study into an immersive experience.
+          </Text>
+
+          <Text style={styles.sectionTitle}>Conversations Come Alive 💬</Text>
+          <Text style={styles.sectionText}>
+            See the Bible in a new light as you read the words of God, prophets, and key figures in speech bubbles. Feel the emotions, conflicts, and triumphs as you step into their shoes.
+          </Text>
+
+          <Text style={styles.sectionTitle}>React and Connect 🙌</Text>
+          <Text style={styles.sectionText}>
+            Respond to powerful messages with emojis. 👍, ❤️, 🙏or be 😲 by messages as you read. Easily revisit your reactions later to reflect on how God's Word is shaping you.
+          </Text>
+
+          <Text style={styles.sectionTitle}>Journey Through Scripture 👣</Text>
+          <Text style={styles.sectionText}>
+            Embark on reading plans with friends. Gain a deeper understanding of the Bible's overarching narrative or focus on specific themes and characters through shorter focused challenges.
+          </Text>
+
+          <Text style={styles.sectionTitle}>Simple Bible Studies 👥</Text>
+          <Text style={styles.sectionText}>
+            At the end of each of the 365 stories of scripture you'll find simple Bible study questions to help stir discussions and take you deeper in your understanding of God's word.
+          </Text>
+
+          <Text style={styles.sectionTitle}>Experience the SourceView Difference</Text>
+          <Text style={styles.sectionText}>
+            Embrace a format designed for the digital age. See entire conversations in context, not just isolated verses. This helps bring understanding and the full impact the dynamic conversations and speeches in the Bible.
+          </Text>
+
+          <Text style={styles.sectionTitle}>Transform Your World</Text>
+          <Text style={styles.sectionText}>
+            Let God's living Word revolutionize your life and impact those around you. Join a movement of your generation encountering Scripture in fresh, powerful ways and watch as it changes everything.
+          </Text>
         </View>
       </ScrollView>
 
@@ -106,6 +174,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 28,
+    fontFamily: "Mistrully",
     color: "#A7FF00",
     textAlign: "center",
     marginBottom: 20,
@@ -121,9 +190,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    textDecorationLine: "underline",
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 20,
+    marginBottom: 10,
   },
   seeAll: {
     fontSize: 14,
@@ -170,6 +241,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 10,
     marginBottom: 10,
+    overflow: 'hidden',
   },
   squareButtonText: {
     fontSize: 16,
@@ -186,6 +258,38 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF", // Optional: to match the background
     marginHorizontal: 10,
     marginBottom: 40,
+  },
+  buttonBackground: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  textContainer: {
+    padding: 20,
+    marginBottom: 60, // Add space for the floating button
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 20,
+    lineHeight: 24,
+    textAlign: 'center',
+  },
+  sectionText: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 15,
+    lineHeight: 24,
   },
 });
 

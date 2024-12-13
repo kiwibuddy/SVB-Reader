@@ -14,6 +14,7 @@ interface ColorData {
 
 interface PieChartComponentProps {
   colorData: ColorData;
+  size?: number;
 }
 
 const PieChartComponent: React.FC<PieChartComponentProps> = ({ colorData }) => {
