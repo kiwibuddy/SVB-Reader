@@ -65,58 +65,82 @@ const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
       }}
     >
       <SegmentTitle segmentId={segID} />
-      <View
-        style={{
-          flex: 1,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          marginLeft: 20,
-        }}
-      >
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+        width: '100%'
+      }}>
+        {/* Chart Section */}
         <View
-          style={{ flex: 1, flexDirection: "row", justifyContent: "center" }}
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginLeft: 10,
+            height: 100, // Add a fixed height for both containers
+          }}
         >
-          <PieChart colorData={colors} />
+          <View
+            style={{ 
+              flex: 1, 
+              flexDirection: "row", 
+              justifyContent: "center",
+              alignItems: "center" // Add this to center vertically
+            }}
+          >
+            <PieChart colorData={colors} size={80} /> {/* Add size prop */}
+          </View>
+          <View
+            style={{ 
+              flex: 2, 
+              justifyContent: "center", 
+              alignItems: "center",
+              height: "100%" // Ensure this takes full height
+            }}
+          >
+            {/* Reader Selection Section */}
+            <View style={{ 
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingLeft: 20
+            }}>
+              <Text style={{ 
+                fontSize: 14,
+                marginBottom: 15,
+                textAlign: 'center'
+              }}>
+                Select your reading role:
+              </Text>
+              
+              <View style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                width: '80%'
+              }}>
+                {icons.map((icon, index) => {
+                  const colors = getColors(readers[index]);
+                  const color = readerNumber === index ? colors.dark : colors.light;
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => handleIconPress(index)}
+                    >
+                      <MaterialIcons
+                        name={readerNumber === index ? "mark-chat-read" : "chat-bubble"}
+                        size={30}
+                        color={readers[index] === "black" ? "grey" : color}
+                      />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          </View>
         </View>
-        <View
-          style={{ flex: 2, justifyContent: "center", alignItems: "center" }}
-        >
-          <ChartLegend colorData={colors} />
-        </View>
-      </View>
-      {/* <View style={{ alignItems: "center", marginTop: 30 }}>
-        <Image
-          source={require("@/assets/images/SVB-Read-together.png")}
-          style={{ width: 200, height: 100, opacity: 0.6 }} // Use responsive size
-        />
-      </View> */}
-      <Text style={{ fontSize: 14, textAlign: "center", marginVertical: 10 }}>
-        Select your reading role:
-      </Text>
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "center",
-          marginVertical: 10,
-        }}
-      >
-        {icons.map((icon, index) => {
-          const colors = getColors(readers[index]);
-          const color = readerNumber === index ? colors.dark : colors.light;
-          return (
-            <TouchableOpacity
-              key={index}
-              onPress={() => handleIconPress(index)} // Use the toggle function
-              style={{ marginHorizontal: 10 }}
-            >
-              <MaterialIcons
-                name={readerNumber === index ? "mark-chat-read" : "chat-bubble"} // Ensure icon.name is a valid Ionicon name
-                size={30}
-                color={readers[index] === "black" ? "grey" : color} // Change color based on selection
-              />
-            </TouchableOpacity>
-          );
-        })}
       </View>
       <View
         style={{
