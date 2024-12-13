@@ -47,6 +47,7 @@ const HomeScreen = () => {
         <View style={styles.buttonGrid}>
           <Pressable
             style={[styles.squareButton, { backgroundColor: 'transparent' }]}
+            onPress={() => router.push("/Reading-Plan")}
           >
             <ImageBackground
               source={require("@/assets/images/button1.png")}
@@ -58,6 +59,7 @@ const HomeScreen = () => {
           </Pressable>
           <Pressable
             style={[styles.squareButton, { backgroundColor: "#FF66B3" }]}
+            onPress={() => router.push("/Reading-Challenges")}
           >
             <ImageBackground
               source={require("@/assets/images/button2.png")}
@@ -254,10 +256,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 10,
-    backgroundColor: "#FFF", // Optional: to match the background
+    padding: 5,
+    backgroundColor: "transparent", // Optional: to match the background
     marginHorizontal: 10,
-    marginBottom: 40,
+    marginBottom: 30,
   },
   buttonBackground: {
     width: '100%',
