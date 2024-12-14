@@ -18,6 +18,29 @@ export type SegmentIds = keyof typeof Books;
 
 const booksArray = Object.keys(Books);
 
+const PLAN_STYLES = {
+  "NT100Days": {
+    color: "#4df469", // Complementary green
+    icon: "⚡"
+  },
+  "SchoolYear2": {
+    color: "#694df4", // Complementary purple
+    icon: "🎓"
+  },
+  "Bible1Year": {
+    color: "#f44d69", // Original red-pink
+    icon: "📖"
+  },
+  "SchoolYear3": {
+    color: "#4d9ff4", // Complementary blue
+    icon: "✏️"
+  },
+  "SchoolYear1": {
+    color: "#f4b64d", // Complementary orange
+    icon: "📚"
+  }
+};
+
 const PlanScreen = () => {
   const { readingPlanProgress, updateReadingPlanProgress, startReadingPlan } = useAppContext();
   const [selectedPlan, setSelectedPlan] = useState(readingPlansData.plans[0]);
@@ -67,43 +90,63 @@ const PlanScreen = () => {
               key={plan.id}
               style={[
                 styles.planButton,
-                selectedPlan.id === plan.id && styles.selectedPlanButton
+                {
+                  backgroundColor: PLAN_STYLES[plan.id as keyof typeof PLAN_STYLES]?.color || "#f4694d",
+                },
+                selectedPlan.id === plan.id && {
+                  transform: [{ scale: 1.02 }],
+                  elevation: 5,
+                }
               ]}
               onPress={() => handlePlanSelection(plan)}
             >
-              <Text style={[
-                styles.planButtonText,
-                selectedPlan.id === plan.id && styles.selectedPlanText
-              ]}>
-                {plan.title}
-              </Text>
-              <Text style={[
-                styles.planDescription,
-                selectedPlan.id === plan.id && styles.selectedPlanText
-              ]}>
-                {plan.description}
-              </Text>
+              <View style={styles.planContent}>
+                <Text style={styles.planIcon}>
+                  {PLAN_STYLES[plan.id as keyof typeof PLAN_STYLES]?.icon}
+                </Text>
+                <Text style={styles.planButtonText}>
+                  {plan.title}
+                </Text>
+                <Text style={styles.planDescription}>
+                  {plan.description}
+                </Text>
+              </View>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
         <View style={styles.divider} />
 
-        <Text style={styles.selectedPlanTitle}>{selectedPlan.title}</Text>
-
-        <View style={styles.progressContainer}>
-          <Text style={styles.progressText}>
-            Progress: {currentProgress?.completedSegments.length || 0} / 
-            {Object.values(selectedPlan.segments).reduce(
-              (acc, book) => acc + book.segments.length, 
-              0
-            )} segments
+        <View style={styles.selectedPlanContainer}>
+          <Text style={styles.selectedPlanTitle}>{selectedPlan.title}</Text>
+          
+          <Text style={styles.planContext}>
+            {selectedPlan.id === "Bible1Year" && 
+              "Experience the entire Biblical narrative in one year. This comprehensive plan takes you through the complete story of Scripture, from Creation to Revelation, helping you understand God's grand plan of redemption."}
+            {selectedPlan.id === "SchoolYear1" && 
+              "Perfect for students and educators, this plan follows the academic calendar with carefully selected narrative passages that tell the Bible's key stories and teachings."}
+            {selectedPlan.id === "SchoolYear2" && 
+              "Continue your Biblical education with this second academic year plan, diving deeper into historical books, prophecy, and New Testament teachings."}
+            {selectedPlan.id === "SchoolYear3" && 
+              "Complete your Biblical foundation with this third academic year plan, exploring wisdom literature, prophetic books, and the life of Christ."}
+            {selectedPlan.id === "NT100Days" && 
+              "An intensive journey through the New Testament in 100 days. Perfect for understanding the life of Jesus, the early church, and the foundations of Christian faith."}
           </Text>
-          {currentProgress?.isCompleted && (
-            <View style={styles.completedBadge}>
-              <Text style={styles.completedText}>Completed!</Text>
-            </View>
-          )}
+
+          <View style={styles.progressContainer}>
+            <Text style={styles.progressText}>
+              Progress: {currentProgress?.completedSegments.length || 0} / 
+              {Object.values(selectedPlan.segments).reduce(
+                (acc, book) => acc + book.segments.length, 
+                0
+              )} segments
+            </Text>
+            {currentProgress?.isCompleted && (
+              <View style={styles.completedBadge}>
+                <Text style={styles.completedText}>Completed!</Text>
+              </View>
+            )}
+          </View>
         </View>
 
         <View style={styles.booksContainer}>
@@ -162,23 +205,36 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginRight: 12,
-    minWidth: 200,
+    width: 200,
+    height: 160,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   selectedPlanButton: {
     backgroundColor: "#8A4FFF",
   },
   planButtonText: {
     fontSize: 16,
-    fontWeight: "500",
-    color: "#333333",
+    fontWeight: "600",
+    color: "#FFFFFF",
+    marginBottom: 8,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.15)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   selectedPlanText: {
     color: "#FFFFFF",
   },
   planDescription: {
-    fontSize: 14,
-    color: "#666666",
-    marginTop: 4,
+    fontSize: 13,
+    color: "#FFFFFF",
+    opacity: 0.9,
+    textAlign: 'center',
+    lineHeight: 16,
   },
   divider: {
     height: 1,
@@ -212,6 +268,30 @@ const styles = StyleSheet.create({
   completedText: {
     color: '#FFFFFF',
     fontWeight: '600',
+  },
+  selectedPlanContainer: {
+    padding: 16,
+  },
+  planContext: {
+    fontSize: 14,
+    color: "#666666",
+    lineHeight: 20,
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  planIcon: {
+    fontSize: 40,
+    height: 60,
+    width: 60,
+    textAlign: 'center',
+    lineHeight: 60,
+    marginBottom: 12,
+  },
+  planContent: {
+    flex: 1,
+    alignItems: 'center',
+    position: 'relative',
+    width: '100%',
   },
 });
 
