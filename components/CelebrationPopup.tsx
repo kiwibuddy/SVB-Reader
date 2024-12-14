@@ -22,7 +22,7 @@ const celebrations: CelebrationContent[] = [
   { phrase: "BibleLevel Up!", icon: "medal" },
   { phrase: "Super Star!", icon: "star-circle" },
   { phrase: "Awesome Job!", icon: "party-popper" },
-  { phrase: "Victory Dance Time!", icon: "dance" },
+  { phrase: "Victory Time!", icon: "trophy-variant" },
   { phrase: "New Story Read!", icon: "book-open" },
   { phrase: "Growing in Faith!", icon: "sprout" },
   { phrase: "Light of the World!", icon: "lightbulb-on" },
