@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,79 +6,123 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { Svg, Circle } from "react-native-svg";
 import { SafeAreaView } from "react-native-safe-area-context";
+import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
+import Accordion, { AccordionItem, accordionColor } from "@/components/navigation/NavBook";
+import Books from "@/assets/data/BookChapterList.json";
+import SegmentTitles from "@/assets/data/SegmentTitles.json";
+import { useAppContext } from "@/context/GlobalContext";
 
+export type SegmentKey = keyof typeof SegmentTitles;
+export type SegmentIds = keyof typeof Books;
 
-const BookItem = ({ title, completed, total }: { 
-  title: string;
-  completed: number;
-  total: number;
-}) => {
-  const progress = (completed / total) * 100;
-
-  return (
-    <TouchableOpacity style={styles.bookItem}>
-      <View style={styles.bookInfo}>
-        {/* <ProgressCircle progress={progress} /> */}
-        <View style={styles.textContainer}>
-          <Text style={styles.bookTitle}>{title}</Text>
-          <Text style={styles.storiesCount}>
-            {completed}/{total} Stories
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-};
+const booksArray = Object.keys(Books);
 
 const PlanScreen = () => {
-  const categories = [
-    { title: "Whole Bible", stories: 365 },
-    { title: "Narrative", stories: 150 },
-    { title: "Gospels", stories: 48 },
-    { title: "Prophets", stories: 38 },
-  ];
+  const { readingPlanProgress, updateReadingPlanProgress, startReadingPlan } = useAppContext();
+  const [selectedPlan, setSelectedPlan] = useState(readingPlansData.plans[0]);
 
-  const books = [
-    { title: "Genesis", completed: 4, total: 18 },
-    { title: "Exodus", completed: 14, total: 14 },
-    { title: "Leviticus", completed: 1, total: 11 },
-    { title: "Numbers", completed: 1, total: 13 },
-    { title: "Deuteronomy", completed: 10, total: 12 },
-    { title: "Joshua", completed: 7, total: 8 },
-    { title: "Judges", completed: 0, total: 10 },
-  ];
+  const currentProgress = readingPlanProgress[selectedPlan.id];
+
+  const handlePlanSelection = (plan: typeof selectedPlan) => {
+    setSelectedPlan(plan);
+    if (!readingPlanProgress[plan.id]) {
+      startReadingPlan(plan.id);
+    }
+  };
+
+  const handleSegmentComplete = (segmentId: string) => {
+    updateReadingPlanProgress(selectedPlan.id, segmentId);
+  };
+
+  const planBooksData = useMemo(() => {
+    console.log('Selected Plan:', selectedPlan.id);
+    const data = selectedPlan.segments ? Object.keys(selectedPlan.segments).map((key) => ({
+      djhBook: key as keyof typeof accordionColor,
+      bookName: Books[key as SegmentIds]?.bookName ?? "Unknown Book",
+      segments: (selectedPlan.segments[key as SegmentIds]?.segments ?? []) as SegmentKey[],
+    })) : [];
+    console.log('Processed Books Data:', data.length, 'books');
+    return data;
+  }, [selectedPlan]);
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Books of the Bible</Text>
-      </View>
+      <ScrollView style={styles.scrollContainer}>
+        <View style={styles.headerContainer}>
+          <Text style={styles.screenTitle}>Reading Plans</Text>
+          <Text style={styles.welcomeText}>
+            Welcome to the Bible Reading Plans and Challenges screen, where you can find personalized reading plans and spiritual challenges designed to deepen your understanding of Scripture and transform your faith.
+          </Text>
+          <Text style={styles.sectionTitle}>Plans</Text>
+        </View>
 
-      <ScrollView horizontal style={styles.categoriesContainer}>
-        {categories.map((category, index) => (
-          <View key={index} style={styles.categoryItem}>
-            <Text style={styles.categoryTitle}>{category.title}</Text>
-            <Text style={styles.categoryCount}>{category.stories} Stories</Text>
-          </View>
-        ))}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.plansScrollView}
+        >
+          {readingPlansData.plans.map((plan) => (
+            <TouchableOpacity
+              key={plan.id}
+              style={[
+                styles.planButton,
+                selectedPlan.id === plan.id && styles.selectedPlanButton
+              ]}
+              onPress={() => handlePlanSelection(plan)}
+            >
+              <Text style={[
+                styles.planButtonText,
+                selectedPlan.id === plan.id && styles.selectedPlanText
+              ]}>
+                {plan.title}
+              </Text>
+              <Text style={[
+                styles.planDescription,
+                selectedPlan.id === plan.id && styles.selectedPlanText
+              ]}>
+                {plan.description}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <View style={styles.divider} />
+
+        <Text style={styles.selectedPlanTitle}>{selectedPlan.title}</Text>
+
+        <View style={styles.progressContainer}>
+          <Text style={styles.progressText}>
+            Progress: {currentProgress?.completedSegments.length || 0} / 
+            {Object.values(selectedPlan.segments).reduce(
+              (acc, book) => acc + book.segments.length, 
+              0
+            )} segments
+          </Text>
+          {currentProgress?.isCompleted && (
+            <View style={styles.completedBadge}>
+              <Text style={styles.completedText}>Completed!</Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.booksContainer}>
+          {planBooksData.map((item) => {
+            const bookIndex = booksArray.findIndex(
+              (book) => book === item.djhBook
+            );
+            return (
+              <Accordion 
+                key={item.djhBook} 
+                item={item} 
+                bookIndex={bookIndex}
+                completedSegments={currentProgress?.completedSegments || []}
+                onSegmentComplete={handleSegmentComplete}
+              />
+            );
+          })}
+        </View>
       </ScrollView>
-
-      <ScrollView style={styles.booksList}>
-        {books.map((book, index) => (
-          <BookItem
-            key={index}
-            title={book.title}
-            completed={book.completed}
-            total={book.total}
-          />
-        ))}
-      </ScrollView>
-
-      <TouchableOpacity style={styles.startButton}>
-        <Text style={styles.startButtonText}>Start Reading Plan</Text>
-      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -88,62 +132,86 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-  header: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EEEEEE",
+  scrollContainer: {
+    flex: 1,
   },
-  headerTitle: {
+  headerContainer: {
+    padding: 16,
+  },
+  screenTitle: {
     fontSize: 24,
     fontWeight: "600",
+    marginBottom: 12,
   },
-  categoriesContainer: {
-    padding: 16,
-  },
-  categoryItem: {
-    marginRight: 16,
-  },
-  categoryTitle: {
+  welcomeText: {
     fontSize: 16,
     color: "#666666",
+    lineHeight: 24,
+    marginBottom: 24,
   },
-  categoryCount: {
-    fontSize: 12,
-    color: "#999999",
-  },
-  booksList: {
-    flex: 1,
-    padding: 16,
-  },
-  bookItem: {
-    marginBottom: 16,
-  },
-  bookInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  textContainer: {
-    marginLeft: 12,
-  },
-  bookTitle: {
-    fontSize: 18,
+  sectionTitle: {
+    fontSize: 20,
     fontWeight: "500",
+    marginBottom: 12,
   },
-  storiesCount: {
-    fontSize: 14,
-    color: "#FF6B6B",
+  plansScrollView: {
+    paddingHorizontal: 16,
   },
-  startButton: {
-    backgroundColor: "#8A4FFF",
-    margin: 16,
+  planButton: {
+    backgroundColor: "#F5F5F5",
     padding: 16,
-    borderRadius: 8,
-    alignItems: "center",
+    borderRadius: 12,
+    marginRight: 12,
+    minWidth: 200,
   },
-  startButtonText: {
-    color: "#FFFFFF",
+  selectedPlanButton: {
+    backgroundColor: "#8A4FFF",
+  },
+  planButtonText: {
     fontSize: 16,
+    fontWeight: "500",
+    color: "#333333",
+  },
+  selectedPlanText: {
+    color: "#FFFFFF",
+  },
+  planDescription: {
+    fontSize: 14,
+    color: "#666666",
+    marginTop: 4,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#EEEEEE",
+    marginVertical: 16,
+  },
+  selectedPlanTitle: {
+    fontSize: 20,
     fontWeight: "600",
+    padding: 16,
+  },
+  booksContainer: {
+    paddingBottom: 16,
+  },
+  progressContainer: {
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  progressText: {
+    fontSize: 16,
+    color: '#666666',
+  },
+  completedBadge: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  completedText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
 });
 
