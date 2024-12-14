@@ -1,5 +1,15 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import readingPlansData from "../assets/data/ReadingPlansChallenges.json";
+
+// Add this interface near the top of the file, before AppContextType
+interface ReadingPlanProgress {
+  planId: string;
+  completedSegments: string[];
+  dateStarted: string;
+  lastRead: string;
+  isCompleted: boolean;
+}
 
 // Define the interface for both segmentId and read status
 interface AppContextType {
@@ -13,6 +23,9 @@ interface AppContextType {
   updateEmojiActions: (newEmojiActions: number) => Promise<void>;
   completedSegments: string[];
   markSegmentComplete: (segmentId: string, isComplete: boolean) => Promise<void>;
+  readingPlanProgress: Record<string, ReadingPlanProgress>;
+  updateReadingPlanProgress: (planId: string, segmentId: string) => void;
+  startReadingPlan: (planId: string) => void;
 }
 
 const defaultContext: AppContextType = {
@@ -26,6 +39,9 @@ const defaultContext: AppContextType = {
   updateEmojiActions: async () => {},
   completedSegments: [],
   markSegmentComplete: async () => {},
+  readingPlanProgress: {},
+  updateReadingPlanProgress: () => {},
+  startReadingPlan: () => {},
 };
 
 // Create the context
@@ -45,6 +61,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   const [readSegments, setReadSegments] = useState<string[]>([]);
   const [emojiActions, setEmojiActions] = useState<number>(0);
   const [completedSegments, setCompletedSegments] = useState<string[]>([]);
+  const [readingPlanProgress, setReadingPlanProgress] = useState<Record<string, ReadingPlanProgress>>({});
 
   useEffect(() => {
     // Load read status from AsyncStorage when the app starts
@@ -120,9 +137,56 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const startReadingPlan = (planId: string) => {
+    setReadingPlanProgress(prev => ({
+      ...prev,
+      [planId]: {
+        planId,
+        completedSegments: [],
+        dateStarted: new Date().toISOString(),
+        lastRead: new Date().toISOString(),
+        isCompleted: false
+      }
+    }));
+  };
+
+  const updateReadingPlanProgress = (planId: string, segmentId: string) => {
+    setReadingPlanProgress(prev => {
+      const planProgress = prev[planId] || {
+        planId,
+        completedSegments: [],
+        dateStarted: new Date().toISOString(),
+        lastRead: new Date().toISOString(),
+        isCompleted: false
+      };
+
+      const updatedSegments = [...planProgress.completedSegments];
+      if (!updatedSegments.includes(segmentId)) {
+        updatedSegments.push(segmentId);
+      }
+
+      // Find the plan in ReadingPlansChallenges.json
+      const plan = readingPlansData.plans.find(p => p.id === planId);
+      const totalSegments = plan ? Object.values(plan.segments).reduce(
+        (acc, book) => acc + book.segments.length, 
+        0
+      ) : 0;
+
+      return {
+        ...prev,
+        [planId]: {
+          ...planProgress,
+          completedSegments: updatedSegments,
+          lastRead: new Date().toISOString(),
+          isCompleted: updatedSegments.length === totalSegments
+        }
+      };
+    });
+  };
+
   return (
     <AppContext.Provider
-      value={{ segmentId, updateSegmentId, readSegments, markAsRead, readingPlan, updateReadingPlan, emojiActions, updateEmojiActions, completedSegments, markSegmentComplete }}
+      value={{ segmentId, updateSegmentId, readSegments, markAsRead, readingPlan, updateReadingPlan, emojiActions, updateEmojiActions, completedSegments, markSegmentComplete, readingPlanProgress, updateReadingPlanProgress, startReadingPlan }}
     >
       {children}
     </AppContext.Provider>

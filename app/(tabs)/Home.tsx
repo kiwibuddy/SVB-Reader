@@ -47,7 +47,7 @@ const HomeScreen = () => {
         <View style={styles.buttonGrid}>
           <Pressable
             style={[styles.squareButton, { backgroundColor: 'transparent' }]}
-            onPress={() => router.push("/Reading-Plan")}
+            onPress={() => router.push("/Plan")}
           >
             <ImageBackground
               source={require("@/assets/images/button1.png")}

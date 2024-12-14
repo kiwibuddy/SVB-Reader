@@ -176,6 +176,8 @@ export interface AccordionItem {
 export interface AccordionProps {
   item: AccordionItem;
   bookIndex: number;
+  completedSegments?: string[];
+  onSegmentComplete?: (segmentId: string) => void;
 }
 
 // Define a type for the structure of SegmentTitles
@@ -192,7 +194,7 @@ const SegmentTitles: Record<SegmentKey, SegmentTitle> = require('@/assets/data/S
 // Define a type for the keys of accordionColor
 type AccordionColorKey = keyof typeof accordionColor;
 
-const Accordion: React.FC<AccordionProps> = ({ item, bookIndex }) => {
+const Accordion = ({ item, bookIndex, completedSegments = [], onSegmentComplete }: AccordionProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const flatListRef = useRef<FlatList<SegmentKey>>(null); // Create a ref for FlatList
 
@@ -208,6 +210,15 @@ const Accordion: React.FC<AccordionProps> = ({ item, bookIndex }) => {
       flatListRef.current.scrollToOffset({ animated: true, offset: 0 });
     }
   }, [item.segments]);
+
+  const handleSegmentPress = (segmentId: string) => {
+    // Existing segment handling logic
+    
+    // Call the completion callback if provided
+    if (onSegmentComplete) {
+      onSegmentComplete(segmentId);
+    }
+  };
 
   return (
     <View

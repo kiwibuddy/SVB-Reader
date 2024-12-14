@@ -3,9 +3,8 @@
     {
       "id": "Bible1Year",
       "title": "Bible in 1 year",
-      "description": "356 stories - 15 min a day",
+      "description": "365 Stories",
       "image": "island",
-      "highlightText": "365 Stories",
       "segments": {
         "Gen": {
           "segments": [
@@ -548,9 +547,8 @@
     {
       "id": "SchoolYear1",
       "title": "Bible Narrative (School Year 1)",
-      "description": "150 stories - 15 min a day",
+      "description": "150 Stories",
       "image": "island",
-      "highlightText": "150 Stories",
       "segments": {
         "Gen": {
           "segments": [
@@ -820,9 +818,8 @@
     {
       "id": "SchoolYear2",
       "title": "Bible Narrative (School Year 2)",
-      "description": "150 stories - 15 min a day",
+      "description": "150 Stories",
       "image": "island",
-      "highlightText": "150 Stories",
       "segments": {
         "Exo": {
           "segments": [
@@ -1041,9 +1038,8 @@
     {
       "id": "SchoolYear3",
       "title": "Bible Narrative (School Year 3)",
-      "description": "150 stories - 15 min a day",
+      "description": "150 Stories",
       "image": "island",
-      "highlightText": "150 Stories",
       "segments": {
         "Gen": {
           "segments": [
@@ -1286,9 +1282,8 @@
     {
       "id": "NT100Days",
       "title": "New Testament in 100 days",
-      "description": "100 stories - 15 min a day",
+      "description": "100 Stories",
       "image": "island",
-      "highlightText": "100 Stories",
       "segments": {
         "Mat": {
           "segments": [
@@ -1445,20 +1440,104 @@
           ]
         }
       }
-    }
-  ],
-  "challenges": [
-    {
-      "title": "Paul’s Letters",
-      "description": "21 stories - 15 min a day",
-      "image": "island",
-      "highlightText": "3 Weeks"
     },
     {
-      "title": "David’s Life",
-      "description": "15 stories - 15 min a day",
+      "id": "test",
+      "title": "test",
+      "description": "test",
+      "image": "test",
+      "segments": {
+        "Mat": {
+          "segments": [
+            "I040",
+            "S266",
+            "S267",
+            "S268",
+            "S269",
+            "S270",
+            "S271",
+            "S272",
+            "S273",
+            "S274",
+            "S275",
+            "S276"
+          ]
+        }
+      }
+    }
+  ],
+  "test": {
+    "id": "test",
+    "title": "test",
+    "description": "test",
+    "image": "test",
+    "segments": {
+      "Mat": {
+        "segments": [
+          "I040",
+          "S266",
+          "S267",
+          "S268",
+          "S269",
+          "S270",
+          "S271",
+          "S272",
+          "S273",
+          "S274",
+          "S275",
+          "S276"
+        ]
+      }
+    }
+  },
+  "challenges": [
+    {
+      "title": "Paul's Letters",
+      "description": "21 Stories - 3 Weeks",
       "image": "island",
-      "highlightText": "15 Days"
+      "longDescription": "Journey through the epistles of Paul, exploring his teachings on faith, grace, and Christian living. Perfect for understanding early church doctrine and practical Christian wisdom."
+    },
+    {
+      "title": "David's Life",
+      "description": "15 Stories - 15 Days",
+      "image": "island",
+      "longDescription": "Follow the journey of David from shepherd to king, through his trials and triumphs. Learn about leadership, faith, and redemption through his powerful story."
+    },
+    {
+      "title": "Advent Journey",
+      "description": "22 Stories - 22 Days",
+      "image": "island",
+      "longDescription": "Prepare your heart for Christmas with daily readings about the prophecies and birth of Jesus. Experience the anticipation and joy of the coming Messiah."
+    },
+    {
+      "title": "Lenten Reflection",
+      "description": "40 Stories - 40 Days",
+      "image": "island",
+      "longDescription": "Journey through Jesus' ministry, passion, and resurrection during the 40 days of Lent. Deepen your understanding of Christ's sacrifice and victory."
+    },
+    {
+      "title": "12 Days of Christmas",
+      "description": "12 Stories - 12 Days",
+      "image": "island",
+      "longDescription": "Celebrate the Christmas season with readings about Jesus' birth and early life. Explore the miraculous events and profound meaning of the incarnation."
+    },
+    {
+      "title": "The Gospels",
+      "description": "28 Stories - 4 Weeks",
+      "image": "island",
+      "longDescription": "Experience the life and teachings of Jesus through all four Gospel accounts. Discover the unique perspective each Gospel writer brings to the story of Christ."
+    },
+    {
+      "title": "The Torah",
+      "description": "35 Stories - 5 Weeks",
+      "image": "island",
+      "longDescription": "Journey through the first five books of the Bible, exploring the foundations of faith, law, and God's covenant with His people."
+    },
+    {
+      "title": "In The Beginning",
+      "description": "14 Stories - 2 Weeks",
+      "image": "island",
+      "longDescription": "Explore the opening chapters of Genesis, from Creation to the Tower of Babel. Understand humanity's origins and early relationship with God."
     }
   ]
 }
