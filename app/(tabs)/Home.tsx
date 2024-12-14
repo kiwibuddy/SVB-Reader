@@ -71,7 +71,8 @@ const HomeScreen = () => {
           </Pressable>
           <Pressable
             style={[styles.squareButton, { backgroundColor: 'transparent' }]}
-          >
+            onPress={() => router.push("/Emoji-Reactions")}
+>
             <ImageBackground
               source={require("@/assets/images/button4.png")}
               style={styles.buttonBackground}
@@ -82,6 +83,7 @@ const HomeScreen = () => {
           </Pressable>
           <Pressable
             style={[styles.squareButton, { backgroundColor: 'transparent' }]}
+            onPress={() => router.push("/Reading-Plan")}
           >
             <ImageBackground
               source={require("@/assets/images/button11.jpg")}
@@ -246,7 +248,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   squareButtonText: {
-    fontSize: 16,
+    fontSize: 20,
     color: "#FFF",
     fontWeight: "bold",
     textAlign: "center",

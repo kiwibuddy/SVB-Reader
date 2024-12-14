@@ -6,7 +6,7 @@ const buttonData: ButtonItem[] = [
     id: "Bible1Year",
     title: "Bible in 1 Year",
     description: "Read through the entire Bible in one year",
-    route: "/index" as const
+    route: "/(tabs)/Plan" as const
   },
   {
     id: "SchoolYear",
