@@ -13,6 +13,8 @@ import SegmentTitle from "./SegmentTitle";
 import EmojiPicker from "../EmojiPicker";
 import { addEmoji } from "@/api/sqlite";
 import { useAppContext } from "@/context/GlobalContext";
+import CelebrationPopup from "../CelebrationPopup";
+
 interface SegmentProps {
   segmentData: SegmentType;
 }
@@ -25,13 +27,16 @@ const icons = [
 ];
 
 const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
-  const { emojiActions, updateEmojiActions } = useAppContext();
+  const { emojiActions, updateEmojiActions, completedSegments, markSegmentComplete } = useAppContext();
   const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
   const [readerNumber, setReaderNumber] = useState<number | null>(null); // Update state type
   const [blockData, setBlockData] = useState<BibleBlock | null>(null); // State for block data
   const [blockID, setBlockID] = useState<string | null>(null); // State for block ID
+  const [showCelebration, setShowCelebration] = useState(false);
   const { content, colors, readers, id } = segmentData;
   const segID = id.split("-")[id.split("-").length - 1];
+  const isCompleted = completedSegments.includes(segID);
+
   // Reset readerNumber to null when id changes
   useEffect(() => {
     setReaderNumber(null);
@@ -56,6 +61,47 @@ const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
   const newContent = splitIntoParagraphs(content);
 
   const colorRenderCount = new Map<string, number>(); // Track render counts
+
+  // Add handler for completion toggle
+  const handleCompletionToggle = async () => {
+    try {
+      if (!isCompleted) {
+        await markSegmentComplete(segID, true);
+        setShowCelebration(true);
+      } else {
+        await markSegmentComplete(segID, false);
+      }
+    } catch (error) {
+      console.error('Error toggling completion:', error);
+    }
+  };
+
+  const handleCelebrationComplete = () => {
+    setShowCelebration(false);
+  };
+
+  // Make the completion button more responsive
+  const CompletionButton = () => (
+    <Pressable 
+      onPress={handleCompletionToggle}
+      style={[
+        styles.completionButton,
+        { opacity: 1 }
+      ]}
+    >
+      <Text style={[
+        styles.completionText,
+        { color: isCompleted ? '#4CAF50' : '#666' }
+      ]}>
+        {isCompleted ? 'Segment Completed' : 'Mark Segment as Complete'}
+      </Text>
+      <Ionicons
+        name={isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'}
+        size={32}
+        color={isCompleted ? '#4CAF50' : '#CCCCCC'}
+      />
+    </Pressable>
+  );
 
   return (
     <View
@@ -263,6 +309,16 @@ const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
           margin: 10,
         }}
       />
+
+      {/* Add completion section at bottom */}
+      <View style={styles.completionContainer}>
+        <CompletionButton />
+      </View>
+
+      <CelebrationPopup 
+        visible={showCelebration} 
+        onComplete={handleCelebrationComplete}
+      />
     </View>
   );
 };
@@ -335,5 +391,22 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
     shadowOpacity: 0.2, // Optional: shadow opacity for iOS
     shadowRadius: 2, // Optional: shadow radius for iOS
+  },
+  completionContainer: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+    marginTop: 10,
+  },
+  completionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+  },
+  completionText: {
+    fontSize: 16,
+    marginRight: 8,
+    color: '#666',
   },
 });

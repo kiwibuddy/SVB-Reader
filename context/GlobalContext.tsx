@@ -11,6 +11,8 @@ interface AppContextType {
   updateReadingPlan: (newReadingPlan: string) => Promise<void>;
   emojiActions: number;
   updateEmojiActions: (newEmojiActions: number) => Promise<void>;
+  completedSegments: string[];
+  markSegmentComplete: (segmentId: string, isComplete: boolean) => Promise<void>;
 }
 
 const defaultContext: AppContextType = {
@@ -22,6 +24,8 @@ const defaultContext: AppContextType = {
   updateReadingPlan: async () => Promise.resolve(), // Updated to return a Promise
   emojiActions: 0,
   updateEmojiActions: async () => {},
+  completedSegments: [],
+  markSegmentComplete: async () => {},
 };
 
 // Create the context
@@ -40,6 +44,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   // State and logic for read segments
   const [readSegments, setReadSegments] = useState<string[]>([]);
   const [emojiActions, setEmojiActions] = useState<number>(0);
+  const [completedSegments, setCompletedSegments] = useState<string[]>([]);
 
   useEffect(() => {
     // Load read status from AsyncStorage when the app starts
@@ -64,9 +69,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     };
 
+    const loadCompletedSegments = async () => {
+      const stored = await AsyncStorage.getItem('completedSegments');
+      if (stored) {
+        setCompletedSegments(JSON.parse(stored));
+      }
+    };
+
     loadSegmentId();
     loadReadStatus();
     loadReadingPlan();
+    loadCompletedSegments();
   }, []);
 
   const markAsRead = async (segmentId: string, isRead: boolean) => {
@@ -92,9 +105,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     setEmojiActions(newEmojiActions);
   };
 
+  const markSegmentComplete = async (segmentId: string, isComplete: boolean) => {
+    try {
+      let updatedSegments;
+      if (isComplete) {
+        updatedSegments = [...completedSegments, segmentId];
+      } else {
+        updatedSegments = completedSegments.filter(id => id !== segmentId);
+      }
+      setCompletedSegments(updatedSegments);
+      await AsyncStorage.setItem('completedSegments', JSON.stringify(updatedSegments));
+    } catch (error) {
+      console.error('Error updating segment completion:', error);
+    }
+  };
+
   return (
     <AppContext.Provider
-      value={{ segmentId, updateSegmentId, readSegments, markAsRead, readingPlan, updateReadingPlan, emojiActions, updateEmojiActions }}
+      value={{ segmentId, updateSegmentId, readSegments, markAsRead, readingPlan, updateReadingPlan, emojiActions, updateEmojiActions, completedSegments, markSegmentComplete }}
     >
       {children}
     </AppContext.Provider>
