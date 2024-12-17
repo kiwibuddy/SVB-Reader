@@ -4,6 +4,8 @@ import { getEmojis} from "@/api/sqlite";
 import BibleBlockComponent from "@/components/Bible/Block";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useRouter } from "expo-router";
+import { SegmentIds } from '@/types'; // Make sure this import exists
+import Books from "@/assets/data/BookChapterList.json";
 
 // Define the structure for our emoji reaction data
 interface EmojiReaction {
@@ -106,7 +108,7 @@ const EMOJI_TYPES = [
 
 const getSegmentReference = (segmentID: string) => {
   const segment = SegmentTitles[segmentID as keyof typeof SegmentTitles];
-  if (!segment) return '';
+  if (!segment || !segment.ref) return segment?.book[0] || '';
   return `${segment.book[0]} ${segment.ref}`;
 };
 
@@ -156,6 +158,8 @@ const ReadingEmoji = () => {
   };
 
   const handleLongPress = (reaction: EmojiReaction) => {
+    const segment = SegmentTitles[reaction.segmentID as keyof typeof SegmentTitles];
+    
     Alert.alert(
       "Go to Segment",
       `Would you like to view this verse in ${getSegmentReference(reaction.segmentID)}?`,
@@ -166,7 +170,15 @@ const ReadingEmoji = () => {
         },
         {
           text: "Go",
-          onPress: () => router.push(`/segment/${reaction.segmentID}`)
+          onPress: () => {
+            router.push({
+              pathname: "/[segment]",
+              params: { 
+                segment: reaction.segmentID,
+                book: segment?.book[0] || ''
+              }
+            });
+          }
         }
       ]
     );
