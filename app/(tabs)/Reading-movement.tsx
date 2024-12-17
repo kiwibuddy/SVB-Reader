@@ -11,7 +11,7 @@ const ReadingPlan = () => {
             Start a Bible Movement - Find 3 Friends • Pick Your Role • Read Together
           </Text>
           <Image
-            source={require("@/assets/images/button1.png")}
+            source={require("../../assets/images/Movement-1.png")}
             style={styles.sectionImage}
             resizeMode="cover"
           />
@@ -21,7 +21,7 @@ const ReadingPlan = () => {
             Invite 3 other friends or classmates. Each pick one of the 4 voices/roles for the story each day: narrator, main character, God/Jesus, or other speaking parts.
           </Text>
           <Image
-            source={require("@/assets/images/button1.png")}
+            source={require("../../assets/images/Movement-2.webp")}
             style={styles.sectionImage}
             resizeMode="cover"
           />
@@ -31,7 +31,7 @@ const ReadingPlan = () => {
             Pick a time in your day that you can meet each day. 15 min plus discussion is all you need to keep up with the reading plan.
           </Text>
           <Image
-            source={require("@/assets/images/button1.png")}
+            source={require("../../assets/images/Movement-3.webp")}
             style={styles.sectionImage}
             resizeMode="cover"
           />
@@ -41,7 +41,7 @@ const ReadingPlan = () => {
             Consider school, cafes, parks, or homes. Look for comfortable seating and minimal noise. Remember - snacks are always a good idea!
           </Text>
           <Image
-            source={require("@/assets/images/button1.png")}
+            source={require("../../assets/images/Movement-4.webp")}
             style={styles.sectionImage}
             resizeMode="cover"
           />
@@ -51,7 +51,7 @@ const ReadingPlan = () => {
             Open the app and select a passage. Assign roles by tapping to choose your character. Take turns reading your highlighted parts.
           </Text>
           <Image
-            source={require("@/assets/images/button1.png")}
+            source={require("../../assets/images/Movement-5.webp")}
             style={styles.sectionImage}
             resizeMode="cover"
           />
