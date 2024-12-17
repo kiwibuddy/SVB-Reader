@@ -1492,52 +1492,224 @@
   },
   "challenges": [
     {
+      "id": "gospelsAndActs",
+      "title": "4 Gospels and Acts",
+      "description": "52 Stories - 7.5 Weeks",
+      "image": "island",
+      "longDescription": "Immerse yourself in the life of Jesus through the four Gospel accounts and witness the birth of the early church in Acts. This journey provides a comprehensive view of Christ's ministry and the Spirit-led expansion of Christianity.",
+      "segments": {
+        "Mar": {
+          "segments": [
+            "I041",
+            "S277",
+            "S278",
+            "S279",
+            "S280",
+            "S281",
+            "S282",
+            "S283",
+            "S284"
+          ]
+        },
+        "Joh": {
+          "segments": [
+            "I043",
+            "S298",
+            "S299",
+            "S300",
+            "S301",
+            "S302",
+            "S303",
+            "S304",
+            "S305",
+            "S306",
+            "S307"
+          ]
+        },
+        "Mat": {
+          "segments": [
+            "I040",
+            "S266",
+            "S267",
+            "S268",
+            "S269",
+            "S270",
+            "S271",
+            "S272",
+            "S273",
+            "S274",
+            "S275",
+            "S276"
+          ]
+        },
+        "Luk": {
+          "segments": [
+            "I042",
+            "S285",
+            "S286",
+            "S287",
+            "S288",
+            "S289",
+            "S290",
+            "S291",
+            "S292",
+            "S293",
+            "S294",
+            "S295",
+            "S296",
+            "S297"
+          ]
+        },
+        "Act": {
+          "segments": [
+            "I044",
+            "S308",
+            "S309",
+            "S310",
+            "S311",
+            "S312",
+            "S313",
+            "S314",
+            "S315",
+            "S316",
+            "S317",
+            "S318",
+            "S319"
+          ]
+        }
+      }
+    },
+    {
+      "id": "paulsLetters",
       "title": "Paul's Letters",
       "description": "21 Stories - 3 Weeks",
       "image": "island",
-      "longDescription": "Journey through the epistles of Paul, exploring his teachings on faith, grace, and Christian living. Perfect for understanding early church doctrine and practical Christian wisdom."
+      "longDescription": "Journey through the epistles of Paul, exploring his teachings on faith, grace, and Christian living. Perfect for understanding early church doctrine and practical Christian wisdom.",
+      "segments": {
+        "Rom": {
+          "segments": ["S201", "S202", "S203"]
+        },
+        "Gal": {
+          "segments": ["S204", "S205"]
+        }
+      }
     },
     {
-      "title": "David's Life",
-      "description": "15 Stories - 15 Days",
-      "image": "island",
-      "longDescription": "Follow the journey of David from shepherd to king, through his trials and triumphs. Learn about leadership, faith, and redemption through his powerful story."
-    },
-    {
-      "title": "Advent Journey",
-      "description": "22 Stories - 22 Days",
-      "image": "island",
-      "longDescription": "Prepare your heart for Christmas with daily readings about the prophecies and birth of Jesus. Experience the anticipation and joy of the coming Messiah."
-    },
-    {
-      "title": "Lenten Reflection",
-      "description": "40 Stories - 40 Days",
-      "image": "island",
-      "longDescription": "Journey through Jesus' ministry, passion, and resurrection during the 40 days of Lent. Deepen your understanding of Christ's sacrifice and victory."
-    },
-    {
-      "title": "12 Days of Christmas",
-      "description": "12 Stories - 12 Days",
-      "image": "island",
-      "longDescription": "Celebrate the Christmas season with readings about Jesus' birth and early life. Explore the miraculous events and profound meaning of the incarnation."
-    },
-    {
-      "title": "The Gospels",
-      "description": "28 Stories - 4 Weeks",
-      "image": "island",
-      "longDescription": "Experience the life and teachings of Jesus through all four Gospel accounts. Discover the unique perspective each Gospel writer brings to the story of Christ."
-    },
-    {
-      "title": "The Torah",
-      "description": "35 Stories - 5 Weeks",
-      "image": "island",
-      "longDescription": "Journey through the first five books of the Bible, exploring the foundations of faith, law, and God's covenant with His people."
-    },
-    {
+      "id": "inTheBeginning",
       "title": "In The Beginning",
       "description": "14 Stories - 2 Weeks",
       "image": "island",
-      "longDescription": "Explore the opening chapters of Genesis, from Creation to the Tower of Babel. Understand humanity's origins and early relationship with God."
+      "longDescription": "Explore the opening chapters of Genesis, from Creation to the Tower of Babel. Understand humanity's origins and early relationship with God.",
+      "segments": {
+        "Gen": {
+          "segments": [
+            "I001",
+            "S001",
+            "S002",
+            "S003",
+            "S004"
+          ]
+        }
+      }
+    },
+    {
+      "id": "dtsOutreach",
+      "title": "DTS Outreach",
+      "description": "40 Stories - 8 Weeks",
+      "image": "island",
+      "longDescription": "A focused journey through key New Testament books, perfect for Discipleship Training School outreach. This selection covers the Gospel of Luke, the early church in Acts, and essential epistles, providing a comprehensive foundation for ministry and discipleship. Each book begins with an introduction (not counted in the 40 stories).",
+      "segments": {
+        "Luk": {
+          "segments": [
+            "I042",
+            "S285",
+            "S286",
+            "S287",
+            "S288",
+            "S289",
+            "S290",
+            "S291",
+            "S292",
+            "S293",
+            "S294",
+            "S295",
+            "S296",
+            "S297"
+          ]
+        },
+        "Act": {
+          "segments": [
+            "I044",
+            "S308",
+            "S309",
+            "S310",
+            "S311",
+            "S312",
+            "S313",
+            "S314",
+            "S315",
+            "S316",
+            "S317",
+            "S318",
+            "S319"
+          ]
+        },
+        "Rom": {
+          "segments": [
+            "I045",
+            "S320",
+            "S321",
+            "S322",
+            "S323"
+          ]
+        },
+        "1Co": {
+          "segments": [
+            "I046",
+            "S328",
+            "S329",
+            "S330"
+          ]
+        },
+        "Eph": {
+          "segments": [
+            "I049",
+            "S337",
+            "S338"
+          ]
+        },
+        "Tit": {
+          "segments": [
+            "I056",
+            "S345"
+          ]
+        },
+        "Jam": {
+          "segments": [
+            "I059",
+            "S352"
+          ]
+        },
+        "1Pe": {
+          "segments": [
+            "I060",
+            "S353"
+          ]
+        },
+        "1Jn": {
+          "segments": [
+            "I062",
+            "S355"
+          ]
+        },
+        "Rev": {
+          "segments": [
+            "I066",
+            "S359",
+            "S365"
+          ]
+        }
+      }
     }
   ]
 }
