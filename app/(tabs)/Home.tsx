@@ -71,7 +71,7 @@ const HomeScreen = () => {
           </Pressable>
           <Pressable
             style={[styles.squareButton, { backgroundColor: 'transparent' }]}
-            onPress={() => router.push("/Emoji-Reactions")}
+            onPress={() => router.push("/Reading-emoji")}
 >
             <ImageBackground
               source={require("@/assets/images/button4.png")}
