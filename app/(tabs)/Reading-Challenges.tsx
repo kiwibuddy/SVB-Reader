@@ -59,6 +59,14 @@ const CHALLENGE_STYLES = {
   "In The Beginning": {
     color: "#f4944d", // Orange
     icon: "🌟"
+  },
+  "4 Gospels and Acts": {
+    color: "#4dcaf4",
+    icon: "📖"
+  },
+  "DTS Outreach": {
+    color: "#f4944d",
+    icon: "🌟"
   }
 };
 
@@ -73,7 +81,7 @@ type Challenge = {
   image: string;
   longDescription: string;
   highlightText?: string;
-  segments?: {
+  segments: {
     [key: string]: {
       segments: string[];
     };
@@ -100,20 +108,16 @@ const ChallengesScreen = () => {
   const { readingPlanProgress, updateReadingPlanProgress, startReadingPlan } = useAppContext();
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge>(() => {
     const challenges = readingPlansData.challenges;
-    console.log('Initial challenges:', challenges);
     const validChallenge = challenges.find(challenge => 
       challenge.segments && Object.keys(challenge.segments).length > 0
-    );
-    console.log('Initial valid challenge:', validChallenge);
-    return validChallenge || challenges[0];
+    ) as unknown as Challenge;
+    return validChallenge || challenges[0] as unknown as Challenge;
   });
 
   const currentProgress = selectedChallenge.id ? readingPlanProgress[selectedChallenge.id] : undefined;
 
-  const handleChallengeSelection = (challenge: Challenge) => {
-    console.log('Selected challenge:', challenge);
-    console.log('Challenge segments:', challenge.segments);
-    setSelectedChallenge(challenge);
+  const handleChallengeSelection = (challenge: any) => {
+    setSelectedChallenge(challenge as Challenge);
     if (challenge.id && !readingPlanProgress[challenge.id]) {
       startReadingPlan(challenge.id);
     }
@@ -165,7 +169,7 @@ const ChallengesScreen = () => {
               style={[
                 styles.challengeButton,
                 {
-                  backgroundColor: CHALLENGE_STYLES[challenge.title]?.color || "#f4694d",
+                  backgroundColor: CHALLENGE_STYLES[challenge.title as ChallengeTitle]?.color || "#f4694d",
                 },
                 selectedChallenge.id === challenge.id && {
                   transform: [{ scale: 1.02 }],
@@ -176,7 +180,7 @@ const ChallengesScreen = () => {
             >
               <View style={styles.challengeContent}>
                 <Text style={styles.challengeIcon}>
-                  {CHALLENGE_STYLES[challenge.title]?.icon}
+                  {CHALLENGE_STYLES[challenge.title as ChallengeTitle]?.icon}
                 </Text>
                 <Text style={styles.challengeButtonText}>
                   {challenge.title}
@@ -396,6 +400,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'relative',
     width: '100%',
+  },
+  challengeContext: {
+    fontSize: 16,
+    color: "#666666",
+    lineHeight: 24,
   },
   ...additionalStyles,
 });
