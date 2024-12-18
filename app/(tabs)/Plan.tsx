@@ -137,7 +137,7 @@ const PlanScreen = () => {
             <Text style={styles.progressText}>
               Progress: {currentProgress?.completedSegments.length || 0} / 
               {Object.values(selectedPlan.segments).reduce(
-                (acc, book) => acc + book.segments.length, 
+                (acc, book) => acc + book.segments.filter(s => !s.startsWith('I')).length, 
                 0
               )} segments
             </Text>

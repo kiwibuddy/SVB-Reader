@@ -206,7 +206,7 @@ const ChallengesScreen = () => {
               Progress: {currentProgress?.completedSegments?.length || 0} / 
               {selectedChallenge.segments ? 
                 Object.values(selectedChallenge.segments).reduce(
-                  (acc, book) => acc + (book.segments?.length || 0), 
+                  (acc, book) => acc + (book.segments?.filter(s => !s.startsWith('I')).length || 0), 
                   0
                 ) : 0} segments
             </Text>
