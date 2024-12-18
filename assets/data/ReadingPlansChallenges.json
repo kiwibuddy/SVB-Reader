@@ -1617,7 +1617,7 @@
       "title": "DTS Outreach",
       "description": "40 Stories - 8 Weeks",
       "image": "island",
-      "longDescription": "A focused journey through key New Testament books, perfect for Discipleship Training School outreach. This selection covers the Gospel of Luke, the early church in Acts, and essential epistles, providing a comprehensive foundation for ministry and discipleship. Each book begins with an introduction (not counted in the 40 stories).",
+      "longDescription": "A focused journey through key New Testament books, perfect for Discipleship Training School outreach. This selection covers the Gospel of Luke, the early church in Acts, and essential epistles, providing a comprehensive foundation for ministry and discipleship.",
       "segments": {
         "Luk": {
           "segments": [
@@ -1707,6 +1707,180 @@
             "I066",
             "S359",
             "S365"
+          ]
+        }
+      }
+    },
+    {
+      "id": "dtsLecturePhase",
+      "title": "DTS Lecture Phase",
+      "description": "55 Stories - 11 Weeks",
+      "image": "island",
+      "longDescription": "A comprehensive Bible reading journey designed for YWAM DTS students during their lecture phase. This 11-week plan aligns with the DTS curriculum, covering key narratives from Creation to the Prophets, providing biblical foundation for each week's teaching topics. Perfect for deepening your understanding of God's character and His redemptive plan through Scripture.",
+      "segments": {
+        "Gen": {
+          "segments": [
+            "I001",
+            "S001",
+            "S002",
+            "S003",
+            "S004",
+            "S006",
+            "S008"
+          ]
+        },
+        "Exo": {
+          "segments": [
+            "I002",
+            "S019",
+            "S023",
+            "S025",
+            "S030",
+            "S032"
+          ]
+        },
+        "Lev": {
+          "segments": [
+            "I003",
+            "S039"
+          ]
+        },
+        "Num": {
+          "segments": [
+            "I004",
+            "S049"
+          ]
+        },
+        "Deu": {
+          "segments": [
+            "I005",
+            "S057",
+            "S058",
+            "S067"
+          ]
+        },
+        "Jos": {
+          "segments": [
+            "I006",
+            "S070",
+            "S076"
+          ]
+        },
+        "Jdg": {
+          "segments": [
+            "I007",
+            "S077",
+            "S079"
+          ]
+        },
+        "Rut": {
+          "segments": [
+            "I008",
+            "S085"
+          ]
+        },
+        "1Sa": {
+          "segments": [
+            "I009",
+            "S088",
+            "S089",
+            "S091"
+          ]
+        },
+        "2Sa": {
+          "segments": [
+            "I010",
+            "S097"
+          ]
+        },
+        "1Ki": {
+          "segments": [
+            "I011",
+            "S106",
+            "S109",
+            "S110"
+          ]
+        },
+        "2Ki": {
+          "segments": [
+            "I012",
+            "S121",
+            "S124"
+          ]
+        },
+        "Neh": {
+          "segments": [
+            "I016",
+            "S149",
+            "S150"
+          ]
+        },
+        "Psa": {
+          "segments": [
+            "I019",
+            "S164",
+            "S166",
+            "S172",
+            "S175",
+            "S177",
+            "S179"
+          ]
+        },
+        "Pro": {
+          "segments": [
+            "I020",
+            "S180"
+          ]
+        },
+        "Isa": {
+          "segments": [
+            "I023",
+            "S191",
+            "S200",
+            "S203",
+            "S204"
+          ]
+        },
+        "Jer": {
+          "segments": [
+            "I024",
+            "S206",
+            "S210",
+            "S211",
+            "S219"
+          ]
+        },
+        "Eze": {
+          "segments": [
+            "I026",
+            "S227",
+            "S232",
+            "S239"
+          ]
+        },
+        "Dan": {
+          "segments": [
+            "I027",
+            "S245",
+            "S246"
+          ]
+        },
+        "Joe": {
+          "segments": [
+            "I029",
+            "S251"
+          ]
+        },
+        "Jon": {
+          "segments": [
+            "I032",
+            "S255"
+          ]
+        },
+        "Hab": {
+          "segments": [
+            "I035",
+            "S259"
           ]
         }
       }
