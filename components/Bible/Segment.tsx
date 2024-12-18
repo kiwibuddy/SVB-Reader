@@ -14,9 +14,13 @@ import EmojiPicker from "../EmojiPicker";
 import { addEmoji } from "@/api/sqlite";
 import { useAppContext } from "@/context/GlobalContext";
 import CelebrationPopup from "../CelebrationPopup";
+import { useRouter } from "expo-router";
 
 interface SegmentProps {
   segmentData: SegmentType;
+  showGlobalCompletion?: boolean;
+  challengeId?: string;
+  planId?: string;
 }
 
 const icons = [
@@ -26,8 +30,30 @@ const icons = [
   { name: "star", label: "4" },
 ];
 
-const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
-  const { emojiActions, updateEmojiActions, completedSegments, markSegmentComplete } = useAppContext();
+const SegmentComponent: React.FC<SegmentProps> = ({ 
+  segmentData, 
+  showGlobalCompletion = true,
+  challengeId,
+  planId
+}) => {
+  const router = useRouter();
+  const { 
+    completedSegments, 
+    markSegmentComplete,
+    activePlan,
+    activeChallenges,
+    emojiActions,
+    updateEmojiActions,
+    updateReadingPlanProgress,
+    updateChallengeProgress
+  } = useAppContext();
+
+  // Add null checks for segmentData
+  if (!segmentData || !segmentData.id) {
+    console.error('Invalid segment data:', segmentData);
+    return null; // Or return an error state component
+  }
+
   const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
   const [readerNumber, setReaderNumber] = useState<number | null>(null); // Update state type
   const [blockData, setBlockData] = useState<BibleBlock | null>(null); // State for block data
@@ -35,7 +61,22 @@ const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
   const [showCelebration, setShowCelebration] = useState(false);
   const { content, colors, readers, id } = segmentData;
   const segID = id.split("-")[id.split("-").length - 1];
-  const isCompleted = completedSegments.includes(segID);
+
+  // Determine which completion state to use
+  const getIsCompleted = () => {
+    if (showGlobalCompletion) {
+      return completedSegments.includes(segID);
+    }
+    if (planId && activePlan?.planId === planId) {
+      return activePlan.completedSegments.includes(segID);
+    }
+    if (challengeId && activeChallenges[challengeId]) {
+      return activeChallenges[challengeId].completedSegments.includes(segID);
+    }
+    return false;
+  };
+
+  const isCompleted = getIsCompleted();
 
   // Reset readerNumber to null when id changes
   useEffect(() => {
@@ -54,8 +95,10 @@ const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
 
   const handleReactionSelect = async (blockData: BibleBlock, blockID: string, emoji: string) => {
     await addEmoji(blockID, JSON.stringify(blockData), emoji, "");
-    await updateEmojiActions(emojiActions + 1);
-    setIsModalVisible(false); // Hide the modal after selection
+    if (typeof emojiActions === 'number') {
+      await updateEmojiActions(emojiActions + 1);
+    }
+    setIsModalVisible(false);
   };
 
   const newContent = splitIntoParagraphs(content);
@@ -63,27 +106,49 @@ const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
   const colorRenderCount = new Map<string, number>(); // Track render counts
 
   // Add handler for completion toggle
-  const handleCompletionToggle = async () => {
-    try {
+  const handleCompletion = async () => {
+    if (showGlobalCompletion) {
+      await markSegmentComplete(segID, !isCompleted);
       if (!isCompleted) {
-        await markSegmentComplete(segID, true);
         setShowCelebration(true);
-      } else {
-        await markSegmentComplete(segID, false);
       }
-    } catch (error) {
-      console.error('Error toggling completion:', error);
+    } else if (planId && activePlan) {
+      // Handle plan completion
+      await updateReadingPlanProgress(planId, segID);
+      setShowCelebration(true);
+    } else if (challengeId && activeChallenges[challengeId]) {
+      // Handle challenge completion
+      await updateChallengeProgress(challengeId, segID);
+      setShowCelebration(true);
     }
   };
 
   const handleCelebrationComplete = () => {
     setShowCelebration(false);
+    // Navigate back based on context
+    if (planId) {
+      router.replace({
+        pathname: '/Plan',
+        params: { 
+          scrollToPlan: planId,
+          timestamp: Date.now() // Force refresh
+        }
+      });
+    } else if (challengeId) {
+      router.replace({
+        pathname: '/Reading-Challenges',
+        params: { 
+          scrollToChallenge: challengeId,
+          timestamp: Date.now() // Force refresh
+        }
+      });
+    }
   };
 
   // Make the completion button more responsive
   const CompletionButton = () => (
     <Pressable 
-      onPress={handleCompletionToggle}
+      onPress={handleCompletion}
       style={[
         styles.completionButton,
         { opacity: 1 }

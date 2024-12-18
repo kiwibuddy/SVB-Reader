@@ -11,6 +11,24 @@ interface ReadingPlanProgress {
   isCompleted: boolean;
 }
 
+interface PlanProgress {
+  planId: string;
+  completedSegments: string[];
+  dateStarted: string;
+  lastRead: string;
+  isCompleted: boolean;
+  isPaused: boolean;
+}
+
+interface ChallengeProgress {
+  challengeId: string;
+  completedSegments: string[];
+  dateStarted: string;
+  lastRead: string;
+  isCompleted: boolean;
+  isPaused: boolean;
+}
+
 // Define the interface for both segmentId and read status
 interface AppContextType {
   segmentId: string;
@@ -24,8 +42,19 @@ interface AppContextType {
   completedSegments: string[];
   markSegmentComplete: (segmentId: string, isComplete: boolean) => Promise<void>;
   readingPlanProgress: Record<string, ReadingPlanProgress>;
-  updateReadingPlanProgress: (planId: string, segmentId: string) => void;
   startReadingPlan: (planId: string) => void;
+  activePlan: PlanProgress | null;
+  startPlan: (planId: string) => void;
+  pausePlan: () => void;
+  resumePlan: () => void;
+  switchPlan: (newPlanId: string) => Promise<void>;
+  activeChallenges: Record<string, ChallengeProgress>;
+  startChallenge: (challengeId: string) => void;
+  pauseChallenge: (challengeId: string) => void;
+  resumeChallenge: (challengeId: string) => void;
+  restartChallenge: (challengeId: string) => void;
+  updateReadingPlanProgress: (planId: string, segmentId: string) => Promise<void>;
+  updateChallengeProgress: (challengeId: string, segmentId: string) => Promise<void>;
 }
 
 const defaultContext: AppContextType = {
@@ -40,8 +69,19 @@ const defaultContext: AppContextType = {
   completedSegments: [],
   markSegmentComplete: async () => {},
   readingPlanProgress: {},
-  updateReadingPlanProgress: () => {},
   startReadingPlan: () => {},
+  activePlan: null,
+  startPlan: () => {},
+  pausePlan: () => {},
+  resumePlan: () => {},
+  switchPlan: async () => {},
+  activeChallenges: {},
+  startChallenge: () => {},
+  pauseChallenge: () => {},
+  resumeChallenge: () => {},
+  restartChallenge: () => {},
+  updateReadingPlanProgress: async () => {},
+  updateChallengeProgress: async () => {},
 };
 
 // Create the context
@@ -62,6 +102,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   const [emojiActions, setEmojiActions] = useState<number>(0);
   const [completedSegments, setCompletedSegments] = useState<string[]>([]);
   const [readingPlanProgress, setReadingPlanProgress] = useState<Record<string, ReadingPlanProgress>>({});
+  const [activePlan, setActivePlan] = useState<PlanProgress | null>(null);
+  const [activeChallenges, setActiveChallenges] = useState<Record<string, ChallengeProgress>>({});
 
   useEffect(() => {
     // Load read status from AsyncStorage when the app starts
@@ -99,6 +141,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     loadCompletedSegments();
   }, []);
 
+  // Load saved state on mount
+  useEffect(() => {
+    const loadSavedState = async () => {
+      try {
+        const [savedPlan, savedChallenges] = await Promise.all([
+          AsyncStorage.getItem('activePlan'),
+          AsyncStorage.getItem('activeChallenges')
+        ]);
+        
+        if (savedPlan) setActivePlan(JSON.parse(savedPlan));
+        if (savedChallenges) setActiveChallenges(JSON.parse(savedChallenges));
+      } catch (error) {
+        console.error('Error loading saved plan/challenge state:', error);
+      }
+    };
+
+    loadSavedState();
+  }, []);
+
   const markAsRead = async (segmentId: string, isRead: boolean) => {
     const updatedSegments = isRead
       ? readSegments.filter((id) => id !== segmentId) // Remove if already read
@@ -122,19 +183,146 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     setEmojiActions(newEmojiActions);
   };
 
+  // Plan Management Functions
+  const startPlan = async (planId: string) => {
+    const newPlan: PlanProgress = {
+      planId,
+      completedSegments: [],
+      dateStarted: new Date().toISOString(),
+      lastRead: new Date().toISOString(),
+      isCompleted: false,
+      isPaused: false
+    };
+    
+    setActivePlan(newPlan);
+    await AsyncStorage.setItem('activePlan', JSON.stringify(newPlan));
+  };
+
+  const pausePlan = async () => {
+    if (activePlan) {
+      const pausedPlan = { ...activePlan, isPaused: true };
+      setActivePlan(pausedPlan);
+      await AsyncStorage.setItem('activePlan', JSON.stringify(pausedPlan));
+    }
+  };
+
+  const resumePlan = async () => {
+    if (activePlan) {
+      const resumedPlan = { ...activePlan, isPaused: false };
+      setActivePlan(resumedPlan);
+      await AsyncStorage.setItem('activePlan', JSON.stringify(resumedPlan));
+    }
+  };
+
+  const switchPlan = async (newPlanId: string) => {
+    if (activePlan && !activePlan.isPaused) {
+      await pausePlan();
+    }
+    await startPlan(newPlanId);
+  };
+
+  // Challenge Management Functions
+  const startChallenge = async (challengeId: string) => {
+    const newChallenge: ChallengeProgress = {
+      challengeId,
+      completedSegments: [],
+      dateStarted: new Date().toISOString(),
+      lastRead: new Date().toISOString(),
+      isCompleted: false,
+      isPaused: false
+    };
+    
+    setActiveChallenges(prev => ({
+      ...prev,
+      [challengeId]: newChallenge
+    }));
+    await AsyncStorage.setItem('activeChallenges', JSON.stringify({
+      ...activeChallenges,
+      [challengeId]: newChallenge
+    }));
+  };
+
+  const pauseChallenge = async (challengeId: string) => {
+    if (activeChallenges[challengeId]) {
+      const updatedChallenges = {
+        ...activeChallenges,
+        [challengeId]: { ...activeChallenges[challengeId], isPaused: true }
+      };
+      setActiveChallenges(updatedChallenges);
+      await AsyncStorage.setItem('activeChallenges', JSON.stringify(updatedChallenges));
+    }
+  };
+
+  const resumeChallenge = async (challengeId: string) => {
+    if (activeChallenges[challengeId]) {
+      const updatedChallenges = {
+        ...activeChallenges,
+        [challengeId]: { ...activeChallenges[challengeId], isPaused: false }
+      };
+      setActiveChallenges(updatedChallenges);
+      await AsyncStorage.setItem('activeChallenges', JSON.stringify(updatedChallenges));
+    }
+  };
+
+  const restartChallenge = async (challengeId: string) => {
+    await startChallenge(challengeId);
+  };
+
+  // Update markSegmentComplete to handle plans and challenges
   const markSegmentComplete = async (segmentId: string, isComplete: boolean) => {
     try {
-      let updatedSegments;
-      if (isComplete) {
-        updatedSegments = [...completedSegments, segmentId];
-      } else {
-        updatedSegments = completedSegments.filter(id => id !== segmentId);
-      }
+      // Update global completion status
+      let updatedSegments = isComplete 
+        ? [...completedSegments, segmentId]
+        : completedSegments.filter(id => id !== segmentId);
+      
       setCompletedSegments(updatedSegments);
       await AsyncStorage.setItem('completedSegments', JSON.stringify(updatedSegments));
+
+      // Update active plan if segment is part of it
+      if (activePlan && !activePlan.isPaused) {
+        const plan = readingPlansData.plans.find(p => p.id === activePlan.planId);
+        if (plan && isSegmentInPlan(segmentId, plan)) {
+          const updatedPlan = {
+            ...activePlan,
+            completedSegments: isComplete 
+              ? [...activePlan.completedSegments, segmentId]
+              : activePlan.completedSegments.filter(id => id !== segmentId)
+          };
+          setActivePlan(updatedPlan);
+          await AsyncStorage.setItem('activePlan', JSON.stringify(updatedPlan));
+        }
+      }
+
+      // Update active challenges if segment is part of them
+      for (const challengeId in activeChallenges) {
+        const challenge = activeChallenges[challengeId];
+        if (!challenge.isPaused) {
+          const challengeData = readingPlansData.challenges.find(c => c.id === challengeId);
+          if (challengeData && isSegmentInPlan(segmentId, challengeData)) {
+            const updatedChallenge = {
+              ...challenge,
+              completedSegments: isComplete
+                ? [...challenge.completedSegments, segmentId]
+                : challenge.completedSegments.filter(id => id !== segmentId)
+            };
+            setActiveChallenges(prev => ({
+              ...prev,
+              [challengeId]: updatedChallenge
+            }));
+          }
+        }
+      }
     } catch (error) {
       console.error('Error updating segment completion:', error);
     }
+  };
+
+  // Helper function to check if a segment is part of a plan/challenge
+  const isSegmentInPlan = (segmentId: string, plan: any) => {
+    return Object.values(plan.segments).some((book: any) => 
+      book.segments.includes(segmentId)
+    );
   };
 
   const startReadingPlan = (planId: string) => {
@@ -150,43 +338,66 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     }));
   };
 
-  const updateReadingPlanProgress = (planId: string, segmentId: string) => {
-    setReadingPlanProgress(prev => {
-      const planProgress = prev[planId] || {
-        planId,
-        completedSegments: [],
-        dateStarted: new Date().toISOString(),
-        lastRead: new Date().toISOString(),
-        isCompleted: false
-      };
+  const updateReadingPlanProgress = async (planId: string, segmentId: string) => {
+    try {
+      const currentPlan = activePlan;
+      if (!currentPlan || currentPlan.planId !== planId) return;
 
-      const updatedSegments = [...planProgress.completedSegments];
+      const updatedSegments = [...currentPlan.completedSegments];
       if (!updatedSegments.includes(segmentId)) {
         updatedSegments.push(segmentId);
       }
 
-      // Find the plan in ReadingPlansChallenges.json
-      const plan = readingPlansData.plans.find(p => p.id === planId);
-      const totalSegments = plan ? Object.values(plan.segments).reduce(
-        (acc, book) => acc + book.segments.length, 
-        0
-      ) : 0;
-
-      return {
-        ...prev,
-        [planId]: {
-          ...planProgress,
-          completedSegments: updatedSegments,
-          lastRead: new Date().toISOString(),
-          isCompleted: updatedSegments.length === totalSegments
-        }
+      const updatedPlan = {
+        ...currentPlan,
+        completedSegments: updatedSegments,
+        isCompleted: false
       };
-    });
+
+      setActivePlan(updatedPlan);
+      await AsyncStorage.setItem('activePlan', JSON.stringify(updatedPlan));
+    } catch (error) {
+      console.error('Error updating plan progress:', error);
+    }
+  };
+
+  const updateChallengeProgress = async (challengeId: string, segmentId: string) => {
+    try {
+      // Get current challenges
+      const currentChallenges = { ...activeChallenges };
+      const challenge = currentChallenges[challengeId];
+      
+      if (!challenge) return;
+
+      // Update completed segments
+      const updatedSegments = [...challenge.completedSegments];
+      if (!updatedSegments.includes(segmentId)) {
+        updatedSegments.push(segmentId);
+      }
+
+      // Update challenge progress
+      const updatedChallenge = {
+        ...challenge,
+        completedSegments: updatedSegments,
+        isCompleted: false // You might want to add logic to check if challenge is complete
+      };
+
+      // Save to state and storage
+      const updatedChallenges = {
+        ...currentChallenges,
+        [challengeId]: updatedChallenge
+      };
+      
+      setActiveChallenges(updatedChallenges);
+      await AsyncStorage.setItem('activeChallenges', JSON.stringify(updatedChallenges));
+    } catch (error) {
+      console.error('Error updating challenge progress:', error);
+    }
   };
 
   return (
     <AppContext.Provider
-      value={{ segmentId, updateSegmentId, readSegments, markAsRead, readingPlan, updateReadingPlan, emojiActions, updateEmojiActions, completedSegments, markSegmentComplete, readingPlanProgress, updateReadingPlanProgress, startReadingPlan }}
+      value={{ segmentId, updateSegmentId, readSegments, markAsRead, readingPlan, updateReadingPlan, emojiActions, updateEmojiActions, completedSegments, markSegmentComplete, readingPlanProgress, startReadingPlan, activePlan, startPlan, pausePlan, resumePlan, switchPlan, activeChallenges, startChallenge, pauseChallenge, resumeChallenge, restartChallenge, updateReadingPlanProgress, updateChallengeProgress }}
     >
       {children}
     </AppContext.Provider>

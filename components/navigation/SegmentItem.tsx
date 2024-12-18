@@ -19,23 +19,57 @@ interface BibleData {
   [key: string]: { colors: ColorData }; // Changed from string[]
 }
 
-export default function SegmentItem({
+interface SegmentItemProps {
+  segment: { 
+    id: string; 
+    title: string; 
+    ref: string | undefined;
+    book: string[];
+  };
+  completedSegments?: string[];
+  onComplete?: (segmentId: string) => void;
+  showGlobalCompletion?: boolean;
+  context?: 'navigation' | 'plan' | 'challenge';
+}
+
+export default function SegmentItem({ 
   segment,
-}: {
-  segment: { id: string; title: string; ref: string | undefined, book: string[] };
-}) {
-  const { ref, book, title, id } = segment;
-  const idSplit = id.split("-");
-  const segID = idSplit[idSplit.length - 1];
-  const { updateSegmentId, completedSegments, markSegmentComplete } = useAppContext();
+  completedSegments = [],
+  onComplete,
+  showGlobalCompletion = false,
+  context = 'navigation'
+}: SegmentItemProps) {
+  const { 
+    completedSegments: globalCompletedSegments,
+    markSegmentComplete,
+    updateSegmentId
+  } = useAppContext();
   const { toggleModal } = useModal() || { toggleModal: () => {} };
   const router = useRouter();
   const [showCelebration, setShowCelebration] = useState(false);
 
+  const { ref, book, title, id } = segment;
+  const idSplit = id.split("-");
+  const segID = idSplit[idSplit.length - 1];
+
   const Bible: BibleData = require('@/assets/data/newBibleNLT1.json');
   const { colors } = Bible[segID];
 
-  const isCompleted = completedSegments.includes(segID);
+  // Only show completion status based on context and source
+  const getCompletionStatus = () => {
+    switch (context) {
+      case 'plan':
+        return completedSegments.includes(segID);
+      case 'challenge':
+        return completedSegments.includes(segID);
+      case 'navigation':
+        return globalCompletedSegments.includes(segID);
+      default:
+        return false;
+    }
+  };
+
+  const isCompleted = getCompletionStatus();
 
   const handlePress = () => {
     updateSegmentId(segment.id);
@@ -44,11 +78,15 @@ export default function SegmentItem({
   };
 
   const handleDonutPress = async () => {
-    if (!isCompleted) {
-      await markSegmentComplete(segID, true);
-      setShowCelebration(true);
-    } else {
-      await markSegmentComplete(segID, false);
+    if (context === 'navigation') {
+      if (!isCompleted) {
+        await markSegmentComplete(segID, true);
+        setShowCelebration(true);
+      } else {
+        await markSegmentComplete(segID, false);
+      }
+    } else if (onComplete) {
+      onComplete(segID);
     }
   };
 

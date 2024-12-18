@@ -14,20 +14,34 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
   textColor,
   iIndex
 }) => {
-  const { children, type, tag = 'defaultTag', pIndex, start } = inline; // Provide a default value
-  const inlineStyle = styles[tag as keyof typeof styles] || {}; // Ensure tag is a valid key
+  const { children, type, tag = 'defaultTag', pIndex, start } = inline;
+
+  if (!children || !Array.isArray(children)) {
+    console.warn(`Invalid children in inline at index ${iIndex}:`, inline);
+    return null;
+  }
+
+  const inlineStyle = styles[tag as keyof typeof styles] || {};
+  
   return (
     <View style={inlineStyle}>
       <Text style={{lineHeight: 36, fontSize: 20}}>
-        {children.map((leaf, index) => (
-          <BibleLeafComponent
-            key={`${iIndex}-${index}`}
-            leaf={leaf}
-            leafIndex={`${iIndex}-${index}`}
-            isIndented={index === 0 && !!start}
-            textColor={textColor}
-          />
-        ))}
+        {children.map((leaf, index) => {
+          if (!leaf || typeof leaf !== 'object') {
+            console.warn(`Invalid leaf at index ${index}:`, leaf);
+            return null;
+          }
+
+          return (
+            <BibleLeafComponent
+              key={`${iIndex}-${index}`}
+              leaf={leaf}
+              leafIndex={`${iIndex}-${index}`}
+              isIndented={index === 0 && !!start}
+              textColor={textColor}
+            />
+          );
+        })}
       </Text>
     </View>
   );

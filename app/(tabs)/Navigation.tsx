@@ -41,7 +41,7 @@ const buttonData = [
 ];
 
 const Navigation = () => {
-  const { readingPlan, updateReadingPlan } = useAppContext();
+  const { readingPlan, updateReadingPlan, completedSegments } = useAppContext();
   const readingPlanData = useMemo(() => {
     const rPDataFull = ReadingPlansChallenges.plans.find((item) => item.id === readingPlan);
     const data = rPDataFull?.segments ? Object.keys(rPDataFull.segments).map((key) => ({
@@ -91,7 +91,7 @@ const Navigation = () => {
           const bookIndex = booksArray.findIndex(
             (book) => book === item.djhBook
           );
-          return <Accordion item={item} bookIndex={bookIndex} />;
+          return <Accordion item={item} bookIndex={bookIndex} context="navigation" showGlobalCompletion={true} completedSegments={completedSegments} />;
         }}
         keyExtractor={(item) => item.djhBook}
       />

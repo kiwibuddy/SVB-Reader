@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
@@ -12,6 +13,12 @@ import Accordion, { AccordionItem, accordionColor } from "@/components/navigatio
 import Books from "@/assets/data/BookChapterList.json";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useAppContext } from "@/context/GlobalContext";
+import { StatusIndicator } from '@/components/StatusIndicator';
+import { useRouter, useLocalSearchParams } from "expo-router";
+
+interface BookSegments {
+  segments: string[];
+}
 
 export type SegmentKey = keyof typeof SegmentTitles;
 export type SegmentIds = keyof typeof Books;
@@ -42,22 +49,34 @@ const PLAN_STYLES = {
 };
 
 const PlanScreen = () => {
-  const { readingPlanProgress, updateReadingPlanProgress, startReadingPlan } = useAppContext();
-  const [selectedPlan, setSelectedPlan] = useState(readingPlansData.plans[0]);
+  const { 
+    readingPlan, 
+    updateReadingPlan, 
+    activePlan,
+    startPlan,
+    pausePlan,
+    resumePlan,
+    switchPlan,
+    readingPlanProgress,
+    updateReadingPlanProgress,
+    updateEmojiActions
+  } = useAppContext();
 
-  const currentProgress = readingPlanProgress[selectedPlan.id];
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [contentHeight, setContentHeight] = useState(0);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
-  const handlePlanSelection = (plan: typeof selectedPlan) => {
-    setSelectedPlan(plan);
-    if (!readingPlanProgress[plan.id]) {
-      startReadingPlan(plan.id);
+  // Initialize selectedPlan with the active plan if it exists, otherwise use first plan
+  const [selectedPlan, setSelectedPlan] = useState(() => {
+    if (activePlan) {
+      return readingPlansData.plans.find(p => p.id === activePlan.planId) || readingPlansData.plans[0];
     }
-  };
+    return readingPlansData.plans[0];
+  });
 
-  const handleSegmentComplete = (segmentId: string) => {
-    updateReadingPlanProgress(selectedPlan.id, segmentId);
-  };
-
+  // Move planBooksData before the useEffect
   const planBooksData = useMemo(() => {
     console.log('Selected Plan:', selectedPlan.id);
     const data = selectedPlan.segments ? Object.keys(selectedPlan.segments).map((key) => ({
@@ -69,9 +88,132 @@ const PlanScreen = () => {
     return data;
   }, [selectedPlan]);
 
+  // Add planBooksData to dependencies array
+  useEffect(() => {
+    if (params.scrollToPlan && scrollViewRef.current && planBooksData) {
+      const planIndex = planBooksData.findIndex(item => item.djhBook === params.scrollToPlan);
+      if (planIndex !== -1) {
+        // Calculate approximate scroll position
+        const headerOffset = 200; // Adjust based on your header height
+        const itemHeight = 150; // Adjust based on your item height
+        const scrollPosition = headerOffset + (planIndex * itemHeight);
+        
+        // Use setTimeout to ensure the scroll happens after render
+        setTimeout(() => {
+          scrollViewRef.current?.scrollTo({
+            y: scrollPosition,
+            animated: true
+          });
+        }, 100);
+      }
+    }
+  }, [params.scrollToPlan, params.timestamp, planBooksData]);
+
+  const currentProgress = readingPlanProgress[selectedPlan.id];
+
+  const handlePlanSelection = async (plan: typeof selectedPlan) => {
+    if (activePlan && activePlan.planId !== plan.id) {
+      Alert.alert(
+        'Switch Reading Plan?',
+        `You are currently on "${activePlan.planId}". Would you like to pause it and switch to "${plan.title}"?`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          },
+          {
+            text: 'Switch Plan',
+            onPress: async () => {
+              await switchPlan(plan.id);
+              setSelectedPlan(plan); // Update selected plan after switching
+            }
+          }
+        ]
+      );
+    } else {
+      setSelectedPlan(plan); // Update selected plan immediately if no active plan
+    }
+  };
+
+  const handleSegmentComplete = (segmentId: string) => {
+    updateReadingPlanProgress(selectedPlan.id, segmentId);
+  };
+
+  const getPlanStatus = (planId: string) => {
+    if (!activePlan || activePlan.planId !== planId) return 'not-started';
+    if (activePlan.isCompleted) return 'completed';
+    return activePlan.isPaused ? 'paused' : 'active';
+  };
+
+  const renderPlanControls = () => {
+    if (!activePlan || activePlan.planId !== selectedPlan.id) {
+      return (
+        <TouchableOpacity
+          style={styles.controlButton}
+          onPress={() => startPlan(selectedPlan.id)}
+        >
+          <Text style={styles.controlButtonText}>Start Plan</Text>
+        </TouchableOpacity>
+      );
+    }
+
+    if (activePlan.isPaused) {
+      return (
+        <TouchableOpacity
+          style={styles.controlButton}
+          onPress={() => resumePlan()}
+        >
+          <Text style={styles.controlButtonText}>Resume Plan</Text>
+        </TouchableOpacity>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        style={[styles.controlButton, styles.pauseButton]}
+        onPress={() => pausePlan()}
+      >
+        <Text style={styles.controlButtonText}>Pause Plan</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  // Get the plan description based on the selected plan
+  const getPlanDescription = (planId: string) => {
+    switch (planId) {
+      case "Bible1Year":
+        return "Experience the entire Biblical narrative in one year. This comprehensive plan takes you through the complete story of Scripture, from Creation to Revelation, helping you understand God's grand plan of redemption.";
+      case "SchoolYear1":
+        return "Perfect for students and educators, this plan follows the academic calendar with carefully selected narrative passages that tell the Bible's key stories and teachings.";
+      case "SchoolYear2":
+        return "Continue your Biblical education with this second academic year plan, diving deeper into historical books, prophecy, and New Testament teachings.";
+      case "SchoolYear3":
+        return "Complete your Biblical foundation with this third academic year plan, exploring wisdom literature, prophetic books, and the life of Christ.";
+      case "NT100Days":
+        return "An intensive journey through the New Testament in 100 days. Perfect for understanding the life of Jesus, the early church, and the foundations of Christian faith.";
+      default:
+        return "";
+    }
+  };
+
+  const handlePress = (segmentId: string) => {
+    router.push({
+      pathname: `/${segmentId}`,
+      query: { 
+        showGlobalCompletion: 'false',
+        planId: selectedPlan.id
+      }
+    } as any);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollContainer}>
+      <ScrollView 
+        ref={scrollViewRef}
+        style={styles.scrollContainer}
+        onContentSizeChange={(w, h) => setContentHeight(h)}
+        onLayout={event => setHeaderHeight(event.nativeEvent.layout.height)}
+      >
         <View style={styles.headerContainer}>
           <Text style={styles.screenTitle}>Reading Plans</Text>
           <Text style={styles.welcomeText}>
@@ -93,13 +235,11 @@ const PlanScreen = () => {
                 {
                   backgroundColor: PLAN_STYLES[plan.id as keyof typeof PLAN_STYLES]?.color || "#f4694d",
                 },
-                selectedPlan.id === plan.id && {
-                  transform: [{ scale: 1.02 }],
-                  elevation: 5,
-                }
+                selectedPlan.id === plan.id && styles.selectedPlanButton
               ]}
               onPress={() => handlePlanSelection(plan)}
             >
+              <StatusIndicator status={getPlanStatus(plan.id)} />
               <View style={styles.planContent}>
                 <Text style={styles.planIcon}>
                   {PLAN_STYLES[plan.id as keyof typeof PLAN_STYLES]?.icon}
@@ -121,27 +261,26 @@ const PlanScreen = () => {
           <Text style={styles.selectedPlanTitle}>{selectedPlan.title}</Text>
           
           <Text style={styles.planContext}>
-            {selectedPlan.id === "Bible1Year" && 
-              "Experience the entire Biblical narrative in one year. This comprehensive plan takes you through the complete story of Scripture, from Creation to Revelation, helping you understand God's grand plan of redemption."}
-            {selectedPlan.id === "SchoolYear1" && 
-              "Perfect for students and educators, this plan follows the academic calendar with carefully selected narrative passages that tell the Bible's key stories and teachings."}
-            {selectedPlan.id === "SchoolYear2" && 
-              "Continue your Biblical education with this second academic year plan, diving deeper into historical books, prophecy, and New Testament teachings."}
-            {selectedPlan.id === "SchoolYear3" && 
-              "Complete your Biblical foundation with this third academic year plan, exploring wisdom literature, prophetic books, and the life of Christ."}
-            {selectedPlan.id === "NT100Days" && 
-              "An intensive journey through the New Testament in 100 days. Perfect for understanding the life of Jesus, the early church, and the foundations of Christian faith."}
+            {getPlanDescription(selectedPlan.id)}
           </Text>
+
+          {renderPlanControls()}
 
           <View style={styles.progressContainer}>
             <Text style={styles.progressText}>
-              Progress: {currentProgress?.completedSegments.length || 0} / 
-              {Object.values(selectedPlan.segments).reduce(
-                (acc, book) => acc + book.segments.filter(s => !s.startsWith('I')).length, 
-                0
-              )} segments
+              Progress: {
+                activePlan?.planId === selectedPlan.id 
+                  ? activePlan.completedSegments.length 
+                  : 0
+              } / {
+                Object.values(selectedPlan.segments).reduce(
+                  (acc: number, book: BookSegments) => 
+                    acc + book.segments.filter((s: string) => !s.startsWith('I')).length,
+                  0
+                )
+              } segments
             </Text>
-            {currentProgress?.isCompleted && (
+            {activePlan?.planId === selectedPlan.id && activePlan.isCompleted && (
               <View style={styles.completedBadge}>
                 <Text style={styles.completedText}>Completed!</Text>
               </View>
@@ -155,13 +294,17 @@ const PlanScreen = () => {
               (book) => book === item.djhBook
             );
             return (
-              <Accordion 
-                key={item.djhBook} 
-                item={item} 
-                bookIndex={bookIndex}
-                completedSegments={currentProgress?.completedSegments || []}
-                onSegmentComplete={handleSegmentComplete}
-              />
+              <View key={item.djhBook} id={`plan-${selectedPlan.id}`}>
+                <Accordion 
+                  item={item} 
+                  bookIndex={bookIndex}
+                  completedSegments={activePlan?.completedSegments || []}
+                  onSegmentComplete={handleSegmentComplete}
+                  context="plan"
+                  showGlobalCompletion={false}
+                  planId={selectedPlan.id}
+                />
+              </View>
             );
           })}
         </View>
@@ -214,7 +357,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   selectedPlanButton: {
-    backgroundColor: "#8A4FFF",
+    transform: [{ scale: 1.02 }],
+    elevation: 5,
   },
   planButtonText: {
     fontSize: 16,
@@ -292,6 +436,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'relative',
     width: '100%',
+  },
+  controlButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginVertical: 16,
+    alignSelf: 'center',
+  },
+  pauseButton: {
+    backgroundColor: '#FFA000',
+  },
+  controlButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

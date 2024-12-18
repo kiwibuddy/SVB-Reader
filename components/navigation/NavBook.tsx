@@ -178,6 +178,10 @@ export interface AccordionProps {
   bookIndex: number;
   completedSegments?: string[];
   onSegmentComplete?: (segmentId: string) => void;
+  showGlobalCompletion?: boolean;
+  context?: 'navigation' | 'plan' | 'challenge';
+  planId?: string;
+  challengeId?: string;
 }
 
 // Define a type for the structure of SegmentTitles
@@ -194,7 +198,16 @@ const SegmentTitles: Record<SegmentKey, SegmentTitle> = require('@/assets/data/S
 // Define a type for the keys of accordionColor
 type AccordionColorKey = keyof typeof accordionColor;
 
-const Accordion = ({ item, bookIndex, completedSegments = [], onSegmentComplete }: AccordionProps) => {
+const Accordion = ({ 
+  item, 
+  bookIndex, 
+  completedSegments = [], 
+  onSegmentComplete,
+  showGlobalCompletion = false,
+  context = 'navigation',
+  planId,
+  challengeId
+}: AccordionProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const flatListRef = useRef<FlatList<SegmentKey>>(null); // Create a ref for FlatList
 
@@ -248,7 +261,15 @@ const Accordion = ({ item, bookIndex, completedSegments = [], onSegmentComplete 
             renderItem={({ item }: { item: SegmentKey }) => {
               const { title, ref, book } = SegmentTitles[item];
               const { id } = Bible[item];
-              return <SegmentItem segment={{ id, title, ref, book }} />;
+              return <SegmentItem 
+                segment={{ id, title, ref, book }} 
+                completedSegments={completedSegments}
+                onComplete={onSegmentComplete}
+                showGlobalCompletion={showGlobalCompletion}
+                context={context}
+                planId={planId}
+                challengeId={challengeId}
+              />;
             }}
             keyExtractor={(subItem) => subItem} // Update keyExtractor to use subItem directly
           />

@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
@@ -12,6 +13,8 @@ import Accordion, { accordionColor } from "@/components/navigation/NavBook";
 import Books from "@/assets/data/BookChapterList.json";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useAppContext } from "@/context/GlobalContext";
+import { StatusIndicator } from '@/components/StatusIndicator';
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 // Add categories for challenges
 const CHALLENGE_CATEGORIES = {
@@ -102,10 +105,34 @@ interface AppContextType {
   };
   updateReadingPlanProgress: (planId: string, segmentId: string) => void;
   startReadingPlan: (planId: string) => void;
+  activeChallenges: {
+    [key: string]: {
+      completedSegments: string[];
+      isCompleted: boolean;
+      isPaused: boolean;
+    };
+  };
+  startChallenge: (challengeId: string) => void;
+  pauseChallenge: (challengeId: string) => void;
+  resumeChallenge: (challengeId: string) => void;
+  restartChallenge: (challengeId: string) => void;
+}
+
+interface BookSegments {
+  segments: string[];
 }
 
 const ChallengesScreen = () => {
-  const { readingPlanProgress, updateReadingPlanProgress, startReadingPlan } = useAppContext();
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const { 
+    activeChallenges,
+    startChallenge,
+    pauseChallenge,
+    resumeChallenge,
+    restartChallenge
+  } = useAppContext();
+
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge>(() => {
     const challenges = readingPlansData.challenges;
     const validChallenge = challenges.find(challenge => 
@@ -114,43 +141,129 @@ const ChallengesScreen = () => {
     return validChallenge || challenges[0] as unknown as Challenge;
   });
 
-  const currentProgress = selectedChallenge.id ? readingPlanProgress[selectedChallenge.id] : undefined;
+  const getChallengeStatus = (challengeId: string) => {
+    const challenge = activeChallenges[challengeId];
+    if (!challenge) return 'not-started';
+    if (challenge.isCompleted) return 'completed';
+    return challenge.isPaused ? 'paused' : 'active';
+  };
 
   const handleChallengeSelection = (challenge: any) => {
     setSelectedChallenge(challenge as Challenge);
-    if (challenge.id && !readingPlanProgress[challenge.id]) {
-      startReadingPlan(challenge.id);
-    }
   };
 
   const handleSegmentComplete = (segmentId: string) => {
-    if (selectedChallenge.id) {
-      updateReadingPlanProgress(selectedChallenge.id, segmentId);
+    // This will be handled by the context's markSegmentComplete function
+    // which now handles both global and challenge-specific completions
+  };
+
+  const renderChallengeControls = () => {
+    const challenge = activeChallenges[selectedChallenge.id];
+    
+    if (!challenge) {
+      return (
+        <TouchableOpacity
+          style={styles.controlButton}
+          onPress={() => startChallenge(selectedChallenge.id)}
+        >
+          <Text style={styles.controlButtonText}>Start Challenge</Text>
+        </TouchableOpacity>
+      );
     }
+
+    if (challenge.isPaused) {
+      return (
+        <View style={styles.controlsContainer}>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => resumeChallenge(selectedChallenge.id)}
+          >
+            <Text style={styles.controlButtonText}>Resume Challenge</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.controlButton, styles.restartButton]}
+            onPress={() => {
+              Alert.alert(
+                'Restart Challenge?',
+                'Are you sure you want to restart this challenge? Your progress will be reset.',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { 
+                    text: 'Restart',
+                    onPress: () => restartChallenge(selectedChallenge.id)
+                  }
+                ]
+              );
+            }}
+          >
+            <Text style={styles.controlButtonText}>Restart Challenge</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        style={[styles.controlButton, styles.pauseButton]}
+        onPress={() => pauseChallenge(selectedChallenge.id)}
+      >
+        <Text style={styles.controlButtonText}>Pause Challenge</Text>
+      </TouchableOpacity>
+    );
   };
 
   const challengeBooksData = useMemo(() => {
-    console.log('Selected Challenge in useMemo:', selectedChallenge);
-    console.log('Selected Challenge segments:', selectedChallenge?.segments);
-    
     if (!selectedChallenge?.segments) {
-      console.log('No segments for challenge:', selectedChallenge?.title);
       return [];
     }
 
-    console.log('Selected Challenge:', selectedChallenge.title);
-    const data = Object.keys(selectedChallenge.segments).map((key) => ({
+    return Object.keys(selectedChallenge.segments).map((key) => ({
       djhBook: key as keyof typeof accordionColor,
       bookName: Books[key as SegmentIds]?.bookName ?? "Unknown Book",
       segments: (selectedChallenge.segments[key as SegmentIds]?.segments ?? []) as SegmentKey[],
     }));
-    console.log('Processed Books Data:', data);
-    return data;
   }, [selectedChallenge]);
+
+  const handlePress = (segmentId: string) => {
+    router.push({
+      pathname: `/${segmentId}`,
+      query: {
+        showGlobalCompletion: 'false',
+        challengeId: selectedChallenge.id
+      }
+    } as any);
+  };
+
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [contentHeight, setContentHeight] = useState(0);
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  useEffect(() => {
+    if (params.scrollToChallenge && scrollViewRef.current && challengeBooksData) {
+      const challengeIndex = challengeBooksData.findIndex(item => item.djhBook === params.scrollToChallenge);
+      if (challengeIndex !== -1) {
+        const headerOffset = 200;
+        const itemHeight = 150;
+        const scrollPosition = headerOffset + (challengeIndex * itemHeight);
+        
+        setTimeout(() => {
+          scrollViewRef.current?.scrollTo({
+            y: scrollPosition,
+            animated: true
+          });
+        }, 100);
+      }
+    }
+  }, [params.scrollToChallenge, params.timestamp, challengeBooksData]);
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollContainer}>
+      <ScrollView 
+        ref={scrollViewRef}
+        style={styles.scrollContainer}
+        onContentSizeChange={(w, h) => setContentHeight(h)}
+        onLayout={event => setHeaderHeight(event.nativeEvent.layout.height)}
+      >
         <View style={styles.headerContainer}>
           <Text style={styles.screenTitle}>Reading Challenges</Text>
           <Text style={styles.welcomeText}>
@@ -158,36 +271,26 @@ const ChallengesScreen = () => {
           </Text>
         </View>
 
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.challengesScrollView}
-        >
-          {readingPlansData.challenges.map((challenge, index) => (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.challengesScrollView}>
+          {readingPlansData.challenges.map((challenge) => (
             <TouchableOpacity
-              key={challenge.id || index}
+              key={challenge.id}
               style={[
                 styles.challengeButton,
                 {
                   backgroundColor: CHALLENGE_STYLES[challenge.title as ChallengeTitle]?.color || "#f4694d",
                 },
-                selectedChallenge.id === challenge.id && {
-                  transform: [{ scale: 1.02 }],
-                  elevation: 5,
-                }
+                selectedChallenge.id === challenge.id && styles.selectedChallengeButton
               ]}
               onPress={() => handleChallengeSelection(challenge)}
             >
+              <StatusIndicator status={getChallengeStatus(challenge.id)} />
               <View style={styles.challengeContent}>
                 <Text style={styles.challengeIcon}>
                   {CHALLENGE_STYLES[challenge.title as ChallengeTitle]?.icon}
                 </Text>
-                <Text style={styles.challengeButtonText}>
-                  {challenge.title}
-                </Text>
-                <Text style={styles.challengeDescription}>
-                  {challenge.description}
-                </Text>
+                <Text style={styles.challengeButtonText}>{challenge.title}</Text>
+                <Text style={styles.challengeDescription}>{challenge.description}</Text>
               </View>
             </TouchableOpacity>
           ))}
@@ -197,20 +300,23 @@ const ChallengesScreen = () => {
 
         <View style={styles.selectedChallengeContainer}>
           <Text style={styles.selectedChallengeTitle}>{selectedChallenge.title}</Text>
-          <Text style={styles.challengeContext}>
-            {selectedChallenge.longDescription}
-          </Text>
+          <Text style={styles.challengeContext}>{selectedChallenge.longDescription}</Text>
+
+          {renderChallengeControls()}
 
           <View style={styles.progressContainer}>
             <Text style={styles.progressText}>
-              Progress: {currentProgress?.completedSegments?.length || 0} / 
-              {selectedChallenge.segments ? 
+              Progress: {
+                activeChallenges[selectedChallenge.id]?.completedSegments.length || 0
+              } / {
                 Object.values(selectedChallenge.segments).reduce(
-                  (acc, book) => acc + (book.segments?.filter(s => !s.startsWith('I')).length || 0), 
+                  (acc: number, book: BookSegments) => 
+                    acc + book.segments.filter((s: string) => !s.startsWith('I')).length,
                   0
-                ) : 0} segments
+                )
+              } segments
             </Text>
-            {currentProgress?.isCompleted && (
+            {activeChallenges[selectedChallenge.id]?.isCompleted && (
               <View style={styles.completedBadge}>
                 <Text style={styles.completedText}>Completed!</Text>
               </View>
@@ -229,8 +335,11 @@ const ChallengesScreen = () => {
                   key={item.djhBook} 
                   item={item} 
                   bookIndex={bookIndex}
-                  completedSegments={currentProgress?.completedSegments || []}
+                  completedSegments={activeChallenges[selectedChallenge.id]?.completedSegments || []}
                   onSegmentComplete={handleSegmentComplete}
+                  context="challenge"
+                  showGlobalCompletion={false}
+                  challengeId={selectedChallenge.id}
                 />
               );
             })}
@@ -275,6 +384,31 @@ const additionalStyles = StyleSheet.create({
     fontSize: 14,
     padding: 20,
     fontStyle: 'italic'
+  },
+  controlButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginVertical: 16,
+    alignSelf: 'center',
+  },
+  pauseButton: {
+    backgroundColor: '#FFA000',
+  },
+  restartButton: {
+    backgroundColor: '#F44336',
+    marginLeft: 8,
+  },
+  controlButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  controlsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 16,
   },
 });
 
@@ -322,7 +456,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   selectedChallengeButton: {
-    backgroundColor: "#8A4FFF",
+    transform: [{ scale: 1.02 }],
+    elevation: 5,
   },
   challengeButtonText: {
     fontSize: 16,
