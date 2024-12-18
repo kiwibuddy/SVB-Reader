@@ -1884,6 +1884,66 @@
           ]
         }
       }
+    },
+    {
+      "id": "torah",
+      "title": "The Torah",
+      "description": "55 Stories - 11 Weeks",
+      "image": "island",
+      "longDescription": "Journey through the first five books of the Bible - Genesis, Exodus, Leviticus, Numbers, and Deuteronomy. Discover the foundations of God's relationship with humanity, from Creation to the edge of the Promised Land.",
+      "segments": {
+        "Gen": {
+          "segments": ["I001"]
+        }
+      }
+    },
+    {
+      "id": "christmas12",
+      "title": "12 Days of Christmas",
+      "description": "12 Stories - 12 Days",
+      "image": "island",
+      "longDescription": "Experience the Christmas story through a 12-day devotional journey. From prophecies to fulfillment, explore the miraculous events surrounding Christ's birth and their meaning for us today.",
+      "segments": {
+        "Gen": {
+          "segments": ["I001"]
+        }
+      }
+    },
+    {
+      "id": "davidsLife",
+      "title": "David's Life",
+      "description": "35 Stories - 7 Weeks",
+      "image": "island",
+      "longDescription": "Follow the journey of David from shepherd boy to king of Israel. Through victories and failures, discover how this 'man after God's own heart' teaches us about leadership, worship, and walking with God.",
+      "segments": {
+        "Gen": {
+          "segments": ["I001"]
+        }
+      }
+    },
+    {
+      "id": "adventJourney",
+      "title": "Advent Journey",
+      "description": "22 Stories - 4 Weeks",
+      "image": "island",
+      "longDescription": "Prepare your heart for Christmas with this Advent reading plan. Journey through prophecies of the Messiah to their fulfillment in Jesus, experiencing the hope, peace, joy, and love of the season.",
+      "segments": {
+        "Gen": {
+          "segments": ["I001"]
+        }
+      }
+    },
+    {
+      "id": "lentenReflection",
+      "title": "Lenten Reflection",
+      "description": "40 Stories - 6 Weeks",
+      "image": "island",
+      "longDescription": "Walk through the season of Lent with purposeful reflection. From Jesus' ministry to His passion, death, and resurrection, deepen your understanding of Christ's sacrifice and its meaning for our lives.",
+      "segments": {
+        "Gen": {
+          "segments": ["I001"]
+        }
+      }
     }
   ]
 }

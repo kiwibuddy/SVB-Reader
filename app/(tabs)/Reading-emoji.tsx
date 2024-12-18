@@ -24,6 +24,14 @@ interface EmojiDescription {
   description: string[];
 }
 
+// Add the type definition (can be near the top with other interfaces)
+type SegmentTitle = {
+  Segment: string;
+  title: string;
+  book: string[];
+  ref?: string;  // Making ref optional since not all segments have it
+}
+
 const EMOJI_DESCRIPTIONS: Record<string, EmojiDescription> = {
   "❤️": {
     title: "Memory Masterclass",
@@ -107,9 +115,9 @@ const EMOJI_TYPES = [
 ];
 
 const getSegmentReference = (segmentID: string) => {
-  const segment = SegmentTitles[segmentID as keyof typeof SegmentTitles];
-  if (!segment || !segment.ref) return segment?.book[0] || '';
-  return `${segment.book[0]} ${segment.ref}`;
+  const segment = SegmentTitles[segmentID as keyof typeof SegmentTitles] as SegmentTitle;
+  if (!segment) return '';
+  return `${segment.book[0]}${segment.ref ? ' ' + segment.ref : ''}`;
 };
 
 const ReadingEmoji = () => {

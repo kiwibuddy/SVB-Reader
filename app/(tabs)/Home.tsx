@@ -17,6 +17,13 @@ import { useAppContext } from "@/context/GlobalContext";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useRouter } from "expo-router";
 
+type SegmentTitle = {
+  Segment: string;
+  title: string;
+  book: string[];
+  ref?: string;  // Making ref optional since not all segments have it
+}
+
 const segIDs = Object.keys(SegmentTitles);
 
 const HomeScreen = () => {
@@ -25,8 +32,8 @@ const HomeScreen = () => {
   const segSplit = segmentId.split("-");
   const segID = segSplit[segSplit.length - 1];
   const segIndex = segIDs.findIndex(id => id === segID);
-  const nextSegID = segIDs[segIndex + 1] || "S001";
-  const nextSegData = SegmentTitles[nextSegID as keyof typeof SegmentTitles] ? SegmentTitles[nextSegID as keyof typeof SegmentTitles] : SegmentTitles[`S001`];
+  const nextSegID = segmentId ? (segIDs[segIndex + 1] || "S001") : "S001";
+  const nextSegData = SegmentTitles[nextSegID as keyof typeof SegmentTitles] as SegmentTitle;
   useEffect(() => {
     console.log("nextSegData", nextSegData);
     console.log("nextSegID", nextSegID);
@@ -144,14 +151,18 @@ const HomeScreen = () => {
       <View style={styles.stickyButtonContainer}>
         <Pressable
           style={styles.button}
-          onPress={() =>
-            router.push(`/${segSplit[0]}-${segSplit[1]}-${nextSegID}`)
-          }
+          onPress={() => {
+            if (!segmentId) {
+              router.push(`/Gen-1-S001`);
+            } else {
+              router.push(`/${segSplit[0]}-${segSplit[1]}-${nextSegID}`);
+            }
+          }}
         >
           <Text style={styles.buttonText}>Read Next Segment</Text>
-          <Text
-            style={styles.buttonRefText}
-          >{`(${nextSegData.book[0]} ${nextSegData.Segment})`}</Text>
+          <Text style={styles.buttonRefText}>
+            {`${nextSegData.book[0]}${nextSegData.ref ? ' ' + nextSegData.ref : ''}`}
+          </Text>
         </Pressable>
       </View>
     </>
