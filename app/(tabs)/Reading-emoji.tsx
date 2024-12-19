@@ -1,11 +1,12 @@
 import { View, Text, Pressable, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getEmojis} from "@/api/sqlite";
 import BibleBlockComponent from "@/components/Bible/Block";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useRouter } from "expo-router";
 import { SegmentIds } from '@/types'; // Make sure this import exists
 import Books from "@/assets/data/BookChapterList.json";
+import { useAppContext } from "@/context/GlobalContext";
 
 // Define the structure for our emoji reaction data
 interface EmojiReaction {
@@ -122,6 +123,7 @@ const getSegmentReference = (segmentID: string) => {
 
 const ReadingEmoji = () => {
   const router = useRouter();
+  const { updateSegmentId } = useAppContext();
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
   const [reactions, setReactions] = useState<EmojiReaction[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -148,7 +150,7 @@ const ReadingEmoji = () => {
   };
 
   // Modify the filteredReactions logic
-  const filteredReactions = selectedEmoji 
+  const filteredReactions = selectedEmoji
     ? reactions.filter(r => r.emoji === selectedEmoji)
     : sortReactionsByRecent(reactions);
 
@@ -167,7 +169,7 @@ const ReadingEmoji = () => {
 
   const handleLongPress = (reaction: EmojiReaction) => {
     const segment = SegmentTitles[reaction.segmentID as keyof typeof SegmentTitles];
-    
+
     Alert.alert(
       "Go to Segment",
       `Would you like to view this verse in ${getSegmentReference(reaction.segmentID)}?`,
@@ -179,9 +181,11 @@ const ReadingEmoji = () => {
         {
           text: "Go",
           onPress: () => {
+            console.log("reaction.segmentID", reaction.segmentID);
+            updateSegmentId(`${"ENG"}-${"NLT"}-${reaction.segmentID}`);
             router.push({
-              pathname: "/[segment]",
-              params: { 
+              pathname: `/${"ENG"}-${"NLT"}-${reaction.segmentID}`,
+              params: {
                 segment: reaction.segmentID,
                 book: segment?.book[0] || ''
               }
@@ -224,7 +228,7 @@ const ReadingEmoji = () => {
       </View>
 
       {selectedEmoji ? (
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.descriptionCard}
           onPress={() => setIsExpanded(!isExpanded)}
           activeOpacity={0.7}
@@ -235,7 +239,7 @@ const ReadingEmoji = () => {
           <Text style={styles.emojiCountText}>
             {selectedEmoji} {getEmojiCount(selectedEmoji)} {EMOJI_DESCRIPTIONS[selectedEmoji].count}
           </Text>
-          
+
           {/* Show intro text */}
           {splitDescription(EMOJI_DESCRIPTIONS[selectedEmoji].description).intro.map((text, index) => (
             <Text key={index} style={styles.descriptionText}>
@@ -250,10 +254,10 @@ const ReadingEmoji = () => {
 
           {/* Show steps when expanded */}
           {isExpanded && splitDescription(EMOJI_DESCRIPTIONS[selectedEmoji].description).steps.map((text, index) => {
-            const isStep = text.includes("Step") || text.includes("Keep It Up") || 
+            const isStep = text.includes("Step") || text.includes("Keep It Up") ||
                           text.includes("Spread the Word") || text.includes("Take Your Time") ||
                           text.includes("Pray Without Ceasing");
-            
+
             return (
               <Text key={`step-${index}`} style={[
                 styles.descriptionText,

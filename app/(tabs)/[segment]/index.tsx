@@ -38,6 +38,7 @@ export default function BibleScreen() {
   const language = idSplit[0].replace("/", "");
   const version = idSplit[1];
   const segID = idSplit[idSplit.length - 1];
+  console.log("segID - pathname", segID);
   const currentSegmentIndex: number = segIds.indexOf(segID);
   const prevSegId = `${language}-${version}-${segIds[currentSegmentIndex - 1]}`;
   const nextSegId = `${language}-${version}-${segIds[currentSegmentIndex + 1]}`;
@@ -55,7 +56,7 @@ export default function BibleScreen() {
     }
   }, [pathname]);
 
-  console.log("segmentId", segmentId);
+  console.log("segmentId - AppContext", segmentId);
   return (
     <>
         <ScrollView ref={scrollViewRef} style={styles.screenContainer}>
@@ -95,7 +96,7 @@ export default function BibleScreen() {
               ]} // Add roundButton style
               onPress={() => {
                 updateSegmentId(prevSegId);
-                router.push(`/${language}-${version}-${prevSegId}`);
+                router.push(`/${prevSegId}`);
                 scrollViewRef.current?.scrollTo({
                   y: 0,
                   animated: false,
@@ -118,7 +119,7 @@ export default function BibleScreen() {
               ]} // Add roundButton style
               onPress={() => {
                 updateSegmentId(nextSegId);
-                router.push(`/${language}-${version}-${nextSegId}`);
+                router.push(`/${nextSegId}`);
                 scrollViewRef.current?.scrollTo({
                   y: 0,
                   animated: false,

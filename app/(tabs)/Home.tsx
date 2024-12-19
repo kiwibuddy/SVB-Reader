@@ -35,9 +35,7 @@ const HomeScreen = () => {
   const nextSegID = segmentId ? (segIDs[segIndex + 1] || "S001") : "S001";
   const nextSegData = SegmentTitles[nextSegID as keyof typeof SegmentTitles] as SegmentTitle;
   useEffect(() => {
-    console.log("nextSegData", nextSegData);
-    console.log("nextSegID", nextSegID);
-    console.log("segmentId", segmentId);
+    console.log("segmentId - HomeScreen", segmentId);
   }, [segmentId]);
   return (
     <>
@@ -153,9 +151,9 @@ const HomeScreen = () => {
           style={styles.button}
           onPress={() => {
             if (!segmentId) {
-              router.push(`/Gen-1-S001`);
+              router.push(`/${"ENG"}-${"NLT"}-S001`);
             } else {
-              router.push(`/${segSplit[0]}-${segSplit[1]}-${nextSegID}`);
+              router.push(`/${"ENG"}-${"NLT"}-${nextSegID}`);
             }
           }}
         >
