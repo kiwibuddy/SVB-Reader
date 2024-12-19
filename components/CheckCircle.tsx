@@ -18,8 +18,8 @@ export default function CheckCircle({ segmentId, iconSize = 24 }: CheckCirclePro
   const isCompleted = completedSegments.includes(segmentId);
 
   const handlePress = async () => {
+    await markSegmentComplete(segmentId, !isCompleted);
     if (!isCompleted) {
-      await markSegmentComplete(segmentId, true);
       setShowCelebration(true);
     }
   };

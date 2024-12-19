@@ -20,16 +20,18 @@ interface BibleData {
 }
 
 interface SegmentItemProps {
-  segment: { 
-    id: string; 
-    title: string; 
-    ref: string | undefined;
+  segment: {
+    id: string;
+    title: string;
+    ref?: string;
     book: string[];
   };
-  completedSegments?: string[];
+  completedSegments: string[];
   onComplete?: (segmentId: string) => void;
-  showGlobalCompletion?: boolean;
-  context?: 'navigation' | 'plan' | 'challenge';
+  showGlobalCompletion: boolean;
+  context: 'navigation' | 'plan' | 'challenge';
+  planId?: string;
+  challengeId?: string;
 }
 
 export default function SegmentItem({ 
@@ -37,7 +39,9 @@ export default function SegmentItem({
   completedSegments = [],
   onComplete,
   showGlobalCompletion = false,
-  context = 'navigation'
+  context = 'navigation',
+  planId,
+  challengeId
 }: SegmentItemProps) {
   const { 
     completedSegments: globalCompletedSegments,

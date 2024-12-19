@@ -145,29 +145,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     }
   };
 
-  // Make the completion button more responsive
-  const CompletionButton = () => (
-    <Pressable 
-      onPress={handleCompletion}
-      style={[
-        styles.completionButton,
-        { opacity: 1 }
-      ]}
-    >
-      <Text style={[
-        styles.completionText,
-        { color: isCompleted ? '#4CAF50' : '#666' }
-      ]}>
-        {isCompleted ? 'Segment Completed' : 'Mark Segment as Complete'}
-      </Text>
-      <Ionicons
-        name={isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'}
-        size={32}
-        color={isCompleted ? '#4CAF50' : '#CCCCCC'}
-      />
-    </Pressable>
-  );
-
   return (
     <View
       style={{
@@ -375,11 +352,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({
         }}
       />
 
-      {/* Add completion section at bottom */}
-      <View style={styles.completionContainer}>
-        <CompletionButton />
-      </View>
-
       <CelebrationPopup 
         visible={showCelebration} 
         onComplete={handleCelebrationComplete}
@@ -456,22 +428,5 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
     shadowOpacity: 0.2, // Optional: shadow opacity for iOS
     shadowRadius: 2, // Optional: shadow radius for iOS
-  },
-  completionContainer: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-    marginTop: 10,
-  },
-  completionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-  },
-  completionText: {
-    fontSize: 16,
-    marginRight: 8,
-    color: '#666',
   },
 });

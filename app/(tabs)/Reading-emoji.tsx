@@ -184,9 +184,9 @@ const ReadingEmoji = () => {
             console.log("reaction.segmentID", reaction.segmentID);
             updateSegmentId(`${"ENG"}-${"NLT"}-${reaction.segmentID}`);
             router.push({
-              pathname: `/${"ENG"}-${"NLT"}-${reaction.segmentID}`,
+              pathname: "/[segment]",
               params: {
-                segment: reaction.segmentID,
+                segment: `${"ENG"}-${"NLT"}-${reaction.segmentID}`,
                 book: segment?.book[0] || ''
               }
             });
