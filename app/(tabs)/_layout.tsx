@@ -20,7 +20,7 @@ export default function TabLayout() {
           name="index"
         options={{
             headerShown: false,
-            title: "Home",
+            title: "Index",
             tabBarIcon: ({ color, focused }) => (
               <TabBarIcon
                 name={focused ? "home" : "home-outline"}
@@ -33,6 +33,42 @@ export default function TabLayout() {
           name="Home"
           options={{
             title: "Home",
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon
+                name={focused ? "home" : "home-outline"}
+                color={color}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="Reading-emoji"
+          options={{
+            title: "Emojis",
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon
+                name={focused ? "home" : "home-outline"}
+                color={color}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="Reading-Challenges"
+          options={{
+            title: "Challenges",
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon
+                name={focused ? "home" : "home-outline"}
+                color={color}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="Reading-Plans"
+          options={{
+            title: "Plans",
             tabBarIcon: ({ color, focused }) => (
               <TabBarIcon
                 name={focused ? "home" : "home-outline"}
