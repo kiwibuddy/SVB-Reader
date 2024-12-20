@@ -6,6 +6,7 @@ import { useModal } from "@/context/NavContext";
 import DonutChart from "../DonutChart";
 import { Ionicons } from '@expo/vector-icons';
 import CelebrationPopup from "../CelebrationPopup";
+import { getCheckColor } from '@/scripts/getCheckColors';
 
 interface ColorData {
   total: number;
@@ -19,6 +20,11 @@ interface BibleData {
   [key: string]: { colors: ColorData }; // Changed from string[]
 }
 
+interface CompletionData {
+  isCompleted: boolean;
+  color: string | null;
+}
+
 interface SegmentItemProps {
   segment: {
     id: string;
@@ -26,7 +32,7 @@ interface SegmentItemProps {
     ref?: string;
     book: string[];
   };
-  completedSegments: string[];
+  completedSegments: Record<string, CompletionData>;
   onComplete?: (segmentId: string) => void;
   showGlobalCompletion: boolean;
   context: 'navigation' | 'plan' | 'challenge';
@@ -36,7 +42,7 @@ interface SegmentItemProps {
 
 export default function SegmentItem({ 
   segment,
-  completedSegments = [],
+  completedSegments = {},
   onComplete,
   showGlobalCompletion = false,
   context = 'navigation',
@@ -46,7 +52,8 @@ export default function SegmentItem({
   const { 
     completedSegments: globalCompletedSegments,
     markSegmentComplete,
-    updateSegmentId
+    updateSegmentId,
+    selectedReaderColor
   } = useAppContext();
   const { toggleModal } = useModal() || { toggleModal: () => {} };
   const router = useRouter();
@@ -63,17 +70,18 @@ export default function SegmentItem({
   const getCompletionStatus = () => {
     switch (context) {
       case 'plan':
-        return completedSegments.includes(segID);
+        return completedSegments[segID]?.isCompleted || false;
       case 'challenge':
-        return completedSegments.includes(segID);
+        return completedSegments[segID]?.isCompleted || false;
       case 'navigation':
-        return globalCompletedSegments.includes(segID);
+        return globalCompletedSegments[segID]?.isCompleted || false;
       default:
         return false;
     }
   };
 
-  const isCompleted = getCompletionStatus();
+  const isCompleted = completedSegments[segID]?.isCompleted || false;
+  const completionColor = completedSegments[segID]?.color || null;
 
   const handlePress = () => {
     updateSegmentId(segment.id);
@@ -96,6 +104,11 @@ export default function SegmentItem({
 
   const handleCelebrationComplete = () => {
     setShowCelebration(false);
+  };
+
+  const getCompletionColor = () => {
+    const completion = completedSegments[segID];
+    return completion?.color ? getCheckColor(completion.color) : getCheckColor(null);
   };
 
   const styles = StyleSheet.create({
@@ -153,7 +166,7 @@ export default function SegmentItem({
               <Ionicons
                 name="checkmark-circle"
                 size={28}
-                color="#4CAF50"
+                color={getCheckColor(completionColor)}
               />
             </View>
           )}

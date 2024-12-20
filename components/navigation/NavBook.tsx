@@ -176,7 +176,7 @@ export interface AccordionItem {
 export interface AccordionProps {
   item: AccordionItem;
   bookIndex: number;
-  completedSegments?: string[];
+  completedSegments?: Record<string, CompletionData>;
   onSegmentComplete?: (segmentId: string) => void;
   showGlobalCompletion?: boolean;
   context?: 'navigation' | 'plan' | 'challenge';
@@ -198,10 +198,15 @@ const SegmentTitles: Record<SegmentKey, SegmentTitle> = require('@/assets/data/S
 // Define a type for the keys of accordionColor
 type AccordionColorKey = keyof typeof accordionColor;
 
+interface CompletionData {
+  isCompleted: boolean;
+  color: string | null;
+}
+
 const Accordion = ({ 
   item, 
   bookIndex, 
-  completedSegments = [], 
+  completedSegments = {},
   onSegmentComplete,
   showGlobalCompletion = false,
   context = 'navigation',

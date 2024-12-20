@@ -29,6 +29,11 @@ interface ChallengeProgress {
   isPaused: boolean;
 }
 
+interface CompletionData {
+  isCompleted: boolean;
+  color: string | null;
+}
+
 // Define the interface for both segmentId and read status
 interface AppContextType {
   segmentId: string;
@@ -39,8 +44,8 @@ interface AppContextType {
   updateReadingPlan: (newReadingPlan: string) => Promise<void>;
   emojiActions: number;
   updateEmojiActions: (newEmojiActions: number) => Promise<void>;
-  completedSegments: string[];
-  markSegmentComplete: (segmentId: string, isComplete: boolean) => Promise<void>;
+  completedSegments: Record<string, CompletionData>;
+  markSegmentComplete: (segmentId: string, isComplete: boolean, color?: string | null) => Promise<void>;
   readingPlanProgress: Record<string, ReadingPlanProgress>;
   startReadingPlan: (planId: string) => void;
   activePlan: PlanProgress | null;
@@ -55,6 +60,8 @@ interface AppContextType {
   restartChallenge: (challengeId: string) => void;
   updateReadingPlanProgress: (planId: string, segmentId: string) => Promise<void>;
   updateChallengeProgress: (challengeId: string, segmentId: string) => Promise<void>;
+  selectedReaderColor: string | null;
+  updateSelectedReaderColor: (color: string | null) => void;
 }
 
 const defaultContext: AppContextType = {
@@ -66,7 +73,7 @@ const defaultContext: AppContextType = {
   updateReadingPlan: async () => Promise.resolve(), // Updated to return a Promise
   emojiActions: 0,
   updateEmojiActions: async () => {},
-  completedSegments: [],
+  completedSegments: {},
   markSegmentComplete: async () => {},
   readingPlanProgress: {},
   startReadingPlan: () => {},
@@ -82,6 +89,8 @@ const defaultContext: AppContextType = {
   restartChallenge: () => {},
   updateReadingPlanProgress: async () => {},
   updateChallengeProgress: async () => {},
+  selectedReaderColor: null,
+  updateSelectedReaderColor: () => {},
 };
 
 // Create the context
@@ -100,10 +109,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   // State and logic for read segments
   const [readSegments, setReadSegments] = useState<string[]>([]);
   const [emojiActions, setEmojiActions] = useState<number>(0);
-  const [completedSegments, setCompletedSegments] = useState<string[]>([]);
+  const [completedSegments, setCompletedSegments] = useState<Record<string, CompletionData>>({});
   const [readingPlanProgress, setReadingPlanProgress] = useState<Record<string, ReadingPlanProgress>>({});
   const [activePlan, setActivePlan] = useState<PlanProgress | null>(null);
   const [activeChallenges, setActiveChallenges] = useState<Record<string, ChallengeProgress>>({});
+  const [selectedReaderColor, setSelectedReaderColor] = useState<string | null>(null);
 
   useEffect(() => {
     // Load read status from AsyncStorage when the app starts
@@ -269,50 +279,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // Update markSegmentComplete to handle plans and challenges
-  const markSegmentComplete = async (segmentId: string, isComplete: boolean) => {
+  const markSegmentComplete = async (segmentId: string, isComplete: boolean, color?: string | null) => {
     try {
-      // Update global completion status
-      let updatedSegments = isComplete 
-        ? [...completedSegments, segmentId]
-        : completedSegments.filter(id => id !== segmentId);
+      const updatedSegments = { ...completedSegments };
+      
+      if (isComplete) {
+        updatedSegments[segmentId] = { isCompleted: true, color: color || null };
+      } else {
+        delete updatedSegments[segmentId];
+      }
       
       setCompletedSegments(updatedSegments);
       await AsyncStorage.setItem('completedSegments', JSON.stringify(updatedSegments));
-
-      // Update active plan if segment is part of it
-      if (activePlan && !activePlan.isPaused) {
-        const plan = readingPlansData.plans.find(p => p.id === activePlan.planId);
-        if (plan && isSegmentInPlan(segmentId, plan)) {
-          const updatedPlan = {
-            ...activePlan,
-            completedSegments: isComplete 
-              ? [...activePlan.completedSegments, segmentId]
-              : activePlan.completedSegments.filter(id => id !== segmentId)
-          };
-          setActivePlan(updatedPlan);
-          await AsyncStorage.setItem('activePlan', JSON.stringify(updatedPlan));
-        }
-      }
-
-      // Update active challenges if segment is part of them
-      for (const challengeId in activeChallenges) {
-        const challenge = activeChallenges[challengeId];
-        if (!challenge.isPaused) {
-          const challengeData = readingPlansData.challenges.find(c => c.id === challengeId);
-          if (challengeData && isSegmentInPlan(segmentId, challengeData)) {
-            const updatedChallenge = {
-              ...challenge,
-              completedSegments: isComplete
-                ? [...challenge.completedSegments, segmentId]
-                : challenge.completedSegments.filter(id => id !== segmentId)
-            };
-            setActiveChallenges(prev => ({
-              ...prev,
-              [challengeId]: updatedChallenge
-            }));
-          }
-        }
-      }
     } catch (error) {
       console.error('Error updating segment completion:', error);
     }
@@ -395,9 +373,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const updateSelectedReaderColor = async (color: string | null) => {
+    setSelectedReaderColor(color);
+  };
+
   return (
     <AppContext.Provider
-      value={{ segmentId, updateSegmentId, readSegments, markAsRead, readingPlan, updateReadingPlan, emojiActions, updateEmojiActions, completedSegments, markSegmentComplete, readingPlanProgress, startReadingPlan, activePlan, startPlan, pausePlan, resumePlan, switchPlan, activeChallenges, startChallenge, pauseChallenge, resumeChallenge, restartChallenge, updateReadingPlanProgress, updateChallengeProgress }}
+      value={{ segmentId, updateSegmentId, readSegments, markAsRead, readingPlan, updateReadingPlan, emojiActions, updateEmojiActions, completedSegments, markSegmentComplete, readingPlanProgress, startReadingPlan, activePlan, startPlan, pausePlan, resumePlan, switchPlan, activeChallenges, startChallenge, pauseChallenge, resumeChallenge, restartChallenge, updateReadingPlanProgress, updateChallengeProgress, selectedReaderColor, updateSelectedReaderColor }}
     >
       {children}
     </AppContext.Provider>

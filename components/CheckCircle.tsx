@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppContext } from '@/context/GlobalContext';
 import { useRouter } from 'expo-router';
 import CelebrationPopup from './CelebrationPopup';
+import { getCheckColor } from '@/scripts/getCheckColors';
 
 interface CheckCircleProps {
   segmentId: string;
@@ -12,13 +13,15 @@ interface CheckCircleProps {
 }
 
 export default function CheckCircle({ segmentId, iconSize = 24 }: CheckCircleProps) {
-  const { completedSegments, markSegmentComplete } = useAppContext();
+  const { completedSegments, markSegmentComplete, selectedReaderColor } = useAppContext();
   const [showCelebration, setShowCelebration] = useState(false);
   const router = useRouter();
-  const isCompleted = completedSegments.includes(segmentId);
+  const isCompleted = completedSegments[segmentId]?.isCompleted || false;
+  const completionColor = completedSegments[segmentId]?.color || null;
 
   const handlePress = async () => {
-    await markSegmentComplete(segmentId, !isCompleted);
+    const color = isCompleted ? null : selectedReaderColor;
+    await markSegmentComplete(segmentId, !isCompleted, color);
     if (!isCompleted) {
       setShowCelebration(true);
     }
@@ -35,7 +38,7 @@ export default function CheckCircle({ segmentId, iconSize = 24 }: CheckCirclePro
         <Ionicons
           name={isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'}
           size={iconSize}
-          color={isCompleted ? '#4CAF50' : '#CCCCCC'}
+          color={isCompleted ? getCheckColor(completionColor) : '#CCCCCC'}
         />
       </Pressable>
       <CelebrationPopup 

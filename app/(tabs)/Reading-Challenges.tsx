@@ -335,7 +335,12 @@ const ChallengesScreen = () => {
                   key={item.djhBook} 
                   item={item} 
                   bookIndex={bookIndex}
-                  completedSegments={activeChallenges[selectedChallenge.id]?.completedSegments || []}
+                  completedSegments={
+                    activeChallenges[selectedChallenge.id]?.completedSegments.reduce((acc, segmentId) => ({
+                      ...acc,
+                      [segmentId]: { isCompleted: true, color: null }
+                    }), {}) || {}
+                  }
                   onSegmentComplete={handleSegmentComplete}
                   context="challenge"
                   showGlobalCompletion={false}

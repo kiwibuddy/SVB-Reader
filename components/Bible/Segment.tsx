@@ -45,7 +45,8 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     emojiActions,
     updateEmojiActions,
     updateReadingPlanProgress,
-    updateChallengeProgress
+    updateChallengeProgress,
+    updateSelectedReaderColor
   } = useAppContext();
 
   // Add null checks for segmentData
@@ -65,7 +66,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   // Determine which completion state to use
   const getIsCompleted = () => {
     if (showGlobalCompletion) {
-      return completedSegments.includes(segID);
+      return completedSegments[segID]?.isCompleted || false;
     }
     if (planId && activePlan?.planId === planId) {
       return activePlan.completedSegments.includes(segID);
@@ -84,7 +85,12 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   }, [id]);
 
   const handleIconPress = (index: number) => {
-    setReaderNumber((prev) => (prev === index ? null : index)); // Toggle selection
+    const readerColor = readers[index];
+    setReaderNumber((prev) => {
+      const newValue = prev === index ? null : index;
+      updateSelectedReaderColor(newValue === null ? null : readerColor);
+      return newValue;
+    });
   };
 
   const handleLongPress = (blockData: BibleBlock, blockID: string) => {
