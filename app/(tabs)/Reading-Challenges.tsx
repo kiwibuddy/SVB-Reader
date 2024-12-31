@@ -257,10 +257,11 @@ const ChallengesScreen = () => {
   }, [params.scrollToChallenge, params.timestamp, challengeBooksData]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <ScrollView 
         ref={scrollViewRef}
         style={styles.scrollContainer}
+        contentContainerStyle={{ paddingTop: 8 }}
         onContentSizeChange={(w, h) => setContentHeight(h)}
         onLayout={event => setHeaderHeight(event.nativeEvent.layout.height)}
       >
@@ -426,18 +427,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerContainer: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 0,
+    paddingBottom: 8,
   },
   screenTitle: {
     fontSize: 24,
     fontWeight: "600",
-    marginBottom: 12,
+    marginBottom: 8, // Reduced from 12
   },
   welcomeText: {
-    fontSize: 16,
+    fontSize: 14, // Reduced from 16
     color: "#666666",
-    lineHeight: 24,
-    marginBottom: 24,
+    lineHeight: 20, // Reduced from 24
+    marginBottom: 16, // Reduced from 24
   },
   sectionTitle: {
     fontSize: 20,
@@ -446,14 +449,14 @@ const styles = StyleSheet.create({
   },
   challengesScrollView: {
     paddingHorizontal: 16,
+    marginBottom: 8, // Added to reduce space before divider
   },
   challengeButton: {
-    backgroundColor: "#F5F5F5",
-    padding: 16,
+    padding: 12, // Reduced from 16
     borderRadius: 12,
     marginRight: 12,
-    width: 200,
-    height: 160,
+    width: 180, // Reduced from 200
+    height: 140, // Reduced from 160
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -496,15 +499,16 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: "#EEEEEE",
-    marginVertical: 16,
+    marginVertical: 8, // Reduced from 16
   },
   selectedChallengeContainer: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8, // Reduced from 16
   },
   selectedChallengeTitle: {
     fontSize: 20,
     fontWeight: "600",
-    marginBottom: 8,
+    marginBottom: 4, // Reduced spacing
   },
   selectedChallengeDescription: {
     fontSize: 16,
@@ -528,18 +532,19 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   challengeIcon: {
-    fontSize: 40,
-    height: 60,
-    width: 60,
+    fontSize: 32, // Reduced from 40
+    height: 40, // Reduced from 60
+    width: 40, // Reduced from 60
     textAlign: 'center',
-    lineHeight: 60,
-    marginBottom: 12,
+    lineHeight: 40, // Reduced from 60
+    marginBottom: 8, // Reduced from 12
   },
   challengeContent: {
     flex: 1,
     alignItems: 'center',
     position: 'relative',
     width: '100%',
+    paddingVertical: 4, // Added to reduce internal spacing
   },
   challengeContext: {
     fontSize: 16,

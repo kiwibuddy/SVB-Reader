@@ -207,10 +207,11 @@ const PlanScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <ScrollView 
         ref={scrollViewRef}
         style={styles.scrollContainer}
+        contentContainerStyle={{ paddingTop: 8 }}
         onContentSizeChange={(w, h) => setContentHeight(h)}
         onLayout={event => setHeaderHeight(event.nativeEvent.layout.height)}
       >
@@ -298,7 +299,10 @@ const PlanScreen = () => {
                 <Accordion 
                   item={item} 
                   bookIndex={bookIndex}
-                  completedSegments={activePlan?.completedSegments || []}
+                  completedSegments={Object.fromEntries((activePlan?.completedSegments || []).map(id => [
+                    id, 
+                    { timestamp: Date.now(), isCompleted: true, color: '#4CAF50' }
+                  ]))}
                   onSegmentComplete={handleSegmentComplete}
                   context="plan"
                   showGlobalCompletion={false}
@@ -322,18 +326,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerContainer: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 0,
+    paddingBottom: 8,
   },
   screenTitle: {
     fontSize: 24,
     fontWeight: "600",
-    marginBottom: 12,
+    marginBottom: 8,
   },
   welcomeText: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#666666",
-    lineHeight: 24,
-    marginBottom: 24,
+    lineHeight: 20,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 20,
@@ -342,14 +348,15 @@ const styles = StyleSheet.create({
   },
   plansScrollView: {
     paddingHorizontal: 16,
+    marginBottom: 8,
   },
   planButton: {
     backgroundColor: "#F5F5F5",
-    padding: 16,
+    padding: 12,
     borderRadius: 12,
     marginRight: 12,
-    width: 200,
-    height: 160,
+    width: 180,
+    height: 140,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -383,18 +390,23 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: "#EEEEEE",
-    marginVertical: 16,
+    marginVertical: 8,
+  },
+  selectedPlanContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   selectedPlanTitle: {
     fontSize: 20,
     fontWeight: "600",
-    padding: 16,
+    marginBottom: 4,
   },
   booksContainer: {
     paddingBottom: 16,
   },
   progressContainer: {
-    padding: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -413,9 +425,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '600',
   },
-  selectedPlanContainer: {
-    padding: 16,
-  },
   planContext: {
     fontSize: 14,
     color: "#666666",
@@ -424,18 +433,19 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   planIcon: {
-    fontSize: 40,
-    height: 60,
-    width: 60,
+    fontSize: 32,
+    height: 40,
+    width: 40,
     textAlign: 'center',
-    lineHeight: 60,
-    marginBottom: 12,
+    lineHeight: 40,
+    marginBottom: 8,
   },
   planContent: {
     flex: 1,
     alignItems: 'center',
     position: 'relative',
     width: '100%',
+    paddingVertical: 4,
   },
   controlButton: {
     backgroundColor: '#4CAF50',
