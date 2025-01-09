@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"; // Ensure useEffect is imported
-import { View, Text, FlatList, Pressable, TouchableOpacity, Modal, StyleSheet } from "react-native";
+import { View, Text, FlatList, Pressable, TouchableOpacity, Modal, StyleSheet, useWindowDimensions, Platform } from "react-native";
 import { BlurView } from "expo-blur";
 import BibleBlockComponent from "./Block";
 import { BibleBlock, SegmentType } from "@/types";
@@ -36,6 +36,9 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   challengeId,
   planId
 }) => {
+  const { width: screenWidth } = useWindowDimensions();
+  const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenWidth > 768);
+
   const router = useRouter();
   const { 
     completedSegments, 
@@ -163,9 +166,10 @@ const SegmentComponent: React.FC<SegmentProps> = ({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-        width: '100%'
+        paddingHorizontal: 10,
+        paddingVertical: isIPad ? 5 : 5,
+        width: '100%',
+        height: isIPad ? 120 : 100,
       }}>
         {/* Chart Section */}
         <View
@@ -173,26 +177,23 @@ const SegmentComponent: React.FC<SegmentProps> = ({
             flex: 1,
             flexDirection: "row",
             justifyContent: "space-between",
-            marginLeft: 10,
-            height: 100, // Add a fixed height for both containers
+            alignItems: "center",
+            height: "100%",
           }}
         >
-          <View
-            style={{ 
-              flex: 1, 
-              flexDirection: "row", 
-              justifyContent: "center",
-              alignItems: "center" // Add this to center vertically
-            }}
-          >
-            <PieChart colorData={colors} size={80} /> {/* Add size prop */}
+          <View style={[styles.chartSection]}>
+            <PieChart 
+              colorData={colors} 
+              size={isIPad ? Math.min(screenWidth * 0.15, 120) : 80}
+            />
           </View>
           <View
             style={{ 
-              flex: 2, 
+              flex: 3, 
               justifyContent: "center", 
               alignItems: "center",
-              height: "100%" // Ensure this takes full height
+              height: "100%",
+              paddingLeft: isIPad ? 10 : 10,
             }}
           >
             {/* Reader Selection Section */}
@@ -213,7 +214,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
               <View style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
-                width: '80%'
+                width: '90%'
               }}>
                 {icons.map((icon, index) => {
                   const colors = getColors(readers[index]);
@@ -434,5 +435,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
     shadowOpacity: 0.2, // Optional: shadow opacity for iOS
     shadowRadius: 2, // Optional: shadow radius for iOS
+  },
+  chartSection: {
+    flex: 1,
+    maxWidth: '40%',
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
   },
 });

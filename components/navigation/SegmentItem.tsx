@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, StyleSheet, Dimensions } from "react-native";
+import { 
+  View, 
+  Text, 
+  Pressable, 
+  StyleSheet, 
+  useWindowDimensions,
+  Platform 
+} from "react-native";
 import { useAppContext } from "@/context/GlobalContext";
 import { useRouter } from "expo-router";
 import { useModal } from "@/context/NavContext";
@@ -58,6 +65,11 @@ export default function SegmentItem({
   const { toggleModal } = useModal() || { toggleModal: () => {} };
   const router = useRouter();
   const [showCelebration, setShowCelebration] = useState(false);
+  const { width: screenWidth } = useWindowDimensions();
+  const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenWidth > 768);
+  
+  // Calculate chart size based on device and text height
+  const chartSize = isIPad ? 55 : 28;
 
   const { ref, book, title, id } = segment;
   const idSplit = id.split("-");
@@ -114,8 +126,8 @@ export default function SegmentItem({
   const styles = StyleSheet.create({
     container: {
       flexDirection: 'row',
-      paddingVertical: 12,
-      paddingHorizontal: 16,
+      paddingVertical: isIPad ? 30 : 12,
+      paddingHorizontal: isIPad ? 30 : 12,
       borderTopWidth: 1,
       borderColor: '#E5E5E5',
       backgroundColor: 'transparent',
@@ -123,22 +135,27 @@ export default function SegmentItem({
     },
     chartContainer: {
       position: 'relative',
-      width: 28,
-      height: 28,
+      width: chartSize,
+      height: chartSize,
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: 12,
+      marginRight: isIPad ? 16 : 12,
+      marginLeft: isIPad ? 10 : 0,
     },
     checkmark: {
       position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
+      top: '50%',
+      left: '50%',
+      transform: [
+        { translateX: -(chartSize/2) },
+        { translateY: -(chartSize/2) }
+      ],
+      width: chartSize,
+      height: chartSize,
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: 'rgba(255, 255, 255, 0.9)',
-      borderRadius: 14,
+      borderRadius: chartSize / 2,
     },
     titleContainer: {
       flex: 1,
@@ -147,11 +164,11 @@ export default function SegmentItem({
     },
     title: {
       fontWeight: "bold",
-      fontSize: 18,
+      fontSize: isIPad ? 20 : 18,
       marginBottom: 4,
     },
     reference: {
-      fontSize: 14,
+      fontSize: isIPad ? 16 : 14,
       color: "#666",
     }
   });
@@ -165,7 +182,7 @@ export default function SegmentItem({
             <View style={styles.checkmark}>
               <Ionicons
                 name="checkmark-circle"
-                size={28}
+                size={chartSize}
                 color={getCheckColor(completionColor)}
               />
             </View>

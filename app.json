@@ -17,8 +17,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": [
-      ]
+      "permissions": []
     },
     "web": {
       "bundler": "metro",
@@ -37,7 +36,8 @@
         }
       ],
       "expo-av",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

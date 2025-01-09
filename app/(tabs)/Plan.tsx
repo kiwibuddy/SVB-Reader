@@ -206,6 +206,13 @@ const PlanScreen = () => {
     } as any);
   };
 
+  // Filter out the unwanted plans
+  const filteredPlans = useMemo(() => {
+    return readingPlansData.plans.filter(plan => 
+      !['SchoolYear2', 'SchoolYear3', 'test'].includes(plan.id)
+    );
+  }, []);
+
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <ScrollView 
@@ -228,7 +235,7 @@ const PlanScreen = () => {
           showsHorizontalScrollIndicator={false}
           style={styles.plansScrollView}
         >
-          {readingPlansData.plans.map((plan) => (
+          {filteredPlans.map((plan) => (
             <TouchableOpacity
               key={plan.id}
               style={[
