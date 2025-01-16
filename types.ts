@@ -138,3 +138,6 @@ export interface BookData {
 export type BooksObject = {
   [key: string]: BookData; // Dynamic keys for each book (e.g., "Gen", "Exo")
 };
+
+import Books from "@/assets/data/BookChapterList.json";
+export type SegmentIds = keyof typeof Books;

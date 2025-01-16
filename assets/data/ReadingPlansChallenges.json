@@ -546,7 +546,7 @@
     },
     {
       "id": "SchoolYear1",
-      "title": "Bible Narrative (School Year 1)",
+      "title": "Bible Narrative (School Year)",
       "description": "150 Stories",
       "image": "island",
       "segments": {
@@ -1492,52 +1492,458 @@
   },
   "challenges": [
     {
+      "id": "gospelsAndActs",
+      "title": "4 Gospels and Acts",
+      "description": "52 Stories - 7.5 Weeks",
+      "image": "island",
+      "longDescription": "Immerse yourself in the life of Jesus through the four Gospel accounts and witness the birth of the early church in Acts. This journey provides a comprehensive view of Christ's ministry and the Spirit-led expansion of Christianity.",
+      "segments": {
+        "Mar": {
+          "segments": [
+            "I041",
+            "S277",
+            "S278",
+            "S279",
+            "S280",
+            "S281",
+            "S282",
+            "S283",
+            "S284"
+          ]
+        },
+        "Joh": {
+          "segments": [
+            "I043",
+            "S298",
+            "S299",
+            "S300",
+            "S301",
+            "S302",
+            "S303",
+            "S304",
+            "S305",
+            "S306",
+            "S307"
+          ]
+        },
+        "Mat": {
+          "segments": [
+            "I040",
+            "S266",
+            "S267",
+            "S268",
+            "S269",
+            "S270",
+            "S271",
+            "S272",
+            "S273",
+            "S274",
+            "S275",
+            "S276"
+          ]
+        },
+        "Luk": {
+          "segments": [
+            "I042",
+            "S285",
+            "S286",
+            "S287",
+            "S288",
+            "S289",
+            "S290",
+            "S291",
+            "S292",
+            "S293",
+            "S294",
+            "S295",
+            "S296",
+            "S297"
+          ]
+        },
+        "Act": {
+          "segments": [
+            "I044",
+            "S308",
+            "S309",
+            "S310",
+            "S311",
+            "S312",
+            "S313",
+            "S314",
+            "S315",
+            "S316",
+            "S317",
+            "S318",
+            "S319"
+          ]
+        }
+      }
+    },
+    {
+      "id": "paulsLetters",
       "title": "Paul's Letters",
       "description": "21 Stories - 3 Weeks",
       "image": "island",
-      "longDescription": "Journey through the epistles of Paul, exploring his teachings on faith, grace, and Christian living. Perfect for understanding early church doctrine and practical Christian wisdom."
+      "longDescription": "Journey through the epistles of Paul, exploring his teachings on faith, grace, and Christian living. Perfect for understanding early church doctrine and practical Christian wisdom.",
+      "segments": {
+        "Rom": {
+          "segments": ["S201", "S202", "S203"]
+        },
+        "Gal": {
+          "segments": ["S204", "S205"]
+        }
+      }
     },
     {
-      "title": "David's Life",
-      "description": "15 Stories - 15 Days",
+      "id": "inTheBeginning",
+      "title": "In The Beginning",
+      "description": "4 Stories",
       "image": "island",
-      "longDescription": "Follow the journey of David from shepherd to king, through his trials and triumphs. Learn about leadership, faith, and redemption through his powerful story."
+      "longDescription": "Explore the opening chapters of Genesis, from Creation to the Tower of Babel. Understand humanity's origins and early relationship with God.",
+      "segments": {
+        "Gen": {
+          "segments": [
+            "I001",
+            "S001",
+            "S002",
+            "S003",
+            "S004"
+          ]
+        }
+      }
     },
     {
-      "title": "Advent Journey",
-      "description": "22 Stories - 22 Days",
+      "id": "dtsOutreach",
+      "title": "DTS Outreach",
+      "description": "40 Stories - 8 Weeks",
       "image": "island",
-      "longDescription": "Prepare your heart for Christmas with daily readings about the prophecies and birth of Jesus. Experience the anticipation and joy of the coming Messiah."
+      "longDescription": "A focused journey through key New Testament books, perfect for Discipleship Training School outreach. This selection covers the Gospel of Luke, the early church in Acts, and essential epistles, providing a comprehensive foundation for ministry and discipleship.",
+      "segments": {
+        "Luk": {
+          "segments": [
+            "I042",
+            "S285",
+            "S286",
+            "S287",
+            "S288",
+            "S289",
+            "S290",
+            "S291",
+            "S292",
+            "S293",
+            "S294",
+            "S295",
+            "S296",
+            "S297"
+          ]
+        },
+        "Act": {
+          "segments": [
+            "I044",
+            "S308",
+            "S309",
+            "S310",
+            "S311",
+            "S312",
+            "S313",
+            "S314",
+            "S315",
+            "S316",
+            "S317",
+            "S318",
+            "S319"
+          ]
+        },
+        "Rom": {
+          "segments": [
+            "I045",
+            "S320",
+            "S321",
+            "S322",
+            "S323"
+          ]
+        },
+        "1Co": {
+          "segments": [
+            "I046",
+            "S328",
+            "S329",
+            "S330"
+          ]
+        },
+        "Eph": {
+          "segments": [
+            "I049",
+            "S337",
+            "S338"
+          ]
+        },
+        "Tit": {
+          "segments": [
+            "I056",
+            "S345"
+          ]
+        },
+        "Jam": {
+          "segments": [
+            "I059",
+            "S352"
+          ]
+        },
+        "1Pe": {
+          "segments": [
+            "I060",
+            "S353"
+          ]
+        },
+        "1Jn": {
+          "segments": [
+            "I062",
+            "S355"
+          ]
+        },
+        "Rev": {
+          "segments": [
+            "I066",
+            "S359",
+            "S365"
+          ]
+        }
+      }
     },
     {
-      "title": "Lenten Reflection",
-      "description": "40 Stories - 40 Days",
+      "id": "dtsLecturePhase",
+      "title": "DTS Lecture Phase",
+      "description": "55 Stories - 11 Weeks",
       "image": "island",
-      "longDescription": "Journey through Jesus' ministry, passion, and resurrection during the 40 days of Lent. Deepen your understanding of Christ's sacrifice and victory."
+      "longDescription": "A comprehensive Bible reading journey designed for YWAM DTS students during their lecture phase. This 11-week plan aligns with the DTS curriculum, covering key narratives from Creation to the Prophets, providing biblical foundation for each week's teaching topics. Perfect for deepening your understanding of God's character and His redemptive plan through Scripture.",
+      "segments": {
+        "Gen": {
+          "segments": [
+            "I001",
+            "S001",
+            "S002",
+            "S003",
+            "S004",
+            "S006",
+            "S008"
+          ]
+        },
+        "Exo": {
+          "segments": [
+            "I002",
+            "S019",
+            "S023",
+            "S025",
+            "S030",
+            "S032"
+          ]
+        },
+        "Lev": {
+          "segments": [
+            "I003",
+            "S039"
+          ]
+        },
+        "Num": {
+          "segments": [
+            "I004",
+            "S049"
+          ]
+        },
+        "Deu": {
+          "segments": [
+            "I005",
+            "S057",
+            "S058",
+            "S067"
+          ]
+        },
+        "Jos": {
+          "segments": [
+            "I006",
+            "S070",
+            "S076"
+          ]
+        },
+        "Jdg": {
+          "segments": [
+            "I007",
+            "S077",
+            "S079"
+          ]
+        },
+        "Rut": {
+          "segments": [
+            "I008",
+            "S085"
+          ]
+        },
+        "1Sa": {
+          "segments": [
+            "I009",
+            "S088",
+            "S089",
+            "S091"
+          ]
+        },
+        "2Sa": {
+          "segments": [
+            "I010",
+            "S097"
+          ]
+        },
+        "1Ki": {
+          "segments": [
+            "I011",
+            "S106",
+            "S109",
+            "S110"
+          ]
+        },
+        "2Ki": {
+          "segments": [
+            "I012",
+            "S121",
+            "S124"
+          ]
+        },
+        "Neh": {
+          "segments": [
+            "I016",
+            "S149",
+            "S150"
+          ]
+        },
+        "Psa": {
+          "segments": [
+            "I019",
+            "S164",
+            "S166",
+            "S172",
+            "S175",
+            "S177",
+            "S179"
+          ]
+        },
+        "Pro": {
+          "segments": [
+            "I020",
+            "S180"
+          ]
+        },
+        "Isa": {
+          "segments": [
+            "I023",
+            "S191",
+            "S200",
+            "S203",
+            "S204"
+          ]
+        },
+        "Jer": {
+          "segments": [
+            "I024",
+            "S206",
+            "S210",
+            "S211",
+            "S219"
+          ]
+        },
+        "Eze": {
+          "segments": [
+            "I026",
+            "S227",
+            "S232",
+            "S239"
+          ]
+        },
+        "Dan": {
+          "segments": [
+            "I027",
+            "S245",
+            "S246"
+          ]
+        },
+        "Joe": {
+          "segments": [
+            "I029",
+            "S251"
+          ]
+        },
+        "Jon": {
+          "segments": [
+            "I032",
+            "S255"
+          ]
+        },
+        "Hab": {
+          "segments": [
+            "I035",
+            "S259"
+          ]
+        }
+      }
     },
     {
+      "id": "torah",
+      "title": "The Torah",
+      "description": "55 Stories - 11 Weeks",
+      "image": "island",
+      "longDescription": "Journey through the first five books of the Bible - Genesis, Exodus, Leviticus, Numbers, and Deuteronomy. Discover the foundations of God's relationship with humanity, from Creation to the edge of the Promised Land.",
+      "segments": {
+        "Gen": {
+          "segments": ["I001"]
+        }
+      }
+    },
+    {
+      "id": "christmas12",
       "title": "12 Days of Christmas",
       "description": "12 Stories - 12 Days",
       "image": "island",
-      "longDescription": "Celebrate the Christmas season with readings about Jesus' birth and early life. Explore the miraculous events and profound meaning of the incarnation."
+      "longDescription": "Experience the Christmas story through a 12-day devotional journey. From prophecies to fulfillment, explore the miraculous events surrounding Christ's birth and their meaning for us today.",
+      "segments": {
+        "Gen": {
+          "segments": ["I001"]
+        }
+      }
     },
     {
-      "title": "The Gospels",
-      "description": "28 Stories - 4 Weeks",
+      "id": "davidsLife",
+      "title": "David's Life",
+      "description": "35 Stories - 7 Weeks",
       "image": "island",
-      "longDescription": "Experience the life and teachings of Jesus through all four Gospel accounts. Discover the unique perspective each Gospel writer brings to the story of Christ."
+      "longDescription": "Follow the journey of David from shepherd boy to king of Israel. Through victories and failures, discover how this 'man after God's own heart' teaches us about leadership, worship, and walking with God.",
+      "segments": {
+        "Gen": {
+          "segments": ["I001"]
+        }
+      }
     },
     {
-      "title": "The Torah",
-      "description": "35 Stories - 5 Weeks",
+      "id": "adventJourney",
+      "title": "Advent Journey",
+      "description": "22 Stories - 4 Weeks",
       "image": "island",
-      "longDescription": "Journey through the first five books of the Bible, exploring the foundations of faith, law, and God's covenant with His people."
+      "longDescription": "Prepare your heart for Christmas with this Advent reading plan. Journey through prophecies of the Messiah to their fulfillment in Jesus, experiencing the hope, peace, joy, and love of the season.",
+      "segments": {
+        "Gen": {
+          "segments": ["I001"]
+        }
+      }
     },
     {
-      "title": "In The Beginning",
-      "description": "14 Stories - 2 Weeks",
+      "id": "lentenReflection",
+      "title": "Lenten Reflection",
+      "description": "40 Stories - 6 Weeks",
       "image": "island",
-      "longDescription": "Explore the opening chapters of Genesis, from Creation to the Tower of Babel. Understand humanity's origins and early relationship with God."
+      "longDescription": "Walk through the season of Lent with purposeful reflection. From Jesus' ministry to His passion, death, and resurrection, deepen your understanding of Christ's sacrifice and its meaning for our lives.",
+      "segments": {
+        "Gen": {
+          "segments": ["I001"]
+        }
+      }
     }
   ]
 }

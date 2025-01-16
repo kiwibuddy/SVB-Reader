@@ -16,7 +16,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": []
     },
     "web": {
       "bundler": "metro",
@@ -34,7 +35,9 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-av"
+      "expo-av",
+      "expo-sqlite",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true
@@ -53,7 +56,13 @@
         "projectId": "4b89909c-ac28-498a-9e46-5591000b8616"
       }
     },
-    "owner": "nathanielbaldock@gmail.com",
-    "privacy": "public"
+    "owner": "kiwibuddy",
+    "privacy": "public",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/4b89909c-ac28-498a-9e46-5591000b8616"
+    }
   }
 }

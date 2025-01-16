@@ -8,7 +8,9 @@ import {
   StyleSheet,
   Pressable,
   FlatList,
-  ImageBackground
+  ImageBackground,
+  useWindowDimensions,
+  Platform
 } from "react-native";
 import Card from "@/components/Card";
 import ReadingPlansChallenges from "../../assets/data/ReadingPlansChallenges.json";
@@ -17,148 +19,17 @@ import { useAppContext } from "@/context/GlobalContext";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useRouter } from "expo-router";
 
+type SegmentTitle = {
+  Segment: string;
+  title: string;
+  book: string[];
+  ref?: string;  // Making ref optional since not all segments have it
+}
+
 const segIDs = Object.keys(SegmentTitles);
 
-const HomeScreen = () => {
-  const { segmentId } = useAppContext();
-  const router = useRouter();
-  const segSplit = segmentId.split("-");
-  const segID = segSplit[segSplit.length - 1];
-  const segIndex = segIDs.findIndex(id => id === segID);
-  const nextSegID = segIDs[segIndex + 1] || "S001";
-  const nextSegData = SegmentTitles[nextSegID as keyof typeof SegmentTitles] ? SegmentTitles[nextSegID as keyof typeof SegmentTitles] : SegmentTitles[`S001`];
-  useEffect(() => {
-    console.log("nextSegData", nextSegData);
-    console.log("nextSegID", nextSegID);
-    console.log("segmentId", segmentId);
-  }, [segmentId]);
-  return (
-    <>
-      <ScrollView style={styles.container}>
-        {/* <Image
-          source={require("../../assets/images/icon.png")}
-          style={styles.logo}
-        /> */}
-
-        <Text style={styles.title}>SOURCEVIEW</Text>
-        <Text style={styles.subtitle}>YOUTH</Text>
-
-        {/* Square Buttons Layout */}
-        <View style={styles.buttonGrid}>
-          <Pressable
-            style={[styles.squareButton, { backgroundColor: 'transparent' }]}
-            onPress={() => router.push("/Plan")}
-          >
-            <ImageBackground
-              source={require("@/assets/images/button1.png")}
-              style={styles.buttonBackground}
-              resizeMode="cover"
-            >
-              <Text style={styles.squareButtonText}>Reading Plans</Text>
-            </ImageBackground>
-          </Pressable>
-          <Pressable
-            style={[styles.squareButton, { backgroundColor: "#FF66B3" }]}
-            onPress={() => router.push("/Reading-Challenges")}
-          >
-            <ImageBackground
-              source={require("@/assets/images/button2.png")}
-              style={styles.buttonBackground}
-              resizeMode="cover"
-            >
-              <Text style={styles.squareButtonText}>Reading Challenges</Text>
-            </ImageBackground>
-          </Pressable>
-          <Pressable
-            style={[styles.squareButton, { backgroundColor: 'transparent' }]}
-            onPress={() => router.push("/Emoji-Reactions")}
->
-            <ImageBackground
-              source={require("@/assets/images/button4.png")}
-              style={styles.buttonBackground}
-              resizeMode="cover"
-            >
-              <Text style={styles.squareButtonText}>Emoji Reactions</Text>
-            </ImageBackground>
-          </Pressable>
-          <Pressable
-            style={[styles.squareButton, { backgroundColor: 'transparent' }]}
-            onPress={() => router.push("/Reading-Plan")}
-          >
-            <ImageBackground
-              source={require("@/assets/images/button11.jpg")}
-              style={styles.buttonBackground}
-              resizeMode="cover"
-            >
-              <Text style={styles.squareButtonText}>
-                How to start a Bible Reading Group
-              </Text>
-            </ImageBackground>
-          </Pressable>
-        </View>
-
-        {/* Added Welcome Text Section */}
-        <View style={styles.textContainer}>
-          <Text style={styles.welcomeTitle}>Welcome to SourceView Youth Bible</Text>
-          <Text style={styles.welcomeText}>
-            Experience the Bible as a dynamic conversation. Dive into God's Word with your friends and watch it come alive!
-          </Text>
-
-          <Text style={styles.sectionTitle}>Read with Friends 👥</Text>
-          <Text style={styles.sectionText}>
-            Gather your group and dive into Scripture together. Choose your reading role and watch your parts light up, transforming Bible study into an immersive experience.
-          </Text>
-
-          <Text style={styles.sectionTitle}>Conversations Come Alive 💬</Text>
-          <Text style={styles.sectionText}>
-            See the Bible in a new light as you read the words of God, prophets, and key figures in speech bubbles. Feel the emotions, conflicts, and triumphs as you step into their shoes.
-          </Text>
-
-          <Text style={styles.sectionTitle}>React and Connect 🙌</Text>
-          <Text style={styles.sectionText}>
-            Respond to powerful messages with emojis. 👍, ❤️, 🙏or be 😲 by messages as you read. Easily revisit your reactions later to reflect on how God's Word is shaping you.
-          </Text>
-
-          <Text style={styles.sectionTitle}>Journey Through Scripture 👣</Text>
-          <Text style={styles.sectionText}>
-            Embark on reading plans with friends. Gain a deeper understanding of the Bible's overarching narrative or focus on specific themes and characters through shorter focused challenges.
-          </Text>
-
-          <Text style={styles.sectionTitle}>Simple Bible Studies 👥</Text>
-          <Text style={styles.sectionText}>
-            At the end of each of the 365 stories of scripture you'll find simple Bible study questions to help stir discussions and take you deeper in your understanding of God's word.
-          </Text>
-
-          <Text style={styles.sectionTitle}>Experience the SourceView Difference</Text>
-          <Text style={styles.sectionText}>
-            Embrace a format designed for the digital age. See entire conversations in context, not just isolated verses. This helps bring understanding and the full impact the dynamic conversations and speeches in the Bible.
-          </Text>
-
-          <Text style={styles.sectionTitle}>Transform Your World</Text>
-          <Text style={styles.sectionText}>
-            Let God's living Word revolutionize your life and impact those around you. Join a movement of your generation encountering Scripture in fresh, powerful ways and watch as it changes everything.
-          </Text>
-        </View>
-      </ScrollView>
-
-      <View style={styles.stickyButtonContainer}>
-        <Pressable
-          style={styles.button}
-          onPress={() =>
-            router.push(`/${segSplit[0]}-${segSplit[1]}-${nextSegID}`)
-          }
-        >
-          <Text style={styles.buttonText}>Read Next Segment</Text>
-          <Text
-            style={styles.buttonRefText}
-          >{`(${nextSegData.book[0]} ${nextSegData.Segment})`}</Text>
-        </Pressable>
-      </View>
-    </>
-  );
-};
-
-const styles = StyleSheet.create({
+// Move styles outside component to avoid the reference error
+const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFF",
@@ -236,16 +107,24 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
     padding: 10,
+    width: '100%',
+  },
+  buttonGridIPad: {
+    flexDirection: "row",
+    padding: 10,
+    gap: 15,
   },
   squareButton: {
-    width: "48%",
-    height: 0,
+    width: isLargeScreen ? 300 : "48%",
+    height: undefined,
     aspectRatio: 1,
+    marginBottom: 16,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 10,
-    marginBottom: 10,
     overflow: 'hidden',
+    minWidth: isLargeScreen ? 280 : undefined,
+    maxWidth: isLargeScreen ? 400 : undefined,
   },
   squareButtonText: {
     fontSize: 20,
@@ -297,4 +176,211 @@ const styles = StyleSheet.create({
   },
 });
 
+const HomeScreen = () => {
+  const { segmentId } = useAppContext();
+  const router = useRouter();
+  const segSplit = segmentId.split("-");
+  const segID = segSplit[segSplit.length - 1];
+  const segIndex = segIDs.findIndex(id => id === segID);
+  const nextSegID = segmentId ? (segIDs[segIndex + 1] || "S001") : "S001";
+  const nextSegData = SegmentTitles[nextSegID as keyof typeof SegmentTitles] as SegmentTitle;
+  const { width: screenWidth } = useWindowDimensions();
+  const isLargeScreen = screenWidth >= 768;
+  
+  // Create styles with current isLargeScreen value
+  const styles = createStyles(isLargeScreen);
+
+  useEffect(() => {
+    console.log("segmentId - HomeScreen", segmentId);
+  }, [segmentId]);
+  return (
+    <>
+      <ScrollView style={styles.container}>
+        {/* <Image
+          source={require("../../assets/images/icon.png")}
+          style={styles.logo}
+        /> */}
+
+        <Text style={styles.title}>SOURCEVIEW</Text>
+        <Text style={styles.subtitle}>YOUTH</Text>
+
+        {/* Conditional rendering based on device type */}
+        {isLargeScreen ? (
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.buttonGridIPad}
+          >
+            <Pressable
+              style={[styles.squareButton, { backgroundColor: 'transparent' }]}
+              onPress={() => router.push("/Plan")}
+            >
+              <ImageBackground
+                source={require("@/assets/images/button1.png")}
+                style={styles.buttonBackground}
+                resizeMode="cover"
+              >
+                <Text style={styles.squareButtonText}>Reading Plans</Text>
+              </ImageBackground>
+            </Pressable>
+            <Pressable
+              style={[styles.squareButton, { backgroundColor: "#FF66B3" }]}
+              onPress={() => router.push("/Reading-Challenges")}
+            >
+              <ImageBackground
+                source={require("@/assets/images/button2.png")}
+                style={styles.buttonBackground}
+                resizeMode="cover"
+              >
+                <Text style={styles.squareButtonText}>Reading Challenges</Text>
+              </ImageBackground>
+            </Pressable>
+            <Pressable
+              style={[styles.squareButton, { backgroundColor: 'transparent' }]}
+              onPress={() => router.push("/Reading-emoji")}
+            >
+              <ImageBackground
+                source={require("@/assets/images/button4.png")}
+                style={styles.buttonBackground}
+                resizeMode="cover"
+              >
+                <Text style={styles.squareButtonText}>Emoji Reactions</Text>
+              </ImageBackground>
+            </Pressable>
+            <Pressable
+              style={[styles.squareButton, { backgroundColor: 'transparent' }]}
+              onPress={() => router.push("/Reading-movement")}
+            >
+              <ImageBackground
+                source={require("@/assets/images/button11.jpg")}
+                style={styles.buttonBackground}
+                resizeMode="cover"
+              >
+                <Text style={styles.squareButtonText}>
+                  How to start a Bible Reading Group
+                </Text>
+              </ImageBackground>
+            </Pressable>
+          </ScrollView>
+        ) : (
+          <View style={styles.buttonGrid}>
+            <Pressable
+              style={[styles.squareButton, { backgroundColor: 'transparent' }]}
+              onPress={() => router.push("/Plan")}
+            >
+              <ImageBackground
+                source={require("@/assets/images/button1.png")}
+                style={styles.buttonBackground}
+                resizeMode="cover"
+              >
+                <Text style={styles.squareButtonText}>Reading Plans</Text>
+              </ImageBackground>
+            </Pressable>
+            <Pressable
+              style={[styles.squareButton, { backgroundColor: "#FF66B3" }]}
+              onPress={() => router.push("/Reading-Challenges")}
+            >
+              <ImageBackground
+                source={require("@/assets/images/button2.png")}
+                style={styles.buttonBackground}
+                resizeMode="cover"
+              >
+                <Text style={styles.squareButtonText}>Reading Challenges</Text>
+              </ImageBackground>
+            </Pressable>
+            <Pressable
+              style={[styles.squareButton, { backgroundColor: 'transparent' }]}
+              onPress={() => router.push("/Reading-emoji")}
+            >
+              <ImageBackground
+                source={require("@/assets/images/button4.png")}
+                style={styles.buttonBackground}
+                resizeMode="cover"
+              >
+                <Text style={styles.squareButtonText}>Emoji Reactions</Text>
+              </ImageBackground>
+            </Pressable>
+            <Pressable
+              style={[styles.squareButton, { backgroundColor: 'transparent' }]}
+              onPress={() => router.push("/Reading-movement")}
+            >
+              <ImageBackground
+                source={require("@/assets/images/button11.jpg")}
+                style={styles.buttonBackground}
+                resizeMode="cover"
+              >
+                <Text style={styles.squareButtonText}>
+                  How to start a Bible Reading Group
+                </Text>
+              </ImageBackground>
+            </Pressable>
+          </View>
+        )}
+
+        {/* Added Welcome Text Section */}
+        <View style={styles.textContainer}>
+          <Text style={styles.welcomeTitle}>Welcome to SourceView Youth Bible</Text>
+          <Text style={styles.welcomeText}>
+            Experience the Bible as a dynamic conversation. Dive into God's Word with your friends and watch it come alive!
+          </Text>
+
+          <Text style={styles.sectionTitle}>Read with Friends 👥</Text>
+          <Text style={styles.sectionText}>
+            Gather your group and dive into Scripture together. Choose your reading role and watch your parts light up, transforming Bible study into an immersive experience.
+          </Text>
+
+          <Text style={styles.sectionTitle}>Conversations Come Alive 💬</Text>
+          <Text style={styles.sectionText}>
+            See the Bible in a new light as you read the words of God, prophets, and key figures in speech bubbles. Feel the emotions, conflicts, and triumphs as you step into their shoes.
+          </Text>
+
+          <Text style={styles.sectionTitle}>React and Connect 🙌</Text>
+          <Text style={styles.sectionText}>
+            Respond to powerful messages with emojis. 👍, ❤️, 🙏or be 😲 by messages as you read. Easily revisit your reactions later to reflect on how God's Word is shaping you.
+          </Text>
+
+          <Text style={styles.sectionTitle}>Journey Through Scripture 👣</Text>
+          <Text style={styles.sectionText}>
+            Embark on reading plans with friends. Gain a deeper understanding of the Bible's overarching narrative or focus on specific themes and characters through shorter focused challenges.
+          </Text>
+
+          <Text style={styles.sectionTitle}>Simple Bible Studies 👥</Text>
+          <Text style={styles.sectionText}>
+            At the end of each of the 365 stories of scripture you'll find simple Bible study questions to help stir discussions and take you deeper in your understanding of God's word.
+          </Text>
+
+          <Text style={styles.sectionTitle}>Experience the SourceView Difference</Text>
+          <Text style={styles.sectionText}>
+            Embrace a format designed for the digital age. See entire conversations in context, not just isolated verses. This helps bring understanding and the full impact the dynamic conversations and speeches in the Bible.
+          </Text>
+
+          <Text style={styles.sectionTitle}>Transform Your World</Text>
+          <Text style={styles.sectionText}>
+            Let God's living Word revolutionize your life and impact those around you. Join a movement of your generation encountering Scripture in fresh, powerful ways and watch as it changes everything.
+          </Text>
+        </View>
+      </ScrollView>
+
+      <View style={styles.stickyButtonContainer}>
+        <Pressable
+          style={styles.button}
+          onPress={() => {
+            if (!segmentId) {
+              router.push(`/${"ENG"}-${"NLT"}-S001`);
+            } else {
+              router.push(`/${"ENG"}-${"NLT"}-${nextSegID}`);
+            }
+          }}
+        >
+          <Text style={styles.buttonText}>Read Next Segment</Text>
+          <Text style={styles.buttonRefText}>
+            {`${nextSegData.book[0]}${nextSegData.ref ? ' ' + nextSegData.ref : ''}`}
+          </Text>
+        </Pressable>
+      </View>
+    </>
+  );
+};
+
+// Add default export
 export default HomeScreen;

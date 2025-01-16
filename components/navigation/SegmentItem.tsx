@@ -1,11 +1,19 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, StyleSheet, Dimensions } from "react-native";
+import { 
+  View, 
+  Text, 
+  Pressable, 
+  StyleSheet, 
+  useWindowDimensions,
+  Platform 
+} from "react-native";
 import { useAppContext } from "@/context/GlobalContext";
 import { useRouter } from "expo-router";
 import { useModal } from "@/context/NavContext";
 import DonutChart from "../DonutChart";
 import { Ionicons } from '@expo/vector-icons';
 import CelebrationPopup from "../CelebrationPopup";
+import { getCheckColor } from '@/scripts/getCheckColors';
 
 interface ColorData {
   total: number;
@@ -19,23 +27,73 @@ interface BibleData {
   [key: string]: { colors: ColorData }; // Changed from string[]
 }
 
-export default function SegmentItem({
+interface CompletionData {
+  isCompleted: boolean;
+  color: string | null;
+}
+
+interface SegmentItemProps {
+  segment: {
+    id: string;
+    title: string;
+    ref?: string;
+    book: string[];
+  };
+  completedSegments: Record<string, CompletionData>;
+  onComplete?: (segmentId: string) => void;
+  showGlobalCompletion: boolean;
+  context: 'navigation' | 'plan' | 'challenge';
+  planId?: string;
+  challengeId?: string;
+}
+
+export default function SegmentItem({ 
   segment,
-}: {
-  segment: { id: string; title: string; ref: string | undefined, book: string[] };
-}) {
-  const { ref, book, title, id } = segment;
-  const idSplit = id.split("-");
-  const segID = idSplit[idSplit.length - 1];
-  const { updateSegmentId, completedSegments, markSegmentComplete } = useAppContext();
+  completedSegments = {},
+  onComplete,
+  showGlobalCompletion = false,
+  context = 'navigation',
+  planId,
+  challengeId
+}: SegmentItemProps) {
+  const { 
+    completedSegments: globalCompletedSegments,
+    markSegmentComplete,
+    updateSegmentId,
+    selectedReaderColor
+  } = useAppContext();
   const { toggleModal } = useModal() || { toggleModal: () => {} };
   const router = useRouter();
   const [showCelebration, setShowCelebration] = useState(false);
+  const { width: screenWidth } = useWindowDimensions();
+  const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenWidth > 768);
+  
+  // Calculate chart size based on device and text height
+  const chartSize = isIPad ? 55 : 28;
+
+  const { ref, book, title, id } = segment;
+  const idSplit = id.split("-");
+  const segID = idSplit[idSplit.length - 1];
 
   const Bible: BibleData = require('@/assets/data/newBibleNLT1.json');
   const { colors } = Bible[segID];
 
-  const isCompleted = completedSegments.includes(segID);
+  // Only show completion status based on context and source
+  const getCompletionStatus = () => {
+    switch (context) {
+      case 'plan':
+        return completedSegments[segID]?.isCompleted || false;
+      case 'challenge':
+        return completedSegments[segID]?.isCompleted || false;
+      case 'navigation':
+        return globalCompletedSegments[segID]?.isCompleted || false;
+      default:
+        return false;
+    }
+  };
+
+  const isCompleted = completedSegments[segID]?.isCompleted || false;
+  const completionColor = completedSegments[segID]?.color || null;
 
   const handlePress = () => {
     updateSegmentId(segment.id);
@@ -44,11 +102,15 @@ export default function SegmentItem({
   };
 
   const handleDonutPress = async () => {
-    if (!isCompleted) {
-      await markSegmentComplete(segID, true);
-      setShowCelebration(true);
-    } else {
-      await markSegmentComplete(segID, false);
+    if (context === 'navigation') {
+      if (!isCompleted) {
+        await markSegmentComplete(segID, true);
+        setShowCelebration(true);
+      } else {
+        await markSegmentComplete(segID, false);
+      }
+    } else if (onComplete) {
+      onComplete(segID);
     }
   };
 
@@ -56,11 +118,16 @@ export default function SegmentItem({
     setShowCelebration(false);
   };
 
+  const getCompletionColor = () => {
+    const completion = completedSegments[segID];
+    return completion?.color ? getCheckColor(completion.color) : getCheckColor(null);
+  };
+
   const styles = StyleSheet.create({
     container: {
       flexDirection: 'row',
-      paddingVertical: 12,
-      paddingHorizontal: 16,
+      paddingVertical: isIPad ? 30 : 12,
+      paddingHorizontal: isIPad ? 30 : 12,
       borderTopWidth: 1,
       borderColor: '#E5E5E5',
       backgroundColor: 'transparent',
@@ -68,22 +135,27 @@ export default function SegmentItem({
     },
     chartContainer: {
       position: 'relative',
-      width: 28,
-      height: 28,
+      width: chartSize,
+      height: chartSize,
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: 12,
+      marginRight: isIPad ? 16 : 12,
+      marginLeft: isIPad ? 10 : 0,
     },
     checkmark: {
       position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
+      top: '50%',
+      left: '50%',
+      transform: [
+        { translateX: -(chartSize/2) },
+        { translateY: -(chartSize/2) }
+      ],
+      width: chartSize,
+      height: chartSize,
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: 'rgba(255, 255, 255, 0.9)',
-      borderRadius: 14,
+      borderRadius: chartSize / 2,
     },
     titleContainer: {
       flex: 1,
@@ -92,11 +164,11 @@ export default function SegmentItem({
     },
     title: {
       fontWeight: "bold",
-      fontSize: 18,
+      fontSize: isIPad ? 20 : 18,
       marginBottom: 4,
     },
     reference: {
-      fontSize: 14,
+      fontSize: isIPad ? 16 : 14,
       color: "#666",
     }
   });
@@ -110,8 +182,8 @@ export default function SegmentItem({
             <View style={styles.checkmark}>
               <Ionicons
                 name="checkmark-circle"
-                size={28}
-                color="#4CAF50"
+                size={chartSize}
+                color={getCheckColor(completionColor)}
               />
             </View>
           )}

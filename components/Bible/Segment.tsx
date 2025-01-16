@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"; // Ensure useEffect is imported
-import { View, Text, FlatList, Pressable, TouchableOpacity, Modal, StyleSheet } from "react-native";
+import { View, Text, FlatList, Pressable, TouchableOpacity, Modal, StyleSheet, useWindowDimensions, Platform } from "react-native";
 import { BlurView } from "expo-blur";
 import BibleBlockComponent from "./Block";
 import { BibleBlock, SegmentType } from "@/types";
@@ -14,9 +14,13 @@ import EmojiPicker from "../EmojiPicker";
 import { addEmoji } from "@/api/sqlite";
 import { useAppContext } from "@/context/GlobalContext";
 import CelebrationPopup from "../CelebrationPopup";
+import { useRouter } from "expo-router";
 
 interface SegmentProps {
   segmentData: SegmentType;
+  showGlobalCompletion?: boolean;
+  challengeId?: string;
+  planId?: string;
 }
 
 const icons = [
@@ -26,8 +30,34 @@ const icons = [
   { name: "star", label: "4" },
 ];
 
-const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
-  const { emojiActions, updateEmojiActions, completedSegments, markSegmentComplete } = useAppContext();
+const SegmentComponent: React.FC<SegmentProps> = ({ 
+  segmentData, 
+  showGlobalCompletion = true,
+  challengeId,
+  planId
+}) => {
+  const { width: screenWidth } = useWindowDimensions();
+  const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenWidth > 768);
+
+  const router = useRouter();
+  const { 
+    completedSegments, 
+    markSegmentComplete,
+    activePlan,
+    activeChallenges,
+    emojiActions,
+    updateEmojiActions,
+    updateReadingPlanProgress,
+    updateChallengeProgress,
+    updateSelectedReaderColor
+  } = useAppContext();
+
+  // Add null checks for segmentData
+  if (!segmentData || !segmentData.id) {
+    console.error('Invalid segment data:', segmentData);
+    return null; // Or return an error state component
+  }
+
   const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
   const [readerNumber, setReaderNumber] = useState<number | null>(null); // Update state type
   const [blockData, setBlockData] = useState<BibleBlock | null>(null); // State for block data
@@ -35,7 +65,22 @@ const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
   const [showCelebration, setShowCelebration] = useState(false);
   const { content, colors, readers, id } = segmentData;
   const segID = id.split("-")[id.split("-").length - 1];
-  const isCompleted = completedSegments.includes(segID);
+
+  // Determine which completion state to use
+  const getIsCompleted = () => {
+    if (showGlobalCompletion) {
+      return completedSegments[segID]?.isCompleted || false;
+    }
+    if (planId && activePlan?.planId === planId) {
+      return activePlan.completedSegments.includes(segID);
+    }
+    if (challengeId && activeChallenges[challengeId]) {
+      return activeChallenges[challengeId].completedSegments.includes(segID);
+    }
+    return false;
+  };
+
+  const isCompleted = getIsCompleted();
 
   // Reset readerNumber to null when id changes
   useEffect(() => {
@@ -43,7 +88,12 @@ const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
   }, [id]);
 
   const handleIconPress = (index: number) => {
-    setReaderNumber((prev) => (prev === index ? null : index)); // Toggle selection
+    const readerColor = readers[index];
+    setReaderNumber((prev) => {
+      const newValue = prev === index ? null : index;
+      updateSelectedReaderColor(newValue === null ? null : readerColor);
+      return newValue;
+    });
   };
 
   const handleLongPress = (blockData: BibleBlock, blockID: string) => {
@@ -54,8 +104,10 @@ const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
 
   const handleReactionSelect = async (blockData: BibleBlock, blockID: string, emoji: string) => {
     await addEmoji(blockID, JSON.stringify(blockData), emoji, "");
-    await updateEmojiActions(emojiActions + 1);
-    setIsModalVisible(false); // Hide the modal after selection
+    if (typeof emojiActions === 'number') {
+      await updateEmojiActions(emojiActions + 1);
+    }
+    setIsModalVisible(false);
   };
 
   const newContent = splitIntoParagraphs(content);
@@ -63,45 +115,44 @@ const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
   const colorRenderCount = new Map<string, number>(); // Track render counts
 
   // Add handler for completion toggle
-  const handleCompletionToggle = async () => {
-    try {
+  const handleCompletion = async () => {
+    if (showGlobalCompletion) {
+      await markSegmentComplete(segID, !isCompleted);
       if (!isCompleted) {
-        await markSegmentComplete(segID, true);
         setShowCelebration(true);
-      } else {
-        await markSegmentComplete(segID, false);
       }
-    } catch (error) {
-      console.error('Error toggling completion:', error);
+    } else if (planId && activePlan) {
+      // Handle plan completion
+      await updateReadingPlanProgress(planId, segID);
+      setShowCelebration(true);
+    } else if (challengeId && activeChallenges[challengeId]) {
+      // Handle challenge completion
+      await updateChallengeProgress(challengeId, segID);
+      setShowCelebration(true);
     }
   };
 
   const handleCelebrationComplete = () => {
     setShowCelebration(false);
+    // Navigate back based on context
+    if (planId) {
+      router.replace({
+        pathname: '/Plan',
+        params: { 
+          scrollToPlan: planId,
+          timestamp: Date.now() // Force refresh
+        }
+      });
+    } else if (challengeId) {
+      router.replace({
+        pathname: '/Reading-Challenges',
+        params: { 
+          scrollToChallenge: challengeId,
+          timestamp: Date.now() // Force refresh
+        }
+      });
+    }
   };
-
-  // Make the completion button more responsive
-  const CompletionButton = () => (
-    <Pressable 
-      onPress={handleCompletionToggle}
-      style={[
-        styles.completionButton,
-        { opacity: 1 }
-      ]}
-    >
-      <Text style={[
-        styles.completionText,
-        { color: isCompleted ? '#4CAF50' : '#666' }
-      ]}>
-        {isCompleted ? 'Segment Completed' : 'Mark Segment as Complete'}
-      </Text>
-      <Ionicons
-        name={isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'}
-        size={32}
-        color={isCompleted ? '#4CAF50' : '#CCCCCC'}
-      />
-    </Pressable>
-  );
 
   return (
     <View
@@ -115,9 +166,10 @@ const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-        width: '100%'
+        paddingHorizontal: 10,
+        paddingVertical: isIPad ? 5 : 5,
+        width: '100%',
+        height: isIPad ? 120 : 100,
       }}>
         {/* Chart Section */}
         <View
@@ -125,26 +177,23 @@ const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
             flex: 1,
             flexDirection: "row",
             justifyContent: "space-between",
-            marginLeft: 10,
-            height: 100, // Add a fixed height for both containers
+            alignItems: "center",
+            height: "100%",
           }}
         >
-          <View
-            style={{ 
-              flex: 1, 
-              flexDirection: "row", 
-              justifyContent: "center",
-              alignItems: "center" // Add this to center vertically
-            }}
-          >
-            <PieChart colorData={colors} size={80} /> {/* Add size prop */}
+          <View style={[styles.chartSection]}>
+            <PieChart 
+              colorData={colors} 
+              size={isIPad ? Math.min(screenWidth * 0.15, 120) : 80}
+            />
           </View>
           <View
             style={{ 
-              flex: 2, 
+              flex: 3, 
               justifyContent: "center", 
               alignItems: "center",
-              height: "100%" // Ensure this takes full height
+              height: "100%",
+              paddingLeft: isIPad ? 10 : 10,
             }}
           >
             {/* Reader Selection Section */}
@@ -165,7 +214,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
               <View style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
-                width: '80%'
+                width: '90%'
               }}>
                 {icons.map((icon, index) => {
                   const colors = getColors(readers[index]);
@@ -310,11 +359,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({ segmentData }) => {
         }}
       />
 
-      {/* Add completion section at bottom */}
-      <View style={styles.completionContainer}>
-        <CompletionButton />
-      </View>
-
       <CelebrationPopup 
         visible={showCelebration} 
         onComplete={handleCelebrationComplete}
@@ -392,21 +436,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2, // Optional: shadow opacity for iOS
     shadowRadius: 2, // Optional: shadow radius for iOS
   },
-  completionContainer: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-    marginTop: 10,
-  },
-  completionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-  },
-  completionText: {
-    fontSize: 16,
-    marginRight: 8,
-    color: '#666',
+  chartSection: {
+    flex: 1,
+    maxWidth: '40%',
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
   },
 });

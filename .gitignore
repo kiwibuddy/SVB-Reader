@@ -7,3 +7,5 @@ expo-env.d.ts
 # @end expo-cli
 /.expo
 .DS_Store
+.DS_Store
+/dist

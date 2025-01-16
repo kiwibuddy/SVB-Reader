@@ -1,21 +1,53 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity, Pressable } from "react-native";
+import { View, Text, Image, StyleSheet, TouchableOpacity, Pressable, useWindowDimensions, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native"; // Import useNavigation
 import { Link, useRouter } from "expo-router";
 import { Video, ResizeMode } from 'expo-av';
 
 const IndexScreen = () => {
   const router = useRouter(); // Initialize the router
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+
+  // Replace Platform.isPad checks with this condition
+  const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenHeight / screenWidth < 1.6);
+
+  // Calculate responsive font sizes with a max width cap
+  const maxWidth = 550; // Cap the scaling at this width
+  const baseFontScale = Math.min(screenWidth / 390, maxWidth / 390); // Limit the scale factor
+  const titleSize = Math.round(40 * baseFontScale);
+  const subtitleSize = Math.round(38 * baseFontScale);
+  
+  const textStyles = {
+    title: {
+      ...styles.title,
+      fontSize: titleSize,
+    },
+    subtitle: {
+      ...styles.subtitle,
+      fontSize: subtitleSize,
+    }
+  };
+
+  // Calculate video dimensions to maintain aspect ratio and fill screen
+  const videoStyle = {
+    width: screenWidth,
+    height: screenHeight,
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  };
 
   return (
     <View style={styles.container}>
       {/* Placeholder for the background image */}
       <Video
         source={require("../../assets/images/Welcome-Screen.mp4")}
-        style={styles.backgroundImage}
+        style={videoStyle}
         isLooping
         shouldPlay
-        resizeMode={ResizeMode.CONTAIN}
+        resizeMode={ResizeMode.COVER}
         isMuted={true}
       />
 
@@ -28,8 +60,8 @@ const IndexScreen = () => {
             style={styles.logo}
           />
 
-          <Text style={styles.title}>SOURCEVIEW</Text>
-          <Text style={styles.subtitle}>YOUTH</Text>
+          <Text style={textStyles.title}>SOURCEVIEW</Text>
+          <Text style={textStyles.subtitle}>YOUTH</Text>
         </View>
         {/* Heading */}
         <View style={styles.titleContainer}>
@@ -57,6 +89,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: '#000', // Add black background to prevent white edges
   },
   backgroundImage: {
     position: "absolute",
@@ -92,7 +125,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   titleContainer: {
-    marginBottom: 100,
+    marginBottom: 50,
   },
   heading: {
     fontSize: 40,

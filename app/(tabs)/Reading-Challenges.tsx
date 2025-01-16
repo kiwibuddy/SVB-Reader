@@ -1,14 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
+import Accordion, { accordionColor } from "@/components/navigation/NavBook";
+import Books from "@/assets/data/BookChapterList.json";
+import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useAppContext } from "@/context/GlobalContext";
+import { StatusIndicator } from '@/components/StatusIndicator';
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 // Add categories for challenges
 const CHALLENGE_CATEGORIES = {
@@ -56,6 +62,14 @@ const CHALLENGE_STYLES = {
   "In The Beginning": {
     color: "#f4944d", // Orange
     icon: "🌟"
+  },
+  "4 Gospels and Acts": {
+    color: "#4dcaf4",
+    icon: "📖"
+  },
+  "DTS Outreach": {
+    color: "#f4944d",
+    icon: "🌟"
   }
 };
 
@@ -64,33 +78,193 @@ type ChallengeTitle = keyof typeof CHALLENGE_STYLES;
 
 // Update the type definition
 type Challenge = {
+  id: string;
   title: ChallengeTitle;
   description: string;
   image: string;
-  highlightText: string;
   longDescription: string;
+  highlightText?: string;
+  segments: {
+    [key: string]: {
+      segments: string[];
+    };
+  };
 };
 
-const ChallengesScreen = () => {
-  const [selectedChallenge, setSelectedChallenge] = useState<Challenge>(readingPlansData.challenges[0] as Challenge);
+const booksArray = Object.keys(Books);
 
-  const handleChallengeSelection = (challenge: Challenge) => {
-    setSelectedChallenge(challenge);
+export type SegmentKey = keyof typeof SegmentTitles;
+export type SegmentIds = keyof typeof Books;
+
+interface AppContextType {
+  readingPlanProgress: {
+    [key: string]: {
+      completedSegments: string[];
+      isCompleted: boolean;
+    };
+  };
+  updateReadingPlanProgress: (planId: string, segmentId: string) => void;
+  startReadingPlan: (planId: string) => void;
+  activeChallenges: {
+    [key: string]: {
+      completedSegments: string[];
+      isCompleted: boolean;
+      isPaused: boolean;
+    };
+  };
+  startChallenge: (challengeId: string) => void;
+  pauseChallenge: (challengeId: string) => void;
+  resumeChallenge: (challengeId: string) => void;
+  restartChallenge: (challengeId: string) => void;
+}
+
+interface BookSegments {
+  segments: string[];
+}
+
+const ChallengesScreen = () => {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const { 
+    activeChallenges,
+    startChallenge,
+    pauseChallenge,
+    resumeChallenge,
+    restartChallenge
+  } = useAppContext();
+
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge>(() => {
+    const challenges = readingPlansData.challenges;
+    const validChallenge = challenges.find(challenge => 
+      challenge.segments && Object.keys(challenge.segments).length > 0
+    ) as unknown as Challenge;
+    return validChallenge || challenges[0] as unknown as Challenge;
+  });
+
+  const getChallengeStatus = (challengeId: string) => {
+    const challenge = activeChallenges[challengeId];
+    if (!challenge) return 'not-started';
+    if (challenge.isCompleted) return 'completed';
+    return challenge.isPaused ? 'paused' : 'active';
   };
 
-  // Group challenges by category
-  const groupedChallenges = readingPlansData.challenges.reduce((acc: any, challenge) => {
-    const category = categorizeChallenge(challenge);
-    if (!acc[category]) {
-      acc[category] = [];
+  const handleChallengeSelection = (challenge: any) => {
+    setSelectedChallenge(challenge as Challenge);
+  };
+
+  const handleSegmentComplete = (segmentId: string) => {
+    // This will be handled by the context's markSegmentComplete function
+    // which now handles both global and challenge-specific completions
+  };
+
+  const renderChallengeControls = () => {
+    const challenge = activeChallenges[selectedChallenge.id];
+    
+    if (!challenge) {
+      return (
+        <TouchableOpacity
+          style={styles.controlButton}
+          onPress={() => startChallenge(selectedChallenge.id)}
+        >
+          <Text style={styles.controlButtonText}>Start Challenge</Text>
+        </TouchableOpacity>
+      );
     }
-    acc[category].push(challenge);
-    return acc;
-  }, {});
+
+    if (challenge.isPaused) {
+      return (
+        <View style={styles.controlsContainer}>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={() => resumeChallenge(selectedChallenge.id)}
+          >
+            <Text style={styles.controlButtonText}>Resume Challenge</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.controlButton, styles.restartButton]}
+            onPress={() => {
+              Alert.alert(
+                'Restart Challenge?',
+                'Are you sure you want to restart this challenge? Your progress will be reset.',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { 
+                    text: 'Restart',
+                    onPress: () => restartChallenge(selectedChallenge.id)
+                  }
+                ]
+              );
+            }}
+          >
+            <Text style={styles.controlButtonText}>Restart Challenge</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        style={[styles.controlButton, styles.pauseButton]}
+        onPress={() => pauseChallenge(selectedChallenge.id)}
+      >
+        <Text style={styles.controlButtonText}>Pause Challenge</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const challengeBooksData = useMemo(() => {
+    if (!selectedChallenge?.segments) {
+      return [];
+    }
+
+    return Object.keys(selectedChallenge.segments).map((key) => ({
+      djhBook: key as keyof typeof accordionColor,
+      bookName: Books[key as SegmentIds]?.bookName ?? "Unknown Book",
+      segments: (selectedChallenge.segments[key as SegmentIds]?.segments ?? []) as SegmentKey[],
+    }));
+  }, [selectedChallenge]);
+
+  const handlePress = (segmentId: string) => {
+    router.push({
+      pathname: `/${segmentId}`,
+      query: {
+        showGlobalCompletion: 'false',
+        challengeId: selectedChallenge.id
+      }
+    } as any);
+  };
+
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [contentHeight, setContentHeight] = useState(0);
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  useEffect(() => {
+    if (params.scrollToChallenge && scrollViewRef.current && challengeBooksData) {
+      const challengeIndex = challengeBooksData.findIndex(item => item.djhBook === params.scrollToChallenge);
+      if (challengeIndex !== -1) {
+        const headerOffset = 200;
+        const itemHeight = 150;
+        const scrollPosition = headerOffset + (challengeIndex * itemHeight);
+        
+        setTimeout(() => {
+          scrollViewRef.current?.scrollTo({
+            y: scrollPosition,
+            animated: true
+          });
+        }, 100);
+      }
+    }
+  }, [params.scrollToChallenge, params.timestamp, challengeBooksData]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollContainer}>
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
+      <ScrollView 
+        ref={scrollViewRef}
+        style={styles.scrollContainer}
+        contentContainerStyle={{ paddingTop: 8 }}
+        onContentSizeChange={(w, h) => setContentHeight(h)}
+        onLayout={event => setHeaderHeight(event.nativeEvent.layout.height)}
+      >
         <View style={styles.headerContainer}>
           <Text style={styles.screenTitle}>Reading Challenges</Text>
           <Text style={styles.welcomeText}>
@@ -98,72 +272,151 @@ const ChallengesScreen = () => {
           </Text>
         </View>
 
-        {Object.entries(groupedChallenges).map(([category, challenges]) => (
-          <View key={category} style={styles.categoryContainer}>
-            <Text style={styles.categoryTitle}>{category}</Text>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              style={styles.challengesScrollView}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.challengesScrollView}>
+          {readingPlansData.challenges.map((challenge) => (
+            <TouchableOpacity
+              key={challenge.id}
+              style={[
+                styles.challengeButton,
+                {
+                  backgroundColor: CHALLENGE_STYLES[challenge.title as ChallengeTitle]?.color || "#f4694d",
+                },
+                selectedChallenge.id === challenge.id && styles.selectedChallengeButton
+              ]}
+              onPress={() => handleChallengeSelection(challenge)}
             >
-              {(challenges as Challenge[]).map((challenge, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.challengeButton,
-                    {
-                      backgroundColor: CHALLENGE_STYLES[challenge.title]?.color || "#f4694d",
-                    },
-                    selectedChallenge.title === challenge.title && {
-                      transform: [{ scale: 1.02 }],
-                      elevation: 5,
-                    }
-                  ]}
-                  onPress={() => handleChallengeSelection(challenge)}
-                >
-                  <View style={styles.challengeContent}>
-                    <Text style={styles.challengeIcon}>
-                      {CHALLENGE_STYLES[challenge.title]?.icon}
-                    </Text>
-                    <Text style={styles.challengeButtonText}>
-                      {challenge.title}
-                    </Text>
-                    <Text style={styles.challengeDescription}>
-                      {challenge.description}
-                    </Text>
-                    <Text style={styles.highlightText}>
-                      {challenge.highlightText}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        ))}
+              <StatusIndicator status={getChallengeStatus(challenge.id)} />
+              <View style={styles.challengeContent}>
+                <Text style={styles.challengeIcon}>
+                  {CHALLENGE_STYLES[challenge.title as ChallengeTitle]?.icon}
+                </Text>
+                <Text style={styles.challengeButtonText}>{challenge.title}</Text>
+                <Text style={styles.challengeDescription}>{challenge.description}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
 
         <View style={styles.divider} />
 
         <View style={styles.selectedChallengeContainer}>
           <Text style={styles.selectedChallengeTitle}>{selectedChallenge.title}</Text>
-          <Text style={styles.selectedChallengeDescription}>{selectedChallenge.description}</Text>
-          <Text style={styles.challengeInfo}>
-            {selectedChallenge.longDescription || 
-              (selectedChallenge.title === "Paul's Letters" && 
-                "Journey through the epistles of Paul, exploring his teachings on faith, grace, and Christian living. Perfect for understanding early church doctrine and practical Christian wisdom.") ||
-              (selectedChallenge.title === "David's Life" && 
-                "Follow the journey of David from shepherd to king, through his trials and triumphs. Learn about leadership, faith, and redemption through his powerful story.") ||
-              (selectedChallenge.title === "Advent Journey" && 
-                "Prepare your heart for Christmas with daily readings about the prophecies and birth of Jesus. Experience the anticipation and joy of the coming Messiah.") ||
-              (selectedChallenge.title === "Lenten Reflection" && 
-                "Journey through Jesus' ministry, passion, and resurrection during the 40 days of Lent. Deepen your understanding of Christ's sacrifice and victory.") ||
-              (selectedChallenge.title === "12 Days of Christmas" && 
-                "Celebrate the Christmas season with readings about Jesus' birth and early life. Explore the miraculous events and profound meaning of the incarnation.")}
-          </Text>
+          <Text style={styles.challengeContext}>{selectedChallenge.longDescription}</Text>
+
+          {renderChallengeControls()}
+
+          <View style={styles.progressContainer}>
+            <Text style={styles.progressText}>
+              Progress: {
+                activeChallenges[selectedChallenge.id]?.completedSegments.length || 0
+              } / {
+                Object.values(selectedChallenge.segments).reduce(
+                  (acc: number, book: BookSegments) => 
+                    acc + book.segments.filter((s: string) => !s.startsWith('I')).length,
+                  0
+                )
+              } segments
+            </Text>
+            {activeChallenges[selectedChallenge.id]?.isCompleted && (
+              <View style={styles.completedBadge}>
+                <Text style={styles.completedText}>Completed!</Text>
+              </View>
+            )}
+          </View>
         </View>
+
+        {challengeBooksData.length > 0 ? (
+          <View style={styles.booksContainer}>
+            {challengeBooksData.map((item) => {
+              const bookIndex = booksArray.findIndex(
+                (book) => book === item.djhBook
+              );
+              return (
+                <Accordion 
+                  key={item.djhBook} 
+                  item={item} 
+                  bookIndex={bookIndex}
+                  completedSegments={
+                    activeChallenges[selectedChallenge.id]?.completedSegments.reduce((acc, segmentId) => ({
+                      ...acc,
+                      [segmentId]: { isCompleted: true, color: null }
+                    }), {}) || {}
+                  }
+                  onSegmentComplete={handleSegmentComplete}
+                  context="challenge"
+                  showGlobalCompletion={false}
+                  challengeId={selectedChallenge.id}
+                />
+              );
+            })}
+          </View>
+        ) : (
+          <Text style={styles.noSegmentsText}>
+            This challenge is coming soon! Check back later for reading segments.
+          </Text>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 };
+
+const additionalStyles = StyleSheet.create({
+  progressContainer: {
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  progressText: {
+    fontSize: 16,
+    color: '#666666',
+  },
+  completedBadge: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  completedText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  booksContainer: {
+    paddingBottom: 16,
+  },
+  noSegmentsText: {
+    textAlign: 'center',
+    color: '#666',
+    fontSize: 14,
+    padding: 20,
+    fontStyle: 'italic'
+  },
+  controlButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginVertical: 16,
+    alignSelf: 'center',
+  },
+  pauseButton: {
+    backgroundColor: '#FFA000',
+  },
+  restartButton: {
+    backgroundColor: '#F44336',
+    marginLeft: 8,
+  },
+  controlButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  controlsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 16,
+  },
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -174,18 +427,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerContainer: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 0,
+    paddingBottom: 8,
   },
   screenTitle: {
     fontSize: 24,
     fontWeight: "600",
-    marginBottom: 12,
+    marginBottom: 8, // Reduced from 12
   },
   welcomeText: {
-    fontSize: 16,
+    fontSize: 14, // Reduced from 16
     color: "#666666",
-    lineHeight: 24,
-    marginBottom: 24,
+    lineHeight: 20, // Reduced from 24
+    marginBottom: 16, // Reduced from 24
   },
   sectionTitle: {
     fontSize: 20,
@@ -194,14 +449,14 @@ const styles = StyleSheet.create({
   },
   challengesScrollView: {
     paddingHorizontal: 16,
+    marginBottom: 8, // Added to reduce space before divider
   },
   challengeButton: {
-    backgroundColor: "#F5F5F5",
-    padding: 16,
+    padding: 12, // Reduced from 16
     borderRadius: 12,
     marginRight: 12,
-    width: 200,
-    height: 160,
+    width: 180, // Reduced from 200
+    height: 140, // Reduced from 160
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -209,7 +464,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   selectedChallengeButton: {
-    backgroundColor: "#8A4FFF",
+    transform: [{ scale: 1.02 }],
+    elevation: 5,
   },
   challengeButtonText: {
     fontSize: 16,
@@ -243,15 +499,16 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: "#EEEEEE",
-    marginVertical: 16,
+    marginVertical: 8, // Reduced from 16
   },
   selectedChallengeContainer: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8, // Reduced from 16
   },
   selectedChallengeTitle: {
     fontSize: 20,
     fontWeight: "600",
-    marginBottom: 8,
+    marginBottom: 4, // Reduced spacing
   },
   selectedChallengeDescription: {
     fontSize: 16,
@@ -275,19 +532,26 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   challengeIcon: {
-    fontSize: 40,
-    height: 60,
-    width: 60,
+    fontSize: 32, // Reduced from 40
+    height: 40, // Reduced from 60
+    width: 40, // Reduced from 60
     textAlign: 'center',
-    lineHeight: 60,
-    marginBottom: 12,
+    lineHeight: 40, // Reduced from 60
+    marginBottom: 8, // Reduced from 12
   },
   challengeContent: {
     flex: 1,
     alignItems: 'center',
     position: 'relative',
     width: '100%',
+    paddingVertical: 4, // Added to reduce internal spacing
   },
+  challengeContext: {
+    fontSize: 16,
+    color: "#666666",
+    lineHeight: 24,
+  },
+  ...additionalStyles,
 });
 
 export default ChallengesScreen;

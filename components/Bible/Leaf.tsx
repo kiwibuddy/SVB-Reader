@@ -10,7 +10,18 @@ interface BibleLeafProps {
 }
 
 const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textColor, leafIndex }) => {
+  if (!leaf || typeof leaf !== 'object') {
+    console.warn(`Invalid leaf at index ${leafIndex}:`, leaf);
+    return null;
+  }
+
   const { note, text, tag, embeddedDoc, SVitalics } = leaf;
+  
+  if (!text || typeof text !== 'string') {
+    console.warn(`Missing or invalid text in leaf at index ${leafIndex}:`, leaf);
+    return null;
+  }
+
   const textSplit = text.split(" ");
   const isVerseRef = tag && tag.indexOf("v") !== -1;
   const isChapterRef = tag && tag.indexOf("c") !== -1;
@@ -28,7 +39,6 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
             color: textColor,
             fontSize: 12,
           },
-          // ...tagStyle,
         }}
       >
         {isIndented ? "     " : ""}
@@ -37,20 +47,23 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
       </Text>
     );
   }
-  return <Text
-        key={leafIndex}
-        style={{
-          ...{
-            color: textColor,
-            fontSize: 20,
-            lineHeight: 36,
-          },
-          ...tagStyle,
-        }}
-      >
-        {isIndented ? "     " : ""}
-        {text}
-      </Text>;
+
+  return (
+    <Text
+      key={leafIndex}
+      style={{
+        ...{
+          color: textColor,
+          fontSize: 20,
+          lineHeight: 36,
+        },
+        ...tagStyle,
+      }}
+    >
+      {isIndented ? "     " : ""}
+      {text}
+    </Text>
+  );
 };
 
 export default BibleLeafComponent;

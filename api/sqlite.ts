@@ -82,3 +82,23 @@ export async function getEmoji(segmentID: string, blockID: string): Promise<stri
     return null;
   }
 }
+
+// Add this function to get all emoji reactions
+export async function getEmojis() {
+  try {
+    const result = await db.getAllAsync<{
+      id: number;
+      segmentID: string;
+      blockID: string;
+      blockData: string;
+      emoji: string;
+      note: string;
+    }>(
+      `SELECT * FROM emojis`
+    );
+    return result;
+  } catch (error) {
+    console.error("Error getting emojis:", error);
+    return [];
+  }
+}
