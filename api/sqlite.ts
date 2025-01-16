@@ -17,6 +17,7 @@ async function initializeDatabase() {
         note TEXT NOT NULL
       );
     `);
+    await createProgressTable();
   } catch (error) {
     console.error("Database initialization error:", error);
   }

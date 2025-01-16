@@ -56,7 +56,7 @@ export default function CheckCircle({ segmentId, iconSize = 24 }: CheckCirclePro
       <Pressable onPress={handlePress}>
         <Ionicons
           name={
-            progress.isCompleted
+            progress?.isCompleted
               ? "checkmark-circle"
               : "checkmark-circle-outline"
           }
