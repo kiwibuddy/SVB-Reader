@@ -3,11 +3,11 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "NODE_NO_WARNINGS=1 expo start",
+    "start": "npx expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
+    "android": "npx expo start --android",
+    "ios": "npx expo start --ios",
+    "web": "npx expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint"
   },
@@ -43,7 +43,9 @@
     "react-native-screens": "~4.4.0",
     "react-native-svg": "15.8.0",
     "react-native-web": "~0.19.13",
-    "victory-native": "^41.4.0"
+    "victory-native": "^41.4.0",
+    "@types/react": "^18.0.0",
+    "@types/react-native": "^0.70.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

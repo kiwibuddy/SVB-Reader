@@ -1,11 +1,12 @@
+import React from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { getEmojis} from "@/api/sqlite";
 import BibleBlockComponent from "@/components/Bible/Block";
-import SegmentTitles from "@/assets/data/SegmentTitles.json";
+const SegmentTitles = require("@/assets/data/SegmentTitles.json");
+const Books = require("@/assets/data/BookChapterList.json");
 import { useRouter } from "expo-router";
 import { SegmentIds } from '@/types'; // Make sure this import exists
-import Books from "@/assets/data/BookChapterList.json";
 import { useAppContext } from "@/context/GlobalContext";
 
 // Define the structure for our emoji reaction data
