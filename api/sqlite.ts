@@ -102,3 +102,54 @@ export async function getEmojis() {
     return [];
   }
 }
+
+export async function createProgressTable() {
+  await db.runAsync(
+      `CREATE TABLE IF NOT EXISTS Progress (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        segmentId TEXT NOT NULL,
+        isCompleted BOOLEAN NOT NULL,
+        color TEXT,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        plan_or_challenge_id TEXT
+      );`
+  );
+}
+
+// Function to insert or update progress
+export async function markSegmentProgress(
+  planId: string,
+  segmentId: string,
+  isCompleted: boolean,
+  color: string | null
+) {
+  try {
+    await db.runAsync(
+      `INSERT OR REPLACE INTO Progress (plan_id, segmentId, isCompleted, color) VALUES (?, ?, ?, ?)`,
+      [planId, segmentId, isCompleted, color]
+    );
+  } catch (error) {
+    console.error("Error marking segment progress:", error);
+  }
+}
+
+// New function to get progress by segmentId and planId
+export async function getSegmentProgress(segmentId: string, planId: string) {
+  try {
+    const result = await db.getFirstAsync<{
+      id: number;
+      segmentId: string;
+      isCompleted: boolean;
+      color: string | null;
+    }>(
+      `SELECT * FROM Progress WHERE segmentId = ? AND plan_id = ?`,
+      segmentId,
+      planId
+    );
+
+    return result || null; // Returns the progress object or null if not found
+  } catch (error) {
+    console.error("Error retrieving segment progress:", error);
+    return null;
+  }
+}
