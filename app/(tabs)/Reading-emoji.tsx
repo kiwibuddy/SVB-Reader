@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { View, Text, Pressable, StyleSheet, FlatList, TouchableOpacity, Alert } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { getEmojis} from "@/api/sqlite";
 import BibleBlockComponent from "@/components/Bible/Block";
 const SegmentTitles = require("@/assets/data/SegmentTitles.json");
 const Books = require("@/assets/data/BookChapterList.json");
 import { useRouter } from "expo-router";
-import { SegmentIds } from '@/types'; // Make sure this import exists
+import { SegmentIds } from '@/types';
 import { useAppContext } from "@/context/GlobalContext";
 
 // Define the structure for our emoji reaction data
@@ -39,16 +39,16 @@ const EMOJI_DESCRIPTIONS: Record<string, EmojiDescription> = {
     title: "Memory Masterclass",
     count: "passages",
     description: [
-      "You've found a verse you really love! Let's make it a part of your daily life by memorizing it. Here's how: 🎯",
-      "Step 1: Break It Down 🔍",
+      "You've found a verse you really love! Let's make it a part of your daily life by memorizing it. Here's how:",
+      "Step 1: Break It Down",
       "Split the verse into smaller parts. It's easier to remember bite-sized pieces.",
-      "Step 2: Repeat, Repeat, Repeat 🔄",
+      "Step 2: Repeat, Repeat, Repeat",
       "Say it out loud. Write it down. Make it a wallpaper for your phone. The more you see it, the more it'll stick.",
-      "Step 3: Connect the Dots 🧠",
+      "Step 3: Connect the Dots",
       "Relate the verse to something in your life. How does it apply to your day-to-day? This makes it meaningful and easier to remember.",
-      "Step 4: Share It 📱",
+      "Step 4: Share It",
       "Tell a friend or post it on your socials. Teaching others is a great way to remember it yourself!",
-      "Keep It Up! ⭐️",
+      "Keep It Up!",
       "Repeat these steps daily, and soon you'll be a have these Scriptures in your ❤️."
     ]
   },
@@ -56,16 +56,16 @@ const EMOJI_DESCRIPTIONS: Record<string, EmojiDescription> = {
     title: "Spread the Word",
     count: "passages",
     description: [
-      "Found a verse that speaks truth to you? Don't keep it to yourself, let's share it with others! Here's how: 🌟",
-      "Step 1: Capture the Moment 📸",
+      "Found a verse that speaks truth to you? Don't keep it to yourself, let's share it with others! Here's how:",
+      "Step 1: Capture the Moment",
       "Screenshot it or write it down. Keep it handy for when you want to share.",
-      "Step 2: Share Your Thoughts 💭",
+      "Step 2: Share Your Thoughts",
       "Post it on your social media or text it to a friend. Add a caption about why it resonates with you.",
-      "Step 3: Start a Conversation 💬",
+      "Step 3: Start a Conversation",
       "Use the verse to spark a discussion. Ask others what they think or how it applies to their lives.",
-      "Step 4: Live It Out 💪",
+      "Step 4: Live It Out",
       "Show how this truth is reflected in your actions. Be a living example of the verse!",
-      "Spread the Word! 🚀",
+      "Spread the Word!",
       "Your excitement can inspire others. Let's get the word out!"
     ]
   },
@@ -73,18 +73,18 @@ const EMOJI_DESCRIPTIONS: Record<string, EmojiDescription> = {
     title: "Hmm needs more thought",
     count: "passages",
     description: [
-      "Stumbled upon a verse that's got you thinking? Let's break it down together! 🧩",
-      "Step 1: Pause and Reflect 🤔",
+      "Stumbled upon a verse that's got you thinking? Let's break it down together!",
+      "Step 1: Pause and Reflect",
       "Take a moment to think about the verse. What do you think it means? How does it make you feel?",
-      "Step 2: Compare Translations 🔄",
+      "Step 2: Compare Translations",
       "Look up the verse in different Bible translations. Sometimes, a different wording can offer new insights.",
-      "Step 3: Seek Wisdom 🎯",
+      "Step 3: Seek Wisdom",
       "Ask someone you trust who knows the Bible well, like a youth leader or pastor. You can also check out online resources or commentaries.",
-      "Step 4: Cross-Reference 🔍",
+      "Step 4: Cross-Reference",
       "Find other verses that relate to the same theme. The Bible often explains itself!",
-      "Step 5: Journal It ✍️",
+      "Step 5: Journal It",
       "Write down your thoughts and questions. Over time, you might find answers or new insights.",
-      "Take Your Time! ⏳",
+      "Take Your Time!",
       "It's okay if you don't understand it all at once. Reflecting on Scripture is a journey, not a race!"
     ]
   },
@@ -92,19 +92,19 @@ const EMOJI_DESCRIPTIONS: Record<string, EmojiDescription> = {
     title: "Turn Verse into Prayer",
     count: "passages",
     description: [
-      "Found a verse that speaks to your heart? Let's turn it into a prayer for your day: ✨",
-      "Step 1: Read and Reflect 📖",
+      "Found a verse that speaks to your heart? Let's turn it into a prayer for your day:",
+      "Step 1: Read and Reflect",
       "Read the verse slowly. Think about what it means to you and what it says about God.",
-      "Step 2: Personalize It 💫",
+      "Step 2: Personalize It",
       "Turn the verse into a personal prayer. Use \"I\" or \"we\" to make it your own.",
-      "Step 3: Ask and Thank 🙌",
+      "Step 3: Ask and Thank",
       "Pray for what you need related to the verse, and thank God for what He's already done.",
-      "Step 4: Listen 👂",
+      "Step 4: Listen",
       "Take a moment to be silent. Listen for what God might be saying to you through the verse.",
-      "Step 5: Keep It Close 📱",
+      "Step 5: Keep It Close",
       "Write down the verse or prayer and keep it with you throughout the day. Revisit it whenever you need a reminder.",
-      "Pray Without Ceasing ✨",
-      "Let these verses guide your prayers, bringing hope and encouragement into your day! 🙏"
+      "Pray Without Ceasing",
+      "Let these verses guide your prayers, bringing hope and encouragement into your day!"
     ]
   }
 };
@@ -197,10 +197,13 @@ const ReadingEmoji = () => {
     );
   };
 
-  return (
-    <ScrollView style={styles.container}>
+  const renderHeader = () => (
+    <>
       <View style={styles.header}>
         <Text style={styles.title}>Emoji Reactions</Text>
+        <Text style={styles.subtitle}>
+          Transform your Bible reading from simple reactions to meaningful life application with guided spiritual practices for memorizing, sharing, reflecting, and praying through your favorite verses.
+        </Text>
       </View>
 
       <View style={styles.gridContainer}>
@@ -228,7 +231,7 @@ const ReadingEmoji = () => {
         ))}
       </View>
 
-      {selectedEmoji ? (
+      {selectedEmoji && (
         <TouchableOpacity
           style={styles.descriptionCard}
           onPress={() => setIsExpanded(!isExpanded)}
@@ -269,39 +272,49 @@ const ReadingEmoji = () => {
             );
           })}
         </TouchableOpacity>
-      ) : (
+      )}
+
+      {!selectedEmoji && (
         <View style={styles.recentHeader}>
           <Text style={styles.recentHeaderText}>
             Most Recent Reactions
           </Text>
         </View>
       )}
+    </>
+  );
 
-      <View style={styles.reactionsContainer}>
-        {filteredReactions.map((reaction, index) => {
-          const blockData = JSON.parse(reaction.blockData);
-          return (
-            <Pressable
-              key={index}
-              onLongPress={() => handleLongPress(reaction)}
-            >
-              <View style={styles.reactionItem}>
-                <BibleBlockComponent
-                  block={blockData}
-                  bIndex={index}
-                  toRead={false}
-                  hasTail={true}
-                />
-                <Text style={styles.reactionEmoji}>{reaction.emoji}</Text>
-                <Text style={styles.referenceText}>
-                  {getSegmentReference(reaction.segmentID)}
-                </Text>
-              </View>
-            </Pressable>
-          );
-        })}
-      </View>
-    </ScrollView>
+  const renderItem = ({ item: reaction, index }: { item: EmojiReaction; index: number }) => {
+    const blockData = JSON.parse(reaction.blockData);
+    return (
+      <Pressable
+        onLongPress={() => handleLongPress(reaction)}
+      >
+        <View style={styles.reactionItem}>
+          <BibleBlockComponent
+            block={blockData}
+            bIndex={index}
+            toRead={false}
+            hasTail={true}
+          />
+          <Text style={styles.reactionEmoji}>{reaction.emoji}</Text>
+          <Text style={styles.referenceText}>
+            {getSegmentReference(reaction.segmentID)}
+          </Text>
+        </View>
+      </Pressable>
+    );
+  };
+
+  return (
+    <FlatList
+      style={styles.container}
+      data={filteredReactions}
+      renderItem={renderItem}
+      keyExtractor={(item) => item.id.toString()}
+      ListHeaderComponent={renderHeader}
+      contentContainerStyle={styles.contentContainer}
+    />
   );
 };
 
@@ -312,12 +325,13 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 12,
-    paddingBottom: 8,
+    paddingBottom: 16,
   },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#333',
+    marginBottom: 8,
   },
   gridContainer: {
     flexDirection: 'row',
@@ -457,6 +471,15 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: 4,
     paddingRight: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+    paddingHorizontal: 4,
+  },
+  contentContainer: {
+    paddingBottom: 20,
   },
 });
 
