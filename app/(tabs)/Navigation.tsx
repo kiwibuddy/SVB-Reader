@@ -91,7 +91,14 @@ const Navigation = () => {
           const bookIndex = booksArray.findIndex(
             (book) => book === item.djhBook
           );
-          return <Accordion item={item} bookIndex={bookIndex} context="navigation" showGlobalCompletion={true} completedSegments={completedSegments} />;
+          return <Accordion 
+            item={{
+              djhBook: item.djhBook,
+              bookName: item.bookName,
+              segments: item.segments
+            }} 
+            bookIndex={bookIndex}
+          />;
         }}
         keyExtractor={(item) => item.djhBook}
       />

@@ -28,13 +28,21 @@ const CustomHeader: React.FC = () => {
       <View style={styles.header}>
         <Pressable
           style={styles.iconContainer}
-          onPress={() => router.push("/Home")}
+          onPress={() => router.push("/(tabs)/about")}
         >
-          <Ionicons
-            name={pathname === "/Home" ? "home" : "home-outline"}
-            size={24}
-            color="#000000"
-          />
+          {pathname === "/Home" ? (
+            <Ionicons
+              name="help-outline"
+              size={24}
+              color="#000000"
+            />
+          ) : (
+            <Ionicons
+              name="home-outline"
+              size={24}
+              color="#000000"
+            />
+          )}
         </Pressable>
         <Image
           source={require("../../assets/images/icon.png")}
