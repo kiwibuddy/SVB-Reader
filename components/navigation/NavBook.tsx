@@ -203,9 +203,9 @@ interface CompletionData {
   color: string | null;
 }
 
-const Accordion = ({ 
-  item, 
-  bookIndex, 
+const Accordion = ({
+  item,
+  bookIndex,
   completedSegments = {},
   onSegmentComplete,
   showGlobalCompletion = false,
@@ -231,7 +231,7 @@ const Accordion = ({
 
   const handleSegmentPress = (segmentId: string) => {
     // Existing segment handling logic
-    
+
     // Call the completion callback if provided
     if (onSegmentComplete) {
       onSegmentComplete(segmentId);
@@ -249,11 +249,16 @@ const Accordion = ({
         <View style={styles.rowContainer}>
           <Image source={imageMap[item.djhBook]} style={styles.logo} />
           <View style={styles.textContainer}>
-            <Text style={{ fontSize: 24 }}>{item.bookName}</Text>
+            <Text style={{ fontSize: 24 }}>{item.bookName} **</Text>
             <Text
-              style={{ fontSize: 16, color: "#FF5733", fontStyle: "italic", fontWeight: "bold" }}
+              style={{
+                fontSize: 16,
+                color: "#FF5733",
+                fontStyle: "italic",
+                fontWeight: "bold",
+              }}
             >
-              {item.segments.length - 1} stories
+              {item.segments.length - 1} {item.segments.length -1 === 1 ? "story" : "stories"}
             </Text>
           </View>
         </View>
@@ -266,15 +271,17 @@ const Accordion = ({
             renderItem={({ item }: { item: SegmentKey }) => {
               const { title, ref, book } = SegmentTitles[item];
               const { id } = Bible[item];
-              return <SegmentItem 
-                segment={{ id, title, ref, book }} 
-                completedSegments={completedSegments}
-                onComplete={onSegmentComplete}
-                showGlobalCompletion={showGlobalCompletion}
-                context={context}
-                planId={planId}
-                challengeId={challengeId}
-              />;
+              return (
+                <SegmentItem
+                  segment={{ id, title, ref, book }}
+                  completedSegments={completedSegments}
+                  onComplete={onSegmentComplete}
+                  showGlobalCompletion={showGlobalCompletion}
+                  context={context}
+                  planId={planId}
+                  challengeId={challengeId}
+                />
+              );
             }}
             keyExtractor={(subItem) => subItem} // Update keyExtractor to use subItem directly
           />
