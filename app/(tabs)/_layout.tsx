@@ -66,18 +66,6 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="Reading-Plans"
-          options={{
-            title: "Plans",
-            tabBarIcon: ({ color, focused }) => (
-              <TabBarIcon
-                name={focused ? "home" : "home-outline"}
-                color={color}
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
           name="[segment]/index"
           options={{
             title: "Bible",

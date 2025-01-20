@@ -91,7 +91,7 @@ const ReadingPlan = () => {
       <View style={styles.stickyButtonContainer}>
         <Pressable
           style={styles.button}
-          onPress={() => router.push("/Plan")}
+          onPress={() => router.push("/Reading-Challenges")}
         >
           <Text style={styles.buttonText}>Start Reading Plan</Text>
         </Pressable>
