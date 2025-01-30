@@ -362,6 +362,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "500",
     marginBottom: 12,
+    color: "#FF9F0A",
   },
   listContainer: {
     paddingTop: 8,

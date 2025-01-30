@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginLeft: 16,
     marginBottom: 12,
-    color: "#333333",
+    color: "#FF9F0A",
   },
   challengeContainer: {
     borderBottomWidth: 1,
