@@ -19,6 +19,8 @@
     "@expo/vector-icons": "^14.0.2",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-navigation/native": "^6.0.2",
+    "@types/react": "^18.0.0",
+    "@types/react-native": "^0.70.0",
     "expo": "~52.0.25",
     "expo-av": "~15.0.2",
     "expo-blur": "~14.0.2",
@@ -27,7 +29,7 @@
     "expo-linking": "~7.0.4",
     "expo-router": "~4.0.16",
     "expo-splash-screen": "^0.29.20",
-    "expo-sqlite": "~15.0.6",
+    "expo-sqlite": "~15.1.0",
     "expo-status-bar": "~2.0.1",
     "expo-symbols": "^0.2.1",
     "expo-system-ui": "~4.0.7",
@@ -44,8 +46,7 @@
     "react-native-svg": "15.8.0",
     "react-native-web": "~0.19.13",
     "victory-native": "^41.4.0",
-    "@types/react": "^18.0.0",
-    "@types/react-native": "^0.70.0"
+    "@shopify/react-native-skia": "1.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
