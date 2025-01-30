@@ -62,6 +62,10 @@ interface AppContextType {
   updateChallengeProgress: (challengeId: string, segmentId: string) => Promise<void>;
   selectedReaderColor: string | null;
   updateSelectedReaderColor: (color: string | null) => void;
+  language: string;
+  version: string;
+  setLanguage: (lang: string) => void;
+  setVersion: (ver: string) => void;
 }
 
 const defaultContext: AppContextType = {
@@ -91,6 +95,10 @@ const defaultContext: AppContextType = {
   updateChallengeProgress: async () => {},
   selectedReaderColor: null,
   updateSelectedReaderColor: () => {},
+  language: 'en',
+  version: 'NLT',
+  setLanguage: () => {},
+  setVersion: () => {},
 };
 
 // Create the context
@@ -114,6 +122,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   const [activePlan, setActivePlan] = useState<PlanProgress | null>(null);
   const [activeChallenges, setActiveChallenges] = useState<Record<string, ChallengeProgress>>({});
   const [selectedReaderColor, setSelectedReaderColor] = useState<string | null>(null);
+  const [language, setLanguage] = useState('en');
+  const [version, setVersion] = useState('NLT');
 
   useEffect(() => {
     // Load read status from AsyncStorage when the app starts
@@ -379,7 +389,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <AppContext.Provider
-      value={{ segmentId, updateSegmentId, readSegments, markAsRead, readingPlan, updateReadingPlan, emojiActions, updateEmojiActions, completedSegments, markSegmentComplete, readingPlanProgress, startReadingPlan, activePlan, startPlan, pausePlan, resumePlan, switchPlan, activeChallenges, startChallenge, pauseChallenge, resumeChallenge, restartChallenge, updateReadingPlanProgress, updateChallengeProgress, selectedReaderColor, updateSelectedReaderColor }}
+      value={{
+        segmentId,
+        updateSegmentId,
+        readSegments,
+        markAsRead,
+        readingPlan,
+        updateReadingPlan,
+        emojiActions,
+        updateEmojiActions,
+        completedSegments,
+        markSegmentComplete,
+        readingPlanProgress,
+        startReadingPlan,
+        activePlan,
+        startPlan,
+        pausePlan,
+        resumePlan,
+        switchPlan,
+        activeChallenges,
+        startChallenge,
+        pauseChallenge,
+        resumeChallenge,
+        restartChallenge,
+        updateReadingPlanProgress,
+        updateChallengeProgress,
+        selectedReaderColor,
+        updateSelectedReaderColor,
+        language,
+        version,
+        setLanguage,
+        setVersion,
+      }}
     >
       {children}
     </AppContext.Provider>

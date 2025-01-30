@@ -11,9 +11,15 @@ interface Questions {
 }
 const Qs: Questions = UIData.Questions;
 
-export default function Questions() {
+interface QuestionsProps {
+  segmentId: string;
+}
+
+const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
+  if (!segmentId) return null;
+  
   const colorScheme = "light"; //useColorScheme();
-  const { segmentId } = useAppContext();
+  const { segmentId: appContextSegmentId } = useAppContext();
   const idSplit = segmentId.split("-");
   const language = idSplit[0];
   const version = idSplit[1];
@@ -84,4 +90,6 @@ export default function Questions() {
       </View>
     </View>
   );
-}
+};
+
+export default Questions;

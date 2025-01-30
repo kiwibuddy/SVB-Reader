@@ -1,3 +1,4 @@
+import React, { useEffect, useMemo, useRef } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Image, Platform, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar } from 'react-native';
 import { useAppContext } from '@/context/GlobalContext';
@@ -13,7 +14,6 @@ import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { useEffect, useMemo, useRef } from 'react';
 import Segment from '@/components/Bible/Segment';
 import { SegmentType, IntroType, isIntroType, isSegmentType } from "@/types";
 import Intro from '@/components/Bible/Intro';
@@ -31,106 +31,110 @@ const segIds = Object.keys(Bible);
 export default function BibleScreen() {
   const router = useRouter();
   const pathname = usePathname();
-  console.log("pathname", pathname);
-  const colorScheme = "light"//useColorScheme();
   const { segmentId, updateSegmentId } = useAppContext();
-  const idSplit = pathname.split("-");
-  const language = idSplit[0].replace("/", "");
-  const version = idSplit[1];
-  const segID = idSplit[idSplit.length - 1];
-  console.log("segID - pathname", segID);
-  const currentSegmentIndex: number = segIds.indexOf(segID);
-  const prevSegId = `${language}-${version}-${segIds[currentSegmentIndex - 1]}`;
-  const nextSegId = `${language}-${version}-${segIds[currentSegmentIndex + 1]}`;
-  const IsFirstSegment = currentSegmentIndex === 0;
-  const IsLastSegment = currentSegmentIndex === segIds.length
-  const segmentData: SegmentType | IntroType = useMemo(
-    () => Bible[segID],
-    [segID]
-  );
+  const colorScheme = "light";
   const scrollViewRef = useRef<ScrollView>(null);
-
-  useEffect(() => {
-    if (pathname.includes(`/${language}-${version}`)) {
-      updateSegmentId(pathname.replace("/", ""));
-    }
+  
+  // Extract just the segment ID from the full path and clean it
+  const segID = useMemo(() => {
+    const parts = pathname?.split("-") || [];
+    return parts[parts.length - 1]?.replace("/", "") || "";
   }, [pathname]);
 
-  console.log("segmentId - AppContext", segmentId);
+  // Get navigation variables
+  const {
+    currentSegmentIndex,
+    prevSegId,
+    nextSegId,
+    IsFirstSegment,
+    IsLastSegment
+  } = useMemo(() => {
+    const currentSegmentIndex = segIds.indexOf(segID);
+    const language = "en";
+    const version = "NLT";
+    
+    return {
+      currentSegmentIndex,
+      prevSegId: currentSegmentIndex > 0 ? `${language}-${version}-${segIds[currentSegmentIndex - 1]}` : null,
+      nextSegId: currentSegmentIndex < segIds.length - 1 ? `${language}-${version}-${segIds[currentSegmentIndex + 1]}` : null,
+      IsFirstSegment: currentSegmentIndex === 0,
+      IsLastSegment: currentSegmentIndex === segIds.length - 1
+    };
+  }, [segID]);
+
+  // Get the segment data
+  const segmentData: SegmentType | IntroType | undefined = useMemo(
+    () => segID ? Bible[segID] : undefined,
+    [segID]
+  );
+
+  useEffect(() => {
+    if (segID && segmentData) {
+      updateSegmentId(segID);
+    }
+  }, [segID, segmentData]);
+
+  // Show loading state
+  if (!segID || !segmentData) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
   return (
-    <>
-        <ScrollView ref={scrollViewRef} style={styles.screenContainer}>
-          {segID[0] === "I" && isIntroType(segmentData) ? (
-            <Intro segmentData={segmentData} />
-          ) : null}
-          {segID[0] === "S" && isSegmentType(segmentData) ? (
-            <>
-              <Segment segmentData={segmentData} />
-              <Questions />
-            </>
-          ) : null}
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              marginTop: 30,
-              marginBottom: 80,
+    <View style={styles.container}>
+      <ScrollView ref={scrollViewRef} style={styles.screenContainer}>
+        {segID[0] === "I" && isIntroType(segmentData) && (
+          <Intro segmentData={segmentData} />
+        )}
+        {segID[0] === "S" && isSegmentType(segmentData) && (
+          <>
+            <Segment segmentData={segmentData} />
+            <Questions segmentId={segID} /> {/* Pass segmentId to Questions */}
+          </>
+        )}
+        <View style={styles.checkCircleContainer}>
+          <CheckCircle segmentId={segID} iconSize={80} />
+        </View>
+      </ScrollView>
+
+      {/* Navigation buttons */}
+      <View style={styles.buttonContainer}>
+        {!IsFirstSegment && prevSegId && (
+          <TouchableOpacity
+            style={[styles.prevButton, styles.roundButton]}
+            onPress={() => {
+              updateSegmentId(prevSegId);
+              router.push(`/${prevSegId}`);
+              scrollViewRef.current?.scrollTo({
+                y: 0,
+                animated: false,
+              });
             }}
           >
-            <CheckCircle segmentId={segID} iconSize={80} />
-          </View>
-        </ScrollView>
+            <FontAwesome name="arrow-left" size={20} color="white" />
+          </TouchableOpacity>
+        )}
 
-        {/* Sticky Navigation Buttons */}
-        <View style={styles.buttonContainer}>
-          {IsFirstSegment ? null : (
-            <TouchableOpacity
-              style={[
-                styles.prevButton,
-                styles.roundButton,
-                {
-                  backgroundColor:
-                    Colors[colorScheme === "light" ? "light" : "dark"].tint,
-                }, // Ensure colorScheme is either "light" or "dark"
-              ]} // Add roundButton style
-              onPress={() => {
-                updateSegmentId(prevSegId);
-                router.push(`/${prevSegId}`);
-                scrollViewRef.current?.scrollTo({
-                  y: 0,
-                  animated: false,
-                });
-              }}
-            >
-              <FontAwesome name="arrow-left" size={20} color="white" />
-            </TouchableOpacity>
-          )}
-
-          {IsLastSegment ? null : (
-            <TouchableOpacity
-              style={[
-                styles.nextButton,
-                styles.roundButton,
-                {
-                  backgroundColor:
-                    Colors[colorScheme === "light" ? "light" : "dark"].tint,
-                }, // Ensure colorScheme is either "light" or "dark"
-              ]} // Add roundButton style
-              onPress={() => {
-                updateSegmentId(nextSegId);
-                router.push(`/${nextSegId}`);
-                scrollViewRef.current?.scrollTo({
-                  y: 0,
-                  animated: false,
-                });
-              }}
-            >
-              <FontAwesome name="arrow-right" size={20} color="white" />
-            </TouchableOpacity>
-          )}
-        </View>
-    </>
+        {!IsLastSegment && nextSegId && (
+          <TouchableOpacity
+            style={[styles.nextButton, styles.roundButton]}
+            onPress={() => {
+              updateSegmentId(nextSegId);
+              router.push(`/${nextSegId}`);
+              scrollViewRef.current?.scrollTo({
+                y: 0,
+                animated: false,
+              });
+            }}
+          >
+            <FontAwesome name="arrow-right" size={20} color="white" />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
   );
 }
 
@@ -147,8 +151,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    flex: 1, // Allow the container to fill the screen
-    backgroundColor: "white",
+    flex: 1,
+    backgroundColor: 'white',
   },
   screenContainer: {
     flex: 1, // Allow ScrollView to fill the available space
@@ -191,4 +195,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  checkCircleContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 30,
+    marginBottom: 80,
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
 });

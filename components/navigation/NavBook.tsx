@@ -4,12 +4,15 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-  Image
+  Image,
+  Platform
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
-import { SegmentKey } from "@/app/(tabs)/Navigation";
+import { SegmentKey, SegmentIds } from "@/app/(tabs)/Navigation";
 import DonutChart from "../DonutChart";
 import SegmentItem from "./SegmentItem";
+import { Ionicons } from '@expo/vector-icons';
+import Books from "@/assets/data/BookChapterList.json";
 
 // Image mapping
 const imageMap: { [key: string]: any } = {
@@ -168,7 +171,7 @@ interface BibleData {
 const Bible: BibleData = require('@/assets/data/newBibleNLT1.json');
 
 export interface AccordionItem {
-  djhBook: keyof typeof accordionColor;
+  djhBook: keyof typeof Books;
   bookName: string;
   segments: SegmentKey[];
 }
@@ -182,6 +185,7 @@ export interface AccordionProps {
   context?: 'navigation' | 'plan' | 'challenge';
   planId?: string;
   challengeId?: string;
+  style?: object;
 }
 
 // Define a type for the structure of SegmentTitles
@@ -211,72 +215,68 @@ const Accordion = ({
   showGlobalCompletion = false,
   context = 'navigation',
   planId,
-  challengeId
+  challengeId,
+  style = {}
 }: AccordionProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const flatListRef = useRef<FlatList<SegmentKey>>(null); // Create a ref for FlatList
+  const [isExpanded, setIsExpanded] = useState(false);
+  const flatListRef = useRef<FlatList<SegmentKey>>(null);
 
-  // Function to generate the formatted string
-  const generateBookIdentifier = (index: number): string => {
-    return `I${(index + 1).toString().padStart(3, "0")}`;
-  };
-  const colors = Bible[generateBookIdentifier(bookIndex)].colors;
+  // Filter out intro segments (starting with 'I') and count actual segments
+  const actualSegments = item.segments.filter(seg => !seg.startsWith('I'));
+  const totalSegments = actualSegments.length;
 
-  // Effect to scroll to top when item.segments changes
-  useEffect(() => {
-    if (isOpen && flatListRef.current) {
-      flatListRef.current.scrollToOffset({ animated: true, offset: 0 });
-    }
-  }, [item.segments]);
-
-  const handleSegmentPress = (segmentId: string) => {
-    // Existing segment handling logic
-    
-    // Call the completion callback if provided
-    if (onSegmentComplete) {
-      onSegmentComplete(segmentId);
-    }
-  };
+  // Count completed segments by checking each actual segment in completedSegments
+  const completedCount = actualSegments.reduce((count, segmentId) => {
+    return completedSegments[segmentId]?.isCompleted ? count + 1 : count;
+  }, 0);
 
   return (
-    <View
-      style={[
-        styles.accordion,
-        { backgroundColor: accordionColor[item.djhBook] },
-      ]}
-    >
-      <TouchableOpacity onPress={() => setIsOpen(!isOpen)}>
-        <View style={styles.rowContainer}>
+    <View style={[styles.accordion, style]}>
+      <TouchableOpacity 
+        onPress={() => setIsExpanded(!isExpanded)}
+        style={styles.header}
+      >
+        <View style={styles.leftContent}>
           <Image source={imageMap[item.djhBook]} style={styles.logo} />
           <View style={styles.textContainer}>
-            <Text style={{ fontSize: 24 }}>{item.bookName}</Text>
-            <Text
-              style={{ fontSize: 16, color: "#FF5733", fontStyle: "italic", fontWeight: "bold" }}
-            >
-              {item.segments.length - 1} stories
+            <Text style={styles.bookTitle}>{item.bookName}</Text>
+            <Text style={styles.segmentCount}>
+              {completedCount} of {totalSegments} stories read
             </Text>
           </View>
         </View>
+        
+        <View style={styles.rightContent}>
+          <Ionicons 
+            name={isExpanded ? "chevron-up" : "chevron-down"} 
+            size={24} 
+            color="#666"
+          />
+        </View>
       </TouchableOpacity>
-      {isOpen && (
-        <View style={styles.flatListContainer}>
+
+      {isExpanded && (
+        <View style={styles.segmentList}>
           <FlatList
             ref={flatListRef}
             data={item.segments}
-            renderItem={({ item }: { item: SegmentKey }) => {
-              const { title, ref, book } = SegmentTitles[item];
-              const { id } = Bible[item];
-              return <SegmentItem 
-                segment={{ id, title, ref, book }} 
+            renderItem={({ item: segment }) => (
+              <SegmentItem 
+                segment={{
+                  id: segment,
+                  title: SegmentTitles[segment].title,
+                  ref: SegmentTitles[segment].ref,
+                  book: SegmentTitles[segment].book
+                }}
                 completedSegments={completedSegments}
                 onComplete={onSegmentComplete}
                 showGlobalCompletion={showGlobalCompletion}
                 context={context}
                 planId={planId}
                 challengeId={challengeId}
-              />;
-            }}
-            keyExtractor={(subItem) => subItem} // Update keyExtractor to use subItem directly
+              />
+            )}
+            keyExtractor={(segment) => segment}
           />
         </View>
       )}
@@ -284,30 +284,51 @@ const Accordion = ({
   );
 };
 
-export default Accordion;
-
 const styles = StyleSheet.create({
   accordion: {
-    borderTopWidth: 1,
-    borderColor: "#000000",
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+    backgroundColor: '#FFF',
   },
-  rowContainer: {
-    // Updated style for horizontal layout
-    flexDirection: "row",
-    justifyContent: "flex-start", // Align items to the left
-    alignItems: "center", // Align items vertically centered
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
   },
-  textContainer: {
-    flex: 0,
-    justifyContent: "space-between",
-  },
-  logo: {
-    width: 70,
-    height: 70,
-    alignSelf: "center",
-    margin: 5,
-  },
-  flatListContainer: {
+  leftContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
   },
+  rightContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    marginRight: 12,
+  },
+  textContainer: {
+    flex: 1,
+  },
+  bookTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000',
+  },
+  segmentCount: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  segmentList: {
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+    backgroundColor: '#F5F5F5',
+  }
 });
+
+export default Accordion;

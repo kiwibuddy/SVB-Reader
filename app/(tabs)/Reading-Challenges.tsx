@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React from 'react';
+import { useState, useMemo, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
@@ -15,6 +17,8 @@ import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useAppContext } from "@/context/GlobalContext";
 import { StatusIndicator } from '@/components/StatusIndicator';
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 
 // Add categories for challenges
 const CHALLENGE_CATEGORIES = {
@@ -32,44 +36,34 @@ const categorizeChallenge = (challenge: any) => {
 // Add at the top of the file
 const CHALLENGE_STYLES = {
   "Paul's Letters": {
-    color: "#4df469", // Complementary green
-    icon: "✉️"
+    color: "#4df469"
   },
   "David's Life": {
-    color: "#f44d69", // Original red-pink
-    icon: "👑"
+    color: "#f44d69"
   },
   "Advent Journey": {
-    color: "#694df4", // Complementary purple
-    icon: "⭐"
+    color: "#694df4"
   },
   "Lenten Reflection": {
-    color: "#4d9ff4", // Complementary blue
-    icon: "✝️"
+    color: "#4d9ff4"
   },
   "12 Days of Christmas": {
-    color: "#f4b64d", // Complementary orange
-    icon: "🎄"
+    color: "#f4b64d"
   },
   "The Gospels": {
-    color: "#4dcaf4", // Light blue
-    icon: "📖"
+    color: "#4dcaf4"
   },
   "The Torah": {
-    color: "#9f4df4", // Purple
-    icon: "📜"
+    color: "#9f4df4"
   },
   "In The Beginning": {
-    color: "#f4944d", // Orange
-    icon: "🌟"
+    color: "#f4944d"
   },
   "4 Gospels and Acts": {
-    color: "#4dcaf4",
-    icon: "📖"
+    color: "#4dcaf4"
   },
   "DTS Outreach": {
-    color: "#f4944d",
-    icon: "🌟"
+    color: "#f4944d"
   }
 };
 
@@ -77,19 +71,15 @@ const CHALLENGE_STYLES = {
 type ChallengeTitle = keyof typeof CHALLENGE_STYLES;
 
 // Update the type definition
-type Challenge = {
+interface Challenge {
   id: string;
   title: ChallengeTitle;
   description: string;
-  image: string;
   longDescription: string;
+  image: string;
   highlightText?: string;
-  segments: {
-    [key: string]: {
-      segments: string[];
-    };
-  };
-};
+  segments: Partial<Record<keyof typeof Books, { segments: string[] }>>;
+}
 
 const booksArray = Object.keys(Books);
 
@@ -122,6 +112,11 @@ interface BookSegments {
   segments: string[];
 }
 
+interface ChallengesByCategory {
+  'Seasonal': Challenge[];
+  'Topical': Challenge[];
+}
+
 const ChallengesScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -133,105 +128,168 @@ const ChallengesScreen = () => {
     restartChallenge
   } = useAppContext();
 
-  const [selectedChallenge, setSelectedChallenge] = useState<Challenge>(() => {
-    const challenges = readingPlansData.challenges;
-    const validChallenge = challenges.find(challenge => 
-      challenge.segments && Object.keys(challenge.segments).length > 0
-    ) as unknown as Challenge;
-    return validChallenge || challenges[0] as unknown as Challenge;
-  });
+  const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
 
-  const getChallengeStatus = (challengeId: string) => {
-    const challenge = activeChallenges[challengeId];
-    if (!challenge) return 'not-started';
-    if (challenge.isCompleted) return 'completed';
-    return challenge.isPaused ? 'paused' : 'active';
+  // Move function definitions up
+  const getChallengeSegmentCount = (challengeId: string) => {
+    const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+    if (!challenge?.segments) return 0;
+    
+    return Object.values(challenge.segments).reduce(
+      (acc, book) => acc + (book?.segments?.filter((s: string) => !s.startsWith('I')).length ?? 0),
+      0
+    );
   };
 
-  const handleChallengeSelection = (challenge: any) => {
-    setSelectedChallenge(challenge as Challenge);
+  const getChallengeBooksData = (challengeId: string) => {
+    const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+    if (!challenge?.segments) return [];
+    
+    return Object.keys(Books).map(key => ({
+      djhBook: key,
+      bookName: Books[key as keyof typeof Books]?.bookName ?? "Unknown Book",
+      segments: (challenge.segments[key as keyof typeof Books] as BookSegments | undefined)?.segments || []
+    }));
   };
+
+  // Group challenges by status and category
+  const organizedChallenges = useMemo(() => {
+    const active: Challenge[] = [];
+    const categorized = {
+      [CHALLENGE_CATEGORIES.SEASONAL]: [] as Challenge[],
+      [CHALLENGE_CATEGORIES.TOPICAL]: [] as Challenge[],
+    };
+
+    readingPlansData.challenges.forEach(challenge => {
+      const isActive = activeChallenges[challenge.id] && !activeChallenges[challenge.id].isPaused;
+      
+      if (isActive) {
+        active.push(challenge as Challenge);
+      } else {
+        const category = categorizeChallenge(challenge);
+        categorized[category].push(challenge as Challenge);
+      }
+    });
+
+    // Sort non-active challenges within each category
+    const sortChallenges = (challenges: Challenge[]) => {
+      return challenges.sort((a, b) => {
+        const aStatus = activeChallenges[a.id]?.isPaused ? 1 : 2;
+        const bStatus = activeChallenges[b.id]?.isPaused ? 1 : 2;
+        if (aStatus !== bStatus) return aStatus - bStatus;
+        return a.title.localeCompare(b.title);
+      });
+    };
+
+    categorized[CHALLENGE_CATEGORIES.SEASONAL] = sortChallenges(categorized[CHALLENGE_CATEGORIES.SEASONAL]);
+    categorized[CHALLENGE_CATEGORIES.TOPICAL] = sortChallenges(categorized[CHALLENGE_CATEGORIES.TOPICAL]);
+
+    return { active, categorized };
+  }, [activeChallenges]);
+
+  const renderChallengeItem = ({ item: challenge }: { item: Challenge }) => {
+    const isSelected = selectedChallengeId === challenge.id;
+    const isActive = activeChallenges[challenge.id];
+    const isPaused = isActive?.isPaused;
+    const segmentCount = getChallengeSegmentCount(challenge.id);
+    const challengeBooksData = isSelected ? getChallengeBooksData(challenge.id) : [];
+
+    return (
+      <View style={styles.challengeContainer}>
+        <TouchableOpacity 
+          style={styles.challengeHeader}
+          onPress={() => setSelectedChallengeId(isSelected ? null : challenge.id)}
+        >
+          <View style={styles.challengeInfo}>
+            <View style={styles.leftContent}>
+              <View style={styles.titleContainer}>
+                <Text style={styles.challengeTitle}>{challenge.title}</Text>
+                <Text style={styles.segmentCount}>
+                  {segmentCount} {segmentCount === 1 ? 'story' : 'stories'}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.rightContent}>
+              {!isActive && (
+                <TouchableOpacity 
+                  onPress={() => startChallenge(challenge.id)}
+                >
+                  <Feather name="play-circle" size={24} color="#666666" />
+                </TouchableOpacity>
+              )}
+              {isPaused && (
+                <TouchableOpacity 
+                  onPress={() => resumeChallenge(challenge.id)}
+                >
+                  <Feather name="play-circle" size={24} color="#666666" />
+                </TouchableOpacity>
+              )}
+              {isActive && !isPaused && (
+                <TouchableOpacity 
+                  onPress={() => pauseChallenge(challenge.id)}
+                >
+                  <Feather name="pause-circle" size={24} color="#666666" />
+                </TouchableOpacity>
+              )}
+              <Ionicons 
+                name={isSelected ? "chevron-up" : "chevron-down"} 
+                size={24} 
+                color="#666"
+              />
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {isSelected && (
+          <View style={styles.booksContainer}>
+            <FlatList
+              data={challengeBooksData}
+              renderItem={({ item }) => {
+                const bookIndex = booksArray.findIndex(
+                  (book) => book === item.djhBook
+                );
+                return (
+                  <Accordion 
+                    item={item} 
+                    bookIndex={bookIndex}
+                    completedSegments={
+                      Object.fromEntries(
+                        (activeChallenges[challenge.id]?.completedSegments || []).map(id => [
+                          id, 
+                          { isCompleted: true, color: null }
+                        ])
+                      )
+                    }
+                    onSegmentComplete={handleSegmentComplete}
+                    context="challenge"
+                    showGlobalCompletion={false}
+                    challengeId={challenge.id}
+                    style={{ backgroundColor: '#FFF' }}
+                  />
+                );
+              }}
+              keyExtractor={(item) => item.djhBook}
+            />
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  const renderCategorySection = (title: string, challenges: Challenge[]) => (
+    <View style={styles.categorySection}>
+      <Text style={styles.categoryTitle}>{title}</Text>
+      <FlatList
+        data={challenges}
+        renderItem={renderChallengeItem}
+        keyExtractor={(item) => item.id}
+      />
+    </View>
+  );
 
   const handleSegmentComplete = (segmentId: string) => {
     // This will be handled by the context's markSegmentComplete function
     // which now handles both global and challenge-specific completions
-  };
-
-  const renderChallengeControls = () => {
-    const challenge = activeChallenges[selectedChallenge.id];
-    
-    if (!challenge) {
-      return (
-        <TouchableOpacity
-          style={styles.controlButton}
-          onPress={() => startChallenge(selectedChallenge.id)}
-        >
-          <Text style={styles.controlButtonText}>Start Challenge</Text>
-        </TouchableOpacity>
-      );
-    }
-
-    if (challenge.isPaused) {
-      return (
-        <View style={styles.controlsContainer}>
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={() => resumeChallenge(selectedChallenge.id)}
-          >
-            <Text style={styles.controlButtonText}>Resume Challenge</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.controlButton, styles.restartButton]}
-            onPress={() => {
-              Alert.alert(
-                'Restart Challenge?',
-                'Are you sure you want to restart this challenge? Your progress will be reset.',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { 
-                    text: 'Restart',
-                    onPress: () => restartChallenge(selectedChallenge.id)
-                  }
-                ]
-              );
-            }}
-          >
-            <Text style={styles.controlButtonText}>Restart Challenge</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-
-    return (
-      <TouchableOpacity
-        style={[styles.controlButton, styles.pauseButton]}
-        onPress={() => pauseChallenge(selectedChallenge.id)}
-      >
-        <Text style={styles.controlButtonText}>Pause Challenge</Text>
-      </TouchableOpacity>
-    );
-  };
-
-  const challengeBooksData = useMemo(() => {
-    if (!selectedChallenge?.segments) {
-      return [];
-    }
-
-    return Object.keys(selectedChallenge.segments).map((key) => ({
-      djhBook: key as keyof typeof accordionColor,
-      bookName: Books[key as SegmentIds]?.bookName ?? "Unknown Book",
-      segments: (selectedChallenge.segments[key as SegmentIds]?.segments ?? []) as SegmentKey[],
-    }));
-  }, [selectedChallenge]);
-
-  const handlePress = (segmentId: string) => {
-    router.push({
-      pathname: `/${segmentId}`,
-      query: {
-        showGlobalCompletion: 'false',
-        challengeId: selectedChallenge.id
-      }
-    } as any);
   };
 
   const scrollViewRef = useRef<ScrollView>(null);
@@ -239,8 +297,10 @@ const ChallengesScreen = () => {
   const [headerHeight, setHeaderHeight] = useState(0);
 
   useEffect(() => {
-    if (params.scrollToChallenge && scrollViewRef.current && challengeBooksData) {
-      const challengeIndex = challengeBooksData.findIndex(item => item.djhBook === params.scrollToChallenge);
+    if (params.scrollToChallenge && scrollViewRef.current && organizedChallenges) {
+      const challengeIndex = organizedChallenges.categorized[CHALLENGE_CATEGORIES.SEASONAL].findIndex(
+        item => item.id === params.scrollToChallenge
+      );
       if (challengeIndex !== -1) {
         const headerOffset = 200;
         const itemHeight = 150;
@@ -254,169 +314,51 @@ const ChallengesScreen = () => {
         }, 100);
       }
     }
-  }, [params.scrollToChallenge, params.timestamp, challengeBooksData]);
+  }, [params.scrollToChallenge, params.timestamp, organizedChallenges]);
+
+  // Create sections data for FlatList
+  const sections = useMemo(() => {
+    const result = [];
+    
+    if (organizedChallenges.active.length > 0) {
+      result.push({
+        title: 'Active Challenges',
+        data: organizedChallenges.active
+      });
+    }
+    
+    result.push({
+      title: 'Seasonal Challenges',
+      data: organizedChallenges.categorized[CHALLENGE_CATEGORIES.SEASONAL]
+    });
+    
+    result.push({
+      title: 'Topical Challenges',
+      data: organizedChallenges.categorized[CHALLENGE_CATEGORIES.TOPICAL]
+    });
+    
+    return result;
+  }, [organizedChallenges]);
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
-      <ScrollView 
-        ref={scrollViewRef}
-        style={styles.scrollContainer}
-        contentContainerStyle={{ paddingTop: 8 }}
-        onContentSizeChange={(w, h) => setContentHeight(h)}
-        onLayout={event => setHeaderHeight(event.nativeEvent.layout.height)}
-      >
-        <View style={styles.headerContainer}>
-          <Text style={styles.screenTitle}>Reading Challenges</Text>
-          <Text style={styles.welcomeText}>
-            Welcome to Bible Reading Challenges, where you can find focused reading challenges to help you dive deep into specific themes and books of the Bible.
-          </Text>
-        </View>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.challengesScrollView}>
-          {readingPlansData.challenges.map((challenge) => (
-            <TouchableOpacity
-              key={challenge.id}
-              style={[
-                styles.challengeButton,
-                {
-                  backgroundColor: CHALLENGE_STYLES[challenge.title as ChallengeTitle]?.color || "#f4694d",
-                },
-                selectedChallenge.id === challenge.id && styles.selectedChallengeButton
-              ]}
-              onPress={() => handleChallengeSelection(challenge)}
-            >
-              <StatusIndicator status={getChallengeStatus(challenge.id)} />
-              <View style={styles.challengeContent}>
-                <Text style={styles.challengeIcon}>
-                  {CHALLENGE_STYLES[challenge.title as ChallengeTitle]?.icon}
-                </Text>
-                <Text style={styles.challengeButtonText}>{challenge.title}</Text>
-                <Text style={styles.challengeDescription}>{challenge.description}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        <View style={styles.divider} />
-
-        <View style={styles.selectedChallengeContainer}>
-          <Text style={styles.selectedChallengeTitle}>{selectedChallenge.title}</Text>
-          <Text style={styles.challengeContext}>{selectedChallenge.longDescription}</Text>
-
-          {renderChallengeControls()}
-
-          <View style={styles.progressContainer}>
-            <Text style={styles.progressText}>
-              Progress: {
-                activeChallenges[selectedChallenge.id]?.completedSegments.length || 0
-              } / {
-                Object.values(selectedChallenge.segments).reduce(
-                  (acc: number, book: BookSegments) => 
-                    acc + book.segments.filter((s: string) => !s.startsWith('I')).length,
-                  0
-                )
-              } segments
+      <FlatList
+        ListHeaderComponent={() => (
+          <View style={styles.headerContainer}>
+            <Text style={styles.screenTitle}>Reading Challenges</Text>
+            <Text style={styles.welcomeText}>
+              Welcome to Bible Reading Challenges, where you can find focused reading challenges to help you dive deep into specific themes and books of the Bible.
             </Text>
-            {activeChallenges[selectedChallenge.id]?.isCompleted && (
-              <View style={styles.completedBadge}>
-                <Text style={styles.completedText}>Completed!</Text>
-              </View>
-            )}
           </View>
-        </View>
-
-        {challengeBooksData.length > 0 ? (
-          <View style={styles.booksContainer}>
-            {challengeBooksData.map((item) => {
-              const bookIndex = booksArray.findIndex(
-                (book) => book === item.djhBook
-              );
-              return (
-                <Accordion 
-                  key={item.djhBook} 
-                  item={item} 
-                  bookIndex={bookIndex}
-                  completedSegments={
-                    activeChallenges[selectedChallenge.id]?.completedSegments.reduce((acc, segmentId) => ({
-                      ...acc,
-                      [segmentId]: { isCompleted: true, color: null }
-                    }), {}) || {}
-                  }
-                  onSegmentComplete={handleSegmentComplete}
-                  context="challenge"
-                  showGlobalCompletion={false}
-                  challengeId={selectedChallenge.id}
-                />
-              );
-            })}
-          </View>
-        ) : (
-          <Text style={styles.noSegmentsText}>
-            This challenge is coming soon! Check back later for reading segments.
-          </Text>
         )}
-      </ScrollView>
+        data={sections}
+        renderItem={({ item }) => renderCategorySection(item.title, item.data)}
+        keyExtractor={(item) => item.title}
+        contentContainerStyle={{ paddingTop: 8 }}
+      />
     </SafeAreaView>
   );
 };
-
-const additionalStyles = StyleSheet.create({
-  progressContainer: {
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  progressText: {
-    fontSize: 16,
-    color: '#666666',
-  },
-  completedBadge: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  completedText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-  },
-  booksContainer: {
-    paddingBottom: 16,
-  },
-  noSegmentsText: {
-    textAlign: 'center',
-    color: '#666',
-    fontSize: 14,
-    padding: 20,
-    fontStyle: 'italic'
-  },
-  controlButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginVertical: 16,
-    alignSelf: 'center',
-  },
-  pauseButton: {
-    backgroundColor: '#FFA000',
-  },
-  restartButton: {
-    backgroundColor: '#F44336',
-    marginLeft: 8,
-  },
-  controlButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  controlsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: 16,
-  },
-});
 
 const styles = StyleSheet.create({
   container: {
@@ -428,130 +370,83 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     paddingHorizontal: 16,
-    paddingTop: 0,
-    paddingBottom: 8,
+    paddingTop: 8,
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
   },
   screenTitle: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 8, // Reduced from 12
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 8,
+    color: '#000000',
   },
   welcomeText: {
-    fontSize: 14, // Reduced from 16
-    color: "#666666",
-    lineHeight: 20, // Reduced from 24
-    marginBottom: 16, // Reduced from 24
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "500",
-    marginBottom: 12,
-  },
-  challengesScrollView: {
-    paddingHorizontal: 16,
-    marginBottom: 8, // Added to reduce space before divider
-  },
-  challengeButton: {
-    padding: 12, // Reduced from 16
-    borderRadius: 12,
-    marginRight: 12,
-    width: 180, // Reduced from 200
-    height: 140, // Reduced from 160
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  selectedChallengeButton: {
-    transform: [{ scale: 1.02 }],
-    elevation: 5,
-  },
-  challengeButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#FFFFFF",
-    marginBottom: 8,
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.15)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  selectedChallengeText: {
-    color: "#FFFFFF",
-  },
-  challengeDescription: {
-    fontSize: 13,
-    color: "#FFFFFF",
-    opacity: 0.9,
-    textAlign: 'center',
-    lineHeight: 16,
-  },
-  highlightText: {
-    fontSize: 13,
-    color: "#FFFFFF",
-    fontWeight: "600",
-    opacity: 0.95,
-    position: 'absolute',
-    bottom: 12,
-    left: 4,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#EEEEEE",
-    marginVertical: 8, // Reduced from 16
-  },
-  selectedChallengeContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8, // Reduced from 16
-  },
-  selectedChallengeTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 4, // Reduced spacing
-  },
-  selectedChallengeDescription: {
     fontSize: 16,
     color: "#666666",
-    lineHeight: 24,
+    lineHeight: 22,
   },
-  categoryContainer: {
-    marginBottom: 24,
+  categorySection: {
+    marginTop: 16,
+    paddingHorizontal: 0,
   },
   categoryTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "600",
     marginLeft: 16,
     marginBottom: 12,
     color: "#333333",
   },
+  challengeContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+    backgroundColor: '#FFF',
+    marginHorizontal: 0,
+    marginBottom: 0,
+    borderRadius: 0,
+    shadowColor: "none",
+    shadowOffset: undefined,
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    borderWidth: 0,
+  },
+  challengeHeader: {
+    padding: 16,
+  },
   challengeInfo: {
-    fontSize: 14,
-    color: "#666666",
-    marginTop: 8,
-    lineHeight: 20,
-  },
-  challengeIcon: {
-    fontSize: 32, // Reduced from 40
-    height: 40, // Reduced from 60
-    width: 40, // Reduced from 60
-    textAlign: 'center',
-    lineHeight: 40, // Reduced from 60
-    marginBottom: 8, // Reduced from 12
-  },
-  challengeContent: {
-    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    position: 'relative',
-    width: '100%',
-    paddingVertical: 4, // Added to reduce internal spacing
   },
-  challengeContext: {
-    fontSize: 16,
-    color: "#666666",
-    lineHeight: 24,
+  leftContent: {
+    flex: 1,
   },
-  ...additionalStyles,
+  rightContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  titleContainer: {
+    flex: 1,
+  },
+  challengeTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: '#000000',
+    marginBottom: 4,
+  },
+  segmentCount: {
+    color: '#666666',
+    fontSize: 14,
+  },
+  booksContainer: {
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+    backgroundColor: '#FFF',
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
 });
 
 export default ChallengesScreen;

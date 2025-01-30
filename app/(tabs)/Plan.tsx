@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  FlatList,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
@@ -15,6 +17,8 @@ import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useAppContext } from "@/context/GlobalContext";
 import { StatusIndicator } from '@/components/StatusIndicator';
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 
 interface BookSegments {
   segments: string[];
@@ -23,28 +27,34 @@ interface BookSegments {
 export type SegmentKey = keyof typeof SegmentTitles;
 export type SegmentIds = keyof typeof Books;
 
-const booksArray = Object.keys(Books);
+// Add interface for Plan type
+interface Plan {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  segments: {
+    [key: string]: {
+      segments: string[];
+    } | undefined;  // Add undefined as possible type
+  };
+}
 
 const PLAN_STYLES = {
   "NT100Days": {
-    color: "#4df469", // Complementary green
-    icon: "⚡"
+    color: "#4df469"
   },
   "SchoolYear2": {
-    color: "#694df4", // Complementary purple
-    icon: "🎓"
+    color: "#694df4"
   },
   "Bible1Year": {
-    color: "#f44d69", // Original red-pink
-    icon: "📖"
+    color: "#f44d69"
   },
   "SchoolYear3": {
-    color: "#4d9ff4", // Complementary blue
-    icon: "✏️"
+    color: "#4d9ff4"
   },
   "SchoolYear1": {
-    color: "#f4b64d", // Complementary orange
-    icon: "📚"
+    color: "#f4b64d"
   }
 };
 
@@ -69,24 +79,43 @@ const PlanScreen = () => {
   const [headerHeight, setHeaderHeight] = useState(0);
 
   // Initialize selectedPlan with the active plan if it exists, otherwise use first plan
-  const [selectedPlan, setSelectedPlan] = useState(() => {
-    if (activePlan) {
-      return readingPlansData.plans.find(p => p.id === activePlan.planId) || readingPlansData.plans[0];
-    }
-    return readingPlansData.plans[0];
-  });
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
-  // Move planBooksData before the useEffect
-  const planBooksData = useMemo(() => {
-    console.log('Selected Plan:', selectedPlan.id);
-    const data = selectedPlan.segments ? Object.keys(selectedPlan.segments).map((key) => ({
-      djhBook: key as keyof typeof accordionColor,
+  // Move these function definitions up here
+  const getPlanBooksData = (planId: string) => {
+    const plan = readingPlansData.plans.find(p => p.id === planId);
+    if (!plan?.segments) return [];
+    
+    return Object.keys(plan.segments).map((key) => ({
+      djhBook: key as SegmentIds,
       bookName: Books[key as SegmentIds]?.bookName ?? "Unknown Book",
-      segments: (selectedPlan.segments[key as SegmentIds]?.segments ?? []) as SegmentKey[],
-    })) : [];
-    console.log('Processed Books Data:', data.length, 'books');
-    return data;
-  }, [selectedPlan]);
+      segments: (plan.segments[key as SegmentIds]?.segments ?? []) as SegmentKey[],
+    }));
+  };
+
+  const getPlanSegmentCount = (planId: string) => {
+    const plan = readingPlansData.plans.find(p => p.id === planId) as Plan | undefined;
+    if (!plan?.segments) return 0;
+    
+    return Object.values(plan.segments).reduce(
+      (acc, book) => acc + (book?.segments?.filter(s => !s.startsWith('I')).length ?? 0),
+      0
+    );
+  };
+
+  // Now use the functions
+  const filteredPlans = useMemo(() => {
+    return readingPlansData.plans.filter(plan => 
+      !['SchoolYear2', 'SchoolYear3', 'test'].includes(plan.id)
+    );
+  }, []);
+
+  const planBooksData = useMemo(() => {
+    if (!selectedPlanId) return [];
+    return getPlanBooksData(selectedPlanId);
+  }, [selectedPlanId]);
+
+  const booksArray = Object.keys(Books);
 
   // Add planBooksData to dependencies array
   useEffect(() => {
@@ -109,13 +138,13 @@ const PlanScreen = () => {
     }
   }, [params.scrollToPlan, params.timestamp, planBooksData]);
 
-  const currentProgress = readingPlanProgress[selectedPlan.id];
+  const currentProgress = readingPlanProgress[selectedPlanId || ''];
 
-  const handlePlanSelection = async (plan: typeof selectedPlan) => {
-    if (activePlan && activePlan.planId !== plan.id) {
+  const handlePlanSelection = async (planId: string) => {
+    if (activePlan && activePlan.planId !== planId) {
       Alert.alert(
         'Switch Reading Plan?',
-        `You are currently on "${activePlan.planId}". Would you like to pause it and switch to "${plan.title}"?`,
+        `You are currently on "${activePlan.planId}". Would you like to pause it and switch to "${planId}"?`,
         [
           {
             text: 'Cancel',
@@ -124,58 +153,25 @@ const PlanScreen = () => {
           {
             text: 'Switch Plan',
             onPress: async () => {
-              await switchPlan(plan.id);
-              setSelectedPlan(plan); // Update selected plan after switching
+              await switchPlan(planId);
+              setSelectedPlanId(planId); // Update selected plan after switching
             }
           }
         ]
       );
     } else {
-      setSelectedPlan(plan); // Update selected plan immediately if no active plan
+      setSelectedPlanId(planId); // Update selected plan immediately if no active plan
     }
   };
 
   const handleSegmentComplete = (segmentId: string) => {
-    updateReadingPlanProgress(selectedPlan.id, segmentId);
+    updateReadingPlanProgress(selectedPlanId || '', segmentId);
   };
 
   const getPlanStatus = (planId: string) => {
     if (!activePlan || activePlan.planId !== planId) return 'not-started';
     if (activePlan.isCompleted) return 'completed';
     return activePlan.isPaused ? 'paused' : 'active';
-  };
-
-  const renderPlanControls = () => {
-    if (!activePlan || activePlan.planId !== selectedPlan.id) {
-      return (
-        <TouchableOpacity
-          style={styles.controlButton}
-          onPress={() => startPlan(selectedPlan.id)}
-        >
-          <Text style={styles.controlButtonText}>Start Plan</Text>
-        </TouchableOpacity>
-      );
-    }
-
-    if (activePlan.isPaused) {
-      return (
-        <TouchableOpacity
-          style={styles.controlButton}
-          onPress={() => resumePlan()}
-        >
-          <Text style={styles.controlButtonText}>Resume Plan</Text>
-        </TouchableOpacity>
-      );
-    }
-
-    return (
-      <TouchableOpacity
-        style={[styles.controlButton, styles.pauseButton]}
-        onPress={() => pausePlan()}
-      >
-        <Text style={styles.controlButtonText}>Pause Plan</Text>
-      </TouchableOpacity>
-    );
   };
 
   // Get the plan description based on the selected plan
@@ -201,17 +197,114 @@ const PlanScreen = () => {
       pathname: `/${segmentId}`,
       query: { 
         showGlobalCompletion: 'false',
-        planId: selectedPlan.id
+        planId: selectedPlanId
       }
     } as any);
   };
 
-  // Filter out the unwanted plans
-  const filteredPlans = useMemo(() => {
-    return readingPlansData.plans.filter(plan => 
-      !['SchoolYear2', 'SchoolYear3', 'test'].includes(plan.id)
+  const renderPlanItem = ({ item: plan }: { item: Plan }) => {
+    const isSelected = selectedPlanId === plan.id;
+    const isActive = activePlan?.planId === plan.id;
+    const isPaused = activePlan && isActive && activePlan.isPaused;
+    const segmentCount = getPlanSegmentCount(plan.id);
+    const planBooksData = isSelected ? getPlanBooksData(plan.id) : [];
+
+    return (
+      <View style={styles.planContainer}>
+        <TouchableOpacity 
+          style={styles.planHeader}
+          onPress={() => setSelectedPlanId(isSelected ? null : plan.id)}
+        >
+          <View style={styles.planInfo}>
+            <View style={styles.leftContent}>
+              <View style={styles.titleContainer}>
+                <Text style={styles.planTitle}>{plan.title}</Text>
+                <Text style={styles.segmentCount}>
+                  {segmentCount} {segmentCount === 1 ? 'story' : 'stories'}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.rightContent}>
+              {!isActive && (
+                <TouchableOpacity 
+                  onPress={() => startPlan(plan.id)}
+                >
+                  <Feather name="play-circle" size={24} color="#666666" />
+                </TouchableOpacity>
+              )}
+              {isPaused && (
+                <TouchableOpacity 
+                  onPress={() => resumePlan()}
+                >
+                  <Feather name="play-circle" size={24} color="#666666" />
+                </TouchableOpacity>
+              )}
+              {isActive && !isPaused && (
+                <TouchableOpacity 
+                  onPress={() => pausePlan()}
+                >
+                  <Feather name="pause-circle" size={24} color="#666666" />
+                </TouchableOpacity>
+              )}
+              <Ionicons 
+                name={isSelected ? "chevron-up" : "chevron-down"} 
+                size={24} 
+                color="#666"
+              />
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {isSelected && (
+          <View style={styles.booksContainer}>
+            <FlatList
+              data={planBooksData}
+              renderItem={({ item }) => {
+                const bookIndex = booksArray.findIndex(
+                  (book) => book === item.djhBook
+                );
+                return (
+                  <Accordion 
+                    item={item} 
+                    bookIndex={bookIndex}
+                    completedSegments={
+                      Object.fromEntries(
+                        (activePlan?.completedSegments || []).map(id => [
+                          id, 
+                          { isCompleted: true, color: null }
+                        ])
+                      )
+                    }
+                    onSegmentComplete={handleSegmentComplete}
+                    context="plan"
+                    showGlobalCompletion={false}
+                    planId={plan.id}
+                    style={{ backgroundColor: '#FFF' }}
+                  />
+                );
+              }}
+              keyExtractor={(item) => item.djhBook}
+            />
+          </View>
+        )}
+      </View>
     );
-  }, []);
+  };
+
+  // Organize plans by status
+  const organizedPlans = useMemo(() => {
+    const plans = [...filteredPlans];
+    return plans.sort((a, b) => {
+      const aStatus = activePlan?.planId === a.id 
+        ? (activePlan.isPaused ? 1 : 0)
+        : 2;
+      const bStatus = activePlan?.planId === b.id
+        ? (activePlan.isPaused ? 1 : 0)
+        : 2;
+      if (aStatus !== bStatus) return aStatus - bStatus;
+      return a.title.localeCompare(b.title);
+    });
+  }, [filteredPlans, activePlan]);
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
@@ -230,95 +323,12 @@ const PlanScreen = () => {
           <Text style={styles.sectionTitle}>Plans</Text>
         </View>
 
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.plansScrollView}
-        >
-          {filteredPlans.map((plan) => (
-            <TouchableOpacity
-              key={plan.id}
-              style={[
-                styles.planButton,
-                {
-                  backgroundColor: PLAN_STYLES[plan.id as keyof typeof PLAN_STYLES]?.color || "#f4694d",
-                },
-                selectedPlan.id === plan.id && styles.selectedPlanButton
-              ]}
-              onPress={() => handlePlanSelection(plan)}
-            >
-              <StatusIndicator status={getPlanStatus(plan.id)} />
-              <View style={styles.planContent}>
-                <Text style={styles.planIcon}>
-                  {PLAN_STYLES[plan.id as keyof typeof PLAN_STYLES]?.icon}
-                </Text>
-                <Text style={styles.planButtonText}>
-                  {plan.title}
-                </Text>
-                <Text style={styles.planDescription}>
-                  {plan.description}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        <View style={styles.divider} />
-
-        <View style={styles.selectedPlanContainer}>
-          <Text style={styles.selectedPlanTitle}>{selectedPlan.title}</Text>
-          
-          <Text style={styles.planContext}>
-            {getPlanDescription(selectedPlan.id)}
-          </Text>
-
-          {renderPlanControls()}
-
-          <View style={styles.progressContainer}>
-            <Text style={styles.progressText}>
-              Progress: {
-                activePlan?.planId === selectedPlan.id 
-                  ? activePlan.completedSegments.length 
-                  : 0
-              } / {
-                Object.values(selectedPlan.segments).reduce(
-                  (acc: number, book: BookSegments) => 
-                    acc + book.segments.filter((s: string) => !s.startsWith('I')).length,
-                  0
-                )
-              } segments
-            </Text>
-            {activePlan?.planId === selectedPlan.id && activePlan.isCompleted && (
-              <View style={styles.completedBadge}>
-                <Text style={styles.completedText}>Completed!</Text>
-              </View>
-            )}
-          </View>
-        </View>
-
-        <View style={styles.booksContainer}>
-          {planBooksData.map((item) => {
-            const bookIndex = booksArray.findIndex(
-              (book) => book === item.djhBook
-            );
-            return (
-              <View key={item.djhBook} id={`plan-${selectedPlan.id}`}>
-                <Accordion 
-                  item={item} 
-                  bookIndex={bookIndex}
-                  completedSegments={Object.fromEntries((activePlan?.completedSegments || []).map(id => [
-                    id, 
-                    { timestamp: Date.now(), isCompleted: true, color: '#4CAF50' }
-                  ]))}
-                  onSegmentComplete={handleSegmentComplete}
-                  context="plan"
-                  showGlobalCompletion={false}
-                  planId={selectedPlan.id}
-                />
-              </View>
-            );
-          })}
-        </View>
+        <FlatList
+          data={organizedPlans}
+          renderItem={renderPlanItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContainer}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -327,7 +337,7 @@ const PlanScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFF',
   },
   scrollContainer: {
     flex: 1,
@@ -353,122 +363,45 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginBottom: 12,
   },
-  plansScrollView: {
-    paddingHorizontal: 16,
-    marginBottom: 8,
+  listContainer: {
+    paddingTop: 8,
   },
-  planButton: {
-    backgroundColor: "#F5F5F5",
-    padding: 12,
-    borderRadius: 12,
-    marginRight: 12,
-    width: 180,
-    height: 140,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  planContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
   },
-  selectedPlanButton: {
-    transform: [{ scale: 1.02 }],
-    elevation: 5,
+  planHeader: {
+    padding: 16,
   },
-  planButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#FFFFFF",
-    marginBottom: 8,
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.15)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+  planInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  selectedPlanText: {
-    color: "#FFFFFF",
+  leftContent: {
+    flex: 1,
   },
-  planDescription: {
-    fontSize: 13,
-    color: "#FFFFFF",
-    opacity: 0.9,
-    textAlign: 'center',
-    lineHeight: 16,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#EEEEEE",
-    marginVertical: 8,
-  },
-  selectedPlanContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  selectedPlanTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  booksContainer: {
-    paddingBottom: 16,
-  },
-  progressContainer: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+  rightContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 12,
   },
-  progressText: {
-    fontSize: 16,
-    color: '#666666',
-  },
-  completedBadge: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  completedText: {
-    color: '#FFFFFF',
+  planTitle: {
+    fontSize: 18,
     fontWeight: '600',
+    color: '#000',
   },
-  planContext: {
+  segmentCount: {
     fontSize: 14,
-    color: "#666666",
-    lineHeight: 20,
-    marginTop: 8,
-    marginBottom: 16,
+    color: '#666',
+    marginTop: 2,
   },
-  planIcon: {
-    fontSize: 32,
-    height: 40,
-    width: 40,
-    textAlign: 'center',
-    lineHeight: 40,
-    marginBottom: 8,
+  booksContainer: {
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
   },
-  planContent: {
-    flex: 1,
-    alignItems: 'center',
-    position: 'relative',
-    width: '100%',
-    paddingVertical: 4,
-  },
-  controlButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginVertical: 16,
-    alignSelf: 'center',
-  },
-  pauseButton: {
-    backgroundColor: '#FFA000',
-  },
-  controlButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+  titleContainer: {
+    flexDirection: 'column',
   },
 });
 
