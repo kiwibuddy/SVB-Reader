@@ -40,12 +40,13 @@ interface SegmentItemProps {
     ref?: string;
     book: string[];
   };
-  completedSegments: Record<string, CompletionData>;
+  completedSegments?: Record<string, CompletionData>;
   onComplete?: (segmentId: string) => void;
-  showGlobalCompletion: boolean;
-  context: 'navigation' | 'plan' | 'challenge';
+  showGlobalCompletion?: boolean;
+  context?: 'navigation' | 'plan' | 'challenge';
   planId?: string;
   challengeId?: string;
+  onPress?: (segmentId: string) => void;
 }
 
 const SegmentItem = ({ 
@@ -61,7 +62,7 @@ const SegmentItem = ({
   const { language, version } = useAppContext();
 
   const handlePress = () => {
-    const query: any = { showGlobalCompletion: showGlobalCompletion.toString() };
+    const query: any = { showGlobalCompletion: showGlobalCompletion?.toString() };
     
     if (context === 'plan' && planId) {
       query.planId = planId;
@@ -92,7 +93,7 @@ const SegmentItem = ({
         )}
       </View>
       <View style={styles.rightContent}>
-        {completedSegments[segment.id]?.isCompleted && (
+        {completedSegments?.[segment.id]?.isCompleted && (
           <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
         )}
       </View>

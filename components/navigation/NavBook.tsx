@@ -16,20 +16,20 @@ import Books from "@/assets/data/BookChapterList.json";
 
 // Image mapping
 const imageMap: { [key: string]: any } = {
-  Gen: require('@/assets/images/BibleIcons/genesis-free-bible-icon.png'),
-  Exo: require('@/assets/images/BibleIcons/exodus-free-bible-icon.png'),
-  Lev: require('@/assets/images/BibleIcons/leviticus-free-bible-icon.png'),
-  Num: require('@/assets/images/BibleIcons/numbers-free-bible-icon.png'),
-  Deu: require('@/assets/images/BibleIcons/deuteronomy-free-bible-icon.png'),
-  Jos: require('@/assets/images/BibleIcons/joshua-free-bible-icon.png'),
-  Jdg: require('@/assets/images/BibleIcons/judges-free-bible-icon.png'),
-  Rut: require('@/assets/images/BibleIcons/ruth-free-bible-icon.png'),
-  [`1Sa`]: require('@/assets/images/BibleIcons/samuel-free-bible-icon.png'),
-  [`2Sa`]: require('@/assets/images/BibleIcons/samuel-free-bible-icon.png'),
-  [`1Ki`]: require('@/assets/images/BibleIcons/kings-free-bible-icon.png'),
-  [`2Ki`]: require('@/assets/images/BibleIcons/kings-free-bible-icon.png'),
-  [`1Ch`]: require('@/assets/images/BibleIcons/chronicles-free-bible-icon.png'),
-  [`2Ch`]: require('@/assets/images/BibleIcons/chronicles-free-bible-icon.png'),
+  'Gen': require('@/assets/images/BibleIcons/genesis-free-bible-icon.png'),
+  'Exo': require('@/assets/images/BibleIcons/exodus-free-bible-icon.png'),
+  'Lev': require('@/assets/images/BibleIcons/leviticus-free-bible-icon.png'),
+  'Num': require('@/assets/images/BibleIcons/numbers-free-bible-icon.png'),
+  'Deu': require('@/assets/images/BibleIcons/deuteronomy-free-bible-icon.png'),
+  'Jos': require('@/assets/images/BibleIcons/joshua-free-bible-icon.png'),
+  'Jdg': require('@/assets/images/BibleIcons/judges-free-bible-icon.png'),
+  'Rut': require('@/assets/images/BibleIcons/ruth-free-bible-icon.png'),
+  '1Sa': require('@/assets/images/BibleIcons/samuel-free-bible-icon.png'),
+  '2Sa': require('@/assets/images/BibleIcons/samuel-free-bible-icon.png'),
+  '1Ki': require('@/assets/images/BibleIcons/kings-free-bible-icon.png'),
+  '2Ki': require('@/assets/images/BibleIcons/kings-free-bible-icon.png'),
+  '1Ch': require('@/assets/images/BibleIcons/chronicles-free-bible-icon.png'),
+  '2Ch': require('@/assets/images/BibleIcons/chronicles-free-bible-icon.png'),
   Ezr: require('@/assets/images/BibleIcons/ezra-free-bible-icon.png'),
   Neh: require('@/assets/images/BibleIcons/nehemiah-free-bible-icon.png'),
   Est: require('@/assets/images/BibleIcons/esther-free-bible-icon.png'),
@@ -186,6 +186,9 @@ export interface AccordionProps {
   planId?: string;
   challengeId?: string;
   style?: object;
+  isExpanded?: boolean;
+  onBookSelect?: (bookName: string) => void;
+  onSegmentSelect?: (segmentId: string) => void;
 }
 
 // Define a type for the structure of SegmentTitles
@@ -207,6 +210,22 @@ interface CompletionData {
   color: string | null;
 }
 
+export interface SegmentItemProps {
+  segment: {
+    id: string;
+    title: string;
+    ref?: string;
+    book: string[];
+  };
+  completedSegments?: Record<string, CompletionData>;
+  onComplete?: (segmentId: string) => void;
+  showGlobalCompletion?: boolean;
+  context?: 'navigation' | 'plan' | 'challenge';
+  planId?: string;
+  challengeId?: string;
+  onPress?: (segmentId: string) => void;
+}
+
 const Accordion = ({ 
   item, 
   bookIndex, 
@@ -216,28 +235,60 @@ const Accordion = ({
   context = 'navigation',
   planId,
   challengeId,
-  style = {}
+  style = {},
+  isExpanded,
+  onBookSelect,
+  onSegmentSelect
 }: AccordionProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpandedState, setIsExpanded] = useState(isExpanded || false);
   const flatListRef = useRef<FlatList<SegmentKey>>(null);
 
-  // Filter out intro segments (starting with 'I') and count actual segments
+  useEffect(() => {
+    setIsExpanded(isExpanded || false);
+  }, [isExpanded]);
+
+  useEffect(() => {
+    // Log all imageMap keys
+    console.log('Available imageMap keys:', Object.keys(imageMap));
+    // Log the current book code
+    console.log('Current djhBook:', item.djhBook);
+    // Check if the key exists
+    console.log('Image exists for book:', !!imageMap[item.djhBook]);
+  }, [item.djhBook]);
+
   const actualSegments = item.segments.filter(seg => !seg.startsWith('I'));
   const totalSegments = actualSegments.length;
-
-  // Count completed segments by checking each actual segment in completedSegments
   const completedCount = actualSegments.reduce((count, segmentId) => {
     return completedSegments[segmentId]?.isCompleted ? count + 1 : count;
   }, 0);
 
+  const handleHeaderPress = () => {
+    if (onBookSelect) {
+      onBookSelect(item.bookName);
+    }
+    setIsExpanded(!isExpandedState);
+  };
+
+  // Add this for debugging
+  const imageSource = imageMap[item.djhBook];
+  console.log('Book:', item.djhBook, 'Image source:', imageSource);
+
   return (
     <View style={[styles.accordion, style]}>
       <TouchableOpacity 
-        onPress={() => setIsExpanded(!isExpanded)}
+        onPress={handleHeaderPress}
         style={styles.header}
       >
         <View style={styles.leftContent}>
-          <Image source={imageMap[item.djhBook]} style={styles.logo} />
+          {imageSource ? (
+            <Image 
+              source={imageSource}
+              style={styles.logo} 
+              resizeMode="contain"
+            />
+          ) : (
+            <View style={[styles.logo, { backgroundColor: '#eee' }]} />
+          )}
           <View style={styles.textContainer}>
             <Text style={styles.bookTitle}>{item.bookName}</Text>
             <Text style={styles.segmentCount}>
@@ -248,14 +299,14 @@ const Accordion = ({
         
         <View style={styles.rightContent}>
           <Ionicons 
-            name={isExpanded ? "chevron-up" : "chevron-down"} 
+            name={isExpandedState ? "chevron-up" : "chevron-down"} 
             size={24} 
             color="#666"
           />
         </View>
       </TouchableOpacity>
 
-      {isExpanded && (
+      {isExpandedState && (
         <View style={styles.segmentList}>
           <FlatList
             ref={flatListRef}
@@ -274,6 +325,7 @@ const Accordion = ({
                 context={context}
                 planId={planId}
                 challengeId={challengeId}
+                onPress={onSegmentSelect}
               />
             )}
             keyExtractor={(segment) => segment}
@@ -310,6 +362,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     marginRight: 12,
+    resizeMode: 'contain',
   },
   textContainer: {
     flex: 1,
