@@ -8,6 +8,7 @@ import {
   Alert,
   FlatList,
   Image,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
@@ -58,6 +59,93 @@ const PLAN_STYLES = {
   }
 };
 
+const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF",
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  welcomeSection: {
+    marginBottom: 16,
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#000",
+    marginBottom: 8,
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: "#666",
+    lineHeight: 22,
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  headerContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 8,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  screenTitle: {
+    fontSize: 24,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "500",
+    marginBottom: 12,
+    color: "#FF9F0A",
+  },
+  listContainer: {
+    paddingTop: 8,
+  },
+  planContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  planHeader: {
+    padding: 16,
+  },
+  planInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  leftContent: {
+    flex: 1,
+  },
+  rightContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  planTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000',
+  },
+  segmentCount: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  booksContainer: {
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+  },
+  titleContainer: {
+    flexDirection: 'column',
+  },
+});
+
 const PlanScreen = () => {
   const { 
     readingPlan, 
@@ -75,8 +163,9 @@ const PlanScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const scrollViewRef = useRef<ScrollView>(null);
-  const [contentHeight, setContentHeight] = useState(0);
-  const [headerHeight, setHeaderHeight] = useState(0);
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 768;
+  const styles = createStyles(isLargeScreen);
 
   // Initialize selectedPlan with the active plan if it exists, otherwise use first plan
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
@@ -306,21 +395,23 @@ const PlanScreen = () => {
     });
   }, [filteredPlans, activePlan]);
 
+  // Add handleScroll function to match Home.tsx
+  const handleScroll = (event: any) => {
+    // Implementation of handleScroll function
+  };
+
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right']}>
+    <SafeAreaView style={styles.container}>
       <ScrollView 
-        ref={scrollViewRef}
-        style={styles.scrollContainer}
-        contentContainerStyle={{ paddingTop: 8 }}
-        onContentSizeChange={(w, h) => setContentHeight(h)}
-        onLayout={event => setHeaderHeight(event.nativeEvent.layout.height)}
+        style={styles.content}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
-        <View style={styles.headerContainer}>
-          <Text style={styles.screenTitle}>Reading Plans</Text>
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeTitle}>Reading Plans</Text>
           <Text style={styles.welcomeText}>
             Welcome to the Bible Reading Plans and Challenges screen, where you can find personalized reading plans and spiritual challenges designed to deepen your understanding of Scripture and transform your faith.
           </Text>
-          <Text style={styles.sectionTitle}>Plans</Text>
         </View>
 
         <FlatList
@@ -333,80 +424,5 @@ const PlanScreen = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFF',
-  },
-  scrollContainer: {
-    flex: 1,
-  },
-  headerContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-  },
-  screenTitle: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  welcomeText: {
-    fontSize: 14,
-    color: "#666666",
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "500",
-    marginBottom: 12,
-    color: "#FF9F0A",
-  },
-  listContainer: {
-    paddingTop: 8,
-  },
-  planContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-  },
-  planHeader: {
-    padding: 16,
-  },
-  planInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  leftContent: {
-    flex: 1,
-  },
-  rightContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  planTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-  },
-  segmentCount: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-  },
-  booksContainer: {
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-  },
-  titleContainer: {
-    flexDirection: 'column',
-  },
-});
 
 export default PlanScreen;

@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Alert,
   FlatList,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
@@ -117,6 +118,108 @@ interface ChallengesByCategory {
   'Topical': Challenge[];
 }
 
+const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF",
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  welcomeSection: {
+    marginBottom: 16,
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#000",
+    marginBottom: 8,
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: "#666",
+    lineHeight: 22,
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  headerContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  screenTitle: {
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 8,
+    color: '#000000',
+  },
+  categorySection: {
+    marginTop: 16,
+    paddingHorizontal: 0,
+  },
+  categoryTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginLeft: 16,
+    marginBottom: 12,
+    color: "#FF9F0A",
+  },
+  challengeContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+    backgroundColor: '#FFF',
+    marginHorizontal: 0,
+    marginBottom: 0,
+    borderRadius: 0,
+    shadowColor: "none",
+    shadowOffset: undefined,
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    borderWidth: 0,
+  },
+  challengeHeader: {
+    padding: 16,
+  },
+  challengeInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  leftContent: {
+    flex: 1,
+  },
+  rightContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  titleContainer: {
+    flex: 1,
+  },
+  challengeTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: '#000000',
+    marginBottom: 4,
+  },
+  segmentCount: {
+    color: '#666666',
+    fontSize: 14,
+  },
+  booksContainer: {
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+    backgroundColor: '#FFF',
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+});
+
 const ChallengesScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -129,6 +232,9 @@ const ChallengesScreen = () => {
   } = useAppContext();
 
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 768;
+  const styles = createStyles(isLargeScreen);
 
   // Move function definitions up
   const getChallengeSegmentCount = (challengeId: string) => {
@@ -343,17 +449,23 @@ const ChallengesScreen = () => {
     return result;
   }, [organizedChallenges]);
 
+  // Add handleScroll function to match Home.tsx
+  const handleScroll = (event: any) => {
+    // Implementation of handleScroll function
+  };
+
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right']}>
+    <SafeAreaView style={styles.container}>
       <FlatList
         ListHeaderComponent={() => (
-          <View style={styles.headerContainer}>
-            <Text style={styles.screenTitle}>Reading Challenges</Text>
+          <View style={styles.welcomeSection}>
+            <Text style={styles.welcomeTitle}>Reading Challenges</Text>
             <Text style={styles.welcomeText}>
               Welcome to Bible Reading Challenges, where you can find focused reading challenges to help you dive deep into specific themes and books of the Bible.
             </Text>
           </View>
         )}
+        style={styles.content}
         data={sections}
         renderItem={({ item }) => renderCategorySection(item.title, item.data)}
         keyExtractor={(item) => item.title}
@@ -362,94 +474,5 @@ const ChallengesScreen = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-  },
-  scrollContainer: {
-    flex: 1,
-  },
-  headerContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-  },
-  screenTitle: {
-    fontSize: 28,
-    fontWeight: "700",
-    marginBottom: 8,
-    color: '#000000',
-  },
-  welcomeText: {
-    fontSize: 16,
-    color: "#666666",
-    lineHeight: 22,
-  },
-  categorySection: {
-    marginTop: 16,
-    paddingHorizontal: 0,
-  },
-  categoryTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginLeft: 16,
-    marginBottom: 12,
-    color: "#FF9F0A",
-  },
-  challengeContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-    backgroundColor: '#FFF',
-    marginHorizontal: 0,
-    marginBottom: 0,
-    borderRadius: 0,
-    shadowColor: "none",
-    shadowOffset: undefined,
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    borderWidth: 0,
-  },
-  challengeHeader: {
-    padding: 16,
-  },
-  challengeInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  leftContent: {
-    flex: 1,
-  },
-  rightContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  titleContainer: {
-    flex: 1,
-  },
-  challengeTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: '#000000',
-    marginBottom: 4,
-  },
-  segmentCount: {
-    color: '#666666',
-    fontSize: 14,
-  },
-  booksContainer: {
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-    backgroundColor: '#FFF',
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-  },
-});
 
 export default ChallengesScreen;

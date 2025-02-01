@@ -1,4 +1,4 @@
-import { View, FlatList, StyleSheet, Text, TextInput, TouchableOpacity } from "react-native";
+import { View, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, useWindowDimensions } from "react-native";
 import Accordion from "@/components/navigation/NavBook";
 import Books from "@/assets/data/BookChapterList.json";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
@@ -22,6 +22,92 @@ const data = Object.keys(Books).map((key) => ({
 
 const booksArray = Object.keys(Books);
 
+const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF",
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  welcomeSection: {
+    marginBottom: 16,
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#000",
+    marginBottom: 8,
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: "#666",
+    lineHeight: 22,
+  },
+  header: {
+    padding: 16,
+    backgroundColor: '#FFF',
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 8,
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginVertical: 8,
+    alignItems: 'center',
+  },
+  filterButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: '#F5F5F5',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  filterButtonActive: {
+    backgroundColor: '#FF6B00',
+  },
+  filterText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  filterTextActive: {
+    color: '#FFF',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    marginTop: 8,
+  },
+  searchInputIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+});
+
 const Navigation = () => {
   const { completedSegments } = useAppContext();
   const [filter, setFilter] = useState('all');
@@ -30,6 +116,9 @@ const Navigation = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [selectedBook, setSelectedBook] = useState<string | null>(null);
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 768;
+  const styles = createStyles(isLargeScreen);
 
   // Define Old and New Testament books
   const oldTestamentBooks = ['Gen', 'Exo', 'Lev', 'Num', 'Deu', 'Jos', 'Jdg', 'Rut', '1Sa', '2Sa', '1Ki', '2Ki', '1Ch', '2Ch', 'Ezr', 'Neh', 'Est', 'Job', 'Psa', 'Pro', 'Ecc', 'SoS', 'Isa', 'Jer', 'Lam', 'Eze', 'Dan', 'Hos', 'Joe', 'Amo', 'Oba', 'Jon', 'Mic', 'Nah', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal'];
@@ -130,11 +219,16 @@ const Navigation = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.titleContainer}>
-          <Text style={styles.title}>Story Finder</Text>
-          <Text style={styles.subtitle}>Navigate through books and chapters to find your next story</Text>
+    <SafeAreaView style={styles.container}>
+      <ScrollView 
+        style={styles.content}
+        contentContainerStyle={{ paddingTop: 8 }}
+      >
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeTitle}>Story Finder</Text>
+          <Text style={styles.welcomeText}>
+            Navigate through books and chapters to find your next story
+          </Text>
         </View>
 
         {/* Filter and Search Container */}
@@ -193,101 +287,33 @@ const Navigation = () => {
             )}
           </View>
         )}
-      </View>
 
-      <FlatList
-        data={filteredData}
-        renderItem={({ item }) => {
-          const bookIndex = booksArray.findIndex(book => book === item.djhBook);
-          const isSelected = Books[item.djhBook].bookName.toLowerCase() === 
-            parseReference(searchQuery)?.book?.toLowerCase();
-          
-          return (
-            <Accordion 
-              item={item} 
-              bookIndex={bookIndex}
-              completedSegments={completedSegments}
-              context="navigation"
-              showGlobalCompletion={true}
-              style={{ backgroundColor: '#FFF' }}
-              isExpanded={isSelected && showSearch}
-              onBookSelect={handleBookSelect}
-              onSegmentSelect={handleSegmentSelect}
-            />
-          );
-        }}
-        keyExtractor={(item) => item.djhBook}
-      />
-    </View>
+        <FlatList
+          data={filteredData}
+          renderItem={({ item }) => {
+            const bookIndex = booksArray.findIndex(book => book === item.djhBook);
+            const isSelected = Books[item.djhBook].bookName.toLowerCase() === 
+              parseReference(searchQuery)?.book?.toLowerCase();
+            
+            return (
+              <Accordion 
+                item={item} 
+                bookIndex={bookIndex}
+                completedSegments={completedSegments}
+                context="navigation"
+                showGlobalCompletion={true}
+                style={{ backgroundColor: '#FFF' }}
+                isExpanded={isSelected && showSearch}
+                onBookSelect={handleBookSelect}
+                onSegmentSelect={handleSegmentSelect}
+              />
+            );
+          }}
+          keyExtractor={(item) => item.djhBook}
+        />
+      </ScrollView>
+    </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFF',
-  },
-  header: {
-    padding: 16,
-    backgroundColor: '#FFF',
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 8,
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    marginVertical: 8,
-    alignItems: 'center',
-  },
-  filterButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: '#F5F5F5',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  filterButtonActive: {
-    backgroundColor: '#FF6B00',
-  },
-  filterText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  filterTextActive: {
-    color: '#FFF',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    marginTop: 8,
-  },
-  searchInputIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    paddingVertical: 12,
-    fontSize: 16,
-  },
-});
 
 export default Navigation;

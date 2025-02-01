@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, FlatList, TouchableOpacity, Alert } from "react-native";
+import { View, Text, Pressable, StyleSheet, FlatList, TouchableOpacity, Alert, SafeAreaView, useWindowDimensions } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { getEmojis} from "@/api/sqlite";
 import BibleBlockComponent from "@/components/Bible/Block";
@@ -122,206 +122,28 @@ const getSegmentReference = (segmentID: string) => {
   return `${segment.book[0]}${segment.ref ? ' ' + segment.ref : ''}`;
 };
 
-const ReadingEmoji = () => {
-  const router = useRouter();
-  const { updateSegmentId } = useAppContext();
-  const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
-  const [reactions, setReactions] = useState<EmojiReaction[]>([]);
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  useEffect(() => {
-    loadReactions();
-  }, []);
-
-  const loadReactions = async () => {
-    try {
-      const allReactions = await getEmojis();
-      setReactions(allReactions);
-    } catch (error) {
-      console.error('Error loading reactions:', error);
-    }
-  };
-
-  // Add this helper function to sort reactions by most recent
-  const sortReactionsByRecent = (reactions: EmojiReaction[]) => {
-    return [...reactions].sort((a, b) => {
-      // Assuming id is sequential and higher means more recent
-      return b.id - a.id;
-    });
-  };
-
-  // Modify the filteredReactions logic
-  const filteredReactions = selectedEmoji
-    ? reactions.filter(r => r.emoji === selectedEmoji)
-    : sortReactionsByRecent(reactions);
-
-  const getEmojiCount = (emojiType: string) => {
-    return reactions.filter(r => r.emoji === emojiType).length;
-  };
-
-  // Helper function to split description into intro and steps
-  const splitDescription = (description: string[]) => {
-    const introIndex = description.findIndex(text => text.includes("Step 1"));
-    return {
-      intro: description.slice(0, introIndex),
-      steps: description.slice(introIndex)
-    };
-  };
-
-  const handleLongPress = (reaction: EmojiReaction) => {
-    const segment = SegmentTitles[reaction.segmentID as keyof typeof SegmentTitles];
-
-    Alert.alert(
-      "Go to Segment",
-      `Would you like to view this verse in ${getSegmentReference(reaction.segmentID)}?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Go",
-          onPress: () => {
-            console.log("reaction.segmentID", reaction.segmentID);
-            updateSegmentId(`${"ENG"}-${"NLT"}-${reaction.segmentID}`);
-            router.push({
-              pathname: "/[segment]",
-              params: {
-                segment: `${"ENG"}-${"NLT"}-${reaction.segmentID}`,
-                book: segment?.book[0] || ''
-              }
-            });
-          }
-        }
-      ]
-    );
-  };
-
-  const renderHeader = () => (
-    <>
-      <View style={styles.header}>
-        <Text style={styles.title}>Emoji Reactions</Text>
-        <Text style={styles.subtitle}>
-          Transform your Bible reading from simple reactions to meaningful life application with guided spiritual practices for memorizing, sharing, reflecting, and praying through your favorite verses.
-        </Text>
-      </View>
-
-      <View style={styles.gridContainer}>
-        {EMOJI_TYPES.map((type, index) => (
-          <Pressable
-            key={index}
-            style={[
-              styles.emojiCard,
-              { backgroundColor: type.color },
-              selectedEmoji && selectedEmoji !== type.emoji && styles.unselectedCard,
-              selectedEmoji === type.emoji && styles.selectedCard,
-            ]}
-            onPress={() => setSelectedEmoji(selectedEmoji === type.emoji ? null : type.emoji)}
-          >
-            <View style={styles.emojiWrapper}>
-              <Text style={styles.emojiText}>{type.emoji}</Text>
-            </View>
-            <View style={styles.emojiInfoContainer}>
-              <Text style={styles.emojiLabel}>{type.label}</Text>
-              <Text style={styles.emojiCount}>
-                {getEmojiCount(type.emoji)} verses
-              </Text>
-            </View>
-          </Pressable>
-        ))}
-      </View>
-
-      {selectedEmoji && (
-        <TouchableOpacity
-          style={styles.descriptionCard}
-          onPress={() => setIsExpanded(!isExpanded)}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.descriptionTitle}>
-            {EMOJI_DESCRIPTIONS[selectedEmoji].title}
-          </Text>
-          <Text style={styles.emojiCountText}>
-            {selectedEmoji} {getEmojiCount(selectedEmoji)} {EMOJI_DESCRIPTIONS[selectedEmoji].count}
-          </Text>
-
-          {/* Show intro text */}
-          {splitDescription(EMOJI_DESCRIPTIONS[selectedEmoji].description).intro.map((text, index) => (
-            <Text key={index} style={styles.descriptionText}>
-              {text}
-            </Text>
-          ))}
-
-          {/* Show expand/collapse indicator */}
-          <Text style={styles.expandIndicator}>
-            {isExpanded ? "Tap to collapse ↑" : "Tap to see steps ↓"}
-          </Text>
-
-          {/* Show steps when expanded */}
-          {isExpanded && splitDescription(EMOJI_DESCRIPTIONS[selectedEmoji].description).steps.map((text, index) => {
-            const isStep = text.includes("Step") || text.includes("Keep It Up") ||
-                          text.includes("Spread the Word") || text.includes("Take Your Time") ||
-                          text.includes("Pray Without Ceasing");
-
-            return (
-              <Text key={`step-${index}`} style={[
-                styles.descriptionText,
-                isStep && styles.stepText
-              ]}>
-                {text}
-              </Text>
-            );
-          })}
-        </TouchableOpacity>
-      )}
-
-      {!selectedEmoji && (
-        <View style={styles.recentHeader}>
-          <Text style={styles.recentHeaderText}>
-            Most Recent Reactions
-          </Text>
-        </View>
-      )}
-    </>
-  );
-
-  const renderItem = ({ item: reaction, index }: { item: EmojiReaction; index: number }) => {
-    const blockData = JSON.parse(reaction.blockData);
-    return (
-      <Pressable
-        onLongPress={() => handleLongPress(reaction)}
-      >
-        <View style={styles.reactionItem}>
-          <BibleBlockComponent
-            block={blockData}
-            bIndex={index}
-            toRead={false}
-            hasTail={true}
-          />
-          <Text style={styles.reactionEmoji}>{reaction.emoji}</Text>
-          <Text style={styles.referenceText}>
-            {getSegmentReference(reaction.segmentID)}
-          </Text>
-        </View>
-      </Pressable>
-    );
-  };
-
-  return (
-    <FlatList
-      style={styles.container}
-      data={filteredReactions}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id.toString()}
-      ListHeaderComponent={renderHeader}
-      contentContainerStyle={styles.contentContainer}
-    />
-  );
-};
-
-const styles = StyleSheet.create({
+const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFF",
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  welcomeSection: {
+    marginBottom: 16,
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#000",
+    marginBottom: 8,
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: "#666",
+    lineHeight: 22,
   },
   header: {
     padding: 12,
@@ -482,5 +304,206 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
 });
+
+const ReadingEmoji = () => {
+  const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 768;
+  const styles = createStyles(isLargeScreen);
+  const { updateSegmentId } = useAppContext();
+  const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
+  const [reactions, setReactions] = useState<EmojiReaction[]>([]);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    loadReactions();
+  }, []);
+
+  const loadReactions = async () => {
+    try {
+      const allReactions = await getEmojis();
+      setReactions(allReactions);
+    } catch (error) {
+      console.error('Error loading reactions:', error);
+    }
+  };
+
+  // Add this helper function to sort reactions by most recent
+  const sortReactionsByRecent = (reactions: EmojiReaction[]) => {
+    return [...reactions].sort((a, b) => {
+      // Assuming id is sequential and higher means more recent
+      return b.id - a.id;
+    });
+  };
+
+  // Modify the filteredReactions logic
+  const filteredReactions = selectedEmoji
+    ? reactions.filter(r => r.emoji === selectedEmoji)
+    : sortReactionsByRecent(reactions);
+
+  const getEmojiCount = (emojiType: string) => {
+    return reactions.filter(r => r.emoji === emojiType).length;
+  };
+
+  // Helper function to split description into intro and steps
+  const splitDescription = (description: string[]) => {
+    const introIndex = description.findIndex(text => text.includes("Step 1"));
+    return {
+      intro: description.slice(0, introIndex),
+      steps: description.slice(introIndex)
+    };
+  };
+
+  const handleLongPress = (reaction: EmojiReaction) => {
+    const segment = SegmentTitles[reaction.segmentID as keyof typeof SegmentTitles];
+
+    Alert.alert(
+      "Go to Segment",
+      `Would you like to view this verse in ${getSegmentReference(reaction.segmentID)}?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Go",
+          onPress: () => {
+            console.log("reaction.segmentID", reaction.segmentID);
+            updateSegmentId(`${"ENG"}-${"NLT"}-${reaction.segmentID}`);
+            router.push({
+              pathname: "/[segment]",
+              params: {
+                segment: `${"ENG"}-${"NLT"}-${reaction.segmentID}`,
+                book: segment?.book[0] || ''
+              }
+            });
+          }
+        }
+      ]
+    );
+  };
+
+  const renderHeader = () => (
+    <>
+      <View style={styles.welcomeSection}>
+        <Text style={styles.welcomeTitle}>Emoji Reactions</Text>
+        <Text style={styles.welcomeText}>
+          Transform your Bible reading from simple reactions to meaningful life application with guided spiritual practices for memorizing, sharing, reflecting, and praying through your favorite verses.
+        </Text>
+      </View>
+
+      <View style={styles.gridContainer}>
+        {EMOJI_TYPES.map((type, index) => (
+          <Pressable
+            key={index}
+            style={[
+              styles.emojiCard,
+              { backgroundColor: type.color },
+              selectedEmoji && selectedEmoji !== type.emoji && styles.unselectedCard,
+              selectedEmoji === type.emoji && styles.selectedCard,
+            ]}
+            onPress={() => setSelectedEmoji(selectedEmoji === type.emoji ? null : type.emoji)}
+          >
+            <View style={styles.emojiWrapper}>
+              <Text style={styles.emojiText}>{type.emoji}</Text>
+            </View>
+            <View style={styles.emojiInfoContainer}>
+              <Text style={styles.emojiLabel}>{type.label}</Text>
+              <Text style={styles.emojiCount}>
+                {getEmojiCount(type.emoji)} verses
+              </Text>
+            </View>
+          </Pressable>
+        ))}
+      </View>
+
+      {selectedEmoji && (
+        <TouchableOpacity
+          style={styles.descriptionCard}
+          onPress={() => setIsExpanded(!isExpanded)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.descriptionTitle}>
+            {EMOJI_DESCRIPTIONS[selectedEmoji].title}
+          </Text>
+          <Text style={styles.emojiCountText}>
+            {selectedEmoji} {getEmojiCount(selectedEmoji)} {EMOJI_DESCRIPTIONS[selectedEmoji].count}
+          </Text>
+
+          {/* Show intro text */}
+          {splitDescription(EMOJI_DESCRIPTIONS[selectedEmoji].description).intro.map((text, index) => (
+            <Text key={index} style={styles.descriptionText}>
+              {text}
+            </Text>
+          ))}
+
+          {/* Show expand/collapse indicator */}
+          <Text style={styles.expandIndicator}>
+            {isExpanded ? "Tap to collapse ↑" : "Tap to see steps ↓"}
+          </Text>
+
+          {/* Show steps when expanded */}
+          {isExpanded && splitDescription(EMOJI_DESCRIPTIONS[selectedEmoji].description).steps.map((text, index) => {
+            const isStep = text.includes("Step") || text.includes("Keep It Up") ||
+                          text.includes("Spread the Word") || text.includes("Take Your Time") ||
+                          text.includes("Pray Without Ceasing");
+
+            return (
+              <Text key={`step-${index}`} style={[
+                styles.descriptionText,
+                isStep && styles.stepText
+              ]}>
+                {text}
+              </Text>
+            );
+          })}
+        </TouchableOpacity>
+      )}
+
+      {!selectedEmoji && (
+        <View style={styles.recentHeader}>
+          <Text style={styles.recentHeaderText}>
+            Most Recent Reactions
+          </Text>
+        </View>
+      )}
+    </>
+  );
+
+  const renderItem = ({ item: reaction, index }: { item: EmojiReaction; index: number }) => {
+    const blockData = JSON.parse(reaction.blockData);
+    return (
+      <Pressable
+        onLongPress={() => handleLongPress(reaction)}
+      >
+        <View style={styles.reactionItem}>
+          <BibleBlockComponent
+            block={blockData}
+            bIndex={index}
+            toRead={false}
+            hasTail={true}
+          />
+          <Text style={styles.reactionEmoji}>{reaction.emoji}</Text>
+          <Text style={styles.referenceText}>
+            {getSegmentReference(reaction.segmentID)}
+          </Text>
+        </View>
+      </Pressable>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <FlatList
+        style={styles.content}
+        data={filteredReactions}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+        ListHeaderComponent={renderHeader}
+        contentContainerStyle={{ paddingTop: 8 }}
+      />
+    </SafeAreaView>
+  );
+};
 
 export default ReadingEmoji;
