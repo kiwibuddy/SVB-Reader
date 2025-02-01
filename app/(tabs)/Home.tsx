@@ -10,7 +10,8 @@ import {
   FlatList,
   ImageBackground,
   useWindowDimensions,
-  Platform
+  Platform,
+  SafeAreaView
 } from "react-native";
 import Card from "@/components/Card";
 import ReadingPlansChallenges from "../../assets/data/ReadingPlansChallenges.json";
@@ -18,6 +19,7 @@ import StickyHeader from "../../components/StickyHeader";
 import { useAppContext } from "@/context/GlobalContext";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useRouter } from "expo-router";
+import { Ionicons } from '@expo/vector-icons';
 
 type SegmentTitle = {
   Segment: string;
@@ -33,352 +35,238 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFF",
-    paddingHorizontal: 10,
   },
-  logo: {
-    width: 100,
-    height: 100,
-    alignSelf: "center",
-    marginTop: 20,
+  content: {
+    flex: 1,
+    padding: 16,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#333",
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 28,
-    fontFamily: "Mistrully",
-    color: "#A7FF00",
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  section: {
-    marginVertical: 20,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  seeAll: {
-    fontSize: 14,
-    color: "#FF5733",
-  },
-  cardsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  button: {
-    backgroundColor: "#FF5733",
-    paddingVertical: 15,
-    paddingHorizontal: 50,
-    borderRadius: 25,
-    marginTop: 50,
-    justifyContent: "center",
-  },
-  buttonText: {
-    fontSize: 20,
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  buttonRefText: {
-    fontSize: 16,
-    color: "#FFFFFF",
-    fontStyle: "italic",
-    textAlign: "center",
-  },
-  flatListContent: {
-    paddingVertical: 10,
-  },
-  buttonGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    padding: 10,
-    width: '100%',
-  },
-  buttonGridIPad: {
-    flexDirection: "row",
-    padding: 10,
-    gap: 15,
-  },
-  squareButton: {
-    width: isLargeScreen ? 300 : "48%",
-    height: undefined,
-    aspectRatio: 1,
+  continueReading: {
+    backgroundColor: "#F5F5F5",
+    borderRadius: 12,
+    padding: 12,
     marginBottom: 16,
-    justifyContent: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    borderRadius: 10,
-    overflow: 'hidden',
-    minWidth: isLargeScreen ? 280 : undefined,
-    maxWidth: isLargeScreen ? 400 : undefined,
   },
-  squareButtonText: {
-    fontSize: 20,
+  readingInfo: {
+    flex: 1,
+  },
+  readingTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  readingSubtitle: {
+    fontSize: 12,
+    color: "#666",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  resumeButton: {
+    backgroundColor: "#FF5733",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  resumeText: {
     color: "#FFF",
-    fontWeight: "bold",
-    textAlign: "center",
+    fontSize: 14,
+    fontWeight: "600",
   },
-  stickyButtonContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 5,
-    backgroundColor: "transparent", // Optional: to match the background
-    marginHorizontal: 10,
-    marginBottom: 30,
+  gridContainer: {
+    flexDirection: "row",
+    gap: 16,
+    marginBottom: 16,
   },
-  buttonBackground: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-    overflow: 'hidden',
+  gridItem: {
+    flex: 1,
+    height: 200,
+    borderRadius: 16,
+    overflow: "hidden",
   },
-  textContainer: {
-    padding: 20,
-    marginBottom: 60, // Add space for the floating button
+  gridItemContent: {
+    flex: 1,
+    justifyContent: "flex-end",
+    padding: 16,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  gridItemTitle: {
+    color: "#FFF",
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  gridItemSubtitle: {
+    color: "rgba(255,255,255,0.9)",
+    fontSize: 12,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  statsContainer: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 16,
+  },
+  statItem: {
+    flex: 1,
+    backgroundColor: "#F5F5F5",
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#333",
+  },
+  statLabel: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 4,
+  },
+  bottomNav: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    borderTopWidth: 1,
+    borderTopColor: "#E5E5E5",
+    paddingVertical: 8,
+  },
+  navItem: {
+    alignItems: "center",
+  },
+  navText: {
+    fontSize: 12,
+    marginTop: 4,
+    color: "#666",
+  },
+  welcomeSection: {
+    marginBottom: 16,
   },
   welcomeTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-    textAlign: 'center',
+    fontWeight: "600",
+    color: "#000",
+    marginBottom: 8,
   },
   welcomeText: {
     fontSize: 16,
-    color: '#666',
-    marginBottom: 20,
-    lineHeight: 24,
-    textAlign: 'center',
-  },
-  sectionText: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 15,
-    lineHeight: 24,
+    color: "#666",
+    lineHeight: 22,
   },
 });
 
 const HomeScreen = () => {
-  const { segmentId } = useAppContext();
+  const { 
+    activePlan,      // Get active plan
+    activeChallenges // Get active challenges
+  } = useAppContext();
   const router = useRouter();
-  const segSplit = segmentId.split("-");
-  const segID = segSplit[segSplit.length - 1];
-  const segIndex = segIDs.findIndex(id => id === segID);
-  const nextSegID = segmentId ? (segIDs[segIndex + 1] || "S001") : "S001";
-  const nextSegData = SegmentTitles[nextSegID as keyof typeof SegmentTitles] as SegmentTitle;
-  const { width: screenWidth } = useWindowDimensions();
-  const isLargeScreen = screenWidth >= 768;
-  
-  // Create styles with current isLargeScreen value
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 768;
   const styles = createStyles(isLargeScreen);
 
-  useEffect(() => {
-    console.log("segmentId - HomeScreen", segmentId);
-  }, [segmentId]);
+  // Calculate available plans (excluding SchoolYear2, SchoolYear3, and test plans)
+  const getAvailablePlansCount = () => {
+    return ReadingPlansChallenges.plans.filter(plan => 
+      !['SchoolYear2', 'SchoolYear3', 'test'].includes(plan.id)
+    ).length;
+  };
+
+  // Calculate available challenges
+  const getAvailableChallengesCount = () => {
+    return ReadingPlansChallenges.challenges.length;
+  };
+
+  // Calculate total active plans/challenges
+  const getActivePlansCount = () => {
+    const activePlansCount = activePlan ? 1 : 0; // Can only have one active plan
+    const activeChallengesCount = Object.values(activeChallenges).filter(
+      challenge => challenge && !challenge.isPaused && !challenge.isCompleted
+    ).length;
+    
+    return activePlansCount + activeChallengesCount;
+  };
+
   return (
-    <>
-      <ScrollView style={styles.container}>
-        {/* <Image
-          source={require("../../assets/images/icon.png")}
-          style={styles.logo}
-        /> */}
-
-        <Text style={styles.title}>SOURCEVIEW</Text>
-        <Text style={styles.subtitle}>YOUTH</Text>
-
-        {/* Conditional rendering based on device type */}
-        {isLargeScreen ? (
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.buttonGridIPad}
-          >
-            <Pressable
-              style={[styles.squareButton, { backgroundColor: 'transparent' }]}
-              onPress={() => router.push("/Plan")}
-            >
-              <ImageBackground
-                source={require("@/assets/images/button1.png")}
-                style={styles.buttonBackground}
-                resizeMode="cover"
-              >
-                <Text style={styles.squareButtonText}>Reading Plans</Text>
-              </ImageBackground>
-            </Pressable>
-            <Pressable
-              style={[styles.squareButton, { backgroundColor: "#FF66B3" }]}
-              onPress={() => router.push("/Reading-Challenges")}
-            >
-              <ImageBackground
-                source={require("@/assets/images/button2.png")}
-                style={styles.buttonBackground}
-                resizeMode="cover"
-              >
-                <Text style={styles.squareButtonText}>Reading Challenges</Text>
-              </ImageBackground>
-            </Pressable>
-            <Pressable
-              style={[styles.squareButton, { backgroundColor: 'transparent' }]}
-              onPress={() => router.push("/Reading-emoji")}
-            >
-              <ImageBackground
-                source={require("@/assets/images/button4.png")}
-                style={styles.buttonBackground}
-                resizeMode="cover"
-              >
-                <Text style={styles.squareButtonText}>Emoji Reactions</Text>
-              </ImageBackground>
-            </Pressable>
-            <Pressable
-              style={[styles.squareButton, { backgroundColor: 'transparent' }]}
-              onPress={() => router.push("/Reading-movement")}
-            >
-              <ImageBackground
-                source={require("@/assets/images/button11.jpg")}
-                style={styles.buttonBackground}
-                resizeMode="cover"
-              >
-                <Text style={styles.squareButtonText}>
-                  How to start a Bible Reading Group
-                </Text>
-              </ImageBackground>
-            </Pressable>
-          </ScrollView>
-        ) : (
-          <View style={styles.buttonGrid}>
-            <Pressable
-              style={[styles.squareButton, { backgroundColor: 'transparent' }]}
-              onPress={() => router.push("/Plan")}
-            >
-              <ImageBackground
-                source={require("@/assets/images/button1.png")}
-                style={styles.buttonBackground}
-                resizeMode="cover"
-              >
-                <Text style={styles.squareButtonText}>Reading Plans</Text>
-              </ImageBackground>
-            </Pressable>
-            <Pressable
-              style={[styles.squareButton, { backgroundColor: "#FF66B3" }]}
-              onPress={() => router.push("/Reading-Challenges")}
-            >
-              <ImageBackground
-                source={require("@/assets/images/button2.png")}
-                style={styles.buttonBackground}
-                resizeMode="cover"
-              >
-                <Text style={styles.squareButtonText}>Reading Challenges</Text>
-              </ImageBackground>
-            </Pressable>
-            <Pressable
-              style={[styles.squareButton, { backgroundColor: 'transparent' }]}
-              onPress={() => router.push("/Reading-emoji")}
-            >
-              <ImageBackground
-                source={require("@/assets/images/button4.png")}
-                style={styles.buttonBackground}
-                resizeMode="cover"
-              >
-                <Text style={styles.squareButtonText}>Emoji Reactions</Text>
-              </ImageBackground>
-            </Pressable>
-            <Pressable
-              style={[styles.squareButton, { backgroundColor: 'transparent' }]}
-              onPress={() => router.push("/Reading-movement")}
-            >
-              <ImageBackground
-                source={require("@/assets/images/button11.jpg")}
-                style={styles.buttonBackground}
-                resizeMode="cover"
-              >
-                <Text style={styles.squareButtonText}>
-                  How to start a Bible Reading Group
-                </Text>
-              </ImageBackground>
-            </Pressable>
-          </View>
-        )}
-
-        {/* Added Welcome Text Section */}
-        <View style={styles.textContainer}>
-          <Text style={styles.welcomeTitle}>Welcome to SourceView Youth Bible</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        {/* Title and Encouragement */}
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeTitle}>Start Your Journey</Text>
           <Text style={styles.welcomeText}>
-            Experience the Bible as a dynamic conversation. Dive into God's Word with your friends and watch it come alive!
-          </Text>
-
-          <Text style={styles.sectionTitle}>Read with Friends 👥</Text>
-          <Text style={styles.sectionText}>
-            Gather your group and dive into Scripture together. Choose your reading role and watch your parts light up, transforming Bible study into an immersive experience.
-          </Text>
-
-          <Text style={styles.sectionTitle}>Conversations Come Alive 💬</Text>
-          <Text style={styles.sectionText}>
-            See the Bible in a new light as you read the words of God, prophets, and key figures in speech bubbles. Feel the emotions, conflicts, and triumphs as you step into their shoes.
-          </Text>
-
-          <Text style={styles.sectionTitle}>React and Connect 🙌</Text>
-          <Text style={styles.sectionText}>
-            Respond to powerful messages with emojis. 👍, ❤️, 🙏or be 😲 by messages as you read. Easily revisit your reactions later to reflect on how God's Word is shaping you.
-          </Text>
-
-          <Text style={styles.sectionTitle}>Journey Through Scripture 👣</Text>
-          <Text style={styles.sectionText}>
-            Embark on reading plans with friends. Gain a deeper understanding of the Bible's overarching narrative or focus on specific themes and characters through shorter focused challenges.
-          </Text>
-
-          <Text style={styles.sectionTitle}>Simple Bible Studies 👥</Text>
-          <Text style={styles.sectionText}>
-            At the end of each of the 365 stories of scripture you'll find simple Bible study questions to help stir discussions and take you deeper in your understanding of God's word.
-          </Text>
-
-          <Text style={styles.sectionTitle}>Experience the SourceView Difference</Text>
-          <Text style={styles.sectionText}>
-            Embrace a format designed for the digital age. See entire conversations in context, not just isolated verses. This helps bring understanding and the full impact the dynamic conversations and speeches in the Bible.
-          </Text>
-
-          <Text style={styles.sectionTitle}>Transform Your World</Text>
-          <Text style={styles.sectionText}>
-            Let God's living Word revolutionize your life and impact those around you. Join a movement of your generation encountering Scripture in fresh, powerful ways and watch as it changes everything.
+            Begin your Bible reading adventure by choosing a reading plan or challenge that fits your goals.
           </Text>
         </View>
-      </ScrollView>
 
-      <View style={styles.stickyButtonContainer}>
-        <Pressable
-          style={styles.button}
-          onPress={() => {
-            if (!segmentId) {
-              router.push(`/${"ENG"}-${"NLT"}-S001`);
-            } else {
-              router.push(`/${"ENG"}-${"NLT"}-${nextSegID}`);
-            }
-          }}
-        >
-          <Text style={styles.buttonText}>Read Next Segment</Text>
-          <Text style={styles.buttonRefText}>
-            {`${nextSegData.book[0]}${nextSegData.ref ? ' ' + nextSegData.ref : ''}`}
-          </Text>
-        </Pressable>
+        {/* Main Navigation Grid */}
+        <View style={styles.gridContainer}>
+          <Pressable 
+            style={styles.gridItem}
+            onPress={() => router.push("/Plan")}
+          >
+            <ImageBackground
+              source={require("@/assets/images/button1.png")}
+              style={styles.gridItemContent}
+            >
+              <View style={styles.overlay} />
+              <Text style={styles.gridItemTitle}>Reading Plans</Text>
+              <Text style={styles.gridItemSubtitle}>
+                {getAvailablePlansCount()} plans available
+              </Text>
+            </ImageBackground>
+          </Pressable>
+
+          <Pressable 
+            style={styles.gridItem}
+            onPress={() => router.push("/Reading-Challenges")}
+          >
+            <ImageBackground
+              source={require("@/assets/images/button2.png")}
+              style={styles.gridItemContent}
+            >
+              <View style={styles.overlay} />
+              <Text style={styles.gridItemTitle}>Reading Challenges</Text>
+              <Text style={styles.gridItemSubtitle}>
+                {getAvailableChallengesCount()} challenges available
+              </Text>
+            </ImageBackground>
+          </Pressable>
+        </View>
+
+        {/* Continue Reading Card */}
+        <View style={styles.continueReading}>
+          <View style={styles.readingInfo}>
+            <Text style={styles.readingTitle}>Continue Reading</Text>
+            <Text style={styles.readingSubtitle}>
+              Leviticus 1:1-4:35
+              <Ionicons name="book-outline" size={16} color="#666" />
+            </Text>
+          </View>
+          <Pressable style={styles.resumeButton}>
+            <Text style={styles.resumeText}>Resume</Text>
+          </Pressable>
+        </View>
+
+        {/* Stats Section */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>12</Text>
+            <Text style={styles.statLabel}>Day Streak</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>24</Text>
+            <Text style={styles.statLabel}>Stories Read</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{getActivePlansCount()}</Text>
+            <Text style={styles.statLabel}>Active Plans</Text>
+          </View>
+        </View>
       </View>
-    </>
+    </SafeAreaView>
   );
 };
 
