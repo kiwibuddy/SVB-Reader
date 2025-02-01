@@ -1,3 +1,4 @@
+import React from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, Image } from "react-native";
 import { router } from "expo-router";
 

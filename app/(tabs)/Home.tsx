@@ -190,10 +190,17 @@ const HomeScreen = () => {
     return activePlansCount + activeChallengesCount;
   };
 
+  const handleScroll = (event: any) => {
+    // Implementation of handleScroll function
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        {/* Title and Encouragement */}
+      <ScrollView 
+        style={styles.content}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         <View style={styles.welcomeSection}>
           <Text style={styles.welcomeTitle}>Start Your Journey</Text>
           <Text style={styles.welcomeText}>
@@ -201,7 +208,6 @@ const HomeScreen = () => {
           </Text>
         </View>
 
-        {/* Main Navigation Grid */}
         <View style={styles.gridContainer}>
           <Pressable 
             style={styles.gridItem}
@@ -236,7 +242,6 @@ const HomeScreen = () => {
           </Pressable>
         </View>
 
-        {/* Continue Reading Card */}
         <View style={styles.continueReading}>
           <View style={styles.readingInfo}>
             <Text style={styles.readingTitle}>Continue Reading</Text>
@@ -250,7 +255,6 @@ const HomeScreen = () => {
           </Pressable>
         </View>
 
-        {/* Stats Section */}
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>12</Text>
@@ -265,7 +269,7 @@ const HomeScreen = () => {
             <Text style={styles.statLabel}>Active Plans</Text>
           </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };

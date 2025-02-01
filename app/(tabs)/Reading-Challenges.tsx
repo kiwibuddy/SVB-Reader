@@ -145,11 +145,14 @@ const ChallengesScreen = () => {
     const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
     if (!challenge?.segments) return [];
     
-    return Object.keys(Books).map(key => ({
-      djhBook: key,
-      bookName: Books[key as keyof typeof Books]?.bookName ?? "Unknown Book",
-      segments: (challenge.segments[key as keyof typeof Books] as BookSegments | undefined)?.segments || []
-    }));
+    const segments = challenge.segments;
+    return Object.entries(segments)
+      .filter(([_, bookData]) => bookData?.segments?.length > 0)
+      .map(([key, bookData]) => ({
+        djhBook: key as keyof typeof Books,
+        bookName: Books[key as keyof typeof Books]?.bookName ?? "Unknown Book",
+        segments: bookData?.segments || []
+      }));
   };
 
   // Group challenges by status and category

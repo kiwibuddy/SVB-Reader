@@ -416,9 +416,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   descriptionText: {
-    fontSize: 14,
-    color: '#444',
-    lineHeight: 20,
+    fontSize: 16,
+    color: '#666',
+    lineHeight: 24,
     marginBottom: 8,
   },
   reactionsContainer: {
@@ -473,9 +473,9 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#666',
-    lineHeight: 20,
+    lineHeight: 24,
     paddingHorizontal: 4,
   },
   contentContainer: {
