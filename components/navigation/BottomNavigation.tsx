@@ -152,15 +152,15 @@ const styles = StyleSheet.create({
   content: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 8,
+    paddingVertical: 6,
   },
   navItem: {
     alignItems: 'center',
-    paddingVertical: 4,
+    paddingVertical: 2,
   },
   navText: {
     fontSize: 12,
-    marginTop: 4,
+    marginTop: 2,
     color: '#666',
   },
   activeText: {

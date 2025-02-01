@@ -24,6 +24,8 @@ import Questions from '@/components/Questions';
 import CheckCircle from '@/components/CheckCircle';
 import StickyHeader from '@/components/StickyHeader';
 import { useRouter, usePathname } from "expo-router";
+import { Animated } from 'react-native';
+import { useBottomNavAnimation } from '@/context/BottomNavContext';
 
 
 const segIds = Object.keys(Bible);
@@ -91,6 +93,8 @@ export default function BibleScreen() {
     );
   }
 
+  const { isVisible } = useBottomNavAnimation();
+
   return (
     <View style={styles.container}>
       <ScrollView 
@@ -114,8 +118,21 @@ export default function BibleScreen() {
         </View>
       </ScrollView>
 
-      {/* Navigation buttons - fixed position */}
-      <View style={styles.buttonContainer}>
+      <Animated.View style={[
+        styles.buttonContainer,
+        {
+          transform: [{
+            translateY: isVisible.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, -16], // Reduced movement when nav is visible
+            })
+          }],
+          bottom: isVisible.interpolate({
+            inputRange: [0, 1],
+            outputRange: [24, 80], // 24px from bottom when hidden, 80px when nav visible
+          })
+        }
+      ]}>
         {!IsFirstSegment && prevSegId && (
           <TouchableOpacity
             style={[styles.roundButton, styles.prevButton]}
@@ -147,7 +164,7 @@ export default function BibleScreen() {
             <FontAwesome name="arrow-right" size={20} color="white" />
           </TouchableOpacity>
         )}
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -177,13 +194,13 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     position: "absolute",
-    bottom: 90, // Fixed position above the bottom navigation
     left: 0,
     right: 0,
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     zIndex: 1000,
+    backgroundColor: 'transparent',
   },
   roundButton: {
     width: 50,

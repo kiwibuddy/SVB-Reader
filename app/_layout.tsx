@@ -11,6 +11,7 @@ import {
   useSQLiteContext,
   type SQLiteDatabase,
 } from "expo-sqlite";
+import { BottomNavProvider } from '@/context/BottomNavContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -34,25 +35,27 @@ export default function RootLayout() {
 
   return (
     <AppProvider>
-      <SQLiteProvider databaseName="test.db">
-        <StatusBar hidden={true} translucent backgroundColor="transparent" />
-        <ThemeProvider
-          value={
-            // colorScheme === "dark" ? DarkTheme :
-            DefaultTheme
-          }
-        >
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: "#ffffff" },
-            }}
+      <BottomNavProvider>
+        <SQLiteProvider databaseName="test.db">
+          <StatusBar hidden={true} translucent backgroundColor="transparent" />
+          <ThemeProvider
+            value={
+              // colorScheme === "dark" ? DarkTheme :
+              DefaultTheme
+            }
           >
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-        </ThemeProvider>
-      </SQLiteProvider>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: "#ffffff" },
+              }}
+            >
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </ThemeProvider>
+        </SQLiteProvider>
+      </BottomNavProvider>
     </AppProvider>
   );
 }

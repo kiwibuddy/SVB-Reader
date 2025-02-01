@@ -1,185 +1,331 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView, Image, SafeAreaView, useWindowDimensions } from "react-native";
-import { router, useRouter } from "expo-router";
+import { View, Text, ScrollView, StyleSheet, SafeAreaView, useWindowDimensions, Pressable } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
 
 const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFF",
   },
-  content: {
-    flex: 1,
+  header: {
     padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  welcomeSection: {
-    marginBottom: 16,
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '600',
   },
-  welcomeTitle: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: "#000",
-    marginBottom: 8,
-  },
-  welcomeText: {
-    fontSize: 16,
-    color: "#666",
-    lineHeight: 22,
+  section: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
-    marginTop: 20,
-    marginBottom: 10,
+    marginBottom: 16,
   },
-  sectionText: {
+  card: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  cardContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '500',
+  },
+  cardSubtitle: {
     fontSize: 16,
-    color: '#666',
-    marginBottom: 15,
-    lineHeight: 24,
+    color: '#6B7280',
   },
-  stickyButtonContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 5,
-    backgroundColor: "transparent",
-    marginHorizontal: 10,
-    marginBottom: 30,
+  resetButton: {
+    padding: 16,
+    alignItems: 'center',
   },
-  button: {
-    backgroundColor: "#FF5733",
-    paddingVertical: 15,
-    paddingHorizontal: 50,
-    borderRadius: 25,
-    justifyContent: "center",
+  resetButtonText: {
+    color: '#9CA3AF',
+    fontSize: 16,
+    fontWeight: '500',
   },
-  buttonText: {
-    fontSize: 20,
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    textAlign: "center",
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  sectionImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-    marginVertical: 15,
+  progressBar: {
+    height: 4,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 2,
+    marginTop: 8,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#3B82F6',
+    borderRadius: 2,
+  },
+  badge: {
+    position: 'absolute',
+    right: 16,
+    backgroundColor: '#10B981',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '500',
   },
 });
 
-const ReadingPlan = () => {
-  const router = useRouter();
+const Achievements = () => {
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const styles = createStyles(isLargeScreen);
 
-  const handleScroll = (event: any) => {
-    // Implementation of handleScroll function
-  };
+  // Add error boundary and loading state
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    // Simulate data loading
+    const loadData = async () => {
+      try {
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error loading achievements:', error);
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Achievements</Text>
+        </View>
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+          <Text>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
-        style={styles.content}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-      >
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>How to Start Your Bible Reading Group</Text>
-          <Text style={styles.welcomeText}>
-            Start a Bible Movement - Find 3 Friends • Pick Your Role • Read Together
-          </Text>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Achievements</Text>
+      </View>
+
+      <ScrollView>
+        {/* Reading Progress Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Reading Progress</Text>
+          <View style={styles.card}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="book" size={24} color="#3B82F6" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Total Stories Read</Text>
+              <Text style={styles.cardSubtitle}>47 of 365 stories</Text>
+            </View>
+          </View>
+
+          <View style={styles.card}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="time" size={24} color="#3B82F6" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Average Reading Time</Text>
+              <Text style={styles.cardSubtitle}>15 minutes per story</Text>
+            </View>
+          </View>
         </View>
 
-        <Image
-          source={require("../../assets/images/Movement-1.png")}
-          style={styles.sectionImage}
-          resizeMode="cover"
-        />
+        {/* Streaks Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Streaks</Text>
+          <View style={styles.card}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="calendar" size={24} color="#3B82F6" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Current Streak</Text>
+              <Text style={styles.cardSubtitle}>12 days</Text>
+            </View>
+          </View>
 
-        <Text style={styles.sectionTitle}>1. Gather Your Friends 👥</Text>
-        <Text style={styles.sectionText}>
-          Invite 3 other friends or classmates. Each pick one of the 4 voices/roles for the story each day: narrator, main character, God/Jesus, or other speaking parts.
-        </Text>
-        <Image
-          source={require("../../assets/images/Movement-2.webp")}
-          style={styles.sectionImage}
-          resizeMode="cover"
-        />
+          <View style={styles.card}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="trending-up" size={24} color="#3B82F6" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Best Streak</Text>
+              <Text style={styles.cardSubtitle}>28 days</Text>
+            </View>
+          </View>
+        </View>
 
-        <Text style={styles.sectionTitle}>2. Plan When ⏰</Text>
-        <Text style={styles.sectionText}>
-          Pick a time in your day that you can meet each day. 15 min plus discussion is all you need to keep up with the reading plan.
-        </Text>
-        <Image
-          source={require("../../assets/images/Movement-3.webp")}
-          style={styles.sectionImage}
-          resizeMode="cover"
-        />
+        {/* Testament Progress Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Testament Progress</Text>
+          <View style={styles.card}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="book" size={24} color="#3B82F6" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Old Testament</Text>
+              <Text style={styles.cardSubtitle}>32 of 219 stories</Text>
+            </View>
+          </View>
 
-        <Text style={styles.sectionTitle}>3. Pick Where 📍</Text>
-        <Text style={styles.sectionText}>
-          Consider school, cafes, parks, or homes. Look for comfortable seating and minimal noise. Remember - snacks are always a good idea!
-        </Text>
-        <Image
-          source={require("../../assets/images/Movement-4.webp")}
-          style={styles.sectionImage}
-          resizeMode="cover"
-        />
+          <View style={styles.card}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="book" size={24} color="#3B82F6" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>New Testament</Text>
+              <Text style={styles.cardSubtitle}>15 of 146 stories</Text>
+            </View>
+          </View>
+        </View>
 
-        <Text style={styles.sectionTitle}>4. Start Reading 📖</Text>
-        <Text style={styles.sectionText}>
-          Open the app and select a passage. Assign roles by tapping to choose your character. Take turns reading your highlighted parts.
-        </Text>
-        <Image
-          source={require("../../assets/images/Movement-5.webp")}
-          style={styles.sectionImage}
-          resizeMode="cover"
-        />
+        {/* Reading Plans Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Reading Plans</Text>
+          
+          <View style={styles.card}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="list" size={24} color="#3B82F6" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>30 Days with Jesus</Text>
+              <Text style={styles.cardSubtitle}>Progress: 15/30 days</Text>
+              <View style={styles.progressBar}>
+                <View style={[styles.progressFill, { width: '50%' }]} />
+              </View>
+            </View>
+          </View>
 
-        <Text style={styles.sectionTitle}>5. Discuss and React 💭</Text>
-        <Text style={styles.sectionText}>
-          Use emoji reactions for memorable verses. Share what stands out to you. Create a judgment-free zone for open discussion.
-        </Text>
-        <Image
-          source={require("@/assets/images/button1.png")}
-          style={styles.sectionImage}
-          resizeMode="cover"
-        />
+          <View style={styles.card}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="list" size={24} color="#3B82F6" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Wisdom Literature</Text>
+              <Text style={styles.cardSubtitle}>Progress: 5/20 days</Text>
+              <View style={styles.progressBar}>
+                <View style={[styles.progressFill, { width: '25%' }]} />
+              </View>
+            </View>
+          </View>
+        </View>
 
-        <Text style={styles.sectionTitle}>6. Keep the Momentum 🔄</Text>
-        <Text style={styles.sectionText}>
-          Plan your next meeting before leaving. Invite interested friends to join. Share meaningful moments with group consent.
-        </Text>
-        <Image
-          source={require("@/assets/images/button1.png")}
-          style={styles.sectionImage}
-          resizeMode="cover"
-        />
+        {/* Challenges Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Challenges</Text>
+          
+          <View style={styles.card}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="trophy" size={24} color="#3B82F6" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Early Bird</Text>
+              <Text style={styles.cardSubtitle}>Read 5 days before 8 AM</Text>
+              <View style={styles.progressBar}>
+                <View style={[styles.progressFill, { width: '80%' }]} />
+              </View>
+            </View>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>4/5</Text>
+            </View>
+          </View>
 
-        <Text style={styles.sectionTitle}>Ready to Begin? 🙏</Text>
-        <Text style={styles.sectionText}>
-          Remember: It's about connecting with each other and exploring God's Word together. Keep it authentic and enjoyable!
-        </Text>
-        <Image
-          source={require("@/assets/images/button1.png")}
-          style={styles.sectionImage}
-          resizeMode="cover"
-        />
-      </ScrollView>
+          <View style={styles.card}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="flame" size={24} color="#3B82F6" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Weekly Warrior</Text>
+              <Text style={styles.cardSubtitle}>Complete 7 day streak</Text>
+              <View style={styles.progressBar}>
+                <View style={[styles.progressFill, { width: '60%' }]} />
+              </View>
+            </View>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>4/7</Text>
+            </View>
+          </View>
 
-      <View style={styles.stickyButtonContainer}>
-        <Pressable
-          style={styles.button}
-          onPress={() => router.push("/Plan")}
-        >
-          <Text style={styles.buttonText}>Start Reading Plan</Text>
+          <View style={styles.card}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="people" size={24} color="#3B82F6" />
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>Group Leader</Text>
+              <Text style={styles.cardSubtitle}>Lead 5 group sessions</Text>
+              <View style={styles.progressBar}>
+                <View style={[styles.progressFill, { width: '40%' }]} />
+              </View>
+            </View>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>2/5</Text>
+            </View>
+          </View>
+        </View>
+
+        <Pressable style={styles.resetButton}>
+          <Text style={styles.resetButtonText}>Reset Statistics</Text>
         </Pressable>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
-export default ReadingPlan;
+type ErrorBoundaryProps = {
+  children: React.ReactNode;
+};
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>Something went wrong.</Text>
+        </SafeAreaView>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default function WrappedAchievements() {
+  return (
+    <ErrorBoundary>
+      <Achievements />
+    </ErrorBoundary>
+  );
+}
