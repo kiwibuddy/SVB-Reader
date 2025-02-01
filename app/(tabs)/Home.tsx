@@ -1,4 +1,3 @@
-//my first edit
 import React, { useEffect } from "react";
 import {
   View,
@@ -156,12 +155,113 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
     color: "#666",
     lineHeight: 22,
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  completeButton: {
+    backgroundColor: '#4CAF50', // Green color for complete button
+  },
+  nextButton: {
+    backgroundColor: '#2196F3', // Blue color for next button
+  },
 });
+
+// Add this near other type definitions
+type ContinueReadingProps = {
+  lastReadSegment: string | null;
+  onPress: () => void;
+};
+
+const ContinueReadingSection = ({ lastReadSegment, onPress }: ContinueReadingProps) => {
+  const { completedSegments, markSegmentComplete, updateSegmentId } = useAppContext();
+  const router = useRouter();
+  const styles = createStyles(false);
+  
+  if (!lastReadSegment) {
+    return (
+      <View style={styles.continueReading}>
+        <View style={styles.readingInfo}>
+          <Text style={styles.readingTitle}>Jump Right In</Text>
+          <Text style={styles.readingSubtitle}>
+            Begin your reading journey with Genesis
+          </Text>
+        </View>
+        <Pressable style={styles.resumeButton} onPress={onPress}>
+          <Text style={styles.resumeText}>Start</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  const isLastSegmentCompleted = completedSegments[lastReadSegment]?.isCompleted;
+  const currentIndex = segIDs.indexOf(lastReadSegment);
+  let nextSegment = segIDs[currentIndex + 1];
+  
+  // Skip any introduction segments
+  while (nextSegment && nextSegment.startsWith('I')) {
+    const skipIndex = segIDs.indexOf(nextSegment);
+    nextSegment = segIDs[skipIndex + 1];
+  }
+
+  const currentSegmentData = SegmentTitles[lastReadSegment as keyof typeof SegmentTitles];
+  const nextSegmentData = nextSegment ? SegmentTitles[nextSegment as keyof typeof SegmentTitles] : null;
+
+  const handleComplete = async () => {
+    // Navigate back to the last segment
+    await updateSegmentId(`ENG-NLT-${lastReadSegment}`);
+    const segment = SegmentTitles[lastReadSegment as keyof typeof SegmentTitles];
+    router.push({
+      pathname: "/[segment]",
+      params: {
+        segment: `ENG-NLT-${lastReadSegment}`,
+        book: segment?.book[0] || ''
+      }
+    });
+  };
+
+  return (
+    <View style={styles.continueReading}>
+      <View style={styles.readingInfo}>
+        <Text style={styles.readingTitle}>
+          {isLastSegmentCompleted ? 'Continue Reading' : 'Resume Reading'}
+        </Text>
+        <Text style={styles.readingSubtitle}>
+          {isLastSegmentCompleted 
+            ? `Next: ${nextSegmentData?.title}`
+            : `Complete: ${currentSegmentData?.title}`}
+        </Text>
+      </View>
+      <View style={styles.buttonContainer}>
+        {!isLastSegmentCompleted && (
+          <Pressable 
+            style={[styles.resumeButton, styles.completeButton]}
+            onPress={handleComplete}
+          >
+            <Text style={styles.resumeText}>Complete</Text>
+          </Pressable>
+        )}
+        <Pressable 
+          style={[styles.resumeButton, isLastSegmentCompleted ? {} : styles.nextButton]}
+          onPress={onPress}
+        >
+          <Text style={styles.resumeText}>
+            {isLastSegmentCompleted ? 'Next' : 'Next'}
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+};
 
 const HomeScreen = () => {
   const { 
-    activePlan,      // Get active plan
-    activeChallenges // Get active challenges
+    activePlan,
+    activeChallenges,
+    lastReadSegment,
+    setLastReadSegment,
+    completedSegments,
+    updateSegmentId,
   } = useAppContext();
   const router = useRouter();
   const { width } = useWindowDimensions();
@@ -190,8 +290,75 @@ const HomeScreen = () => {
     return activePlansCount + activeChallengesCount;
   };
 
+  // Calculate total completed segments
+  const getCompletedStoriesCount = () => {
+    return Object.values(completedSegments).filter(segment => segment.isCompleted).length;
+  };
+
   const handleScroll = (event: any) => {
     // Implementation of handleScroll function
+  };
+
+  const handleContinueReading = async () => {
+    if (!lastReadSegment) {
+      // For new users, start with the first story segment (S001) in Genesis
+      await setLastReadSegment('S001');
+      await updateSegmentId(`ENG-NLT-S001`);
+      router.push({
+        pathname: "/[segment]",
+        params: {
+          segment: `ENG-NLT-S001`,
+          book: 'Gen'
+        }
+      });
+      return;
+    }
+
+    const currentIndex = segIDs.indexOf(lastReadSegment);
+    let nextSegment = segIDs[currentIndex + 1];
+    
+    // Skip any introduction segments
+    while (nextSegment && nextSegment.startsWith('I')) {
+      const skipIndex = segIDs.indexOf(nextSegment);
+      nextSegment = segIDs[skipIndex + 1];
+    }
+
+    if (nextSegment) {
+      // If there's a next segment, go to it
+      await setLastReadSegment(nextSegment);
+      await updateSegmentId(`ENG-NLT-${nextSegment}`);
+      const segment = SegmentTitles[nextSegment as keyof typeof SegmentTitles];
+      router.push({
+        pathname: "/[segment]",
+        params: {
+          segment: `ENG-NLT-${nextSegment}`,
+          book: segment?.book[0] || ''
+        }
+      });
+    } else {
+      // If no next segment (or at the end), resume the last segment
+      await updateSegmentId(`ENG-NLT-${lastReadSegment}`);
+      const segment = SegmentTitles[lastReadSegment as keyof typeof SegmentTitles];
+      router.push({
+        pathname: "/[segment]",
+        params: {
+          segment: `ENG-NLT-${lastReadSegment}`,
+          book: segment?.book[0] || ''
+        }
+      });
+    }
+  };
+
+  const handleComplete = async () => {
+    await updateSegmentId(`ENG-NLT-${lastReadSegment}`);
+    const segment = SegmentTitles[lastReadSegment as keyof typeof SegmentTitles];
+    router.push({
+      pathname: "/[segment]",
+      params: {
+        segment: `ENG-NLT-${lastReadSegment}`,
+        book: segment?.book[0] || ''
+      }
+    });
   };
 
   return (
@@ -242,18 +409,10 @@ const HomeScreen = () => {
           </Pressable>
         </View>
 
-        <View style={styles.continueReading}>
-          <View style={styles.readingInfo}>
-            <Text style={styles.readingTitle}>Continue Reading</Text>
-            <Text style={styles.readingSubtitle}>
-              Leviticus 1:1-4:35
-              <Ionicons name="book-outline" size={16} color="#666" />
-            </Text>
-          </View>
-          <Pressable style={styles.resumeButton}>
-            <Text style={styles.resumeText}>Resume</Text>
-          </Pressable>
-        </View>
+        <ContinueReadingSection 
+          lastReadSegment={lastReadSegment}
+          onPress={handleContinueReading}
+        />
 
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
@@ -261,7 +420,7 @@ const HomeScreen = () => {
             <Text style={styles.statLabel}>Day Streak</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>24</Text>
+            <Text style={styles.statNumber}>{getCompletedStoriesCount()}</Text>
             <Text style={styles.statLabel}>Stories Read</Text>
           </View>
           <View style={styles.statItem}>

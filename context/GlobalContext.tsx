@@ -66,6 +66,8 @@ interface AppContextType {
   version: string;
   setLanguage: (lang: string) => void;
   setVersion: (ver: string) => void;
+  lastReadSegment: string | null;
+  setLastReadSegment: (segmentId: string) => Promise<void>;
 }
 
 const defaultContext: AppContextType = {
@@ -99,6 +101,8 @@ const defaultContext: AppContextType = {
   version: 'NLT',
   setLanguage: () => {},
   setVersion: () => {},
+  lastReadSegment: null,
+  setLastReadSegment: async () => {},
 };
 
 // Create the context
@@ -124,6 +128,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   const [selectedReaderColor, setSelectedReaderColor] = useState<string | null>(null);
   const [language, setLanguage] = useState('en');
   const [version, setVersion] = useState('NLT');
+  const [lastReadSegment, setLastReadSegment] = useState<string | null>(null);
 
   useEffect(() => {
     // Load read status from AsyncStorage when the app starts
@@ -387,6 +392,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     setSelectedReaderColor(color);
   };
 
+  const updateLastReadSegment = async (segmentId: string) => {
+    setLastReadSegment(segmentId);
+    await AsyncStorage.setItem('lastReadSegment', segmentId);
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -420,6 +430,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         version,
         setLanguage,
         setVersion,
+        lastReadSegment,
+        setLastReadSegment: updateLastReadSegment,
       }}
     >
       {children}

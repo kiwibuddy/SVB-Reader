@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Image, Platform, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar } from 'react-native';
 import { useAppContext } from '@/context/GlobalContext';
@@ -74,6 +74,14 @@ export default function BibleScreen() {
     }
   }, [segID, segmentData]);
 
+  const handleScroll = (event: any) => {
+    const currentOffset = event.nativeEvent.contentOffset.y;
+    // Call the global scroll handler if it exists
+    if (global.handleBottomNavScroll) {
+      global.handleBottomNavScroll(event);
+    }
+  };
+
   // Show loading state
   if (!segID || !segmentData) {
     return (
@@ -85,14 +93,20 @@ export default function BibleScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView ref={scrollViewRef} style={styles.screenContainer}>
+      <ScrollView 
+        ref={scrollViewRef} 
+        style={styles.screenContainer}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
+        <View style={styles.headerSpacer} />
         {segID[0] === "I" && isIntroType(segmentData) && (
           <Intro segmentData={segmentData} />
         )}
         {segID[0] === "S" && isSegmentType(segmentData) && (
           <>
             <Segment segmentData={segmentData} />
-            <Questions segmentId={segID} /> {/* Pass segmentId to Questions */}
+            <Questions segmentId={segID} />
           </>
         )}
         <View style={styles.checkCircleContainer}>
@@ -100,11 +114,11 @@ export default function BibleScreen() {
         </View>
       </ScrollView>
 
-      {/* Navigation buttons */}
+      {/* Navigation buttons - fixed position */}
       <View style={styles.buttonContainer}>
         {!IsFirstSegment && prevSegId && (
           <TouchableOpacity
-            style={[styles.prevButton, styles.roundButton]}
+            style={[styles.roundButton, styles.prevButton]}
             onPress={() => {
               updateSegmentId(prevSegId);
               router.push(`/${prevSegId}`);
@@ -120,7 +134,7 @@ export default function BibleScreen() {
 
         {!IsLastSegment && nextSegId && (
           <TouchableOpacity
-            style={[styles.nextButton, styles.roundButton]}
+            style={[styles.roundButton, styles.nextButton]}
             onPress={() => {
               updateSegmentId(nextSegId);
               router.push(`/${nextSegId}`);
@@ -158,42 +172,40 @@ const styles = StyleSheet.create({
     flex: 1, // Allow ScrollView to fill the available space
     backgroundColor: "white",
   },
+  headerSpacer: {
+    height: 16, // Match Home.tsx top padding
+  },
   buttonContainer: {
     position: "absolute",
-    bottom: 20, // Position at the bottom
+    bottom: 90, // Fixed position above the bottom navigation
     left: 0,
-    right: 0, // Stretch to fill the width
-    flexDirection: "row", // Align buttons in a row
-    justifyContent: "space-between", // Space buttons evenly
-    padding: 10, // Add some padding
-    backgroundColor: "transparent", // Background color for visibility
-    zIndex: 1000, // Ensure buttons are above other content
-  },
-  prevButton: {
-    backgroundColor: "#007BFF", // Button color
-    padding: 10,
-    borderRadius: 5,
-    flex: 0, // Allow button to take available space
-    marginRight: 5, // Space between buttons
-  },
-  nextButton: {
-    backgroundColor: "#007BFF", // Button color
-    padding: 10,
-    borderRadius: 5,
-    flex: 0, // Allow button to take available space
-    marginLeft: 5, // Space between buttons
-  },
-  buttonText: {
-    color: "#FFFFFF", // Text color
-    fontSize: 16,
-    textAlign: "center", // Center text
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    zIndex: 1000,
   },
   roundButton: {
-    width: 50, // Adjust size as needed
+    width: 50,
     height: 50,
-    borderRadius: 25, // Half of width/height for a circle
+    borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#007BFF",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  prevButton: {
+    marginRight: 'auto',
+  },
+  nextButton: {
+    marginLeft: 'auto',
   },
   checkCircleContainer: {
     flex: 1,

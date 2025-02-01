@@ -4,6 +4,10 @@ import { useRouter, usePathname } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+declare global {
+  var handleBottomNavScroll: ((event: any) => void) | undefined;
+}
+
 interface BottomNavigationProps {
   isHome?: boolean;
 }
@@ -15,53 +19,43 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   const [isVisible] = React.useState(new Animated.Value(1));
   const lastScrollY = React.useRef(0);
 
-  // Move hooks before any conditional returns
+  const handleScroll = (event: any) => {
+    const currentOffset = event.nativeEvent.contentOffset.y;
+    if (currentOffset > lastScrollY.current && currentOffset > 50) {
+      // Scrolling down - hide
+      Animated.spring(isVisible, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 100,
+        friction: 10
+      }).start();
+    } else if (currentOffset < lastScrollY.current) {
+      // Scrolling up - show
+      Animated.spring(isVisible, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 100,
+        friction: 10
+      }).start();
+    }
+    lastScrollY.current = currentOffset;
+  };
+
+  // Pass this handleScroll function to each ScrollView in your app
   React.useEffect(() => {
-    if (isHome) return; // Early return in useEffect is fine
-
-    let timeout: NodeJS.Timeout;
-    const handleScroll = (event: any) => {
-      const currentScrollY = event.nativeEvent.contentOffset.y;
-      
-      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
-        // Scrolling down - hide
-        Animated.spring(isVisible, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
-      } else {
-        // Scrolling up - show
-        Animated.spring(isVisible, {
-          toValue: 1,
-          useNativeDriver: true,
-        }).start();
-      }
-      
-      // Clear previous timeout
-      if (timeout) clearTimeout(timeout);
-      
-      // Set new timeout to show nav after stopping scroll
-      timeout = setTimeout(() => {
-        Animated.spring(isVisible, {
-          toValue: 1,
-          useNativeDriver: true,
-        }).start();
-      }, 1500);
-
-      lastScrollY.current = currentScrollY;
-    };
-
-    // Add scroll listener to window
-    if (!isHome) {
-      // Add your scroll listener logic here
-      // This will depend on how you're handling scrolling in your app
+    if (isHome) return;
+    
+    // You can expose the handleScroll function to other components
+    if (global) {
+      global.handleBottomNavScroll = handleScroll;
     }
 
     return () => {
-      if (timeout) clearTimeout(timeout);
-      // Remove scroll listener if needed
+      if (global) {
+        delete global.handleBottomNavScroll;
+      }
     };
-  }, [isHome, isVisible]);
+  }, [isHome]);
 
   // Don't render the navigation on the index screen - move after hooks
   if (pathname === "/" || pathname === "/index") {
@@ -153,6 +147,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    zIndex: 999,
   },
   content: {
     flexDirection: 'row',
