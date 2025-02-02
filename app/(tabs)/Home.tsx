@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,15 +10,19 @@ import {
   ImageBackground,
   useWindowDimensions,
   Platform,
-  SafeAreaView
+  SafeAreaView,
+  TouchableOpacity
 } from "react-native";
 import Card from "@/components/Card";
 import ReadingPlansChallenges from "../../assets/data/ReadingPlansChallenges.json";
 import StickyHeader from "../../components/StickyHeader";
 import { useAppContext } from "@/context/GlobalContext";
-import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
+import { getEmojis } from "@/api/sqlite";
+import { format } from 'date-fns';
+
+const SegmentTitles = require("@/assets/data/SegmentTitles.json") as { [key: string]: SegmentTitle };
 
 type SegmentTitle = {
   Segment: string;
@@ -165,6 +169,86 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   nextButton: {
     backgroundColor: '#2196F3', // Blue color for next button
   },
+  section: {
+    marginVertical: 4,
+    padding: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  insightCards: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  featuredCard: {
+    borderRadius: 16,
+    backgroundColor: '#f5f5f5',
+    padding: 16,
+    marginVertical: 8,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  activityCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    marginRight: 8,
+    width: 180,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  activityTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  emojiContainer: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  emoji: {
+    fontSize: 20,
+    marginRight: 4,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#666',
+  },
+  insightCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    flex: 1,
+    minWidth: isLargeScreen ? '23%' : '48%',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    opacity: 1,
+  },
+  insightCardPressed: {
+    opacity: 0.7,
+  },
+  insightTitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+  },
+  insightValue: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
 });
 
 // Add this near other type definitions
@@ -249,6 +333,237 @@ const ContinueReadingSection = ({ lastReadSegment, onPress }: ContinueReadingPro
             {isLastSegmentCompleted ? 'Next' : 'Next'}
           </Text>
         </Pressable>
+      </View>
+    </View>
+  );
+};
+
+// Add types for our data
+interface RecentActivity {
+  segmentId: string;
+  title: string;
+  timestamp: string;
+  emojis: string[];
+}
+
+// Add near other type definitions
+type CompletionData = {
+  id: string;
+  isCompleted: boolean;
+};
+
+// 1. Recent Activity Section with real data
+const RecentActivitySection = ({ styles }: { styles: any }) => {
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    const loadRecentActivity = async () => {
+      const emojiData = await getEmojis();
+      const activities = emojiData
+        .reduce((acc: RecentActivity[], curr) => {
+          const existing = acc.find(a => a.segmentId === curr.segmentID);
+          if (existing) {
+            existing.emojis.push(curr.emoji);
+          } else {
+            acc.push({
+              segmentId: curr.segmentID,
+              title: SegmentTitles[curr.segmentID]?.title || 'Unknown Segment',
+              timestamp: new Date().toISOString(), // You might want to store this in your DB
+              emojis: [curr.emoji]
+            });
+          }
+          return acc;
+        }, [])
+        .slice(0, 5); // Show last 5 activities
+
+      setRecentActivities(activities);
+    };
+
+    loadRecentActivity();
+  }, []);
+
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Recent Activity</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {recentActivities.map((activity, index) => (
+          <TouchableOpacity 
+            key={index}
+            style={styles.activityCard}
+            onPress={() => {
+              // Navigate to segment
+              router.push({
+                pathname: "/[segment]",
+                params: { segment: activity.segmentId }
+              });
+            }}
+          >
+            <Text style={styles.activityTitle} numberOfLines={2}>
+              {activity.title}
+            </Text>
+            <View style={styles.emojiContainer}>
+              {activity.emojis.map((emoji, i) => (
+                <Text key={i} style={styles.emoji}>{emoji}</Text>
+              ))}
+            </View>
+            <Text style={styles.timestamp}>
+              {format(new Date(activity.timestamp), 'MMM d, h:mm a')}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
+  );
+};
+
+// 2. Reading Insights with real data
+const InsightsSection = ({ styles }: { styles: any }) => {
+  const { completedSegments } = useAppContext();
+  const router = useRouter();
+  const [insights, setInsights] = useState({
+    favoriteBook: '',
+    favoriteBookFullName: '',
+    favoriteSegmentId: '',
+    favoriteSegment: '',
+    readingStreak: 0,
+    mostUsedEmoji: '',
+    completionRate: 0
+  });
+
+  useEffect(() => {
+    const calculateInsights = async () => {
+      const emojiData = await getEmojis();
+      
+      // Calculate most used emoji
+      const emojiCounts = emojiData.reduce((acc: {[key: string]: number}, curr) => {
+        acc[curr.emoji] = (acc[curr.emoji] || 0) + 1;
+        return acc;
+      }, {});
+      const mostUsedEmoji = Object.entries(emojiCounts)
+        .sort(([,a], [,b]) => b - a)[0]?.[0] || '👍';
+
+      // Calculate segment read counts and book counts
+      const segmentCounts: {[key: string]: number} = {};
+      const bookCounts: {[key: string]: number} = {};
+
+      Object.entries(completedSegments).forEach(([segmentId, seg]) => {
+        if (seg.isCompleted) {
+          // Count segment reads using the key as the ID
+          segmentCounts[segmentId] = (segmentCounts[segmentId] || 0) + 1;
+          
+          // Count book reads
+          const book = SegmentTitles[segmentId]?.book[0] || 'Unknown';
+          bookCounts[book] = (bookCounts[book] || 0) + 1;
+        }
+      });
+
+      // Find favorite book and segment
+      const favoriteBookKey = Object.entries(bookCounts)
+        .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Gen';
+      
+      // Map short book name to full name (you'll need to create this mapping)
+      const bookNameMapping: { [key: string]: string } = {
+        'Gen': 'Genesis',
+        'Exo': 'Exodus',
+        // ... add other book mappings
+      };
+
+      const favoriteSegmentId = Object.entries(segmentCounts)
+        .sort(([,a], [,b]) => b - a)[0]?.[0];
+
+      setInsights({
+        favoriteBook: favoriteBookKey,
+        favoriteBookFullName: bookNameMapping[favoriteBookKey] || favoriteBookKey,
+        favoriteSegmentId,
+        favoriteSegment: favoriteSegmentId 
+          ? SegmentTitles[favoriteSegmentId]?.title || 'Unknown'
+          : 'Not enough data',
+        readingStreak: 12,
+        mostUsedEmoji,
+        completionRate: Math.round((Object.keys(completedSegments).length / Object.keys(SegmentTitles).length) * 100)
+      });
+    };
+
+    calculateInsights();
+  }, [completedSegments]);
+
+  const handleBookPress = () => {
+    // Find first segment of favorite book
+    const firstSegment = Object.entries(SegmentTitles).find(([_, data]) => 
+      data.book[0] === insights.favoriteBook
+    );
+    if (firstSegment) {
+      router.push({
+        pathname: "/[segment]",
+        params: {
+          segment: `ENG-NLT-${firstSegment[0]}`,
+          book: insights.favoriteBook
+        }
+      });
+    }
+  };
+
+  const handleStoryPress = () => {
+    if (insights.favoriteSegmentId) {
+      router.push({
+        pathname: "/[segment]",
+        params: {
+          segment: `ENG-NLT-${insights.favoriteSegmentId}`,
+          book: SegmentTitles[insights.favoriteSegmentId]?.book[0] || ''
+        }
+      });
+    }
+  };
+
+  const handleEmojiPress = () => {
+    router.push({
+      pathname: "/reactions",
+      params: { selectedEmoji: insights.mostUsedEmoji }
+    });
+  };
+
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Your Reading Journey</Text>
+      <View style={styles.insightCards}>
+        <Pressable 
+          style={({pressed}) => [
+            styles.insightCard,
+            pressed && styles.insightCardPressed
+          ]}
+          onPress={handleBookPress}
+        >
+          <Text style={styles.insightTitle}>Favorite Book</Text>
+          <Text style={styles.insightValue}>{insights.favoriteBookFullName}</Text>
+        </Pressable>
+
+        <Pressable 
+          style={({pressed}) => [
+            styles.insightCard,
+            pressed && styles.insightCardPressed
+          ]}
+          onPress={handleStoryPress}
+        >
+          <Text style={styles.insightTitle}>Favorite Story</Text>
+          <Text style={styles.insightValue} numberOfLines={2}>{insights.favoriteSegment}</Text>
+        </Pressable>
+
+        <Pressable 
+          style={({pressed}) => [
+            styles.insightCard,
+            pressed && styles.insightCardPressed
+          ]}
+          onPress={handleEmojiPress}
+        >
+          <Text style={styles.insightTitle}>Most Used Reaction</Text>
+          <Text style={styles.insightValue}>{insights.mostUsedEmoji}</Text>
+        </Pressable>
+
+        <View style={styles.insightCard}>
+          <Text style={styles.insightTitle}>Completion</Text>
+          <Text style={styles.insightValue}>{insights.completionRate}%</Text>
+        </View>
       </View>
     </View>
   );
@@ -428,6 +743,9 @@ const HomeScreen = () => {
             <Text style={styles.statLabel}>Active Plans</Text>
           </View>
         </View>
+
+        <InsightsSection styles={styles} />
+        <RecentActivitySection styles={styles} />
       </ScrollView>
     </SafeAreaView>
   );
