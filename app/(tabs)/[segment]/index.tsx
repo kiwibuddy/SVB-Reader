@@ -133,7 +133,7 @@ export default function BibleScreen() {
       >
         <View style={styles.headerSpacer} />
         {segID[0] === "I" && isIntroType(segmentData) && (
-          <Intro segmentData={segmentData} />
+          <Intro segmentData={{...segmentData, id: segID}} />
         )}
         {segID[0] === "S" && isSegmentType(segmentData) && (
           <>
@@ -144,11 +144,11 @@ export default function BibleScreen() {
               challengeId={challengeId as string}
             />
             <Questions segmentId={segID} />
+            <View style={styles.checkCircleContainer}>
+              <CheckCircle segmentId={segID} iconSize={80} />
+            </View>
           </>
         )}
-        <View style={styles.checkCircleContainer}>
-          <CheckCircle segmentId={segID} iconSize={80} />
-        </View>
       </ScrollView>
 
       <Animated.View style={[
