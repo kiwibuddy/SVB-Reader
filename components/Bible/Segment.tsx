@@ -15,12 +15,13 @@ import { addEmoji } from "@/api/sqlite";
 import { useAppContext } from "@/context/GlobalContext";
 import CelebrationPopup from "../CelebrationPopup";
 import { useRouter } from "expo-router";
+import CheckCircle from "@/components/CheckCircle";
 
 interface SegmentProps {
   segmentData: SegmentType;
-  showGlobalCompletion?: boolean;
-  challengeId?: string;
+  context?: 'main' | 'plan' | 'challenge';
   planId?: string;
+  challengeId?: string;
 }
 
 const icons = [
@@ -32,9 +33,9 @@ const icons = [
 
 const SegmentComponent: React.FC<SegmentProps> = ({ 
   segmentData, 
-  showGlobalCompletion = true,
-  challengeId,
-  planId
+  context = 'main',
+  planId,
+  challengeId
 }) => {
   const { width: screenWidth } = useWindowDimensions();
   const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenWidth > 768);
@@ -68,7 +69,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   // Determine which completion state to use
   const getIsCompleted = () => {
-    if (showGlobalCompletion) {
+    if (context === 'main') {
       return completedSegments[segID]?.isCompleted || false;
     }
     if (planId && activePlan?.planId === planId) {
@@ -97,17 +98,21 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   };
 
   const handleLongPress = (blockData: BibleBlock, blockID: string) => {
-    setIsModalVisible(true); // Show the reaction selection modal
+    setIsModalVisible(true);
     setBlockData(blockData);
     setBlockID(blockID);
   };
 
   const handleReactionSelect = async (blockData: BibleBlock, blockID: string, emoji: string) => {
-    await addEmoji(blockID, JSON.stringify(blockData), emoji, "");
-    if (typeof emojiActions === 'number') {
-      await updateEmojiActions(emojiActions + 1);
+    try {
+      await addEmoji(blockID, JSON.stringify(blockData), emoji, "");
+      if (typeof emojiActions === 'number') {
+        await updateEmojiActions(emojiActions + 1);
+      }
+      setIsModalVisible(false);
+    } catch (error) {
+      console.error('Error setting emoji:', error);
     }
-    setIsModalVisible(false);
   };
 
   const newContent = splitIntoParagraphs(content);
@@ -116,7 +121,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   // Add handler for completion toggle
   const handleCompletion = async () => {
-    if (showGlobalCompletion) {
+    if (context === 'main') {
       await markSegmentComplete(segID, !isCompleted);
       if (!isCompleted) {
         setShowCelebration(true);

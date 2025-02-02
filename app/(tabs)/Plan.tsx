@@ -20,6 +20,7 @@ import { StatusIndicator } from '@/components/StatusIndicator';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
+import { markSegmentCompleteInDB, getSegmentCompletionStatus, unlockAchievement } from "@/api/sqlite";
 
 interface BookSegments {
   segments: string[];
@@ -169,6 +170,93 @@ const PlanScreen = () => {
 
   // Initialize selectedPlan with the active plan if it exists, otherwise use first plan
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [planProgress, setPlanProgress] = useState<Record<string, string[]>>({});
+
+  // Load initial progress data
+  useEffect(() => {
+    loadPlanProgress();
+  }, []);
+
+  const loadPlanProgress = async () => {
+    const progress: Record<string, string[]> = {};
+    
+    // Load progress for each plan
+    for (const plan of readingPlansData.plans) {
+      const completedSegments: string[] = [];
+      
+      // Check completion status for each segment
+      for (const [bookKey, bookData] of Object.entries(plan.segments)) {
+        if (bookData?.segments) {
+          for (const segmentId of bookData.segments) {
+            const isCompleted = await getSegmentCompletionStatus(
+              segmentId,
+              'plan',
+              plan.id
+            );
+            if (isCompleted) {
+              completedSegments.push(segmentId);
+            }
+          }
+        }
+      }
+      
+      progress[plan.id] = completedSegments;
+    }
+    
+    setPlanProgress(progress);
+  };
+
+  const handleSegmentComplete = async (planId: string, segmentId: string) => {
+    try {
+      // Mark segment as complete in database
+      await markSegmentCompleteInDB(segmentId, 'plan', planId);
+      
+      // Update local state
+      setPlanProgress(prev => ({
+        ...prev,
+        [planId]: [...(prev[planId] || []), segmentId]
+      }));
+
+      // Check for achievements
+      const completedCount = (planProgress[planId] || []).length + 1;
+      
+      // Achievement for starting a plan
+      if (completedCount === 1) {
+        await unlockAchievement(
+          'plan_started',
+          'Plan Started!',
+          'Started your first reading plan'
+        );
+      }
+
+      // Achievement for completing 10 segments
+      if (completedCount === 10) {
+        await unlockAchievement(
+          'plan_milestone_10',
+          'First Milestone!',
+          'Completed 10 segments in a reading plan'
+        );
+      }
+
+      // Check if plan is completed
+      const plan = readingPlansData.plans.find(p => p.id === planId);
+      if (plan) {
+        const totalSegments = Object.values(plan.segments)
+          .reduce((acc, book) => acc + (book?.segments?.length || 0), 0);
+        
+        if (completedCount === totalSegments) {
+          await unlockAchievement(
+            `plan_complete_${planId}`,
+            'Plan Completed!',
+            `Completed the ${plan.title} reading plan`
+          );
+        }
+      }
+
+    } catch (error) {
+      console.error('Error completing segment:', error);
+    }
+  };
 
   // Move these function definitions up here
   const getPlanBooksData = (planId: string) => {
@@ -253,10 +341,6 @@ const PlanScreen = () => {
     }
   };
 
-  const handleSegmentComplete = (segmentId: string) => {
-    updateReadingPlanProgress(selectedPlanId || '', segmentId);
-  };
-
   const getPlanStatus = (planId: string) => {
     if (!activePlan || activePlan.planId !== planId) return 'not-started';
     if (activePlan.isCompleted) return 'completed';
@@ -297,6 +381,11 @@ const PlanScreen = () => {
     const isPaused = activePlan && isActive && activePlan.isPaused;
     const segmentCount = getPlanSegmentCount(plan.id);
     const planBooksData = isSelected ? getPlanBooksData(plan.id) : [];
+    const completedSegments = planProgress[plan.id] || [];
+    const totalSegments = Object.values(plan.segments)
+      .reduce((acc, book) => acc + (book?.segments?.length || 0), 0);
+    
+    const progress = (completedSegments.length / totalSegments) * 100;
 
     return (
       <View style={styles.planContainer}>
@@ -356,15 +445,7 @@ const PlanScreen = () => {
                   <Accordion 
                     item={item} 
                     bookIndex={bookIndex}
-                    completedSegments={
-                      Object.fromEntries(
-                        (activePlan?.completedSegments || []).map(id => [
-                          id, 
-                          { isCompleted: true, color: null }
-                        ])
-                      )
-                    }
-                    onSegmentComplete={handleSegmentComplete}
+                    onSegmentComplete={(segmentId) => handleSegmentComplete(plan.id, segmentId)}
                     context="plan"
                     showGlobalCompletion={false}
                     planId={plan.id}
@@ -376,6 +457,7 @@ const PlanScreen = () => {
             />
           </View>
         )}
+        <Text>Progress: {progress.toFixed(1)}%</Text>
       </View>
     );
   };

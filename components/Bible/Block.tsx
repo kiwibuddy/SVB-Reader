@@ -26,16 +26,17 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
   const { source, children } = block;
   const { color, sourceName } = source;
   const colors = getColors(color);
-  const [emoji, setEmoji] = useState<string | null>(null);
+  const [existingEmoji, setExistingEmoji] = useState<string | null>(null);
 
   useEffect(() => {
-    async function checkForEmoji() {
-      const result = await getEmoji(segID, bIndex.toString());
-      setEmoji(result);
-    }
-
-    checkForEmoji(); // Initial check
-  }, [segID, bIndex, emoji, emojiActions]);
+    const fetchEmoji = async () => {
+      if (segID) {
+        const emoji = await getEmoji(segID, bIndex.toString());
+        setExistingEmoji(emoji);
+      }
+    };
+    fetchEmoji();
+  }, [segID, bIndex]);
 
   if (toRead) {
     return (
@@ -44,63 +45,68 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
   }
     const tailAlignment = color !== "black" ? {left: 15} : {right:15};
   const emojiAlignment = color !== "black" ? { right: 10 } : { left: 10 };
-  // if (color !== 'black') {
-    return (
-      <View key={bIndex}>
+  const emojiTopPosition = hasTail ? { top: 35 } : { top: 15 };
+
+  return (
+    <View key={bIndex}>
+      {hasTail && (
+        <SourceNameComponent
+          sourceName={sourceName}
+          align={color !== "black" ? "left" : "right"}
+        />
+      )}
+      <View
+        style={{
+          ...styles.bubble,
+          ...{
+            backgroundColor: colors.light,
+          },
+        }}
+      >
         {hasTail && (
-          <SourceNameComponent
-            sourceName={sourceName}
-            align={color !== "black" ? "left" : "right"}
+          <View
+            style={[
+              styles.tail,
+              {
+                borderBottomColor: colors.light,
+              },
+              tailAlignment,
+            ]}
           />
         )}
-        <View
-          style={{
-            ...styles.bubble,
-            ...{
-              backgroundColor: colors.light,
-            },
+        <FlatList
+          data={children}
+          renderItem={({ item, index }) => {
+            if (item.type === "break") return null;
+            return (
+              <BibleInlineComponent
+                key={`${bIndex}-${index}`}
+                iIndex={`${bIndex}-${index}`}
+                inline={item}
+                textColor={colors.dark}
+              />
+            );
           }}
-        >
-          {hasTail && (
-            <View
-              style={[
-                styles.tail,
-                {
-                  borderBottomColor: colors.light,
-                },
-                tailAlignment,
-              ]}
-            />
-          )}
-          <FlatList
-            data={children}
-            renderItem={({ item, index }) => {
-              if (item.type === "break") return null;
-              return (
-                <BibleInlineComponent
-                  key={`${bIndex}-${index}`}
-                  iIndex={`${bIndex}-${index}`}
-                  inline={item}
-                  textColor={colors.dark}
-                />
-              );
-            }}
-          />
-        </View>
-        {emoji && (
-          <View style={[styles.reactionContainer, { top: 35 }, emojiAlignment]}>
-            <Pressable
-              onPress={async () => {
-                await deleteEmoji(segID, bIndex.toString());
-                setEmoji(null);
-              }}
-            >
-              <Text style={styles.reactionText}>{`${emoji}`}</Text>
-            </Pressable>
-          </View>
-        )}
+        />
       </View>
-    );
+      {existingEmoji && (
+        <View style={[
+          styles.reactionContainer,
+          emojiTopPosition,
+          emojiAlignment
+        ]}>
+          <Pressable
+            onPress={async () => {
+              await deleteEmoji(segID, bIndex.toString());
+              setExistingEmoji(null);
+            }}
+          >
+            <Text style={styles.reactionText}>{`${existingEmoji}`}</Text>
+          </Pressable>
+        </View>
+      )}
+    </View>
+  );
 };
 
 // Define styles
@@ -152,6 +158,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2, // Optional: shadow opacity for iOS
     shadowRadius: 2, // Optional: shadow radius for iOS
     zIndex: 100,
+  },
+  blockEmoji: {
+    position: 'absolute',
+    left: -25,
+    top: '50%',
+    transform: [{ translateY: -12 }],
+    fontSize: 20,
   },
 });
 

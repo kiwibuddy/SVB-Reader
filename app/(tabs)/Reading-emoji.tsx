@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, FlatList, TouchableOpacity, Alert, SafeAreaView, useWindowDimensions } from "react-native";
 import { useState, useEffect, useCallback } from "react";
-import { getEmojis} from "@/api/sqlite";
+import { getEmojis } from "@/api/sqlite";
 import BibleBlockComponent from "@/components/Bible/Block";
 const SegmentTitles = require("@/assets/data/SegmentTitles.json");
 const Books = require("@/assets/data/BookChapterList.json");
@@ -113,7 +113,7 @@ const EMOJI_TYPES = [
   { emoji: "❤️", label: "Love", color: "#FF6B6B" },
   { emoji: "👍", label: "Agree", color: "#4ECDC4" },
   { emoji: "🤔", label: "Reflecting", color: "#FFB347" },
-  { emoji: "🙏", label: "Praying", color: "#9B59B6" },
+  { emoji: "🙏", label: "Praying", color: "#9B59B6" }
 ];
 
 const getSegmentReference = (segmentID: string) => {
@@ -313,39 +313,49 @@ const ReadingEmoji = () => {
   const { updateSegmentId } = useAppContext();
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
   const [reactions, setReactions] = useState<EmojiReaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
-    loadReactions();
+    loadEmojis();
   }, []);
 
-  const loadReactions = async () => {
+  const loadEmojis = async () => {
     try {
-      const allReactions = await getEmojis();
-      setReactions(allReactions);
+      setIsLoading(true);
+      const emojiData = await getEmojis();
+      setReactions(emojiData);
     } catch (error) {
-      console.error('Error loading reactions:', error);
+      console.error('Error loading emojis:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Add this helper function to sort reactions by most recent
+  // Sort reactions by most recent first
   const sortReactionsByRecent = (reactions: EmojiReaction[]) => {
-    return [...reactions].sort((a, b) => {
-      // Assuming id is sequential and higher means more recent
-      return b.id - a.id;
-    });
+    return [...reactions].sort((a, b) => b.id - a.id);
   };
 
-  // Modify the filteredReactions logic
-  const filteredReactions = selectedEmoji
-    ? reactions.filter(r => r.emoji === selectedEmoji)
-    : sortReactionsByRecent(reactions);
+  // Get filtered reactions based on selected emoji type
+  const getFilteredReactions = () => {
+    if (!selectedEmoji) {
+      // When no emoji is selected, show all reactions sorted by most recent
+      return sortReactionsByRecent(reactions);
+    }
+    // When emoji type is selected, filter by that type and sort by most recent
+    return sortReactionsByRecent(
+      reactions.filter(r => r.emoji === selectedEmoji)
+    );
+  };
+
+  // Replace existing filteredReactions with the new function
+  const filteredReactions = getFilteredReactions();
 
   const getEmojiCount = (emojiType: string) => {
     return reactions.filter(r => r.emoji === emojiType).length;
   };
 
-  // Helper function to split description into intro and steps
   const splitDescription = (description: string[]) => {
     const introIndex = description.findIndex(text => text.includes("Step 1"));
     return {
@@ -383,6 +393,10 @@ const ReadingEmoji = () => {
     );
   };
 
+  const handleEmojiTypeSelect = (emoji: string) => {
+    setSelectedEmoji(selectedEmoji === emoji ? null : emoji);
+  };
+
   const renderHeader = () => (
     <>
       <View style={styles.welcomeSection}>
@@ -402,7 +416,7 @@ const ReadingEmoji = () => {
               selectedEmoji && selectedEmoji !== type.emoji && styles.unselectedCard,
               selectedEmoji === type.emoji && styles.selectedCard,
             ]}
-            onPress={() => setSelectedEmoji(selectedEmoji === type.emoji ? null : type.emoji)}
+            onPress={() => handleEmojiTypeSelect(type.emoji)}
           >
             <View style={styles.emojiWrapper}>
               <Text style={styles.emojiText}>{type.emoji}</Text>
@@ -430,19 +444,16 @@ const ReadingEmoji = () => {
             {selectedEmoji} {getEmojiCount(selectedEmoji)} {EMOJI_DESCRIPTIONS[selectedEmoji].count}
           </Text>
 
-          {/* Show intro text */}
           {splitDescription(EMOJI_DESCRIPTIONS[selectedEmoji].description).intro.map((text, index) => (
             <Text key={index} style={styles.descriptionText}>
               {text}
             </Text>
           ))}
 
-          {/* Show expand/collapse indicator */}
           <Text style={styles.expandIndicator}>
             {isExpanded ? "Tap to collapse ↑" : "Tap to see steps ↓"}
           </Text>
 
-          {/* Show steps when expanded */}
           {isExpanded && splitDescription(EMOJI_DESCRIPTIONS[selectedEmoji].description).steps.map((text, index) => {
             const isStep = text.includes("Step") || text.includes("Keep It Up") ||
                           text.includes("Spread the Word") || text.includes("Take Your Time") ||

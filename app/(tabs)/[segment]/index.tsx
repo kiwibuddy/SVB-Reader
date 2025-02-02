@@ -3,37 +3,31 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Image, Platform, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar } from 'react-native';
 import { useAppContext } from '@/context/GlobalContext';
 import BibleData from "@/assets/data/newBibleNLT1.json"
+import readingPlansData from "@/assets/data/ReadingPlansChallenges.json";
+import { FontAwesome } from '@expo/vector-icons';
+import { useRouter, usePathname, useLocalSearchParams } from "expo-router";
+import { Animated } from 'react-native';
+import { useBottomNavAnimation } from '@/context/BottomNavContext';
+import Segment from '@/components/Bible/Segment';
+import { SegmentType, IntroType, isIntroType, isSegmentType } from "@/types";
+import Intro from '@/components/Bible/Intro';
+import Questions from '@/components/Questions';
+import CheckCircle from '@/components/CheckCircle';
+import StickyHeader from '@/components/StickyHeader';
 
 // Define the type for Bible
 type BibleType = { [key: string]: SegmentType | IntroType };
 
 const Bible: BibleType = BibleData as BibleType; // Type assertion to ensure correct type
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import Segment from '@/components/Bible/Segment';
-import { SegmentType, IntroType, isIntroType, isSegmentType } from "@/types";
-import Intro from '@/components/Bible/Intro';
-import { FontAwesome } from '@expo/vector-icons'; // Ensure you have this import
-// import { useColorScheme } from '@/hooks/useColorScheme.web';
-import { Colors } from '@/constants/Colors';
-import Questions from '@/components/Questions';
-import CheckCircle from '@/components/CheckCircle';
-import StickyHeader from '@/components/StickyHeader';
-import { useRouter, usePathname } from "expo-router";
-import { Animated } from 'react-native';
-import { useBottomNavAnimation } from '@/context/BottomNavContext';
-
-
 const segIds = Object.keys(Bible);
 
 export default function BibleScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const { planId, challengeId } = params;
   const pathname = usePathname();
-  const { segmentId, updateSegmentId } = useAppContext();
+  const { segmentId, updateSegmentId, language, version } = useAppContext();
   const colorScheme = "light";
   const scrollViewRef = useRef<ScrollView>(null);
   
@@ -43,26 +37,43 @@ export default function BibleScreen() {
     return parts[parts.length - 1]?.replace("/", "") || "";
   }, [pathname]);
 
-  // Get navigation variables
-  const {
-    currentSegmentIndex,
-    prevSegId,
-    nextSegId,
-    IsFirstSegment,
-    IsLastSegment
-  } = useMemo(() => {
-    const currentSegmentIndex = segIds.indexOf(segID);
-    const language = "en";
-    const version = "NLT";
-    
-    return {
-      currentSegmentIndex,
-      prevSegId: currentSegmentIndex > 0 ? `${language}-${version}-${segIds[currentSegmentIndex - 1]}` : null,
-      nextSegId: currentSegmentIndex < segIds.length - 1 ? `${language}-${version}-${segIds[currentSegmentIndex + 1]}` : null,
-      IsFirstSegment: currentSegmentIndex === 0,
-      IsLastSegment: currentSegmentIndex === segIds.length - 1
-    };
-  }, [segID]);
+  // Get context-aware navigation segments
+  const { prevSegId, nextSegId } = useMemo(() => {
+    if (planId) {
+      // Get segments from the current plan
+      const plan = readingPlansData.plans.find(p => p.id === planId);
+      const planSegments = plan ? Object.values(plan.segments)
+        .flatMap(book => book?.segments || [])
+        .filter(seg => !seg.startsWith('I')) : [];
+      
+      const currentIndex = planSegments.indexOf(segID);
+      return {
+        prevSegId: currentIndex > 0 ? `${language}-${version}-${planSegments[currentIndex - 1]}` : null,
+        nextSegId: currentIndex < planSegments.length - 1 ? `${language}-${version}-${planSegments[currentIndex + 1]}` : null
+      };
+    } 
+    else if (challengeId) {
+      // Get segments from the current challenge
+      const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+      const challengeSegments = challenge ? Object.values(challenge.segments)
+        .flatMap(book => book?.segments || [])
+        .filter(seg => !seg.startsWith('I')) : [];
+      
+      const currentIndex = challengeSegments.indexOf(segID);
+      return {
+        prevSegId: currentIndex > 0 ? `${language}-${version}-${challengeSegments[currentIndex - 1]}` : null,
+        nextSegId: currentIndex < challengeSegments.length - 1 ? `${language}-${version}-${challengeSegments[currentIndex + 1]}` : null
+      };
+    }
+    else {
+      // Default navigation through all segments
+      const currentSegmentIndex = segIds.indexOf(segID);
+      return {
+        prevSegId: currentSegmentIndex > 0 ? `${language}-${version}-${segIds[currentSegmentIndex - 1]}` : null,
+        nextSegId: currentSegmentIndex < segIds.length - 1 ? `${language}-${version}-${segIds[currentSegmentIndex + 1]}` : null
+      };
+    }
+  }, [segID, planId, challengeId]);
 
   // Get the segment data
   const segmentData: SegmentType | IntroType | undefined = useMemo(
@@ -95,6 +106,23 @@ export default function BibleScreen() {
 
   const { isVisible } = useBottomNavAnimation();
 
+  // Update navigation handlers to preserve context
+  const handleNavigation = (segId: string) => {
+    updateSegmentId(segId);
+    router.push({
+      pathname: "/[segment]",
+      params: {
+        segment: segId,
+        ...(planId ? { planId } : {}),
+        ...(challengeId ? { challengeId } : {})
+      }
+    });
+    scrollViewRef.current?.scrollTo({
+      y: 0,
+      animated: false,
+    });
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView 
@@ -109,7 +137,12 @@ export default function BibleScreen() {
         )}
         {segID[0] === "S" && isSegmentType(segmentData) && (
           <>
-            <Segment segmentData={segmentData} />
+            <Segment 
+              segmentData={segmentData}
+              context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
+              planId={planId as string}
+              challengeId={challengeId as string}
+            />
             <Questions segmentId={segID} />
           </>
         )}
@@ -133,33 +166,19 @@ export default function BibleScreen() {
           })
         }
       ]}>
-        {!IsFirstSegment && prevSegId && (
+        {prevSegId && (
           <TouchableOpacity
             style={[styles.roundButton, styles.prevButton]}
-            onPress={() => {
-              updateSegmentId(prevSegId);
-              router.push(`/${prevSegId}`);
-              scrollViewRef.current?.scrollTo({
-                y: 0,
-                animated: false,
-              });
-            }}
+            onPress={() => handleNavigation(prevSegId)}
           >
             <FontAwesome name="arrow-left" size={20} color="white" />
           </TouchableOpacity>
         )}
 
-        {!IsLastSegment && nextSegId && (
+        {nextSegId && (
           <TouchableOpacity
             style={[styles.roundButton, styles.nextButton]}
-            onPress={() => {
-              updateSegmentId(nextSegId);
-              router.push(`/${nextSegId}`);
-              scrollViewRef.current?.scrollTo({
-                y: 0,
-                animated: false,
-              });
-            }}
+            onPress={() => handleNavigation(nextSegId)}
           >
             <FontAwesome name="arrow-right" size={20} color="white" />
           </TouchableOpacity>

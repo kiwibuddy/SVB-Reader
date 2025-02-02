@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 
-const EMOJIS = ["👍", "❤️", "🤔", "🙏"];
+const EMOJIS = ["❤️", "👍", "🤔", "🙏"];
 
 const EmojiPicker = ({ onEmojiSelect }: { onEmojiSelect: (emoji: string) => void }) => {
   const renderItem = ({ item }: { item: string }) => (

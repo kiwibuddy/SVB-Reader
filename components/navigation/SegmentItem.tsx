@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   View, 
   Text, 
@@ -15,6 +15,7 @@ import DonutChart from "../DonutChart";
 import { Ionicons } from '@expo/vector-icons';
 import CelebrationPopup from "../CelebrationPopup";
 import { getCheckColor } from '@/scripts/getCheckColors';
+import { markSegmentCompleteInDB, getSegmentCompletionStatus } from "@/api/sqlite";
 
 interface ColorData {
   total: number;
@@ -41,7 +42,7 @@ interface SegmentItemProps {
     book: string[];
   };
   completedSegments?: Record<string, CompletionData>;
-  onComplete?: (segmentId: string) => void;
+  onComplete?: (segmentId: string, planId?: string, challengeId?: string) => void;
   showGlobalCompletion?: boolean;
   context?: 'navigation' | 'plan' | 'challenge';
   planId?: string;
@@ -60,6 +61,29 @@ const SegmentItem = ({
 }: SegmentItemProps) => {
   const router = useRouter();
   const { language, version } = useAppContext();
+  const [isCompleted, setIsCompleted] = useState(false);
+
+  useEffect(() => {
+    checkCompletionStatus();
+  }, [segment.id, context, planId, challengeId]);
+
+  const checkCompletionStatus = async () => {
+    const completed = await getSegmentCompletionStatus(
+      segment.id,
+      context === 'plan' ? 'plan' : context === 'challenge' ? 'challenge' : 'main',
+      planId,
+      challengeId
+    );
+    setIsCompleted(completed);
+  };
+
+  const handleComplete = async () => {
+    console.log('handleComplete called', { onComplete, segment, planId, challengeId });
+    if (onComplete) {
+      onComplete(segment.id, planId, challengeId);
+      setIsCompleted(true); // Update local state immediately
+    }
+  };
 
   const handlePress = () => {
     const query: any = { showGlobalCompletion: showGlobalCompletion?.toString() };
@@ -93,9 +117,13 @@ const SegmentItem = ({
         )}
       </View>
       <View style={styles.rightContent}>
-        {completedSegments?.[segment.id]?.isCompleted && (
-          <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
-        )}
+        <TouchableOpacity onPress={handleComplete}>
+          <Ionicons 
+            name={isCompleted ? "checkmark-circle" : "checkmark-circle-outline"} 
+            size={24} 
+            color={isCompleted ? "#4CAF50" : "#CCCCCC"} 
+          />
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );

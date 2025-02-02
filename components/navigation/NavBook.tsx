@@ -13,6 +13,7 @@ import DonutChart from "../DonutChart";
 import SegmentItem from "./SegmentItem";
 import { Ionicons } from '@expo/vector-icons';
 import Books from "@/assets/data/BookChapterList.json";
+import { markSegmentCompleteInDB, getSegmentCompletionStatus } from "@/api/sqlite";
 
 // Image mapping
 const imageMap: { [key: string]: any } = {
@@ -179,7 +180,6 @@ export interface AccordionItem {
 export interface AccordionProps {
   item: AccordionItem;
   bookIndex: number;
-  completedSegments?: Record<string, CompletionData>;
   onSegmentComplete?: (segmentId: string) => void;
   showGlobalCompletion?: boolean;
   context?: 'navigation' | 'plan' | 'challenge';
@@ -229,7 +229,6 @@ export interface SegmentItemProps {
 const Accordion = ({ 
   item, 
   bookIndex, 
-  completedSegments = {},
   onSegmentComplete,
   showGlobalCompletion = false,
   context = 'navigation',
@@ -242,6 +241,7 @@ const Accordion = ({
 }: AccordionProps) => {
   const [isExpandedState, setIsExpanded] = useState(isExpanded || false);
   const flatListRef = useRef<FlatList<SegmentKey>>(null);
+  const [completedSegments, setCompletedSegments] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setIsExpanded(isExpanded || false);
@@ -256,10 +256,30 @@ const Accordion = ({
     console.log('Image exists for book:', !!imageMap[item.djhBook]);
   }, [item.djhBook]);
 
+  useEffect(() => {
+    loadCompletionStatus();
+  }, [item.segments]);
+
+  const loadCompletionStatus = async () => {
+    const completionStatus: Record<string, boolean> = {};
+    
+    for (const segmentId of item.segments) {
+      const isCompleted = await getSegmentCompletionStatus(
+        segmentId,
+        context === 'plan' ? 'plan' : context === 'challenge' ? 'challenge' : 'main',
+        planId,
+        challengeId
+      );
+      completionStatus[segmentId] = isCompleted;
+    }
+    
+    setCompletedSegments(completionStatus);
+  };
+
   const actualSegments = item.segments.filter(seg => !seg.startsWith('I'));
   const totalSegments = actualSegments.length;
   const completedCount = actualSegments.reduce((count, segmentId) => {
-    return completedSegments[segmentId]?.isCompleted ? count + 1 : count;
+    return completedSegments[segmentId] ? count + 1 : count;
   }, 0);
 
   const handleHeaderPress = () => {
@@ -319,13 +339,19 @@ const Accordion = ({
                   ref: SegmentTitles[segment].ref,
                   book: SegmentTitles[segment].book
                 }}
-                completedSegments={completedSegments}
+                completedSegments={
+                  Object.fromEntries(
+                    Object.entries(completedSegments).map(([id, isCompleted]) => [
+                      id,
+                      { isCompleted, color: null }
+                    ])
+                  )
+                }
                 onComplete={onSegmentComplete}
                 showGlobalCompletion={showGlobalCompletion}
                 context={context}
                 planId={planId}
                 challengeId={challengeId}
-                onPress={onSegmentSelect}
               />
             )}
             keyExtractor={(segment) => segment}

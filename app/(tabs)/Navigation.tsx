@@ -299,7 +299,6 @@ const Navigation = () => {
               <Accordion 
                 item={item} 
                 bookIndex={bookIndex}
-                completedSegments={completedSegments}
                 context="navigation"
                 showGlobalCompletion={true}
                 style={{ backgroundColor: '#FFF' }}

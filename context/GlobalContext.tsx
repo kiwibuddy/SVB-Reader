@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import readingPlansData from "../assets/data/ReadingPlansChallenges.json";
+import { markSegmentCompleteInDB } from '@/api/sqlite';
 
 // Add this interface near the top of the file, before AppContextType
 interface ReadingPlanProgress {
@@ -32,6 +33,9 @@ interface ChallengeProgress {
 interface CompletionData {
   isCompleted: boolean;
   color: string | null;
+  context?: 'main' | 'plan' | 'challenge';
+  planId?: string;
+  challengeId?: string;
 }
 
 // Define the interface for both segmentId and read status
@@ -45,7 +49,13 @@ interface AppContextType {
   emojiActions: number;
   updateEmojiActions: (newEmojiActions: number) => Promise<void>;
   completedSegments: Record<string, CompletionData>;
-  markSegmentComplete: (segmentId: string, isComplete: boolean, color?: string | null) => Promise<void>;
+  markSegmentComplete: (
+    segmentId: string, 
+    isComplete: boolean, 
+    color?: string | null, 
+    context?: 'main' | 'plan' | 'challenge',
+    contextId?: string
+  ) => Promise<void>;
   readingPlanProgress: Record<string, ReadingPlanProgress>;
   startReadingPlan: (planId: string) => void;
   activePlan: PlanProgress | null;
@@ -294,18 +304,67 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // Update markSegmentComplete to handle plans and challenges
-  const markSegmentComplete = async (segmentId: string, isComplete: boolean, color?: string | null) => {
+  const markSegmentComplete = async (
+    segmentId: string, 
+    isComplete: boolean, 
+    color?: string | null,
+    context: 'main' | 'plan' | 'challenge' = 'main',
+    contextId?: string
+  ) => {
     try {
-      const updatedSegments = { ...completedSegments };
-      
+      // Update SQLite database
       if (isComplete) {
-        updatedSegments[segmentId] = { isCompleted: true, color: color || null };
-      } else {
-        delete updatedSegments[segmentId];
+        await markSegmentCompleteInDB(
+          segmentId,
+          context || 'main',
+          context === 'plan' ? contextId : null,
+          context === 'challenge' ? contextId : null,
+          color
+        );
       }
-      
-      setCompletedSegments(updatedSegments);
-      await AsyncStorage.setItem('completedSegments', JSON.stringify(updatedSegments));
+
+      // Update local state based on context
+      if (context === 'main') {
+        const updatedSegments = { ...completedSegments };
+        if (isComplete) {
+          updatedSegments[segmentId] = { isCompleted: true, color: color || null };
+        } else {
+          delete updatedSegments[segmentId];
+        }
+        setCompletedSegments(updatedSegments);
+        await AsyncStorage.setItem('completedSegments', JSON.stringify(updatedSegments));
+      } 
+      else if (context === 'plan' && contextId) {
+        if (!activePlan) return;
+        
+        const updatedPlan: PlanProgress = {
+          ...activePlan,
+          completedSegments: isComplete 
+            ? [...activePlan.completedSegments, segmentId]
+            : activePlan.completedSegments.filter(id => id !== segmentId),
+          lastRead: new Date().toISOString()
+        };
+
+        if (updatedPlan.planId === contextId) {
+          setActivePlan(updatedPlan);
+          await AsyncStorage.setItem('activePlan', JSON.stringify(updatedPlan));
+        }
+      }
+      else if (context === 'challenge' && contextId) {
+        const updatedChallenges = { ...activeChallenges };
+        const challenge = updatedChallenges[contextId];
+        if (challenge) {
+          if (isComplete && !challenge.completedSegments.includes(segmentId)) {
+            challenge.completedSegments.push(segmentId);
+          } else if (!isComplete) {
+            challenge.completedSegments = challenge.completedSegments.filter(
+              id => id !== segmentId
+            );
+          }
+          setActiveChallenges(updatedChallenges);
+          await AsyncStorage.setItem('activeChallenges', JSON.stringify(updatedChallenges));
+        }
+      }
     } catch (error) {
       console.error('Error updating segment completion:', error);
     }

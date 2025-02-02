@@ -361,14 +361,6 @@ const ChallengesScreen = () => {
                   <Accordion 
                     item={item} 
                     bookIndex={bookIndex}
-                    completedSegments={
-                      Object.fromEntries(
-                        (activeChallenges[challenge.id]?.completedSegments || []).map(id => [
-                          id, 
-                          { isCompleted: true, color: null }
-                        ])
-                      )
-                    }
                     onSegmentComplete={handleSegmentComplete}
                     context="challenge"
                     showGlobalCompletion={false}
