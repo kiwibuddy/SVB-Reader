@@ -518,7 +518,7 @@ const InsightsSection = ({ styles }: { styles: any }) => {
 
   const handleEmojiPress = () => {
     router.push({
-      pathname: "/reactions",
+      pathname: "/Reading-emoji",
       params: { selectedEmoji: insights.mostUsedEmoji }
     });
   };
