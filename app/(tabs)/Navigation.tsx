@@ -10,6 +10,7 @@ import { parseReference } from '@/utils/parseReference';
 import { findSegmentId } from '@/utils/referenceMapping';
 import { useRouter } from 'expo-router';
 import SearchResults from '@/components/navigation/SearchResults';
+import { useAppSettings } from '@/context/AppSettingsContext';
 
 export type SegmentKey = keyof typeof SegmentTitles;
 export type SegmentIds = keyof typeof Books;
@@ -22,10 +23,10 @@ const data = Object.keys(Books).map((key) => ({
 
 const booksArray = Object.keys(Books);
 
-const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
+const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -37,12 +38,12 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   welcomeTitle: {
     fontSize: 24,
     fontWeight: "600",
-    color: "#000",
+    color: colors.text,
     marginBottom: 8,
   },
   welcomeText: {
     fontSize: 16,
-    color: "#666",
+    color: colors.secondary,
     lineHeight: 22,
   },
   header: {
@@ -59,10 +60,11 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 4,
+    color: colors.text,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: colors.secondary,
     marginBottom: 8,
   },
   filterContainer: {
@@ -106,6 +108,10 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
   },
+  searchBar: {
+    backgroundColor: colors.card,
+    borderColor: colors.border,
+  },
 });
 
 const Navigation = () => {
@@ -118,7 +124,8 @@ const Navigation = () => {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
-  const styles = createStyles(isLargeScreen);
+  const { colors } = useAppSettings();
+  const styles = createStyles(isLargeScreen, colors);
 
   // Define Old and New Testament books
   const oldTestamentBooks = ['Gen', 'Exo', 'Lev', 'Num', 'Deu', 'Jos', 'Jdg', 'Rut', '1Sa', '2Sa', '1Ki', '2Ki', '1Ch', '2Ch', 'Ezr', 'Neh', 'Est', 'Job', 'Psa', 'Pro', 'Ecc', 'SoS', 'Isa', 'Jer', 'Lam', 'Eze', 'Dan', 'Hos', 'Joe', 'Amo', 'Oba', 'Jon', 'Mic', 'Nah', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal'];

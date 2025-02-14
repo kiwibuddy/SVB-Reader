@@ -1,16 +1,18 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet, SafeAreaView, useWindowDimensions, Pressable } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
+import { useAppSettings } from '@/context/AppSettingsContext';
 
-const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
+const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
+    backgroundColor: colors.background,
   },
   header: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    borderBottomColor: colors.border,
+    backgroundColor: colors.card,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -18,6 +20,7 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
+    color: colors.text,
   },
   section: {
     padding: 16,
@@ -27,10 +30,12 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   sectionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: colors.text,
     marginBottom: 16,
   },
   card: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.card,
+    borderColor: colors.border,
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -42,19 +47,20 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
     marginLeft: 12,
   },
   cardTitle: {
+    color: colors.text,
     fontSize: 18,
     fontWeight: '500',
   },
   cardSubtitle: {
+    color: colors.secondary,
     fontSize: 16,
-    color: '#6B7280',
   },
   resetButton: {
     padding: 16,
     alignItems: 'center',
   },
   resetButtonText: {
-    color: '#9CA3AF',
+    color: colors.secondary,
     fontSize: 16,
     fontWeight: '500',
   },
@@ -95,7 +101,8 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
 const Achievements = () => {
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
-  const styles = createStyles(isLargeScreen);
+  const { colors } = useAppSettings();
+  const styles = createStyles(isLargeScreen, colors);
 
   // Add error boundary and loading state
   const [isLoading, setIsLoading] = React.useState(true);
@@ -323,6 +330,25 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
 }
 
 export default function WrappedAchievements() {
+  const { colors } = useAppSettings();
+  
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    achievementCard: {
+      backgroundColor: colors.card,
+      borderColor: colors.border,
+    },
+    title: {
+      color: colors.text,
+    },
+    description: {
+      color: colors.secondary,
+    },
+  });
+
   return (
     <ErrorBoundary>
       <Achievements />

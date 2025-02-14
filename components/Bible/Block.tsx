@@ -10,6 +10,8 @@ import { useSQLiteContext } from "expo-sqlite";
 import { useAppContext } from "@/context/GlobalContext";
 import { deleteEmoji, getEmoji, addEmoji } from "@/api/sqlite";
 import EmojiPicker from "@/components/EmojiPicker";
+import { useAppSettings } from "@/context/AppSettingsContext";
+import { baseSizes as sizes } from "@/context/FontSizeContext";
 
 interface BibleBlockProps {
   block: BibleBlock;
@@ -20,13 +22,13 @@ interface BibleBlockProps {
 
 const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead, hasTail }) => {
   const { segmentId, emojiActions } = useAppContext();
+  const { colors } = useAppSettings();
   const idSplit = segmentId.split("-");
   const language = idSplit[0];
   const version = idSplit[1];
   const segID = idSplit[idSplit.length - 1];
   const { source, children } = block;
   const { color, sourceName } = source;
-  const colors = getColors(color);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [existingEmoji, setExistingEmoji] = useState<string | null>(null);
 
@@ -64,6 +66,49 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
   const emojiAlignment = color !== "black" ? { right: 10 } : { left: 10 };
   const emojiTopPosition = hasTail ? { top: 35 } : { top: 15 };
 
+  const styles = StyleSheet.create({
+    container: {
+      backgroundColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')],
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 8,
+    },
+    text: {
+      color: colors.text,
+      fontSize: sizes.body,
+      lineHeight: 24,
+    },
+    sourceName: {
+      color: colors.secondary,
+      fontSize: sizes.caption,
+    },
+    tail: {
+      position: "absolute",
+      top: -9,
+      width: 0,
+      height: 0,
+      borderLeftWidth: 10,
+      borderRightWidth: 10,
+      borderBottomWidth: 10,
+      borderLeftColor: "transparent",
+      borderRightColor: "transparent",
+    },
+    reactionContainer: {
+      flexDirection: "row",
+      padding: 5,
+      position: "absolute",
+      zIndex: 100,
+      elevation: 3,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 2,
+    },
+    reactionText: {
+      fontSize: 30,
+    },
+  });
+
   return (
     <View key={bIndex}>
       {hasTail && (
@@ -74,10 +119,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
       )}
       <View
         style={{
-          ...styles.bubble,
-          ...{
-            backgroundColor: colors.light,
-          },
+          ...styles.container,
         }}
       >
         {hasTail && (
@@ -85,7 +127,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
             style={[
               styles.tail,
               {
-                borderBottomColor: colors.light,
+                borderBottomColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')],
               },
               tailAlignment,
             ]}
@@ -100,7 +142,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
                 key={`${bIndex}-${index}`}
                 iIndex={`${bIndex}-${index}`}
                 inline={item}
-                textColor={colors.dark}
+                textColor={colors.text}
               />
             );
           }}
@@ -121,64 +163,5 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
     </View>
   );
 };
-
-// Define styles
-const styles = StyleSheet.create({
-  bubble: {
-    borderRadius: 10, // Rounded corners
-    padding: 10, // Padding inside the bubble
-    position: "relative", // Position for the tail
-    margin: 10, // Margin around the bubble
-  },
-  tail: {
-    position: "absolute",
-    top: -9, // Position above the bubble
-    // left: 15, // Adjust as needed for positioning
-    width: 0,
-    height: 0,
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
-    borderBottomWidth: 10,
-    borderLeftColor: "transparent",
-    borderRightColor: "transparent",
-    // borderBottomColor: "#FF6347", // Same as bubble background
-  },
-  text: {
-    color: "#8B0000", // Dark red text color
-    fontSize: 16, // Adjust font size as needed
-  },
-  reactionText: {
-    fontSize: 30, // Adjust size as needed
-    elevation: 3, // Optional: add shadow on Android
-    shadowColor: "#000", // Optional: shadow color for iOS
-    shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
-    shadowOpacity: 0.2, // Optional: shadow opacity for iOS
-    shadowRadius: 2, // Optional: shadow radius for iOS
-  },
-  reactionPosition: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    zIndex: 1,
-  },
-  reactionContainer: {
-    flexDirection: "row",
-    padding: 5, // Padding for the circle
-    position: "absolute",
-    elevation: 3, // Optional: add shadow on Android
-    shadowColor: "#000", // Optional: shadow color for iOS
-    shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
-    shadowOpacity: 0.2, // Optional: shadow opacity for iOS
-    shadowRadius: 2, // Optional: shadow radius for iOS
-    zIndex: 100,
-  },
-  blockEmoji: {
-    position: 'absolute',
-    left: -25,
-    top: '50%',
-    transform: [{ translateY: -12 }],
-    fontSize: 20,
-  },
-});
 
 export default BibleBlockComponent;

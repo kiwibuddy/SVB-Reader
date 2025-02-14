@@ -21,6 +21,9 @@ import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { getEmojis, getCurrentStreak } from "@/api/sqlite";
 import { format } from 'date-fns';
+import CustomHeader from "@/components/navigation/CustomHeader";
+import { useFontSize } from '@/context/FontSizeContext';
+import { useAppSettings } from "@/context/AppSettingsContext";
 
 const SegmentTitles = require("@/assets/data/SegmentTitles.json") as { [key: string]: SegmentTitle };
 
@@ -62,8 +65,6 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   readingSubtitle: {
     fontSize: 12,
     color: "#666",
-    flexDirection: "row",
-    alignItems: "center",
   },
   resumeButton: {
     backgroundColor: "#FF5733",
@@ -255,24 +256,25 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
 type ContinueReadingProps = {
   lastReadSegment: string | null;
   onPress: () => void;
+  styles: any;
 };
 
-const ContinueReadingSection = ({ lastReadSegment, onPress }: ContinueReadingProps) => {
+const ContinueReadingSection = ({ lastReadSegment, onPress, styles }: ContinueReadingProps) => {
   const { completedSegments, markSegmentComplete, updateSegmentId } = useAppContext();
   const router = useRouter();
-  const styles = createStyles(false);
+  const { sizes } = useFontSize();
   
   if (!lastReadSegment) {
     return (
       <View style={styles.continueReading}>
         <View style={styles.readingInfo}>
-          <Text style={styles.readingTitle}>Jump Right In</Text>
-          <Text style={styles.readingSubtitle}>
+          <Text style={[styles.readingTitle, { fontSize: sizes.subtitle }]}>Jump Right In</Text>
+          <Text style={[styles.readingSubtitle, { fontSize: sizes.caption }]}>
             Begin your reading journey with Genesis
           </Text>
         </View>
         <Pressable style={styles.resumeButton} onPress={onPress}>
-          <Text style={styles.resumeText}>Start</Text>
+          <Text style={[styles.resumeText, { fontSize: sizes.button }]}>Start</Text>
         </Pressable>
       </View>
     );
@@ -307,10 +309,10 @@ const ContinueReadingSection = ({ lastReadSegment, onPress }: ContinueReadingPro
   return (
     <View style={styles.continueReading}>
       <View style={styles.readingInfo}>
-        <Text style={styles.readingTitle}>
+        <Text style={[styles.readingTitle, { fontSize: sizes.subtitle }]}>
           {isLastSegmentCompleted ? 'Continue Reading' : 'Resume Reading'}
         </Text>
-        <Text style={styles.readingSubtitle}>
+        <Text style={[styles.readingSubtitle, { fontSize: sizes.caption }]}>
           {isLastSegmentCompleted 
             ? `Next: ${nextSegmentData?.title}`
             : `Complete: ${currentSegmentData?.title}`}
@@ -322,14 +324,14 @@ const ContinueReadingSection = ({ lastReadSegment, onPress }: ContinueReadingPro
             style={[styles.resumeButton, styles.completeButton]}
             onPress={handleComplete}
           >
-            <Text style={styles.resumeText}>Complete</Text>
+            <Text style={[styles.resumeText, { fontSize: sizes.button }]}>Complete</Text>
           </Pressable>
         )}
         <Pressable 
           style={[styles.resumeButton, isLastSegmentCompleted ? {} : styles.nextButton]}
           onPress={onPress}
         >
-          <Text style={styles.resumeText}>
+          <Text style={[styles.resumeText, { fontSize: sizes.button }]}>
             {isLastSegmentCompleted ? 'Next' : 'Next'}
           </Text>
         </Pressable>
@@ -352,8 +354,45 @@ type CompletionData = {
   isCompleted: boolean;
 };
 
+interface SectionStyles {
+  section: any;
+  sectionTitle: any;
+  insightCards: any;
+  insightCard: any;
+  insightCardPressed: any;
+  insightTitle: any;
+  insightValue: any;
+  activityCard: any;
+  emojiContainer: any;
+  text: {
+    title: number;
+    subtitle: number;
+    body: number;
+    caption: number;
+    button: number;
+  };
+}
+
 // 1. Recent Activity Section with real data
-const RecentActivitySection = ({ styles }: { styles: any }) => {
+const RecentActivitySection = ({ styles }: { styles: SectionStyles }) => {
+  const { sizes } = useFontSize();
+  
+  const localStyles = StyleSheet.create({
+    activityTitle: {
+      fontSize: sizes.subtitle,
+      fontWeight: '600',
+      marginBottom: 8,
+    },
+    emoji: {
+      fontSize: sizes.title,
+      marginRight: 4,
+    },
+    timestamp: {
+      fontSize: sizes.caption,
+      color: '#666',
+    },
+  });
+
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const router = useRouter();
 
@@ -399,15 +438,15 @@ const RecentActivitySection = ({ styles }: { styles: any }) => {
               });
             }}
           >
-            <Text style={styles.activityTitle} numberOfLines={2}>
+            <Text style={localStyles.activityTitle} numberOfLines={2}>
               {activity.title}
             </Text>
             <View style={styles.emojiContainer}>
               {activity.emojis.map((emoji, i) => (
-                <Text key={i} style={styles.emoji}>{emoji}</Text>
+                <Text key={i} style={localStyles.emoji}>{emoji}</Text>
               ))}
             </View>
-            <Text style={styles.timestamp}>
+            <Text style={localStyles.timestamp}>
               {format(new Date(activity.timestamp), 'MMM d, h:mm a')}
             </Text>
           </TouchableOpacity>
@@ -418,9 +457,28 @@ const RecentActivitySection = ({ styles }: { styles: any }) => {
 };
 
 // 2. Reading Insights with real data
-const InsightsSection = ({ styles }: { styles: any }) => {
+const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
   const { completedSegments } = useAppContext();
   const router = useRouter();
+  const { sizes } = useFontSize();
+  
+  const localStyles = StyleSheet.create({
+    sectionTitle: {
+      fontSize: sizes.title,
+      fontWeight: '600',
+      marginBottom: 8,
+    },
+    insightTitle: {
+      fontSize: sizes.caption,
+      color: '#666',
+      marginBottom: 4,
+    },
+    insightValue: {
+      fontSize: sizes.subtitle,
+      fontWeight: '600',
+    },
+  });
+
   const [insights, setInsights] = useState({
     favoriteBook: '',
     favoriteBookFullName: '',
@@ -525,7 +583,7 @@ const InsightsSection = ({ styles }: { styles: any }) => {
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Your Reading Journey</Text>
+      <Text style={localStyles.sectionTitle}>Your Reading Journey</Text>
       <View style={styles.insightCards}>
         <Pressable 
           style={({pressed}) => [
@@ -579,9 +637,11 @@ const HomeScreen = () => {
     updateSegmentId,
   } = useAppContext();
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isLargeScreen = width >= 768;
-  const styles = createStyles(isLargeScreen);
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  const { sizes } = useFontSize();
+  const { colors } = useAppSettings();
+  const styles = createStyles(width >= 768);
   const [currentStreak, setCurrentStreak] = useState(0);
 
   // Add useEffect to fetch streak data
@@ -687,16 +747,53 @@ const HomeScreen = () => {
     });
   };
 
+  const combinedStyles: SectionStyles = {
+    ...styles,
+    text: {
+      title: sizes.title,
+      subtitle: sizes.subtitle,
+      body: sizes.body,
+      caption: sizes.caption,
+      button: sizes.button,
+    }
+  };
+
+  const localStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    welcomeTitle: {
+      color: colors.text,
+      fontSize: sizes.title,
+    },
+    welcomeText: {
+      color: colors.secondary,
+      fontSize: sizes.body,
+    },
+    statItem: {
+      backgroundColor: colors.card,
+      borderColor: colors.border,
+    },
+    statNumber: {
+      color: colors.text,
+    },
+    statLabel: {
+      color: colors.secondary,
+    },
+  });
+
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={localStyles.container}>
+      <CustomHeader />
       <ScrollView 
         style={styles.content}
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
         <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>Start Your Journey</Text>
-          <Text style={styles.welcomeText}>
+          <Text style={localStyles.welcomeTitle}>Start Your Journey</Text>
+          <Text style={localStyles.welcomeText}>
             Begin your Bible reading adventure by choosing a reading plan or challenge that fits your goals.
           </Text>
         </View>
@@ -738,27 +835,28 @@ const HomeScreen = () => {
         <ContinueReadingSection 
           lastReadSegment={lastReadSegment}
           onPress={handleContinueReading}
+          styles={combinedStyles}
         />
 
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{currentStreak}</Text>
-            <Text style={styles.statLabel}>Day Streak</Text>
+            <Text style={localStyles.statNumber}>{currentStreak}</Text>
+            <Text style={localStyles.statLabel}>Day Streak</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{getCompletedStoriesCount()}</Text>
-            <Text style={styles.statLabel}>Stories Read</Text>
+            <Text style={localStyles.statNumber}>{getCompletedStoriesCount()}</Text>
+            <Text style={localStyles.statLabel}>Stories Read</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{getActivePlansCount()}</Text>
-            <Text style={styles.statLabel}>Active Plans</Text>
+            <Text style={localStyles.statNumber}>{getActivePlansCount()}</Text>
+            <Text style={localStyles.statLabel}>Active Plans</Text>
           </View>
         </View>
 
-        <InsightsSection styles={styles} />
-        <RecentActivitySection styles={styles} />
+        <InsightsSection styles={combinedStyles} />
+        <RecentActivitySection styles={combinedStyles} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 

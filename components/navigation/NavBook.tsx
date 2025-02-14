@@ -14,6 +14,7 @@ import SegmentItem from "./SegmentItem";
 import { Ionicons } from '@expo/vector-icons';
 import Books from "@/assets/data/BookChapterList.json";
 import { markSegmentCompleteInDB, getSegmentCompletionStatus } from "@/api/sqlite";
+import { useAppSettings } from '@/context/AppSettingsContext';
 
 // Image mapping
 const imageMap: { [key: string]: any } = {
@@ -239,6 +240,7 @@ const Accordion = ({
   onBookSelect,
   onSegmentSelect
 }: AccordionProps) => {
+  const { colors } = useAppSettings();
   const [isExpandedState, setIsExpanded] = useState(isExpanded || false);
   const flatListRef = useRef<FlatList<SegmentKey>>(null);
   const [completedSegments, setCompletedSegments] = useState<Record<string, boolean>>({});
@@ -288,25 +290,78 @@ const Accordion = ({
   const imageSource = imageMap[item.djhBook];
   console.log('Book:', item.djhBook, 'Image source:', imageSource);
 
+  const styles = StyleSheet.create({
+    accordion: {
+      backgroundColor: colors.card,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 16,
+      backgroundColor: colors.card,
+    },
+    headerLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    },
+    rightContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    bookIcon: {
+      width: 32,
+      height: 32,
+      marginRight: 12,
+    },
+    titleContainer: {
+      flex: 1,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    subtitle: {
+      fontSize: 14,
+      color: colors.secondary,
+      marginTop: 2,
+    },
+    segmentList: {
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      backgroundColor: colors.background,
+    },
+    flatListContainer: {
+      backgroundColor: colors.background,
+    },
+    chevron: {
+      color: colors.secondary,
+    }
+  });
+
   return (
     <View style={[styles.accordion, style]}>
       <TouchableOpacity 
         onPress={handleHeaderPress}
         style={styles.header}
       >
-        <View style={styles.leftContent}>
+        <View style={styles.headerLeft}>
           {imageSource ? (
             <Image 
               source={imageSource}
-              style={styles.logo} 
+              style={styles.bookIcon} 
               resizeMode="contain"
             />
           ) : (
-            <View style={[styles.logo, { backgroundColor: '#eee' }]} />
+            <View style={[styles.bookIcon, { backgroundColor: colors.border }]} />
           )}
-          <View style={styles.textContainer}>
-            <Text style={styles.bookTitle}>{item.bookName}</Text>
-            <Text style={styles.segmentCount}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>{item.bookName}</Text>
+            <Text style={styles.subtitle}>
               {completedCount} of {totalSegments} stories read
             </Text>
           </View>
@@ -316,7 +371,7 @@ const Accordion = ({
           <Ionicons 
             name={isExpandedState ? "chevron-up" : "chevron-down"} 
             size={24} 
-            color="#666"
+            color={styles.chevron.color}
           />
         </View>
       </TouchableOpacity>
@@ -326,6 +381,7 @@ const Accordion = ({
           <FlatList
             ref={flatListRef}
             data={item.segments}
+            style={styles.flatListContainer}
             renderItem={({ item: segment }) => (
               <SegmentItem
                 segment={{
@@ -347,53 +403,5 @@ const Accordion = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  accordion: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-    backgroundColor: '#FFF',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-  },
-  leftContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  rightContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  logo: {
-    width: 40,
-    height: 40,
-    marginRight: 12,
-    resizeMode: 'contain',
-  },
-  textContainer: {
-    flex: 1,
-  },
-  bookTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-  },
-  segmentCount: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-  },
-  segmentList: {
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-    backgroundColor: '#F5F5F5',
-  }
-});
 
 export default Accordion;

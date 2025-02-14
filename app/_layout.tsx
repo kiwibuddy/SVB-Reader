@@ -12,12 +12,14 @@ import {
   type SQLiteDatabase,
 } from "expo-sqlite";
 import { BottomNavProvider } from '@/context/BottomNavContext';
+import { FontSizeProvider } from '@/context/FontSizeContext';
+import { AppSettingsProvider, useAppSettings } from '@/context/AppSettingsContext';
+import { View } from 'react-native';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  // const colorScheme =  useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     'Mistrully': require('../assets/fonts/Mistrully.ttf'),
@@ -34,28 +36,40 @@ export default function RootLayout() {
   }
 
   return (
-    <AppProvider>
-      <BottomNavProvider>
-        <SQLiteProvider databaseName="test.db">
-          <StatusBar hidden={true} translucent backgroundColor="transparent" />
-          <ThemeProvider
-            value={
-              // colorScheme === "dark" ? DarkTheme :
-              DefaultTheme
-            }
-          >
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: "#ffffff" },
-              }}
-            >
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-          </ThemeProvider>
-        </SQLiteProvider>
-      </BottomNavProvider>
-    </AppProvider>
+    <AppSettingsProvider>
+      <AppContent />
+    </AppSettingsProvider>
+  );
+}
+
+function AppContent() {
+  const { isDarkMode, colors } = useAppSettings();
+  
+  return (
+    <ThemeProvider value={isDarkMode ? DarkTheme : DefaultTheme}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <AppProvider>
+          <FontSizeProvider>
+            <BottomNavProvider>
+              <SQLiteProvider databaseName="test.db">
+                <StatusBar 
+                  style={isDarkMode ? "light" : "dark"}
+                  backgroundColor={colors.background}
+                />
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: colors.background },
+                  }}
+                >
+                  <Stack.Screen name="(tabs)" />
+                  <Stack.Screen name="+not-found" />
+                </Stack>
+              </SQLiteProvider>
+            </BottomNavProvider>
+          </FontSizeProvider>
+        </AppProvider>
+      </View>
+    </ThemeProvider>
   );
 }

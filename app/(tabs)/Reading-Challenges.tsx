@@ -20,6 +20,7 @@ import { StatusIndicator } from '@/components/StatusIndicator';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
+import { useAppSettings } from '@/context/AppSettingsContext';
 
 // Add categories for challenges
 const CHALLENGE_CATEGORIES = {
@@ -118,10 +119,10 @@ interface ChallengesByCategory {
   'Topical': Challenge[];
 }
 
-const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
+const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -133,12 +134,12 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   welcomeTitle: {
     fontSize: 24,
     fontWeight: "600",
-    color: "#000",
+    color: colors.text,
     marginBottom: 8,
   },
   welcomeText: {
     fontSize: 16,
-    color: "#666",
+    color: colors.secondary,
     lineHeight: 22,
   },
   scrollContainer: {
@@ -148,15 +149,15 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    borderBottomColor: colors.border,
   },
   screenTitle: {
     fontSize: 28,
     fontWeight: "700",
     marginBottom: 8,
-    color: '#000000',
+    color: colors.text,
   },
   categorySection: {
     marginTop: 16,
@@ -171,8 +172,8 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   },
   challengeContainer: {
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-    backgroundColor: '#FFF',
+    borderBottomColor: colors.border,
+    backgroundColor: colors.card,
     marginHorizontal: 0,
     marginBottom: 0,
     borderRadius: 0,
@@ -204,17 +205,17 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   challengeTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: '#000000',
+    color: colors.text,
     marginBottom: 4,
   },
   segmentCount: {
-    color: '#666666',
+    color: colors.secondary,
     fontSize: 14,
   },
   booksContainer: {
     borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-    backgroundColor: '#FFF',
+    borderTopColor: colors.border,
+    backgroundColor: colors.card,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
   },
@@ -234,7 +235,8 @@ const ChallengesScreen = () => {
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
-  const styles = createStyles(isLargeScreen);
+  const { colors } = useAppSettings();
+  const styles = createStyles(isLargeScreen, colors);
 
   // Move function definitions up
   const getChallengeSegmentCount = (challengeId: string) => {

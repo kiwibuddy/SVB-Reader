@@ -14,6 +14,7 @@ import Intro from '@/components/Bible/Intro';
 import Questions from '@/components/Questions';
 import CheckCircle from '@/components/CheckCircle';
 import StickyHeader from '@/components/StickyHeader';
+import { useAppSettings } from '@/context/AppSettingsContext';
 
 // Define the type for Bible
 type BibleType = { [key: string]: SegmentType | IntroType };
@@ -22,13 +23,95 @@ const Bible: BibleType = BibleData as BibleType; // Type assertion to ensure cor
 
 const segIds = Object.keys(Bible);
 
+// Move styles outside component
+const createStyles = (colors: any) => StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  title: {
+    color: colors.text,
+  },
+  subtitle: {
+    color: colors.secondary,
+  },
+  roleSelector: {
+    backgroundColor: colors.card,
+    borderColor: colors.border,
+  },
+  headerImage: {
+    color: "#808080",
+    bottom: -90,
+    left: -35,
+    position: "absolute",
+  },
+  titleContainer: {
+    flexDirection: "column",
+    gap: 8,
+    flex: 1,
+  },
+  screenContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  headerSpacer: {
+    height: 16,
+  },
+  buttonContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    zIndex: 1000,
+    backgroundColor: 'transparent',
+  },
+  roundButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  prevButton: {
+    marginRight: 'auto',
+  },
+  nextButton: {
+    marginLeft: 'auto',
+  },
+  checkCircleContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 30,
+    marginBottom: 80,
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: colors.text,
+  },
+});
+
 export default function BibleScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { planId, challengeId } = params;
   const pathname = usePathname();
   const { segmentId, updateSegmentId, language, version } = useAppContext();
-  const colorScheme = "light";
+  const { colors } = useAppSettings();
   const scrollViewRef = useRef<ScrollView>(null);
   
   // Extract just the segment ID from the full path and clean it
@@ -81,11 +164,13 @@ export default function BibleScreen() {
     [segID]
   );
 
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   useEffect(() => {
     if (segID && segmentData) {
       updateSegmentId(segID);
     }
-  }, [segID, segmentData]);
+  }, [segID, segmentData, updateSegmentId]);
 
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
@@ -99,7 +184,7 @@ export default function BibleScreen() {
   if (!segID || !segmentData) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <Text>Loading...</Text>
+        <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
   }
@@ -187,71 +272,3 @@ export default function BibleScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  headerImage: {
-    color: "#808080",
-    bottom: -90,
-    left: -35,
-    position: "absolute",
-  },
-  titleContainer: {
-    flexDirection: "column",
-    gap: 8,
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
-  screenContainer: {
-    flex: 1, // Allow ScrollView to fill the available space
-    backgroundColor: "white",
-  },
-  headerSpacer: {
-    height: 16, // Match Home.tsx top padding
-  },
-  buttonContainer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    zIndex: 1000,
-    backgroundColor: 'transparent',
-  },
-  roundButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#007BFF",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  prevButton: {
-    marginRight: 'auto',
-  },
-  nextButton: {
-    marginLeft: 'auto',
-  },
-  checkCircleContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 30,
-    marginBottom: 80,
-  },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  }
-});

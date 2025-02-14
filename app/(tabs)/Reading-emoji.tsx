@@ -8,6 +8,7 @@ const Books = require("@/assets/data/BookChapterList.json");
 import { useRouter } from "expo-router";
 import { SegmentIds } from '@/types';
 import { useAppContext } from "@/context/GlobalContext";
+import { useAppSettings } from "@/context/AppSettingsContext";
 
 // Define the structure for our emoji reaction data
 interface EmojiReaction {
@@ -122,10 +123,10 @@ const getSegmentReference = (segmentID: string) => {
   return `${segment.book[0]}${segment.ref ? ' ' + segment.ref : ''}`;
 };
 
-const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
+const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -137,12 +138,12 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   welcomeTitle: {
     fontSize: 24,
     fontWeight: "600",
-    color: "#000",
+    color: colors.text,
     marginBottom: 8,
   },
   welcomeText: {
     fontSize: 16,
-    color: "#666",
+    color: colors.secondary,
     lineHeight: 22,
   },
   header: {
@@ -152,7 +153,7 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.text,
     marginBottom: 8,
   },
   gridContainer: {
@@ -179,6 +180,8 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
     shadowRadius: 1.41,
     elevation: 2,
     transform: [{scale: 1}],
+    backgroundColor: colors.card,
+    borderColor: colors.border,
   },
   selectedCard: {
     transform: [{scale: 1.05}],
@@ -229,17 +232,17 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   descriptionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#333',
+    color: colors.text,
     marginBottom: 8,
   },
   emojiCountText: {
     fontSize: 16,
-    color: '#666',
+    color: colors.secondary,
     marginBottom: 16,
   },
   descriptionText: {
     fontSize: 16,
-    color: '#666',
+    color: colors.secondary,
     lineHeight: 24,
     marginBottom: 8,
   },
@@ -272,7 +275,7 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   },
   expandIndicator: {
     textAlign: 'center',
-    color: '#666',
+    color: colors.secondary,
     fontSize: 13,
     marginTop: 8,
     marginBottom: 8,
@@ -285,18 +288,18 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   recentHeaderText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: colors.text,
   },
   referenceText: {
     fontSize: 12,
-    color: '#666',
+    color: colors.secondary,
     textAlign: 'right',
     marginTop: 4,
     paddingRight: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: colors.secondary,
     lineHeight: 24,
     paddingHorizontal: 4,
   },
@@ -309,7 +312,8 @@ const ReadingEmoji = () => {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
-  const styles = createStyles(isLargeScreen);
+  const { colors } = useAppSettings();
+  const styles = createStyles(isLargeScreen, colors);
   const { updateSegmentId } = useAppContext();
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
   const [reactions, setReactions] = useState<EmojiReaction[]>([]);

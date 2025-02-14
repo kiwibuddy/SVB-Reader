@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, Animated } from "react-native";
 import { useRouter, usePathname } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppSettings } from '@/context/AppSettingsContext';
 
 declare global {
   var handleBottomNavScroll: ((event: any) => void) | undefined;
@@ -18,6 +19,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   const insets = useSafeAreaInsets();
   const [isVisible] = React.useState(new Animated.Value(1));
   const lastScrollY = React.useRef(0);
+  const { colors } = useAppSettings();
 
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
@@ -62,6 +64,48 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     return null;
   }
 
+  const styles = StyleSheet.create({
+    container: {
+      backgroundColor: colors.card,
+      borderTopColor: colors.border,
+      borderTopWidth: 1,
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      zIndex: 999,
+    },
+    content: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      paddingVertical: 6,
+    },
+    navItem: {
+      alignItems: 'center',
+      paddingVertical: 2,
+    },
+    navText: {
+      fontSize: 12,
+      marginTop: 2,
+      color: colors.text,
+    },
+    activeText: {
+      color: colors.primary,
+    },
+    label: {
+      color: colors.text,
+    },
+    activeLabel: {
+      color: colors.primary,
+    },
+    icon: {
+      color: colors.secondary,
+    },
+    activeIcon: {
+      color: colors.primary,
+    },
+  });
+
   const containerStyle = [
     styles.container,
     {
@@ -85,7 +129,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
           <Ionicons 
             name={pathname === "/Home" ? "home" : "home-outline"} 
             size={24} 
-            color={pathname === "/Home" ? "#FF5733" : "#666"} 
+            color={pathname === "/Home" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Home" && styles.activeText]}>
             Home
@@ -99,7 +143,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
           <Ionicons 
             name={pathname === "/Reading-emoji" ? "happy" : "happy-outline"} 
             size={24} 
-            color={pathname === "/Reading-emoji" ? "#FF5733" : "#666"} 
+            color={pathname === "/Reading-emoji" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Reading-emoji" && styles.activeText]}>
             Emoji
@@ -113,7 +157,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
           <Ionicons 
             name={pathname === "/Reading-movement" ? "trophy" : "trophy-outline"} 
             size={24} 
-            color={pathname === "/Reading-movement" ? "#FF5733" : "#666"} 
+            color={pathname === "/Reading-movement" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Reading-movement" && styles.activeText]}>
             Achievements
@@ -127,7 +171,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
           <Ionicons 
             name={pathname === "/Navigation" ? "search" : "search-outline"} 
             size={24} 
-            color={pathname === "/Navigation" ? "#FF5733" : "#666"} 
+            color={pathname === "/Navigation" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Navigation" && styles.activeText]}>
             Search
@@ -137,35 +181,5 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     </Animated.View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#FFF',
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 999,
-  },
-  content: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 6,
-  },
-  navItem: {
-    alignItems: 'center',
-    paddingVertical: 2,
-  },
-  navText: {
-    fontSize: 12,
-    marginTop: 2,
-    color: '#666',
-  },
-  activeText: {
-    color: '#FF5733',
-  },
-});
 
 export default BottomNavigation; 

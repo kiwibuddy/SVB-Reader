@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from "react";
 import { 
   View, 
@@ -16,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import CelebrationPopup from "../CelebrationPopup";
 import { getCheckColor } from '@/scripts/getCheckColors';
 import { markSegmentCompleteInDB, getSegmentCompletionStatus } from "@/api/sqlite";
+import { useAppSettings } from '@/context/AppSettingsContext';
 
 interface ColorData {
   total: number;
@@ -59,6 +61,7 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
     isCompleted: false,
     color: null
   });
+  const { colors } = useAppSettings();
 
   useEffect(() => {
     const loadStatus = async () => {
@@ -93,48 +96,39 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
     });
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      backgroundColor: colors.background,
+    },
+    title: {
+      fontSize: 16,
+      color: colors.text,
+      marginBottom: 4,
+    },
+    reference: {
+      fontSize: 14,
+      color: colors.secondary,
+    },
+    completedText: {
+      color: colors.secondary,
+    }
+  });
+
   return (
-    <TouchableOpacity style={styles.container} onPress={handlePress}>
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>{segment.title}</Text>
-        <Text style={styles.subtitle}>{segment.ref}</Text>
-      </View>
-      <View style={styles.rightContent}>
-        <Ionicons 
-          name={completionStatus.isCompleted ? "checkmark-circle" : "checkmark-circle-outline"} 
-          size={24} 
-          color={completionStatus.isCompleted ? getCheckColor(completionStatus.color) : "#CCCCCC"} 
-        />
-      </View>
+    <TouchableOpacity 
+      style={styles.container}
+      onPress={handlePress}
+    >
+      <Text style={styles.title}>{segment.title}</Text>
+      {segment.ref && (
+        <Text style={styles.reference}>{segment.ref}</Text>
+      )}
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    backgroundColor: '#F5F5F5',
-  },
-  textContainer: {
-    flex: 1,
-    paddingRight: 16,
-  },
-  title: {
-    fontSize: 16,
-    color: '#000000',
-    marginBottom: 2,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  rightContent: {
-    marginLeft: 12,
-  }
-});
 
 export default SegmentItem;

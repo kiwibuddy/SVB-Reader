@@ -21,6 +21,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { markSegmentCompleteInDB, getSegmentCompletionStatus, unlockAchievement } from "@/api/sqlite";
+import { useAppSettings } from '@/context/AppSettingsContext';
 
 interface BookSegments {
   segments: string[];
@@ -60,10 +61,10 @@ const PLAN_STYLES = {
   }
 };
 
-const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
+const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -75,12 +76,12 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   welcomeTitle: {
     fontSize: 24,
     fontWeight: "600",
-    color: "#000",
+    color: colors.text,
     marginBottom: 8,
   },
   welcomeText: {
     fontSize: 16,
-    color: "#666",
+    color: colors.secondary,
     lineHeight: 22,
   },
   scrollContainer: {
@@ -131,11 +132,11 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   planTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#000',
+    color: colors.text,
   },
   segmentCount: {
     fontSize: 14,
-    color: '#666',
+    color: colors.secondary,
     marginTop: 2,
   },
   booksContainer: {
@@ -144,6 +145,16 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   },
   titleContainer: {
     flexDirection: 'column',
+  },
+  title: {
+    color: colors.text,
+  },
+  description: {
+    color: colors.secondary,
+  },
+  card: {
+    backgroundColor: colors.card,
+    borderColor: colors.border,
   },
 });
 
@@ -166,7 +177,8 @@ const PlanScreen = () => {
   const scrollViewRef = useRef<ScrollView>(null);
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
-  const styles = createStyles(isLargeScreen);
+  const { colors } = useAppSettings();
+  const styles = createStyles(isLargeScreen, colors);
 
   // Initialize selectedPlan with the active plan if it exists, otherwise use first plan
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
