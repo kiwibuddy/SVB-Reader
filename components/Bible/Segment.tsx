@@ -16,6 +16,7 @@ import { useAppContext } from "@/context/GlobalContext";
 import CelebrationPopup from "../CelebrationPopup";
 import { useRouter } from "expo-router";
 import CheckCircle from "@/components/CheckCircle";
+import { useAppSettings } from '@/context/AppSettingsContext';
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -30,6 +31,15 @@ const icons = [
   { name: "star", label: "3" },
   { name: "star", label: "4" },
 ];
+
+// OR define it directly if you prefer
+interface ColorData {
+  total: number;
+  black: number;
+  red: number;
+  green: number;
+  blue: number;
+}
 
 const SegmentComponent: React.FC<SegmentProps> = ({ 
   segmentData, 
@@ -53,6 +63,8 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     updateSelectedReaderColor
   } = useAppContext();
 
+  const { colors } = useAppSettings();
+
   // Add null checks for segmentData
   if (!segmentData || !segmentData.id) {
     console.error('Invalid segment data:', segmentData);
@@ -64,8 +76,16 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const [blockData, setBlockData] = useState<BibleBlock | null>(null); // State for block data
   const [blockID, setBlockID] = useState<string | null>(null); // State for block ID
   const [showCelebration, setShowCelebration] = useState(false);
-  const { content, colors, readers, id } = segmentData;
+  const { content, readers, id } = segmentData;
   const segID = id.split("-")[id.split("-").length - 1];
+
+  const [colorData, setColorData] = useState({
+    black: 0,
+    red: 0,
+    green: 0,
+    blue: 0,
+    total: 0
+  });
 
   // Determine which completion state to use
   const getIsCompleted = () => {
@@ -118,6 +138,24 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const newContent = splitIntoParagraphs(content);
 
   const colorRenderCount = new Map<string, number>(); // Track render counts
+
+  useEffect(() => {
+    // Calculate color counts from content
+    const counts = newContent.reduce((acc, block) => {
+      const color = block.source.color as keyof typeof acc;
+      acc[color] = (acc[color] || 0) + 1;
+      acc.total += 1;
+      return acc;
+    }, {
+      black: 0,
+      red: 0,
+      green: 0,
+      blue: 0,
+      total: 0
+    } as ColorData);
+    
+    setColorData(counts);
+  }, [newContent]);
 
   // Add handler for completion toggle
   const handleCompletion = async () => {
@@ -172,13 +210,212 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     }
   };
 
+  // Add speech bubble colors based on theme
+  const getSpeakerStyle = (speaker: string) => {
+    const baseStyle = {
+      padding: 16,
+      borderRadius: 8,
+      marginBottom: 8,
+      borderWidth: 1,
+    };
+
+    switch (speaker.toLowerCase()) {
+      case 'narrator':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.bubbles.default,
+          borderColor: colors.border,
+        };
+      case 'god':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.bubbles.red,
+          borderColor: colors.border,
+        };
+      case 'jesus':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.bubbles.red,
+          borderColor: colors.border,
+        };
+      case 'people':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.bubbles.blue,
+          borderColor: colors.border,
+        };
+      default:
+        return {
+          ...baseStyle,
+          backgroundColor: colors.bubbles.default,
+          borderColor: colors.border,
+        };
+    }
+  };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      padding: 16,
+    },
+    roleContainer: {
+      backgroundColor: colors.card,
+      borderRadius: 8,
+      padding: 16,
+      marginBottom: 16,
+      borderColor: colors.border,
+      borderWidth: 1,
+    },
+    roleText: {
+      color: colors.text,
+      fontSize: 18,
+      fontWeight: '600',
+      marginBottom: 8,
+    },
+    verseContainer: {
+      backgroundColor: colors.card,
+      borderRadius: 8,
+      padding: 16,
+      marginBottom: 8,
+      borderColor: colors.border,
+      borderWidth: 1,
+    },
+    verseText: {
+      color: colors.text,
+      fontSize: 16,
+      lineHeight: 24,
+    },
+    verseNumber: {
+      color: colors.secondary,
+      fontSize: 12,
+      marginRight: 4,
+    },
+    speakerText: {
+      color: colors.text,
+      fontSize: 16,
+      lineHeight: 24,
+    },
+    speakerLabel: {
+      color: colors.secondary,
+      fontSize: 14,
+      fontStyle: 'italic',
+      marginBottom: 4,
+    },
+    chartSection: {
+      flex: 1,
+      maxWidth: '40%',
+      justifyContent: "center",
+      alignItems: "center",
+      paddingVertical: 10,
+    },
+    readerSection: {
+      flex: 3, 
+      justifyContent: "center", 
+      alignItems: "center", 
+      height: "100%",
+      paddingLeft: 10,
+    },
+    readerContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingLeft: 20
+    },
+    readerText: {
+      fontSize: 14,
+      marginBottom: 15,
+      textAlign: 'center',
+      color: colors.text, // Add theme color
+    },
+    iconContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: '90%'
+    },
+    divider: {
+      borderBottomColor: colors.border,
+      borderBottomWidth: 1,
+      margin: 10,
+    },
+    blurContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      alignContent: "flex-start",
+    },
+    emojiPickerContainer: {
+      flex: 0,
+      flexDirection: "column", // Ensure elements stack vertically
+      alignItems: "center", // Center items horizontally
+      marginBottom: 10, // Add some space between the emoji picker and the block
+    },
+    modalContainer: {
+      // marginTop: 100,
+      flex: 0, // Allow the modal container to take available space
+      justifyContent: "flex-start",
+      backgroundColor: "transparent",
+      // Remove any fixed height settings
+    },
+    blockContainer: {
+      flex: 0, // Set flex to 0 to prevent it from growing
+      flexDirection: "row", // Ensure elements stack vertically
+      alignContent: "flex-start",
+      backgroundColor: "white",
+      borderRadius: 16,
+      padding: 16,
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+      maxWidth: "80%",
+      maxHeight: "80%", // Keep the maxHeight to limit the size
+      overflow: "hidden",
+    },
+    reactionText: {
+      fontSize: 30, // Adjust size as needed
+      elevation: 3, // Optional: add shadow on Android
+      shadowColor: "#000", // Optional: shadow color for iOS
+      shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
+      shadowOpacity: 0.2, // Optional: shadow opacity for iOS
+      shadowRadius: 2, // Optional: shadow radius for iOS
+    },
+    reactionPosition: {
+      position: "absolute",
+      bottom: 0,
+      right: 0,
+      zIndex: 1,
+    },
+    reactionContainer: {
+      flexDirection: "row",
+      // backgroundColor: "white", // White background
+      // borderRadius: 20, // Half of the width/height for a circle
+      padding: 5, // Padding for the circle
+      position: "absolute",
+      top: -25, // Adjust as needed for overlap
+      right: 0, // Adjust as needed for spacing from the right
+      elevation: 3, // Optional: add shadow on Android
+      shadowColor: "#000", // Optional: shadow color for iOS
+      shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
+      shadowOpacity: 0.2, // Optional: shadow opacity for iOS
+      shadowRadius: 2, // Optional: shadow radius for iOS
+    },
+  });
+
+  // Update the render method where speech bubbles are rendered
+  const renderSpeechBubble = (content: string, speaker: string) => (
+    <View style={getSpeakerStyle(speaker)}>
+      <Text style={styles.speakerLabel}>{speaker}</Text>
+      <Text style={styles.speakerText}>{content}</Text>
+    </View>
+  );
+
   return (
-    <View
-      style={{
-        padding: 5,
-        backgroundColor: "white",
-      }}
-    >
+    <View style={styles.container}>
       <SegmentTitle segmentId={segID} />
       <View style={{
         flexDirection: 'row',
@@ -199,41 +436,19 @@ const SegmentComponent: React.FC<SegmentProps> = ({
             height: "100%",
           }}
         >
-          <View style={[styles.chartSection]}>
+          <View style={styles.chartSection}>
             <PieChart 
-              colorData={colors} 
+              colorData={colorData}
               size={isIPad ? Math.min(screenWidth * 0.15, 120) : 80}
             />
           </View>
-          <View
-            style={{ 
-              flex: 3, 
-              justifyContent: "center", 
-              alignItems: "center", 
-              height: "100%",
-              paddingLeft: isIPad ? 10 : 10,
-            }}
-          >
-            {/* Reader Selection Section */}
-            <View style={{ 
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingLeft: 20
-            }}>
-              <Text style={{ 
-                fontSize: 14,
-                marginBottom: 15,
-                textAlign: 'center'
-              }}>
+          <View style={styles.readerSection}>
+            <View style={styles.readerContainer}>
+              <Text style={styles.readerText}>
                 Select your reading role:
               </Text>
               
-              <View style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                width: '90%'
-              }}>
+              <View style={styles.iconContainer}>
                 {icons.map((icon, index) => {
                   const colors = getColors(readers[index]);
                   const color = readerNumber === index ? colors.dark : colors.light;
@@ -255,13 +470,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
           </View>
         </View>
       </View>
-      <View
-        style={{
-          borderBottomColor: "grey",
-          borderBottomWidth: 1,
-          margin: 10,
-        }}
-      />
+      <View style={styles.divider} />
 
       <FlatList
         data={newContent}
@@ -368,13 +577,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
           </Pressable>
         </BlurView>
       </Modal>
-      <View
-        style={{
-          borderBottomColor: "grey",
-          borderBottomWidth: 1,
-          margin: 10,
-        }}
-      />
+      <View style={styles.divider} />
 
       <CelebrationPopup 
         visible={showCelebration} 
@@ -385,79 +588,3 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 };
 
 export default SegmentComponent;
-
-const styles = StyleSheet.create({
-  blurContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    alignContent: "flex-start",
-  },
-  emojiPickerContainer: {
-    flex: 0,
-    flexDirection: "column", // Ensure elements stack vertically
-    alignItems: "center", // Center items horizontally
-    marginBottom: 10, // Add some space between the emoji picker and the block
-  },
-  modalContainer: {
-    // marginTop: 100,
-    flex: 0, // Allow the modal container to take available space
-    justifyContent: "flex-start",
-    backgroundColor: "transparent",
-    // Remove any fixed height settings
-  },
-  blockContainer: {
-    flex: 0, // Set flex to 0 to prevent it from growing
-    flexDirection: "row", // Ensure elements stack vertically
-    alignContent: "flex-start",
-    backgroundColor: "white",
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    maxWidth: "80%",
-    maxHeight: "80%", // Keep the maxHeight to limit the size
-    overflow: "hidden",
-  },
-  reactionText: {
-    fontSize: 30, // Adjust size as needed
-    elevation: 3, // Optional: add shadow on Android
-    shadowColor: "#000", // Optional: shadow color for iOS
-    shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
-    shadowOpacity: 0.2, // Optional: shadow opacity for iOS
-    shadowRadius: 2, // Optional: shadow radius for iOS
-  },
-  reactionPosition: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    zIndex: 1,
-  },
-  reactionContainer: {
-    flexDirection: "row",
-    // backgroundColor: "white", // White background
-    // borderRadius: 20, // Half of the width/height for a circle
-    padding: 5, // Padding for the circle
-    position: "absolute",
-    top: -25, // Adjust as needed for overlap
-    right: 0, // Adjust as needed for spacing from the right
-    elevation: 3, // Optional: add shadow on Android
-    shadowColor: "#000", // Optional: shadow color for iOS
-    shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
-    shadowOpacity: 0.2, // Optional: shadow opacity for iOS
-    shadowRadius: 2, // Optional: shadow radius for iOS
-  },
-  chartSection: {
-    flex: 1,
-    maxWidth: '40%',
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 10,
-  },
-});

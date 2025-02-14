@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { type FontSize, type TextSizes } from './FontSizeContext';
+import { Appearance, ColorSchemeName } from 'react-native';
 
 // Create the context
 const AppSettingsContext = createContext<AppSettingsContextType | undefined>(undefined);
@@ -77,7 +78,14 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     button: 16,
     navigation: 16,
   });
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const systemColorScheme = Appearance.getColorScheme();
+    const getSavedMode = async () => {
+      const savedMode = await AsyncStorage.getItem('darkMode');
+      return savedMode !== null ? savedMode === 'true' : systemColorScheme === 'dark';
+    };
+    return systemColorScheme === 'dark';
+  });
   
   const colors = isDarkMode ? darkColors : lightColors;
 
@@ -113,20 +121,36 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     await updateOrientation(locked);
   };
 
+  // Listen for system color scheme changes
+  useEffect(() => {
+    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
+      AsyncStorage.getItem('darkMode').then(savedMode => {
+        if (savedMode === null) {
+          setIsDarkMode(colorScheme === 'dark');
+        }
+      });
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  // Load saved dark mode preference on mount
+  useEffect(() => {
+    const loadSavedMode = async () => {
+      const savedMode = await AsyncStorage.getItem('darkMode');
+      if (savedMode !== null) {
+        setIsDarkMode(savedMode === 'true');
+      }
+    };
+    loadSavedMode();
+  }, []);
+
   const setDarkMode = async (enabled: boolean) => {
     setIsDarkMode(enabled);
     await AsyncStorage.setItem('darkMode', enabled.toString());
   };
-
-  useEffect(() => {
-    const loadSettings = async () => {
-      const savedDarkMode = await AsyncStorage.getItem('darkMode');
-      if (savedDarkMode !== null) {
-        setIsDarkMode(savedDarkMode === 'true');
-      }
-    };
-    loadSettings();
-  }, []);
 
   return (
     <AppSettingsContext.Provider value={{
