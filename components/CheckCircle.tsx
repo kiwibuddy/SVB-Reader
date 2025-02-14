@@ -5,7 +5,7 @@ import { useAppContext } from '@/context/GlobalContext';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import CelebrationPopup from './CelebrationPopup';
 import { getCheckColor } from '@/scripts/getCheckColors';
-import { getSegmentReadCount } from '@/api/sqlite';
+import { getSegmentReadCount, getSegmentCompletionStatus } from '@/api/sqlite';
 
 interface CheckCircleProps {
   segmentId: string;
@@ -35,22 +35,22 @@ export default function CheckCircle({
   const router = useRouter();
   const params = useLocalSearchParams();
 
-  // Get completion status based on context
-  const getIsCompleted = () => {
-    if (context === 'main') {
-      return completedSegments[segmentId]?.isCompleted || false;
-    }
-    if (context === 'plan' && planId && activePlan?.planId === planId) {
-      return activePlan.completedSegments.includes(segmentId);
-    }
-    if (context === 'challenge' && challengeId && activeChallenges[challengeId]) {
-      return activeChallenges[challengeId].completedSegments.includes(segmentId);
-    }
-    return false;
-  };
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [completionColor, setCompletionColor] = useState<string | null>(null);
 
-  const isCompleted = getIsCompleted();
-  const completionColor = completedSegments[segmentId]?.color || null;
+  useEffect(() => {
+    const loadCompletionStatus = async () => {
+      const status = await getSegmentCompletionStatus(
+        segmentId,
+        context,
+        planId,
+        challengeId
+      );
+      setIsCompleted(status.isCompleted);
+      setCompletionColor(status.color);
+    };
+    loadCompletionStatus();
+  }, [segmentId, context, planId, challengeId]);
 
   useEffect(() => {
     // Load total read count for the segment

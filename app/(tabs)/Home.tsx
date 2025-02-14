@@ -19,7 +19,7 @@ import StickyHeader from "../../components/StickyHeader";
 import { useAppContext } from "@/context/GlobalContext";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
-import { getEmojis } from "@/api/sqlite";
+import { getEmojis, getCurrentStreak } from "@/api/sqlite";
 import { format } from 'date-fns';
 
 const SegmentTitles = require("@/assets/data/SegmentTitles.json") as { [key: string]: SegmentTitle };
@@ -582,6 +582,17 @@ const HomeScreen = () => {
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const styles = createStyles(isLargeScreen);
+  const [currentStreak, setCurrentStreak] = useState(0);
+
+  // Add useEffect to fetch streak data
+  useEffect(() => {
+    const loadStreak = async () => {
+      const streak = await getCurrentStreak();
+      setCurrentStreak(streak);
+    };
+    
+    loadStreak();
+  }, [completedSegments]); // Reload when completedSegments changes
 
   // Calculate available plans (excluding SchoolYear2, SchoolYear3, and test plans)
   const getAvailablePlansCount = () => {
@@ -731,7 +742,7 @@ const HomeScreen = () => {
 
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>12</Text>
+            <Text style={styles.statNumber}>{currentStreak}</Text>
             <Text style={styles.statLabel}>Day Streak</Text>
           </View>
           <View style={styles.statItem}>

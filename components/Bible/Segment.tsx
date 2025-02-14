@@ -105,7 +105,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   const handleReactionSelect = async (blockData: BibleBlock, blockID: string, emoji: string) => {
     try {
-      await addEmoji(blockID, JSON.stringify(blockData), emoji, "");
+      await addEmoji(segID, blockID, JSON.stringify(blockData), emoji);
       if (typeof emojiActions === 'number') {
         await updateEmojiActions(emojiActions + 1);
       }
@@ -159,6 +159,19 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     }
   };
 
+  const handleComplete = async () => {
+    if (readerNumber !== null) {
+      await markSegmentComplete(
+        segmentData.id,
+        true,
+        readers[readerNumber],
+        context,
+        context === 'plan' ? planId : challengeId
+      );
+      setShowCelebration(true);
+    }
+  };
+
   return (
     <View
       style={{
@@ -196,7 +209,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
             style={{ 
               flex: 3, 
               justifyContent: "center", 
-              alignItems: "center",
+              alignItems: "center", 
               height: "100%",
               paddingLeft: isIPad ? 10 : 10,
             }}
@@ -337,9 +350,8 @@ const SegmentComponent: React.FC<SegmentProps> = ({
               <View style={styles.modalContainer}>
                 <View style={styles.emojiPickerContainer}>
                   <EmojiPicker
-                    onEmojiSelect={(emoji) =>
-                      handleReactionSelect(blockData, blockID, emoji)
-                    }
+                    onEmojiSelect={(emoji) => handleReactionSelect(blockData, blockID, emoji)}
+                    onClose={() => setIsModalVisible(false)}
                   />
                 </View>
                 <View style={styles.blockContainer}>

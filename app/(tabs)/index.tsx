@@ -61,7 +61,7 @@ const IndexScreen = () => {
           />
 
           <Text style={textStyles.title}>SOURCEVIEW</Text>
-          <Text style={textStyles.subtitle}>YOUTH</Text>
+          <Text style={textStyles.subtitle}>READER</Text>
         </View>
         {/* Heading */}
         <View style={styles.titleContainer}>

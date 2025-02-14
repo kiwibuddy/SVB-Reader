@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import readingPlansData from "../assets/data/ReadingPlansChallenges.json";
-import { markSegmentCompleteInDB } from '@/api/sqlite';
+import { markSegmentCompleteInDB, updateDailyActivity } from '@/api/sqlite';
 
 // Add this interface near the top of the file, before AppContextType
 interface ReadingPlanProgress {
@@ -307,20 +307,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   const markSegmentComplete = async (
     segmentId: string, 
     isComplete: boolean, 
-    color?: string | null,
+    color: string | null = null,
     context: 'main' | 'plan' | 'challenge' = 'main',
-    contextId?: string
+    planId?: string,
+    challengeId?: string
   ) => {
     try {
-      // Update SQLite database
       if (isComplete) {
-        await markSegmentCompleteInDB(
-          segmentId,
-          context || 'main',
-          context === 'plan' ? contextId : null,
-          context === 'challenge' ? contextId : null,
-          color
-        );
+        await markSegmentCompleteInDB(segmentId, context, planId, challengeId, color);
+        await updateDailyActivity(segmentId);
       }
 
       // Update local state based on context
@@ -334,7 +329,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         setCompletedSegments(updatedSegments);
         await AsyncStorage.setItem('completedSegments', JSON.stringify(updatedSegments));
       } 
-      else if (context === 'plan' && contextId) {
+      else if (context === 'plan' && planId) {
         if (!activePlan) return;
         
         const updatedPlan: PlanProgress = {
@@ -345,14 +340,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
           lastRead: new Date().toISOString()
         };
 
-        if (updatedPlan.planId === contextId) {
+        if (updatedPlan.planId === planId) {
           setActivePlan(updatedPlan);
           await AsyncStorage.setItem('activePlan', JSON.stringify(updatedPlan));
         }
       }
-      else if (context === 'challenge' && contextId) {
+      else if (context === 'challenge' && challengeId) {
         const updatedChallenges = { ...activeChallenges };
-        const challenge = updatedChallenges[contextId];
+        const challenge = updatedChallenges[challengeId];
         if (challenge) {
           if (isComplete && !challenge.completedSegments.includes(segmentId)) {
             challenge.completedSegments.push(segmentId);

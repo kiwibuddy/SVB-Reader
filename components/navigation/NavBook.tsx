@@ -182,7 +182,7 @@ export interface AccordionProps {
   bookIndex: number;
   onSegmentComplete?: (segmentId: string) => void;
   showGlobalCompletion?: boolean;
-  context?: 'navigation' | 'plan' | 'challenge';
+  context?: 'main' | 'plan' | 'challenge';
   planId?: string;
   challengeId?: string;
   style?: object;
@@ -231,7 +231,7 @@ const Accordion = ({
   bookIndex, 
   onSegmentComplete,
   showGlobalCompletion = false,
-  context = 'navigation',
+  context = 'main',
   planId,
   challengeId,
   style = {},
@@ -264,13 +264,8 @@ const Accordion = ({
     const completionStatus: Record<string, boolean> = {};
     
     for (const segmentId of item.segments) {
-      const isCompleted = await getSegmentCompletionStatus(
-        segmentId,
-        context === 'plan' ? 'plan' : context === 'challenge' ? 'challenge' : 'main',
-        planId,
-        challengeId
-      );
-      completionStatus[segmentId] = isCompleted;
+      const status = await getSegmentCompletionStatus(segmentId);
+      completionStatus[segmentId] = status.isCompleted;
     }
     
     setCompletedSegments(completionStatus);
@@ -332,26 +327,17 @@ const Accordion = ({
             ref={flatListRef}
             data={item.segments}
             renderItem={({ item: segment }) => (
-              <SegmentItem 
+              <SegmentItem
                 segment={{
                   id: segment,
                   title: SegmentTitles[segment].title,
                   ref: SegmentTitles[segment].ref,
                   book: SegmentTitles[segment].book
                 }}
-                completedSegments={
-                  Object.fromEntries(
-                    Object.entries(completedSegments).map(([id, isCompleted]) => [
-                      id,
-                      { isCompleted, color: null }
-                    ])
-                  )
-                }
-                onComplete={onSegmentComplete}
-                showGlobalCompletion={showGlobalCompletion}
                 context={context}
                 planId={planId}
                 challengeId={challengeId}
+                onPress={onSegmentSelect}
               />
             )}
             keyExtractor={(segment) => segment}

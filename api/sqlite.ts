@@ -16,7 +16,8 @@ async function initializeDatabase() {
         blockID TEXT NOT NULL,
         blockData TEXT NOT NULL,
         emoji TEXT NOT NULL,
-        note TEXT NOT NULL
+        note TEXT NOT NULL,
+        UNIQUE(segmentID, blockID)
       );
 
       -- New segment completion table
@@ -41,7 +42,36 @@ async function initializeDatabase() {
         maxProgress INTEGER,
         isCompleted BOOLEAN
       );
+
+      -- New daily_activity table to track reading streaks
+      CREATE TABLE IF NOT EXISTS daily_activity (
+        id INTEGER PRIMARY KEY NOT NULL,
+        date TEXT NOT NULL,
+        segmentCount INTEGER NOT NULL,
+        lastUpdated TEXT NOT NULL
+      );
+
+      -- New table to track current streak
+      CREATE TABLE IF NOT EXISTS streak_data (
+        id INTEGER PRIMARY KEY NOT NULL,
+        currentStreak INTEGER NOT NULL,
+        longestStreak INTEGER NOT NULL,
+        lastReadDate TEXT NOT NULL,
+        lastUpdated TEXT NOT NULL
+      );
     `);
+
+    // Initialize streak_data if empty
+    const streakData = await db.getFirstAsync(
+      'SELECT * FROM streak_data LIMIT 1'
+    );
+    
+    if (!streakData) {
+      await db.runAsync(`
+        INSERT INTO streak_data (currentStreak, longestStreak, lastReadDate, lastUpdated)
+        VALUES (0, 0, date('now', 'localtime'), datetime('now', 'localtime'))
+      `);
+    }
   } catch (error) {
     console.error("Database initialization error:", error);
   }
@@ -52,32 +82,18 @@ initializeDatabase();
 // Segment completion functions
 export async function markSegmentCompleteInDB(
   segmentID: string,
-  completionType: 'main' | 'challenge' | 'plan',
-  planID: string | null = null,
-  challengeID: string | null = null,
-  readerColor: string | null = null
+  context: 'main' | 'plan' | 'challenge',
+  planID?: string | null,
+  challengeID?: string | null,
+  readerColor?: string | null
 ) {
   try {
-    await db.runAsync(
-      `INSERT INTO segment_completion 
-       (segmentID, completionType, planID, challengeID, completionDate, readerColor)
-       VALUES (?, ?, ?, ?, datetime('now'), ?)`,
-      segmentID,
-      completionType,
-      planID,
-      challengeID,
-      readerColor
-    );
-
-    if (completionType !== 'main') {
-      await db.runAsync(
-        `INSERT INTO segment_completion 
-         (segmentID, completionType, completionDate, readerColor)
-         VALUES (?, 'main', datetime('now'), ?)`,
-        segmentID,
-        readerColor
-      );
-    }
+    await db.runAsync(`
+      INSERT INTO segment_completion (
+        segmentID, completionType, planID, challengeID, completionDate, readerColor
+      )
+      VALUES (?, ?, ?, ?, datetime('now', 'localtime'), ?)
+    `, segmentID, context, planID || null, challengeID || null, readerColor || null);
   } catch (error) {
     console.error("Error marking segment complete:", error);
   }
@@ -85,26 +101,39 @@ export async function markSegmentCompleteInDB(
 
 export async function getSegmentCompletionStatus(
   segmentID: string,
-  completionType: 'main' | 'challenge' | 'plan',
-  planID: string | null = null,
-  challengeID: string | null = null
-) {
+  context: 'main' | 'plan' | 'challenge' = 'main',
+  planID?: string,
+  challengeID?: string
+): Promise<{ isCompleted: boolean; color: string | null }> {
   try {
-    const result = await db.getFirstAsync<{ id: number }>(
-      `SELECT id FROM segment_completion 
+    const result = await db.getFirstAsync<{ readerColor: string | null }>(
+      `SELECT readerColor 
+       FROM segment_completion 
        WHERE segmentID = ? 
        AND completionType = ?
-       AND (planID = ? OR planID IS NULL)
-       AND (challengeID = ? OR challengeID IS NULL)`,
+       AND (
+         (? IS NULL AND planID IS NULL) OR planID = ?
+       )
+       AND (
+         (? IS NULL AND challengeID IS NULL) OR challengeID = ?
+       )
+       ORDER BY completionDate DESC 
+       LIMIT 1`,
       segmentID,
-      completionType,
-      planID,
-      challengeID
+      context,
+      planID || null,
+      planID || null,
+      challengeID || null,
+      challengeID || null
     );
-    return !!result;
+    
+    return {
+      isCompleted: !!result,
+      color: result?.readerColor || null
+    };
   } catch (error) {
     console.error("Error getting segment completion status:", error);
-    return false;
+    return { isCompleted: false, color: null };
   }
 }
 
@@ -163,35 +192,28 @@ export async function getAchievements() {
 }
 
 // New function to insert an emoji
-export async function addEmoji(
-  ID: string,
-  blockData: string,
-  emoji: string,
-  note: string
-) {
-  const idSplit = ID.split("-");
-  const segmentID = idSplit[0];
-  const blockID = idSplit[1];
+export async function addEmoji(segmentID: string, blockID: string, blockData: any, emoji: string) {
   try {
-    // First delete any existing emoji for this block
-    await db.runAsync(
-      `DELETE FROM emojis WHERE segmentID = ? AND blockID = ?`,
-      segmentID,
-      blockID
-    );
+    await deleteEmoji(segmentID, blockID);
     
-    // Then insert the new emoji
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    const blockDataString = typeof blockData === 'string' 
+      ? blockData 
+      : JSON.stringify(blockData);
+    
     await db.runAsync(
-      `INSERT INTO emojis (segmentID, blockID, blockData, emoji, note) 
+      `INSERT INTO emojis (segmentID, blockID, blockData, emoji, note)
        VALUES (?, ?, ?, ?, ?)`,
       segmentID,
       blockID,
-      blockData,
+      blockDataString,
       emoji,
-      note
+      ''
     );
   } catch (error) {
     console.error("Error adding emoji:", error);
+    throw error;
   }
 }
 
@@ -199,9 +221,8 @@ export async function addEmoji(
 export async function deleteEmoji(segmentID: string, blockID: string) {
   try {
     await db.runAsync(
-      `
-      DELETE FROM emojis WHERE segmentID = ? AND blockID = ?
-    `,
+      `DELETE FROM emojis 
+       WHERE segmentID = ? AND blockID = ?`,
       segmentID,
       blockID
     );
@@ -214,16 +235,14 @@ export async function deleteEmoji(segmentID: string, blockID: string) {
 export async function getEmoji(segmentID: string, blockID: string): Promise<string | null> {
   try {
     const result = await db.getFirstAsync<{ emoji: string }>(
-      `
-      SELECT emoji FROM emojis WHERE segmentID = ? AND blockID = ?
-    `,
+      `SELECT emoji FROM emojis 
+       WHERE segmentID = ? AND blockID = ?`,
       segmentID,
       blockID
     );
-
-    return result ? result.emoji : null; // Returns the emoji string or null if not found
+    return result?.emoji || null;
   } catch (error) {
-    console.error("Error retrieving emoji:", error);
+    console.error("Error getting emoji:", error);
     return null;
   }
 }
@@ -239,7 +258,8 @@ export async function getEmojis() {
       emoji: string;
       note: string;
     }>(
-      `SELECT * FROM emojis`
+      `SELECT * FROM emojis 
+       ORDER BY id DESC`
     );
     return result;
   } catch (error) {
@@ -258,6 +278,89 @@ export async function getSegmentReadCount(segmentID: string): Promise<number> {
     return result?.count || 0;
   } catch (error) {
     console.error("Error getting segment read count:", error);
+    return 0;
+  }
+}
+
+// Add new functions to handle streak tracking
+export async function updateDailyActivity(segmentId: string) {
+  const today = new Date().toISOString().split('T')[0];
+  
+  try {
+    // Record daily activity
+    await db.runAsync(`
+      INSERT OR REPLACE INTO daily_activity (date, segmentCount, lastUpdated)
+      VALUES (
+        ?,
+        COALESCE((
+          SELECT segmentCount + 1
+          FROM daily_activity
+          WHERE date = ?
+        ), 1),
+        datetime('now', 'localtime')
+      )
+    `, today, today);
+
+    // Update streak
+    await updateStreak();
+  } catch (error) {
+    console.error("Error updating daily activity:", error);
+  }
+}
+
+async function updateStreak() {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    
+    const streakData = await db.getFirstAsync<{
+      currentStreak: number;
+      longestStreak: number;
+      lastReadDate: string;
+    }>('SELECT * FROM streak_data ORDER BY id DESC LIMIT 1');
+
+    if (!streakData) return;
+
+    const lastReadDate = new Date(streakData.lastReadDate);
+    const currentDate = new Date(today);
+    const diffDays = Math.floor((currentDate.getTime() - lastReadDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    let newStreak = streakData.currentStreak;
+    
+    if (diffDays === 0) {
+      // Already counted for today
+      return;
+    } else if (diffDays === 1) {
+      // Consecutive day
+      newStreak += 1;
+    } else {
+      // Streak broken
+      newStreak = 1;
+    }
+
+    const newLongestStreak = Math.max(newStreak, streakData.longestStreak);
+
+    await db.runAsync(`
+      UPDATE streak_data
+      SET currentStreak = ?,
+          longestStreak = ?,
+          lastReadDate = ?,
+          lastUpdated = datetime('now', 'localtime')
+      WHERE id = (SELECT id FROM streak_data ORDER BY id DESC LIMIT 1)
+    `, newStreak, newLongestStreak, today);
+
+  } catch (error) {
+    console.error("Error updating streak:", error);
+  }
+}
+
+export async function getCurrentStreak(): Promise<number> {
+  try {
+    const result = await db.getFirstAsync<{ currentStreak: number }>(
+      'SELECT currentStreak FROM streak_data ORDER BY id DESC LIMIT 1'
+    );
+    return result?.currentStreak || 0;
+  } catch (error) {
+    console.error("Error getting current streak:", error);
     return 0;
   }
 }

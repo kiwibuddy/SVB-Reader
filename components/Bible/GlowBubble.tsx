@@ -36,13 +36,14 @@ const GlowingBubble = ({ block, bIndex, hasTail }: BibleBlockProps) => {
   }, []);
 
   useEffect(() => {
-    async function checkForEmoji() {
-      const result = await getEmoji(segID, bIndex.toString());
-      setEmoji(result);
-    }
-
-    checkForEmoji(); // Initial check
-  }, [segID, bIndex, emoji, emojiActions]);
+    const checkForEmoji = async () => {
+      if (segID && bIndex !== undefined) {
+        const result = await getEmoji(segID, bIndex.toString());
+        setEmoji(result);
+      }
+    };
+    checkForEmoji();
+  }, [segID, bIndex, emojiActions]);
 
   const glowColor = glowAnim.interpolate({
     inputRange: [0, 0.33, 0.66, 1],

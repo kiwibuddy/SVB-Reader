@@ -315,22 +315,22 @@ const ReadingEmoji = () => {
   const [reactions, setReactions] = useState<EmojiReaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
-    loadEmojis();
-  }, []);
-
-  const loadEmojis = async () => {
-    try {
+    const loadEmojis = async () => {
       setIsLoading(true);
-      const emojiData = await getEmojis();
-      setReactions(emojiData);
-    } catch (error) {
-      console.error('Error loading emojis:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      try {
+        const emojiData = await getEmojis();
+        setReactions(emojiData);
+      } catch (error) {
+        console.error('Error loading emojis:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadEmojis();
+  }, [refreshTrigger]);
 
   // Sort reactions by most recent first
   const sortReactionsByRecent = (reactions: EmojiReaction[]) => {
@@ -482,12 +482,16 @@ const ReadingEmoji = () => {
   );
 
   const renderItem = ({ item: reaction, index }: { item: EmojiReaction; index: number }) => {
-    const blockData = JSON.parse(reaction.blockData);
-    return (
-      <Pressable
-        onLongPress={() => handleLongPress(reaction)}
-      >
-        <View style={styles.reactionItem}>
+    try {
+      const blockData = typeof reaction.blockData === 'string' 
+        ? JSON.parse(reaction.blockData)
+        : reaction.blockData;
+
+      return (
+        <Pressable
+          onLongPress={() => handleLongPress(reaction)}
+          style={styles.reactionItem}
+        >
           <BibleBlockComponent
             block={blockData}
             bIndex={index}
@@ -498,9 +502,12 @@ const ReadingEmoji = () => {
           <Text style={styles.referenceText}>
             {getSegmentReference(reaction.segmentID)}
           </Text>
-        </View>
-      </Pressable>
-    );
+        </Pressable>
+      );
+    } catch (error) {
+      console.error('Error parsing blockData:', error);
+      return null;
+    }
   };
 
   return (
@@ -512,6 +519,8 @@ const ReadingEmoji = () => {
         keyExtractor={(item) => item.id.toString()}
         ListHeaderComponent={renderHeader}
         contentContainerStyle={{ paddingTop: 8 }}
+        refreshing={isLoading}
+        onRefresh={() => setRefreshTrigger(prev => prev + 1)}
       />
     </SafeAreaView>
   );

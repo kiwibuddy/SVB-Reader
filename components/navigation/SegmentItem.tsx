@@ -41,52 +41,40 @@ interface SegmentItemProps {
     ref?: string;
     book: string[];
   };
-  completedSegments?: Record<string, CompletionData>;
-  onComplete?: (segmentId: string, planId?: string, challengeId?: string) => void;
-  showGlobalCompletion?: boolean;
-  context?: 'navigation' | 'plan' | 'challenge';
+  context?: 'main' | 'plan' | 'challenge';
   planId?: string;
   challengeId?: string;
   onPress?: (segmentId: string) => void;
 }
 
-const SegmentItem = ({ 
+const SegmentItem: React.FC<SegmentItemProps> = ({ 
   segment,
-  completedSegments,
-  onComplete,
-  showGlobalCompletion,
-  context,
+  context = 'main',
   planId,
   challengeId
-}: SegmentItemProps) => {
+}) => {
   const router = useRouter();
   const { language, version } = useAppContext();
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [completionStatus, setCompletionStatus] = useState<CompletionData>({
+    isCompleted: false,
+    color: null
+  });
 
   useEffect(() => {
-    checkCompletionStatus();
+    const loadStatus = async () => {
+      const status = await getSegmentCompletionStatus(
+        segment.id,
+        context,
+        planId,
+        challengeId
+      );
+      setCompletionStatus(status);
+    };
+    loadStatus();
   }, [segment.id, context, planId, challengeId]);
 
-  const checkCompletionStatus = async () => {
-    const completed = await getSegmentCompletionStatus(
-      segment.id,
-      context === 'plan' ? 'plan' : context === 'challenge' ? 'challenge' : 'main',
-      planId,
-      challengeId
-    );
-    setIsCompleted(completed);
-  };
-
-  const handleComplete = async () => {
-    console.log('handleComplete called', { onComplete, segment, planId, challengeId });
-    if (onComplete) {
-      onComplete(segment.id, planId, challengeId);
-      setIsCompleted(true); // Update local state immediately
-    }
-  };
-
   const handlePress = () => {
-    const query: any = { showGlobalCompletion: showGlobalCompletion?.toString() };
+    const query: any = {};
     
     if (context === 'plan' && planId) {
       query.planId = planId;
@@ -106,24 +94,17 @@ const SegmentItem = ({
   };
 
   return (
-    <TouchableOpacity 
-      style={styles.container}
-      onPress={handlePress}
-    >
+    <TouchableOpacity style={styles.container} onPress={handlePress}>
       <View style={styles.textContainer}>
         <Text style={styles.title}>{segment.title}</Text>
-        {segment.ref && (
-          <Text style={styles.subtitle}>{segment.ref}</Text>
-        )}
+        <Text style={styles.subtitle}>{segment.ref}</Text>
       </View>
       <View style={styles.rightContent}>
-        <TouchableOpacity onPress={handleComplete}>
-          <Ionicons 
-            name={isCompleted ? "checkmark-circle" : "checkmark-circle-outline"} 
-            size={24} 
-            color={isCompleted ? "#4CAF50" : "#CCCCCC"} 
-          />
-        </TouchableOpacity>
+        <Ionicons 
+          name={completionStatus.isCompleted ? "checkmark-circle" : "checkmark-circle-outline"} 
+          size={24} 
+          color={completionStatus.isCompleted ? getCheckColor(completionStatus.color) : "#CCCCCC"} 
+        />
       </View>
     </TouchableOpacity>
   );

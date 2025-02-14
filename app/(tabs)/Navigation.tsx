@@ -299,7 +299,7 @@ const Navigation = () => {
               <Accordion 
                 item={item} 
                 bookIndex={bookIndex}
-                context="navigation"
+                context="main"
                 showGlobalCompletion={true}
                 style={{ backgroundColor: '#FFF' }}
                 isExpanded={isSelected && showSearch}

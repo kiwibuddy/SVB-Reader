@@ -8,7 +8,8 @@ import { getColors } from "@/scripts/getColors";
 import GlowBubble from "./GlowBubble";
 import { useSQLiteContext } from "expo-sqlite";
 import { useAppContext } from "@/context/GlobalContext";
-import { deleteEmoji, getEmoji } from "@/api/sqlite";
+import { deleteEmoji, getEmoji, addEmoji } from "@/api/sqlite";
+import EmojiPicker from "@/components/EmojiPicker";
 
 interface BibleBlockProps {
   block: BibleBlock;
@@ -26,17 +27,33 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
   const { source, children } = block;
   const { color, sourceName } = source;
   const colors = getColors(color);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [existingEmoji, setExistingEmoji] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchEmoji = async () => {
-      if (segID) {
+      if (segID && bIndex !== undefined) {
         const emoji = await getEmoji(segID, bIndex.toString());
         setExistingEmoji(emoji);
       }
     };
     fetchEmoji();
-  }, [segID, bIndex]);
+  }, [segID, bIndex, emojiActions]);
+
+  const handleLongPress = () => {
+    setShowEmojiPicker(true);
+  };
+
+  const handleEmojiSelect = async (emoji: string) => {
+    try {
+      await addEmoji(segID, bIndex.toString(), JSON.stringify(block), emoji);
+      setExistingEmoji(emoji);
+      setShowEmojiPicker(false);
+    } catch (error) {
+      console.error("Error setting emoji:", error);
+      setExistingEmoji(null);
+    }
+  };
 
   if (toRead) {
     return (
@@ -90,20 +107,16 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
         />
       </View>
       {existingEmoji && (
-        <View style={[
-          styles.reactionContainer,
-          emojiTopPosition,
-          emojiAlignment
-        ]}>
-          <Pressable
-            onPress={async () => {
-              await deleteEmoji(segID, bIndex.toString());
-              setExistingEmoji(null);
-            }}
-          >
-            <Text style={styles.reactionText}>{`${existingEmoji}`}</Text>
-          </Pressable>
+        <View style={[styles.reactionContainer, emojiAlignment, emojiTopPosition]}>
+          <Text style={styles.reactionText}>{existingEmoji}</Text>
         </View>
+      )}
+
+      {showEmojiPicker && (
+        <EmojiPicker 
+          onEmojiSelect={handleEmojiSelect}
+          onClose={() => setShowEmojiPicker(false)}
+        />
       )}
     </View>
   );
