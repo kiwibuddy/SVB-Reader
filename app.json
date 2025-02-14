@@ -44,8 +44,7 @@
     },
     "fonts": [
       {
-        "asset": "assets/fonts/Mistrully.ttf",
-        "family": "Mistrully"
+        "asset": "assets/fonts/Mistrully.ttf"
       }
     ],
     "extra": {

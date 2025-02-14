@@ -1,22 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { View, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as ScreenOrientation from 'expo-screen-orientation';
-import { type FontSize, type TextSizes } from './FontSizeContext';
-import { Appearance, ColorSchemeName } from 'react-native';
 
-// Create the context
-const AppSettingsContext = createContext<AppSettingsContextType | undefined>(undefined);
-
-interface AppSettingsContextType {
-  fontSize: FontSize;
-  setFontSize: (size: FontSize) => void;
-  sizes: TextSizes;
-  isOrientationLocked: boolean;
-  setOrientationLock: (locked: boolean) => Promise<void>;
-  isDarkMode: boolean;
-  setDarkMode: (enabled: boolean) => Promise<void>;
-  colors: ColorScheme;
-}
+export type SupportedLanguage = 'en' | 'fr' | 'de';
 
 interface ColorScheme {
   background: string;
@@ -24,7 +10,6 @@ interface ColorScheme {
   primary: string;
   secondary: string;
   bubbles: {
-    [key: string]: string;
     default: string;
     red: string;
     blue: string;
@@ -35,7 +20,17 @@ interface ColorScheme {
   border: string;
 }
 
-const lightColors: ColorScheme = {
+interface AppSettingsState {
+  isDarkMode: boolean;
+  setIsDarkMode: (value: boolean) => void;
+  language: SupportedLanguage;
+  colors: ColorScheme;
+  setLanguage: (lang: SupportedLanguage) => void;
+  isOrientationLocked: boolean;
+  setIsOrientationLocked: (value: boolean) => void;
+}
+
+const defaultColors: ColorScheme = {
   background: '#FFFFFF',
   text: '#000000',
   primary: '#FF5733',
@@ -51,118 +46,48 @@ const lightColors: ColorScheme = {
   border: '#E5E5E5',
 };
 
-const darkColors: ColorScheme = {
-  background: '#121212',
-  text: '#FFFFFF',
-  primary: '#FF7B5C',
-  secondary: '#A0A0A0',
-  bubbles: {
-    default: '#2A2A2A',
-    red: '#4A2A2A',
-    blue: '#2A2A4A',
-    green: '#2A4A2A',
-    black: '#2A2A2A',
-  },
-  card: '#1E1E1E',
-  border: '#333333',
-};
+const AppSettingsContext = createContext<AppSettingsState | undefined>(undefined);
 
-export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isOrientationLocked, setIsOrientationLocked] = useState(true);
-  const [fontSize, setFontSize] = useState<FontSize>('medium');
-  const [sizes, setSizes] = useState<TextSizes>({
-    title: 24,
-    subtitle: 18,
-    body: 16,
-    caption: 14,
-    button: 16,
-    navigation: 16,
-  });
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    const systemColorScheme = Appearance.getColorScheme();
-    const getSavedMode = async () => {
-      const savedMode = await AsyncStorage.getItem('darkMode');
-      return savedMode !== null ? savedMode === 'true' : systemColorScheme === 'dark';
-    };
-    return systemColorScheme === 'dark';
-  });
-  
-  const colors = isDarkMode ? darkColors : lightColors;
+export const AppSettingsProvider = ({ children }: { children: React.ReactNode }) => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [language, setLanguageState] = useState<SupportedLanguage>('en');
+  const [isOrientationLocked, setIsOrientationLocked] = useState(false);
 
-  // Load saved orientation setting
+  const setLanguage = async (newLanguage: SupportedLanguage) => {
+    setLanguageState(newLanguage);
+    await AsyncStorage.setItem('appLanguage', newLanguage);
+  };
+
   useEffect(() => {
     const loadSettings = async () => {
-      const savedOrientation = await AsyncStorage.getItem('orientationLocked');
-      if (savedOrientation !== null) {
-        setIsOrientationLocked(savedOrientation === 'true');
-        await updateOrientation(savedOrientation === 'true');
+      const savedLanguage = await AsyncStorage.getItem('appLanguage');
+      if (savedLanguage) {
+        setLanguageState(savedLanguage as SupportedLanguage);
       }
     };
     loadSettings();
   }, []);
 
-  const updateOrientation = async (locked: boolean) => {
-    try {
-      if (locked) {
-        await ScreenOrientation.lockAsync(
-          ScreenOrientation.OrientationLock.PORTRAIT_UP
-        );
-      } else {
-        await ScreenOrientation.unlockAsync();
-      }
-    } catch (error) {
-      console.error('Error updating orientation:', error);
-    }
-  };
-
-  const setOrientationLock = async (locked: boolean) => {
-    setIsOrientationLocked(locked);
-    await AsyncStorage.setItem('orientationLocked', locked.toString());
-    await updateOrientation(locked);
-  };
-
-  // Listen for system color scheme changes
-  useEffect(() => {
-    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      AsyncStorage.getItem('darkMode').then(savedMode => {
-        if (savedMode === null) {
-          setIsDarkMode(colorScheme === 'dark');
-        }
-      });
-    });
-
-    return () => {
-      subscription.remove();
-    };
+  const toggleDarkMode = useCallback(() => {
+    setIsDarkMode(prev => !prev);
   }, []);
 
-  // Load saved dark mode preference on mount
-  useEffect(() => {
-    const loadSavedMode = async () => {
-      const savedMode = await AsyncStorage.getItem('darkMode');
-      if (savedMode !== null) {
-        setIsDarkMode(savedMode === 'true');
-      }
-    };
-    loadSavedMode();
+  const toggleOrientationLock = useCallback(() => {
+    setIsOrientationLocked(prev => !prev);
   }, []);
 
-  const setDarkMode = async (enabled: boolean) => {
-    setIsDarkMode(enabled);
-    await AsyncStorage.setItem('darkMode', enabled.toString());
+  const value: AppSettingsState = {
+    isDarkMode,
+    setIsDarkMode,
+    language,
+    colors: defaultColors,
+    setLanguage,
+    isOrientationLocked,
+    setIsOrientationLocked,
   };
 
   return (
-    <AppSettingsContext.Provider value={{
-      fontSize,
-      setFontSize,
-      sizes,
-      isOrientationLocked,
-      setOrientationLock,
-      isDarkMode,
-      setDarkMode,
-      colors,
-    }}>
+    <AppSettingsContext.Provider value={value}>
       {children}
     </AppSettingsContext.Provider>
   );
@@ -170,8 +95,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
 export const useAppSettings = () => {
   const context = useContext(AppSettingsContext);
-  if (context === undefined) {
-    throw new Error('useAppSettings must be used within an AppSettingsProvider');
+  if (!context) {
+    throw new Error('useAppSettings must be used within AppSettingsProvider');
   }
   return context;
 }; 

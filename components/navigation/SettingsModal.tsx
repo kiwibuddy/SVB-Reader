@@ -13,6 +13,8 @@ import Slider from '@react-native-community/slider';
 import { Picker } from '@react-native-picker/picker';
 import { useFontSize } from '@/context/FontSizeContext';
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
+import { SupportedLanguage } from '@/context/AppSettingsContext';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -23,8 +25,16 @@ type FontSize = 'small' | 'medium' | 'large';
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
   const { fontSize, setFontSize, sizes } = useFontSize();
-  const { isOrientationLocked, setOrientationLock, isDarkMode, setDarkMode, colors } = useAppSettings();
-  const [language, setLanguage] = useState('en');
+  const { 
+    isOrientationLocked, 
+    setIsOrientationLocked,
+    isDarkMode, 
+    setIsDarkMode,
+    colors,
+    language,
+    setLanguage 
+  } = useAppSettings();
+  const { t } = useTranslation();
 
   const sliderValue = useMemo(() => {
     switch(fontSize) {
@@ -38,6 +48,20 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
   const handleSliderChange = (value: number) => {
     const size = value <= 0.5 ? 'small' : value <= 1.5 ? 'medium' : 'large';
     setFontSize(size);
+  };
+
+  const languages: Array<{ label: string; value: SupportedLanguage }> = [
+    { label: 'English', value: 'en' },
+    { label: 'Français', value: 'fr' },
+    { label: 'Deutsch', value: 'de' }
+  ];
+
+  const handleDarkModeToggle = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  const handleOrientationLockToggle = () => {
+    setIsOrientationLocked(!isOrientationLocked);
   };
 
   const modalStyles = StyleSheet.create({
@@ -100,28 +124,53 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
       fontSize: sizes.button,
       fontWeight: '600',
     },
+    languageSelector: {
+      backgroundColor: colors.card,
+      borderRadius: 8,
+      padding: 12,
+      marginTop: 8,
+      width: '100%',
+    },
+    languageOption: {
+      padding: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    selectedLanguage: {
+      backgroundColor: colors.primary + '20',
+    },
+    languageText: {
+      color: colors.text,
+      fontSize: 16,
+    },
+    selectedLanguageText: {
+      color: colors.primary,
+      fontWeight: '600',
+    },
+    settingRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    settingText: {
+      fontSize: sizes.body,
+    },
   });
 
   return (
     <Modal
-      animationType="fade"
+      animationType="slide"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}
     >
-      <Pressable 
-        style={modalStyles.overlay} 
-        onPress={onClose}
-      >
-        <View 
-          style={modalStyles.modalContent}
-          onStartShouldSetResponder={() => true}
-        >
-          <Text style={modalStyles.title}>Settings</Text>
+      <Pressable style={modalStyles.overlay} onPress={onClose}>
+        <View style={modalStyles.modalContent}>
+          <Text style={modalStyles.title}>{t('settings')}</Text>
           
           {/* Font Size */}
           <View style={modalStyles.setting}>
-            <Text style={modalStyles.settingLabel}>Font Size</Text>
+            <Text style={modalStyles.settingLabel}>{t('fontSize')}</Text>
             <View style={modalStyles.fontSizePreview}>
               {(['small', 'medium', 'large'] as FontSize[]).map((size) => (
                 <Text 
@@ -147,47 +196,59 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
             />
           </View>
 
-          {/* Dark Mode */}
+          {/* Language Selection */}
           <View style={modalStyles.setting}>
-            <Text style={modalStyles.settingLabel}>Dark Mode</Text>
+            <Text style={modalStyles.settingLabel}>{t('language')}</Text>
+            <View style={modalStyles.languageSelector}>
+              {languages.map((lang) => (
+                <TouchableOpacity
+                  key={lang.value}
+                  style={[
+                    modalStyles.languageOption,
+                    language === lang.value && modalStyles.selectedLanguage,
+                  ]}
+                  onPress={() => setLanguage(lang.value)}
+                >
+                  <Text
+                    style={[
+                      modalStyles.languageText,
+                      language === lang.value && modalStyles.selectedLanguageText,
+                    ]}
+                  >
+                    {lang.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Dark Mode */}
+          <View style={modalStyles.settingRow}>
+            <Text style={[modalStyles.settingText, { color: colors.text }]}>{t('darkMode')}</Text>
             <Switch
               value={isDarkMode}
-              onValueChange={async (value) => {
-                await setDarkMode(value);
-              }}
+              onValueChange={handleDarkModeToggle}
+              trackColor={{ false: colors.border, true: colors.primary }}
+              thumbColor={colors.text}
             />
           </View>
 
           {/* Orientation Lock */}
-          <View style={modalStyles.setting}>
-            <Text style={modalStyles.settingLabel}>Lock Screen Orientation</Text>
+          <View style={modalStyles.settingRow}>
+            <Text style={[modalStyles.settingText, { color: colors.text }]}>{t('lockScreenOrientation')}</Text>
             <Switch
               value={isOrientationLocked}
-              onValueChange={async (value) => {
-                await setOrientationLock(value);
-              }}
+              onValueChange={handleOrientationLockToggle}
+              trackColor={{ false: colors.border, true: colors.primary }}
+              thumbColor={colors.text}
             />
-          </View>
-
-          {/* Language */}
-          <View style={modalStyles.setting}>
-            <Text style={modalStyles.settingLabel}>Language</Text>
-            <Picker
-              selectedValue={language}
-              onValueChange={setLanguage}
-              style={modalStyles.picker}
-            >
-              <Picker.Item label="English" value="en" />
-              <Picker.Item label="Español" value="es" />
-              <Picker.Item label="Français" value="fr" />
-            </Picker>
           </View>
 
           <TouchableOpacity 
             style={modalStyles.closeButton}
             onPress={onClose}
           >
-            <Text style={modalStyles.closeButtonText}>Close</Text>
+            <Text style={modalStyles.closeButtonText}>{t('close')}</Text>
           </TouchableOpacity>
         </View>
       </Pressable>

@@ -3,6 +3,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, Pressable, useWindowDi
 import { useNavigation } from "@react-navigation/native"; // Import useNavigation
 import { Link, useRouter } from "expo-router";
 import { Video, ResizeMode } from 'expo-av';
+import { useFonts } from 'expo-font';
 
 const IndexScreen = () => {
   const router = useRouter(); // Initialize the router
@@ -39,6 +40,14 @@ const IndexScreen = () => {
     bottom: 0,
   };
 
+  const [fontsLoaded] = useFonts({
+    'Mistrully': require('@/assets/fonts/Mistrully.ttf'),
+  });
+
+  if (!fontsLoaded) {
+    return null; // Or a loading indicator
+  }
+
   return (
     <View style={styles.container}>
       {/* Placeholder for the background image */}
@@ -61,7 +70,7 @@ const IndexScreen = () => {
           />
 
           <Text style={textStyles.title}>SOURCEVIEW</Text>
-          <Text style={textStyles.subtitle}>READER</Text>
+          <Text style={[textStyles.subtitle, { fontFamily: 'Mistrully' }]}>READER</Text>
         </View>
         {/* Heading */}
         <View style={styles.titleContainer}>
@@ -119,8 +128,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   subtitle: {
-    fontSize: 38,
-    fontFamily: "Mistrully",
+    fontSize: 32,
     color: "#A7FF00",
     marginBottom: 20,
   },

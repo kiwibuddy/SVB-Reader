@@ -20,6 +20,8 @@ interface BibleBlockProps {
   hasTail: boolean;
 }
 
+type BubbleColor = 'default' | 'red' | 'blue' | 'green' | 'black';
+
 const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead, hasTail }) => {
   const { segmentId, emojiActions } = useAppContext();
   const { colors } = useAppSettings();
@@ -68,7 +70,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
 
   const styles = StyleSheet.create({
     container: {
-      backgroundColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')],
+      backgroundColor: colors.bubbles[color === 'black' ? 'black' : (color as BubbleColor || 'default')],
       borderRadius: 12,
       padding: 16,
       marginBottom: 8,
@@ -127,7 +129,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
             style={[
               styles.tail,
               {
-                borderBottomColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')],
+                borderBottomColor: colors.bubbles[color === 'black' ? 'black' : (color as BubbleColor || 'default')],
               },
               tailAlignment,
             ]}

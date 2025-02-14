@@ -4,6 +4,7 @@ import { useRouter, usePathname } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 declare global {
   var handleBottomNavScroll: ((event: any) => void) | undefined;
@@ -19,7 +20,8 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   const insets = useSafeAreaInsets();
   const [isVisible] = React.useState(new Animated.Value(1));
   const lastScrollY = React.useRef(0);
-  const { colors } = useAppSettings();
+  const { colors, isDarkMode } = useAppSettings();
+  const { t } = useTranslation();
 
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
@@ -66,7 +68,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
 
   const styles = StyleSheet.create({
     container: {
-      backgroundColor: colors.card,
+      backgroundColor: colors.background,
       borderTopColor: colors.border,
       borderTopWidth: 1,
       position: 'absolute',
@@ -104,6 +106,9 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     activeIcon: {
       color: colors.primary,
     },
+    text: {
+      color: colors.text,
+    }
   });
 
   const containerStyle = [
@@ -132,7 +137,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
             color={pathname === "/Home" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Home" && styles.activeText]}>
-            Home
+            {t('home')}
           </Text>
         </Pressable>
 
@@ -146,7 +151,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
             color={pathname === "/Reading-emoji" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Reading-emoji" && styles.activeText]}>
-            Emoji
+            {t('emoji')}
           </Text>
         </Pressable>
 
@@ -160,7 +165,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
             color={pathname === "/Reading-movement" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Reading-movement" && styles.activeText]}>
-            Achievements
+            {t('achievements')}
           </Text>
         </Pressable>
 
@@ -174,7 +179,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
             color={pathname === "/Navigation" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Navigation" && styles.activeText]}>
-            Search
+            {t('search')}
           </Text>
         </Pressable>
       </View>

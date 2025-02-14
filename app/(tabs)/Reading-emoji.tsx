@@ -9,6 +9,7 @@ import { useRouter } from "expo-router";
 import { SegmentIds } from '@/types';
 import { useAppContext } from "@/context/GlobalContext";
 import { useAppSettings } from "@/context/AppSettingsContext";
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Define the structure for our emoji reaction data
 interface EmojiReaction {
@@ -320,6 +321,7 @@ const ReadingEmoji = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const loadEmojis = async () => {
@@ -404,9 +406,9 @@ const ReadingEmoji = () => {
   const renderHeader = () => (
     <>
       <View style={styles.welcomeSection}>
-        <Text style={styles.welcomeTitle}>Emoji Reactions</Text>
+        <Text style={styles.welcomeTitle}>{t('emojiPageTitle')}</Text>
         <Text style={styles.welcomeText}>
-          Transform your Bible reading from simple reactions to meaningful life application with guided spiritual practices for memorizing, sharing, reflecting, and praying through your favorite verses.
+          {t('emojiPageSubtitle')}
         </Text>
       </View>
 
@@ -478,7 +480,7 @@ const ReadingEmoji = () => {
       {!selectedEmoji && (
         <View style={styles.recentHeader}>
           <Text style={styles.recentHeaderText}>
-            Most Recent Reactions
+            {t('recentEmojis')}
           </Text>
         </View>
       )}

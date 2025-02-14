@@ -79,7 +79,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const { content, readers, id } = segmentData;
   const segID = id.split("-")[id.split("-").length - 1];
 
-  const [colorData, setColorData] = useState({
+  const [colorData, setColorData] = useState<ColorData>({
     black: 0,
     red: 0,
     green: 0,
@@ -139,9 +139,9 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   const colorRenderCount = new Map<string, number>(); // Track render counts
 
-  useEffect(() => {
-    // Calculate color counts from content
-    const counts = newContent.reduce((acc, block) => {
+  // Move colorData calculation outside useEffect
+  const calculateColorCounts = (content: BibleBlock[]) => {
+    return content.reduce((acc, block) => {
       const color = block.source.color as keyof typeof acc;
       acc[color] = (acc[color] || 0) + 1;
       acc.total += 1;
@@ -153,9 +153,13 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       blue: 0,
       total: 0
     } as ColorData);
-    
+  };
+
+  // Update useEffect to only run when newContent changes
+  useEffect(() => {
+    const counts = calculateColorCounts(newContent);
     setColorData(counts);
-  }, [newContent]);
+  }, [newContent]); // Only depend on newContent
 
   // Add handler for completion toggle
   const handleCompletion = async () => {

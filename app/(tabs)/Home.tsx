@@ -24,6 +24,7 @@ import { format } from 'date-fns';
 import CustomHeader from "@/components/navigation/CustomHeader";
 import { useFontSize } from '@/context/FontSizeContext';
 import { useAppSettings } from "@/context/AppSettingsContext";
+import { useTranslation } from '@/hooks/useTranslation';
 
 const SegmentTitles = require("@/assets/data/SegmentTitles.json") as { [key: string]: SegmentTitle };
 
@@ -641,6 +642,7 @@ const HomeScreen = () => {
   const isLandscape = width > height;
   const { sizes } = useFontSize();
   const { colors } = useAppSettings();
+  const { t } = useTranslation();
   const styles = createStyles(width >= 768);
   const [currentStreak, setCurrentStreak] = useState(0);
 
@@ -792,10 +794,8 @@ const HomeScreen = () => {
         scrollEventThrottle={16}
       >
         <View style={styles.welcomeSection}>
-          <Text style={localStyles.welcomeTitle}>Start Your Journey</Text>
-          <Text style={localStyles.welcomeText}>
-            Begin your Bible reading adventure by choosing a reading plan or challenge that fits your goals.
-          </Text>
+          <Text style={localStyles.welcomeTitle}>{t('homeWelcome')}</Text>
+          <Text style={localStyles.welcomeText}>{t('homeSubtitle')}</Text>
         </View>
 
         <View style={styles.gridContainer}>
@@ -808,9 +808,9 @@ const HomeScreen = () => {
               style={styles.gridItemContent}
             >
               <View style={styles.overlay} />
-              <Text style={styles.gridItemTitle}>Reading Plans</Text>
+              <Text style={styles.gridItemTitle}>{t('readingPlansTitle')}</Text>
               <Text style={styles.gridItemSubtitle}>
-                {getAvailablePlansCount()} plans available
+                {getAvailablePlansCount()} {t('plansAvailable')}
               </Text>
             </ImageBackground>
           </Pressable>
@@ -824,9 +824,9 @@ const HomeScreen = () => {
               style={styles.gridItemContent}
             >
               <View style={styles.overlay} />
-              <Text style={styles.gridItemTitle}>Reading Challenges</Text>
+              <Text style={styles.gridItemTitle}>{t('readingChallengesTitle')}</Text>
               <Text style={styles.gridItemSubtitle}>
-                {getAvailableChallengesCount()} challenges available
+                {getAvailableChallengesCount()} {t('challengesAvailable')}
               </Text>
             </ImageBackground>
           </Pressable>
@@ -841,15 +841,15 @@ const HomeScreen = () => {
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <Text style={localStyles.statNumber}>{currentStreak}</Text>
-            <Text style={localStyles.statLabel}>Day Streak</Text>
+            <Text style={localStyles.statLabel}>{t('streakCount')}</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={localStyles.statNumber}>{getCompletedStoriesCount()}</Text>
-            <Text style={localStyles.statLabel}>Stories Read</Text>
+            <Text style={localStyles.statLabel}>{t('versesRead')}</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={localStyles.statNumber}>{getActivePlansCount()}</Text>
-            <Text style={localStyles.statLabel}>Active Plans</Text>
+            <Text style={localStyles.statLabel}>{t('activePlans')}</Text>
           </View>
         </View>
 
