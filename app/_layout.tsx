@@ -15,6 +15,7 @@ import { BottomNavProvider } from '@/context/BottomNavContext';
 import { FontSizeProvider } from '@/context/FontSizeContext';
 import { AppSettingsProvider, useAppSettings } from '@/context/AppSettingsContext';
 import { View } from 'react-native';
+import '../config/i18n'; // Import this to initialize i18next
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -37,7 +38,11 @@ export default function RootLayout() {
 
   return (
     <AppSettingsProvider>
-      <AppContent />
+      <FontSizeProvider>
+        <AppProvider>
+          <Stack screenOptions={{ headerShown: false }} />
+        </AppProvider>
+      </FontSizeProvider>
     </AppSettingsProvider>
   );
 }

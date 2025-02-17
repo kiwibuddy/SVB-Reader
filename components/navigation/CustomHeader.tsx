@@ -7,7 +7,12 @@ import SettingsModal from "./SettingsModal";
 import { useFontSize } from '@/context/FontSizeContext';
 import { useAppSettings } from '@/context/AppSettingsContext';
 
-const CustomHeader: React.FC = () => {
+interface CustomHeaderProps {
+  leftComponent?: React.ReactNode;
+  rightComponent?: React.ReactNode;
+}
+
+const CustomHeader: React.FC<CustomHeaderProps> = ({ leftComponent, rightComponent }) => {
   const router = useRouter();
   const [isSettingsVisible, setIsSettingsVisible] = useState(false);
   const { sizes } = useFontSize();

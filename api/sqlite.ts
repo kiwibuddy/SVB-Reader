@@ -1,6 +1,11 @@
 import { SQLiteDatabase } from "expo-sqlite";
 import * as SQLite from "expo-sqlite";
 
+interface CompletionData {
+  isCompleted: boolean;
+  color: string | null;
+}
+
 let db: SQLiteDatabase;
 
 async function initializeDatabase() {
@@ -99,32 +104,23 @@ export async function markSegmentCompleteInDB(
   }
 }
 
-export async function getSegmentCompletionStatus(
-  segmentID: string,
-  context: 'main' | 'plan' | 'challenge' = 'main',
-  planID?: string,
-  challengeID?: string
-): Promise<{ isCompleted: boolean; color: string | null }> {
+export const getSegmentCompletionStatus = async (
+  segmentId: string,
+  context: string = 'main',
+  planId?: string,
+  challengeId?: string
+): Promise<CompletionData> => {
   try {
+    // Add defensive checks
+    if (!segmentId) {
+      console.warn('No segmentId provided to getSegmentCompletionStatus');
+      return { isCompleted: false, color: null };
+    }
+
+    // Your existing query logic here
     const result = await db.getFirstAsync<{ readerColor: string | null }>(
-      `SELECT readerColor 
-       FROM segment_completion 
-       WHERE segmentID = ? 
-       AND completionType = ?
-       AND (
-         (? IS NULL AND planID IS NULL) OR planID = ?
-       )
-       AND (
-         (? IS NULL AND challengeID IS NULL) OR challengeID = ?
-       )
-       ORDER BY completionDate DESC 
-       LIMIT 1`,
-      segmentID,
-      context,
-      planID || null,
-      planID || null,
-      challengeID || null,
-      challengeID || null
+      `SELECT readerColor FROM segment_completion WHERE segmentID = ?`,
+      [segmentId]
     );
     
     return {
@@ -132,10 +128,10 @@ export async function getSegmentCompletionStatus(
       color: result?.readerColor || null
     };
   } catch (error) {
-    console.error("Error getting segment completion status:", error);
+    console.error('Error getting segment completion status:', error);
     return { isCompleted: false, color: null };
   }
-}
+};
 
 // Achievement functions
 export async function unlockAchievement(
@@ -196,6 +192,7 @@ export async function addEmoji(segmentID: string, blockID: string, blockData: an
   try {
     await deleteEmoji(segmentID, blockID);
     
+    // Add a small delay to ensure deletion completes
     await new Promise(resolve => setTimeout(resolve, 100));
     
     const blockDataString = typeof blockData === 'string' 
@@ -203,7 +200,7 @@ export async function addEmoji(segmentID: string, blockID: string, blockData: an
       : JSON.stringify(blockData);
     
     await db.runAsync(
-      `INSERT INTO emojis (segmentID, blockID, blockData, emoji, note)
+      `INSERT OR REPLACE INTO emojis (segmentID, blockID, blockData, emoji, note)
        VALUES (?, ?, ?, ?, ?)`,
       segmentID,
       blockID,

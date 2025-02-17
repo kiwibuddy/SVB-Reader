@@ -9,6 +9,7 @@ import { useRouter } from "expo-router";
 import { SegmentIds } from '@/types';
 import { useAppContext } from "@/context/GlobalContext";
 import { useAppSettings } from "@/context/AppSettingsContext";
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Define the structure for our emoji reaction data
 interface EmojiReaction {
@@ -35,86 +36,11 @@ type SegmentTitle = {
   ref?: string;  // Making ref optional since not all segments have it
 }
 
-const EMOJI_DESCRIPTIONS: Record<string, EmojiDescription> = {
-  "❤️": {
-    title: "Memory Masterclass",
-    count: "passages",
-    description: [
-      "You've found a verse you really love! Let's make it a part of your daily life by memorizing it. Here's how:",
-      "Step 1: Break It Down",
-      "Split the verse into smaller parts. It's easier to remember bite-sized pieces.",
-      "Step 2: Repeat, Repeat, Repeat",
-      "Say it out loud. Write it down. Make it a wallpaper for your phone. The more you see it, the more it'll stick.",
-      "Step 3: Connect the Dots",
-      "Relate the verse to something in your life. How does it apply to your day-to-day? This makes it meaningful and easier to remember.",
-      "Step 4: Share It",
-      "Tell a friend or post it on your socials. Teaching others is a great way to remember it yourself!",
-      "Keep It Up!",
-      "Repeat these steps daily, and soon you'll be a have these Scriptures in your ❤️."
-    ]
-  },
-  "👍": {
-    title: "Spread the Word",
-    count: "passages",
-    description: [
-      "Found a verse that speaks truth to you? Don't keep it to yourself, let's share it with others! Here's how:",
-      "Step 1: Capture the Moment",
-      "Screenshot it or write it down. Keep it handy for when you want to share.",
-      "Step 2: Share Your Thoughts",
-      "Post it on your social media or text it to a friend. Add a caption about why it resonates with you.",
-      "Step 3: Start a Conversation",
-      "Use the verse to spark a discussion. Ask others what they think or how it applies to their lives.",
-      "Step 4: Live It Out",
-      "Show how this truth is reflected in your actions. Be a living example of the verse!",
-      "Spread the Word!",
-      "Your excitement can inspire others. Let's get the word out!"
-    ]
-  },
-  "🤔": {
-    title: "Hmm needs more thought",
-    count: "passages",
-    description: [
-      "Stumbled upon a verse that's got you thinking? Let's break it down together!",
-      "Step 1: Pause and Reflect",
-      "Take a moment to think about the verse. What do you think it means? How does it make you feel?",
-      "Step 2: Compare Translations",
-      "Look up the verse in different Bible translations. Sometimes, a different wording can offer new insights.",
-      "Step 3: Seek Wisdom",
-      "Ask someone you trust who knows the Bible well, like a youth leader or pastor. You can also check out online resources or commentaries.",
-      "Step 4: Cross-Reference",
-      "Find other verses that relate to the same theme. The Bible often explains itself!",
-      "Step 5: Journal It",
-      "Write down your thoughts and questions. Over time, you might find answers or new insights.",
-      "Take Your Time!",
-      "It's okay if you don't understand it all at once. Reflecting on Scripture is a journey, not a race!"
-    ]
-  },
-  "🙏": {
-    title: "Turn Verse into Prayer",
-    count: "passages",
-    description: [
-      "Found a verse that speaks to your heart? Let's turn it into a prayer for your day:",
-      "Step 1: Read and Reflect",
-      "Read the verse slowly. Think about what it means to you and what it says about God.",
-      "Step 2: Personalize It",
-      "Turn the verse into a personal prayer. Use \"I\" or \"we\" to make it your own.",
-      "Step 3: Ask and Thank",
-      "Pray for what you need related to the verse, and thank God for what He's already done.",
-      "Step 4: Listen",
-      "Take a moment to be silent. Listen for what God might be saying to you through the verse.",
-      "Step 5: Keep It Close",
-      "Write down the verse or prayer and keep it with you throughout the day. Revisit it whenever you need a reminder.",
-      "Pray Without Ceasing",
-      "Let these verses guide your prayers, bringing hope and encouragement into your day!"
-    ]
-  }
-};
-
 const EMOJI_TYPES = [
-  { emoji: "❤️", label: "Love", color: "#FF6B6B" },
-  { emoji: "👍", label: "Agree", color: "#4ECDC4" },
-  { emoji: "🤔", label: "Reflecting", color: "#FFB347" },
-  { emoji: "🙏", label: "Praying", color: "#9B59B6" }
+  { emoji: "❤️", label: "love", color: "#FF6B6B" },
+  { emoji: "👍", label: "agree", color: "#4ECDC4" },
+  { emoji: "🤔", label: "reflecting", color: "#FFB347" },
+  { emoji: "🙏", label: "praying", color: "#9B59B6" }
 ];
 
 const getSegmentReference = (segmentID: string) => {
@@ -308,6 +234,17 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   },
 });
 
+// Add this helper function near the top with other utility functions
+const getEmojiKey = (emoji: string) => {
+  switch (emoji) {
+    case '❤️': return 'love';
+    case '👍': return 'agree';
+    case '🤔': return 'reflecting';
+    case '🙏': return 'praying';
+    default: return '';
+  }
+};
+
 const ReadingEmoji = () => {
   const router = useRouter();
   const { width } = useWindowDimensions();
@@ -320,6 +257,7 @@ const ReadingEmoji = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const loadEmojis = async () => {
@@ -370,24 +308,24 @@ const ReadingEmoji = () => {
 
   const handleLongPress = (reaction: EmojiReaction) => {
     const segment = SegmentTitles[reaction.segmentID as keyof typeof SegmentTitles];
+    const reference = getSegmentReference(reaction.segmentID);
 
     Alert.alert(
-      "Go to Segment",
-      `Would you like to view this verse in ${getSegmentReference(reaction.segmentID)}?`,
+      t('UI.emojiPage.goToSegment'),
+      t('UI.emojiPage.viewVersePrompt', { reference }),
       [
         {
-          text: "Cancel",
+          text: t('UI.emojiPage.cancel'),
           style: "cancel"
         },
         {
-          text: "Go",
+          text: t('UI.emojiPage.go'),
           onPress: () => {
-            console.log("reaction.segmentID", reaction.segmentID);
-            updateSegmentId(`${"ENG"}-${"NLT"}-${reaction.segmentID}`);
+            updateSegmentId(`ENG-NLT-${reaction.segmentID}`);
             router.push({
               pathname: "/[segment]",
               params: {
-                segment: `${"ENG"}-${"NLT"}-${reaction.segmentID}`,
+                segment: `ENG-NLT-${reaction.segmentID}`,
                 book: segment?.book[0] || ''
               }
             });
@@ -404,9 +342,11 @@ const ReadingEmoji = () => {
   const renderHeader = () => (
     <>
       <View style={styles.welcomeSection}>
-        <Text style={styles.welcomeTitle}>Emoji Reactions</Text>
+        <Text style={styles.welcomeTitle}>
+          {t('UI.emojiPage.title')}
+        </Text>
         <Text style={styles.welcomeText}>
-          Transform your Bible reading from simple reactions to meaningful life application with guided spiritual practices for memorizing, sharing, reflecting, and praying through your favorite verses.
+          {t('UI.emojiPage.subtitle')}
         </Text>
       </View>
 
@@ -426,9 +366,11 @@ const ReadingEmoji = () => {
               <Text style={styles.emojiText}>{type.emoji}</Text>
             </View>
             <View style={styles.emojiInfoContainer}>
-              <Text style={styles.emojiLabel}>{type.label}</Text>
+              <Text style={styles.emojiLabel}>
+                {t(`UI.emojiPage.emojiTypes.${type.label}`)}
+              </Text>
               <Text style={styles.emojiCount}>
-                {getEmojiCount(type.emoji)} verses
+                {getEmojiCount(type.emoji)} {t('UI.emojiPage.verses')}
               </Text>
             </View>
           </Pressable>
@@ -442,43 +384,57 @@ const ReadingEmoji = () => {
           activeOpacity={0.7}
         >
           <Text style={styles.descriptionTitle}>
-            {EMOJI_DESCRIPTIONS[selectedEmoji].title}
+            {t(`UI.emojiPage.emojiDescriptions.${getEmojiKey(selectedEmoji)}.title`)}
           </Text>
           <Text style={styles.emojiCountText}>
-            {selectedEmoji} {getEmojiCount(selectedEmoji)} {EMOJI_DESCRIPTIONS[selectedEmoji].count}
+            {selectedEmoji} {getEmojiCount(selectedEmoji)} {t(`UI.emojiPage.emojiDescriptions.${getEmojiKey(selectedEmoji)}.count`)}
           </Text>
 
-          {splitDescription(EMOJI_DESCRIPTIONS[selectedEmoji].description).intro.map((text, index) => (
-            <Text key={index} style={styles.descriptionText}>
-              {text}
-            </Text>
-          ))}
+          <Text style={styles.descriptionText}>
+            {t(`UI.emojiPage.emojiDescriptions.${getEmojiKey(selectedEmoji)}.intro`)}
+          </Text>
 
           <Text style={styles.expandIndicator}>
-            {isExpanded ? "Tap to collapse ↑" : "Tap to see steps ↓"}
+            {isExpanded ? t('UI.emojiPage.tapToCollapse') : t('UI.emojiPage.tapToSeeSteps')}
           </Text>
 
-          {isExpanded && splitDescription(EMOJI_DESCRIPTIONS[selectedEmoji].description).steps.map((text, index) => {
-            const isStep = text.includes("Step") || text.includes("Keep It Up") ||
-                          text.includes("Spread the Word") || text.includes("Take Your Time") ||
-                          text.includes("Pray Without Ceasing");
+          {isExpanded && (
+            <>
+              {['1', '2', '3', '4', '5'].map((step) => {
+                const emojiKey = getEmojiKey(selectedEmoji);
+                const stepKey = `UI.emojiPage.emojiDescriptions.${emojiKey}.steps.${step}`;
+                const descKey = `UI.emojiPage.emojiDescriptions.${emojiKey}.steps.${step}_desc`;
+                
+                if (t(stepKey) !== stepKey) {
+                  return (
+                    <React.Fragment key={step}>
+                      <Text style={[styles.descriptionText, styles.stepText]}>
+                        {t(stepKey)}
+                      </Text>
+                      <Text style={styles.descriptionText}>
+                        {t(descKey)}
+                      </Text>
+                    </React.Fragment>
+                  );
+                }
+                return null;
+              })}
 
-            return (
-              <Text key={`step-${index}`} style={[
-                styles.descriptionText,
-                isStep && styles.stepText
-              ]}>
-                {text}
+              <Text style={[styles.descriptionText, styles.stepText]}>
+                {t(`UI.emojiPage.emojiDescriptions.${getEmojiKey(selectedEmoji)}.steps.conclusion`)}
               </Text>
-            );
-          })}
+              <Text style={styles.descriptionText}>
+                {t(`UI.emojiPage.emojiDescriptions.${getEmojiKey(selectedEmoji)}.steps.conclusion_desc`)}
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
       )}
 
       {!selectedEmoji && (
         <View style={styles.recentHeader}>
           <Text style={styles.recentHeaderText}>
-            Most Recent Reactions
+            {t('UI.emojiPage.recentReactions')}
           </Text>
         </View>
       )}

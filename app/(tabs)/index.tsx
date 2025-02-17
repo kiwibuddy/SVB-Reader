@@ -3,10 +3,12 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, Pressable, useWindowDi
 import { useNavigation } from "@react-navigation/native"; // Import useNavigation
 import { Link, useRouter } from "expo-router";
 import { Video, ResizeMode } from 'expo-av';
+import { useTranslation } from 'react-i18next';
 
 const IndexScreen = () => {
   const router = useRouter(); // Initialize the router
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { t } = useTranslation();
 
   // Replace Platform.isPad checks with this condition
   const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenHeight / screenWidth < 1.6);
@@ -24,7 +26,7 @@ const IndexScreen = () => {
     },
     subtitle: {
       ...styles.subtitle,
-      fontSize: subtitleSize,
+      fontSize: 40,
     }
   };
 
@@ -60,23 +62,23 @@ const IndexScreen = () => {
             style={styles.logo}
           />
 
-          <Text style={textStyles.title}>SOURCEVIEW</Text>
-          <Text style={textStyles.subtitle}>READER</Text>
+          <Text style={textStyles.title}>{t('UI.landing.title')}</Text>
+          <Text style={textStyles.subtitle}>{t('UI.landing.subtitle')}</Text>
         </View>
         {/* Heading */}
         <View style={styles.titleContainer}>
           <Text style={styles.heading}>
-            Get ready for a new Bible reading journey!
+            {t('UI.landing.heading')}
           </Text>
 
           {/* Subheading */}
           <Text style={styles.subheading}>
-            A Digital Bible Designed For A Digital Generation.
+            {t('UI.landing.subheading')}
           </Text>
 
           {/* Button */}
           <Pressable style={styles.button} onPress={() => router.push("/Home")}>
-              <Text style={styles.buttonText}>Get Started</Text>
+            <Text style={styles.buttonText}>{t('UI.landing.getStarted')}</Text>
           </Pressable>
         </View>
       </View>
@@ -119,9 +121,9 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   subtitle: {
-    fontSize: 38,
+    fontSize: 40,
     fontFamily: "Mistrully",
-    color: "#A7FF00",
+    color: "#FF5733",
     marginBottom: 20,
   },
   titleContainer: {

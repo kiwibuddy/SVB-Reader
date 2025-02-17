@@ -3,7 +3,7 @@ import { View, Text, FlatList, Pressable } from "react-native";
 import BibleInlineComponent from "./Inline";
 import { BibleBlock } from "@/types";
 import SourceNameComponent from "./SourceName";
-import { StyleSheet } from 'react-native'; // Ensure you import StyleSheet
+import { StyleSheet } from 'react-native';
 import { getColors } from "@/scripts/getColors";
 import GlowBubble from "./GlowBubble";
 import { useSQLiteContext } from "expo-sqlite";
@@ -21,16 +21,14 @@ interface BibleBlockProps {
 }
 
 const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead, hasTail }) => {
-  const { segmentId, emojiActions } = useAppContext();
+  const { segmentId, emojiActions, updateEmojiActions } = useAppContext();
   const { colors } = useAppSettings();
   const idSplit = segmentId.split("-");
-  const language = idSplit[0];
-  const version = idSplit[1];
   const segID = idSplit[idSplit.length - 1];
-  const { source, children } = block;
-  const { color, sourceName } = source;
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [existingEmoji, setExistingEmoji] = useState<string | null>(null);
+  const { source, children } = block;
+  const { color, sourceName } = source;
 
   useEffect(() => {
     const fetchEmoji = async () => {
@@ -43,35 +41,42 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
   }, [segID, bIndex, emojiActions]);
 
   const handleLongPress = () => {
-    setShowEmojiPicker(true);
+    if (!toRead) {
+      setShowEmojiPicker(true);
+    }
   };
 
   const handleEmojiSelect = async (emoji: string) => {
     try {
-      await addEmoji(segID, bIndex.toString(), JSON.stringify(block), emoji);
+      await addEmoji(segID, bIndex.toString(), block, emoji);
       setExistingEmoji(emoji);
       setShowEmojiPicker(false);
+      if (emojiActions !== undefined) {
+        updateEmojiActions(emojiActions + 1);
+      }
     } catch (error) {
       console.error("Error setting emoji:", error);
-      setExistingEmoji(null);
     }
   };
 
   if (toRead) {
     return (
       <GlowBubble block={block} bIndex={bIndex} hasTail={hasTail} />
-    )
+    );
   }
-    const tailAlignment = color !== "black" ? {left: 15} : {right:15};
+
+  const tailAlignment = color !== "black" ? {left: 15} : {right: 15};
   const emojiAlignment = color !== "black" ? { right: 10 } : { left: 10 };
   const emojiTopPosition = hasTail ? { top: 35 } : { top: 15 };
 
   const styles = StyleSheet.create({
+    outerContainer: {
+      marginBottom: 8,
+    },
     container: {
-      backgroundColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')],
       borderRadius: 12,
       padding: 16,
-      marginBottom: 8,
+      zIndex: 1,
     },
     text: {
       color: colors.text,
@@ -92,6 +97,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
       borderBottomWidth: 10,
       borderLeftColor: "transparent",
       borderRightColor: "transparent",
+      zIndex: 2,
     },
     reactionContainer: {
       flexDirection: "row",
@@ -107,60 +113,77 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
     reactionText: {
       fontSize: 30,
     },
+    emojiPickerWrapper: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: -80,
+      zIndex: 1000,
+      elevation: 5,
+    },
   });
 
   return (
-    <View key={bIndex}>
-      {hasTail && (
-        <SourceNameComponent
-          sourceName={sourceName}
-          align={color !== "black" ? "left" : "right"}
-        />
-      )}
-      <View
-        style={{
-          ...styles.container,
-        }}
-      >
+    <Pressable
+      onLongPress={handleLongPress}
+      delayLongPress={300}
+      style={styles.outerContainer}
+    >
+      <View key={bIndex}>
         {hasTail && (
-          <View
-            style={[
-              styles.tail,
-              {
-                borderBottomColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')],
-              },
-              tailAlignment,
-            ]}
+          <SourceNameComponent
+            sourceName={sourceName}
+            align={color !== "black" ? "left" : "right"}
           />
         )}
-        <FlatList
-          data={children}
-          renderItem={({ item, index }) => {
-            if (item.type === "break") return null;
-            return (
-              <BibleInlineComponent
-                key={`${bIndex}-${index}`}
-                iIndex={`${bIndex}-${index}`}
-                inline={item}
-                textColor={colors.text}
-              />
-            );
-          }}
-        />
-      </View>
-      {existingEmoji && (
-        <View style={[styles.reactionContainer, emojiAlignment, emojiTopPosition]}>
-          <Text style={styles.reactionText}>{existingEmoji}</Text>
+        <View
+          style={[
+            styles.container,
+            { backgroundColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')] }
+          ]}
+        >
+          {hasTail && (
+            <View
+              style={[
+                styles.tail,
+                {
+                  borderBottomColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')],
+                },
+                tailAlignment,
+              ]}
+            />
+          )}
+          <View>
+            {children.map((item, index) => {
+              if (item.type === "break") return null;
+              return (
+                <BibleInlineComponent
+                  key={`${bIndex}-${index}`}
+                  iIndex={`${bIndex}-${index}`}
+                  inline={item}
+                  textColor={colors.text}
+                />
+              );
+            })}
+          </View>
         </View>
-      )}
+        
+        {existingEmoji && (
+          <View style={[styles.reactionContainer, emojiAlignment, emojiTopPosition]}>
+            <Text style={styles.reactionText}>{existingEmoji}</Text>
+          </View>
+        )}
 
-      {showEmojiPicker && (
-        <EmojiPicker 
-          onEmojiSelect={handleEmojiSelect}
-          onClose={() => setShowEmojiPicker(false)}
-        />
-      )}
-    </View>
+        {showEmojiPicker && (
+          <View style={styles.emojiPickerWrapper}>
+            <EmojiPicker
+              onEmojiSelect={handleEmojiSelect}
+              onClose={() => setShowEmojiPicker(false)}
+            />
+          </View>
+        )}
+      </View>
+    </Pressable>
   );
 };
 

@@ -24,8 +24,8 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
   const inlineStyle = styles[tag as keyof typeof styles] || {};
   
   return (
-    <View style={inlineStyle}>
-      <Text style={{lineHeight: 36, fontSize: 20}}>
+    <View style={[inlineStyle, { pointerEvents: 'none' }]}>
+      <Text style={{lineHeight: 36, fontSize: 20, pointerEvents: 'none'}}>
         {children.map((leaf, index) => {
           if (!leaf || typeof leaf !== 'object') {
             console.warn(`Invalid leaf at index ${index}:`, leaf);

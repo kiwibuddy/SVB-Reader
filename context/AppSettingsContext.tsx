@@ -3,11 +3,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { type FontSize, type TextSizes } from './FontSizeContext';
 import { Appearance, ColorSchemeName } from 'react-native';
+import { type ColorScheme } from './types';
+import i18next from 'i18next';
 
 // Create the context
 const AppSettingsContext = createContext<AppSettingsContextType | undefined>(undefined);
 
-interface AppSettingsContextType {
+export type SupportedLanguage = 'en' | 'fr' | 'de';
+
+export interface AppSettingsContextType {
   fontSize: FontSize;
   setFontSize: (size: FontSize) => void;
   sizes: TextSizes;
@@ -16,23 +20,8 @@ interface AppSettingsContextType {
   isDarkMode: boolean;
   setDarkMode: (enabled: boolean) => Promise<void>;
   colors: ColorScheme;
-}
-
-interface ColorScheme {
-  background: string;
-  text: string;
-  primary: string;
-  secondary: string;
-  bubbles: {
-    [key: string]: string;
-    default: string;
-    red: string;
-    blue: string;
-    green: string;
-    black: string;
-  };
-  card: string;
-  border: string;
+  language: SupportedLanguage;
+  setLanguage: (language: SupportedLanguage) => void;
 }
 
 const lightColors: ColorScheme = {
@@ -86,6 +75,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     };
     return systemColorScheme === 'dark';
   });
+  const [language, setLanguage] = useState<SupportedLanguage>('en');
   
   const colors = isDarkMode ? darkColors : lightColors;
 
@@ -152,6 +142,24 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     await AsyncStorage.setItem('darkMode', enabled.toString());
   };
 
+  // Add this effect to handle language changes
+  useEffect(() => {
+    const loadSavedLanguage = async () => {
+      const savedLanguage = await AsyncStorage.getItem('language');
+      if (savedLanguage) {
+        setLanguage(savedLanguage as SupportedLanguage);
+        i18next.changeLanguage(savedLanguage);
+      }
+    };
+    loadSavedLanguage();
+  }, []);
+
+  const handleSetLanguage = async (newLanguage: SupportedLanguage) => {
+    setLanguage(newLanguage);
+    await AsyncStorage.setItem('language', newLanguage);
+    await i18next.changeLanguage(newLanguage);
+  };
+
   return (
     <AppSettingsContext.Provider value={{
       fontSize,
@@ -162,6 +170,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       isDarkMode,
       setDarkMode,
       colors,
+      language,
+      setLanguage: handleSetLanguage,
     }}>
       {children}
     </AppSettingsContext.Provider>

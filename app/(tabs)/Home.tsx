@@ -23,7 +23,9 @@ import { getEmojis, getCurrentStreak } from "@/api/sqlite";
 import { format } from 'date-fns';
 import CustomHeader from "@/components/navigation/CustomHeader";
 import { useFontSize } from '@/context/FontSizeContext';
-import { useAppSettings } from "@/context/AppSettingsContext";
+import { useAppSettings } from '@/context/AppSettingsContext';
+import { type ColorScheme } from '@/context/types';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const SegmentTitles = require("@/assets/data/SegmentTitles.json") as { [key: string]: SegmentTitle };
 
@@ -37,17 +39,17 @@ type SegmentTitle = {
 const segIDs = Object.keys(SegmentTitles);
 
 // Move styles outside component to avoid the reference error
-const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
+const createStyles = (isLargeScreen: boolean, colors: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 16,
   },
   continueReading: {
-    backgroundColor: "#F5F5F5",
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
@@ -61,10 +63,11 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
   readingTitle: {
     fontSize: 14,
     fontWeight: "600",
+    color: colors.text,
   },
   readingSubtitle: {
     fontSize: 12,
-    color: "#666",
+    color: colors.secondary,
   },
   resumeButton: {
     backgroundColor: "#FF5733",
@@ -81,6 +84,7 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
     flexDirection: "row",
     gap: 16,
     marginBottom: 16,
+    paddingHorizontal: 0,
   },
   gridItem: {
     flex: 1,
@@ -147,6 +151,7 @@ const createStyles = (isLargeScreen: boolean) => StyleSheet.create({
     color: "#666",
   },
   welcomeSection: {
+    marginTop: 16,
     marginBottom: 16,
   },
   welcomeTitle: {
@@ -257,24 +262,26 @@ type ContinueReadingProps = {
   lastReadSegment: string | null;
   onPress: () => void;
   styles: any;
+  colors: ColorScheme;
 };
 
-const ContinueReadingSection = ({ lastReadSegment, onPress, styles }: ContinueReadingProps) => {
+const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: ContinueReadingProps) => {
   const { completedSegments, markSegmentComplete, updateSegmentId } = useAppContext();
   const router = useRouter();
   const { sizes } = useFontSize();
+  const { t } = useTranslation();
   
   if (!lastReadSegment) {
     return (
-      <View style={styles.continueReading}>
+      <View style={[styles.continueReading, { backgroundColor: colors.card }]}>
         <View style={styles.readingInfo}>
-          <Text style={[styles.readingTitle, { fontSize: sizes.subtitle }]}>Jump Right In</Text>
+          <Text style={[styles.readingTitle, { fontSize: sizes.subtitle }]}>{t('UI.home.jumpRightIn')}</Text>
           <Text style={[styles.readingSubtitle, { fontSize: sizes.caption }]}>
-            Begin your reading journey with Genesis
+            {t('UI.home.beginReadingJourney')}
           </Text>
         </View>
         <Pressable style={styles.resumeButton} onPress={onPress}>
-          <Text style={[styles.resumeText, { fontSize: sizes.button }]}>Start</Text>
+          <Text style={[styles.resumeText, { fontSize: sizes.button }]}>{t('UI.home.start')}</Text>
         </Pressable>
       </View>
     );
@@ -307,10 +314,10 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles }: ContinueRe
   };
 
   return (
-    <View style={styles.continueReading}>
+    <View style={[styles.continueReading, { backgroundColor: colors.card }]}>
       <View style={styles.readingInfo}>
         <Text style={[styles.readingTitle, { fontSize: sizes.subtitle }]}>
-          {isLastSegmentCompleted ? 'Continue Reading' : 'Resume Reading'}
+          {isLastSegmentCompleted ? t('UI.home.continueReading') : t('UI.home.resumeReading')}
         </Text>
         <Text style={[styles.readingSubtitle, { fontSize: sizes.caption }]}>
           {isLastSegmentCompleted 
@@ -324,7 +331,7 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles }: ContinueRe
             style={[styles.resumeButton, styles.completeButton]}
             onPress={handleComplete}
           >
-            <Text style={[styles.resumeText, { fontSize: sizes.button }]}>Complete</Text>
+            <Text style={[styles.resumeText, { fontSize: sizes.button }]}>{t('UI.home.complete')}</Text>
           </Pressable>
         )}
         <Pressable 
@@ -332,7 +339,7 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles }: ContinueRe
           onPress={onPress}
         >
           <Text style={[styles.resumeText, { fontSize: sizes.button }]}>
-            {isLastSegmentCompleted ? 'Next' : 'Next'}
+            {isLastSegmentCompleted ? t('UI.home.next') : t('UI.home.next')}
           </Text>
         </Pressable>
       </View>
@@ -371,11 +378,13 @@ interface SectionStyles {
     caption: number;
     button: number;
   };
+  colors: ColorScheme;
 }
 
 // 1. Recent Activity Section with real data
 const RecentActivitySection = ({ styles }: { styles: SectionStyles }) => {
   const { sizes } = useFontSize();
+  const { t } = useTranslation();
   
   const localStyles = StyleSheet.create({
     activityTitle: {
@@ -424,7 +433,7 @@ const RecentActivitySection = ({ styles }: { styles: SectionStyles }) => {
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Recent Activity</Text>
+      <Text style={styles.sectionTitle}>{t('UI.home.recentActivity')}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         {recentActivities.map((activity, index) => (
           <TouchableOpacity 
@@ -461,6 +470,8 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
   const { completedSegments } = useAppContext();
   const router = useRouter();
   const { sizes } = useFontSize();
+  const { colors } = styles;
+  const { t } = useTranslation();
   
   const localStyles = StyleSheet.create({
     sectionTitle: {
@@ -583,7 +594,7 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
 
   return (
     <View style={styles.section}>
-      <Text style={localStyles.sectionTitle}>Your Reading Journey</Text>
+      <Text style={localStyles.sectionTitle}>{t('UI.home.readingJourney')}</Text>
       <View style={styles.insightCards}>
         <Pressable 
           style={({pressed}) => [
@@ -592,7 +603,7 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
           ]}
           onPress={handleBookPress}
         >
-          <Text style={styles.insightTitle}>Favorite Book</Text>
+          <Text style={styles.insightTitle}>{t('UI.home.favoriteBook')}</Text>
           <Text style={styles.insightValue}>{insights.favoriteBookFullName}</Text>
         </Pressable>
 
@@ -603,7 +614,7 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
           ]}
           onPress={handleStoryPress}
         >
-          <Text style={styles.insightTitle}>Favorite Story</Text>
+          <Text style={styles.insightTitle}>{t('UI.home.favoriteStory')}</Text>
           <Text style={styles.insightValue} numberOfLines={2}>{insights.favoriteSegment}</Text>
         </Pressable>
 
@@ -614,12 +625,12 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
           ]}
           onPress={handleEmojiPress}
         >
-          <Text style={styles.insightTitle}>Most Used Reaction</Text>
+          <Text style={styles.insightTitle}>{t('UI.home.mostUsedReaction')}</Text>
           <Text style={styles.insightValue}>{insights.mostUsedEmoji}</Text>
         </Pressable>
 
         <View style={styles.insightCard}>
-          <Text style={styles.insightTitle}>Completion</Text>
+          <Text style={styles.insightTitle}>{t('UI.home.completion')}</Text>
           <Text style={styles.insightValue}>{insights.completionRate}%</Text>
         </View>
       </View>
@@ -641,7 +652,8 @@ const HomeScreen = () => {
   const isLandscape = width > height;
   const { sizes } = useFontSize();
   const { colors } = useAppSettings();
-  const styles = createStyles(width >= 768);
+  const { t } = useTranslation();
+  const styles = createStyles(width >= 768, colors);
   const [currentStreak, setCurrentStreak] = useState(0);
 
   // Add useEffect to fetch streak data
@@ -749,6 +761,7 @@ const HomeScreen = () => {
 
   const combinedStyles: SectionStyles = {
     ...styles,
+    colors,
     text: {
       title: sizes.title,
       subtitle: sizes.subtitle,
@@ -785,17 +798,26 @@ const HomeScreen = () => {
 
   return (
     <View style={localStyles.container}>
-      <CustomHeader />
+      <CustomHeader 
+        leftComponent={
+          <Pressable onPress={() => router.push("/about")}>
+            <Ionicons name="information-circle-outline" size={24} color={colors.text} />
+          </Pressable>
+        }
+        rightComponent={
+          <Pressable onPress={() => router.push("/settings")}>
+            <Ionicons name="settings-outline" size={24} color={colors.text} />
+          </Pressable>
+        }
+      />
       <ScrollView 
         style={styles.content}
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
         <View style={styles.welcomeSection}>
-          <Text style={localStyles.welcomeTitle}>Start Your Journey</Text>
-          <Text style={localStyles.welcomeText}>
-            Begin your Bible reading adventure by choosing a reading plan or challenge that fits your goals.
-          </Text>
+          <Text style={styles.welcomeTitle}>{t('UI.home.heading')}</Text>
+          <Text style={styles.welcomeText}>{t('UI.home.subheading')}</Text>
         </View>
 
         <View style={styles.gridContainer}>
@@ -808,9 +830,11 @@ const HomeScreen = () => {
               style={styles.gridItemContent}
             >
               <View style={styles.overlay} />
-              <Text style={styles.gridItemTitle}>Reading Plans</Text>
+              <Text style={styles.gridItemTitle}>
+                {t('UI.home.readingPlans')}
+              </Text>
               <Text style={styles.gridItemSubtitle}>
-                {getAvailablePlansCount()} plans available
+                {t('UI.home.plansAvailable', { count: getAvailablePlansCount() })}
               </Text>
             </ImageBackground>
           </Pressable>
@@ -824,9 +848,11 @@ const HomeScreen = () => {
               style={styles.gridItemContent}
             >
               <View style={styles.overlay} />
-              <Text style={styles.gridItemTitle}>Reading Challenges</Text>
+              <Text style={styles.gridItemTitle}>
+                {t('UI.home.readingChallenges')}
+              </Text>
               <Text style={styles.gridItemSubtitle}>
-                {getAvailableChallengesCount()} challenges available
+                {t('UI.home.challengesAvailable', { count: getAvailableChallengesCount() })}
               </Text>
             </ImageBackground>
           </Pressable>
@@ -836,20 +862,21 @@ const HomeScreen = () => {
           lastReadSegment={lastReadSegment}
           onPress={handleContinueReading}
           styles={combinedStyles}
+          colors={colors}
         />
 
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <Text style={localStyles.statNumber}>{currentStreak}</Text>
-            <Text style={localStyles.statLabel}>Day Streak</Text>
+            <Text style={localStyles.statLabel}>{t('UI.home.dayStreak')}</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={localStyles.statNumber}>{getCompletedStoriesCount()}</Text>
-            <Text style={localStyles.statLabel}>Stories Read</Text>
+            <Text style={localStyles.statLabel}>{t('UI.home.storiesRead')}</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={localStyles.statNumber}>{getActivePlansCount()}</Text>
-            <Text style={localStyles.statLabel}>Active Plans</Text>
+            <Text style={localStyles.statLabel}>{t('UI.home.activePlans')}</Text>
           </View>
         </View>
 

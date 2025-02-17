@@ -53,7 +53,8 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
   segment,
   context = 'main',
   planId,
-  challengeId
+  challengeId,
+  onPress
 }) => {
   const router = useRouter();
   const { language, version } = useAppContext();
@@ -112,6 +113,7 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
     reference: {
       fontSize: 14,
       color: colors.secondary,
+      marginTop: 2,
     },
     completedText: {
       color: colors.secondary,
@@ -123,9 +125,13 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
       style={styles.container}
       onPress={handlePress}
     >
-      <Text style={styles.title}>{segment.title}</Text>
+      <Text style={styles.title}>
+        {segment.title}
+      </Text>
       {segment.ref && (
-        <Text style={styles.reference}>{segment.ref}</Text>
+        <Text style={styles.reference}>
+          {segment.ref}
+        </Text>
       )}
     </TouchableOpacity>
   );
