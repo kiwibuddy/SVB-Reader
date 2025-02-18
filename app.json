@@ -36,7 +36,12 @@
         }
       ],
       "expo-av",
-      "expo-sqlite",
+      [
+        "expo-sqlite",
+        {
+          "version": "latest"
+        }
+      ],
       "expo-video"
     ],
     "experiments": {

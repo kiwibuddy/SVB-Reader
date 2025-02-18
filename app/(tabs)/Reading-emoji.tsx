@@ -1,22 +1,23 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, FlatList, TouchableOpacity, Alert, SafeAreaView, useWindowDimensions } from "react-native";
 import { useState, useEffect, useCallback } from "react";
-import { getEmojis } from "@/api/sqlite";
-import BibleBlockComponent from "@/components/Bible/Block";
-const SegmentTitles = require("@/assets/data/SegmentTitles.json");
-const Books = require("@/assets/data/BookChapterList.json");
 import { useRouter } from "expo-router";
-import { SegmentIds } from '@/types';
 import { useAppContext } from "@/context/GlobalContext";
 import { useAppSettings } from "@/context/AppSettingsContext";
 import { useTranslation } from '@/hooks/useTranslation';
+import { getEmojis } from "@/api/sqlite";
+import BibleBlockComponent from "@/components/Bible/Block";
+import { BibleBlock } from '@/types';  // Import only BibleBlock for now
 
-// Define the structure for our emoji reaction data
+const SegmentTitles = require("@/assets/data/SegmentTitles.json");
+const Books = require("@/assets/data/BookChapterList.json");
+
+// Define EmojiReaction interface locally until it's properly exported from types
 interface EmojiReaction {
   id: number;
   segmentID: string;
   blockID: string;
-  blockData: string;
+  blockData: BibleBlock;
   emoji: string;
   note: string;
 }
@@ -178,6 +179,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   reactionItem: {
     marginBottom: 16,
     position: 'relative',
+    zIndex: 1
   },
   reactionEmoji: {
     position: 'absolute',
@@ -185,14 +187,15 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     right: 12,
     fontSize: 30,
     padding: 4,
+    zIndex: 2,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 1,
-    elevation: 1,
   },
   stepText: {
     fontWeight: 'bold',

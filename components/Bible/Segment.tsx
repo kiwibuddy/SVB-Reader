@@ -72,12 +72,13 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return null; // Or return an error state component
   }
 
-  const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
-  const [readerNumber, setReaderNumber] = useState<number | null>(null); // Update state type
-  const [blockData, setBlockData] = useState<BibleBlock | null>(null); // State for block data
-  const [blockID, setBlockID] = useState<string | null>(null); // State for block ID
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedBlock, setSelectedBlock] = useState<{
+    block: BibleBlock;
+    index: number;
+  } | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
-  const { content, readers, id } = segmentData;
+  const { content, readers = [], id } = segmentData;
   const segID = id.split("-")[id.split("-").length - 1];
 
   const [colorData, setColorData] = useState({
@@ -104,36 +105,24 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   const isCompleted = getIsCompleted();
 
-  // Reset readerNumber to null when id changes
-  useEffect(() => {
-    setReaderNumber(null);
-  }, [id]);
-
-  const handleIconPress = (index: number) => {
-    const readerColor = readers[index];
-    setReaderNumber((prev: number | null) => {
-      const newValue = prev === index ? null : index;
-      updateSelectedReaderColor(newValue === null ? null : readerColor);
-      return newValue;
-    });
-  };
-
-  const handleLongPress = (blockData: BibleBlock, blockID: string) => {
+  const handleLongPress = (block: BibleBlock, index: number) => {
+    setSelectedBlock({ block, index });
     setIsModalVisible(true);
-    setBlockData(blockData);
-    setBlockID(blockID);
   };
 
-  const handleReactionSelect = async (blockData: BibleBlock, blockID: string, emoji: string) => {
-    try {
-      await addEmoji(segID, blockID, JSON.stringify(blockData), emoji);
-      if (typeof emojiActions === 'number') {
-        await updateEmojiActions(emojiActions + 1);
+  const handleEmojiSelect = async (emoji: string) => {
+    if (selectedBlock) {
+      const { block, index } = selectedBlock;
+      try {
+        await addEmoji(segID, index.toString(), block, emoji);
+        if (emojiActions !== undefined) {
+          updateEmojiActions(emojiActions + 1);
+        }
+      } catch (error) {
+        console.error("Error setting emoji:", error);
       }
-      setIsModalVisible(false);
-    } catch (error) {
-      console.error('Error setting emoji:', error);
     }
+    setIsModalVisible(false);
   };
 
   // Memoize the content to prevent unnecessary re-renders
@@ -202,11 +191,11 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   };
 
   const handleComplete = async () => {
-    if (readerNumber !== null) {
+    if (selectedBlock) {
       await markSegmentComplete(
         segmentData.id,
         true,
-        readers[readerNumber],
+        readers[selectedBlock.index],
         context,
         context === 'plan' ? planId : challengeId
       );
@@ -344,41 +333,21 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     },
     blurContainer: {
       flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      alignContent: "flex-start",
-    },
-    emojiPickerContainer: {
-      flex: 0,
-      flexDirection: "column", // Ensure elements stack vertically
-      alignItems: "center", // Center items horizontally
-      marginBottom: 10, // Add some space between the emoji picker and the block
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     modalContainer: {
-      // marginTop: 100,
-      flex: 0, // Allow the modal container to take available space
-      justifyContent: "flex-start",
-      backgroundColor: "transparent",
-      // Remove any fixed height settings
+      width: '90%',
+      backgroundColor: 'white',
+      borderRadius: 12,
+      padding: 16,
+      gap: 16,
+    },
+    emojiPickerContainer: {
+      alignItems: 'center',
     },
     blockContainer: {
-      flex: 0, // Set flex to 0 to prevent it from growing
-      flexDirection: "row", // Ensure elements stack vertically
-      alignContent: "flex-start",
-      backgroundColor: "white",
-      borderRadius: 16,
-      padding: 16,
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      elevation: 5,
-      maxWidth: "80%",
-      maxHeight: "80%", // Keep the maxHeight to limit the size
-      overflow: "hidden",
+      width: '100%',
     },
     reactionText: {
       fontSize: 30, // Adjust size as needed
@@ -396,8 +365,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     },
     reactionContainer: {
       flexDirection: "row",
-      // backgroundColor: "white", // White background
-      // borderRadius: 20, // Half of the width/height for a circle
       padding: 5, // Padding for the circle
       position: "absolute",
       top: -25, // Adjust as needed for overlap
@@ -420,30 +387,20 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   // Memoize the renderItem function
   const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
-    const { color, sourceName } = item.source;
-    const isFirstOfNewSource =
-      index === 0 ||
-      memoizedContent[index - 1].source.sourceName !== sourceName;
-    const readerColor = readers[readerNumber!];
-    
+    const { sourceName } = item.source;
+    const showSourceName = index === 0 || 
+      content[index - 1].source.sourceName !== sourceName;
+
     return (
-      <View 
-        style={{ 
-          position: 'relative', 
-          zIndex: 1,
-          pointerEvents: 'auto'
-        }}
-      >
-        <BibleBlockComponent
-          key={index}
-          block={item}
-          bIndex={index}
-          toRead={readerColor === color}
-          hasTail={isFirstOfNewSource}
-        />
-      </View>
+      <BibleBlockComponent
+        block={item}
+        bIndex={index}
+        toRead={selectedBlock?.index === index}
+        hasTail={showSourceName}
+        onLongPress={handleLongPress}
+      />
     );
-  }, [readerNumber, readers, memoizedContent]);
+  }, [selectedBlock, content]);
 
   return (
     <View style={styles.container}>
@@ -480,18 +437,23 @@ const SegmentComponent: React.FC<SegmentProps> = ({
               </Text>
               
               <View style={styles.iconContainer}>
-                {icons.map((icon, index) => {
-                  const colors = getColors(readers[index]);
-                  const color = readerNumber === index ? colors.dark : colors.light;
+                {readers.map((readerColor, index) => {
+                  const colors = getColors(readerColor);
+                  const isSelected = selectedBlock?.index === index;
                   return (
                     <TouchableOpacity
                       key={index}
-                      onPress={() => handleIconPress(index)}
+                      onPress={() => {
+                        const block = content[index];
+                        if (block) {
+                          handleLongPress(block, index);
+                        }
+                      }}
                     >
                       <MaterialIcons
-                        name={readerNumber === index ? "mark-chat-read" : "chat-bubble"}
+                        name={isSelected ? "mark-chat-read" : "chat-bubble"}
                         size={30}
-                        color={readers[index] === "black" ? "grey" : color}
+                        color={readerColor === "black" ? "grey" : isSelected ? colors.dark : colors.light}
                       />
                     </TouchableOpacity>
                   );
@@ -504,35 +466,37 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       <View style={styles.divider} />
 
       <FlatList
-        data={memoizedContent}
+        data={content}
         renderItem={renderItem}
-        keyExtractor={useCallback((item: BibleBlock, index: number) => 
-          `${item.source.sourceName}-${index}`, 
-        [])}
+        keyExtractor={(item, index) => `${item.source.sourceName}-${index}`}
         initialNumToRender={10}
         maxToRenderPerBatch={10}
         windowSize={5}
       />
-      <Modal visible={isModalVisible} transparent={true} animationType="fade">
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsModalVisible(false)}
+      >
         <BlurView intensity={60} tint="dark" style={styles.blurContainer}>
           <Pressable
             style={styles.blurContainer}
             onPress={() => setIsModalVisible(false)}
           >
-            {blockData && blockID && (
+            {selectedBlock && (
               <View style={styles.modalContainer}>
                 <View style={styles.emojiPickerContainer}>
                   <EmojiPicker
-                    onEmojiSelect={(emoji) => handleReactionSelect(blockData, blockID, emoji)}
+                    onEmojiSelect={handleEmojiSelect}
                     onClose={() => setIsModalVisible(false)}
                   />
                 </View>
                 <View style={styles.blockContainer}>
                   <BibleBlockComponent
-                    key={`reaction-block`}
-                    block={blockData}
-                    bIndex={0}
-                    toRead={false} // Set toRead based on the reading logic
+                    block={selectedBlock.block}
+                    bIndex={selectedBlock.index}
+                    toRead={false}
                     hasTail={true}
                   />
                 </View>

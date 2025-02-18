@@ -90,11 +90,9 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginLeft: 'auto',
   },
   checkCircleContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 30,
-    marginBottom: 80,
+    alignItems: 'center',
+    paddingVertical: 20,
+    marginBottom: 60,
   },
   centered: {
     justifyContent: 'center',
@@ -230,7 +228,7 @@ export default function BibleScreen() {
             />
             <Questions segmentId={segID} />
             <View style={styles.checkCircleContainer}>
-              <CheckCircle segmentId={segID} iconSize={80} />
+              <CheckCircle segmentId={segID} iconSize={60} />
             </View>
           </>
         )}

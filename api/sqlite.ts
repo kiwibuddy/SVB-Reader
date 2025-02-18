@@ -1,6 +1,6 @@
 import { SQLiteDatabase } from "expo-sqlite";
 import * as SQLite from "expo-sqlite";
-
+import { BibleBlock } from "@/types";
 interface CompletionData {
   isCompleted: boolean;
   color: string | null;
@@ -14,7 +14,6 @@ async function initializeDatabase() {
     await db.execAsync(`
       PRAGMA journal_mode = 'wal';
       
-      -- Existing emojis table
       CREATE TABLE IF NOT EXISTS emojis (
         id INTEGER PRIMARY KEY NOT NULL,
         segmentID TEXT NOT NULL,
@@ -79,6 +78,7 @@ async function initializeDatabase() {
     }
   } catch (error) {
     console.error("Database initialization error:", error);
+    throw error;
   }
 }
 
@@ -188,26 +188,27 @@ export async function getAchievements() {
 }
 
 // New function to insert an emoji
-export async function addEmoji(segmentID: string, blockID: string, blockData: any, emoji: string) {
+export async function addEmoji(
+  segmentID: string,
+  blockID: string,
+  blockData: BibleBlock,
+  emoji: string
+) {
   try {
     // First delete any existing emoji
     await deleteEmoji(segmentID, blockID);
     
-    // Add a small delay to ensure deletion completes
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    const blockDataString = typeof blockData === 'string' 
-      ? blockData 
-      : JSON.stringify(blockData);
-    
+    // Then insert the new emoji
     await db.runAsync(
-      `INSERT OR REPLACE INTO emojis (segmentID, blockID, blockData, emoji, note)
+      `INSERT INTO emojis (segmentID, blockID, blockData, emoji, note)
        VALUES (?, ?, ?, ?, ?)`,
-      segmentID,
-      blockID,
-      blockDataString,
-      emoji,
-      ''
+      [
+        segmentID,
+        blockID,
+        JSON.stringify(blockData),
+        emoji,
+        '' // Empty note for now
+      ]
     );
   } catch (error) {
     console.error("Error adding emoji:", error);
@@ -221,8 +222,7 @@ export async function deleteEmoji(segmentID: string, blockID: string) {
     await db.runAsync(
       `DELETE FROM emojis 
        WHERE segmentID = ? AND blockID = ?`,
-      segmentID,
-      blockID
+      [segmentID, blockID]
     );
   } catch (error) {
     console.error("Error deleting emoji:", error);
@@ -236,8 +236,7 @@ export async function getEmoji(segmentID: string, blockID: string): Promise<stri
     const result = await db.getFirstAsync<{ emoji: string }>(
       `SELECT emoji FROM emojis 
        WHERE segmentID = ? AND blockID = ?`,
-      segmentID,
-      blockID
+      [segmentID, blockID]
     );
     return result?.emoji || null;
   } catch (error) {
@@ -257,10 +256,14 @@ export async function getEmojis() {
       emoji: string;
       note: string;
     }>(
-      `SELECT * FROM emojis 
-       ORDER BY id DESC`
+      `SELECT * FROM emojis ORDER BY id DESC`
     );
-    return result;
+    
+    // Parse blockData back into BibleBlock objects
+    return result.map(row => ({
+      ...row,
+      blockData: JSON.parse(row.blockData) as BibleBlock
+    }));
   } catch (error) {
     console.error("Error getting emojis:", error);
     return [];
