@@ -54,7 +54,8 @@
       },
       "eas": {
         "projectId": "4b89909c-ac28-498a-9e46-5591000b8616"
-      }
+      },
+      "watchman": false
     },
     "owner": "kiwibuddy",
     "privacy": "public",

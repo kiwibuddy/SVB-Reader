@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // Ensure useEffect is imported
+import React, { useState, useEffect, useMemo, useCallback } from "react"; // Ensure useEffect is imported
 import { View, Text, FlatList, Pressable, TouchableOpacity, Modal, StyleSheet, useWindowDimensions, Platform } from "react-native";
 import { BlurView } from "expo-blur";
 import BibleBlockComponent from "./Block";
@@ -17,6 +17,7 @@ import CelebrationPopup from "../CelebrationPopup";
 import { useRouter } from "expo-router";
 import CheckCircle from "@/components/CheckCircle";
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { memo } from "react";
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -110,7 +111,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   const handleIconPress = (index: number) => {
     const readerColor = readers[index];
-    setReaderNumber((prev) => {
+    setReaderNumber((prev: number | null) => {
       const newValue = prev === index ? null : index;
       updateSelectedReaderColor(newValue === null ? null : readerColor);
       return newValue;
@@ -135,13 +136,16 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     }
   };
 
-  const newContent = splitIntoParagraphs(content);
+  // Memoize the content to prevent unnecessary re-renders
+  const memoizedContent = useMemo(() => {
+    return splitIntoParagraphs(segmentData.content);
+  }, [segmentData.content]);
 
   const colorRenderCount = new Map<string, number>(); // Track render counts
 
   useEffect(() => {
     // Calculate color counts from content
-    const counts = newContent.reduce((acc, block) => {
+    const counts = memoizedContent.reduce((acc, block) => {
       const color = block.source.color as keyof typeof acc;
       acc[color] = (acc[color] || 0) + 1;
       acc.total += 1;
@@ -155,7 +159,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     } as ColorData);
     
     setColorData(counts);
-  }, [newContent]);
+  }, [memoizedContent]);
 
   // Add handler for completion toggle
   const handleCompletion = async () => {
@@ -414,6 +418,33 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     </View>
   );
 
+  // Memoize the renderItem function
+  const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
+    const { color, sourceName } = item.source;
+    const isFirstOfNewSource =
+      index === 0 ||
+      memoizedContent[index - 1].source.sourceName !== sourceName;
+    const readerColor = readers[readerNumber!];
+    
+    return (
+      <View 
+        style={{ 
+          position: 'relative', 
+          zIndex: 1,
+          pointerEvents: 'auto'
+        }}
+      >
+        <BibleBlockComponent
+          key={index}
+          block={item}
+          bIndex={index}
+          toRead={readerColor === color}
+          hasTail={isFirstOfNewSource}
+        />
+      </View>
+    );
+  }, [readerNumber, readers, memoizedContent]);
+
   return (
     <View style={styles.container}>
       <SegmentTitle segmentId={segID} />
@@ -473,81 +504,14 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       <View style={styles.divider} />
 
       <FlatList
-        data={newContent}
-        renderItem={({ item, index }) => {
-          const { color, sourceName } = item.source;
-          const isFirstOfNewSource =
-            index === 0 ||
-            newContent[index - 1].source.sourceName !== sourceName;
-          const readerColor = readers[readerNumber!]; // Ensure readerNumber is not null
-          if (readerColor !== color) {
-            return (
-              <Pressable
-                onLongPress={() => handleLongPress(item, `${segID}-${index}`)}
-              >
-                <BibleBlockComponent
-                  key={index}
-                  block={item}
-                  bIndex={index}
-                  toRead={false} // Set toRead based on the reading logic
-                  hasTail={isFirstOfNewSource}
-                />
-              </Pressable>
-            );
-          }
-          const colorReaders = readers.filter((reader) => reader === color); // Get all readers for the current color
-          const numberOfColorReaders = colorReaders.length; // Count of readers for this color
-
-          // Initialize the render count for the current color if not already done
-          if (!colorRenderCount.has(color)) {
-            colorRenderCount.set(color, 0);
-          }
-
-          // Get the current render count for this color
-          const currentRenderCount = colorRenderCount.get(color)!;
-
-          // Determine if the current reader should read this block
-          let shouldRead = false;
-
-          if (numberOfColorReaders === 1) {
-            // Single color reader logic
-            shouldRead = color === readerColor; // Only set to true if the block color matches the readerColor
-          } else {
-            // Multiple color readers logic
-            const indices = readers.reduce<number[]>((acc, reader, index) => {
-              if (reader === readerColor) {
-                acc.push(index);
-              }
-              return acc;
-            }, []);
-            const position = indices.indexOf(readerNumber!);
-            // Determine the total number of blocks rendered for this color
-            const totalRendered = currentRenderCount; // This is the count of how many times this color has been rendered
-
-            // Calculate the turn for the current reader based on their position
-            shouldRead = totalRendered % numberOfColorReaders === position; // Assign reading based on turn
-          }
-
-          // Increment the render count for this color after determining shouldRead
-          colorRenderCount.set(color, currentRenderCount + 1);
-
-          return (
-            <>
-              <Pressable
-                onLongPress={() => handleLongPress(item, `${segID}-${index}`)}
-              >
-                <BibleBlockComponent
-                  key={index}
-                  block={item}
-                  bIndex={index}
-                  toRead={shouldRead} // Set toRead based on the reading logic
-                  hasTail={isFirstOfNewSource}
-                />
-              </Pressable>
-            </>
-          );
-        }}
-        keyExtractor={(item, index) => index.toString()}
+        data={memoizedContent}
+        renderItem={renderItem}
+        keyExtractor={useCallback((item: BibleBlock, index: number) => 
+          `${item.source.sourceName}-${index}`, 
+        [])}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
       />
       <Modal visible={isModalVisible} transparent={true} animationType="fade">
         <BlurView intensity={60} tint="dark" style={styles.blurContainer}>
@@ -587,4 +551,5 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   );
 };
 
-export default SegmentComponent;
+// Wrap the entire component in memo to prevent parent re-renders
+export default memo(SegmentComponent);

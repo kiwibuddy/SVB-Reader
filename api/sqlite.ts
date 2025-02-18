@@ -190,6 +190,7 @@ export async function getAchievements() {
 // New function to insert an emoji
 export async function addEmoji(segmentID: string, blockID: string, blockData: any, emoji: string) {
   try {
+    // First delete any existing emoji
     await deleteEmoji(segmentID, blockID);
     
     // Add a small delay to ensure deletion completes
@@ -225,6 +226,7 @@ export async function deleteEmoji(segmentID: string, blockID: string) {
     );
   } catch (error) {
     console.error("Error deleting emoji:", error);
+    throw error;
   }
 }
 

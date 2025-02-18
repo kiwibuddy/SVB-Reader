@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Pressable } from "react-native";
+import React, { useEffect, useState, memo } from "react";
+import { View, Text, FlatList, Pressable, GestureResponderEvent } from "react-native";
 import BibleInlineComponent from "./Inline";
 import { BibleBlock } from "@/types";
 import SourceNameComponent from "./SourceName";
@@ -20,7 +20,7 @@ interface BibleBlockProps {
   hasTail: boolean;
 }
 
-const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead, hasTail }) => {
+const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({ block, bIndex, toRead, hasTail }) => {
   const { segmentId, emojiActions, updateEmojiActions } = useAppContext();
   const { colors } = useAppSettings();
   const idSplit = segmentId.split("-");
@@ -29,6 +29,9 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
   const [existingEmoji, setExistingEmoji] = useState<string | null>(null);
   const { source, children } = block;
   const { color, sourceName } = source;
+  const [touchPosition, setTouchPosition] = useState({ x: 0, y: 0 });
+
+  console.log('Block rendered:', { bIndex, toRead, hasTail });
 
   useEffect(() => {
     const fetchEmoji = async () => {
@@ -40,11 +43,24 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
     fetchEmoji();
   }, [segID, bIndex, emojiActions]);
 
-  const handleLongPress = () => {
-    if (!toRead) {
-      setShowEmojiPicker(true);
-    }
+  useEffect(() => {
+    console.log(`Block ${bIndex} re-rendered. Reason:`, {
+      segmentId,
+      emojiActions,
+      showEmojiPicker
+    });
+  }, [segmentId, emojiActions, showEmojiPicker]);
+
+  const handleLongPress = (event: GestureResponderEvent) => {
+    console.log('Long press detected on block:', bIndex);
+    const { pageX, pageY } = event.nativeEvent;
+    setTouchPosition({ x: pageX, y: pageY });
+    setShowEmojiPicker(true);
   };
+
+  useEffect(() => {
+    console.log('Emoji picker visibility changed:', showEmojiPicker);
+  }, [showEmojiPicker]);
 
   const handleEmojiSelect = async (emoji: string) => {
     try {
@@ -56,6 +72,18 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
       }
     } catch (error) {
       console.error("Error setting emoji:", error);
+    }
+  };
+
+  const handleEmojiDelete = async () => {
+    try {
+      await deleteEmoji(segID, bIndex.toString());
+      setExistingEmoji(null);
+      if (emojiActions !== undefined) {
+        updateEmojiActions(emojiActions + 1);
+      }
+    } catch (error) {
+      console.error("Error deleting emoji:", error);
     }
   };
 
@@ -72,11 +100,14 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
   const styles = StyleSheet.create({
     outerContainer: {
       marginBottom: 8,
+      position: 'relative',
+      zIndex: 1,
     },
     container: {
       borderRadius: 12,
       padding: 16,
       zIndex: 1,
+      position: 'relative',
     },
     text: {
       color: colors.text,
@@ -120,6 +151,9 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
       bottom: -80,
       zIndex: 1000,
       elevation: 5,
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
     },
   });
 
@@ -127,7 +161,10 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
     <Pressable
       onLongPress={handleLongPress}
       delayLongPress={300}
-      style={styles.outerContainer}
+      style={[
+        styles.outerContainer,
+        { backgroundColor: 'rgba(0,0,0,0.01)' }
+      ]}
     >
       <View key={bIndex}>
         {hasTail && (
@@ -154,7 +191,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
             />
           )}
           <View>
-            {children.map((item, index) => {
+            {children.map((item: any, index: number) => {
               if (item.type === "break") return null;
               return (
                 <BibleInlineComponent
@@ -170,12 +207,35 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
         
         {existingEmoji && (
           <View style={[styles.reactionContainer, emojiAlignment, emojiTopPosition]}>
-            <Text style={styles.reactionText}>{existingEmoji}</Text>
+            <Pressable onPress={handleEmojiDelete}>
+              <Text style={styles.reactionText}>{existingEmoji}</Text>
+            </Pressable>
           </View>
         )}
 
         {showEmojiPicker && (
-          <View style={styles.emojiPickerWrapper}>
+          <View 
+            style={[
+              styles.emojiPickerWrapper,
+              {
+                position: 'absolute',
+                left: touchPosition.x - 100,
+                top: touchPosition.y - 50,
+                backgroundColor: 'white',
+                padding: 16,
+                borderRadius: 8,
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
+                zIndex: 1000,
+              }
+            ]}
+          >
             <EmojiPicker
               onEmojiSelect={handleEmojiSelect}
               onClose={() => setShowEmojiPicker(false)}
@@ -185,6 +245,13 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({ block, bIndex, toRead,
       </View>
     </Pressable>
   );
-};
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.bIndex === nextProps.bIndex &&
+    prevProps.toRead === nextProps.toRead &&
+    prevProps.hasTail === nextProps.hasTail &&
+    prevProps.block === nextProps.block
+  );
+});
 
 export default BibleBlockComponent;
