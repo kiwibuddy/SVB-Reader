@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Animated, FlatList, Pressable } from "react-native";
+import { View, Text, StyleSheet, Animated, FlatList, Pressable, Platform } from "react-native";
 import { getColors } from "@/scripts/getColors";
 import { BibleBlock } from "@/types";
 import SourceNameComponent from "./SourceName";
@@ -167,10 +167,25 @@ const GlowingBubble = ({ block, bIndex, hasTail }: BibleBlockProps) => {
 // Define styles
 const styles = StyleSheet.create({
   bubble: {
-    borderRadius: 10, // Rounded corners
-    padding: 10, // Padding inside the bubble
-    position: "relative", // Position for the tail
-    margin: 10, // Margin around the bubble
+    borderRadius: 10,
+    padding: 10,
+    position: "relative",
+    margin: 10,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 3,
+      },
+    }),
   },
   tail: {
     position: "absolute",
@@ -186,12 +201,22 @@ const styles = StyleSheet.create({
     // borderBottomColor: "#FF6347", // Same as bubble background
   },
   reactionText: {
-    fontSize: 30, // Adjust size as needed
-    elevation: 3, // Optional: add shadow on Android
-    shadowColor: "#000", // Optional: shadow color for iOS
-    shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
-    shadowOpacity: 0.2, // Optional: shadow opacity for iOS
-    shadowRadius: 2, // Optional: shadow radius for iOS
+    fontSize: 30,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 3,
+      },
+    }),
   },
   reactionPosition: {
     position: "absolute",
@@ -201,14 +226,24 @@ const styles = StyleSheet.create({
   },
   reactionContainer: {
     flexDirection: "row",
-    padding: 5, // Padding for the circle
+    padding: 5,
     position: "absolute",
-    elevation: 3, // Optional: add shadow on Android
-    shadowColor: "#000", // Optional: shadow color for iOS
-    shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
-    shadowOpacity: 0.2, // Optional: shadow opacity for iOS
-    shadowRadius: 2, // Optional: shadow radius for iOS
     zIndex: 100,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 3,
+      },
+    }),
   },
 });
 
