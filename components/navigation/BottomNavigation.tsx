@@ -168,7 +168,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
           style={styles.navItem} 
           onPress={() => router.push("/Navigation")}
         >
-          <MaterialCommunityIcons name="book-open-outline" size={24} color={pathname === "/Navigation" ? colors.primary : colors.secondary} />
+          <Ionicons name="book-outline" size={24} color={pathname === "/Navigation" ? colors.primary : colors.secondary} />
           <Text style={[styles.navText, pathname === "/Navigation" && styles.activeText]}>
             Search
           </Text>
