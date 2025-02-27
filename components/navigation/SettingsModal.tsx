@@ -15,6 +15,7 @@ import { useFontSize } from '@/context/FontSizeContext';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { SupportedLanguage } from '@/context/AppSettingsContext';
+import { Animated } from 'react-native';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -62,13 +63,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
       backgroundColor: colors.background + 'CC',
       justifyContent: 'center',
       alignItems: 'center',
+      paddingHorizontal: 16,
     },
     modalContent: {
       backgroundColor: colors.card,
       borderRadius: 20,
       padding: 20,
-      width: '80%',
-      maxWidth: 400,
+      width: '100%',
+      marginHorizontal: 0,
     },
     title: {
       fontSize: sizes.title,
@@ -141,101 +143,131 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
     },
   });
 
+  const slideAnim = React.useRef(new Animated.Value(-1000)).current;
+
+  React.useEffect(() => {
+    if (visible) {
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+        speed: 15,
+        bounciness: 5
+      }).start();
+    } else {
+      Animated.timing(slideAnim, {
+        toValue: -1000,
+        duration: 300,
+        useNativeDriver: true
+      }).start();
+    }
+  }, [visible]);
+
   return (
     <Modal
-      animationType="slide"
+      animationType="none"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}
     >
-      <Pressable style={modalStyles.overlay} onPress={onClose}>
-        <View style={modalStyles.modalContent}>
-          <Text style={modalStyles.title}>Settings</Text>
-          
-          {/* Font Size */}
-          <View style={modalStyles.setting}>
-            <Text style={modalStyles.settingLabel}>Font Size</Text>
-            <View style={modalStyles.fontSizePreview}>
-              {(['small', 'medium', 'large'] as FontSize[]).map((size) => (
-                <Text 
-                  key={size}
-                  style={[
-                    modalStyles.previewText,
-                    { fontSize: size === 'small' ? sizes.caption : 
-                             size === 'medium' ? sizes.body : 
-                             sizes.title }
-                  ]}
-                >
-                  AAA
-                </Text>
-              ))}
-            </View>
-            <Slider
-              style={modalStyles.slider}
-              minimumValue={0}
-              maximumValue={2}
-              step={1}
-              value={sliderValue}
-              onValueChange={handleSliderChange}
-            />
-          </View>
-
-          {/* Language Selection */}
-          <View style={modalStyles.setting}>
-            <Text style={modalStyles.settingLabel}>Language</Text>
-            <View style={modalStyles.languageSelector}>
-              {languages.map((lang) => (
-                <TouchableOpacity
-                  key={lang.value}
-                  style={[
-                    modalStyles.languageOption,
-                    language === lang.value && modalStyles.selectedLanguage,
-                  ]}
-                  onPress={() => setLanguage(lang.value)}
-                >
-                  <Text
+      <Animated.View 
+        style={[
+          modalStyles.overlay,
+          {
+            transform: [{
+              translateY: slideAnim
+            }]
+          }
+        ]}
+      >
+        <Pressable style={{width: '100%'}} onPress={onClose}>
+          <View style={modalStyles.modalContent}>
+            <Text style={modalStyles.title}>Settings</Text>
+            
+            {/* Font Size */}
+            <View style={modalStyles.setting}>
+              <Text style={modalStyles.settingLabel}>Font Size</Text>
+              <View style={modalStyles.fontSizePreview}>
+                {(['small', 'medium', 'large'] as FontSize[]).map((size) => (
+                  <Text 
+                    key={size}
                     style={[
-                      modalStyles.languageText,
-                      language === lang.value && modalStyles.selectedLanguageText,
+                      modalStyles.previewText,
+                      { fontSize: size === 'small' ? sizes.caption : 
+                               size === 'medium' ? sizes.body : 
+                               sizes.title }
                     ]}
                   >
-                    {lang.label}
+                    AAA
                   </Text>
-                </TouchableOpacity>
-              ))}
+                ))}
+              </View>
+              <Slider
+                style={modalStyles.slider}
+                minimumValue={0}
+                maximumValue={2}
+                step={1}
+                value={sliderValue}
+                onValueChange={handleSliderChange}
+              />
             </View>
-          </View>
 
-          {/* Dark Mode */}
-          <View style={modalStyles.setting}>
-            <Text style={modalStyles.settingLabel}>Dark Mode</Text>
-            <Switch
-              value={isDarkMode}
-              onValueChange={async (value) => {
-                await setDarkMode(value);
-              }}
-            />
-          </View>
+            {/* Language Selection */}
+            <View style={modalStyles.setting}>
+              <Text style={modalStyles.settingLabel}>Language</Text>
+              <View style={modalStyles.languageSelector}>
+                {languages.map((lang) => (
+                  <TouchableOpacity
+                    key={lang.value}
+                    style={[
+                      modalStyles.languageOption,
+                      language === lang.value && modalStyles.selectedLanguage,
+                    ]}
+                    onPress={() => setLanguage(lang.value)}
+                  >
+                    <Text
+                      style={[
+                        modalStyles.languageText,
+                        language === lang.value && modalStyles.selectedLanguageText,
+                      ]}
+                    >
+                      {lang.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
 
-          {/* Orientation Lock */}
-          <View style={modalStyles.setting}>
-            <Text style={modalStyles.settingLabel}>Lock Screen Orientation</Text>
-            <Switch
-              value={isOrientationLocked}
-              onValueChange={async (value) => {
-                await setOrientationLock(value);
-              }}
-            />
-          </View>
+            {/* Dark Mode */}
+            <View style={modalStyles.setting}>
+              <Text style={modalStyles.settingLabel}>Dark Mode</Text>
+              <Switch
+                value={isDarkMode}
+                onValueChange={async (value) => {
+                  await setDarkMode(value);
+                }}
+              />
+            </View>
 
-          <TouchableOpacity 
-            style={modalStyles.closeButton}
-            onPress={onClose}
-          >
-            <Text style={modalStyles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
-        </View>
-      </Pressable>
+            {/* Orientation Lock */}
+            <View style={modalStyles.setting}>
+              <Text style={modalStyles.settingLabel}>Lock Screen Orientation</Text>
+              <Switch
+                value={isOrientationLocked}
+                onValueChange={async (value) => {
+                  await setOrientationLock(value);
+                }}
+              />
+            </View>
+
+            <TouchableOpacity 
+              style={modalStyles.closeButton}
+              onPress={onClose}
+            >
+              <Text style={modalStyles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Animated.View>
     </Modal>
   );
 };

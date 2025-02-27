@@ -12,6 +12,7 @@ import { deleteEmoji, getEmoji, addEmoji } from "@/api/sqlite";
 import EmojiPicker from "@/components/EmojiPicker";
 import { useAppSettings } from "@/context/AppSettingsContext";
 import { baseSizes as sizes } from "@/context/FontSizeContext";
+import { Ionicons } from '@expo/vector-icons';
 
 interface BibleBlockProps {
   block: BibleBlock;

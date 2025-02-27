@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet, Animated } from "react-native";
 import { useRouter, usePathname } from "expo-router";
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5, Feather, MaterialCommunityIcons } from '@expo/vector-icons'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppSettings } from '@/context/AppSettingsContext';
 
@@ -168,11 +168,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
           style={styles.navItem} 
           onPress={() => router.push("/Navigation")}
         >
-          <Ionicons 
-            name={pathname === "/Navigation" ? "search" : "search-outline"} 
-            size={24} 
-            color={pathname === "/Navigation" ? colors.primary : colors.secondary} 
-          />
+          <MaterialCommunityIcons name="book-open-outline" size={24} color={pathname === "/Navigation" ? colors.primary : colors.secondary} />
           <Text style={[styles.navText, pathname === "/Navigation" && styles.activeText]}>
             Search
           </Text>

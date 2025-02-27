@@ -101,6 +101,22 @@ const createStyles = (colors: any) => StyleSheet.create({
   loadingText: {
     color: colors.text,
   },
+  navigationButton: {
+    backgroundColor: 'white',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  }
 });
 
 export default function BibleScreen() {
@@ -251,19 +267,19 @@ export default function BibleScreen() {
       ]}>
         {prevSegId && (
           <TouchableOpacity
-            style={[styles.roundButton, styles.prevButton]}
+            style={styles.navigationButton}
             onPress={() => handleNavigation(prevSegId)}
           >
-            <FontAwesome name="arrow-left" size={20} color="white" />
+            <Ionicons name="chevron-back" size={24} color={colors.secondary} />
           </TouchableOpacity>
         )}
 
         {nextSegId && (
           <TouchableOpacity
-            style={[styles.roundButton, styles.nextButton]}
+            style={styles.navigationButton}
             onPress={() => handleNavigation(nextSegId)}
           >
-            <FontAwesome name="arrow-right" size={20} color="white" />
+            <Ionicons name="chevron-forward" size={24} color={colors.secondary} />
           </TouchableOpacity>
         )}
       </Animated.View>
