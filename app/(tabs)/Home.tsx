@@ -348,12 +348,12 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: Co
 };
 
 // Add types for our data
-interface RecentActivity {
-  segmentId: string;
-  title: string;
-  timestamp: string;
-  emojis: string[];
-}
+// interface RecentActivity {
+//   segmentId: string;
+//   title: string;
+//   timestamp: string;
+//   emojis: string[];
+// }
 
 // Add near other type definitions
 type CompletionData = {
@@ -380,90 +380,6 @@ interface SectionStyles {
   };
   colors: ColorScheme;
 }
-
-// 1. Recent Activity Section with real data
-const RecentActivitySection = ({ styles }: { styles: SectionStyles }) => {
-  const { sizes } = useFontSize();
-  const { t } = useTranslation();
-  
-  const localStyles = StyleSheet.create({
-    activityTitle: {
-      fontSize: sizes.subtitle,
-      fontWeight: '600',
-      marginBottom: 8,
-    },
-    emoji: {
-      fontSize: sizes.title,
-      marginRight: 4,
-    },
-    timestamp: {
-      fontSize: sizes.caption,
-      color: '#666',
-    },
-  });
-
-  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
-  const router = useRouter();
-
-  useEffect(() => {
-    const loadRecentActivity = async () => {
-      const emojiData = await getEmojis();
-      const activities = emojiData
-        .reduce((acc: RecentActivity[], curr) => {
-          const existing = acc.find(a => a.segmentId === curr.segmentID);
-          if (existing) {
-            existing.emojis.push(curr.emoji);
-          } else {
-            acc.push({
-              segmentId: curr.segmentID,
-              title: SegmentTitles[curr.segmentID]?.title || 'Unknown Segment',
-              timestamp: new Date().toISOString(), // You might want to store this in your DB
-              emojis: [curr.emoji]
-            });
-          }
-          return acc;
-        }, [])
-        .slice(0, 5); // Show last 5 activities
-
-      setRecentActivities(activities);
-    };
-
-    loadRecentActivity();
-  }, []);
-
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{t('UI.home.recentActivity')}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {recentActivities.map((activity, index) => (
-          <TouchableOpacity 
-            key={index}
-            style={styles.activityCard}
-            onPress={() => {
-              // Navigate to segment
-              router.push({
-                pathname: "/[segment]",
-                params: { segment: activity.segmentId }
-              });
-            }}
-          >
-            <Text style={localStyles.activityTitle} numberOfLines={2}>
-              {activity.title}
-            </Text>
-            <View style={styles.emojiContainer}>
-              {activity.emojis.map((emoji, i) => (
-                <Text key={i} style={localStyles.emoji}>{emoji}</Text>
-              ))}
-            </View>
-            <Text style={localStyles.timestamp}>
-              {format(new Date(activity.timestamp), 'MMM d, h:mm a')}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
-  );
-};
 
 // 2. Reading Insights with real data
 const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
@@ -881,7 +797,6 @@ const HomeScreen = () => {
         </View>
 
         <InsightsSection styles={combinedStyles} />
-        <RecentActivitySection styles={combinedStyles} />
       </ScrollView>
     </View>
   );
