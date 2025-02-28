@@ -15,6 +15,7 @@ import Questions from '@/components/Questions';
 import CheckCircle from '@/components/CheckCircle';
 import StickyHeader from '@/components/StickyHeader';
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { startReadingSession, updateReadingSession } from '@/api/sqlite';
 
 // Define the type for Bible
 type BibleType = { [key: string]: SegmentType | IntroType };
@@ -120,22 +121,71 @@ const createStyles = (colors: any) => StyleSheet.create({
 });
 
 export default function BibleScreen() {
+  const { colors } = useAppSettings();
+  const { updateSegmentId, language, version } = useAppContext();
   const router = useRouter();
   const params = useLocalSearchParams();
   const { planId, challengeId } = params;
-  const pathname = usePathname();
-  const { segmentId, updateSegmentId, language, version } = useAppContext();
-  const { colors } = useAppSettings();
   const scrollViewRef = useRef<ScrollView>(null);
+  const { isVisible } = useBottomNavAnimation();
   
-  // Extract just the segment ID from the full path and clean it
+  // Create styles
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  // Parse segmentID
   const segID = useMemo(() => {
-    const parts = pathname?.split("-") || [];
-    return parts[parts.length - 1]?.replace("/", "") || "";
-  }, [pathname]);
+    const segment = params.segment as string;
+    return segment.includes('-') ? segment.split('-').pop() || '' : segment;
+  }, [params.segment]);
+
+  // Get segment data
+  const segmentData = useMemo(() => {
+    if (!segID) return undefined;
+    return Bible[segID];
+  }, [segID]);
+
+  // Update segment ID when it changes
+  useEffect(() => {
+    if (segID) {
+      updateSegmentId(segID);
+    }
+  }, [segID, updateSegmentId]);
+
+  // Show loading state if data isn't ready
+  if (!segID || !segmentData) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
+
+  // Navigation handler
+  const handleNavigation = (segId: string) => {
+    const cleanSegId = segId.includes('-') ? segId.split('-').pop() || segId : segId;
+    
+    updateSegmentId(cleanSegId);
+    router.push({
+      pathname: "/[segment]",
+      params: {
+        segment: cleanSegId,
+        ...(planId ? { planId } : {}),
+        ...(challengeId ? { challengeId } : {})
+      }
+    });
+    scrollViewRef.current?.scrollTo({
+      y: 0,
+      animated: false,
+    });
+  };
 
   // Get context-aware navigation segments
   const { prevSegId, nextSegId } = useMemo(() => {
+    // Make sure language and version are defined
+    if (!language || !version) {
+      return { prevSegId: null, nextSegId: null };
+    }
+
     if (planId) {
       // Get segments from the current plan
       const plan = readingPlansData.plans.find(p => p.id === planId);
@@ -170,21 +220,7 @@ export default function BibleScreen() {
         nextSegId: currentSegmentIndex < segIds.length - 1 ? `${language}-${version}-${segIds[currentSegmentIndex + 1]}` : null
       };
     }
-  }, [segID, planId, challengeId]);
-
-  // Get the segment data
-  const segmentData: SegmentType | IntroType | undefined = useMemo(
-    () => segID ? Bible[segID] : undefined,
-    [segID]
-  );
-
-  const styles = useMemo(() => createStyles(colors), [colors]);
-
-  useEffect(() => {
-    if (segID && segmentData) {
-      updateSegmentId(segID);
-    }
-  }, [segID, segmentData, updateSegmentId]);
+  }, [segID, planId, challengeId, language, version]);
 
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
@@ -192,34 +228,6 @@ export default function BibleScreen() {
     if (global.handleBottomNavScroll) {
       global.handleBottomNavScroll(event);
     }
-  };
-
-  // Show loading state
-  if (!segID || !segmentData) {
-    return (
-      <View style={[styles.container, styles.centered]}>
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
-    );
-  }
-
-  const { isVisible } = useBottomNavAnimation();
-
-  // Update navigation handlers to preserve context
-  const handleNavigation = (segId: string) => {
-    updateSegmentId(segId);
-    router.push({
-      pathname: "/[segment]",
-      params: {
-        segment: segId,
-        ...(planId ? { planId } : {}),
-        ...(challengeId ? { challengeId } : {})
-      }
-    });
-    scrollViewRef.current?.scrollTo({
-      y: 0,
-      animated: false,
-    });
   };
 
   return (
@@ -244,7 +252,13 @@ export default function BibleScreen() {
             />
             <Questions segmentId={segID} />
             <View style={styles.checkCircleContainer}>
-              <CheckCircle segmentId={segID} iconSize={60} />
+              <CheckCircle 
+                segmentId={segID} 
+                iconSize={60}
+                context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
+                planId={planId as string || undefined}
+                challengeId={challengeId as string || undefined}
+              />
             </View>
           </>
         )}

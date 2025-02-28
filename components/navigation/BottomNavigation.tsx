@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet, Animated } from "react-native";
 import { useRouter, usePathname } from "expo-router";
-import { Ionicons, FontAwesome5, Feather, MaterialCommunityIcons } from '@expo/vector-icons'; 
+import { Ionicons } from '@expo/vector-icons'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppSettings } from '@/context/AppSettingsContext';
 
@@ -66,43 +66,28 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
 
   const styles = StyleSheet.create({
     container: {
-      backgroundColor: colors.card,
-      borderTopColor: colors.border,
       borderTopWidth: 1,
       position: 'absolute',
       bottom: 0,
       left: 0,
       right: 0,
-      zIndex: 999,
     },
     content: {
       flexDirection: 'row',
       justifyContent: 'space-around',
-      paddingVertical: 6,
+      alignItems: 'center',
+      paddingVertical: 8,
     },
     navItem: {
       alignItems: 'center',
-      paddingVertical: 2,
+      justifyContent: 'center',
     },
     navText: {
       fontSize: 12,
-      marginTop: 2,
-      color: colors.text,
+      marginTop: 4,
     },
     activeText: {
-      color: colors.primary,
-    },
-    label: {
-      color: colors.text,
-    },
-    activeLabel: {
-      color: colors.primary,
-    },
-    icon: {
-      color: colors.secondary,
-    },
-    activeIcon: {
-      color: colors.primary,
+      color: '#FF5733', // Your app's primary color
     },
   });
 
@@ -110,6 +95,8 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     styles.container,
     {
       paddingBottom: insets.bottom,
+      backgroundColor: colors.background,
+      borderTopColor: colors.border,
       transform: [{
         translateY: isVisible.interpolate({
           inputRange: [0, 1],
@@ -124,7 +111,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
       <View style={styles.content}>
         <Pressable 
           style={styles.navItem} 
-          onPress={() => router.push("/Home")}
+          onPress={() => router.replace("/Home")}
         >
           <Ionicons 
             name={pathname === "/Home" ? "home" : "home-outline"} 
@@ -138,7 +125,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
 
         <Pressable 
           style={styles.navItem} 
-          onPress={() => router.push("/Reading-emoji")}
+          onPress={() => router.replace("/Reading-emoji")}
         >
           <Ionicons 
             name={pathname === "/Reading-emoji" ? "happy" : "happy-outline"} 
@@ -152,23 +139,27 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
 
         <Pressable 
           style={styles.navItem} 
-          onPress={() => router.push("/Reading-movement")}
+          onPress={() => router.replace("/(tabs)/Achievements")}
         >
           <Ionicons 
-            name={pathname === "/Reading-movement" ? "trophy" : "trophy-outline"} 
+            name={pathname === "/(tabs)/Achievements" ? "trophy" : "trophy-outline"} 
             size={24} 
-            color={pathname === "/Reading-movement" ? colors.primary : colors.secondary} 
+            color={pathname === "/(tabs)/Achievements" ? colors.primary : colors.secondary} 
           />
-          <Text style={[styles.navText, pathname === "/Reading-movement" && styles.activeText]}>
+          <Text style={[styles.navText, pathname === "/(tabs)/Achievements" && styles.activeText]}>
             Achievements
           </Text>
         </Pressable>
 
         <Pressable 
           style={styles.navItem} 
-          onPress={() => router.push("/Navigation")}
+          onPress={() => router.replace("/Navigation")}
         >
-          <Ionicons name="book-outline" size={24} color={pathname === "/Navigation" ? colors.primary : colors.secondary} />
+          <Ionicons 
+            name="book-outline" 
+            size={24} 
+            color={pathname === "/Navigation" ? colors.primary : colors.secondary} 
+          />
           <Text style={[styles.navText, pathname === "/Navigation" && styles.activeText]}>
             Search
           </Text>

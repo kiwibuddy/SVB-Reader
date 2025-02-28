@@ -11,9 +11,10 @@ interface BibleBlockProps {
   block: BibleBlock;
   bIndex: number;
   hasTail: boolean;
+  isGlowing: boolean;
 }
 
-const GlowingBubble = ({ block, bIndex, hasTail }: BibleBlockProps) => {
+const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) => {
   const { segmentId, emojiActions } = useAppContext();
    const idSplit = segmentId.split("-");
    const language = idSplit[0];
@@ -58,110 +59,70 @@ const GlowingBubble = ({ block, bIndex, hasTail }: BibleBlockProps) => {
   const tailAlignment = color !== "black" ? { left: 15 } : { right: 15 };
   const emojiAlignment = color !== "black" ? { right: 10 } : { left: 10 };
 
-  // if (color !== "black") {
-    return (
-      <View key={bIndex}>
-        {hasTail && <SourceNameComponent sourceName={sourceName} align={color !== "black" ? "left" : "right"} />}
-        <Animated.View
-          style={[
-            styles.bubble,
-            {
-              backgroundColor: colors.light,
+  return (
+    <View key={bIndex}>
+      {hasTail && <SourceNameComponent sourceName={sourceName} align={color !== "black" ? "left" : "right"} />}
+      <Animated.View
+        style={[
+          styles.bubble,
+          {
+            backgroundColor: colors.light,
+            ...(isGlowing ? {
               shadowColor: glowColor,
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 1,
-              borderWidth: 0, // Removed black border
-              elevation: 5,
-              shadowRadius: 10, // Added to increase glow radius
-            },
-          ]}
-        >
-          {hasTail && (
-            <View
-              style={[
-                styles.tail,
-                {
-                  borderBottomColor: colors.light,
-                },
-                tailAlignment
-              ]}
-            />
-          )}
-          <FlatList
-            data={children}
-            renderItem={({ item, index }) => {
-              if (item.type === "break" || item.tag === "b") return null;
-              return (
-                <BibleInlineComponent
-                  key={`${bIndex}-${index}`}
-                  iIndex={`${bIndex}-${index}`}
-                  inline={item}
-                  textColor={colors.dark}
-                />
-              );
-            }}
+              shadowRadius: 10,
+            } : {
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 3,
+            }),
+            borderWidth: 0,
+            elevation: isGlowing ? 5 : 3,
+          },
+        ]}
+      >
+        {hasTail && (
+          <View
+            style={[
+              styles.tail,
+              {
+                borderBottomColor: colors.light,
+              },
+              tailAlignment
+            ]}
           />
-        </Animated.View>
-        {emoji && (
-          <View style={[styles.reactionContainer, { top: 35 }, emojiAlignment]}>
-            <Pressable
-              onPress={async () => {
-                await deleteEmoji(segID, bIndex.toString());
-                setEmoji(null);
-              }}
-            >
-              <Text style={styles.reactionText}>{`${emoji}`}</Text>
-            </Pressable>
-          </View>
         )}
-      </View>
-    );
-  // }
-  // return (
-  //   <Animated.View
-  //     style={[
-  //       {
-  //         backgroundColor: colors.light,
-  //         shadowColor: glowColor,
-  //         shadowOpacity: 1,
-  //         shadowOffset: { width: 0, height: 0 },
-  //         borderWidth: 0, // Removed black border
-  //         elevation: 5,
-  //         shadowRadius: 10, // Added to increase glow radius
-  //         borderRadius: 10,
-  //         margin: 10,
-  //         padding: 10,
-  //       },
-  //     ]}
-  //   >
-  //     <FlatList
-  //       data={children}
-  //       renderItem={({ item, index }) => {
-  //         if (item.type === "break" || item.tag === "b") return null;
-  //         return (
-  //           <BibleInlineComponent
-  //             key={`${bIndex}-${index}`}
-  //             iIndex={`${bIndex}-${index}`}
-  //             inline={item}
-  //             textColor={colors.dark}
-  //           />
-  //         );
-  //       }}
-  //     />
-  //     {emoji && (
-  //       <View style={[styles.reactionContainer, { top: -25, right: 0 }]}>
-  //         <Pressable
-  //           onPress={async () => {
-  //             await deleteEmoji(segID, bIndex.toString());
-  //             setEmoji(null);
-  //           }}
-  //         >
-  //           <Text style={styles.reactionText}>{`${emoji}`}</Text>
-  //         </Pressable>
-  //       </View>
-  //     )}
-  //   </Animated.View>
-  // );
+        <FlatList
+          data={children}
+          renderItem={({ item, index }) => {
+            if (item.type === "break" || item.tag === "b") return null;
+            return (
+              <BibleInlineComponent
+                key={`${bIndex}-${index}`}
+                iIndex={`${bIndex}-${index}`}
+                inline={item}
+                textColor={colors.dark}
+              />
+            );
+          }}
+        />
+      </Animated.View>
+      {emoji && (
+        <View style={[styles.reactionContainer, { top: 35 }, emojiAlignment]}>
+          <Pressable
+            onPress={async () => {
+              await deleteEmoji(segID, bIndex.toString());
+              setEmoji(null);
+            }}
+          >
+            <Text style={styles.reactionText}>{`${emoji}`}</Text>
+          </Pressable>
+        </View>
+      )}
+    </View>
+  );
 };
 
 // Define styles

@@ -2,6 +2,7 @@ import React from 'react';
 import { Tabs } from "expo-router";
 import { View } from "react-native";
 import { useAppSettings } from "@/context/AppSettingsContext";
+import { MaterialIcons } from '@expo/vector-icons';
 
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { Colors } from "@/constants/Colors";
@@ -63,6 +64,17 @@ export default function TabLayout() {
           options={{
             title: "Bible",
             tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="Achievements"
+          options={{
+            title: 'Achievements',
+            headerTitle: 'Your Achievements',
+            tabBarLabel: 'Achievements',
+            tabBarIcon: ({ color, size }) => (
+              <MaterialIcons name="emoji-events" size={size} color={color} />
+            ),
           }}
         />
       </Tabs>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react"; // Ensure useEffect is imported
 import { View, Text, FlatList, Pressable, TouchableOpacity, Modal, StyleSheet, useWindowDimensions, Platform } from "react-native";
 import { BlurView } from "expo-blur";
-import BibleBlockComponent from "./Block";
+import BibleBlockComponent from './BibleBlock';
 import { BibleBlock, SegmentType } from "@/types";
 import PieChart from "../PieChart";
 import ChartLegend from "../ChartLegend";
@@ -61,7 +61,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     updateEmojiActions,
     updateReadingPlanProgress,
     updateChallengeProgress,
-    updateSelectedReaderColor
   } = useAppContext();
 
   const { colors } = useAppSettings();
@@ -88,6 +87,12 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     blue: 0,
     total: 0
   });
+
+  // Track which reader role is currently selected
+  const [selectedReaderPosition, setSelectedReaderPosition] = useState<{
+    color: string;
+    position: number;
+  } | null>(null);
 
   // Determine which completion state to use
   const getIsCompleted = () => {
@@ -246,6 +251,48 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     }
   };
 
+  const handleReaderRoleSelect = (color: string, position: number) => {
+    setSelectedReaderPosition(prev => {
+      // If clicking the already selected role, deselect it
+      if (prev?.color === color && prev?.position === position) {
+        return null;
+      }
+      // Otherwise select this new role (deselecting any previous role)
+      return { color, position };
+    });
+  };
+
+  // Group readers by color to know position
+  const readersByColor = useMemo(() => {
+    return readers.reduce((acc, color, index) => {
+      if (!acc[color]) {
+        acc[color] = [];
+      }
+      acc[color].push(index);
+      return acc;
+    }, {} as { [color: string]: number[] });
+  }, [readers]);
+
+  // Update shouldBlockGlow to use the new state
+  const shouldBlockGlow = useCallback((blockColor: string, blockIndex: number) => {
+    if (!selectedReaderPosition) return false;
+    
+    const { color, position } = selectedReaderPosition;
+    if (blockColor !== color) return false;
+
+    const colorPositions = readersByColor[blockColor] || [];
+    if (colorPositions.length <= 1) {
+      return position === 0;
+    }
+
+    // For multiple readers of same color
+    const blocksOfThisColor = content.filter(item => item.source.color === blockColor);
+    const positionInSequence = blocksOfThisColor.findIndex(item => 
+      content.indexOf(item) === blockIndex
+    );
+    return positionInSequence % colorPositions.length === position;
+  }, [content, readersByColor, selectedReaderPosition]);
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -375,6 +422,30 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       shadowOpacity: 0.2, // Optional: shadow opacity for iOS
       shadowRadius: 2, // Optional: shadow radius for iOS
     },
+    readerRoleSelector: {
+      marginVertical: 10,
+      padding: 10,
+    },
+    readerRoleTitle: {
+      fontSize: 16,
+      marginBottom: 8,
+      fontWeight: '500',
+    },
+    readerRoleButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+    },
+    roleButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: '#ccc',
+    },
+    activeRoleButton: {
+      borderWidth: 3,
+      borderColor: '#000',
+    }
   });
 
   // Update the render method where speech bubbles are rendered
@@ -385,22 +456,24 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     </View>
   );
 
-  // Memoize the renderItem function
+  // Update renderItem to use new glow logic
   const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
     const { sourceName } = item.source;
     const showSourceName = index === 0 || 
       content[index - 1].source.sourceName !== sourceName;
 
+    const isGlowing = shouldBlockGlow(item.source.color, index);
+
     return (
       <BibleBlockComponent
         block={item}
         bIndex={index}
-        toRead={selectedBlock?.index === index}
         hasTail={showSourceName}
+        isGlowing={isGlowing}
         onLongPress={handleLongPress}
       />
     );
-  }, [selectedBlock, content]);
+  }, [content, shouldBlockGlow]);
 
   return (
     <View style={styles.container}>
@@ -439,21 +512,19 @@ const SegmentComponent: React.FC<SegmentProps> = ({
               <View style={styles.iconContainer}>
                 {readers.map((readerColor, index) => {
                   const colors = getColors(readerColor);
-                  const isSelected = selectedBlock?.index === index;
+                  const position = readersByColor[readerColor].indexOf(index);
+                  const isActive = selectedReaderPosition?.color === readerColor && 
+                                  selectedReaderPosition?.position === position;
+                  
                   return (
                     <TouchableOpacity
                       key={index}
-                      onPress={() => {
-                        const block = content[index];
-                        if (block) {
-                          handleLongPress(block, index);
-                        }
-                      }}
+                      onPress={() => handleReaderRoleSelect(readerColor, position)}
                     >
                       <MaterialIcons
-                        name={isSelected ? "mark-chat-read" : "chat-bubble"}
+                        name={isActive ? "mark-chat-read" : "chat-bubble"}
                         size={30}
-                        color={readerColor === "black" ? "grey" : isSelected ? colors.dark : colors.light}
+                        color={readerColor === "black" ? "grey" : isActive ? colors.dark : colors.light}
                       />
                     </TouchableOpacity>
                   );
@@ -496,8 +567,9 @@ const SegmentComponent: React.FC<SegmentProps> = ({
                   <BibleBlockComponent
                     block={selectedBlock.block}
                     bIndex={selectedBlock.index}
-                    toRead={false}
                     hasTail={true}
+                    isGlowing={false}
+                    onLongPress={handleLongPress}
                   />
                 </View>
               </View>

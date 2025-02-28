@@ -44,7 +44,8 @@ async function initializeDatabase() {
         unlockDate TEXT NOT NULL,
         progress INTEGER,
         maxProgress INTEGER,
-        isCompleted BOOLEAN
+        isCompleted BOOLEAN,
+        achievementDate TEXT
       );
 
       -- New daily_activity table to track reading streaks
@@ -63,6 +64,46 @@ async function initializeDatabase() {
         lastReadDate TEXT NOT NULL,
         lastUpdated TEXT NOT NULL
       );
+
+      -- New completedSegments table
+      CREATE TABLE IF NOT EXISTS completedSegments (
+        id INTEGER PRIMARY KEY NOT NULL,
+        segmentID TEXT NOT NULL,
+        isCompleted BOOLEAN NOT NULL DEFAULT 0,
+        completionDate TEXT,
+        UNIQUE(segmentID)
+      );
+
+      -- New sourceReadings table
+      CREATE TABLE IF NOT EXISTS sourceReadings (
+        id INTEGER PRIMARY KEY NOT NULL,
+        segmentID TEXT NOT NULL,
+        blockID TEXT NOT NULL,
+        color TEXT NOT NULL,
+        readDate TEXT NOT NULL,
+        UNIQUE(segmentID, blockID, color)
+      );
+
+      -- New table to track reading sessions
+      CREATE TABLE IF NOT EXISTS reading_sessions (
+        id INTEGER PRIMARY KEY NOT NULL,
+        startTime TEXT NOT NULL,
+        endTime TEXT NOT NULL,
+        segmentCount INTEGER NOT NULL,
+        sessionDate TEXT NOT NULL
+      );
+
+      -- New table for book completion tracking
+      CREATE TABLE IF NOT EXISTS book_completion (
+        id INTEGER PRIMARY KEY NOT NULL,
+        bookId TEXT NOT NULL,
+        isCompleted BOOLEAN NOT NULL DEFAULT 0,
+        completionDate TEXT,
+        UNIQUE(bookId)
+      );
+
+      -- Add achievementDate column if it doesn't exist
+      ALTER TABLE achievements ADD COLUMN achievementDate TEXT;
     `);
 
     // Initialize streak_data if empty
@@ -364,5 +405,321 @@ export async function getCurrentStreak(): Promise<number> {
   } catch (error) {
     console.error("Error getting current streak:", error);
     return 0;
+  }
+}
+
+// Add type for the count query results
+interface CountResult {
+  count: number;
+}
+
+// Update the functions to use the type
+export const getCompletedSegmentsCount = async () => {
+  const result = await db.getFirstAsync<CountResult>(
+    `SELECT COUNT(*) as count FROM completedSegments WHERE isCompleted = 1`
+  );
+  return result?.count || 0;
+};
+
+// Get emoji usage statistics
+export const getEmojiStats = async () => {
+  const totalResult = await db.getFirstAsync<CountResult>(
+    `SELECT COUNT(*) as count FROM emojis`
+  );
+  
+  const heartResult = await db.getFirstAsync<CountResult>(
+    `SELECT COUNT(*) as count FROM emojis WHERE emoji = '❤️'`
+  );
+  
+  const prayerResult = await db.getFirstAsync<CountResult>(
+    `SELECT COUNT(*) as count FROM emojis WHERE emoji = '🙏'`
+  );
+  
+  const questionResult = await db.getFirstAsync<CountResult>(
+    `SELECT COUNT(*) as count FROM emojis WHERE emoji = '❓'`
+  );
+  
+  const thumbsUpResult = await db.getFirstAsync<CountResult>(
+    `SELECT COUNT(*) as count FROM emojis WHERE emoji = '👍'`
+  );
+  
+  return {
+    total: totalResult?.count || 0,
+    heart: heartResult?.count || 0,
+    prayer: prayerResult?.count || 0,
+    question: questionResult?.count || 0,
+    thumbsUp: thumbsUpResult?.count || 0
+  };
+};
+
+// Get source reading statistics
+export const getSourceStats = async () => {
+  const redResult = await db.getFirstAsync<CountResult>(
+    `SELECT COUNT(*) as count FROM sourceReadings WHERE color = 'red'`
+  );
+  
+  const greenResult = await db.getFirstAsync<CountResult>(
+    `SELECT COUNT(*) as count FROM sourceReadings WHERE color = 'green'`
+  );
+  
+  const blueResult = await db.getFirstAsync<CountResult>(
+    `SELECT COUNT(*) as count FROM sourceReadings WHERE color = 'blue'`
+  );
+  
+  const blackResult = await db.getFirstAsync<CountResult>(
+    `SELECT COUNT(*) as count FROM sourceReadings WHERE color = 'black'`
+  );
+  
+  return {
+    red: redResult?.count || 0,
+    green: greenResult?.count || 0,
+    blue: blueResult?.count || 0,
+    black: blackResult?.count || 0
+  };
+};
+
+export async function getBestStreak(): Promise<number> {
+  try {
+    const result = await db.getFirstAsync<{ longestStreak: number }>(
+      'SELECT longestStreak FROM streak_data ORDER BY id DESC LIMIT 1'
+    );
+    return result?.longestStreak || 0;
+  } catch (error) {
+    console.error("Error getting best streak:", error);
+    return 0;
+  }
+}
+
+// New function to start a reading session
+export async function startReadingSession() {
+  try {
+    await db.runAsync(`
+      INSERT INTO reading_sessions (startTime, endTime, segmentCount, sessionDate)
+      VALUES (datetime('now', 'localtime'), datetime('now', 'localtime'), 0, date('now', 'localtime'))
+    `);
+    
+    // Return the newly created session ID
+    const result = await db.getFirstAsync<{id: number}>(`
+      SELECT last_insert_rowid() as id
+    `);
+    return result?.id;
+  } catch (error) {
+    console.error("Error starting reading session:", error);
+    return null;
+  }
+}
+
+// Function to update an ongoing reading session
+export async function updateReadingSession(sessionId: number, segmentCount: number) {
+  try {
+    await db.runAsync(`
+      UPDATE reading_sessions
+      SET endTime = datetime('now', 'localtime'),
+          segmentCount = ?
+      WHERE id = ?
+    `, segmentCount, sessionId);
+  } catch (error) {
+    console.error("Error updating reading session:", error);
+  }
+}
+
+// Get the longest reading session
+export async function getLongestSession(): Promise<number> {
+  try {
+    const result = await db.getFirstAsync<{maxSegments: number}>(`
+      SELECT MAX(segmentCount) as maxSegments FROM reading_sessions
+    `);
+    return result?.maxSegments || 0;
+  } catch (error) {
+    console.error("Error getting longest session:", error);
+    return 0;
+  }
+}
+
+// Check if a book is completely read
+export async function checkBookCompletion(bookId: string): Promise<boolean> {
+  try {
+    // Get all segments for the book
+    const bookSegmentsQuery = `
+      SELECT segments FROM BookChapterList WHERE bookId = ?
+    `;
+    const bookData = await db.getFirstAsync<{segments: string}>(bookSegmentsQuery, bookId);
+    
+    if (!bookData) return false;
+    
+    // Parse the segments array
+    const segments = JSON.parse(bookData.segments);
+    
+    // Check if all segments are completed
+    const completedCount = await db.getFirstAsync<{count: number}>(`
+      SELECT COUNT(*) as count FROM completedSegments 
+      WHERE segmentID IN (${segments.map(() => '?').join(',')})
+      AND isCompleted = 1
+    `, ...segments);
+    
+    const isCompleted = completedCount?.count === segments.length;
+    
+    // If completed, update the book_completion table
+    if (isCompleted) {
+      await db.runAsync(`
+        INSERT OR REPLACE INTO book_completion (bookId, isCompleted, completionDate)
+        VALUES (?, 1, datetime('now', 'localtime'))
+      `, bookId);
+    }
+    
+    return isCompleted;
+  } catch (error) {
+    console.error("Error checking book completion:", error);
+    return false;
+  }
+}
+
+// Get all completed books
+export async function getCompletedBooks(): Promise<string[]> {
+  try {
+    const results = await db.getAllAsync<{bookId: string}>(`
+      SELECT bookId FROM book_completion WHERE isCompleted = 1
+    `);
+    
+    return results.map(row => row.bookId);
+  } catch (error) {
+    console.error("Error getting completed books:", error);
+    return [];
+  }
+}
+
+// Check if all emoji types have been used
+export async function checkEmojiCollection(): Promise<{complete: boolean, used: string[]}> {
+  try {
+    const emojiTypes = ['❤️', '👍', '🤔', '🙏']; // List all expected emoji types
+    
+    const results = await db.getAllAsync<{emoji: string}>(`
+      SELECT DISTINCT emoji FROM emojis
+    `);
+    
+    const usedEmojis = results.map(row => row.emoji);
+    const isComplete = emojiTypes.every(emoji => usedEmojis.includes(emoji));
+    
+    return {
+      complete: isComplete,
+      used: usedEmojis
+    };
+  } catch (error) {
+    console.error("Error checking emoji collection:", error);
+    return {
+      complete: false,
+      used: []
+    };
+  }
+}
+
+// Get completed segments count for Old Testament
+export async function getOldTestamentProgress(): Promise<{completed: number; total: number}> {
+  try {
+    // Get all Old Testament segments from BookChapterList.json
+    // We consider these books as Old Testament (Genesis through Malachi)
+    const oldTestamentBooks = [
+      'Gen', 'Exo', 'Lev', 'Num', 'Deu', 'Jos', 'Jdg', 'Rut', '1Sa', '2Sa',
+      '1Ki', '2Ki', '1Ch', '2Ch', 'Ezr', 'Neh', 'Est', 'Job', 'Psa', 'Pro',
+      'Ecc', 'SoS', 'Isa', 'Jer', 'Lam', 'Eze', 'Dan', 'Hos', 'Joe', 'Amo',
+      'Oba', 'Jon', 'Mic', 'Nah', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal'
+    ];
+    
+    // Get all segments from these books (this would use your BookChapterList data)
+    // This is just a placeholder - your app should get the actual segments from your data
+    const oldTestamentSegments = await db.getAllAsync<{segmentID: string}>(`
+      SELECT DISTINCT s.segmentID
+      FROM completedSegments s
+      WHERE substr(s.segmentID, 1, 1) = 'S' 
+      AND CAST(substr(s.segmentID, 2) AS INTEGER) <= 219
+    `);
+    
+    // Get completed segments count
+    const completedCount = await db.getFirstAsync<{count: number}>(`
+      SELECT COUNT(*) as count
+      FROM completedSegments
+      WHERE isCompleted = 1
+      AND segmentID IN (
+        SELECT segmentID
+        FROM completedSegments
+        WHERE substr(segmentID, 1, 1) = 'S' 
+        AND CAST(substr(segmentID, 2) AS INTEGER) <= 219
+      )
+    `);
+    
+    return {
+      completed: completedCount?.count || 0,
+      total: 219 // This should be the actual count from your data
+    };
+  } catch (error) {
+    console.error("Error getting Old Testament progress:", error);
+    return { completed: 0, total: 219 };
+  }
+}
+
+// Get completed segments count for New Testament
+export async function getNewTestamentProgress(): Promise<{completed: number; total: number}> {
+  try {
+    // New Testament would be from Matthew through Revelation
+    const newTestamentBooks = [
+      'Mat', 'Mar', 'Luk', 'Joh', 'Act', 'Rom', '1Co', '2Co', 'Gal', 'Eph',
+      'Php', 'Col', '1Th', '2Th', '1Ti', '2Ti', 'Tit', 'Phm', 'Heb', 'Jam',
+      '1Pe', '2Pe', '1Jn', '2Jn', '3Jn', 'Jud', 'Rev'
+    ];
+    
+    // Get completed segments count
+    const completedCount = await db.getFirstAsync<{count: number}>(`
+      SELECT COUNT(*) as count
+      FROM completedSegments
+      WHERE isCompleted = 1
+      AND segmentID IN (
+        SELECT segmentID
+        FROM completedSegments
+        WHERE substr(segmentID, 1, 1) = 'S' 
+        AND CAST(substr(segmentID, 2) AS INTEGER) > 219
+      )
+    `);
+    
+    return {
+      completed: completedCount?.count || 0,
+      total: 146 // This should be the actual count from your data
+    };
+  } catch (error) {
+    console.error("Error getting New Testament progress:", error);
+    return { completed: 0, total: 146 };
+  }
+}
+
+// Update the function that marks achievements as completed
+export async function markAchievementComplete(achievementId: string) {
+  try {
+    await db.runAsync(`
+      UPDATE achievements 
+      SET isCompleted = 1, 
+          achievementDate = datetime('now', 'localtime')
+      WHERE achievementId = ?
+    `, achievementId);
+  } catch (error) {
+    console.error("Error marking achievement complete:", error);
+  }
+}
+
+// Function to get achievement dates
+export async function getAchievementDates(): Promise<{[key: string]: string}> {
+  try {
+    const results = await db.getAllAsync<{achievementId: string, achievementDate: string}>(`
+      SELECT achievementId, achievementDate 
+      FROM achievements 
+      WHERE isCompleted = 1 
+      AND achievementDate IS NOT NULL
+    `);
+    
+    return results.reduce((acc, curr) => {
+      acc[curr.achievementId] = curr.achievementDate;
+      return acc;
+    }, {} as {[key: string]: string});
+  } catch (error) {
+    console.error("Error getting achievement dates:", error);
+    return {};
   }
 }
