@@ -20,7 +20,7 @@ import { StatusIndicator } from '@/components/StatusIndicator';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
-import { markSegmentCompleteInDB, getSegmentCompletionStatus, unlockAchievement } from "@/api/sqlite";
+import { markSegmentComplete, getSegmentCompletionStatus, unlockAchievement } from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
 
 interface BookSegments {
@@ -221,7 +221,7 @@ const PlanScreen = () => {
   const handleSegmentComplete = async (planId: string, segmentId: string) => {
     try {
       // Mark segment as complete in database
-      await markSegmentCompleteInDB(segmentId, 'plan', planId);
+      await markSegmentComplete(segmentId, 'plan', planId);
       
       // Update local state
       setPlanProgress(prev => ({

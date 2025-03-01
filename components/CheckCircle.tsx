@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppContext } from '@/context/GlobalContext';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import CelebrationPopup from './CelebrationPopup';
+import CelebrationPopup from '@/components/Bible/CelebrationPopup';
 import { getCheckColor } from '@/scripts/getCheckColors';
 import { getSegmentReadCount, getSegmentCompletionStatus } from '@/api/sqlite';
 

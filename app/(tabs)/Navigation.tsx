@@ -1,4 +1,4 @@
-import { View, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, useWindowDimensions } from "react-native";
+import { View, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, useWindowDimensions, Platform } from "react-native";
 import Accordion from "@/components/navigation/NavBook";
 import Books from "@/assets/data/BookChapterList.json";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
@@ -11,6 +11,7 @@ import { findSegmentId } from '@/utils/referenceMapping';
 import { useRouter } from 'expo-router';
 import SearchResults from '@/components/navigation/SearchResults';
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { getSegmentCompletionStatus } from "@/api/sqlite";
 
 export type SegmentKey = keyof typeof SegmentTitles;
 export type SegmentIds = keyof typeof Books;
@@ -115,7 +116,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
 });
 
 const Navigation = () => {
-  const { completedSegments } = useAppContext();
+  const { completedSegments, language, version } = useAppContext();
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAscending, setIsAscending] = useState(true);
@@ -131,6 +132,9 @@ const Navigation = () => {
   const oldTestamentBooks = ['Gen', 'Exo', 'Lev', 'Num', 'Deu', 'Jos', 'Jdg', 'Rut', '1Sa', '2Sa', '1Ki', '2Ki', '1Ch', '2Ch', 'Ezr', 'Neh', 'Est', 'Job', 'Psa', 'Pro', 'Ecc', 'SoS', 'Isa', 'Jer', 'Lam', 'Eze', 'Dan', 'Hos', 'Joe', 'Amo', 'Oba', 'Jon', 'Mic', 'Nah', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal'];
   const newTestamentBooks = ['Mat', 'Mar', 'Luk', 'Joh', 'Act', 'Rom', '1Co', '2Co', 'Gal', 'Eph', 'Php', 'Col', '1Th', '2Th', '1Ti', '2Ti', 'Tit', 'Phm', 'Heb', 'Jam', '1Pe', '2Pe', '1Jn', '2Jn', '3Jn', 'Jud', 'Rev'];
 
+  // Add state for completed segments
+  const [completedSegmentIds, setCompletedSegmentIds] = useState<{[key: string]: boolean}>({});
+
   // Handle book title click
   const handleBookSelect = (bookName: string) => {
     // Only update search if search is active
@@ -142,7 +146,18 @@ const Navigation = () => {
 
   // Handle segment click when chapter is selected
   const handleSegmentSelect = (segmentId: string) => {
-    router.push(`/read/${segmentId}`);
+    // Reset any scroll position that might be stored
+    if (Platform.OS === 'web') {
+      window.scrollTo(0, 0);
+    }
+    
+    router.push({
+      pathname: "/(tabs)/[segment]" as const,
+      params: {
+        segment: `${language}-${version}-${segmentId}`,
+        scrollReset: 'true'
+      }
+    });
   };
 
   const handleSearchToggle = () => {
@@ -179,41 +194,22 @@ const Navigation = () => {
           const bookName = Books[item.djhBook].bookName.toLowerCase();
           return bookName === parsedRef.book.toLowerCase();
         });
-
-        // If chapter is specified, filter segments by chapter reference
-        if (parsedRef.chapter) {
-          filtered = filtered.map(item => ({
-            ...item,
-            segments: item.segments.filter(segId => {
-              const segmentData = SegmentTitles[segId];
-              if (!('ref' in segmentData)) return false;
-              
-              // Check if the reference contains the chapter number
-              const chapterStr = `:${parsedRef.chapter}`;
-              return segmentData.ref.includes(chapterStr);
-            })
-          }));
-        }
       } else {
-        // Normal book name search
-        const cleanQuery = searchQuery.toLowerCase().trim();
+        // Filter by book name containing search query
         filtered = filtered.filter(item => {
-          const bookName = Books[item.djhBook].bookName;
-          const cleanBookName = bookName.replace(/^\d+\s*/, '').toLowerCase();
-          return cleanBookName.startsWith(cleanQuery);
+          const bookName = Books[item.djhBook].bookName.toLowerCase();
+          return bookName.includes(searchQuery.toLowerCase());
         });
       }
     }
 
-    // Sort the data
-    filtered.sort((a, b) => {
-      const bookOrderA = [...oldTestamentBooks, ...newTestamentBooks].indexOf(a.djhBook);
-      const bookOrderB = [...oldTestamentBooks, ...newTestamentBooks].indexOf(b.djhBook);
-      return isAscending ? bookOrderA - bookOrderB : bookOrderB - bookOrderA;
+    // Apply sort order
+    return filtered.sort((a, b) => {
+      const indexA = booksArray.indexOf(a.djhBook);
+      const indexB = booksArray.indexOf(b.djhBook);
+      return isAscending ? indexA - indexB : indexB - indexA;
     });
-
-    return filtered;
-  }, [filter, isAscending, searchQuery, showSearch]);
+  }, [filter, searchQuery, showSearch, isAscending]);
 
   // Handle filter button press
   const handleFilterPress = (newFilter: string) => {
@@ -312,6 +308,7 @@ const Navigation = () => {
                 isExpanded={isSelected && showSearch}
                 onBookSelect={handleBookSelect}
                 onSegmentSelect={handleSegmentSelect}
+                completedSegments={completedSegmentIds}
               />
             );
           }}

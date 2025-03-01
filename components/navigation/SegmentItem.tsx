@@ -14,9 +14,9 @@ import { useRouter } from "expo-router";
 import { useModal } from "@/context/NavContext";
 import DonutChart from "../DonutChart";
 import { Ionicons } from '@expo/vector-icons';
-import CelebrationPopup from "../CelebrationPopup";
+import CelebrationPopup from "@/components/CelebrationPopup";
 import { getCheckColor } from '@/scripts/getCheckColors';
-import { markSegmentCompleteInDB, getSegmentCompletionStatus } from "@/api/sqlite";
+import { markSegmentComplete, getSegmentCompletionStatus } from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
 
 interface ColorData {
@@ -78,45 +78,43 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
   }, [segment.id, context, planId, challengeId]);
 
   const handlePress = () => {
-    const query: any = {};
-    
-    if (context === 'plan' && planId) {
-      query.planId = planId;
-    } else if (context === 'challenge' && challengeId) {
-      query.challengeId = challengeId;
+    if (onPress) {
+      onPress(segment.id);
+    } else {
+      router.push({
+        pathname: "/(tabs)/[segment]" as const,
+        params: {
+          segment: `${language}-${version}-${segment.id}`,
+          ...(context === 'plan' && planId ? { planId } : {}),
+          ...(context === 'challenge' && challengeId ? { challengeId } : {})
+        }
+      });
     }
-
-    const segmentPath = `${language}-${version}-${segment.id}`;
-
-    router.push({
-      pathname: "/[segment]" as const,
-      params: {
-        segment: segmentPath,
-        ...query
-      }
-    });
   };
 
   const styles = StyleSheet.create({
     container: {
-      paddingVertical: 12,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 8,
       paddingHorizontal: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-      backgroundColor: colors.background,
+      backgroundColor: colors.card,
+    },
+    textContainer: {
+      flex: 1,
     },
     title: {
       fontSize: 16,
       color: colors.text,
-      marginBottom: 4,
     },
     reference: {
-      fontSize: 14,
+      fontSize: 12,
       color: colors.secondary,
       marginTop: 2,
     },
-    completedText: {
-      color: colors.secondary,
+    checkIcon: {
+      marginLeft: 8,
     }
   });
 
@@ -125,13 +123,23 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
       style={styles.container}
       onPress={handlePress}
     >
-      <Text style={styles.title}>
-        {segment.title}
-      </Text>
-      {segment.ref && (
-        <Text style={styles.reference}>
-          {segment.ref}
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>
+          {segment.title}
         </Text>
+        {segment.ref && (
+          <Text style={styles.reference}>
+            {segment.ref}
+          </Text>
+        )}
+      </View>
+      {completionStatus.isCompleted && (
+        <Ionicons 
+          name="checkmark-circle" 
+          size={20} 
+          color="#888" 
+          style={styles.checkIcon} 
+        />
       )}
     </TouchableOpacity>
   );

@@ -14,6 +14,14 @@ async function initializeDatabase() {
     await db.execAsync(`
       PRAGMA journal_mode = 'wal';
       
+      -- Add the segments table
+      CREATE TABLE IF NOT EXISTS segments (
+        segmentID TEXT PRIMARY KEY NOT NULL,
+        bookId TEXT NOT NULL,
+        title TEXT NOT NULL,
+        reference TEXT
+      );
+      
       CREATE TABLE IF NOT EXISTS emojis (
         id INTEGER PRIMARY KEY NOT NULL,
         segmentID TEXT NOT NULL,
@@ -101,10 +109,10 @@ async function initializeDatabase() {
         completionDate TEXT,
         UNIQUE(bookId)
       );
-
-      -- Add achievementDate column if it doesn't exist
-      ALTER TABLE achievements ADD COLUMN achievementDate TEXT;
     `);
+    
+    // Populate the segments table with data from SegmentTitles.json
+    await populateSegmentsTable();
 
     // Initialize streak_data if empty
     const streakData = await db.getFirstAsync(
@@ -118,30 +126,75 @@ async function initializeDatabase() {
       `);
     }
   } catch (error) {
-    console.error("Database initialization error:", error);
+    console.error("Error initializing database:", error);
     throw error;
+  }
+}
+
+// Add this function to populate the segments table
+async function populateSegmentsTable() {
+  try {
+    // Check if table is already populated
+    const count = await db.getFirstAsync<{count: number}>(`
+      SELECT COUNT(*) as count FROM segments
+    `);
+    
+    if (count?.count === 0) {
+      // Import segment data
+      const segmentTitles = require('../assets/data/SegmentTitles.json');
+      
+      // Begin transaction for faster inserts
+      await db.execAsync('BEGIN TRANSACTION');
+      
+      for (const [segmentId, data] of Object.entries(segmentTitles)) {
+        const segment = data as any;
+        await db.runAsync(`
+          INSERT INTO segments (segmentID, bookId, title, reference)
+          VALUES (?, ?, ?, ?)
+        `, segmentId, segment.book[0], segment.title, segment.ref || null);
+      }
+      
+      await db.execAsync('COMMIT');
+    }
+  } catch (error) {
+    console.error("Error populating segments table:", error);
+    await db.execAsync('ROLLBACK');
   }
 }
 
 initializeDatabase();
 
 // Segment completion functions
-export async function markSegmentCompleteInDB(
+export async function markSegmentComplete(
   segmentID: string,
-  context: 'main' | 'plan' | 'challenge',
-  planID?: string | null,
-  challengeID?: string | null,
-  readerColor?: string | null
-) {
+  context: 'main' | 'plan' | 'challenge' = 'main',
+  planID?: string | null
+): Promise<void> {
   try {
+    // Insert completion record without checking book
     await db.runAsync(`
-      INSERT INTO segment_completion (
-        segmentID, completionType, planID, challengeID, completionDate, readerColor
-      )
-      VALUES (?, ?, ?, ?, datetime('now', 'localtime'), ?)
-    `, segmentID, context, planID || null, challengeID || null, readerColor || null);
+      INSERT OR REPLACE INTO segment_completion (
+        segmentID, 
+        completionType,
+        planID,
+        completionDate
+      ) VALUES (?, ?, ?, datetime('now', 'localtime'))
+    `, segmentID, context, planID || null);
+    
+    // Extract book ID from segment ID using the pattern
+    // Most segment IDs follow a pattern where the book can be determined
+    // For example, if we have segment data in memory:
+    const segmentTitles = require('../assets/data/SegmentTitles.json');
+    const segment = segmentTitles[segmentID];
+    
+    if (segment && segment.book && segment.book.length > 0) {
+      const bookId = segment.book[0];
+      await checkBookCompletion(bookId);
+    }
+    
   } catch (error) {
     console.error("Error marking segment complete:", error);
+    throw error;
   }
 }
 
@@ -408,49 +461,96 @@ export async function getCurrentStreak(): Promise<number> {
   }
 }
 
-// Add type for the count query results
+// Update the existing functions to use the CountResult type
 interface CountResult {
   count: number;
+  currentStreak?: number;
+  longestStreak?: number;
 }
 
-// Update the functions to use the type
+// Keep only one version of each function
 export const getCompletedSegmentsCount = async () => {
-  const result = await db.getFirstAsync<CountResult>(
-    `SELECT COUNT(*) as count FROM completedSegments WHERE isCompleted = 1`
+  try {
+    // The segment_completion table doesn't have an isCompleted column
+    // It records completions, so each row represents a completed segment
+    const result = await db.getFirstAsync<CountResult>(
+      `SELECT COUNT(*) as count FROM segment_completion`
+    );
+    return result?.count || 0;
+  } catch (error) {
+    console.error('Error getting completed segments count:', error);
+    return 0;
+  }
+};
+
+export const getTotalSegmentsCount = async () => {
+  try {
+    // For total segments, we need a reference count
+    // This is a placeholder - you might need to adjust based on your data
+    return 365; // Total number of segments in your Bible data
+  } catch (error) {
+    console.error('Error getting total segments count:', error);
+    return 0;
+  }
+};
+
+export const getReadingStreak = async () => {
+  const result = await db.getFirstAsync<{currentStreak: number, longestStreak: number}>(
+    `SELECT currentStreak, longestStreak FROM streak_data LIMIT 1`
   );
-  return result?.count || 0;
+  return {
+    currentStreak: result?.currentStreak || 0,
+    longestStreak: result?.longestStreak || 0
+  };
 };
 
 // Get emoji usage statistics
-export const getEmojiStats = async () => {
-  const totalResult = await db.getFirstAsync<CountResult>(
-    `SELECT COUNT(*) as count FROM emojis`
-  );
-  
-  const heartResult = await db.getFirstAsync<CountResult>(
-    `SELECT COUNT(*) as count FROM emojis WHERE emoji = '❤️'`
-  );
-  
-  const prayerResult = await db.getFirstAsync<CountResult>(
-    `SELECT COUNT(*) as count FROM emojis WHERE emoji = '🙏'`
-  );
-  
-  const questionResult = await db.getFirstAsync<CountResult>(
-    `SELECT COUNT(*) as count FROM emojis WHERE emoji = '❓'`
-  );
-  
-  const thumbsUpResult = await db.getFirstAsync<CountResult>(
-    `SELECT COUNT(*) as count FROM emojis WHERE emoji = '👍'`
-  );
-  
-  return {
-    total: totalResult?.count || 0,
-    heart: heartResult?.count || 0,
-    prayer: prayerResult?.count || 0,
-    question: questionResult?.count || 0,
-    thumbsUp: thumbsUpResult?.count || 0
-  };
-};
+export async function getEmojiStats(): Promise<{
+  total: number;
+  heart: number;
+  prayer: number;
+  question: number;
+  thumbsUp: number;
+}> {
+  try {
+    const totalResult = await db.getFirstAsync<{count: number}>(`
+      SELECT COUNT(*) as count FROM emojis
+    `);
+    
+    const heartResult = await db.getFirstAsync<{count: number}>(`
+      SELECT COUNT(*) as count FROM emojis WHERE emoji = '❤️'
+    `);
+    
+    const prayerResult = await db.getFirstAsync<{count: number}>(`
+      SELECT COUNT(*) as count FROM emojis WHERE emoji = '🙏'
+    `);
+    
+    const questionResult = await db.getFirstAsync<{count: number}>(`
+      SELECT COUNT(*) as count FROM emojis WHERE emoji = '🤔'
+    `);
+    
+    const thumbsUpResult = await db.getFirstAsync<{count: number}>(`
+      SELECT COUNT(*) as count FROM emojis WHERE emoji = '👍'
+    `);
+    
+    return {
+      total: totalResult?.count || 0,
+      heart: heartResult?.count || 0,
+      prayer: prayerResult?.count || 0,
+      question: questionResult?.count || 0,
+      thumbsUp: thumbsUpResult?.count || 0
+    };
+  } catch (error) {
+    console.error("Error getting emoji stats:", error);
+    return {
+      total: 0,
+      heart: 0,
+      prayer: 0,
+      question: 0,
+      thumbsUp: 0
+    };
+  }
+}
 
 // Get source reading statistics
 export const getSourceStats = async () => {
@@ -536,28 +636,30 @@ export async function getLongestSession(): Promise<number> {
   }
 }
 
-// Check if a book is completely read
+// Update the checkBookCompletion function
 export async function checkBookCompletion(bookId: string): Promise<boolean> {
   try {
-    // Get all segments for the book
-    const bookSegmentsQuery = `
-      SELECT segments FROM BookChapterList WHERE bookId = ?
-    `;
-    const bookData = await db.getFirstAsync<{segments: string}>(bookSegmentsQuery, bookId);
-    
-    if (!bookData) return false;
-    
-    // Parse the segments array
-    const segments = JSON.parse(bookData.segments);
-    
-    // Check if all segments are completed
-    const completedCount = await db.getFirstAsync<{count: number}>(`
-      SELECT COUNT(*) as count FROM completedSegments 
-      WHERE segmentID IN (${segments.map(() => '?').join(',')})
-      AND isCompleted = 1
-    `, ...segments);
-    
-    const isCompleted = completedCount?.count === segments.length;
+    // Get all segments for the book, excluding introductions
+    const result = await db.getFirstAsync<{count: number}>(`
+      SELECT COUNT(*) as count 
+      FROM segment_completion 
+      WHERE segmentID IN (
+        SELECT segmentID 
+        FROM segments 
+        WHERE bookId = ? 
+        AND segmentID NOT LIKE '%intro%'
+      )
+    `, bookId);
+
+    // Get total number of segments for the book (excluding introductions)
+    const totalResult = await db.getFirstAsync<{count: number}>(`
+      SELECT COUNT(*) as count 
+      FROM segments 
+      WHERE bookId = ? 
+      AND segmentID NOT LIKE '%intro%'
+    `, bookId);
+
+    const isCompleted = (result?.count ?? 0) === (totalResult?.count ?? 0) && (totalResult?.count ?? 0) > 0;
     
     // If completed, update the book_completion table
     if (isCompleted) {
@@ -570,6 +672,19 @@ export async function checkBookCompletion(bookId: string): Promise<boolean> {
     return isCompleted;
   } catch (error) {
     console.error("Error checking book completion:", error);
+    return false;
+  }
+}
+
+// Add a function to get completion status for a specific book
+export async function getBookCompletionStatus(bookId: string): Promise<boolean> {
+  try {
+    const result = await db.getFirstAsync<{isCompleted: number}>(`
+      SELECT isCompleted FROM book_completion WHERE bookId = ?
+    `, bookId);
+    return result?.isCompleted === 1;
+  } catch (error) {
+    console.error("Error getting book completion status:", error);
     return false;
   }
 }
@@ -616,40 +731,16 @@ export async function checkEmojiCollection(): Promise<{complete: boolean, used: 
 // Get completed segments count for Old Testament
 export async function getOldTestamentProgress(): Promise<{completed: number; total: number}> {
   try {
-    // Get all Old Testament segments from BookChapterList.json
-    // We consider these books as Old Testament (Genesis through Malachi)
-    const oldTestamentBooks = [
-      'Gen', 'Exo', 'Lev', 'Num', 'Deu', 'Jos', 'Jdg', 'Rut', '1Sa', '2Sa',
-      '1Ki', '2Ki', '1Ch', '2Ch', 'Ezr', 'Neh', 'Est', 'Job', 'Psa', 'Pro',
-      'Ecc', 'SoS', 'Isa', 'Jer', 'Lam', 'Eze', 'Dan', 'Hos', 'Joe', 'Amo',
-      'Oba', 'Jon', 'Mic', 'Nah', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal'
-    ];
-    
-    // Get all segments from these books (this would use your BookChapterList data)
-    // This is just a placeholder - your app should get the actual segments from your data
-    const oldTestamentSegments = await db.getAllAsync<{segmentID: string}>(`
-      SELECT DISTINCT s.segmentID
-      FROM completedSegments s
-      WHERE substr(s.segmentID, 1, 1) = 'S' 
-      AND CAST(substr(s.segmentID, 2) AS INTEGER) <= 219
-    `);
-    
-    // Get completed segments count
-    const completedCount = await db.getFirstAsync<{count: number}>(`
+    // Get completed segments for Old Testament (segments 1-219)
+    const result = await db.getFirstAsync<{count: number}>(`
       SELECT COUNT(*) as count
-      FROM completedSegments
-      WHERE isCompleted = 1
-      AND segmentID IN (
-        SELECT segmentID
-        FROM completedSegments
-        WHERE substr(segmentID, 1, 1) = 'S' 
-        AND CAST(substr(segmentID, 2) AS INTEGER) <= 219
-      )
+      FROM segment_completion
+      WHERE CAST(substr(segmentID, 2) AS INTEGER) <= 219
     `);
     
     return {
-      completed: completedCount?.count || 0,
-      total: 219 // This should be the actual count from your data
+      completed: result?.count || 0,
+      total: 219
     };
   } catch (error) {
     console.error("Error getting Old Testament progress:", error);
@@ -660,29 +751,16 @@ export async function getOldTestamentProgress(): Promise<{completed: number; tot
 // Get completed segments count for New Testament
 export async function getNewTestamentProgress(): Promise<{completed: number; total: number}> {
   try {
-    // New Testament would be from Matthew through Revelation
-    const newTestamentBooks = [
-      'Mat', 'Mar', 'Luk', 'Joh', 'Act', 'Rom', '1Co', '2Co', 'Gal', 'Eph',
-      'Php', 'Col', '1Th', '2Th', '1Ti', '2Ti', 'Tit', 'Phm', 'Heb', 'Jam',
-      '1Pe', '2Pe', '1Jn', '2Jn', '3Jn', 'Jud', 'Rev'
-    ];
-    
-    // Get completed segments count
-    const completedCount = await db.getFirstAsync<{count: number}>(`
+    // Get completed segments for New Testament (segments 220-365)
+    const result = await db.getFirstAsync<{count: number}>(`
       SELECT COUNT(*) as count
-      FROM completedSegments
-      WHERE isCompleted = 1
-      AND segmentID IN (
-        SELECT segmentID
-        FROM completedSegments
-        WHERE substr(segmentID, 1, 1) = 'S' 
-        AND CAST(substr(segmentID, 2) AS INTEGER) > 219
-      )
+      FROM segment_completion
+      WHERE CAST(substr(segmentID, 2) AS INTEGER) > 219
     `);
     
     return {
-      completed: completedCount?.count || 0,
-      total: 146 // This should be the actual count from your data
+      completed: result?.count || 0,
+      total: 146
     };
   } catch (error) {
     console.error("Error getting New Testament progress:", error);

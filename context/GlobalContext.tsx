@@ -1,7 +1,11 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import readingPlansData from "../assets/data/ReadingPlansChallenges.json";
-import { markSegmentCompleteInDB, updateDailyActivity } from '@/api/sqlite';
+import { 
+  markSegmentComplete as markSegmentCompleteDB,
+  getSegmentCompletionStatus,
+  updateDailyActivity
+} from '@/api/sqlite';
 
 // Add this interface near the top of the file, before AppContextType
 interface ReadingPlanProgress {
@@ -305,61 +309,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Update markSegmentComplete to handle plans and challenges
   const markSegmentComplete = async (
-    segmentId: string, 
-    isComplete: boolean, 
-    color: string | null = null,
+    segmentId: string,
+    isCompleted: boolean,
+    readerColor: string | null = null,
     context: 'main' | 'plan' | 'challenge' = 'main',
-    planId?: string,
-    challengeId?: string
+    contextId?: string
   ) => {
     try {
-      if (isComplete) {
-        await markSegmentCompleteInDB(segmentId, context, planId, challengeId, color);
-        await updateDailyActivity(segmentId);
-      }
+      // Use the correctly named function
+      await markSegmentCompleteDB(segmentId, context, contextId);
+      
+      // Update local state
+      setCompletedSegments(prev => ({
+        ...prev,
+        [segmentId]: {
+          isCompleted,
+          color: readerColor
+        }
+      }));
 
-      // Update local state based on context
-      if (context === 'main') {
-        const updatedSegments = { ...completedSegments };
-        if (isComplete) {
-          updatedSegments[segmentId] = { isCompleted: true, color: color || null };
-        } else {
-          delete updatedSegments[segmentId];
-        }
-        setCompletedSegments(updatedSegments);
-        await AsyncStorage.setItem('completedSegments', JSON.stringify(updatedSegments));
-      } 
-      else if (context === 'plan' && planId) {
-        if (!activePlan) return;
-        
-        const updatedPlan: PlanProgress = {
-          ...activePlan,
-          completedSegments: isComplete 
-            ? [...activePlan.completedSegments, segmentId]
-            : activePlan.completedSegments.filter(id => id !== segmentId),
-          lastRead: new Date().toISOString()
-        };
-
-        if (updatedPlan.planId === planId) {
-          setActivePlan(updatedPlan);
-          await AsyncStorage.setItem('activePlan', JSON.stringify(updatedPlan));
-        }
-      }
-      else if (context === 'challenge' && challengeId) {
-        const updatedChallenges = { ...activeChallenges };
-        const challenge = updatedChallenges[challengeId];
-        if (challenge) {
-          if (isComplete && !challenge.completedSegments.includes(segmentId)) {
-            challenge.completedSegments.push(segmentId);
-          } else if (!isComplete) {
-            challenge.completedSegments = challenge.completedSegments.filter(
-              id => id !== segmentId
-            );
-          }
-          setActiveChallenges(updatedChallenges);
-          await AsyncStorage.setItem('activeChallenges', JSON.stringify(updatedChallenges));
-        }
-      }
+      // Update streak
+      await updateDailyActivity(segmentId);
+      
     } catch (error) {
       console.error('Error updating segment completion:', error);
     }

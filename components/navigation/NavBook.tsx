@@ -13,11 +13,11 @@ import DonutChart from "../DonutChart";
 import SegmentItem from "./SegmentItem";
 import { Ionicons } from '@expo/vector-icons';
 import Books from "@/assets/data/BookChapterList.json";
-import { markSegmentCompleteInDB, getSegmentCompletionStatus } from "@/api/sqlite";
+import { markSegmentComplete, getSegmentCompletionStatus } from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
 
 // Image mapping
-const imageMap: { [key: string]: any } = {
+export const imageMap: { [key: string]: any } = {
   'Gen': require('@/assets/images/BibleIcons/genesis-free-bible-icon.png'),
   'Exo': require('@/assets/images/BibleIcons/exodus-free-bible-icon.png'),
   'Lev': require('@/assets/images/BibleIcons/leviticus-free-bible-icon.png'),
@@ -190,6 +190,7 @@ export interface AccordionProps {
   isExpanded?: boolean;
   onBookSelect?: (bookName: string) => void;
   onSegmentSelect?: (segmentId: string) => void;
+  completedSegments?: {[key: string]: boolean};
 }
 
 // Define a type for the structure of SegmentTitles
@@ -227,7 +228,7 @@ export interface SegmentItemProps {
   onPress?: (segmentId: string) => void;
 }
 
-const Accordion = ({ 
+const Accordion: React.FC<AccordionProps> = ({ 
   item, 
   bookIndex, 
   onSegmentComplete,
@@ -238,12 +239,12 @@ const Accordion = ({
   style = {},
   isExpanded,
   onBookSelect,
-  onSegmentSelect
-}: AccordionProps) => {
+  onSegmentSelect,
+  completedSegments = {}
+}) => {
   const { colors } = useAppSettings();
   const [isExpandedState, setIsExpanded] = useState(isExpanded || false);
   const flatListRef = useRef<FlatList<SegmentKey>>(null);
-  const [completedSegments, setCompletedSegments] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setIsExpanded(isExpanded || false);
@@ -257,21 +258,6 @@ const Accordion = ({
     // Check if the key exists
     console.log('Image exists for book:', !!imageMap[item.djhBook]);
   }, [item.djhBook]);
-
-  useEffect(() => {
-    loadCompletionStatus();
-  }, [item.segments]);
-
-  const loadCompletionStatus = async () => {
-    const completionStatus: Record<string, boolean> = {};
-    
-    for (const segmentId of item.segments) {
-      const status = await getSegmentCompletionStatus(segmentId);
-      completionStatus[segmentId] = status.isCompleted;
-    }
-    
-    setCompletedSegments(completionStatus);
-  };
 
   const actualSegments = item.segments.filter(seg => !seg.startsWith('I'));
   const totalSegments = actualSegments.length;

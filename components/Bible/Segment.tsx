@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react"; // Ensure useEffect is imported
-import { View, Text, FlatList, Pressable, TouchableOpacity, Modal, StyleSheet, useWindowDimensions, Platform } from "react-native";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"; // Ensure useEffect is imported
+import { View, Text, FlatList, Pressable, TouchableOpacity, Modal, StyleSheet, useWindowDimensions, Platform, ScrollView } from "react-native";
 import { BlurView } from "expo-blur";
 import BibleBlockComponent from './BibleBlock';
 import { BibleBlock, SegmentType } from "@/types";
@@ -13,8 +13,8 @@ import SegmentTitle from "./SegmentTitle";
 import EmojiPicker from "../EmojiPicker";
 import { addEmoji } from "@/api/sqlite";
 import { useAppContext } from "@/context/GlobalContext";
-import CelebrationPopup from "../CelebrationPopup";
-import { useRouter } from "expo-router";
+import CelebrationPopup from "./CelebrationPopup";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import CheckCircle from "@/components/CheckCircle";
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { memo } from "react";
@@ -64,6 +64,8 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   } = useAppContext();
 
   const { colors } = useAppSettings();
+
+  const { scrollReset } = useLocalSearchParams();
 
   // Add null checks for segmentData
   if (!segmentData || !segmentData.id) {
@@ -475,74 +477,98 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     );
   }, [content, shouldBlockGlow]);
 
+  const flatListRef = useRef<FlatList>(null);
+
+  // Force scroll to top whenever the segment changes
+  useEffect(() => {
+    // Immediate scroll
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+    
+    // Double-check after a brief moment to ensure content is rendered
+    const timer = setTimeout(() => {
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+      if (Platform.OS === 'web') {
+        window.scrollTo(0, 0);
+      }
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [segmentData.id]);
+
   return (
     <View style={styles.container}>
-      <SegmentTitle segmentId={segID} />
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 10,
-        paddingVertical: isIPad ? 5 : 5,
-        width: '100%',
-        height: isIPad ? 120 : 100,
-      }}>
-        {/* Chart Section */}
-        <View
-          style={{
-            flex: 1,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            height: "100%",
-          }}
-        >
-          <View style={styles.chartSection}>
-            <PieChart 
-              colorData={colorData}
-              size={isIPad ? Math.min(screenWidth * 0.15, 120) : 80}
-            />
-          </View>
-          <View style={styles.readerSection}>
-            <View style={styles.readerContainer}>
-              <Text style={styles.readerText}>
-                Select your reading role:
-              </Text>
-              
-              <View style={styles.iconContainer}>
-                {readers.map((readerColor, index) => {
-                  const colors = getColors(readerColor);
-                  const position = readersByColor[readerColor].indexOf(index);
-                  const isActive = selectedReaderPosition?.color === readerColor && 
-                                  selectedReaderPosition?.position === position;
-                  
-                  return (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() => handleReaderRoleSelect(readerColor, position)}
-                    >
-                      <MaterialIcons
-                        name={isActive ? "mark-chat-read" : "chat-bubble"}
-                        size={30}
-                        color={readerColor === "black" ? "grey" : isActive ? colors.dark : colors.light}
-                      />
-                    </TouchableOpacity>
-                  );
-                })}
+      <FlatList
+        ref={flatListRef}
+        data={content}
+        ListHeaderComponent={() => (
+          <>
+            <SegmentTitle segmentId={segID} />
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 10,
+              paddingVertical: isIPad ? 5 : 5,
+              width: '100%',
+              height: isIPad ? 120 : 100,
+            }}>
+              {/* Chart Section */}
+              <View style={{
+                flex: 1,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                height: "100%",
+              }}>
+                <View style={styles.chartSection}>
+                  <PieChart 
+                    colorData={colorData}
+                    size={isIPad ? Math.min(screenWidth * 0.15, 120) : 80}
+                  />
+                </View>
+                <View style={styles.readerSection}>
+                  <View style={styles.readerContainer}>
+                    <Text style={styles.readerText}>
+                      Select your reading role:
+                    </Text>
+                    <View style={styles.iconContainer}>
+                      {readers.map((readerColor, index) => {
+                        const colors = getColors(readerColor);
+                        const position = readersByColor[readerColor].indexOf(index);
+                        const isActive = selectedReaderPosition?.color === readerColor && 
+                                      selectedReaderPosition?.position === position;
+                        
+                        return (
+                          <TouchableOpacity
+                            key={index}
+                            onPress={() => handleReaderRoleSelect(readerColor, position)}
+                          >
+                            <MaterialIcons
+                              name={isActive ? "mark-chat-read" : "chat-bubble"}
+                              size={30}
+                              color={readerColor === "black" ? "grey" : isActive ? colors.dark : colors.light}
+                            />
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+                </View>
               </View>
             </View>
-          </View>
-        </View>
-      </View>
-      <View style={styles.divider} />
-
-      <FlatList
-        data={content}
+            <View style={styles.divider} />
+          </>
+        )}
         renderItem={renderItem}
         keyExtractor={(item, index) => `${item.source.sourceName}-${index}`}
         initialNumToRender={10}
         maxToRenderPerBatch={10}
         windowSize={5}
+        onLayout={() => {
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+        }}
+        contentContainerStyle={{ flexGrow: 1 }}
+        automaticallyAdjustKeyboardInsets={true}
       />
       <Modal
         visible={isModalVisible}
