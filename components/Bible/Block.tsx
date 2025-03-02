@@ -70,7 +70,12 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({ block, bIndex, to
 
   if (toRead) {
     return (
-      <GlowBubble block={block} bIndex={bIndex} hasTail={hasTail} />
+      <GlowBubble 
+        block={block} 
+        bIndex={bIndex} 
+        hasTail={hasTail}
+        isGlowing={toRead}
+      />
     );
   }
 
