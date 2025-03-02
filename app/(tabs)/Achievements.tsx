@@ -88,31 +88,30 @@ const TrophyGrid = ({ trophies, colors }: { trophies: Trophy[], colors: any }) =
   
   // Helper function to render the trophy icon
   const renderTrophyIcon = (trophy: Trophy, isAchieved: boolean) => {
-    // Check if it's a book trophy and has an image
+    // Check if it's a book trophy
     if (trophy.id.startsWith('book_')) {
       const bookCode = trophy.id.replace('book_', '').substring(0, 3);
-      const bookCodeUpper = bookCode.charAt(0).toUpperCase() + bookCode.slice(1);
+      // Convert to proper case to match imageMap keys
+      const bookCodeUpper = bookCode.charAt(0).toUpperCase() + bookCode.slice(1).toLowerCase();
       const imageSource = imageMap[bookCodeUpper];
       
-      if (imageSource) {
-        return (
-          <Image 
-            source={imageSource}
-            style={[
-              { width: 28, height: 28 },
-              isAchieved ? styles.achievedIcon : styles.lockedIcon
-            ]} 
-            resizeMode="contain"
-          />
-        );
-      }
+      return (
+        <Image 
+          source={imageSource}
+          style={[
+            { width: 56, height: 56 },
+            isAchieved ? styles.achievedIcon : styles.lockedIcon
+          ]} 
+          resizeMode="contain"
+        />
+      );
     }
     
-    // Default to Ionicons for non-book trophies or if image not found
+    // Non-book trophies - now same size as book icons
     return (
       <Ionicons 
         name={trophy.icon as any} 
-        size={28} 
+        size={56} // Increased from 28 to 56
         color={isAchieved ? colors.primary : colors.border} 
         style={isAchieved ? styles.achievedIcon : styles.lockedIcon}
       />
@@ -331,19 +330,19 @@ function Achievements() {
       { id: 'book_psa', code: 'Psa', title: 'Psalms' },
       { id: 'book_pro', code: 'Pro', title: 'Proverbs' },
       { id: 'book_ecc', code: 'Ecc', title: 'Ecclesiastes' },
-      { id: 'book_sng', code: 'Sng', title: 'Song of Solomon' },
+      { id: 'book_sos', code: 'SoS', title: 'Song of Solomon' },
       { id: 'book_isa', code: 'Isa', title: 'Isaiah' },
       { id: 'book_jer', code: 'Jer', title: 'Jeremiah' },
       { id: 'book_lam', code: 'Lam', title: 'Lamentations' },
-      { id: 'book_ezk', code: 'Ezk', title: 'Ezekiel' },
+      { id: 'book_ezk', code: 'Eze', title: 'Ezekiel' },
       { id: 'book_dan', code: 'Dan', title: 'Daniel' },
       { id: 'book_hos', code: 'Hos', title: 'Hosea' },
-      { id: 'book_jol', code: 'Jol', title: 'Joel' },
+      { id: 'book_jol', code: 'Joe', title: 'Joel' },
       { id: 'book_amo', code: 'Amo', title: 'Amos' },
       { id: 'book_oba', code: 'Oba', title: 'Obadiah' },
       { id: 'book_jon', code: 'Jon', title: 'Jonah' },
       { id: 'book_mic', code: 'Mic', title: 'Micah' },
-      { id: 'book_nam', code: 'Nam', title: 'Nahum' },
+      { id: 'book_nam', code: 'Nah', title: 'Nahum' },
       { id: 'book_hab', code: 'Hab', title: 'Habakkuk' },
       { id: 'book_zep', code: 'Zep', title: 'Zephaniah' },
       { id: 'book_hag', code: 'Hag', title: 'Haggai' },
@@ -393,7 +392,7 @@ function Achievements() {
       },
       {
         id: 'bible_explorer',
-        title: "Bible Explorer",
+      title: "Bible Explorer",
         description: "Read 10 Bible stories",
         icon: "compass-outline",
         achieved: stats.completedStories >= 10
@@ -407,9 +406,9 @@ function Achievements() {
       },
       {
         id: 'bible_scholar',
-        title: "Bible Scholar",
+      title: "Bible Scholar",
         description: "Read 50 Bible stories",
-        icon: "school-outline",
+      icon: "school-outline",
         achieved: stats.completedStories >= 50
       },
       {
@@ -644,7 +643,7 @@ function Achievements() {
   };
 
   if (isLoading) {
-    return (
+  return (
       <View style={[styles.container, styles.centerContent, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>

@@ -45,7 +45,7 @@ const IndexScreen = () => {
     <View style={styles.container}>
       {/* Placeholder for the background image */}
       <Video
-        source={require("../../assets/images/Welcome-Screen.mp4")}
+        source={require("../../assets/images/Welcome-Screen-3.mp4")}
         style={videoStyle}
         isLooping
         shouldPlay

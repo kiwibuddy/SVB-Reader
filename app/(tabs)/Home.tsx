@@ -255,6 +255,9 @@ const createStyles = (isLargeScreen: boolean, colors: ColorScheme) => StyleSheet
     fontSize: 18,
     fontWeight: '600',
   },
+  gridItemImage: {
+    // Add appropriate styles for the grid item image
+  },
 });
 
 // Add this near other type definitions
@@ -742,16 +745,11 @@ const HomeScreen = () => {
             onPress={() => router.push("/Plan")}
           >
             <ImageBackground
-              source={require("@/assets/images/button1.png")}
+              source={require("@/assets/images/Plans1.png")}
               style={styles.gridItemContent}
+              imageStyle={styles.gridItemImage}
             >
-              <View style={styles.overlay} />
-              <Text style={styles.gridItemTitle}>
-                {t('UI.home.readingPlans')}
-              </Text>
-              <Text style={styles.gridItemSubtitle}>
-                {t('UI.home.plansAvailable', { count: getAvailablePlansCount() })}
-              </Text>
+              {/* Text removed */}
             </ImageBackground>
           </Pressable>
 
@@ -760,16 +758,11 @@ const HomeScreen = () => {
             onPress={() => router.push("/Reading-Challenges")}
           >
             <ImageBackground
-              source={require("@/assets/images/button2.png")}
+              source={require("@/assets/images/Challenges1.png")}
               style={styles.gridItemContent}
+              imageStyle={styles.gridItemImage}
             >
-              <View style={styles.overlay} />
-              <Text style={styles.gridItemTitle}>
-                {t('UI.home.readingChallenges')}
-              </Text>
-              <Text style={styles.gridItemSubtitle}>
-                {t('UI.home.challengesAvailable', { count: getAvailableChallengesCount() })}
-              </Text>
+              {/* Text removed */}
             </ImageBackground>
           </Pressable>
         </View>
