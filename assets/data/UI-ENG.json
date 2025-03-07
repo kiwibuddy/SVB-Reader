@@ -24,9 +24,9 @@
     },
     "home": {
       "readingPlans": "Plans",
-      "plansAvailable": "3 plans available",
+      "plansAvailable": "3 Plans available",
       "readingChallenges": "Challenges",
-      "challengesAvailable": "10 challenges available",
+      "challengesAvailable": "10 Challenges available",
       "heading": "Start your Journey",
       "subheading": "Begin your Bible reading adventure by choosing a reading plan or challenge that fits your goals.",
       "continueReading": "Continue Reading",
@@ -49,9 +49,75 @@
       "completion": "Completion"
     },
     "about": {
-      "title": "About",
-      "description": "SourceView Bible is a revolutionary way to read and understand Scripture.",
-      "version": "Version 1.0.0"
+      "title": "About SourceView Reader",
+      "subtitle": "Reimagining Scripture for Community",
+      "description": "The SourceView Reader transforms Bible study from a solitary activity into a vibrant, shared journey. Building on the revolutionary foundation of the SourceView Bible, we've created an experience specifically designed for groups to discover God's Word together in fresh, meaningful ways.",
+      "legacy": {
+        "title": "The SourceView Bible Legacy",
+        "description": "The SourceView Bible represents a groundbreaking approach to reading scripture—the culmination of over 40,000 hours of meticulous research by a global team of scholars and designers. This innovative format removes traditional barriers to understanding by:",
+        "features": [
+          "Color-coding speakers to instantly reveal dialogue patterns and perspectives",
+          "Removing distracting chapter and verse numbers for a more natural reading experience",
+          "Visually organizing content to highlight the dramatic flow of God's redemptive story"
+        ],
+        "impact": "Already embraced by thousands through its printed editions and web application, the SourceView Bible has transformed how people encounter scripture, rekindling passion for God's Word and deepening spiritual understanding."
+      },
+      "reader": {
+        "title": "SourceView Reader: Designed for Community",
+        "description": "The SourceView Reader app takes this transformative approach to the next level by creating a purpose-built platform for shared biblical discovery. We believe scripture comes alive when experienced in community—just as it was meant to be."
+      },
+      "features": {
+        "title": "Key Features",
+        "sections": {
+          "reading": {
+            "title": "Interactive Group Reading",
+            "description": "The heart of SourceView Reader is its unique group reading experience:",
+            "items": [
+              "Scripture divided into 365 engaging stories",
+              "Four distinct reading roles for group participation",
+              "Color-coded speech bubbles with dynamic glowing highlights",
+              "Immersive reading view that puts the focus on the text"
+            ]
+          },
+          "reflection": {
+            "title": "Meaningful Reflection",
+            "description": "Deepen your engagement with scripture through:",
+            "items": [
+              "Emoji reactions (❤️ Love, 👍 Agree, 🤔 Reflecting, 🙏 Praying) to mark meaningful passages",
+              "Guided discussion questions tailored to each story",
+              "Memory Masterclass feature to help memorize favorite verses",
+              "Powerful search to quickly find and revisit important passages"
+            ]
+          },
+          "journey": {
+            "title": "Motivated Journey",
+            "description": "Stay engaged with your Bible reading through:",
+            "items": [
+              "Reading plans that guide you through scripture in meaningful ways",
+              "Themed challenges to explore specific topics and books",
+              "Achievement system with trophies to celebrate your progress",
+              "Reading statistics to visualize your growing engagement with God's Word"
+            ]
+          },
+          "experience": {
+            "title": "Personalized Experience",
+            "description": "Make the app work for you with:",
+            "items": [
+              "Font size adjustments for comfortable reading",
+              "Light and dark modes for any environment",
+              "Multiple language options including English, French, and German",
+              "Screen orientation controls for your preferred reading position"
+            ]
+          }
+        }
+      },
+      "vision": {
+        "title": "The Vision Behind SourceView Reader",
+        "description": "We designed SourceView Reader because we believe that scripture was meant to be experienced together. In ancient times, communities would gather to hear God's Word read aloud—letters from Paul, stories of Jesus, or the ancient narratives of Israel. By bringing this communal experience into the digital age, we're not creating something new, but returning to something timeless.",
+        "impact": "When four friends open SourceView Reader together, something remarkable happens. The text of scripture transforms from words on a page into a living conversation. The drama of God's story unfolds through different voices. Questions spark insights. Reactions lead to deeper understanding. And in these shared moments, the Bible becomes not just a book to be studied, but a living story to be experienced together.",
+        "cta": "Join thousands of readers who have discovered the power of SourceView. Download the app today and experience scripture as you never have before—in community, in color, and in context."
+      },
+      "footer": "SourceView Reader is proudly built on the foundation of the original SourceView Bible. Learn more about the complete SourceView Bible project at sourceviewbible.com"
     },
     "bibleBlock": {
       "addReaction": "Add Reaction",
