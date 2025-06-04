@@ -68,6 +68,12 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({ block, bIndex, to
     }
   };
 
+  // Helper function to safely get bubble color
+  const getBubbleColor = (color: string | undefined) => {
+    const bubbleKey = color === 'black' ? 'black' : (color || 'default');
+    return colors.bubbles[bubbleKey as keyof typeof colors.bubbles] || colors.bubbles.default;
+  };
+
   if (toRead) {
     return (
       <GlowBubble 
@@ -151,7 +157,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({ block, bIndex, to
         <View
           style={[
             styles.container,
-            { backgroundColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')] }
+            { backgroundColor: getBubbleColor(color) }
           ]}
         >
           {hasTail && (
@@ -159,7 +165,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({ block, bIndex, to
               style={[
                 styles.tail,
                 {
-                  borderBottomColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')],
+                  borderBottomColor: getBubbleColor(color),
                 },
                 tailAlignment,
               ]}

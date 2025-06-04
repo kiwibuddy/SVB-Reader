@@ -208,6 +208,11 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
     backgroundColor: '#FF9800',
     borderRadius: 4,
   },
+  progressFillCompleted: {
+    height: '100%',
+    backgroundColor: '#4CAF50',
+    borderRadius: 4,
+  },
   progressText: {
     fontSize: 12,
     color: colors.secondary,
@@ -348,6 +353,115 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
     textAlign: 'center',
     lineHeight: 20,
   },
+  completedChallengeCard: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 12,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+    opacity: 0.9,
+  },
+  completedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4CAF5020',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  completedBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#4CAF50',
+  },
+  completedChallengeCardCompact: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+    opacity: 0.95,
+  },
+  completedChallengeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  completedChallengeLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  completedChallengeTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  restartButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  restartButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.secondary,
+  },
+  // Horizontal slider styles
+  sliderContainer: {
+    marginBottom: 24,
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 16,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  activeTab: {
+    backgroundColor: colors.card,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.secondary,
+  },
+  activeTabText: {
+    color: colors.text,
+  },
+  sliderContent: {
+    minHeight: 200,
+  },
 });
 
 const ChallengesScreen = () => {
@@ -365,10 +479,12 @@ const ChallengesScreen = () => {
 
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
   const [expandedBookId, setExpandedBookId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const { colors, isDarkMode } = useAppSettings();
   const styles = createStyles(isLargeScreen, colors, isDarkMode);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Helper functions
   const getChallengeSegmentCount = (challengeId: string) => {
@@ -403,10 +519,36 @@ const ChallengesScreen = () => {
       });
   };
 
+  // Helper function to check if challenge is completed
+  const isChallengeCompleted = (challengeId: string) => {
+    const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+    if (!challenge?.segments) return false;
+    
+    const allSegments = Object.values(challenge.segments)
+      .flatMap(book => book?.segments || [])
+      .filter(seg => !seg.startsWith('I'));
+    
+    // Check if all segments are completed
+    return allSegments.every(segId => completedSegments[segId]?.isCompleted);
+  };
+
   const calculateProgress = (challenge: any) => {
     if (!challenge.completedSegments) return 0;
     const totalSegments = getChallengeSegmentCount(challenge.challengeId);
     return Math.round((challenge.completedSegments.length / totalSegments) * 100);
+  };
+
+  // Calculate progress for any challenge based on global completion
+  const calculateGlobalProgress = (challengeId: string) => {
+    const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+    if (!challenge?.segments) return 0;
+    
+    const allSegments = Object.values(challenge.segments)
+      .flatMap(book => book?.segments || [])
+      .filter(seg => !seg.startsWith('I'));
+    
+    const completedCount = allSegments.filter(segId => completedSegments[segId]?.isCompleted).length;
+    return Math.round((completedCount / allSegments.length) * 100);
   };
 
   const getEstimatedDuration = (segmentCount: number) => {
@@ -430,13 +572,17 @@ const ChallengesScreen = () => {
   // Organize challenges
   const organizedChallenges = useMemo(() => {
     const active: Challenge[] = [];
+    const completed: Challenge[] = [];
     const seasonal: Challenge[] = [];
     const topical: Challenge[] = [];
 
     readingPlansData.challenges.forEach(challenge => {
       const isActive = activeChallenges[challenge.id] && !activeChallenges[challenge.id].isPaused;
+      const isCompleted = isChallengeCompleted(challenge.id);
       
-      if (isActive) {
+      if (isCompleted) {
+        completed.push(challenge as Challenge);
+      } else if (isActive) {
         active.push(challenge as Challenge);
       } else {
         // Simple categorization based on title
@@ -453,8 +599,8 @@ const ChallengesScreen = () => {
       }
     });
 
-    return { active, seasonal, topical };
-  }, [activeChallenges]);
+    return { active, completed, seasonal, topical };
+  }, [activeChallenges, completedSegments]);
 
   const handleChallengeAction = async (challengeId: string, action: 'start' | 'continue' | 'pause' | 'resume') => {
     try {
@@ -478,33 +624,62 @@ const ChallengesScreen = () => {
     }
   };
 
-  const renderChallengeCard = (challenge: Challenge, isActive: boolean = false) => {
+  const renderChallengeCard = (challenge: Challenge, isActive: boolean = false, isCompleted: boolean = false) => {
     const activeData = isActive ? activeChallenges[challenge.id] : null;
     const segmentCount = getChallengeSegmentCount(challenge.id);
-    const progress = isActive && activeData ? calculateProgress(activeData) : 0;
+    const progress = isCompleted ? 100 : (isActive && activeData ? calculateProgress(activeData) : calculateGlobalProgress(challenge.id));
     const duration = getEstimatedDuration(segmentCount);
     const isExpanded = selectedChallengeId === challenge.id;
     const books = getChallengeBooksWithProgress(challenge.id);
     const isPaused = activeData?.isPaused || false;
 
+    // Compact design for completed challenges
+    if (isCompleted) {
+      return (
+        <View key={challenge.id} style={styles.completedChallengeCardCompact}>
+          <View style={styles.completedChallengeRow}>
+            <View style={styles.completedChallengeLeft}>
+              <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+              <Text style={styles.completedChallengeTitle}>{challenge.title}</Text>
+            </View>
+            <Pressable
+              style={styles.restartButton}
+              onPress={() => handleChallengeAction(challenge.id, 'start')}
+            >
+              <Ionicons name="refresh" size={14} color="#666" />
+              <Text style={styles.restartButtonText}>Again</Text>
+            </Pressable>
+          </View>
+        </View>
+      );
+    }
+
+    // Use completed card style if challenge is completed
+    const cardStyle = styles.challengeCard;
+    
     return (
-      <View key={challenge.id} style={styles.challengeCard}>
+      <View key={challenge.id} style={cardStyle}>
         <View style={styles.challengeHeader}>
-          <Text style={styles.challengeTitle}>{challenge.title}</Text>
-          <Text style={styles.challengeMeta}>
-            {segmentCount} stories · {duration}
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.challengeTitle}>{challenge.title}</Text>
+            <Text style={styles.challengeMeta}>
+              {segmentCount} stories · {duration}
+            </Text>
+          </View>
         </View>
 
-        {isActive && activeData && (
+        {(isActive || progress > 0) && (
           <View style={styles.progressSection}>
             <View style={styles.progressBar}>
               <View 
-                style={[styles.progressFill, { width: `${progress}%` }]}
+                style={[
+                  styles.progressFill, 
+                  { width: `${progress}%` }
+                ]}
               />
             </View>
             <Text style={styles.progressText}>
-              {progress}% complete · {activeData.completedSegments?.length || 0}/{segmentCount} stories
+              {progress}% complete · {activeData?.completedSegments?.length || 0}/{segmentCount} stories
             </Text>
           </View>
         )}
@@ -573,66 +748,57 @@ const ChallengesScreen = () => {
               
               <View style={styles.booksGrid}>
                 {books.map((book) => (
-                  <Pressable
-                    key={book.key}
-                    style={[
-                      styles.bookChip,
-                      expandedBookId === `${challenge.id}-${book.key}` && styles.bookChipActive,
-                      book.isCompleted && styles.bookChipCompleted,
-                    ]}
-                    onPress={() => {
-                      const bookId = `${challenge.id}-${book.key}`;
-                      setExpandedBookId(expandedBookId === bookId ? null : bookId);
-                    }}
-                  >
-                    <Text style={[
-                      styles.bookChipText,
-                      expandedBookId === `${challenge.id}-${book.key}` && styles.bookChipTextActive,
-                      book.isCompleted && styles.bookChipTextCompleted,
-                    ]}>
-                      {book.name} ({book.completedCount}/{book.totalCount})
-                    </Text>
-                  </Pressable>
+                  <View key={book.key}>
+                    <Pressable
+                      style={[
+                        styles.bookChip,
+                        expandedBookId === `${challenge.id}-${book.key}` && styles.bookChipActive,
+                        book.isCompleted && styles.bookChipCompleted,
+                      ]}
+                      onPress={() => {
+                        const bookId = `${challenge.id}-${book.key}`;
+                        setExpandedBookId(expandedBookId === bookId ? null : bookId);
+                      }}
+                    >
+                      <Text style={[
+                        styles.bookChipText,
+                        expandedBookId === `${challenge.id}-${book.key}` && styles.bookChipTextActive,
+                        book.isCompleted && styles.bookChipTextCompleted,
+                      ]}>
+                        {book.name} ({book.completedCount}/{book.totalCount})
+                      </Text>
+                    </Pressable>
+
+                    {/* Show stories immediately under this book when expanded */}
+                    {expandedBookId === `${challenge.id}-${book.key}` && (
+                      <View style={[styles.storiesGrid, { width: '100%', marginTop: 8 }]}>
+                        {book.segments.map((segmentId: string) => {
+                          const isStoryCompleted = completedSegments[segmentId]?.isCompleted;
+                          const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+                          
+                          return (
+                            <Pressable
+                              key={segmentId}
+                              style={[
+                                styles.storyChip,
+                                isStoryCompleted && styles.storyChipCompleted,
+                              ]}
+                              onPress={() => handleStoryPress(segmentId, challenge.id)}
+                            >
+                              <Text style={[
+                                styles.storyChipText,
+                                isStoryCompleted && styles.storyChipTextCompleted,
+                              ]}>
+                                {segmentData?.title || segmentId}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    )}
+                  </View>
                 ))}
               </View>
-
-              {/* Show stories for expanded book */}
-              {expandedBookId && (
-                (() => {
-                  const [expandedChallengeId, expandedBookKey] = expandedBookId.split('-');
-                  if (expandedChallengeId !== challenge.id) return null;
-                  
-                  const expandedBook = books.find(b => b.key === expandedBookKey);
-                  if (!expandedBook) return null;
-
-                  return (
-                    <View style={styles.storiesGrid}>
-                      {expandedBook.segments.map((segmentId: string) => {
-                        const isCompleted = completedSegments[segmentId]?.isCompleted;
-                        const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
-                        
-                        return (
-                          <Pressable
-                            key={segmentId}
-                            style={[
-                              styles.storyChip,
-                              isCompleted && styles.storyChipCompleted,
-                            ]}
-                            onPress={() => handleStoryPress(segmentId, challenge.id)}
-                          >
-                            <Text style={[
-                              styles.storyChipText,
-                              isCompleted && styles.storyChipTextCompleted,
-                            ]}>
-                              {segmentData?.title || segmentId}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
-                    </View>
-                  );
-                })()
-              )}
             </View>
           </View>
         )}
@@ -650,47 +816,94 @@ const ChallengesScreen = () => {
           </Text>
         </View>
 
-        {organizedChallenges.active.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionIcon}>📖</Text>
-              <Text style={styles.sectionTitle}>Your Active Challenges</Text>
-            </View>
-            {organizedChallenges.active.map(challenge => renderChallengeCard(challenge, true))}
-          </View>
-        )}
-
-        {organizedChallenges.seasonal.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionIcon}>🎄</Text>
-              <Text style={styles.sectionTitle}>Seasonal Challenges</Text>
-            </View>
-            {organizedChallenges.seasonal.map(challenge => renderChallengeCard(challenge, false))}
-          </View>
-        )}
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionIcon}>📚</Text>
-            <Text style={styles.sectionTitle}>Topical Challenges</Text>
-          </View>
-          {organizedChallenges.topical.length > 0 ? (
-            organizedChallenges.topical.map(challenge => renderChallengeCard(challenge, false))
-          ) : (
-            <View style={styles.emptyState}>
-              <Ionicons 
-                name="flag-outline" 
-                size={48} 
-                color={colors.secondary} 
-                style={styles.emptyStateIcon}
-              />
-              <Text style={styles.emptyStateTitle}>No Challenges Available</Text>
-              <Text style={styles.emptyStateText}>
-                Check back later for new reading challenges to enhance your Bible study journey.
+        {/* Horizontal Slider for Active/Completed */}
+        <View style={styles.sliderContainer}>
+          <View style={styles.tabsContainer}>
+            <Pressable
+              style={[styles.tab, activeTab === 'active' && styles.activeTab]}
+              onPress={() => setActiveTab('active')}
+            >
+              <Text style={[styles.tabText, activeTab === 'active' && styles.activeTabText]}>
+                Active ({organizedChallenges.active.length + organizedChallenges.seasonal.length + organizedChallenges.topical.length})
               </Text>
-            </View>
-          )}
+            </Pressable>
+            <Pressable
+              style={[styles.tab, activeTab === 'completed' && styles.activeTab]}
+              onPress={() => setActiveTab('completed')}
+            >
+              <Text style={[styles.tabText, activeTab === 'completed' && styles.activeTabText]}>
+                Completed ({organizedChallenges.completed.length})
+              </Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.sliderContent}>
+            {activeTab === 'active' ? (
+              <>
+                {organizedChallenges.active.length > 0 && (
+                  <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                      <Text style={styles.sectionIcon}>📖</Text>
+                      <Text style={styles.sectionTitle}>Your Active Challenges</Text>
+                    </View>
+                    {organizedChallenges.active.map(challenge => renderChallengeCard(challenge, true, false))}
+                  </View>
+                )}
+
+                {organizedChallenges.seasonal.length > 0 && (
+                  <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                      <Text style={styles.sectionIcon}>🎄</Text>
+                      <Text style={styles.sectionTitle}>Seasonal Challenges</Text>
+                    </View>
+                    {organizedChallenges.seasonal.map(challenge => renderChallengeCard(challenge, false, false))}
+                  </View>
+                )}
+
+                <View style={styles.section}>
+                  <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionIcon}>📚</Text>
+                    <Text style={styles.sectionTitle}>Topical Challenges</Text>
+                  </View>
+                  {organizedChallenges.topical.length > 0 ? (
+                    organizedChallenges.topical.map(challenge => renderChallengeCard(challenge, false, false))
+                  ) : (
+                    <View style={styles.emptyState}>
+                      <Ionicons 
+                        name="flag-outline" 
+                        size={48} 
+                        color={colors.secondary} 
+                        style={styles.emptyStateIcon}
+                      />
+                      <Text style={styles.emptyStateTitle}>No Challenges Available</Text>
+                      <Text style={styles.emptyStateText}>
+                        Check back later for new reading challenges to enhance your Bible study journey.
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </>
+            ) : (
+              <View style={styles.section}>
+                {organizedChallenges.completed.length > 0 ? (
+                  organizedChallenges.completed.map(challenge => renderChallengeCard(challenge, false, true))
+                ) : (
+                  <View style={styles.emptyState}>
+                    <Ionicons 
+                      name="checkmark-circle-outline" 
+                      size={48} 
+                      color={colors.secondary} 
+                      style={styles.emptyStateIcon}
+                    />
+                    <Text style={styles.emptyStateTitle}>No Completed Challenges</Text>
+                    <Text style={styles.emptyStateText}>
+                      Complete some challenges to see them here! Start with the challenges in the Active tab.
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>

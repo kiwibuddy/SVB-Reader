@@ -27,6 +27,8 @@ import { useAppSettings } from '@/context/AppSettingsContext';
 import { type ColorScheme } from '@/context/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { LinearGradient } from 'expo-linear-gradient';
+import StreakCounter from '@/components/gamification/StreakCounter';
+import CelebrationModal from '@/components/gamification/CelebrationModal';
 
 const SegmentTitles = require("@/assets/data/SegmentTitles.json") as { [key: string]: SegmentTitle };
 
@@ -196,9 +198,9 @@ const createStyles = (isLargeScreen: boolean, colors: ColorScheme) => StyleSheet
     letterSpacing: -0.5,
   },
   welcomeText: {
+    color: colors.textSecondary,
     fontSize: 16,
-    color: colors.secondary,
-    lineHeight: 24,
+    lineHeight: 22,
     fontWeight: "400",
   },
   buttonContainer: {
@@ -1346,6 +1348,18 @@ const HomeScreen = () => {
   const { t } = useTranslation();
   const styles = createStyles(width >= 768, colors);
   const [currentStreak, setCurrentStreak] = useState(0);
+  const [celebrationModal, setCelebrationModal] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    type: 'plan' | 'challenge' | 'streak' | 'milestone' | 'book' | 'story';
+    stats?: any;
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'streak',
+  });
 
   // Move localStyles creation AFTER the hooks are called
   const localStyles = StyleSheet.create({
@@ -1361,8 +1375,8 @@ const HomeScreen = () => {
       marginBottom: 8,
     },
     welcomeText: {
-      color: colors.secondary,
-      fontSize: sizes.body,
+      color: colors.textSecondary,
+      fontSize: 16,
       lineHeight: 22,
       fontWeight: "400",
     },
@@ -1503,6 +1517,9 @@ const HomeScreen = () => {
     },
     activeReadingSection: {
       marginBottom: 20, // Consistent spacing
+    },
+    streakSection: {
+      marginBottom: 20,
     },
   });
 
@@ -1832,14 +1849,17 @@ const HomeScreen = () => {
           />
         </View>
 
+        <View style={localStyles.streakSection}>
+          <StreakCounter
+            currentStreak={currentStreak}
+            bestStreak={15} // You can get this from context or API
+            lastReadDate={new Date().toISOString().split('T')[0]} // Today for demo
+            onPress={() => router.push('/Achievements')}
+            compact={false}
+          />
+        </View>
+
         <View style={localStyles.statsContainer}>
-          <View style={localStyles.statItem}>
-            <View style={[localStyles.statIcon, { backgroundColor: 'rgba(255, 193, 7, 0.15)' }]}>
-              <Ionicons name="flame-outline" size={18} color="#FF9800" />
-            </View>
-            <Text style={localStyles.statNumber}>{currentStreak}</Text>
-            <Text style={localStyles.statLabel}>Day Streak</Text>
-          </View>
           <View style={localStyles.statItem}>
             <View style={[localStyles.statIcon, { backgroundColor: 'rgba(76, 175, 80, 0.15)' }]}>
               <Ionicons name="book-outline" size={18} color="#4CAF50" />
@@ -1863,6 +1883,14 @@ const HomeScreen = () => {
         {/* Bottom spacing for tab bar */}
         <View style={{ height: 60 }} />
       </ScrollView>
+      <CelebrationModal
+        visible={celebrationModal.visible}
+        onClose={() => setCelebrationModal(prev => ({ ...prev, visible: false }))}
+        title={celebrationModal.title}
+        message={celebrationModal.message}
+        type={celebrationModal.type}
+        stats={celebrationModal.stats}
+      />
     </View>
   );
 };

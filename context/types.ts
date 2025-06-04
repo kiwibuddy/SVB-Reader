@@ -1,6 +1,8 @@
 export interface ColorScheme {
   background: string;
   text: string;
+  textSecondary: string;
+  textDisabled: string;
   primary: string;
   secondary: string;
   bubbles: {

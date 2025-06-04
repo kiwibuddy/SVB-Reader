@@ -21,6 +21,8 @@ import { StatusIndicator } from '@/components/StatusIndicator';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
+import CelebrationModal from '@/components/gamification/CelebrationModal';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface BookSegments {
   segments: string[];
@@ -117,9 +119,55 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
     elevation: 2,
     borderWidth: 1,
     borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+    overflow: 'hidden',
+  },
+  completedPlanCard: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 12,
+    shadowColor: '#4CAF50',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+    borderWidth: 2,
+    borderColor: '#4CAF5040',
+    overflow: 'hidden',
+  },
+  completedPlanGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.05,
   },
   planHeader: {
     marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  planHeaderContent: {
+    flex: 1,
+    marginRight: 12,
+  },
+  completedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4CAF5020',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  completedBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#4CAF50',
+    marginLeft: 4,
   },
   planTitle: {
     fontSize: 18,
@@ -169,6 +217,15 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
   },
   secondaryButton: {
     backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+  },
+  restartButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   buttonText: {
     fontSize: 14,
@@ -277,6 +334,78 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
     textAlign: 'center',
     lineHeight: 20,
   },
+  completedPlanCardCompact: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+    opacity: 0.95,
+  },
+  completedPlanRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  completedPlanLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  completedPlanTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.text,
+  },
+  restartButtonText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.secondary,
+  },
+  // Horizontal slider styles
+  sliderContainer: {
+    marginBottom: 24,
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 16,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  activeTab: {
+    backgroundColor: colors.card,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.secondary,
+  },
+  activeTabText: {
+    color: colors.text,
+  },
+  sliderContent: {
+    minHeight: 200,
+  },
 });
 
 const PlanScreen = () => {
@@ -294,10 +423,24 @@ const PlanScreen = () => {
 
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [expandedBookId, setExpandedBookId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const { colors, isDarkMode } = useAppSettings();
   const styles = createStyles(isLargeScreen, colors, isDarkMode);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [celebrationModal, setCelebrationModal] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    type: 'plan' | 'challenge' | 'streak' | 'milestone' | 'book' | 'story';
+    stats?: any;
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'plan',
+  });
 
   // Filter and organize plans
   const availablePlans = useMemo(() => {
@@ -332,12 +475,51 @@ const PlanScreen = () => {
     return weeks === 1 ? '1 week' : `${weeks} weeks`;
   };
 
-  const handlePlanAction = async (planId: string, action: 'start' | 'continue' | 'pause' | 'resume' | 'switch') => {
+  const isPlanCompleted = (planId: string) => {
+    // For now, return false since we don't have completed plans tracking
+    return false;
+  };
+
+  const getPlanBooksWithProgress = (planId: string) => {
+    const plan = readingPlansData.plans.find(p => p.id === planId);
+    if (!plan?.segments) return [];
+    
+    // Get plan-specific completion data
+    const planCompletion = (activePlan?.planId === planId ? activePlan.completedSegments : []) || [];
+    
+    return Object.entries(plan.segments)
+      .filter(([_, bookData]) => bookData?.segments?.length > 0)
+      .map(([key, bookData]) => {
+        const segments = bookData?.segments?.filter((s: string) => !s.startsWith('I')) || [];
+        const completedCount = segments.filter((segId: string) => planCompletion.includes(segId)).length;
+        const isCompleted = completedCount === segments.length && segments.length > 0;
+        
+        return {
+          key,
+          name: Books[key as keyof typeof Books]?.bookName || key,
+          segments,
+          completedCount,
+          totalCount: segments.length,
+          isCompleted
+        };
+      });
+  };
+
+  const handlePlanAction = async (planId: string, action: 'start' | 'continue' | 'pause' | 'resume' | 'switch' | 'restart') => {
     try {
       switch (action) {
         case 'start':
           await startPlan(planId);
-          router.push('/Plan');
+          setCelebrationModal({
+            visible: true,
+            title: 'Plan Started!',
+            message: 'Your reading journey begins now. Stay consistent and enjoy discovering God\'s word!',
+            type: 'plan',
+            stats: {
+              storiesRead: 0,
+              totalProgress: 0,
+            }
+          });
           break;
         case 'continue':
           // Navigate to next reading
@@ -347,6 +529,28 @@ const PlanScreen = () => {
           break;
         case 'resume':
           await resumePlan();
+          break;
+        case 'restart':
+          Alert.alert(
+            'Restart Reading Plan',
+            'Are you sure you want to restart this plan? Your current progress will be reset.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { 
+                text: 'Restart', 
+                style: 'destructive',
+                onPress: async () => {
+                  // TODO: Implement restart functionality when available
+                  setCelebrationModal({
+                    visible: true,
+                    title: 'Plan Restarted!',
+                    message: 'Fresh start! Ready to dive back into God\'s word with renewed energy.',
+                    type: 'plan',
+                  });
+                }
+              }
+            ]
+          );
           break;
         case 'switch':
           Alert.alert(
@@ -363,28 +567,6 @@ const PlanScreen = () => {
       console.error('Plan action error:', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
     }
-  };
-
-  const getPlanBooksWithProgress = (planId: string) => {
-    const plan = readingPlansData.plans.find(p => p.id === planId);
-    if (!plan?.segments) return [];
-    
-    return Object.entries(plan.segments)
-      .filter(([_, bookData]) => bookData?.segments?.length > 0)
-      .map(([key, bookData]) => {
-        const segments = bookData?.segments?.filter((s: string) => !s.startsWith('I')) || [];
-        const completedCount = segments.filter((segId: string) => completedSegments[segId]?.isCompleted).length;
-        const isCompleted = completedCount === segments.length && segments.length > 0;
-        
-        return {
-          key,
-          name: Books[key as keyof typeof Books]?.bookName || key,
-          segments,
-          completedCount,
-          totalCount: segments.length,
-          isCompleted
-        };
-      });
   };
 
   const handleStoryPress = async (segmentId: string, planId: string) => {
@@ -411,14 +593,56 @@ const PlanScreen = () => {
     const isExpanded = selectedPlanId === planId;
     const books = getPlanBooksWithProgress(planId);
     const isPaused = plan?.isPaused || false;
+    const isCompleted = isPlanCompleted(planId);
+
+    // Check if plan was just completed
+    useEffect(() => {
+      if (isActive && progress === 100 && !isCompleted) {
+        setCelebrationModal({
+          visible: true,
+          title: 'Plan Completed! 🎉',
+          message: 'Congratulations! You\'ve completed your reading plan. What an amazing achievement!',
+          type: 'plan',
+          stats: {
+            storiesRead: plan.completedSegments?.length || 0,
+            totalProgress: 100,
+          }
+        });
+      }
+    }, [progress, isCompleted]);
+
+    // Compact design for completed plans
+    if (isCompleted) {
+      return (
+        <View key={planId} style={styles.completedPlanCardCompact}>
+          <View style={styles.completedPlanRow}>
+            <View style={styles.completedPlanLeft}>
+              <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+              <Text style={styles.completedPlanTitle}>{planData.title}</Text>
+            </View>
+            <Pressable
+              style={styles.restartButton}
+              onPress={() => handlePlanAction(planId, 'restart')}
+            >
+              <Ionicons name="refresh" size={14} color={colors.secondary} />
+              <Text style={styles.restartButtonText}>Again</Text>
+            </Pressable>
+          </View>
+        </View>
+      );
+    }
+
+    const cardStyle = styles.planCard;
 
     return (
-      <View key={planId} style={styles.planCard}>
+      <View key={planId} style={cardStyle}>
         <View style={styles.planHeader}>
-          <Text style={styles.planTitle}>{planData.title}</Text>
-          <Text style={styles.planMeta}>
-            {segmentCount} stories · {duration}
-          </Text>
+          <View style={styles.planHeaderContent}>
+            <Text style={styles.planTitle}>{planData.title}</Text>
+            <Text style={styles.planMeta}>
+              {segmentCount} stories · {duration}
+            </Text>
+          </View>
         </View>
 
         {isActive && (
@@ -504,66 +728,59 @@ const PlanScreen = () => {
               
               <View style={styles.booksGrid}>
                 {books.map((book) => (
-                  <Pressable
-                    key={book.key}
-                    style={[
-                      styles.bookChip,
-                      expandedBookId === `${planId}-${book.key}` && styles.bookChipActive,
-                      book.isCompleted && styles.bookChipCompleted,
-                    ]}
-                    onPress={() => {
-                      const bookId = `${planId}-${book.key}`;
-                      setExpandedBookId(expandedBookId === bookId ? null : bookId);
-                    }}
-                  >
-                    <Text style={[
-                      styles.bookChipText,
-                      expandedBookId === `${planId}-${book.key}` && styles.bookChipTextActive,
-                      book.isCompleted && styles.bookChipTextCompleted,
-                    ]}>
-                      {book.name} ({book.completedCount}/{book.totalCount})
-                    </Text>
-                  </Pressable>
+                  <View key={book.key}>
+                    <Pressable
+                      style={[
+                        styles.bookChip,
+                        expandedBookId === `${planId}-${book.key}` && styles.bookChipActive,
+                        book.isCompleted && styles.bookChipCompleted,
+                      ]}
+                      onPress={() => {
+                        const bookId = `${planId}-${book.key}`;
+                        setExpandedBookId(expandedBookId === bookId ? null : bookId);
+                      }}
+                    >
+                      <Text style={[
+                        styles.bookChipText,
+                        expandedBookId === `${planId}-${book.key}` && styles.bookChipTextActive,
+                        book.isCompleted && styles.bookChipTextCompleted,
+                      ]}>
+                        {book.name} ({book.completedCount}/{book.totalCount})
+                      </Text>
+                    </Pressable>
+
+                    {/* Show stories immediately under this book when expanded */}
+                    {expandedBookId === `${planId}-${book.key}` && (
+                      <View style={[styles.storiesGrid, { width: '100%', marginTop: 8 }]}>
+                        {book.segments.map((segmentId: string) => {
+                          // Get plan-specific completion data with null safety
+                          const planCompletion = (activePlan && activePlan.planId === planId ? activePlan.completedSegments : []) || [];
+                          const isCompleted = planCompletion.includes(segmentId);
+                          const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+                          
+                          return (
+                            <Pressable
+                              key={segmentId}
+                              style={[
+                                styles.storyChip,
+                                isCompleted && styles.storyChipCompleted,
+                              ]}
+                              onPress={() => handleStoryPress(segmentId, planId)}
+                            >
+                              <Text style={[
+                                styles.storyChipText,
+                                isCompleted && styles.storyChipTextCompleted,
+                              ]}>
+                                {segmentData?.title || segmentId}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    )}
+                  </View>
                 ))}
               </View>
-
-              {/* Show stories for expanded book */}
-              {expandedBookId && (
-                (() => {
-                  const [expandedPlanId, expandedBookKey] = expandedBookId.split('-');
-                  if (expandedPlanId !== planId) return null;
-                  
-                  const expandedBook = books.find(b => b.key === expandedBookKey);
-                  if (!expandedBook) return null;
-
-                  return (
-                    <View style={styles.storiesGrid}>
-                      {expandedBook.segments.map((segmentId: string) => {
-                        const isCompleted = completedSegments[segmentId]?.isCompleted;
-                        const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
-                        
-                        return (
-                          <Pressable
-                            key={segmentId}
-                            style={[
-                              styles.storyChip,
-                              isCompleted && styles.storyChipCompleted,
-                            ]}
-                            onPress={() => handleStoryPress(segmentId, planId)}
-                          >
-                            <Text style={[
-                              styles.storyChipText,
-                              isCompleted && styles.storyChipTextCompleted,
-                            ]}>
-                              {segmentData?.title || segmentId}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
-                    </View>
-                  );
-                })()
-              )}
             </View>
           </View>
         )}
@@ -581,33 +798,89 @@ const PlanScreen = () => {
           </Text>
         </View>
 
-        {activePlans.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Your Active Plan</Text>
-            {activePlans.map(plan => renderPlanCard(plan, true))}
-          </View>
-        )}
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Available Plans</Text>
-          {availablePlans.length > 0 ? (
-            availablePlans.map(plan => renderPlanCard(plan, false))
-          ) : (
-            <View style={styles.emptyState}>
-              <Ionicons 
-                name="book-outline" 
-                size={48} 
-                color={colors.secondary} 
-                style={styles.emptyStateIcon}
-              />
-              <Text style={styles.emptyStateTitle}>No Plans Available</Text>
-              <Text style={styles.emptyStateText}>
-                Check back later for new reading plans to enhance your Bible study journey.
+        {/* Horizontal Slider for Available/Completed */}
+        <View style={styles.sliderContainer}>
+          <View style={styles.tabsContainer}>
+            <Pressable
+              style={[styles.tab, activeTab === 'active' && styles.activeTab]}
+              onPress={() => setActiveTab('active')}
+            >
+              <Text style={[styles.tabText, activeTab === 'active' && styles.activeTabText]}>
+                Available ({activePlans.length + availablePlans.filter(plan => !isPlanCompleted(plan.id) && (!activePlan || activePlan.planId !== plan.id)).length})
               </Text>
-            </View>
-          )}
+            </Pressable>
+            <Pressable
+              style={[styles.tab, activeTab === 'completed' && styles.activeTab]}
+              onPress={() => setActiveTab('completed')}
+            >
+              <Text style={[styles.tabText, activeTab === 'completed' && styles.activeTabText]}>
+                Completed (0)
+              </Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.sliderContent}>
+            {activeTab === 'active' ? (
+              <>
+                {activePlans.length > 0 && (
+                  <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Your Active Plan</Text>
+                    {activePlans.map(plan => renderPlanCard(plan, true))}
+                  </View>
+                )}
+
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Available Plans</Text>
+                  {availablePlans
+                    .filter(plan => !isPlanCompleted(plan.id) && (!activePlan || activePlan.planId !== plan.id))
+                    .length > 0 ? (
+                    availablePlans
+                      .filter(plan => !isPlanCompleted(plan.id) && (!activePlan || activePlan.planId !== plan.id))
+                      .map(plan => renderPlanCard(plan, false))
+                  ) : (
+                    <View style={styles.emptyState}>
+                      <Ionicons 
+                        name="book-outline" 
+                        size={48} 
+                        color={colors.secondary} 
+                        style={styles.emptyStateIcon}
+                      />
+                      <Text style={styles.emptyStateTitle}>All Plans Active!</Text>
+                      <Text style={styles.emptyStateText}>
+                        You have an active plan running. Complete or pause it to start a new one.
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </>
+            ) : (
+              <View style={styles.section}>
+                <View style={styles.emptyState}>
+                  <Ionicons 
+                    name="checkmark-circle-outline" 
+                    size={48} 
+                    color={colors.secondary} 
+                    style={styles.emptyStateIcon}
+                  />
+                  <Text style={styles.emptyStateTitle}>No Completed Plans</Text>
+                  <Text style={styles.emptyStateText}>
+                    Complete a reading plan to see it here! Start with one of the available plans in the Available tab.
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
         </View>
       </ScrollView>
+
+      <CelebrationModal
+        visible={celebrationModal.visible}
+        onClose={() => setCelebrationModal(prev => ({ ...prev, visible: false }))}
+        title={celebrationModal.title}
+        message={celebrationModal.message}
+        type={celebrationModal.type}
+        stats={celebrationModal.stats}
+      />
     </SafeAreaView>
   );
 };
