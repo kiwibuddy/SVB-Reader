@@ -70,36 +70,72 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   },
   filterContainer: {
     flexDirection: 'row',
-    gap: 8,
-    marginVertical: 8,
+    marginVertical: 12,
     alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  filterScrollContent: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingRight: 8,
   },
   filterButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: '#F5F5F5',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: colors.isDark ? colors.card : '#E8E8E8', // Darker shade only for light mode
     flexDirection: 'row',
     alignItems: 'center',
+    marginRight: 8,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    elevation: 4,
   },
   filterButtonActive: {
     backgroundColor: '#FF6B00',
   },
   filterText: {
     fontSize: 14,
-    color: '#666',
+    color: colors.text,
     fontWeight: '500',
   },
   filterTextActive: {
     color: '#FFF',
+    fontWeight: '600',
+  },
+  sortIcon: {
+    marginLeft: 4,
+  },
+  searchButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.card,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  searchButtonActive: {
+    backgroundColor: '#FF6B00',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    marginTop: 8,
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   searchInputIcon: {
     marginRight: 8,
@@ -108,6 +144,10 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
+    color: colors.text,
+  },
+  clearButton: {
+    padding: 4,
   },
   searchBar: {
     backgroundColor: colors.card,
@@ -234,63 +274,101 @@ const Navigation = () => {
           </Text>
         </View>
 
-        {/* Filter and Search Container */}
-        <View style={styles.filterContainer}>
-          <TouchableOpacity 
-            style={[styles.filterButton, filter === 'all' && styles.filterButtonActive]}
-            onPress={() => handleFilterPress('all')}
-          >
-            <Text style={[styles.filterText, filter === 'all' && styles.filterTextActive]}>
-              All {filter === 'all' && (isAscending ? ' ↓' : ' ↑')}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.filterButton, filter === 'ot' && styles.filterButtonActive]}
-            onPress={() => handleFilterPress('ot')}
-          >
-            <Text style={[styles.filterText, filter === 'ot' && styles.filterTextActive]}>
-              Old Testament {filter === 'ot' && (isAscending ? ' ↓' : ' ↑')}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.filterButton, filter === 'nt' && styles.filterButtonActive]}
-            onPress={() => handleFilterPress('nt')}
-          >
-            <Text style={[styles.filterText, filter === 'nt' && styles.filterTextActive]}>
-              New Testament {filter === 'nt' && (isAscending ? ' ↓' : ' ↑')}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.filterButton, showSearch && styles.filterButtonActive]}
-            onPress={handleSearchToggle}
-          >
-            <Ionicons 
-              name="search" 
-              size={20} 
-              color={showSearch ? '#FFF' : '#666'} 
-            />
-          </TouchableOpacity>
-        </View>
+      {/* Filter and Search Container */}
+<View style={styles.filterContainer}>
+  <ScrollView 
+    horizontal 
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={styles.filterScrollContent}
+  >
+    <TouchableOpacity 
+      style={[styles.filterButton, filter === 'all' && styles.filterButtonActive]}
+      onPress={() => handleFilterPress('all')}
+    >
+      <Text style={[styles.filterText, filter === 'all' && styles.filterTextActive]}>
+        All
+      </Text>
+      {filter === 'all' && (
+        <Ionicons 
+          name={isAscending ? "chevron-down" : "chevron-up"} 
+          size={16} 
+          color="#FFF" 
+          style={styles.sortIcon}
+        />
+      )}
+    </TouchableOpacity>
+    <TouchableOpacity 
+      style={[styles.filterButton, filter === 'ot' && styles.filterButtonActive]}
+      onPress={() => handleFilterPress('ot')}
+    >
+      <Text style={[styles.filterText, filter === 'ot' && styles.filterTextActive]}>
+        Old Testament
+      </Text>
+      {filter === 'ot' && (
+        <Ionicons 
+          name={isAscending ? "chevron-down" : "chevron-up"} 
+          size={16} 
+          color="#FFF" 
+          style={styles.sortIcon}
+        />
+      )}
+    </TouchableOpacity>
+    <TouchableOpacity 
+      style={[styles.filterButton, filter === 'nt' && styles.filterButtonActive]}
+      onPress={() => handleFilterPress('nt')}
+    >
+      <Text style={[styles.filterText, filter === 'nt' && styles.filterTextActive]}>
+        New Testament
+      </Text>
+      {filter === 'nt' && (
+        <Ionicons 
+          name={isAscending ? "chevron-down" : "chevron-up"} 
+          size={16} 
+          color="#FFF" 
+          style={styles.sortIcon}
+        />
+      )}
+    </TouchableOpacity>
+  </ScrollView>
+  <TouchableOpacity 
+    style={[styles.searchButton, showSearch && styles.searchButtonActive]}
+    onPress={handleSearchToggle}
+  >
+    <Ionicons 
+      name={showSearch ? "close" : "search"} 
+      size={20} 
+      color={showSearch ? '#FFF' : colors.text} 
+    />
+  </TouchableOpacity>
+</View>
 
-        {/* Search Bar - Only show when search is active */}
-        {showSearch && (
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color="#666" style={styles.searchInputIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search books..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoFocus
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={handleClearSearch}>
-                <Ionicons name="close-circle" size={20} color="#666" />
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-
+{/* Search Bar - Only show when search is active */}
+{showSearch && (
+  <View style={styles.searchContainer}>
+    <Ionicons 
+      name="search" 
+      size={20} 
+      color={colors.secondary} 
+      style={styles.searchInputIcon} 
+    />
+    <TextInput
+      style={[styles.searchInput, { color: colors.text }]}
+      placeholder="Search books..."
+      placeholderTextColor={colors.secondary}
+      value={searchQuery}
+      onChangeText={setSearchQuery}
+      autoFocus
+    />
+    {searchQuery.length > 0 && (
+      <TouchableOpacity 
+        onPress={handleClearSearch}
+        style={styles.clearButton}
+      >
+        <Ionicons name="close-circle" size={20} color={colors.secondary} />
+      </TouchableOpacity>
+    )}
+  </View>
+)}
         <FlatList
           data={filteredData}
           renderItem={({ item }) => {

@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React from 'react';
+import { useState, useMemo, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,20 +8,18 @@ import {
   StyleSheet,
   Alert,
   FlatList,
-  Image,
   useWindowDimensions,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
-import Accordion, { AccordionItem, accordionColor } from "@/components/navigation/NavBook";
+import Accordion, { accordionColor } from "@/components/navigation/NavBook";
 import Books from "@/assets/data/BookChapterList.json";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useAppContext } from "@/context/GlobalContext";
 import { StatusIndicator } from '@/components/StatusIndicator';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
-import { Feather } from '@expo/vector-icons';
-import { markSegmentComplete, getSegmentCompletionStatus, unlockAchievement } from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
 
 interface BookSegments {
@@ -43,477 +42,571 @@ interface Plan {
   };
 }
 
+// Fix the interface for plan progress to match the actual data structure
+interface PlanProgressData {
+  completedSegments: string[];
+  isCompleted: boolean;
+  isPaused: boolean;
+}
+
 const PLAN_STYLES = {
   "NT100Days": {
-    color: "#4df469"
+    color: "#4df469",
+    icon: "book-reader"
   },
   "SchoolYear2": {
-    color: "#694df4"
+    color: "#694df4",
+    icon: "graduation-cap"
   },
   "Bible1Year": {
-    color: "#f44d69"
+    color: "#f44d69",
+    icon: "calendar-alt"
   },
   "SchoolYear3": {
-    color: "#4d9ff4"
+    color: "#4d9ff4",
+    icon: "school"
   },
   "SchoolYear1": {
-    color: "#f4b64d"
+    color: "#f4b64d",
+    icon: "book"
   }
 };
 
-const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create({
+const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
   content: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 20,
   },
-  welcomeSection: {
-    marginBottom: 16,
+  header: {
+    paddingVertical: 20,
+    paddingBottom: 16,
   },
-  welcomeTitle: {
-    fontSize: 24,
-    fontWeight: "600",
+  title: {
+    fontSize: 28,
+    fontWeight: "700",
     color: colors.text,
     marginBottom: 8,
   },
-  welcomeText: {
+  subtitle: {
     fontSize: 16,
     color: colors.secondary,
     lineHeight: 22,
   },
-  scrollContainer: {
-    flex: 1,
-  },
-  headerContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-  },
-  screenTitle: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 8,
+  section: {
+    marginBottom: 32,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "500",
+    fontWeight: "600",
+    color: colors.text,
+    marginBottom: 16,
+  },
+  planCard: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 20,
     marginBottom: 12,
-    color: "#FF9F0A",
-  },
-  listContainer: {
-    paddingTop: 8,
-  },
-  planContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
   },
   planHeader: {
-    padding: 16,
-  },
-  planInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  leftContent: {
-    flex: 1,
-  },
-  rightContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    marginBottom: 16,
   },
   planTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.text,
+    marginBottom: 4,
   },
-  segmentCount: {
+  planMeta: {
     fontSize: 14,
     color: colors.secondary,
-    marginTop: 2,
   },
-  booksContainer: {
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
+  progressSection: {
+    marginBottom: 16,
   },
-  titleContainer: {
-    flexDirection: 'column',
+  progressBar: {
+    height: 8,
+    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 8,
   },
-  title: {
-    color: colors.text,
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#4CAF50',
+    borderRadius: 4,
   },
-  description: {
+  progressText: {
+    fontSize: 12,
     color: colors.secondary,
   },
-  card: {
-    backgroundColor: colors.card,
-    borderColor: colors.border,
+  planActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 8,
+  },
+  actionButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  primaryButton: {
+    backgroundColor: '#007AFF',
+  },
+  secondaryButton: {
+    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+  },
+  buttonText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+  },
+  secondaryButtonText: {
+    color: colors.text,
+  },
+  expandedContent: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+  },
+  booksSection: {
+    marginBottom: 20,
+  },
+  subsectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.text,
+    marginBottom: 12,
+  },
+  booksGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  bookChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  bookChipActive: {
+    backgroundColor: '#007AFF20',
+    borderColor: '#007AFF',
+  },
+  bookChipCompleted: {
+    backgroundColor: '#4CAF5020',
+    borderColor: '#4CAF50',
+  },
+  bookChipText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: colors.secondary,
+  },
+  bookChipTextActive: {
+    color: '#007AFF',
+  },
+  bookChipTextCompleted: {
+    color: '#4CAF50',
+  },
+  storiesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 12,
+    paddingLeft: 16,
+  },
+  storyChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+  },
+  storyChipCompleted: {
+    backgroundColor: '#4CAF5015',
+    borderColor: '#4CAF50',
+  },
+  storyChipText: {
+    fontSize: 11,
+    color: colors.secondary,
+    fontWeight: "500",
+  },
+  storyChipTextCompleted: {
+    color: '#4CAF50',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyStateIcon: {
+    marginBottom: 16,
+    opacity: 0.3,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.text,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: colors.secondary,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
 
 const PlanScreen = () => {
-  const { 
-    readingPlan, 
-    updateReadingPlan, 
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const {
     activePlan,
     startPlan,
     pausePlan,
     resumePlan,
     switchPlan,
-    readingPlanProgress,
-    updateReadingPlanProgress,
-    updateEmojiActions
+    completedSegments,
+    updateSegmentId,
   } = useAppContext();
 
-  const router = useRouter();
-  const params = useLocalSearchParams();
-  const scrollViewRef = useRef<ScrollView>(null);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [expandedBookId, setExpandedBookId] = useState<string | null>(null);
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
-  const { colors } = useAppSettings();
-  const styles = createStyles(isLargeScreen, colors);
+  const { colors, isDarkMode } = useAppSettings();
+  const styles = createStyles(isLargeScreen, colors, isDarkMode);
 
-  // Initialize selectedPlan with the active plan if it exists, otherwise use first plan
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [planProgress, setPlanProgress] = useState<Record<string, string[]>>({});
-
-  // Load initial progress data
-  useEffect(() => {
-    loadPlanProgress();
-  }, []);
-
-  const loadPlanProgress = async () => {
-    const progress: Record<string, string[]> = {};
-    
-    // Load progress for each plan
-    for (const plan of readingPlansData.plans) {
-      const completedSegments: string[] = [];
-      
-      // Check completion status for each segment
-      for (const [bookKey, bookData] of Object.entries(plan.segments)) {
-        if (bookData?.segments) {
-          for (const segmentId of bookData.segments) {
-            const isCompleted = await getSegmentCompletionStatus(
-              segmentId,
-              'plan',
-              plan.id
-            );
-            if (isCompleted) {
-              completedSegments.push(segmentId);
-            }
-          }
-        }
-      }
-      
-      progress[plan.id] = completedSegments;
-    }
-    
-    setPlanProgress(progress);
-  };
-
-  const handleSegmentComplete = async (planId: string, segmentId: string) => {
-    try {
-      // Mark segment as complete in database
-      await markSegmentComplete(segmentId, 'plan', planId);
-      
-      // Update local state
-      setPlanProgress(prev => ({
-        ...prev,
-        [planId]: [...(prev[planId] || []), segmentId]
-      }));
-
-      // Check for achievements
-      const completedCount = (planProgress[planId] || []).length + 1;
-      
-      // Achievement for starting a plan
-      if (completedCount === 1) {
-        await unlockAchievement(
-          'plan_started',
-          'Plan Started!',
-          'Started your first reading plan'
-        );
-      }
-
-      // Achievement for completing 10 segments
-      if (completedCount === 10) {
-        await unlockAchievement(
-          'plan_milestone_10',
-          'First Milestone!',
-          'Completed 10 segments in a reading plan'
-        );
-      }
-
-      // Check if plan is completed
-      const plan = readingPlansData.plans.find(p => p.id === planId);
-      if (plan) {
-        const totalSegments = Object.values(plan.segments)
-          .reduce((acc, book) => acc + (book?.segments?.length || 0), 0);
-        
-        if (completedCount === totalSegments) {
-          await unlockAchievement(
-            `plan_complete_${planId}`,
-            'Plan Completed!',
-            `Completed the ${plan.title} reading plan`
-          );
-        }
-      }
-
-    } catch (error) {
-      console.error('Error completing segment:', error);
-    }
-  };
-
-  // Move these function definitions up here
-  const getPlanBooksData = (planId: string) => {
-    const plan = readingPlansData.plans.find(p => p.id === planId);
-    if (!plan?.segments) return [];
-    
-    return Object.keys(plan.segments).map((key) => ({
-      djhBook: key as SegmentIds,
-      bookName: Books[key as SegmentIds]?.bookName ?? "Unknown Book",
-      segments: (plan.segments[key as SegmentIds]?.segments ?? []) as SegmentKey[],
-    }));
-  };
-
-  const getPlanSegmentCount = (planId: string) => {
-    const plan = readingPlansData.plans.find(p => p.id === planId) as Plan | undefined;
-    if (!plan?.segments) return 0;
-    
-    return Object.values(plan.segments).reduce(
-      (acc, book) => acc + (book?.segments?.filter(s => !s.startsWith('I')).length ?? 0),
-      0
-    );
-  };
-
-  // Now use the functions
-  const filteredPlans = useMemo(() => {
+  // Filter and organize plans
+  const availablePlans = useMemo(() => {
     return readingPlansData.plans.filter(plan => 
       !['SchoolYear2', 'SchoolYear3', 'test'].includes(plan.id)
     );
   }, []);
 
-  const planBooksData = useMemo(() => {
-    if (!selectedPlanId) return [];
-    return getPlanBooksData(selectedPlanId);
-  }, [selectedPlanId]);
+  const activePlans = useMemo(() => {
+    return activePlan ? [activePlan] : [];
+  }, [activePlan]);
 
-  const booksArray = Object.keys(Books);
-
-  // Add planBooksData to dependencies array
-  useEffect(() => {
-    if (params.scrollToPlan && scrollViewRef.current && planBooksData) {
-      const planIndex = planBooksData.findIndex(item => item.djhBook === params.scrollToPlan);
-      if (planIndex !== -1) {
-        // Calculate approximate scroll position
-        const headerOffset = 200; // Adjust based on your header height
-        const itemHeight = 150; // Adjust based on your item height
-        const scrollPosition = headerOffset + (planIndex * itemHeight);
-        
-        // Use setTimeout to ensure the scroll happens after render
-        setTimeout(() => {
-          scrollViewRef.current?.scrollTo({
-            y: scrollPosition,
-            animated: true
-          });
-        }, 100);
-      }
-    }
-  }, [params.scrollToPlan, params.timestamp, planBooksData]);
-
-  const currentProgress = readingPlanProgress[selectedPlanId || ''];
-
-  const handlePlanSelection = async (planId: string) => {
-    if (activePlan && activePlan.planId !== planId) {
-      Alert.alert(
-        'Switch Reading Plan?',
-        `You are currently on "${activePlan.planId}". Would you like to pause it and switch to "${planId}"?`,
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel'
-          },
-          {
-            text: 'Switch Plan',
-            onPress: async () => {
-              await switchPlan(planId);
-              setSelectedPlanId(planId); // Update selected plan after switching
-            }
-          }
-        ]
-      );
-    } else {
-      setSelectedPlanId(planId); // Update selected plan immediately if no active plan
-    }
-  };
-
-  const getPlanStatus = (planId: string) => {
-    if (!activePlan || activePlan.planId !== planId) return 'not-started';
-    if (activePlan.isCompleted) return 'completed';
-    return activePlan.isPaused ? 'paused' : 'active';
-  };
-
-  // Get the plan description based on the selected plan
-  const getPlanDescription = (planId: string) => {
-    switch (planId) {
-      case "Bible1Year":
-        return "Experience the entire Biblical narrative in one year. This comprehensive plan takes you through the complete story of Scripture, from Creation to Revelation, helping you understand God's grand plan of redemption.";
-      case "SchoolYear1":
-        return "Perfect for students and educators, this plan follows the academic calendar with carefully selected narrative passages that tell the Bible's key stories and teachings.";
-      case "SchoolYear2":
-        return "Continue your Biblical education with this second academic year plan, diving deeper into historical books, prophecy, and New Testament teachings.";
-      case "SchoolYear3":
-        return "Complete your Biblical foundation with this third academic year plan, exploring wisdom literature, prophetic books, and the life of Christ.";
-      case "NT100Days":
-        return "An intensive journey through the New Testament in 100 days. Perfect for understanding the life of Jesus, the early church, and the foundations of Christian faith.";
-      default:
-        return "";
-    }
-  };
-
-  const handlePress = (segmentId: string) => {
-    router.push({
-      pathname: `/${segmentId}`,
-      query: { 
-        showGlobalCompletion: 'false',
-        planId: selectedPlanId
-      }
-    } as any);
-  };
-
-  const renderPlanItem = ({ item: plan }: { item: Plan }) => {
-    const isSelected = selectedPlanId === plan.id;
-    const isActive = activePlan?.planId === plan.id;
-    const isPaused = activePlan && isActive && activePlan.isPaused;
-    const segmentCount = getPlanSegmentCount(plan.id);
-    const planBooksData = isSelected ? getPlanBooksData(plan.id) : [];
-    const completedSegments = planProgress[plan.id] || [];
-    const totalSegments = Object.values(plan.segments)
-      .reduce((acc, book) => acc + (book?.segments?.length || 0), 0);
+  // Helper functions
+  const getPlanSegmentCount = (planId: string) => {
+    const plan = readingPlansData.plans.find(p => p.id === planId);
+    if (!plan?.segments) return 0;
     
-    const progress = (completedSegments.length / totalSegments) * 100;
+    return Object.values(plan.segments).reduce(
+      (acc, book) => acc + (book?.segments?.filter((s: string) => !s.startsWith('I')).length ?? 0),
+      0
+    );
+  };
+
+  const calculateProgress = (plan: any) => {
+    if (!plan.completedSegments) return 0;
+    const totalSegments = getPlanSegmentCount(plan.planId);
+    return Math.round((plan.completedSegments.length / totalSegments) * 100);
+  };
+
+  const getEstimatedDuration = (segmentCount: number) => {
+    const weeks = Math.ceil(segmentCount / 7);
+    return weeks === 1 ? '1 week' : `${weeks} weeks`;
+  };
+
+  const handlePlanAction = async (planId: string, action: 'start' | 'continue' | 'pause' | 'resume' | 'switch') => {
+    try {
+      switch (action) {
+        case 'start':
+          await startPlan(planId);
+          router.push('/Plan');
+          break;
+        case 'continue':
+          // Navigate to next reading
+          break;
+        case 'pause':
+          await pausePlan();
+          break;
+        case 'resume':
+          await resumePlan();
+          break;
+        case 'switch':
+          Alert.alert(
+            'Switch Reading Plan',
+            'Are you sure you want to switch to this plan? Your current progress will be saved.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Switch', onPress: () => switchPlan(planId) }
+            ]
+          );
+          break;
+      }
+    } catch (error) {
+      console.error('Plan action error:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
+  };
+
+  const getPlanBooksWithProgress = (planId: string) => {
+    const plan = readingPlansData.plans.find(p => p.id === planId);
+    if (!plan?.segments) return [];
+    
+    return Object.entries(plan.segments)
+      .filter(([_, bookData]) => bookData?.segments?.length > 0)
+      .map(([key, bookData]) => {
+        const segments = bookData?.segments?.filter((s: string) => !s.startsWith('I')) || [];
+        const completedCount = segments.filter((segId: string) => completedSegments[segId]?.isCompleted).length;
+        const isCompleted = completedCount === segments.length && segments.length > 0;
+        
+        return {
+          key,
+          name: Books[key as keyof typeof Books]?.bookName || key,
+          segments,
+          completedCount,
+          totalCount: segments.length,
+          isCompleted
+        };
+      });
+  };
+
+  const handleStoryPress = async (segmentId: string, planId: string) => {
+    await updateSegmentId(`ENG-NLT-${segmentId}`);
+    const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+    router.push({
+      pathname: "/[segment]",
+      params: {
+        segment: `ENG-NLT-${segmentId}`,
+        book: segmentData?.book[0] || '',
+        planId: planId
+      }
+    });
+  };
+
+  const renderPlanCard = (plan: any, isActive: boolean = false) => {
+    const planData = readingPlansData.plans.find(p => p.id === (isActive ? plan.planId : plan.id));
+    if (!planData) return null;
+
+    const planId = isActive ? plan.planId : plan.id;
+    const segmentCount = getPlanSegmentCount(planId);
+    const progress = isActive ? calculateProgress(plan) : 0;
+    const duration = getEstimatedDuration(segmentCount);
+    const isExpanded = selectedPlanId === planId;
+    const books = getPlanBooksWithProgress(planId);
+    const isPaused = plan?.isPaused || false;
 
     return (
-      <View style={styles.planContainer}>
-        <TouchableOpacity 
-          style={styles.planHeader}
-          onPress={() => setSelectedPlanId(isSelected ? null : plan.id)}
-        >
-          <View style={styles.planInfo}>
-            <View style={styles.leftContent}>
-              <View style={styles.titleContainer}>
-                <Text style={styles.planTitle}>{plan.title}</Text>
-                <Text style={styles.segmentCount}>
-                  {segmentCount} {segmentCount === 1 ? 'story' : 'stories'}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.rightContent}>
-              {!isActive && (
-                <TouchableOpacity 
-                  onPress={() => startPlan(plan.id)}
-                >
-                  <Feather name="play-circle" size={24} color="#666666" />
-                </TouchableOpacity>
-              )}
-              {isPaused && (
-                <TouchableOpacity 
-                  onPress={() => resumePlan()}
-                >
-                  <Feather name="play-circle" size={24} color="#666666" />
-                </TouchableOpacity>
-              )}
-              {isActive && !isPaused && (
-                <TouchableOpacity 
-                  onPress={() => pausePlan()}
-                >
-                  <Feather name="pause-circle" size={24} color="#666666" />
-                </TouchableOpacity>
-              )}
-              <Ionicons 
-                name={isSelected ? "chevron-up" : "chevron-down"} 
-                size={24} 
-                color="#666"
+      <View key={planId} style={styles.planCard}>
+        <View style={styles.planHeader}>
+          <Text style={styles.planTitle}>{planData.title}</Text>
+          <Text style={styles.planMeta}>
+            {segmentCount} stories · {duration}
+          </Text>
+        </View>
+
+        {isActive && (
+          <View style={styles.progressSection}>
+            <View style={styles.progressBar}>
+              <View 
+                style={[styles.progressFill, { width: `${progress}%` }]}
               />
             </View>
-          </View>
-        </TouchableOpacity>
-
-        {isSelected && (
-          <View style={styles.booksContainer}>
-            <FlatList
-              data={planBooksData}
-              renderItem={({ item }) => {
-                const bookIndex = booksArray.findIndex(
-                  (book) => book === item.djhBook
-                );
-                return (
-                  <Accordion 
-                    item={item} 
-                    bookIndex={bookIndex}
-                    onSegmentComplete={(segmentId) => handleSegmentComplete(plan.id, segmentId)}
-                    context="plan"
-                    showGlobalCompletion={false}
-                    planId={plan.id}
-                    style={{ backgroundColor: '#FFF' }}
-                  />
-                );
-              }}
-              keyExtractor={(item) => item.djhBook}
-            />
+            <Text style={styles.progressText}>
+              {progress}% complete · {plan.completedSegments?.length || 0}/{segmentCount} stories
+            </Text>
           </View>
         )}
-        <Text>Progress: {progress.toFixed(1)}%</Text>
+
+        <View style={styles.planActions}>
+          {!isActive && (
+            <>
+              {activePlan && (
+                <Pressable
+                  style={[styles.actionButton, styles.secondaryButton]}
+                  onPress={() => handlePlanAction(plan.id, 'switch')}
+                >
+                  <Text style={[styles.buttonText, styles.secondaryButtonText]}>Switch</Text>
+                </Pressable>
+              )}
+              <Pressable
+                style={[styles.actionButton, styles.primaryButton]}
+                onPress={() => handlePlanAction(plan.id, 'start')}
+              >
+                <Ionicons name="play" size={16} color="#FFFFFF" />
+                <Text style={[styles.buttonText, styles.primaryButtonText]}>Start</Text>
+              </Pressable>
+            </>
+          )}
+
+          {isActive && (
+            <>
+              {isPaused ? (
+                <Pressable
+                  style={[styles.actionButton, styles.primaryButton]}
+                  onPress={() => handlePlanAction(plan.planId, 'resume')}
+                >
+                  <Ionicons name="play" size={16} color="#FFFFFF" />
+                  <Text style={[styles.buttonText, styles.primaryButtonText]}>Resume</Text>
+                </Pressable>
+              ) : (
+                <>
+                  <Pressable
+                    style={[styles.actionButton, styles.secondaryButton]}
+                    onPress={() => handlePlanAction(plan.planId, 'pause')}
+                  >
+                    <Text style={[styles.buttonText, styles.secondaryButtonText]}>Pause</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.actionButton, styles.primaryButton]}
+                    onPress={() => handlePlanAction(plan.planId, 'continue')}
+                  >
+                    <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+                    <Text style={[styles.buttonText, styles.primaryButtonText]}>Continue</Text>
+                  </Pressable>
+                </>
+              )}
+            </>
+          )}
+
+          <Pressable
+            style={[styles.actionButton, styles.secondaryButton]}
+            onPress={() => setSelectedPlanId(isExpanded ? null : planId)}
+          >
+            <Ionicons 
+              name={isExpanded ? "chevron-up" : "chevron-down"} 
+              size={16} 
+              color={colors.text} 
+            />
+          </Pressable>
+        </View>
+
+        {isExpanded && (
+          <View style={styles.expandedContent}>
+            <View style={styles.booksSection}>
+              <Text style={styles.subsectionTitle}>Books & Stories</Text>
+              
+              <View style={styles.booksGrid}>
+                {books.map((book) => (
+                  <Pressable
+                    key={book.key}
+                    style={[
+                      styles.bookChip,
+                      expandedBookId === `${planId}-${book.key}` && styles.bookChipActive,
+                      book.isCompleted && styles.bookChipCompleted,
+                    ]}
+                    onPress={() => {
+                      const bookId = `${planId}-${book.key}`;
+                      setExpandedBookId(expandedBookId === bookId ? null : bookId);
+                    }}
+                  >
+                    <Text style={[
+                      styles.bookChipText,
+                      expandedBookId === `${planId}-${book.key}` && styles.bookChipTextActive,
+                      book.isCompleted && styles.bookChipTextCompleted,
+                    ]}>
+                      {book.name} ({book.completedCount}/{book.totalCount})
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              {/* Show stories for expanded book */}
+              {expandedBookId && (
+                (() => {
+                  const [expandedPlanId, expandedBookKey] = expandedBookId.split('-');
+                  if (expandedPlanId !== planId) return null;
+                  
+                  const expandedBook = books.find(b => b.key === expandedBookKey);
+                  if (!expandedBook) return null;
+
+                  return (
+                    <View style={styles.storiesGrid}>
+                      {expandedBook.segments.map((segmentId: string) => {
+                        const isCompleted = completedSegments[segmentId]?.isCompleted;
+                        const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+                        
+                        return (
+                          <Pressable
+                            key={segmentId}
+                            style={[
+                              styles.storyChip,
+                              isCompleted && styles.storyChipCompleted,
+                            ]}
+                            onPress={() => handleStoryPress(segmentId, planId)}
+                          >
+                            <Text style={[
+                              styles.storyChipText,
+                              isCompleted && styles.storyChipTextCompleted,
+                            ]}>
+                              {segmentData?.title || segmentId}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  );
+                })()
+              )}
+            </View>
+          </View>
+        )}
       </View>
     );
   };
 
-  // Organize plans by status
-  const organizedPlans = useMemo(() => {
-    const plans = [...filteredPlans];
-    return plans.sort((a, b) => {
-      const aStatus = activePlan?.planId === a.id 
-        ? (activePlan.isPaused ? 1 : 0)
-        : 2;
-      const bStatus = activePlan?.planId === b.id
-        ? (activePlan.isPaused ? 1 : 0)
-        : 2;
-      if (aStatus !== bStatus) return aStatus - bStatus;
-      return a.title.localeCompare(b.title);
-    });
-  }, [filteredPlans, activePlan]);
-
-  // Add handleScroll function to match Home.tsx
-  const handleScroll = (event: any) => {
-    // Implementation of handleScroll function
-  };
-
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
-        style={styles.content}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-      >
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>Reading Plans</Text>
-          <Text style={styles.welcomeText}>
-            Welcome to the Bible Reading Plans and Challenges screen, where you can find personalized reading plans and spiritual challenges designed to deepen your understanding of Scripture and transform your faith.
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Reading Plans</Text>
+          <Text style={styles.subtitle}>
+            Choose a structured path through Scripture designed to deepen your understanding and build consistent reading habits.
           </Text>
         </View>
 
-        <FlatList
-          data={organizedPlans}
-          renderItem={renderPlanItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
-        />
+        {activePlans.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Your Active Plan</Text>
+            {activePlans.map(plan => renderPlanCard(plan, true))}
+          </View>
+        )}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Available Plans</Text>
+          {availablePlans.length > 0 ? (
+            availablePlans.map(plan => renderPlanCard(plan, false))
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons 
+                name="book-outline" 
+                size={48} 
+                color={colors.secondary} 
+                style={styles.emptyStateIcon}
+              />
+              <Text style={styles.emptyStateTitle}>No Plans Available</Text>
+              <Text style={styles.emptyStateText}>
+                Check back later for new reading plans to enhance your Bible study journey.
+              </Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

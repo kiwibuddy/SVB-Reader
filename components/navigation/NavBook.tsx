@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Books from "@/assets/data/BookChapterList.json";
 import { markSegmentComplete, getSegmentCompletionStatus } from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { useAppContext } from '@/context/GlobalContext';
 
 // Image mapping
 export const imageMap: { [key: string]: any } = {
@@ -243,12 +244,48 @@ const Accordion: React.FC<AccordionProps> = ({
   completedSegments = {}
 }) => {
   const { colors } = useAppSettings();
+  const { completedSegments: globalCompletedSegments } = useAppContext();
   const [isExpandedState, setIsExpanded] = useState(isExpanded || false);
+  const [contextCompletionStatus, setContextCompletionStatus] = useState<{[key: string]: boolean}>({});
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const flatListRef = useRef<FlatList<SegmentKey>>(null);
 
   useEffect(() => {
     setIsExpanded(isExpanded || false);
   }, [isExpanded]);
+
+  // Trigger refresh when global completed segments change
+  useEffect(() => {
+    setRefreshTrigger(prev => prev + 1);
+  }, [globalCompletedSegments]);
+
+  // Load completion status for all segments in this book based on context
+  useEffect(() => {
+    const loadCompletionStatus = async () => {
+      const actualSegments = item.segments.filter(seg => !seg.startsWith('I'));
+      const completionMap: {[key: string]: boolean} = {};
+
+      // Load completion status for each segment
+      for (const segmentId of actualSegments) {
+        try {
+          const status = await getSegmentCompletionStatus(
+            segmentId,
+            context,
+            planId,
+            challengeId
+          );
+          completionMap[segmentId] = status.isCompleted;
+        } catch (error) {
+          console.error(`Error loading completion for ${segmentId}:`, error);
+          completionMap[segmentId] = false;
+        }
+      }
+
+      setContextCompletionStatus(completionMap);
+    };
+
+    loadCompletionStatus();
+  }, [item.segments, context, planId, challengeId, refreshTrigger]);
 
   useEffect(() => {
     // Log all imageMap keys
@@ -261,8 +298,10 @@ const Accordion: React.FC<AccordionProps> = ({
 
   const actualSegments = item.segments.filter(seg => !seg.startsWith('I'));
   const totalSegments = actualSegments.length;
+  
+  // Use context-aware completion status instead of the prop
   const completedCount = actualSegments.reduce((count, segmentId) => {
-    return completedSegments[segmentId] ? count + 1 : count;
+    return contextCompletionStatus[segmentId] ? count + 1 : count;
   }, 0);
 
   const handleHeaderPress = () => {

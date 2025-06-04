@@ -74,7 +74,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     },
     content: {
       flexDirection: 'row',
-      justifyContent: 'space-around',
+      justifyContent: 'space-evenly',
       alignItems: 'center',
       paddingVertical: 8,
     },
@@ -83,6 +83,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
       justifyContent: 'center',
     },
     navText: {
+      color: colors.text,
       fontSize: 12,
       marginTop: 4,
     },
@@ -142,11 +143,11 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
           onPress={() => router.replace("/(tabs)/Achievements")}
         >
           <Ionicons 
-            name={pathname === "/(tabs)/Achievements" ? "trophy" : "trophy-outline"} 
+            name={pathname === "/Achievements" ? "trophy" : "trophy-outline"} 
             size={24} 
-            color={pathname === "/(tabs)/Achievements" ? colors.primary : colors.secondary} 
+            color={pathname === "/Achievements" ? colors.primary : colors.secondary} 
           />
-          <Text style={[styles.navText, pathname === "/(tabs)/Achievements" && styles.activeText]}>
+          <Text style={[styles.navText, pathname === "/Achievements" && styles.activeText]}>
             Achievements
           </Text>
         </Pressable>

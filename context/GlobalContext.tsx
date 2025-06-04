@@ -4,8 +4,11 @@ import readingPlansData from "../assets/data/ReadingPlansChallenges.json";
 import { 
   markSegmentComplete as markSegmentCompleteDB,
   getSegmentCompletionStatus,
-  updateDailyActivity
+  updateDailyActivity,
+  activateReadingPlan,
+  activateReadingChallenge
 } from '@/api/sqlite';
+import { View, Text } from "react-native";
 
 // Add this interface near the top of the file, before AppContextType
 interface ReadingPlanProgress {
@@ -224,6 +227,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Plan Management Functions
   const startPlan = async (planId: string) => {
+    // Get plan data and extract segment IDs
+    const planData = readingPlansData.plans.find(p => p.id === planId);
+    if (!planData) return;
+    
+    const segmentIDs = Object.values(planData.segments)
+      .flatMap(book => book?.segments || [])
+      .filter(seg => !seg.startsWith('I')); // Exclude introductions
+    
+    // Initialize database tracking
+    await activateReadingPlan(planId, segmentIDs);
+    
     const newPlan: PlanProgress = {
       planId,
       completedSegments: [],
@@ -262,6 +276,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Challenge Management Functions
   const startChallenge = async (challengeId: string) => {
+    // Get challenge data and extract segment IDs
+    const challengeData = readingPlansData.challenges.find(c => c.id === challengeId);
+    if (!challengeData) return;
+    
+    const segmentIDs = Object.values(challengeData.segments)
+      .flatMap(book => book?.segments || [])
+      .filter(seg => !seg.startsWith('I')); // Exclude introductions
+    
+    // Initialize database tracking
+    await activateReadingChallenge(challengeId, segmentIDs);
+    
     const newChallenge: ChallengeProgress = {
       challengeId,
       completedSegments: [],
@@ -316,8 +341,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     contextId?: string
   ) => {
     try {
-      // Use the correctly named function
-      await markSegmentCompleteDB(segmentId, context, contextId);
+      // Use the correctly named function with proper parameters
+      const planID = context === 'plan' ? contextId : null;
+      const challengeID = context === 'challenge' ? contextId : null;
+      await markSegmentCompleteDB(segmentId, context, planID, challengeID);
       
       // Update local state
       setCompletedSegments(prev => ({
@@ -327,6 +354,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
           color: readerColor
         }
       }));
+
+      // Update plan/challenge progress if in context
+      if (context === 'plan' && contextId && activePlan?.planId === contextId) {
+        await updateReadingPlanProgress(contextId, segmentId);
+      } else if (context === 'challenge' && contextId && activeChallenges[contextId]) {
+        await updateChallengeProgress(contextId, segmentId);
+      }
 
       // Update streak
       await updateDailyActivity(segmentId);

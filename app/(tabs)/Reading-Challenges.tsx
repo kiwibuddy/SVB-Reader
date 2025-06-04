@@ -9,6 +9,7 @@ import {
   Alert,
   FlatList,
   useWindowDimensions,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
@@ -108,6 +109,12 @@ interface AppContextType {
   pauseChallenge: (challengeId: string) => void;
   resumeChallenge: (challengeId: string) => void;
   restartChallenge: (challengeId: string) => void;
+  completedSegments: {
+    [key: string]: {
+      isCompleted: boolean;
+    };
+  };
+  updateSegmentId: (segmentId: string) => void;
 }
 
 interface BookSegments {
@@ -119,88 +126,62 @@ interface ChallengesByCategory {
   'Topical': Challenge[];
 }
 
-const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create({
+const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
   content: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 20,
   },
-  welcomeSection: {
-    marginBottom: 16,
+  header: {
+    paddingVertical: 20,
+    paddingBottom: 16,
   },
-  welcomeTitle: {
-    fontSize: 24,
-    fontWeight: "600",
+  title: {
+    fontSize: 28,
+    fontWeight: "700",
     color: colors.text,
     marginBottom: 8,
   },
-  welcomeText: {
+  subtitle: {
     fontSize: 16,
     color: colors.secondary,
     lineHeight: 22,
   },
-  scrollContainer: {
-    flex: 1,
+  section: {
+    marginBottom: 32,
   },
-  headerContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 16,
-    backgroundColor: colors.card,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
   },
-  screenTitle: {
-    fontSize: 28,
-    fontWeight: "700",
-    marginBottom: 8,
-    color: colors.text,
+  sectionIcon: {
+    marginRight: 8,
+    fontSize: 18,
   },
-  categorySection: {
-    marginTop: 16,
-    paddingHorizontal: 0,
-  },
-  categoryTitle: {
+  sectionTitle: {
     fontSize: 20,
     fontWeight: "600",
-    marginLeft: 16,
-    marginBottom: 12,
-    color: "#FF9F0A",
+    color: colors.text,
   },
-  challengeContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+  challengeCard: {
     backgroundColor: colors.card,
-    marginHorizontal: 0,
-    marginBottom: 0,
-    borderRadius: 0,
-    shadowColor: "none",
-    shadowOffset: undefined,
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    borderWidth: 0,
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 12,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
   },
   challengeHeader: {
-    padding: 16,
-  },
-  challengeInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  leftContent: {
-    flex: 1,
-  },
-  rightContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  titleContainer: {
-    flex: 1,
+    marginBottom: 16,
   },
   challengeTitle: {
     fontSize: 18,
@@ -208,16 +189,164 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     color: colors.text,
     marginBottom: 4,
   },
-  segmentCount: {
-    color: colors.secondary,
+  challengeMeta: {
     fontSize: 14,
+    color: colors.secondary,
   },
-  booksContainer: {
+  progressSection: {
+    marginBottom: 16,
+  },
+  progressBar: {
+    height: 8,
+    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#FF9800',
+    borderRadius: 4,
+  },
+  progressText: {
+    fontSize: 12,
+    color: colors.secondary,
+  },
+  challengeActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 8,
+  },
+  actionButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  primaryButton: {
+    backgroundColor: '#FF9800',
+  },
+  secondaryButton: {
+    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+  },
+  successButton: {
+    backgroundColor: '#4CAF50',
+  },
+  buttonText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+  },
+  secondaryButtonText: {
+    color: colors.text,
+  },
+  expandedContent: {
+    marginTop: 16,
+    paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.card,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
+    borderTopColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+  },
+  description: {
+    fontSize: 14,
+    color: colors.text,
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  booksSection: {
+    marginBottom: 20,
+  },
+  subsectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.text,
+    marginBottom: 12,
+  },
+  booksGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  bookChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  bookChipActive: {
+    backgroundColor: '#FF980020',
+    borderColor: '#FF9800',
+  },
+  bookChipCompleted: {
+    backgroundColor: '#4CAF5020',
+    borderColor: '#4CAF50',
+  },
+  bookChipText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: colors.secondary,
+  },
+  bookChipTextActive: {
+    color: '#FF9800',
+  },
+  bookChipTextCompleted: {
+    color: '#4CAF50',
+  },
+  storiesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 12,
+    paddingLeft: 16,
+  },
+  storyChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+  },
+  storyChipCompleted: {
+    backgroundColor: '#4CAF5015',
+    borderColor: '#4CAF50',
+  },
+  storyChipText: {
+    fontSize: 11,
+    color: colors.secondary,
+    fontWeight: "500",
+  },
+  storyChipTextCompleted: {
+    color: '#4CAF50',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyStateIcon: {
+    marginBottom: 16,
+    opacity: 0.3,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.text,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: colors.secondary,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
 
@@ -229,16 +358,19 @@ const ChallengesScreen = () => {
     startChallenge,
     pauseChallenge,
     resumeChallenge,
-    restartChallenge
+    restartChallenge,
+    completedSegments,
+    updateSegmentId,
   } = useAppContext();
 
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
+  const [expandedBookId, setExpandedBookId] = useState<string | null>(null);
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
-  const { colors } = useAppSettings();
-  const styles = createStyles(isLargeScreen, colors);
+  const { colors, isDarkMode } = useAppSettings();
+  const styles = createStyles(isLargeScreen, colors, isDarkMode);
 
-  // Move function definitions up
+  // Helper functions
   const getChallengeSegmentCount = (challengeId: string) => {
     const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
     if (!challenge?.segments) return 0;
@@ -249,27 +381,57 @@ const ChallengesScreen = () => {
     );
   };
 
-  const getChallengeBooksData = (challengeId: string) => {
+  const getChallengeBooksWithProgress = (challengeId: string) => {
     const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
     if (!challenge?.segments) return [];
     
-    const segments = challenge.segments;
-    return Object.entries(segments)
+    return Object.entries(challenge.segments)
       .filter(([_, bookData]) => bookData?.segments?.length > 0)
-      .map(([key, bookData]) => ({
-        djhBook: key as keyof typeof Books,
-        bookName: Books[key as keyof typeof Books]?.bookName ?? "Unknown Book",
-        segments: bookData?.segments || []
-      }));
+      .map(([key, bookData]) => {
+        const segments = bookData?.segments?.filter((s: string) => !s.startsWith('I')) || [];
+        const completedCount = segments.filter((segId: string) => completedSegments[segId]?.isCompleted).length;
+        const isCompleted = completedCount === segments.length && segments.length > 0;
+        
+        return {
+          key,
+          name: Books[key as keyof typeof Books]?.bookName || key,
+          segments,
+          completedCount,
+          totalCount: segments.length,
+          isCompleted
+        };
+      });
   };
 
-  // Group challenges by status and category
+  const calculateProgress = (challenge: any) => {
+    if (!challenge.completedSegments) return 0;
+    const totalSegments = getChallengeSegmentCount(challenge.challengeId);
+    return Math.round((challenge.completedSegments.length / totalSegments) * 100);
+  };
+
+  const getEstimatedDuration = (segmentCount: number) => {
+    const weeks = Math.ceil(segmentCount / 7);
+    return weeks === 1 ? '1 week' : `${weeks} weeks`;
+  };
+
+  const handleStoryPress = async (segmentId: string, challengeId: string) => {
+    await updateSegmentId(`ENG-NLT-${segmentId}`);
+    const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+    router.push({
+      pathname: "/[segment]",
+      params: {
+        segment: `ENG-NLT-${segmentId}`,
+        book: segmentData?.book[0] || '',
+        challengeId: challengeId
+      }
+    });
+  };
+
+  // Organize challenges
   const organizedChallenges = useMemo(() => {
     const active: Challenge[] = [];
-    const categorized = {
-      [CHALLENGE_CATEGORIES.SEASONAL]: [] as Challenge[],
-      [CHALLENGE_CATEGORIES.TOPICAL]: [] as Challenge[],
-    };
+    const seasonal: Challenge[] = [];
+    const topical: Challenge[] = [];
 
     readingPlansData.challenges.forEach(challenge => {
       const isActive = activeChallenges[challenge.id] && !activeChallenges[challenge.id].isPaused;
@@ -277,194 +439,260 @@ const ChallengesScreen = () => {
       if (isActive) {
         active.push(challenge as Challenge);
       } else {
-        const category = categorizeChallenge(challenge);
-        categorized[category].push(challenge as Challenge);
+        // Simple categorization based on title
+        const seasonalKeywords = ['Christmas', 'Advent', 'Lenten'];
+        const isSeasonalChallenge = seasonalKeywords.some(keyword => 
+          challenge.title.includes(keyword)
+        );
+        
+        if (isSeasonalChallenge) {
+          seasonal.push(challenge as Challenge);
+        } else {
+          topical.push(challenge as Challenge);
+        }
       }
     });
 
-    // Sort non-active challenges within each category
-    const sortChallenges = (challenges: Challenge[]) => {
-      return challenges.sort((a, b) => {
-        const aStatus = activeChallenges[a.id]?.isPaused ? 1 : 2;
-        const bStatus = activeChallenges[b.id]?.isPaused ? 1 : 2;
-        if (aStatus !== bStatus) return aStatus - bStatus;
-        return a.title.localeCompare(b.title);
-      });
-    };
-
-    categorized[CHALLENGE_CATEGORIES.SEASONAL] = sortChallenges(categorized[CHALLENGE_CATEGORIES.SEASONAL]);
-    categorized[CHALLENGE_CATEGORIES.TOPICAL] = sortChallenges(categorized[CHALLENGE_CATEGORIES.TOPICAL]);
-
-    return { active, categorized };
+    return { active, seasonal, topical };
   }, [activeChallenges]);
 
-  const renderChallengeItem = ({ item: challenge }: { item: Challenge }) => {
-    const isSelected = selectedChallengeId === challenge.id;
-    const isActive = activeChallenges[challenge.id];
-    const isPaused = isActive?.isPaused;
+  const handleChallengeAction = async (challengeId: string, action: 'start' | 'continue' | 'pause' | 'resume') => {
+    try {
+      switch (action) {
+        case 'start':
+          await startChallenge(challengeId);
+          break;
+        case 'continue':
+          // Navigate to next reading
+          break;
+        case 'pause':
+          await pauseChallenge(challengeId);
+          break;
+        case 'resume':
+          await resumeChallenge(challengeId);
+          break;
+      }
+    } catch (error) {
+      console.error('Challenge action error:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
+  };
+
+  const renderChallengeCard = (challenge: Challenge, isActive: boolean = false) => {
+    const activeData = isActive ? activeChallenges[challenge.id] : null;
     const segmentCount = getChallengeSegmentCount(challenge.id);
-    const challengeBooksData = isSelected ? getChallengeBooksData(challenge.id) : [];
+    const progress = isActive && activeData ? calculateProgress(activeData) : 0;
+    const duration = getEstimatedDuration(segmentCount);
+    const isExpanded = selectedChallengeId === challenge.id;
+    const books = getChallengeBooksWithProgress(challenge.id);
+    const isPaused = activeData?.isPaused || false;
 
     return (
-      <View style={styles.challengeContainer}>
-        <TouchableOpacity 
-          style={styles.challengeHeader}
-          onPress={() => setSelectedChallengeId(isSelected ? null : challenge.id)}
-        >
-          <View style={styles.challengeInfo}>
-            <View style={styles.leftContent}>
-              <View style={styles.titleContainer}>
-                <Text style={styles.challengeTitle}>{challenge.title}</Text>
-                <Text style={styles.segmentCount}>
-                  {segmentCount} {segmentCount === 1 ? 'story' : 'stories'}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.rightContent}>
-              {!isActive && (
-                <TouchableOpacity 
-                  onPress={() => startChallenge(challenge.id)}
-                >
-                  <Feather name="play-circle" size={24} color="#666666" />
-                </TouchableOpacity>
-              )}
-              {isPaused && (
-                <TouchableOpacity 
-                  onPress={() => resumeChallenge(challenge.id)}
-                >
-                  <Feather name="play-circle" size={24} color="#666666" />
-                </TouchableOpacity>
-              )}
-              {isActive && !isPaused && (
-                <TouchableOpacity 
-                  onPress={() => pauseChallenge(challenge.id)}
-                >
-                  <Feather name="pause-circle" size={24} color="#666666" />
-                </TouchableOpacity>
-              )}
-              <Ionicons 
-                name={isSelected ? "chevron-up" : "chevron-down"} 
-                size={24} 
-                color="#666"
+      <View key={challenge.id} style={styles.challengeCard}>
+        <View style={styles.challengeHeader}>
+          <Text style={styles.challengeTitle}>{challenge.title}</Text>
+          <Text style={styles.challengeMeta}>
+            {segmentCount} stories · {duration}
+          </Text>
+        </View>
+
+        {isActive && activeData && (
+          <View style={styles.progressSection}>
+            <View style={styles.progressBar}>
+              <View 
+                style={[styles.progressFill, { width: `${progress}%` }]}
               />
             </View>
+            <Text style={styles.progressText}>
+              {progress}% complete · {activeData.completedSegments?.length || 0}/{segmentCount} stories
+            </Text>
           </View>
-        </TouchableOpacity>
+        )}
 
-        {isSelected && (
-          <View style={styles.booksContainer}>
-            <FlatList
-              data={challengeBooksData}
-              renderItem={({ item }) => {
-                const bookIndex = booksArray.findIndex(
-                  (book) => book === item.djhBook
-                );
-                return (
-                  <Accordion 
-                    item={item} 
-                    bookIndex={bookIndex}
-                    onSegmentComplete={handleSegmentComplete}
-                    context="challenge"
-                    showGlobalCompletion={false}
-                    challengeId={challenge.id}
-                    style={{ backgroundColor: '#FFF' }}
-                  />
-                );
-              }}
-              keyExtractor={(item) => item.djhBook}
+        <View style={styles.challengeActions}>
+          {!isActive && (
+            <Pressable
+              style={[styles.actionButton, styles.primaryButton]}
+              onPress={() => handleChallengeAction(challenge.id, 'start')}
+            >
+              <Ionicons name="play" size={16} color="#FFFFFF" />
+              <Text style={[styles.buttonText, styles.primaryButtonText]}>Start</Text>
+            </Pressable>
+          )}
+
+          {isActive && (
+            <>
+              {isPaused ? (
+                <Pressable
+                  style={[styles.actionButton, styles.successButton]}
+                  onPress={() => handleChallengeAction(challenge.id, 'resume')}
+                >
+                  <Ionicons name="play" size={16} color="#FFFFFF" />
+                  <Text style={[styles.buttonText, styles.primaryButtonText]}>Resume</Text>
+                </Pressable>
+              ) : (
+                <>
+                  <Pressable
+                    style={[styles.actionButton, styles.secondaryButton]}
+                    onPress={() => handleChallengeAction(challenge.id, 'pause')}
+                  >
+                    <Text style={[styles.buttonText, styles.secondaryButtonText]}>Pause</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.actionButton, styles.primaryButton]}
+                    onPress={() => handleChallengeAction(challenge.id, 'continue')}
+                  >
+                    <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+                    <Text style={[styles.buttonText, styles.primaryButtonText]}>Continue</Text>
+                  </Pressable>
+                </>
+              )}
+            </>
+          )}
+
+          <Pressable
+            style={[styles.actionButton, styles.secondaryButton]}
+            onPress={() => setSelectedChallengeId(isExpanded ? null : challenge.id)}
+          >
+            <Ionicons 
+              name={isExpanded ? "chevron-up" : "chevron-down"} 
+              size={16} 
+              color={colors.text} 
             />
+          </Pressable>
+        </View>
+
+        {isExpanded && (
+          <View style={styles.expandedContent}>
+            <Text style={styles.description}>
+              {challenge.longDescription || challenge.description}
+            </Text>
+            
+            <View style={styles.booksSection}>
+              <Text style={styles.subsectionTitle}>Books & Stories</Text>
+              
+              <View style={styles.booksGrid}>
+                {books.map((book) => (
+                  <Pressable
+                    key={book.key}
+                    style={[
+                      styles.bookChip,
+                      expandedBookId === `${challenge.id}-${book.key}` && styles.bookChipActive,
+                      book.isCompleted && styles.bookChipCompleted,
+                    ]}
+                    onPress={() => {
+                      const bookId = `${challenge.id}-${book.key}`;
+                      setExpandedBookId(expandedBookId === bookId ? null : bookId);
+                    }}
+                  >
+                    <Text style={[
+                      styles.bookChipText,
+                      expandedBookId === `${challenge.id}-${book.key}` && styles.bookChipTextActive,
+                      book.isCompleted && styles.bookChipTextCompleted,
+                    ]}>
+                      {book.name} ({book.completedCount}/{book.totalCount})
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              {/* Show stories for expanded book */}
+              {expandedBookId && (
+                (() => {
+                  const [expandedChallengeId, expandedBookKey] = expandedBookId.split('-');
+                  if (expandedChallengeId !== challenge.id) return null;
+                  
+                  const expandedBook = books.find(b => b.key === expandedBookKey);
+                  if (!expandedBook) return null;
+
+                  return (
+                    <View style={styles.storiesGrid}>
+                      {expandedBook.segments.map((segmentId: string) => {
+                        const isCompleted = completedSegments[segmentId]?.isCompleted;
+                        const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+                        
+                        return (
+                          <Pressable
+                            key={segmentId}
+                            style={[
+                              styles.storyChip,
+                              isCompleted && styles.storyChipCompleted,
+                            ]}
+                            onPress={() => handleStoryPress(segmentId, challenge.id)}
+                          >
+                            <Text style={[
+                              styles.storyChipText,
+                              isCompleted && styles.storyChipTextCompleted,
+                            ]}>
+                              {segmentData?.title || segmentId}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  );
+                })()
+              )}
+            </View>
           </View>
         )}
       </View>
     );
   };
 
-  const renderCategorySection = (title: string, challenges: Challenge[]) => (
-    <View style={styles.categorySection}>
-      <Text style={styles.categoryTitle}>{title}</Text>
-      <FlatList
-        data={challenges}
-        renderItem={renderChallengeItem}
-        keyExtractor={(item) => item.id}
-      />
-    </View>
-  );
-
-  const handleSegmentComplete = (segmentId: string) => {
-    // This will be handled by the context's markSegmentComplete function
-    // which now handles both global and challenge-specific completions
-  };
-
-  const scrollViewRef = useRef<ScrollView>(null);
-  const [contentHeight, setContentHeight] = useState(0);
-  const [headerHeight, setHeaderHeight] = useState(0);
-
-  useEffect(() => {
-    if (params.scrollToChallenge && scrollViewRef.current && organizedChallenges) {
-      const challengeIndex = organizedChallenges.categorized[CHALLENGE_CATEGORIES.SEASONAL].findIndex(
-        item => item.id === params.scrollToChallenge
-      );
-      if (challengeIndex !== -1) {
-        const headerOffset = 200;
-        const itemHeight = 150;
-        const scrollPosition = headerOffset + (challengeIndex * itemHeight);
-        
-        setTimeout(() => {
-          scrollViewRef.current?.scrollTo({
-            y: scrollPosition,
-            animated: true
-          });
-        }, 100);
-      }
-    }
-  }, [params.scrollToChallenge, params.timestamp, organizedChallenges]);
-
-  // Create sections data for FlatList
-  const sections = useMemo(() => {
-    const result = [];
-    
-    if (organizedChallenges.active.length > 0) {
-      result.push({
-        title: 'Active Challenges',
-        data: organizedChallenges.active
-      });
-    }
-    
-    result.push({
-      title: 'Seasonal Challenges',
-      data: organizedChallenges.categorized[CHALLENGE_CATEGORIES.SEASONAL]
-    });
-    
-    result.push({
-      title: 'Topical Challenges',
-      data: organizedChallenges.categorized[CHALLENGE_CATEGORIES.TOPICAL]
-    });
-    
-    return result;
-  }, [organizedChallenges]);
-
-  // Add handleScroll function to match Home.tsx
-  const handleScroll = (event: any) => {
-    // Implementation of handleScroll function
-  };
-
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList
-        ListHeaderComponent={() => (
-          <View style={styles.welcomeSection}>
-            <Text style={styles.welcomeTitle}>Reading Challenges</Text>
-            <Text style={styles.welcomeText}>
-              Welcome to Bible Reading Challenges, where you can find focused reading challenges to help you dive deep into specific themes and books of the Bible.
-            </Text>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Reading Challenges</Text>
+          <Text style={styles.subtitle}>
+            Take on focused reading challenges designed for spiritual growth and deeper Bible study.
+          </Text>
+        </View>
+
+        {organizedChallenges.active.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionIcon}>📖</Text>
+              <Text style={styles.sectionTitle}>Your Active Challenges</Text>
+            </View>
+            {organizedChallenges.active.map(challenge => renderChallengeCard(challenge, true))}
           </View>
         )}
-        style={styles.content}
-        data={sections}
-        renderItem={({ item }) => renderCategorySection(item.title, item.data)}
-        keyExtractor={(item) => item.title}
-        contentContainerStyle={{ paddingTop: 8 }}
-      />
+
+        {organizedChallenges.seasonal.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionIcon}>🎄</Text>
+              <Text style={styles.sectionTitle}>Seasonal Challenges</Text>
+            </View>
+            {organizedChallenges.seasonal.map(challenge => renderChallengeCard(challenge, false))}
+          </View>
+        )}
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionIcon}>📚</Text>
+            <Text style={styles.sectionTitle}>Topical Challenges</Text>
+          </View>
+          {organizedChallenges.topical.length > 0 ? (
+            organizedChallenges.topical.map(challenge => renderChallengeCard(challenge, false))
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons 
+                name="flag-outline" 
+                size={48} 
+                color={colors.secondary} 
+                style={styles.emptyStateIcon}
+              />
+              <Text style={styles.emptyStateTitle}>No Challenges Available</Text>
+              <Text style={styles.emptyStateText}>
+                Check back later for new reading challenges to enhance your Bible study journey.
+              </Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };

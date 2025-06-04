@@ -295,160 +295,202 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return positionInSequence % colorPositions.length === position;
   }, [content, readersByColor, selectedReaderPosition]);
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-      padding: 16,
-    },
-    roleContainer: {
-      backgroundColor: colors.card,
-      borderRadius: 8,
-      padding: 16,
-      marginBottom: 16,
-      borderColor: colors.border,
-      borderWidth: 1,
-    },
-    roleText: {
-      color: colors.text,
-      fontSize: 18,
-      fontWeight: '600',
-      marginBottom: 8,
-    },
-    verseContainer: {
-      backgroundColor: colors.card,
-      borderRadius: 8,
-      padding: 16,
-      marginBottom: 8,
-      borderColor: colors.border,
-      borderWidth: 1,
-    },
-    verseText: {
-      color: colors.text,
-      fontSize: 16,
-      lineHeight: 24,
-    },
-    verseNumber: {
-      color: colors.secondary,
-      fontSize: 12,
-      marginRight: 4,
-    },
-    speakerText: {
-      color: colors.text,
-      fontSize: 16,
-      lineHeight: 24,
-    },
-    speakerLabel: {
-      color: colors.secondary,
-      fontSize: 14,
-      fontStyle: 'italic',
-      marginBottom: 4,
-    },
-    chartSection: {
-      flex: 1,
-      maxWidth: '40%',
-      justifyContent: "center",
-      alignItems: "center",
-      paddingVertical: 10,
-    },
-    readerSection: {
-      flex: 3, 
-      justifyContent: "center", 
-      alignItems: "center", 
-      height: "100%",
-      paddingLeft: 10,
-    },
-    readerContainer: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingLeft: 20
-    },
-    readerText: {
-      fontSize: 14,
-      marginBottom: 15,
-      textAlign: 'center',
-      color: colors.text, // Add theme color
-    },
-    iconContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      width: '90%'
-    },
-    divider: {
-      borderBottomColor: colors.border,
-      borderBottomWidth: 1,
-      margin: 10,
-    },
-    blurContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    modalContainer: {
-      width: '90%',
-      backgroundColor: 'white',
-      borderRadius: 12,
-      padding: 16,
-      gap: 16,
-    },
-    emojiPickerContainer: {
-      alignItems: 'center',
-    },
-    blockContainer: {
-      width: '100%',
-    },
-    reactionText: {
-      fontSize: 30, // Adjust size as needed
-      elevation: 3, // Optional: add shadow on Android
-      shadowColor: "#000", // Optional: shadow color for iOS
-      shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
-      shadowOpacity: 0.2, // Optional: shadow opacity for iOS
-      shadowRadius: 2, // Optional: shadow radius for iOS
-    },
-    reactionPosition: {
-      position: "absolute",
-      bottom: 0,
-      right: 0,
-      zIndex: 1,
-    },
-    reactionContainer: {
-      flexDirection: "row",
-      padding: 5, // Padding for the circle
-      position: "absolute",
-      top: -25, // Adjust as needed for overlap
-      right: 0, // Adjust as needed for spacing from the right
-      elevation: 3, // Optional: add shadow on Android
-      shadowColor: "#000", // Optional: shadow color for iOS
-      shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
-      shadowOpacity: 0.2, // Optional: shadow opacity for iOS
-      shadowRadius: 2, // Optional: shadow radius for iOS
-    },
-    readerRoleSelector: {
-      marginVertical: 10,
-      padding: 10,
-    },
-    readerRoleTitle: {
-      fontSize: 16,
-      marginBottom: 8,
-      fontWeight: '500',
-    },
-    readerRoleButtons: {
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-    },
-    roleButton: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      borderWidth: 1,
-      borderColor: '#ccc',
-    },
-    activeRoleButton: {
-      borderWidth: 3,
-      borderColor: '#000',
-    }
-  });
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+    padding: 16,
+  },
+  roleContainer: {
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    borderColor: colors.border,
+    borderWidth: 1,
+  },
+  roleText: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  verseContainer: {
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 8,
+    borderColor: colors.border,
+    borderWidth: 1,
+  },
+  verseText: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  verseNumber: {
+    color: colors.secondary,
+    fontSize: 12,
+    marginRight: 4,
+  },
+  speakerText: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  speakerLabel: {
+    color: colors.secondary,
+    fontSize: 14,
+    fontStyle: 'italic',
+    marginBottom: 4,
+  },
+  chartSection: {
+    flex: 1,
+    maxWidth: '40%',
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  readerSection: {
+    flex: 3, 
+    justifyContent: "center", 
+    alignItems: "center", 
+    height: "100%",
+    paddingLeft: 10,
+  },
+  readerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: 20
+  },
+  readerText: {
+    fontSize: 14,
+    marginBottom: 15,
+    textAlign: 'center',
+    color: colors.text, // Add theme color
+  },
+  iconContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '90%'
+  },
+  divider: {
+    borderBottomColor: colors.border,
+    borderBottomWidth: 1,
+    margin: 10,
+  },
+  blurContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Add semi-transparent overlay
+  },
+modalContainer: {
+  width: '85%',
+  maxHeight: '75%', // Restore maxHeight to prevent always expanding
+  maxWidth: 350,
+  backgroundColor: colors.background || 'white',
+  borderRadius: 20,
+  padding: 0,
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 10,
+  },
+  shadowOpacity: 0.25,
+  shadowRadius: 20,
+  elevation: 15,
+  // Remove marginTop and flex - let it size naturally based on content
+},
+  emojiPickerContainer: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border || '#E5E5EA',
+  },
+  blockContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: colors.card || '#F8F9FA',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  // Add new styles for enhanced messaging look
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: colors.text || '#000',
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 16,
+   // backgroundColor: colors.secondary || '#E5E5EA',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  reactionText: {
+    fontSize: 30, // Adjust size as needed
+    elevation: 3, // Optional: add shadow on Android
+    shadowColor: "#000", // Optional: shadow color for iOS
+    shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
+    shadowOpacity: 0.2, // Optional: shadow opacity for iOS
+    shadowRadius: 2, // Optional: shadow radius for iOS
+  },
+  reactionPosition: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    zIndex: 1,
+  },
+  reactionContainer: {
+    flexDirection: "row",
+    padding: 5, // Padding for the circle
+    position: "absolute",
+    top: -25, // Adjust as needed for overlap
+    right: 0, // Adjust as needed for spacing from the right
+    elevation: 3, // Optional: add shadow on Android
+    shadowColor: "#000", // Optional: shadow color for iOS
+    shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
+    shadowOpacity: 0.2, // Optional: shadow opacity for iOS
+    shadowRadius: 2, // Optional: shadow radius for iOS
+  },
+  readerRoleSelector: {
+    marginVertical: 10,
+    padding: 10,
+  },
+  readerRoleTitle: {
+    fontSize: 16,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  readerRoleButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  roleButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  activeRoleButton: {
+    borderWidth: 3,
+    borderColor: '#000',
+  }
+});
 
   // Update the render method where speech bubbles are rendered
   const renderSpeechBubble = (content: string, speaker: string) => (
@@ -570,39 +612,56 @@ const SegmentComponent: React.FC<SegmentProps> = ({
         contentContainerStyle={{ flexGrow: 1 }}
         automaticallyAdjustKeyboardInsets={true}
       />
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setIsModalVisible(false)}
-      >
-        <BlurView intensity={60} tint="dark" style={styles.blurContainer}>
-          <Pressable
-            style={styles.blurContainer}
-            onPress={() => setIsModalVisible(false)}
+<Modal
+  visible={isModalVisible}
+  transparent={true}
+  animationType="slide"
+  onRequestClose={() => setIsModalVisible(false)}
+>
+  <BlurView intensity={60} tint="dark" style={styles.blurContainer}>
+    <Pressable
+      style={styles.blurContainer}
+      onPress={() => setIsModalVisible(false)}
+    >
+      {selectedBlock && (
+        <View style={styles.modalContainer}>
+          {/* Add modern header */}
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Add Reaction</Text>
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => setIsModalVisible(false)}
+            >
+              <Ionicons name="close" size={25} color={"red"} />
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.emojiPickerContainer}>
+            <EmojiPicker
+              onEmojiSelect={handleEmojiSelect}
+              onClose={() => setIsModalVisible(false)}
+            />
+          </View>
+          
+          <ScrollView 
+            style={styles.blockContainer}
+            showsVerticalScrollIndicator={true}
+            bounces={false}
+            contentContainerStyle={{ flexGrow: 1 }}
           >
-            {selectedBlock && (
-              <View style={styles.modalContainer}>
-                <View style={styles.emojiPickerContainer}>
-                  <EmojiPicker
-                    onEmojiSelect={handleEmojiSelect}
-                    onClose={() => setIsModalVisible(false)}
-                  />
-                </View>
-                <View style={styles.blockContainer}>
-                  <BibleBlockComponent
-                    block={selectedBlock.block}
-                    bIndex={selectedBlock.index}
-                    hasTail={true}
-                    isGlowing={false}
-                    onLongPress={handleLongPress}
-                  />
-                </View>
-              </View>
-            )}
-          </Pressable>
-        </BlurView>
-      </Modal>
+            <BibleBlockComponent
+              block={selectedBlock.block}
+              bIndex={selectedBlock.index}
+              hasTail={true}
+              isGlowing={false}
+              onLongPress={handleLongPress}
+            />
+          </ScrollView>
+        </View>
+      )}
+    </Pressable>
+  </BlurView>
+</Modal>
       <View style={styles.divider} />
 
       <CelebrationPopup 

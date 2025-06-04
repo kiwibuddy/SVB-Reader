@@ -62,17 +62,20 @@ export default function CheckCircle({
   }, [segmentId, isCompleted]);
 
   const handlePress = async () => {
-    if (!isCompleted) {
-      // Get the currently active reader color from the context
-      // If no color is selected, pass null
-      const contextId = context === 'plan' ? planId : 
-                        context === 'challenge' ? challengeId : 
-                        undefined;
+    // Always allow clicking for multiple reads
+    const contextId = context === 'plan' ? planId : 
+                      context === 'challenge' ? challengeId : 
+                      undefined;
                         
-      // Use null instead of selectedReaderColor until it's properly implemented
-      await markSegmentComplete(segmentId, true, null, context, contextId);
-      setShowCelebration(true);
-    }
+    await markSegmentComplete(segmentId, true, null, context, contextId);
+    
+    // Update local state
+    setIsCompleted(true);
+    setShowCelebration(true);
+    
+    // Refresh read count
+    const newCount = await getSegmentReadCount(segmentId);
+    setReadCount(newCount);
   };
 
   const handleCelebrationComplete = () => {
