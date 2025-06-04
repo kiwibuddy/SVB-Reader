@@ -192,6 +192,7 @@ export interface AccordionProps {
   onBookSelect?: (bookName: string) => void;
   onSegmentSelect?: (segmentId: string) => void;
   completedSegments?: {[key: string]: boolean};
+  targetSegmentId?: string | null;
 }
 
 // Define a type for the structure of SegmentTitles
@@ -241,7 +242,8 @@ const Accordion: React.FC<AccordionProps> = ({
   isExpanded,
   onBookSelect,
   onSegmentSelect,
-  completedSegments = {}
+  completedSegments = {},
+  targetSegmentId
 }) => {
   const { colors } = useAppSettings();
   const { completedSegments: globalCompletedSegments } = useAppContext();
@@ -405,7 +407,7 @@ const Accordion: React.FC<AccordionProps> = ({
         <View style={styles.segmentList}>
           <FlatList
             ref={flatListRef}
-            data={item.segments}
+            data={targetSegmentId ? item.segments.filter(seg => seg === targetSegmentId) : item.segments}
             style={styles.flatListContainer}
             renderItem={({ item: segment }) => (
               <SegmentItem

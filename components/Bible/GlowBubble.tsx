@@ -56,17 +56,18 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
     ],
   });
 
-  const tailAlignment = color !== "black" ? { left: 15 } : { right: 15 };
-  const emojiAlignment = color !== "black" ? { right: 10 } : { left: 10 };
+  const tailAlignment = color !== "black" ? { left: 12 } : { right: 12 };
+  const emojiAlignment = color !== "black" ? { right: -8 } : { left: -8 };
 
   return (
-    <View key={bIndex}>
+    <View key={bIndex} style={{ alignItems: color !== "black" ? 'flex-start' : 'flex-end', marginVertical: 1 }}>
       {hasTail && <SourceNameComponent sourceName={sourceName} align={color !== "black" ? "left" : "right"} />}
       <Animated.View
         style={[
           styles.bubble,
           {
             backgroundColor: colors.light,
+            alignSelf: color !== "black" ? 'flex-start' : 'flex-end',
             ...(isGlowing ? {
               shadowColor: glowColor,
               shadowOffset: { width: 0, height: 0 },
@@ -76,10 +77,10 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
-              shadowRadius: 3,
+              shadowRadius: 4,
             }),
             borderWidth: 0,
-            elevation: isGlowing ? 5 : 3,
+            elevation: isGlowing ? 5 : 4,
           },
         ]}
       >
@@ -93,6 +94,17 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
               tailAlignment
             ]}
           />
+        )}
+        {emoji && (
+          <View style={[styles.reactionContainer, { top: -20 }, emojiAlignment]}>
+            <Pressable
+              onPress={async () => {
+                await deleteEmoji(segID, bIndex.toString());
+                setEmoji(null);
+              }}>
+              <Text style={styles.reactionText}>{`${emoji}`}</Text>
+            </Pressable>
+          </View>
         )}
         <FlatList
           data={children}
@@ -109,18 +121,6 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
           }}
         />
       </Animated.View>
-      {emoji && (
-        <View style={[styles.reactionContainer, { top: 35 }, emojiAlignment]}>
-          <Pressable
-            onPress={async () => {
-              await deleteEmoji(segID, bIndex.toString());
-              setEmoji(null);
-            }}
-          >
-            <Text style={styles.reactionText}>{`${emoji}`}</Text>
-          </Pressable>
-        </View>
-      )}
     </View>
   );
 };
@@ -128,83 +128,75 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
 // Define styles
 const styles = StyleSheet.create({
   bubble: {
-    borderRadius: 10,
-    padding: 10,
+    borderRadius: 18,
+    padding: 12,
+    paddingHorizontal: 16,
     position: "relative",
-    margin: 10,
+    marginVertical: 2,
+    marginHorizontal: 8,
+    maxWidth: '90%',
+    alignSelf: 'flex-start',
     ...Platform.select({
       web: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+        boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.1)',
       },
       default: {
         shadowColor: '#000',
         shadowOffset: {
           width: 0,
-          height: 2,
+          height: 1,
         },
-        shadowOpacity: 0.2,
+        shadowOpacity: 0.08,
         shadowRadius: 2,
-        elevation: 3,
+        elevation: 2,
       },
     }),
   },
   tail: {
     position: "absolute",
-    top: -9, // Position above the bubble
-    // left: 15, // Adjust as needed for positioning
+    top: -6,
     width: 0,
     height: 0,
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
-    borderBottomWidth: 10,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderBottomWidth: 8,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
-    // borderBottomColor: "#FF6347", // Same as bubble background
+    zIndex: 2,
   },
   reactionText: {
-    fontSize: 30,
+    fontSize: 28,
+    lineHeight: 32,
+    textAlign: 'center',
     ...Platform.select({
       web: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+        filter: 'drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.1))',
       },
       default: {
         shadowColor: '#000',
         shadowOffset: {
           width: 0,
-          height: 2,
+          height: 1,
         },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        elevation: 3,
+        shadowOpacity: 0.1,
+        shadowRadius: 1,
+        elevation: 2,
       },
     }),
   },
   reactionPosition: {
     position: "absolute",
-    bottom: 0,
-    right: 0,
-    zIndex: 1,
+    bottom: -8,
+    right: -8,
+    zIndex: 10,
   },
   reactionContainer: {
-    flexDirection: "row",
-    padding: 5,
     position: "absolute",
     zIndex: 100,
-    ...Platform.select({
-      web: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
-      },
-      default: {
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        elevation: 3,
-      },
-    }),
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

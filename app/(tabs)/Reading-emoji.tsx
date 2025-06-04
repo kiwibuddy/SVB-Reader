@@ -1,4 +1,5 @@
 "use client"
+import React from "react"
 import {
   View,
   Text,
@@ -118,25 +119,17 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
     },
     emojiCard: {
       width: isLargeScreen ? "23%" : "48%",
-      minHeight: 90,
-      padding: 16,
-      marginBottom: 0,
+      height: 140,
       borderRadius: 16,
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
+      overflow: "hidden",
       shadowColor: "#000",
       shadowOffset: {
         width: 0,
-        height: 3,
+        height: 4,
       },
-      shadowOpacity: 0.15,
-      shadowRadius: 6,
-      elevation: 5,
-      transform: [{ scale: 1 }],
-      borderWidth: 1,
-      borderColor: "rgba(255,255,255,0.1)",
-      overflow: "hidden",
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 4,
     },
     selectedCard: {
       transform: [{ scale: 1.03 }],
@@ -156,32 +149,71 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       transform: [{ scale: 0.98 }],
       shadowOpacity: 0.1,
     },
-    emojiWrapper: {
-      width: 48,
-      height: 48,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: 10,
-      borderRadius: 24,
+    gradientContainer: {
+      flex: 1,
+      padding: 16,
+      borderRadius: 16,
+      position: 'relative',
+    },
+    cardContent: {
+      flex: 1,
+      justifyContent: 'space-between',
+      zIndex: 2,
+    },
+    cardIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 8,
+      backgroundColor: 'rgba(255,255,255,0.25)',
+    },
+    cardTextSection: {
+      flex: 1,
+      justifyContent: 'center',
+      marginVertical: 4,
+    },
+    cardTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: '#FFF',
+      marginBottom: 2,
+      textShadowColor: 'rgba(0,0,0,0.3)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
+      letterSpacing: -0.2,
+    },
+    cardBadge: {
+      alignSelf: 'flex-start',
+      backgroundColor: 'rgba(255,255,255,0.25)',
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.3)',
+      marginTop: 6,
+    },
+    badgeText: {
+      fontSize: 10,
+      fontWeight: '600',
+      color: '#FFF',
+      textShadowColor: 'rgba(0,0,0,0.25)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
+    },
+    cardAccent: {
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      width: 40,
+      height: 40,
+      backgroundColor: 'rgba(255,255,255,0.08)',
+      borderBottomLeftRadius: 20,
     },
     emojiText: {
-      fontSize: 32,
-    },
-    emojiInfoContainer: {
-      alignItems: "center",
-    },
-    emojiLabel: {
-      fontSize: 14,
-      color: "white",
-      fontWeight: "600",
-      letterSpacing: 0.3,
-      textAlign: "center",
-    },
-    emojiCount: {
-      fontSize: 12,
-      color: "rgba(255, 255, 255, 0.9)",
-      marginTop: 4,
-      textAlign: "center",
+      fontSize: 24,
+      lineHeight: 24,
     },
     descriptionCard: {
       marginVertical: 16,
@@ -240,40 +272,26 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       paddingHorizontal: 4,
     },
     reactionItem: {
-      marginBottom: 20,
+      marginBottom: 24,
       position: "relative",
-      zIndex: 1,
-      borderRadius: 16,
-      overflow: "hidden",
-      shadowColor: colors.text,
-      shadowOffset: {
-        width: 0,
-        height: 3,
-      },
-      shadowOpacity: 0.1,
-      shadowRadius: 6,
-      elevation: 4,
-      borderWidth: 1,
-      borderColor: Platform.OS === "ios" ? "rgba(0,0,0,0.05)" : "transparent",
+      backgroundColor: "transparent",
+      borderWidth: 0,
     },
-    reactionEmoji: {
+    emojiReaction: {
       position: "absolute",
-      top: 12,
-      right: 12,
-      fontSize: 30,
-      padding: 8,
-      zIndex: 2,
-      elevation: 3,
-      backgroundColor: "rgba(0,0,0,0.1)",
-      borderRadius: 20,
-      overflow: "hidden",
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.2,
-      shadowRadius: 3,
+      zIndex: 100,
+      width: 32,
+      height: 32,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    messageContainer: {
+      position: "relative",
+    },
+    emojiReactionText: {
+      fontSize: 28,
+      lineHeight: 32,
+      textAlign: 'center',
     },
     stepText: {
       fontWeight: "700",
@@ -719,25 +737,25 @@ const ReadingEmoji = () => {
             >
               <LinearGradient
                 colors={type.gradientColors as any}
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                }}
+                style={styles.gradientContainer}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-              />
-              <View style={styles.emojiWrapper}>
-                <Text style={styles.emojiText}>{type.emoji}</Text>
-              </View>
-              <View style={styles.emojiInfoContainer}>
-                <Text style={styles.emojiLabel}>{t(`UI.emojiPage.emojiTypes.${type.label}`)}</Text>
-                <Text style={styles.emojiCount}>
-                  {count} {t("UI.emojiPage.verses")}
-                </Text>
-              </View>
+              >
+                <View style={styles.cardContent}>
+                  <View style={styles.cardIcon}>
+                    <Text style={styles.emojiText}>{type.emoji}</Text>
+                  </View>
+                  <View style={styles.cardTextSection}>
+                    <Text style={styles.cardTitle}>{t(`UI.emojiPage.emojiTypes.${type.label}`)}</Text>
+                  </View>
+                  <View style={styles.cardBadge}>
+                    <Text style={styles.badgeText}>
+                      {count} {t("UI.emojiPage.verses")}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.cardAccent} />
+              </LinearGradient>
             </Pressable>
           )
         })}
@@ -767,6 +785,10 @@ const ReadingEmoji = () => {
   const renderItem = ({ item: reaction, index }: { item: EmojiReaction; index: number }) => {
     try {
       const blockData = typeof reaction.blockData === "string" ? JSON.parse(reaction.blockData) : reaction.blockData
+      const { source } = blockData
+      const { color } = source
+      // Mirrored: right for left-aligned, left for right-aligned
+      const emojiAlignment = color !== "black" ? { right: 0 } : { left: 0 }
 
       return (
         <Pressable
@@ -774,8 +796,20 @@ const ReadingEmoji = () => {
           style={styles.reactionItem}
           android_ripple={{ color: "rgba(0,0,0,0.1)", borderless: false }}
         >
-          <BibleBlockComponent block={blockData} bIndex={index} toRead={false} hasTail={true} />
-          <Text style={styles.reactionEmoji}>{reaction.emoji}</Text>
+          <View style={styles.messageContainer}>
+            <BibleBlockComponent 
+              block={blockData} 
+              bIndex={index} 
+              toRead={false} 
+              hasTail={true} 
+              hideEmoji={true}
+              renderBubbleExtra={
+                <View style={[styles.emojiReaction, emojiAlignment]}>
+                  <Text style={styles.emojiReactionText}>{reaction.emoji}</Text>
+                </View>
+              }
+            />
+          </View>
           <Text style={styles.referenceText}>{getSegmentReference(reaction.segmentID)}</Text>
         </Pressable>
       )

@@ -73,33 +73,40 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     marginVertical: 12,
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
   },
   filterScrollContent: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
     paddingRight: 8,
+    flex: 1,
   },
   filterButton: {
     paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    backgroundColor: colors.isDark ? colors.card : '#E8E8E8', // Darker shade only for light mode
+    paddingHorizontal: 8,
+    borderRadius: 20,
+    backgroundColor: colors.isDark ? colors.card : '#F0F0F0',
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 8,
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.5,
-    shadowRadius: 2,
-    elevation: 4,
+    flex: 1,
+    justifyContent: 'center',
+    minWidth: 0,
+    borderWidth: 1,
+    borderColor: colors.isDark ? colors.border : '#E0E0E0',
+  },
+  filterButtonAll: {
+    flex: 0.6,
   },
   filterButtonActive: {
     backgroundColor: '#FF6B00',
+    borderColor: '#FF6B00',
   },
   filterText: {
-    fontSize: 14,
+    fontSize: 11,
     color: colors.text,
     fontWeight: '500',
+    textAlign: 'center',
+    flexShrink: 1,
   },
   filterTextActive: {
     color: '#FFF',
@@ -115,11 +122,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    flexShrink: 0,
   },
   searchButtonActive: {
     backgroundColor: '#FF6B00',
@@ -162,6 +165,7 @@ const Navigation = () => {
   const [isAscending, setIsAscending] = useState(true);
   const [showSearch, setShowSearch] = useState(false);
   const [selectedBook, setSelectedBook] = useState<string | null>(null);
+  const [targetSegmentId, setTargetSegmentId] = useState<string | null>(null);
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
@@ -185,33 +189,26 @@ const Navigation = () => {
   };
 
   // Handle segment click when chapter is selected
-  const handleSegmentSelect = (segmentId: string) => {
+  const handleSegmentSelect = (segmentId: string, targetVerse?: number) => {
     // Reset any scroll position that might be stored
     if (Platform.OS === 'web') {
       window.scrollTo(0, 0);
     }
     
+    const params: any = {
+      segment: `${language}-${version}-${segmentId}`,
+      scrollReset: 'true'
+    };
+    
+    // Add verse parameter if specified
+    if (targetVerse) {
+      params.verse = targetVerse.toString();
+    }
+    
     router.push({
       pathname: "/(tabs)/[segment]" as const,
-      params: {
-        segment: `${language}-${version}-${segmentId}`,
-        scrollReset: 'true'
-      }
+      params
     });
-  };
-
-  const handleSearchToggle = () => {
-    setShowSearch(!showSearch);
-    if (showSearch) {
-      // Clear search when closing
-      setSearchQuery('');
-      setSelectedBook(null);
-    }
-  };
-
-  const handleClearSearch = () => {
-    setSearchQuery('');
-    setSelectedBook(null);
   };
 
   const filteredData = React.useMemo(() => {
@@ -224,18 +221,47 @@ const Navigation = () => {
       filtered = filtered.filter(item => newTestamentBooks.includes(item.djhBook));
     }
 
+    // Reset target segment when search changes
+    setTargetSegmentId(null);
+    setSelectedBook(null);
+
     // Apply search filter
     if (searchQuery && showSearch) {
       const parsedRef = parseReference(searchQuery);
       
-      if (parsedRef?.book) {
-        // Filter to show only the selected book
+      if (parsedRef?.book && parsedRef?.chapter) {
+        // Handle specific scripture reference (e.g., "John 3:16")
+        const targetSegment = findSegmentId(parsedRef.book, parsedRef.chapter, parsedRef.verse);
+        
+        if (targetSegment) {
+          // Filter to show only the book that contains this segment
+          filtered = filtered.filter(item => {
+            return item.segments.includes(targetSegment as any);
+          });
+          
+          // Set the target segment for accordion expansion and highlighting
+          setTargetSegmentId(targetSegment);
+          const bookKey = parsedRef.book as keyof typeof Books;
+          setSelectedBook(Books[bookKey]?.bookName || '');
+        } else {
+          // If no segment found, show the book that matches
+          filtered = filtered.filter(item => {
+            const bookName = Books[item.djhBook].bookName.toLowerCase();
+            return bookName.includes(parsedRef.book.toLowerCase()) || item.djhBook === parsedRef.book;
+          });
+          
+          // Set selected book for expansion even if no specific segment
+          const bookKey = parsedRef.book as keyof typeof Books;
+          setSelectedBook(Books[bookKey]?.bookName || '');
+        }
+      } else if (parsedRef?.book) {
+        // Handle partial reference (e.g., "John" or "1 Corinthians")
         filtered = filtered.filter(item => {
           const bookName = Books[item.djhBook].bookName.toLowerCase();
-          return bookName === parsedRef.book.toLowerCase();
+          return bookName.includes(parsedRef.book.toLowerCase()) || item.djhBook === parsedRef.book;
         });
       } else {
-        // Filter by book name containing search query
+        // Handle general text search
         filtered = filtered.filter(item => {
           const bookName = Books[item.djhBook].bookName.toLowerCase();
           return bookName.includes(searchQuery.toLowerCase());
@@ -250,6 +276,22 @@ const Navigation = () => {
       return isAscending ? indexA - indexB : indexB - indexA;
     });
   }, [filter, searchQuery, showSearch, isAscending]);
+
+  const handleSearchToggle = () => {
+    setShowSearch(!showSearch);
+    if (showSearch) {
+      // Clear search when closing
+      setSearchQuery('');
+      setSelectedBook(null);
+      setTargetSegmentId(null);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setSelectedBook(null);
+    setTargetSegmentId(null);
+  };
 
   // Handle filter button press
   const handleFilterPress = (newFilter: string) => {
@@ -276,16 +318,19 @@ const Navigation = () => {
 
       {/* Filter and Search Container */}
 <View style={styles.filterContainer}>
-  <ScrollView 
-    horizontal 
-    showsHorizontalScrollIndicator={false}
-    contentContainerStyle={styles.filterScrollContent}
-  >
+  <View style={styles.filterScrollContent}>
     <TouchableOpacity 
-      style={[styles.filterButton, filter === 'all' && styles.filterButtonActive]}
+      style={[
+        styles.filterButton, 
+        styles.filterButtonAll,
+        filter === 'all' && styles.filterButtonActive
+      ]}
       onPress={() => handleFilterPress('all')}
     >
-      <Text style={[styles.filterText, filter === 'all' && styles.filterTextActive]}>
+      <Text 
+        style={[styles.filterText, filter === 'all' && styles.filterTextActive]}
+        numberOfLines={1}
+      >
         All
       </Text>
       {filter === 'all' && (
@@ -301,7 +346,10 @@ const Navigation = () => {
       style={[styles.filterButton, filter === 'ot' && styles.filterButtonActive]}
       onPress={() => handleFilterPress('ot')}
     >
-      <Text style={[styles.filterText, filter === 'ot' && styles.filterTextActive]}>
+      <Text 
+        style={[styles.filterText, filter === 'ot' && styles.filterTextActive]}
+        numberOfLines={1}
+      >
         Old Testament
       </Text>
       {filter === 'ot' && (
@@ -317,7 +365,10 @@ const Navigation = () => {
       style={[styles.filterButton, filter === 'nt' && styles.filterButtonActive]}
       onPress={() => handleFilterPress('nt')}
     >
-      <Text style={[styles.filterText, filter === 'nt' && styles.filterTextActive]}>
+      <Text 
+        style={[styles.filterText, filter === 'nt' && styles.filterTextActive]}
+        numberOfLines={1}
+      >
         New Testament
       </Text>
       {filter === 'nt' && (
@@ -329,7 +380,7 @@ const Navigation = () => {
         />
       )}
     </TouchableOpacity>
-  </ScrollView>
+  </View>
   <TouchableOpacity 
     style={[styles.searchButton, showSearch && styles.searchButtonActive]}
     onPress={handleSearchToggle}
@@ -353,7 +404,7 @@ const Navigation = () => {
     />
     <TextInput
       style={[styles.searchInput, { color: colors.text }]}
-      placeholder="Search books..."
+      placeholder="Search books or verses (e.g., John 3:16)..."
       placeholderTextColor={colors.secondary}
       value={searchQuery}
       onChangeText={setSearchQuery}
@@ -373,8 +424,7 @@ const Navigation = () => {
           data={filteredData}
           renderItem={({ item }) => {
             const bookIndex = booksArray.findIndex(book => book === item.djhBook);
-            const isSelected = Books[item.djhBook].bookName.toLowerCase() === 
-              parseReference(searchQuery)?.book?.toLowerCase();
+            const isSelected = Books[item.djhBook].bookName.toLowerCase() === selectedBook?.toLowerCase();
             
             return (
               <Accordion 
@@ -387,6 +437,7 @@ const Navigation = () => {
                 onBookSelect={handleBookSelect}
                 onSegmentSelect={handleSegmentSelect}
                 completedSegments={completedSegmentIds}
+                targetSegmentId={targetSegmentId}
               />
             );
           }}

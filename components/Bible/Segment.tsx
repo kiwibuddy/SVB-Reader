@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"; // Ensure useEffect is imported
 import { View, Text, FlatList, Pressable, TouchableOpacity, Modal, StyleSheet, useWindowDimensions, Platform, ScrollView } from "react-native";
 import { BlurView } from "expo-blur";
-import BibleBlockComponent from './BibleBlock';
+import BibleBlockComponent from './Block';
 import { BibleBlock, SegmentType } from "@/types";
 import PieChart from "../PieChart";
 import ChartLegend from "../ChartLegend";
@@ -73,10 +73,11 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return null; // Or return an error state component
   }
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<{
     block: BibleBlock;
     index: number;
+    position: { x: number; y: number };
   } | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const { content, readers = [], id } = segmentData;
@@ -112,9 +113,15 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   const isCompleted = getIsCompleted();
 
-  const handleLongPress = (block: BibleBlock, index: number) => {
-    setSelectedBlock({ block, index });
-    setIsModalVisible(true);
+  const handleLongPress = (block: BibleBlock, index: number, position?: { x: number; y: number }) => {
+    // Use the bubble position if provided, otherwise use screen center as fallback
+    const finalPosition = position || { 
+      x: screenWidth / 2, 
+      y: 300 
+    };
+
+    setSelectedBlock({ block, index, position: finalPosition });
+    setShowEmojiPicker(true);
   };
 
   const handleEmojiSelect = async (emoji: string) => {
@@ -129,7 +136,13 @@ const SegmentComponent: React.FC<SegmentProps> = ({
         console.error("Error setting emoji:", error);
       }
     }
-    setIsModalVisible(false);
+    setShowEmojiPicker(false);
+    setSelectedBlock(null);
+  };
+
+  const handleEmojiPickerClose = () => {
+    setShowEmojiPicker(false);
+    setSelectedBlock(null);
   };
 
   // Memoize the content to prevent unnecessary re-renders
@@ -380,91 +393,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     margin: 10,
   },
-  blurContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Add semi-transparent overlay
-  },
-modalContainer: {
-  width: '85%',
-  maxHeight: '75%', // Restore maxHeight to prevent always expanding
-  maxWidth: 350,
-  backgroundColor: colors.background || 'white',
-  borderRadius: 20,
-  padding: 0,
-  shadowColor: '#000',
-  shadowOffset: {
-    width: 0,
-    height: 10,
-  },
-  shadowOpacity: 0.25,
-  shadowRadius: 20,
-  elevation: 15,
-  // Remove marginTop and flex - let it size naturally based on content
-},
-  emojiPickerContainer: {
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border || '#E5E5EA',
-  },
-  blockContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: colors.card || '#F8F9FA',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  // Add new styles for enhanced messaging look
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  modalTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: colors.text || '#000',
-  },
-  closeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 16,
-   // backgroundColor: colors.secondary || '#E5E5EA',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  reactionText: {
-    fontSize: 30, // Adjust size as needed
-    elevation: 3, // Optional: add shadow on Android
-    shadowColor: "#000", // Optional: shadow color for iOS
-    shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
-    shadowOpacity: 0.2, // Optional: shadow opacity for iOS
-    shadowRadius: 2, // Optional: shadow radius for iOS
-  },
-  reactionPosition: {
-    position: "absolute",
-    bottom: 0,
+  emojiPickerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
     right: 0,
-    zIndex: 1,
+    bottom: 0,
+    zIndex: 1000,
   },
-  reactionContainer: {
-    flexDirection: "row",
-    padding: 5, // Padding for the circle
-    position: "absolute",
-    top: -25, // Adjust as needed for overlap
-    right: 0, // Adjust as needed for spacing from the right
-    elevation: 3, // Optional: add shadow on Android
-    shadowColor: "#000", // Optional: shadow color for iOS
-    shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
-    shadowOpacity: 0.2, // Optional: shadow opacity for iOS
-    shadowRadius: 2, // Optional: shadow radius for iOS
+  emojiPickerWrapper: {
+    position: 'absolute',
+    zIndex: 1001,
   },
   readerRoleSelector: {
     marginVertical: 10,
@@ -500,7 +439,7 @@ modalContainer: {
     </View>
   );
 
-  // Update renderItem to use new glow logic
+  // Update renderItem to use the correct function signature
   const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
     const { sourceName } = item.source;
     const showSourceName = index === 0 || 
@@ -513,7 +452,7 @@ modalContainer: {
         block={item}
         bIndex={index}
         hasTail={showSourceName}
-        isGlowing={isGlowing}
+        toRead={isGlowing}
         onLongPress={handleLongPress}
       />
     );
@@ -612,56 +551,31 @@ modalContainer: {
         contentContainerStyle={{ flexGrow: 1 }}
         automaticallyAdjustKeyboardInsets={true}
       />
-<Modal
-  visible={isModalVisible}
-  transparent={true}
-  animationType="slide"
-  onRequestClose={() => setIsModalVisible(false)}
->
-  <BlurView intensity={60} tint="dark" style={styles.blurContainer}>
-    <Pressable
-      style={styles.blurContainer}
-      onPress={() => setIsModalVisible(false)}
-    >
-      {selectedBlock && (
-        <View style={styles.modalContainer}>
-          {/* Add modern header */}
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Add Reaction</Text>
-            <TouchableOpacity 
-              style={styles.closeButton}
-              onPress={() => setIsModalVisible(false)}
-            >
-              <Ionicons name="close" size={25} color={"red"} />
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.emojiPickerContainer}>
+
+      {/* Simple positioned emoji picker - no modal or overlay */}
+      {showEmojiPicker && selectedBlock && (
+        <>
+          <Pressable
+            style={styles.emojiPickerOverlay}
+            onPress={handleEmojiPickerClose}
+          />
+          <View
+            style={[
+              styles.emojiPickerWrapper,
+              {
+                left: Math.max(10, Math.min(selectedBlock.position.x - 100, screenWidth - 210)),
+                top: Math.max(100, selectedBlock.position.y - 60),
+              }
+            ]}
+          >
             <EmojiPicker
               onEmojiSelect={handleEmojiSelect}
-              onClose={() => setIsModalVisible(false)}
+              onClose={handleEmojiPickerClose}
             />
           </View>
-          
-          <ScrollView 
-            style={styles.blockContainer}
-            showsVerticalScrollIndicator={true}
-            bounces={false}
-            contentContainerStyle={{ flexGrow: 1 }}
-          >
-            <BibleBlockComponent
-              block={selectedBlock.block}
-              bIndex={selectedBlock.index}
-              hasTail={true}
-              isGlowing={false}
-              onLongPress={handleLongPress}
-            />
-          </ScrollView>
-        </View>
+        </>
       )}
-    </Pressable>
-  </BlurView>
-</Modal>
+
       <View style={styles.divider} />
 
       <CelebrationPopup 
