@@ -144,7 +144,6 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     marginRight: 8,
   },
   searchInput: {
-    flex: 1,
     paddingVertical: 12,
     fontSize: 16,
     color: colors.text,
@@ -156,6 +155,24 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     backgroundColor: colors.card,
     borderColor: colors.border,
   },
+  inlineVerseButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    marginLeft: 4,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 107, 0, 0.1)',
+  },
+  inlineVerseText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#FF6B00',
+    marginRight: 3,
+  },
+  spacer: {
+    flex: 1,
+  },
 });
 
 const Navigation = () => {
@@ -166,6 +183,7 @@ const Navigation = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [selectedBook, setSelectedBook] = useState<string | null>(null);
   const [targetSegmentId, setTargetSegmentId] = useState<string | null>(null);
+  const [targetVerse, setTargetVerse] = useState<number | null>(null);
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
@@ -179,6 +197,39 @@ const Navigation = () => {
   // Add state for completed segments
   const [completedSegmentIds, setCompletedSegmentIds] = useState<{[key: string]: boolean}>({});
 
+  // Check if search query is a valid scripture reference with verse
+  const isValidScriptureReference = React.useMemo(() => {
+    if (!searchQuery || !showSearch) return false;
+    const parsedRef = parseReference(searchQuery);
+    if (parsedRef?.book && parsedRef?.chapter && parsedRef?.verse) {
+      const segmentId = findSegmentId(parsedRef.book, parsedRef.chapter, parsedRef.verse);
+      if (segmentId) {
+        // Additional validation: check for reasonable verse numbers
+        // Most chapters don't have more than 80 verses, very few go above 100
+        const verse = parsedRef.verse;
+        if (verse > 150) {
+          return false; // Clearly invalid verse number
+        }
+        
+        // Additional checks for specific books with known limits could be added here
+        // For now, we'll trust the referenceMapping utility but add basic sanity checks
+        return true;
+      }
+    }
+    return false;
+  }, [searchQuery, showSearch]);
+
+  // Handle direct navigation to scripture reference
+  const handleDirectScriptureNavigation = () => {
+    const parsedRef = parseReference(searchQuery);
+    if (parsedRef?.book && parsedRef?.chapter && parsedRef?.verse) {
+      const segmentId = findSegmentId(parsedRef.book, parsedRef.chapter, parsedRef.verse);
+      if (segmentId) {
+        handleSegmentSelect(segmentId, parsedRef.verse);
+      }
+    }
+  };
+
   // Handle book title click
   const handleBookSelect = (bookName: string) => {
     // Only update search if search is active
@@ -189,7 +240,9 @@ const Navigation = () => {
   };
 
   // Handle segment click when chapter is selected
-  const handleSegmentSelect = (segmentId: string, targetVerse?: number) => {
+  const handleSegmentSelect = (segmentId: string, verseOverride?: number) => {
+    console.log('🚀 Navigation: handleSegmentSelect called with:', { segmentId, verseOverride, targetVerse });
+    
     // Reset any scroll position that might be stored
     if (Platform.OS === 'web') {
       window.scrollTo(0, 0);
@@ -200,10 +253,27 @@ const Navigation = () => {
       scrollReset: 'true'
     };
     
-    // Add verse parameter if specified
-    if (targetVerse) {
-      params.verse = targetVerse.toString();
+    // Use verse override if provided, otherwise use stored target verse
+    const verseToUse = verseOverride || targetVerse;
+    console.log('🔧 Navigation: verseToUse calculated as:', verseToUse);
+    
+    if (verseToUse) {
+      params.verse = verseToUse.toString();
+      console.log('✅ Navigation: Added verse to params:', params.verse);
+      
+      // Also add chapter information if we have a parsed reference
+      if (searchQuery && showSearch) {
+        const parsedRef = parseReference(searchQuery);
+        if (parsedRef?.chapter) {
+          params.chapter = parsedRef.chapter.toString();
+          console.log('✅ Navigation: Added chapter to params:', params.chapter);
+        }
+      }
+    } else {
+      console.log('❌ Navigation: No verse to add to params');
     }
+    
+    console.log('🎯 Navigation: Final params being sent:', JSON.stringify(params, null, 2));
     
     router.push({
       pathname: "/(tabs)/[segment]" as const,
@@ -224,6 +294,7 @@ const Navigation = () => {
     // Reset target segment when search changes
     setTargetSegmentId(null);
     setSelectedBook(null);
+    setTargetVerse(null);
 
     // Apply search filter
     if (searchQuery && showSearch) {
@@ -241,6 +312,10 @@ const Navigation = () => {
           
           // Set the target segment for accordion expansion and highlighting
           setTargetSegmentId(targetSegment);
+          // Store the verse number for navigation
+          if (parsedRef.verse) {
+            setTargetVerse(parsedRef.verse);
+          }
           const bookKey = parsedRef.book as keyof typeof Books;
           setSelectedBook(Books[bookKey]?.bookName || '');
         } else {
@@ -284,6 +359,7 @@ const Navigation = () => {
       setSearchQuery('');
       setSelectedBook(null);
       setTargetSegmentId(null);
+      setTargetVerse(null);
     }
   };
 
@@ -291,6 +367,7 @@ const Navigation = () => {
     setSearchQuery('');
     setSelectedBook(null);
     setTargetSegmentId(null);
+    setTargetVerse(null);
   };
 
   // Handle filter button press
@@ -397,19 +474,29 @@ const Navigation = () => {
 {showSearch && (
   <View style={styles.searchContainer}>
     <Ionicons 
-      name="search" 
+      name="search"
       size={20} 
       color={colors.secondary} 
       style={styles.searchInputIcon} 
     />
     <TextInput
-      style={[styles.searchInput, { color: colors.text }]}
+      style={[styles.searchInput, { color: colors.text, flex: isValidScriptureReference ? 0 : 1 }]}
       placeholder="Search books or verses (e.g., John 3:16)..."
       placeholderTextColor={colors.secondary}
       value={searchQuery}
       onChangeText={setSearchQuery}
       autoFocus
     />
+    {isValidScriptureReference && (
+      <TouchableOpacity 
+        style={styles.inlineVerseButton}
+        onPress={handleDirectScriptureNavigation}
+      >
+        <Text style={styles.inlineVerseText}>Go To</Text>
+        <Ionicons name="arrow-forward" size={12} color="#FF6B00" />
+      </TouchableOpacity>
+    )}
+    <View style={styles.spacer} />
     {searchQuery.length > 0 && (
       <TouchableOpacity 
         onPress={handleClearSearch}

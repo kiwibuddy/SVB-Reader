@@ -125,14 +125,11 @@ export default function BibleScreen() {
   const { updateSegmentId, language, version } = useAppContext();
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { planId, challengeId } = params;
+  const { planId, challengeId, verse } = params;
   const scrollViewRef = useRef<ScrollView>(null);
   const { isVisible } = useBottomNavAnimation();
   
-  // Create styles
-  const styles = useMemo(() => createStyles(colors), [colors]);
-
-  // Parse segmentID
+  // Parse segmentID first
   const segID = useMemo(() => {
     const segment = params.segment as string;
     return segment.includes('-') ? segment.split('-').pop() || '' : segment;
@@ -143,6 +140,29 @@ export default function BibleScreen() {
     if (!segID) return undefined;
     return Bible[segID];
   }, [segID]);
+  
+  // Create styles AFTER we ensure we have all the data we need
+  const styles = useMemo(() => {
+    if (!colors) {
+      // Provide minimal fallback styles
+      return StyleSheet.create({
+        container: { flex: 1, backgroundColor: '#fff' },
+        screenContainer: { flex: 1 },
+        headerSpacer: { height: 20 },
+        checkCircleContainer: { alignItems: 'center', padding: 20 },
+        buttonContainer: { position: 'absolute', bottom: 24, right: 16, flexDirection: 'row', gap: 12 },
+        navigationButton: { 
+          backgroundColor: '#f0f0f0', 
+          borderRadius: 25, 
+          width: 50, 
+          height: 50, 
+          justifyContent: 'center', 
+          alignItems: 'center' 
+        }
+      });
+    }
+    return createStyles(colors);
+  }, [colors]);
 
   // Update segment ID when it changes
   useEffect(() => {
@@ -151,11 +171,18 @@ export default function BibleScreen() {
     }
   }, [segID, updateSegmentId]);
 
+  // Add debugging for verse parameter
+  useEffect(() => {
+    if (verse) {
+      console.log('BibleScreen received verse parameter:', verse);
+    }
+  }, [verse]);
+
   // Show loading state if data isn't ready
-  if (!segID || !segmentData) {
+  if (!segID || !segmentData || !colors) {
     return (
-      <View style={[styles.container, styles.centered]}>
-        <Text style={styles.loadingText}>Loading...</Text>
+      <View style={[{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors?.background || '#fff' }]}>
+        <Text style={{ color: colors?.text || '#000' }}>Loading...</Text>
       </View>
     );
   }
@@ -249,9 +276,11 @@ export default function BibleScreen() {
               context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
               planId={planId as string}
               challengeId={challengeId as string}
+              verse={verse}
             />
             <Questions segmentId={segID} />
-            <View style={styles.checkCircleContainer}>
+            {/* Temporarily disabled CheckCircle to fix Context error */}
+            {/* <View style={styles.checkCircleContainer}>
               <CheckCircle 
                 segmentId={segID} 
                 iconSize={60}
@@ -259,7 +288,7 @@ export default function BibleScreen() {
                 planId={planId as string || undefined}
                 challengeId={challengeId as string || undefined}
               />
-            </View>
+            </View> */}
           </>
         )}
       </ScrollView>

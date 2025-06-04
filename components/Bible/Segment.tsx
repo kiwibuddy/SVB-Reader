@@ -24,6 +24,7 @@ interface SegmentProps {
   context?: 'main' | 'plan' | 'challenge';
   planId?: string;
   challengeId?: string;
+  verse?: string | string[];
 }
 
 const icons = [
@@ -46,12 +47,13 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   segmentData, 
   context = 'main',
   planId,
-  challengeId
+  challengeId,
+  verse: verseProp
 }) => {
+  // Move ALL hooks to the very top - consolidate useLocalSearchParams calls
   const { width: screenWidth } = useWindowDimensions();
-  const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenWidth > 768);
-
   const router = useRouter();
+  const { colors } = useAppSettings();
   const { 
     completedSegments, 
     markSegmentComplete,
@@ -62,10 +64,29 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     updateReadingPlanProgress,
     updateChallengeProgress,
   } = useAppContext();
+  
+  // Consolidate ALL useLocalSearchParams calls here
+  const allParams = useLocalSearchParams();
+  const { scrollReset, verse: urlVerse, chapter: urlChapter } = allParams;
+  
+  // Use verse from props, fallback to URL params for backward compatibility
+  const verseParam = verseProp || urlVerse;
+  const verse = Array.isArray(verseParam) ? verseParam[0] : verseParam;
 
-  const { colors } = useAppSettings();
+  const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenWidth > 768);
 
-  const { scrollReset } = useLocalSearchParams();
+  // Add debugging for verse parameter
+  useEffect(() => {
+    console.log('🎯 Verse parameter received:', verse, typeof verse);
+    console.log('🔧 verseProp:', verseProp);
+    console.log('🔧 urlVerse:', urlVerse);
+    console.log('🔧 Final verse value:', verse);
+  }, [verse, verseProp, urlVerse]);
+
+  // Simplified debugging for all search params
+  useEffect(() => {
+    console.log('🔧 ALL useLocalSearchParams():', allParams);
+  }, [allParams]);
 
   // Add null checks for segmentData
   if (!segmentData || !segmentData.id) {
@@ -168,6 +189,14 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     } as ColorData);
     
     setColorData(counts);
+  }, [memoizedContent]);
+
+  // Add debugging for content structure
+  useEffect(() => {
+    if (memoizedContent && memoizedContent.length > 0) {
+      console.log('📚 Content loaded, total blocks:', memoizedContent.length);
+      console.log('📝 First block structure:', JSON.stringify(memoizedContent[0], null, 2));
+    }
   }, [memoizedContent]);
 
   // Add handler for completion toggle
@@ -476,6 +505,159 @@ const styles = StyleSheet.create({
     return () => clearTimeout(timer);
   }, [segmentData.id]);
 
+  // REAL VERSE SCROLLING: Enhanced verse detection logic  
+  useEffect(() => {
+    console.log('🔄 Verse scrolling effect triggered with verse:', verse, 'content length:', memoizedContent.length);
+    
+    if (verse && flatListRef.current && memoizedContent.length > 0) {
+      const targetVerse = parseInt(verse as string);
+      console.log('🎯 Attempting to scroll to verse:', targetVerse);
+      console.log('📊 Total blocks in content:', memoizedContent.length);
+      
+      // Parse the URL params to get the chapter information
+      const segmentParam = allParams.segment as string;
+      console.log('🔍 Segment param:', segmentParam);
+      
+      // Extract chapter from the navigation context - we need to determine which chapter we're looking for
+      // For now, let's find ALL chapters and verses in this segment
+      console.log('🔍 DEBUGGING: Available chapters and verses in this segment:');
+      const chaptersAndVerses: {[chapter: number]: number[]} = {};
+      let currentChapter = 0;
+      
+      memoizedContent.forEach((block, index) => {
+        if (block.children && Array.isArray(block.children)) {
+          // Search in the inline children (BibleInline[])
+          block.children.forEach((inline: any) => {
+            if (inline.children && Array.isArray(inline.children)) {
+              // Search in the leaf children (BibleLeaf[])
+              inline.children.forEach((leaf: any) => {
+                if (leaf && typeof leaf === 'object') {
+                  // Look for chapter markers: tag array containing "c"
+                  if (Array.isArray(leaf.tag) && leaf.tag.includes('c') && leaf.text) {
+                    const chapterNum = parseInt(leaf.text);
+                    if (!isNaN(chapterNum)) {
+                      currentChapter = chapterNum;
+                      if (!chaptersAndVerses[currentChapter]) {
+                        chaptersAndVerses[currentChapter] = [];
+                      }
+                      console.log(`📖 Found chapter ${chapterNum} in block ${index}`);
+                    }
+                  }
+                  
+                  // Look for verse tags: tag array containing "v" and text with verse number
+                  if (Array.isArray(leaf.tag) && leaf.tag.includes('v') && leaf.text && currentChapter > 0) {
+                    const verseNum = parseInt(leaf.text);
+                    if (!isNaN(verseNum)) {
+                      if (!chaptersAndVerses[currentChapter]) {
+                        chaptersAndVerses[currentChapter] = [];
+                      }
+                      chaptersAndVerses[currentChapter].push(verseNum);
+                      console.log(`✅ Found chapter ${currentChapter}, verse ${verseNum} in block ${index}`);
+                    }
+                  }
+                }
+              });
+            }
+          });
+        }
+      });
+      
+      console.log('📋 Chapters and verses in this segment:', chaptersAndVerses);
+      
+      // Get target chapter from URL params, fallback to 3 for backward compatibility
+      const targetChapter = urlChapter ? parseInt(Array.isArray(urlChapter) ? urlChapter[0] : urlChapter) : 3;
+      console.log(`🎯 Looking for chapter ${targetChapter}, verse ${targetVerse}`);
+      
+      if (!chaptersAndVerses[targetChapter]) {
+        console.log(`⚠️ WARNING: Chapter ${targetChapter} not found in this segment!`);
+        console.log('📖 Available chapters:', Object.keys(chaptersAndVerses).map(Number).sort((a, b) => a - b));
+        return;
+      }
+      
+      if (!chaptersAndVerses[targetChapter].includes(targetVerse)) {
+        console.log(`⚠️ WARNING: Verse ${targetVerse} not found in chapter ${targetChapter}!`);
+        console.log(`📖 Available verses in chapter ${targetChapter}:`, chaptersAndVerses[targetChapter].sort((a, b) => a - b));
+        return;
+      }
+
+      // Find the block that contains the target chapter and verse
+      currentChapter = 0;
+      const targetBlockIndex = memoizedContent.findIndex((block, index) => {
+        if (block.children && Array.isArray(block.children)) {
+          return block.children.some((inline: any) => {
+            if (inline.children && Array.isArray(inline.children)) {
+              return inline.children.some((leaf: any) => {
+                if (leaf && typeof leaf === 'object') {
+                  // Update current chapter when we find a chapter marker
+                  if (Array.isArray(leaf.tag) && leaf.tag.includes('c') && leaf.text) {
+                    const chapterNum = parseInt(leaf.text);
+                    if (!isNaN(chapterNum)) {
+                      currentChapter = chapterNum;
+                    }
+                  }
+                  
+                  // Look for the target verse in the target chapter
+                  if (Array.isArray(leaf.tag) && leaf.tag.includes('v') && 
+                      leaf.text && currentChapter === targetChapter) {
+                    const verseNum = parseInt(leaf.text);
+                    if (verseNum === targetVerse) {
+                      console.log(`✅ Found target chapter ${targetChapter}, verse ${targetVerse} in block ${index}`);
+                      return true;
+                    }
+                  }
+                }
+                return false;
+              });
+            }
+            return false;
+          });
+        }
+        return false;
+      });
+
+      console.log('🎯 Final target block index:', targetBlockIndex);
+
+      if (targetBlockIndex !== -1) {
+        console.log('🚀 Attempting to scroll to verse block:', targetBlockIndex);
+        
+        const scrollTimer = setTimeout(() => {
+          console.log('⏰ Timer fired, executing scroll...');
+          
+          // Step 1: Scroll to approximate position (conservative estimate)
+          const conservativeOffset = targetBlockIndex * 60; // Conservative estimate
+          console.log(`📍 First scroll to conservative offset: ${conservativeOffset}`);
+          
+          flatListRef.current?.scrollToOffset({
+            offset: conservativeOffset,
+            animated: false, // Non-animated for first position
+          });
+          
+          // Step 2: After a brief moment, try scrollToIndex for precise positioning
+          setTimeout(() => {
+            console.log('🎯 Attempting precise scrollToIndex...');
+            try {
+              flatListRef.current?.scrollToIndex({
+                index: targetBlockIndex,
+                animated: true,
+                viewPosition: 0.0,
+              });
+              console.log('✅ Final scrollToIndex executed successfully');
+            } catch (error) {
+              console.log('❌ Final scrollToIndex failed, staying at conservative position');
+            }
+          }, 500); // Short delay for the second scroll
+          
+          console.log('✅ Two-stage scroll initiated for chapter', targetChapter, 'verse', targetVerse);
+        }, 3000);
+
+        return () => clearTimeout(scrollTimer);
+      } else {
+        console.log('❌ Verse not found with any search method');
+        console.log(`💡 Suggestion: Check if chapter ${targetChapter}, verse ${targetVerse} exists in this segment`);
+      }
+    }
+  }, [verse, memoizedContent, allParams]);
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -550,6 +732,20 @@ const styles = StyleSheet.create({
         }}
         contentContainerStyle={{ flexGrow: 1 }}
         automaticallyAdjustKeyboardInsets={true}
+        onScrollToIndexFailed={(error) => {
+          // Handle scroll failure gracefully with improved logging
+          console.log('❌ onScrollToIndexFailed called:', error);
+          console.log(`📊 Error details: index=${error.index}, highestMeasuredFrameIndex=${error.highestMeasuredFrameIndex}, averageItemLength=${error.averageItemLength}`);
+          
+          // Use a more conservative offset calculation
+          const conservativeOffset = Math.min(
+            error.averageItemLength * error.index,
+            error.averageItemLength * error.highestMeasuredFrameIndex + (error.index - error.highestMeasuredFrameIndex) * 60
+          );
+          
+          console.log(`📍 Fallback scroll offset: ${conservativeOffset}`);
+          flatListRef.current?.scrollToOffset({ offset: conservativeOffset, animated: true });
+        }}
       />
 
       {/* Simple positioned emoji picker - no modal or overlay */}
