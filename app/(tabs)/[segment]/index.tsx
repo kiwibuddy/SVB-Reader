@@ -13,6 +13,7 @@ import { SegmentType, IntroType, isIntroType, isSegmentType } from "@/types";
 import Intro from '@/components/Bible/Intro';
 import Questions from '@/components/Questions';
 import CheckCircle from '@/components/CheckCircle';
+import CelebrationPopup from '@/components/Bible/CelebrationPopup';
 import StickyHeader from '@/components/StickyHeader';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { startReadingSession, updateReadingSession } from '@/api/sqlite';
@@ -59,14 +60,15 @@ const createStyles = (colors: any) => StyleSheet.create({
     height: 16,
   },
   buttonContainer: {
-    position: "absolute",
+    position: 'absolute',
+    bottom: 104,
     left: 0,
     right: 0,
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     zIndex: 1000,
-    backgroundColor: 'transparent',
+    backgroundColor: 'transparent'
   },
   roundButton: {
     width: 50,
@@ -92,8 +94,8 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   checkCircleContainer: {
     alignItems: 'center',
-    paddingVertical: 20,
-    marginBottom: 60,
+    paddingHorizontal: 20,
+    marginBottom: 104,
   },
   centered: {
     justifyContent: 'center',
@@ -129,6 +131,13 @@ export default function BibleScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const { isVisible } = useBottomNavAnimation();
   
+  // Create our own animation value that matches the bottom nav
+  const [bottomNavVisible] = useState(new Animated.Value(1));
+  const lastScrollY = useRef(0);
+  
+  // Celebration popup state
+  const [showCelebration, setShowCelebration] = useState(false);
+  
   // Parse segmentID first
   const segID = useMemo(() => {
     const segment = params.segment as string;
@@ -149,7 +158,10 @@ export default function BibleScreen() {
         container: { flex: 1, backgroundColor: '#fff' },
         screenContainer: { flex: 1 },
         headerSpacer: { height: 20 },
-        checkCircleContainer: { alignItems: 'center', padding: 20 },
+        checkCircleContainer: { 
+          alignItems: 'center', 
+          paddingHorizontal: 20,
+        },
         buttonContainer: { position: 'absolute', bottom: 24, right: 16, flexDirection: 'row', gap: 12 },
         navigationButton: { 
           backgroundColor: '#f0f0f0', 
@@ -177,6 +189,27 @@ export default function BibleScreen() {
       console.log('BibleScreen received verse parameter:', verse);
     }
   }, [verse]);
+
+  // Celebration handlers
+  const handleCelebration = () => {
+    setShowCelebration(true);
+  };
+
+  const handleCelebrationComplete = () => {
+    setShowCelebration(false);
+    
+    // Use setTimeout to ensure navigation happens after render cycle
+    setTimeout(() => {
+      // Navigate based on context
+      if (params.planId) {
+        router.push('/Plan');
+      } else if (params.challengeId) {
+        router.push('/Reading-Challenges');
+      } else {
+        router.push('/Navigation');
+      }
+    }, 0);
+  };
 
   // Show loading state if data isn't ready
   if (!segID || !segmentData || !colors) {
@@ -251,7 +284,28 @@ export default function BibleScreen() {
 
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
-    // Call the global scroll handler if it exists
+    
+    // Same animation logic as bottom navigation bar
+    if (currentOffset > lastScrollY.current && currentOffset > 50) {
+      // Scrolling down - hide bottom nav and move buttons down
+      Animated.spring(bottomNavVisible, {
+        toValue: 0,
+        useNativeDriver: true, // Match bottom nav exactly
+        tension: 100,
+        friction: 10
+      }).start();
+    } else if (currentOffset < lastScrollY.current) {
+      // Scrolling up - show bottom nav and move buttons up
+      Animated.spring(bottomNavVisible, {
+        toValue: 1,
+        useNativeDriver: true, // Match bottom nav exactly
+        tension: 100,
+        friction: 10
+      }).start();
+    }
+    lastScrollY.current = currentOffset;
+    
+    // Call the global scroll handler for the actual bottom nav
     if (global.handleBottomNavScroll) {
       global.handleBottomNavScroll(event);
     }
@@ -279,16 +333,27 @@ export default function BibleScreen() {
               verse={verse}
             />
             <Questions segmentId={segID} />
-            {/* Temporarily disabled CheckCircle to fix Context error */}
-            {/* <View style={styles.checkCircleContainer}>
+            <Animated.View style={[
+              styles.checkCircleContainer,
+              {
+                transform: [{
+                  translateY: bottomNavVisible.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-20, 0], // Move up 20px when nav is hidden, normal position when visible
+                    extrapolate: 'clamp'
+                  })
+                }]
+              }
+            ]}>
               <CheckCircle 
                 segmentId={segID} 
                 iconSize={60}
                 context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
                 planId={planId as string || undefined}
                 challengeId={challengeId as string || undefined}
+                onCelebration={handleCelebration}
               />
-            </View> */}
+            </Animated.View>
           </>
         )}
       </ScrollView>
@@ -297,15 +362,11 @@ export default function BibleScreen() {
         styles.buttonContainer,
         {
           transform: [{
-            translateY: isVisible.interpolate({
+            translateY: bottomNavVisible.interpolate({
               inputRange: [0, 1],
-              outputRange: [0, -16], // Reduced movement when nav is visible
+              outputRange: [80, 0], // Move down 80px when nav is hidden, normal position when visible
             })
-          }],
-          bottom: isVisible.interpolate({
-            inputRange: [0, 1],
-            outputRange: [24, 80], // 24px from bottom when hidden, 80px when nav visible
-          })
+          }]
         }
       ]}>
         {prevSegId && (
@@ -326,6 +387,12 @@ export default function BibleScreen() {
           </TouchableOpacity>
         )}
       </Animated.View>
+
+      {/* Render CelebrationPopup at root level for proper screen positioning */}
+      <CelebrationPopup 
+        visible={showCelebration} 
+        onComplete={handleCelebrationComplete}
+      />
     </View>
   );
 }
