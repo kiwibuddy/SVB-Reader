@@ -109,7 +109,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({ block, bIndex, to
 
   const styles = StyleSheet.create({
     outerContainer: {
-      marginBottom: 2,
+      marginVertical: 6,
       position: 'relative',
       zIndex: 1,
     },

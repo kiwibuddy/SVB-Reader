@@ -26,6 +26,24 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
   const colors = getColors(color);
   const glowAnim = new Animated.Value(0);
 
+  // Get readable text color based on bubble color
+  const getReadableTextColor = (bubbleColor: string) => {
+    switch (bubbleColor) {
+      case "red":
+        return "#AD1457"; // Deep pink, excellent contrast with richer rose background
+      case "green":
+        return "#00695C"; // Deep teal, perfect for sophisticated teal background
+      case "blue":
+        return "#1565C0"; // Deep blue, great contrast with deeper blue background
+      case "black":
+        return "#37474F"; // Darker gray for improved contrast
+      default:
+        return "#37474F"; // Default darker gray
+    }
+  };
+
+  const textColor = getReadableTextColor(color);
+
   useEffect(() => {
     Animated.loop(
       Animated.timing(glowAnim, {
@@ -60,7 +78,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
   const emojiAlignment = color !== "black" ? { right: -8 } : { left: -8 };
 
   return (
-    <View key={bIndex} style={{ alignItems: color !== "black" ? 'flex-start' : 'flex-end', marginVertical: 1 }}>
+    <View key={bIndex} style={{ alignItems: color !== "black" ? 'flex-start' : 'flex-end', marginVertical: 6 }}>
       {hasTail && <SourceNameComponent sourceName={sourceName} align={color !== "black" ? "left" : "right"} />}
       <Animated.View
         style={[
@@ -72,7 +90,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
               shadowColor: glowColor,
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 1,
-              shadowRadius: 10,
+              shadowRadius: 6,
             } : {
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
@@ -115,7 +133,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
                 key={`${bIndex}-${index}`}
                 iIndex={`${bIndex}-${index}`}
                 inline={item}
-                textColor={colors.dark}
+                textColor={textColor}
               />
             );
           }}
@@ -132,7 +150,7 @@ const styles = StyleSheet.create({
     padding: 12,
     paddingHorizontal: 16,
     position: "relative",
-    marginVertical: 2,
+    marginVertical: 6,
     marginHorizontal: 8,
     maxWidth: '90%',
     alignSelf: 'flex-start',

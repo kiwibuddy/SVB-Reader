@@ -112,11 +112,9 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     total: 0
   });
 
-  // Track which reader role is currently selected
-  const [selectedReaderPosition, setSelectedReaderPosition] = useState<{
-    color: string;
-    position: number;
-  } | null>(null);
+  // Updated reader selection state - store selected reader number (0-3)
+  const [readerNumber, setReaderNumber] = useState<number | null>(null);
+  const [selectedReaderColor, setSelectedReaderColor] = useState<string | null>(null);
 
   // Determine which completion state to use
   const getIsCompleted = () => {
@@ -171,7 +169,13 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return splitIntoParagraphs(segmentData.content);
   }, [segmentData.content]);
 
-  const colorRenderCount = new Map<string, number>(); // Track render counts
+  // **IMPROVED TURN-BASED READING ALGORITHM**
+  const colorRenderCount = useRef(new Map<string, number>()).current; // Persistent render count
+
+  // Reset render counts when reader selection changes
+  useEffect(() => {
+    colorRenderCount.clear();
+  }, [readerNumber, selectedReaderColor]);
 
   useEffect(() => {
     // Calculate color counts from content
@@ -198,294 +202,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       console.log('📝 First block structure:', JSON.stringify(memoizedContent[0], null, 2));
     }
   }, [memoizedContent]);
-
-  // Add handler for completion toggle
-  const handleCompletion = async () => {
-    if (context === 'main') {
-      await markSegmentComplete(segID, !isCompleted);
-      if (!isCompleted) {
-        setShowCelebration(true);
-      }
-    } else if (planId && activePlan) {
-      // Handle plan completion
-      await updateReadingPlanProgress(planId, segID);
-      setShowCelebration(true);
-    } else if (challengeId && activeChallenges[challengeId]) {
-      // Handle challenge completion
-      await updateChallengeProgress(challengeId, segID);
-      setShowCelebration(true);
-    }
-  };
-
-  const handleCelebrationComplete = () => {
-    setShowCelebration(false);
-    // Navigate back based on context
-    if (planId) {
-      router.replace({
-        pathname: '/Plan',
-        params: { 
-          scrollToPlan: planId,
-          timestamp: Date.now() // Force refresh
-        }
-      });
-    } else if (challengeId) {
-      router.replace({
-        pathname: '/Reading-Challenges',
-        params: { 
-          scrollToChallenge: challengeId,
-          timestamp: Date.now() // Force refresh
-        }
-      });
-    }
-  };
-
-  const handleComplete = async () => {
-    if (selectedBlock) {
-      await markSegmentComplete(
-        segmentData.id,
-        true,
-        readers[selectedBlock.index],
-        context,
-        context === 'plan' ? planId : challengeId
-      );
-      setShowCelebration(true);
-    }
-  };
-
-  // Add speech bubble colors based on theme
-  const getSpeakerStyle = (speaker: string) => {
-    const baseStyle = {
-      padding: 16,
-      borderRadius: 8,
-      marginBottom: 8,
-      borderWidth: 1,
-    };
-
-    switch (speaker.toLowerCase()) {
-      case 'narrator':
-        return {
-          ...baseStyle,
-          backgroundColor: colors.bubbles.default,
-          borderColor: colors.border,
-        };
-      case 'god':
-        return {
-          ...baseStyle,
-          backgroundColor: colors.bubbles.red,
-          borderColor: colors.border,
-        };
-      case 'jesus':
-        return {
-          ...baseStyle,
-          backgroundColor: colors.bubbles.red,
-          borderColor: colors.border,
-        };
-      case 'people':
-        return {
-          ...baseStyle,
-          backgroundColor: colors.bubbles.blue,
-          borderColor: colors.border,
-        };
-      default:
-        return {
-          ...baseStyle,
-          backgroundColor: colors.bubbles.default,
-          borderColor: colors.border,
-        };
-    }
-  };
-
-  const handleReaderRoleSelect = (color: string, position: number) => {
-    setSelectedReaderPosition(prev => {
-      // If clicking the already selected role, deselect it
-      if (prev?.color === color && prev?.position === position) {
-        return null;
-      }
-      // Otherwise select this new role (deselecting any previous role)
-      return { color, position };
-    });
-  };
-
-  // Group readers by color to know position
-  const readersByColor = useMemo(() => {
-    return readers.reduce((acc, color, index) => {
-      if (!acc[color]) {
-        acc[color] = [];
-      }
-      acc[color].push(index);
-      return acc;
-    }, {} as { [color: string]: number[] });
-  }, [readers]);
-
-  // Update shouldBlockGlow to use the new state
-  const shouldBlockGlow = useCallback((blockColor: string, blockIndex: number) => {
-    if (!selectedReaderPosition) return false;
-    
-    const { color, position } = selectedReaderPosition;
-    if (blockColor !== color) return false;
-
-    const colorPositions = readersByColor[blockColor] || [];
-    if (colorPositions.length <= 1) {
-      return position === 0;
-    }
-
-    // For multiple readers of same color
-    const blocksOfThisColor = content.filter(item => item.source.color === blockColor);
-    const positionInSequence = blocksOfThisColor.findIndex(item => 
-      content.indexOf(item) === blockIndex
-    );
-    return positionInSequence % colorPositions.length === position;
-  }, [content, readersByColor, selectedReaderPosition]);
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    padding: 16,
-  },
-  roleContainer: {
-    backgroundColor: colors.card,
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    borderColor: colors.border,
-    borderWidth: 1,
-  },
-  roleText: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  verseContainer: {
-    backgroundColor: colors.card,
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 8,
-    borderColor: colors.border,
-    borderWidth: 1,
-  },
-  verseText: {
-    color: colors.text,
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  verseNumber: {
-    color: colors.secondary,
-    fontSize: 12,
-    marginRight: 4,
-  },
-  speakerText: {
-    color: colors.text,
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  speakerLabel: {
-    color: colors.secondary,
-    fontSize: 14,
-    fontStyle: 'italic',
-    marginBottom: 4,
-  },
-  chartSection: {
-    flex: 1,
-    maxWidth: '40%',
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 10,
-  },
-  readerSection: {
-    flex: 3, 
-    justifyContent: "center", 
-    alignItems: "center", 
-    height: "100%",
-    paddingLeft: 10,
-  },
-  readerContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingLeft: 20
-  },
-  readerText: {
-    fontSize: 14,
-    marginBottom: 15,
-    textAlign: 'center',
-    color: colors.text, // Add theme color
-  },
-  iconContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '90%'
-  },
-  divider: {
-    borderBottomColor: colors.border,
-    borderBottomWidth: 1,
-    margin: 10,
-  },
-  emojiPickerOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1000,
-  },
-  emojiPickerWrapper: {
-    position: 'absolute',
-    zIndex: 1001,
-  },
-  readerRoleSelector: {
-    marginVertical: 10,
-    padding: 10,
-  },
-  readerRoleTitle: {
-    fontSize: 16,
-    marginBottom: 8,
-    fontWeight: '500',
-  },
-  readerRoleButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  roleButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#ccc',
-  },
-  activeRoleButton: {
-    borderWidth: 3,
-    borderColor: '#000',
-  }
-});
-
-  // Update the render method where speech bubbles are rendered
-  const renderSpeechBubble = (content: string, speaker: string) => (
-    <View style={getSpeakerStyle(speaker)}>
-      <Text style={styles.speakerLabel}>{speaker}</Text>
-      <Text style={styles.speakerText}>{content}</Text>
-    </View>
-  );
-
-  // Update renderItem to use the correct function signature
-  const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
-    const { sourceName } = item.source;
-    const showSourceName = index === 0 || 
-      content[index - 1].source.sourceName !== sourceName;
-
-    const isGlowing = shouldBlockGlow(item.source.color, index);
-
-    return (
-      <BibleBlockComponent
-        block={item}
-        bIndex={index}
-        hasTail={showSourceName}
-        toRead={isGlowing}
-        onLongPress={handleLongPress}
-      />
-    );
-  }, [content, shouldBlockGlow]);
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -658,11 +374,293 @@ const styles = StyleSheet.create({
     }
   }, [verse, memoizedContent, allParams]);
 
+  const handleCompletion = async () => {
+    if (context === 'main') {
+      await markSegmentComplete(segID, true);
+    } else if (planId) {
+      await updateReadingPlanProgress(planId, segID);
+    } else if (challengeId) {
+      await updateChallengeProgress(challengeId, segID);
+    }
+    setShowCelebration(true);
+  };
+
+  const handleCelebrationComplete = () => {
+    setShowCelebration(false);
+    
+    // Check if this is part of a plan or challenge
+    if (planId && activePlan) {
+      const remainingSegments = activePlan.completedSegments;
+      // Note: We don't have access to the full segment list here
+      // You may need to adjust this logic based on your data structure
+    }
+    
+    if (challengeId && activeChallenges[challengeId]) {
+      const challenge = activeChallenges[challengeId];
+      const remainingSegments = challenge.completedSegments;
+      // Note: We don't have access to the full segment list here
+      // You may need to adjust this logic based on your data structure
+    }
+  };
+
+  const handleComplete = async () => {
+    await handleCompletion();
+  };
+
+  const getSpeakerStyle = (speaker: string) => {
+    const baseStyle = {
+      ...styles.verseContainer,
+      marginVertical: 4,
+      padding: 12,
+      borderRadius: 8,
+    };
+
+    switch (speaker) {
+      case 'red':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.bubbles.red,
+          borderColor: colors.border,
+        };
+      case 'green':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.bubbles.green,
+          borderColor: colors.border,
+        };
+      case 'blue':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.bubbles.blue,
+          borderColor: colors.border,
+        };
+      case 'black':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.bubbles.black,
+          borderColor: colors.border,
+        };
+      default:
+        return {
+          ...baseStyle,
+          backgroundColor: colors.bubbles.default,
+          borderColor: colors.border,
+        };
+    }
+  };
+
+  // **IMPROVED READER ROLE SELECTION**
+  const handleIconPress = (index: number) => {
+    const readerColor = readers[index];
+    setReaderNumber((prev) => {
+      const newValue = prev === index ? null : index;
+      setSelectedReaderColor(newValue === null ? null : readerColor);
+      return newValue;
+    });
+  };
+
+  // Group readers by color to know position within that color
+  const readersByColor = useMemo(() => {
+    return readers.reduce((acc, color, index) => {
+      if (!acc[color]) {
+        acc[color] = [];
+      }
+      acc[color].push(index);
+      return acc;
+    }, {} as { [color: string]: number[] });
+  }, [readers]);
+
+  // **FIXED TURN-BASED ALGORITHM** - This is the core logic from the documentation
+  const shouldBlockGlow = useCallback((blockColor: string, blockIndex: number) => {
+    if (!selectedReaderColor || readerNumber === null) return false;
+    if (blockColor !== selectedReaderColor) return false;
+
+    // Count how many readers selected this color
+    const colorReaders = readers.filter((reader) => reader === blockColor);
+    const numberOfColorReaders = colorReaders.length;
+
+    // Initialize render count tracking for this color
+    if (!colorRenderCount.has(blockColor)) {
+      colorRenderCount.set(blockColor, 0);
+    }
+
+    const currentRenderCount = colorRenderCount.get(blockColor)!;
+    let shouldRead = false;
+
+    if (numberOfColorReaders === 1) {
+      // Single color reader logic - they read all bubbles of their color
+      shouldRead = blockColor === selectedReaderColor;
+    } else {
+      // Multiple color readers logic - take turns
+      const indices = readers.reduce<number[]>((acc, reader, index) => {
+        if (reader === selectedReaderColor) acc.push(index);
+        return acc;
+      }, []);
+      const position = indices.indexOf(readerNumber!);
+      shouldRead = currentRenderCount % numberOfColorReaders === position;
+    }
+
+    // Increment render count after determining shouldRead
+    colorRenderCount.set(blockColor, currentRenderCount + 1);
+
+    return shouldRead;
+  }, [readers, selectedReaderColor, readerNumber, colorRenderCount]);
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+    padding: 16,
+  },
+  roleContainer: {
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    borderColor: colors.border,
+    borderWidth: 1,
+  },
+  roleText: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  verseContainer: {
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 8,
+    borderColor: colors.border,
+    borderWidth: 1,
+  },
+  verseText: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  verseNumber: {
+    color: colors.secondary,
+    fontSize: 12,
+    marginRight: 4,
+  },
+  speakerText: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  speakerLabel: {
+    color: colors.secondary,
+    fontSize: 14,
+    fontStyle: 'italic',
+    marginBottom: 4,
+  },
+  chartSection: {
+    flex: 1,
+    maxWidth: '40%',
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  readerSection: {
+    flex: 3, 
+    justifyContent: "center", 
+    alignItems: "center", 
+    height: "100%",
+    paddingLeft: 10,
+  },
+  readerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: 20
+  },
+  readerText: {
+    fontSize: 14,
+    marginBottom: 15,
+    textAlign: 'center',
+    color: colors.text, // Add theme color
+  },
+  iconContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '90%'
+  },
+  divider: {
+    borderBottomColor: colors.border,
+    borderBottomWidth: 1,
+    margin: 10,
+  },
+  emojiPickerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1000,
+  },
+  emojiPickerWrapper: {
+    position: 'absolute',
+    zIndex: 1001,
+  },
+  readerRoleSelector: {
+    marginVertical: 10,
+    padding: 10,
+  },
+  readerRoleTitle: {
+    fontSize: 16,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  readerRoleButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  roleButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  activeRoleButton: {
+    borderWidth: 3,
+    borderColor: '#000',
+  }
+});
+
+  // Update the render method where speech bubbles are rendered
+  const renderSpeechBubble = (content: string, speaker: string) => (
+    <View style={getSpeakerStyle(speaker)}>
+      <Text style={styles.speakerLabel}>{speaker}</Text>
+      <Text style={styles.speakerText}>{content}</Text>
+    </View>
+  );
+
+  // **IMPROVED RENDER ITEM** - Uses memoizedContent and proper shouldBlockGlow
+  const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
+    const { sourceName } = item.source;
+    const showSourceName = index === 0 || 
+      memoizedContent[index - 1].source.sourceName !== sourceName;
+
+    const isGlowing = shouldBlockGlow(item.source.color, index);
+
+    return (
+      <BibleBlockComponent
+        block={item}
+        bIndex={index}
+        hasTail={showSourceName}
+        toRead={isGlowing}
+        onLongPress={handleLongPress}
+      />
+    );
+  }, [memoizedContent, shouldBlockGlow]);
+
   return (
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
-        data={content}
+        data={memoizedContent}
         ListHeaderComponent={() => (
           <>
             <SegmentTitle segmentId={segID} />
@@ -697,19 +695,42 @@ const styles = StyleSheet.create({
                     <View style={styles.iconContainer}>
                       {readers.map((readerColor, index) => {
                         const colors = getColors(readerColor);
-                        const position = readersByColor[readerColor].indexOf(index);
-                        const isActive = selectedReaderPosition?.color === readerColor && 
-                                      selectedReaderPosition?.position === position;
+                        const isActive = readerNumber === index;
+                        
+                        // Get proper icon color that's always visible
+                        const getIconColor = () => {
+                          if (readerColor === "black") {
+                            return isActive ? "#37474F" : "#90A4AE";
+                          }
+                          
+                          if (isActive) {
+                            // Use deeper, more saturated versions that work with darker backgrounds
+                            switch (readerColor) {
+                              case "red": return "#AD1457"; // Deep pink, matches text color
+                              case "green": return "#00695C"; // Deep teal, matches text color
+                              case "blue": return "#1565C0"; // Deep blue, matches text color
+                              default: return colors.light;
+                            }
+                          } else {
+                            // Use lighter versions when not selected but still visible
+                            switch (readerColor) {
+                              case "red": return "#F48FB1"; // Light pink
+                              case "green": return "#4DB6AC"; // Light teal
+                              case "blue": return "#64B5F6"; // Light blue
+                              default: return colors.light;
+                            }
+                          }
+                        };
                         
                         return (
                           <TouchableOpacity
                             key={index}
-                            onPress={() => handleReaderRoleSelect(readerColor, position)}
+                            onPress={() => handleIconPress(index)}
                           >
                             <MaterialIcons
                               name={isActive ? "mark-chat-read" : "chat-bubble"}
                               size={30}
-                              color={readerColor === "black" ? "grey" : isActive ? colors.dark : colors.light}
+                              color={getIconColor()}
                             />
                           </TouchableOpacity>
                         );
@@ -724,6 +745,17 @@ const styles = StyleSheet.create({
         )}
         renderItem={renderItem}
         keyExtractor={(item, index) => `${item.source.sourceName}-${index}`}
+        ListFooterComponent={() => (
+          <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+            <CheckCircle
+              segmentId={segID}
+              context={context}
+              planId={planId}
+              challengeId={challengeId}
+              onCelebration={() => setShowCelebration(true)}
+            />
+          </View>
+        )}
         initialNumToRender={10}
         maxToRenderPerBatch={10}
         windowSize={5}
