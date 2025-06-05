@@ -53,7 +53,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   // Move ALL hooks to the very top - consolidate useLocalSearchParams calls
   const { width: screenWidth } = useWindowDimensions();
   const router = useRouter();
-  const { colors } = useAppSettings();
+  const { colors, isDarkMode } = useAppSettings();
   const { 
     completedSegments, 
     markSegmentComplete,
@@ -707,30 +707,37 @@ const styles = StyleSheet.create({
                     </Text>
                     <View style={styles.iconContainer}>
                       {readers.map((readerColor, index) => {
-                        const colors = getColors(readerColor);
                         const isActive = readerNumber === index;
                         
-                        // Get proper icon color that's always visible
+                        // Get proper icon color using speech bubble colors
                         const getIconColor = () => {
-                          if (readerColor === "black") {
-                            return isActive ? "#1A202C" : "#A0AEC0";
-                          }
-                          
                           if (isActive) {
-                            // Use bright, vibrant versions that match the app's energetic style
-                            switch (readerColor) {
-                              case "red": return "#BE185D"; // Vibrant deep pink, matches text color
-                              case "green": return "#0D9488"; // Vibrant teal, matches text color
-                              case "blue": return "#1E40AF"; // Vibrant blue, matches text color
-                              default: return colors.light;
+                            // Use slightly brighter colors than speech bubbles to make buttons stand out
+                            if (isDarkMode) {
+                              switch (readerColor) {
+                                case "black": return "#2A2A2A"; // Slightly brighter than bubble black
+                                case "red": return "#D32F2F"; // Colors.error[700] - brighter than bubble red
+                                case "green": return "#388E3C"; // Colors.success[700] - brighter than bubble green
+                                case "blue": return "#1976D2"; // Colors.secondary[700] - brighter than bubble blue
+                                default: return colors.bubbles.default;
+                              }
+                            } else {
+                              switch (readerColor) {
+                                case "black": return "#E0E0E0"; // Colors.neutral[300] - brighter than bubble black
+                                case "red": return "#EF9A9A"; // Colors.error[200] - brighter than bubble red
+                                case "green": return "#A5D6A7"; // Colors.success[200] - brighter than bubble green
+                                case "blue": return "#90CAF9"; // Colors.secondary[200] - brighter than bubble blue
+                                default: return colors.bubbles.default;
+                              }
                             }
                           } else {
-                            // Use bright, lighter versions when not selected for energy
+                            // Use lighter/faded versions when not selected
                             switch (readerColor) {
-                              case "red": return "#F687B3"; // Bright light pink
-                              case "green": return "#4FD1C7"; // Bright light teal
-                              case "blue": return "#60A5FA"; // Bright light blue
-                              default: return colors.light;
+                              case "black": return "#A0AEC0"; // Light grey
+                              case "red": return "#F687B3"; // Light pink
+                              case "green": return "#81E6D9"; // Light teal 
+                              case "blue": return "#90CDF4"; // Light blue
+                              default: return colors.bubbles.default;
                             }
                           }
                         };

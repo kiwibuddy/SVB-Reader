@@ -133,16 +133,15 @@ const IndexScreen = () => {
   };
 
   const sourceViewColors = [
-    { color: '#D32F2F', label: 'God' },
-    { color: '#388E3C', label: 'Main Character' },
-    { color: '#1976D2', label: 'Other Voices' },
-    { color: '#666666', label: 'Narrator' }
+    { color: colors.bubbles.red, label: 'God', name: 'Red' },
+    { color: colors.bubbles.green, label: 'Main Character', name: 'Green' },
+    { color: colors.bubbles.blue, label: 'Other Voices', name: 'Blue' },
+    { color: colors.bubbles.black, label: 'Narrator', name: 'Gray' }
   ];
 
-  // Example scripture conversation for speech bubble card
   const exampleConversation = [
-    { speaker: 'Jesus', color: '#D32F2F', text: 'Who do you say that I am?' },
-    { speaker: 'Peter', color: '#388E3C', text: 'You are the Christ, the Son of the living God.' }
+    { speaker: 'Jesus', color: colors.bubbles.red, text: 'Who do you say that I am?' },
+    { speaker: 'Peter', color: colors.bubbles.green, text: 'You are the Christ, the Son of the living God.' }
   ];
 
   return (
@@ -232,7 +231,7 @@ const IndexScreen = () => {
                                   { backgroundColor: message.color },
                                   msgIndex === 0 ? styles.speechBubbleLeft : styles.speechBubbleRight
                                 ]}>
-                                  <Text style={styles.speechText}>{message.text}</Text>
+                                  <Text style={[styles.speechText, { color: colors.text }]}>{message.text}</Text>
                                 </View>
                               </View>
                             ))}
@@ -246,12 +245,10 @@ const IndexScreen = () => {
                           <View style={styles.colorBadgesGrid}>
                             {sourceViewColors.map((colorInfo, colorIndex) => (
                               <View key={colorIndex} style={[styles.colorBadgeGridItem, { backgroundColor: colorInfo.color }]}>
-                                <Text style={styles.colorBadgeGridText}>
-                                  {colorInfo.color === '#D32F2F' ? 'Red' : 
-                                   colorInfo.color === '#388E3C' ? 'Green' : 
-                                   colorInfo.color === '#1976D2' ? 'Blue' : 'Gray'}
+                                <Text style={[styles.colorBadgeGridText, { color: colors.text }]}>
+                                  {colorInfo.name}
                                 </Text>
-                                <Text style={styles.colorBadgeGridLabel}>
+                                <Text style={[styles.colorBadgeGridLabel, { color: colors.text }]}>
                                   {colorInfo.label}
                                 </Text>
                               </View>
@@ -441,9 +438,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
     letterSpacing: 0.1,
-    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowColor: 'rgba(0, 0, 0, 0.4)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 1,
+    textShadowRadius: 3,
     paddingHorizontal: 0,
     width: '100%',
   },
@@ -480,16 +477,21 @@ const styles = StyleSheet.create({
   },
   colorBadgeGridText: {
     fontSize: 12,
-    color: '#FFFFFF',
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 2,
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 0, height: 0.5 },
+    textShadowRadius: 0.5,
   },
   colorBadgeGridLabel: {
     fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.9)',
     fontWeight: '500',
     textAlign: 'center',
+    opacity: 0.8,
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 0, height: 0.5 },
+    textShadowRadius: 0.5,
   },
   indicatorSection: {
     justifyContent: 'center',
@@ -623,12 +625,11 @@ const styles = StyleSheet.create({
   },
   speechText: {
     fontSize: 13,
-    color: '#FFFFFF',
     fontWeight: '500',
     lineHeight: 18,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 0, height: 0.5 },
+    textShadowRadius: 0.5,
   },
 });
 

@@ -52,30 +52,18 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
   const [bubbleLayout, setBubbleLayout] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const touchableRef = useRef<React.ElementRef<typeof TouchableOpacity>>(null);
 
-  // **ULTIMATE SPEECH BUBBLE SPACING SYSTEM** - Final refinement
+  // **SIMPLIFIED PERFECT SPACING SYSTEM** - Exactly as requested
   const getAdvancedSpacing = () => {
     const isSpeakerChange = previousSpeaker && previousSpeaker !== sourceName;
     const isNarrator = color === 'black';
-    const wasNarrator = previousSpeaker === 'THE NARRATOR';
-    const willBeNarrator = nextSpeaker === 'THE NARRATOR';
     
-    // **EXPERT CONVERSATION FLOW SPACING** - Publication quality
-    let topMargin = 8; // Refined base spacing for optimal reading flow
+    let topMargin;
     
     if (isSpeakerChange) {
-      // **REFINED SPEAKER TRANSITION LOGIC**
-      if (isNarrator && wasNarrator) {
-        // Narrator to narrator continuation (different narrator sections)
-        topMargin = 12;
-      } else if (isNarrator || wasNarrator) {
-        // Narrator transitions (to/from speech)
-        topMargin = 16;
-      } else {
-        // Character to character transitions  
-        topMargin = 14;
-      }
+      // **ALL SPEAKER TRANSITIONS: 14px** - No exceptions
+      topMargin = 14;
     } else {
-      // **SAME SPEAKER CONTINUATION**
+      // **SAME SPEAKER CONTINUATION** - Only these get different heights
       if (isNarrator) {
         // Narrator continuation paragraphs
         topMargin = 10;
@@ -85,23 +73,9 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
       }
     }
     
-    // **SEQUENCE POSITION ADJUSTMENTS**
-    if (isFirstInSequence) {
-      // First bubble in a sequence gets extra breathing room
-      topMargin += 3;
-    }
-    
-    // **CONTENT TYPE ADJUSTMENTS**
-    const hasLongContent = block.children && block.children.length > 1;
-    if (hasLongContent && isNarrator) {
-      // Long narrator blocks get slight reduction for better density
-      topMargin = Math.max(topMargin - 1, 8);
-    }
-    
     return {
       marginTop: topMargin,
-      marginBottom: isLastInSequence ? 8 : 4, // Consistent bottom spacing
-      // **HORIZONTAL BREATHING ROOM**
+      marginBottom: 4, // Consistent bottom spacing
       paddingHorizontal: 2, // Subtle horizontal padding for better flow
     };
   };

@@ -54,6 +54,10 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
   const isChapterRef = Array.isArray(tag) && tag.includes("c");
   const tagStyle = styles[tag as unknown as keyof typeof styles] || {};
 
+  // **TEMPORARY FIX: Hide verse and chapter numbers if formatting is problematic**
+  const HIDE_VERSE_NUMBERS = true; // Set to true to hide verse numbers
+  const HIDE_CHAPTER_NUMBERS = true; // Set to true to hide chapter numbers
+
   // **DEBUG: Log verse detection**
   if (text && (isVerseRef || isChapterRef)) {
     console.log(`📖 Leaf: Detected ${isVerseRef ? 'verse' : 'chapter'} "${text}" with tag:`, tag);
@@ -62,24 +66,31 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
   // **EXPERT VERSE SUPERSCRIPT** - Publication quality
   if (isVerseRef) {
     console.log(`🔍 Rendering verse number: "${text}" as superscript`);
+    
+    if (HIDE_VERSE_NUMBERS) {
+      return null; // Hide verse numbers entirely
+    }
+    
     return (
-      <View style={styles.verseContainer}>
-        <Text style={[
-          styles.verseNumber,
-          { 
-            color: textColor,
-            fontSize: baseSizes.body * TYPOGRAPHY.verse.scale,
-            lineHeight: baseSizes.body * TYPOGRAPHY.verse.scale * 1.2,
-          }
-        ]}>
-          {text}
-        </Text>
-      </View>
+      <Text style={[
+        styles.verseNumber,
+        { 
+          color: textColor,
+          fontSize: baseSizes.body * TYPOGRAPHY.verse.scale,
+          lineHeight: baseSizes.body * TYPOGRAPHY.lineHeight, // Use same line height as body text
+        }
+      ]}>
+        {text}
+      </Text>
     );
   }
 
   // **REFINED CHAPTER STYLING** - Consistent with body text
   if (isChapterRef) {
+    if (HIDE_CHAPTER_NUMBERS) {
+      return null; // Hide chapter numbers entirely
+    }
+    
     return (
       <Text style={[
         styles.chapterNumber,
@@ -92,6 +103,12 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
         {text}
       </Text>
     );
+  }
+
+  // Handle asterisks and other special characters inline
+  const isSpecialChar = text === '*' || text === '†' || text === '‡';
+  if (isSpecialChar) {
+    return null; // Hide special characters entirely
   }
 
   // **EXPERT BODY TEXT** - Optimized for extended reading
@@ -117,19 +134,14 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
 export default BibleLeafComponent;
 
 const styles = StyleSheet.create({
-  // **EXPERT VERSE SUPERSCRIPT**
-  verseContainer: {
-    alignSelf: 'flex-start',
-    marginRight: TYPOGRAPHY.verse.spacing,
-    marginTop: -baseSizes.body * TYPOGRAPHY.verse.raise,
-    zIndex: 1, // Ensure proper layering
-  },
+  // **EXPERT VERSE SUPERSCRIPT** - Now truly inline
   verseNumber: {
     fontWeight: TYPOGRAPHY.fontWeight.semibold,
     letterSpacing: TYPOGRAPHY.letterSpacing.verse,
     opacity: 0.85, // Subtle but readable
     includeFontPadding: false,
     textAlignVertical: 'top',
+    marginRight: TYPOGRAPHY.verse.spacing,
     // Enhanced shadow for better legibility
     ...(Platform.OS === 'ios' && {
       shadowColor: '#000',
@@ -165,5 +177,12 @@ const styles = StyleSheet.create({
   nd: {
     fontWeight: TYPOGRAPHY.fontWeight.medium,
     letterSpacing: TYPOGRAPHY.letterSpacing.body * 1.1,
+  },
+
+  // **REFINED SPECIAL STYLING**
+  specialChar: {
+    fontWeight: TYPOGRAPHY.fontWeight.semibold,
+    letterSpacing: TYPOGRAPHY.letterSpacing.body * 1.1,
+    includeFontPadding: false,
   },
 });

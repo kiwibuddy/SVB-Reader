@@ -203,11 +203,6 @@ const AchievementCard = ({
       onPress={onPress}
       activeOpacity={0.8}
     >
-      {achieved && (
-        <View style={[styles.achievedBadge, { backgroundColor: color }]}>
-          <Ionicons name="checkmark" size={10} color="white" />
-        </View>
-      )}
       
       {/* Icon and Title Row */}
       <View style={styles.cardRow}>
@@ -725,52 +720,67 @@ function Achievements() {
           <View style={styles.heroStatsContainer}>
             <View style={[styles.heroStatCard, styles.storiesCard]}>
               <LinearGradient
-                colors={['#4CAF50', '#45A049']}
+                colors={['#43e97b', '#38f9d7']}
                 style={styles.heroCardGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <View style={styles.heroCardIcon}>
-                  <Ionicons name="book" size={28} color="white" />
-                </View>
                 <View style={styles.heroCardContent}>
-                  <Text style={styles.heroCardNumber}>{stats.completedStories}</Text>
-                  <Text style={styles.heroCardLabel}>Stories Read</Text>
+                  <View style={styles.heroCardIcon}>
+                    <Ionicons name="book" size={18} color="#FFF" />
+                  </View>
+                  <View style={styles.heroCardTextSection}>
+                    <Text style={styles.heroCardTitle}>Stories{'\n'}Read</Text>
+                  </View>
+                  <View style={styles.heroCardBadge}>
+                    <Text style={styles.heroBadgeText}>{stats.completedStories}</Text>
+                  </View>
                 </View>
+                <View style={styles.heroCardAccent} />
               </LinearGradient>
             </View>
 
             <View style={[styles.heroStatCard, styles.streakCard]}>
               <LinearGradient
-                colors={['#FF5722', '#F4511E']}
+                colors={['#fa709a', '#fee140']}
                 style={styles.heroCardGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <View style={styles.heroCardIcon}>
-                  <Ionicons name="flame" size={28} color="white" />
-                </View>
                 <View style={styles.heroCardContent}>
-                  <Text style={styles.heroCardNumber}>{stats.currentStreak}</Text>
-                  <Text style={styles.heroCardLabel}>Current Streak</Text>
+                  <View style={styles.heroCardIcon}>
+                    <Ionicons name="flame" size={18} color="#FFF" />
+                  </View>
+                  <View style={styles.heroCardTextSection}>
+                    <Text style={styles.heroCardTitle}>Current{'\n'}Streak</Text>
+                  </View>
+                  <View style={styles.heroCardBadge}>
+                    <Text style={styles.heroBadgeText}>{stats.currentStreak}</Text>
+                  </View>
                 </View>
+                <View style={styles.heroCardAccent} />
               </LinearGradient>
             </View>
 
             <View style={[styles.heroStatCard, styles.progressCard]}>
               <LinearGradient
-                colors={['#2196F3', '#1976D2']}
+                colors={['#4facfe', '#00f2fe']}
                 style={styles.heroCardGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <View style={styles.heroCardIcon}>
-                  <Ionicons name="trending-up" size={28} color="white" />
-                </View>
                 <View style={styles.heroCardContent}>
-                  <Text style={styles.heroCardNumber}>{stats.completionPercentage}%</Text>
-                  <Text style={styles.heroCardLabel}>Complete</Text>
+                  <View style={styles.heroCardIcon}>
+                    <Ionicons name="trending-up" size={18} color="#FFF" />
+                  </View>
+                  <View style={styles.heroCardTextSection}>
+                    <Text style={styles.heroCardTitle}>Complete{'\n'}Bible</Text>
+                  </View>
+                  <View style={styles.heroCardBadge}>
+                    <Text style={styles.heroBadgeText}>{stats.completionPercentage}%</Text>
+                  </View>
                 </View>
+                <View style={styles.heroCardAccent} />
               </LinearGradient>
             </View>
           </View>
@@ -928,20 +938,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
     position: "relative",
-    borderWidth: 1,
+    borderWidth: Platform.OS === 'ios' ? 1 : 0,
     borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
     minHeight: 120,
-  },
-  achievedBadge: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1,
   },
   cardRow: {
     flexDirection: "row",
@@ -1056,13 +1055,14 @@ const styles = StyleSheet.create({
   },
   heroStatCard: {
     flex: 1,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 3,
-    overflow: "hidden",
+    height: 140,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   storiesCard: {
     // No additional styling needed
@@ -1075,44 +1075,75 @@ const styles = StyleSheet.create({
   },
   heroCardGradient: {
     flex: 1,
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 8,
-    minHeight: 100,
-  },
-  heroCardIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
+    padding: 16,
+    borderRadius: 16,
+    position: 'relative',
   },
   heroCardContent: {
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    zIndex: 2,
+    height: '100%',
+    paddingVertical: 4,
+  },
+  heroCardIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
     alignItems: "center",
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    shadowColor: 'rgba(0,0,0,0.1)',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  heroCardNumber: {
-    fontSize: 28,
-    fontWeight: "800",
-    marginBottom: 2,
-    color: "white",
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+  heroCardTextSection: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 0,
+    paddingVertical: 4,
   },
-  heroCardLabel: {
+  heroCardTitle: {
     fontSize: 12,
-    fontWeight: "600",
-    textAlign: "center",
-    color: "white",
-    opacity: 0.9,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    fontWeight: '700',
+    color: '#FFF',
+    textShadowColor: 'rgba(0,0,0,0.25)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+    letterSpacing: -0.2,
+    textAlign: 'center',
+    lineHeight: 15,
+  },
+  heroCardBadge: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    minWidth: 40,
+    alignItems: 'center',
+  },
+  heroBadgeText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#FFF',
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+    textAlign: 'center',
+  },
+  heroCardAccent: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 40,
+    height: 40,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderBottomLeftRadius: 20,
   },
 })
 
