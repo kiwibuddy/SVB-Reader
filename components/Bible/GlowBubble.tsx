@@ -62,7 +62,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
   const emojiAlignment = color !== "black" ? { right: -8 } : { left: -8 };
 
   return (
-    <View key={bIndex} style={{ alignItems: color !== "black" ? 'flex-start' : 'flex-end', marginVertical: 6 }}>
+    <View key={bIndex} style={{ alignItems: color !== "black" ? 'flex-start' : 'flex-end', marginVertical: 10 }}>
       {hasTail && <SourceNameComponent sourceName={sourceName} align={color !== "black" ? "left" : "right"} />}
       <Animated.View
         style={[
@@ -131,11 +131,11 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
 const styles = StyleSheet.create({
   bubble: {
     borderRadius: 18,
-    padding: 12,
+    padding: 14,
     paddingHorizontal: 16,
     position: "relative",
-    marginVertical: 6,
-    marginHorizontal: 8,
+    marginVertical: 10,
+    marginHorizontal: 12,
     maxWidth: '90%',
     alignSelf: 'flex-start',
     ...Platform.select({

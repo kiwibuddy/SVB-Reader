@@ -510,7 +510,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 16,
   },
   roleContainer: {
     backgroundColor: colors.card,
@@ -637,13 +638,21 @@ const styles = StyleSheet.create({
     </View>
   );
 
-  // **IMPROVED RENDER ITEM** - Uses memoizedContent and proper shouldBlockGlow
+  // **IMPROVED RENDER ITEM** - Uses advanced conversation flow analysis
   const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
     const { sourceName } = item.source;
     const showSourceName = index === 0 || 
       memoizedContent[index - 1].source.sourceName !== sourceName;
 
     const isGlowing = shouldBlockGlow(item.source.color, index);
+
+    // Advanced conversation context analysis
+    const previousSpeaker = index > 0 ? memoizedContent[index - 1].source.sourceName : undefined;
+    const nextSpeaker = index < memoizedContent.length - 1 ? memoizedContent[index + 1].source.sourceName : undefined;
+    
+    // Detect speaker sequences for advanced spacing
+    const isFirstInSequence = previousSpeaker !== sourceName;
+    const isLastInSequence = nextSpeaker !== sourceName;
 
     return (
       <BibleBlockComponent
@@ -652,6 +661,10 @@ const styles = StyleSheet.create({
         hasTail={showSourceName}
         toRead={isGlowing}
         onLongPress={handleLongPress}
+        isFirstInSequence={isFirstInSequence}
+        isLastInSequence={isLastInSequence}
+        previousSpeaker={previousSpeaker}
+        nextSpeaker={nextSpeaker}
       />
     );
   }, [memoizedContent, shouldBlockGlow]);
@@ -756,14 +769,24 @@ const styles = StyleSheet.create({
             />
           </View>
         )}
-        initialNumToRender={10}
-        maxToRenderPerBatch={10}
-        windowSize={5}
+        // Expert-level performance and UX optimizations
+        initialNumToRender={8}
+        maxToRenderPerBatch={6}
+        windowSize={4}
+        updateCellsBatchingPeriod={100}
+        removeClippedSubviews={true}
         onLayout={() => {
           flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
         }}
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{ 
+          flexGrow: 1,
+          paddingBottom: 24,
+        }}
+        contentInsetAdjustmentBehavior="automatic"
         automaticallyAdjustKeyboardInsets={true}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+        alwaysBounceVertical={false}
         onScrollToIndexFailed={(error) => {
           // Handle scroll failure gracefully with improved logging
           console.log('❌ onScrollToIndexFailed called:', error);
