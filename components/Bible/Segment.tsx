@@ -700,23 +700,23 @@ const styles = StyleSheet.create({
                         // Get proper icon color that's always visible
                         const getIconColor = () => {
                           if (readerColor === "black") {
-                            return isActive ? "#37474F" : "#90A4AE";
+                            return isActive ? "#1A202C" : "#A0AEC0";
                           }
                           
                           if (isActive) {
-                            // Use deeper, more saturated versions that work with darker backgrounds
+                            // Use bright, vibrant versions that match the app's energetic style
                             switch (readerColor) {
-                              case "red": return "#AD1457"; // Deep pink, matches text color
-                              case "green": return "#00695C"; // Deep teal, matches text color
-                              case "blue": return "#1565C0"; // Deep blue, matches text color
+                              case "red": return "#BE185D"; // Vibrant deep pink, matches text color
+                              case "green": return "#0D9488"; // Vibrant teal, matches text color
+                              case "blue": return "#1E40AF"; // Vibrant blue, matches text color
                               default: return colors.light;
                             }
                           } else {
-                            // Use lighter versions when not selected but still visible
+                            // Use bright, lighter versions when not selected for energy
                             switch (readerColor) {
-                              case "red": return "#F48FB1"; // Light pink
-                              case "green": return "#4DB6AC"; // Light teal
-                              case "blue": return "#64B5F6"; // Light blue
+                              case "red": return "#F687B3"; // Bright light pink
+                              case "green": return "#4FD1C7"; // Bright light teal
+                              case "blue": return "#60A5FA"; // Bright light blue
                               default: return colors.light;
                             }
                           }

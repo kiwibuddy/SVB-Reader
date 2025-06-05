@@ -6,6 +6,7 @@ import SourceNameComponent from "./SourceName";
 import BibleInlineComponent from "./Inline";
 import { useAppContext } from "@/context/GlobalContext";
 import { deleteEmoji, getEmoji } from "@/api/sqlite";
+import { useAppSettings } from '@/context/AppSettingsContext';
 
 interface BibleBlockProps {
   block: BibleBlock;
@@ -16,6 +17,7 @@ interface BibleBlockProps {
 
 const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) => {
   const { segmentId, emojiActions } = useAppContext();
+  const { colors } = useAppSettings();
    const idSplit = segmentId.split("-");
    const language = idSplit[0];
    const version = idSplit[1];
@@ -23,26 +25,8 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
   const [emoji, setEmoji] = useState<string | null>(null);
   const { source, children } = block;
   const { color, sourceName } = source;
-  const colors = getColors(color);
+  const bubbleColors = getColors(color);
   const glowAnim = new Animated.Value(0);
-
-  // Get readable text color based on bubble color
-  const getReadableTextColor = (bubbleColor: string) => {
-    switch (bubbleColor) {
-      case "red":
-        return "#AD1457"; // Deep pink, excellent contrast with richer rose background
-      case "green":
-        return "#00695C"; // Deep teal, perfect for sophisticated teal background
-      case "blue":
-        return "#1565C0"; // Deep blue, great contrast with deeper blue background
-      case "black":
-        return "#37474F"; // Darker gray for improved contrast
-      default:
-        return "#37474F"; // Default darker gray
-    }
-  };
-
-  const textColor = getReadableTextColor(color);
 
   useEffect(() => {
     Animated.loop(
@@ -84,7 +68,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
         style={[
           styles.bubble,
           {
-            backgroundColor: colors.light,
+            backgroundColor: bubbleColors.light,
             alignSelf: color !== "black" ? 'flex-start' : 'flex-end',
             ...(isGlowing ? {
               shadowColor: glowColor,
@@ -107,7 +91,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
             style={[
               styles.tail,
               {
-                borderBottomColor: colors.light,
+                borderBottomColor: bubbleColors.light,
               },
               tailAlignment
             ]}
@@ -133,7 +117,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
                 key={`${bIndex}-${index}`}
                 iIndex={`${bIndex}-${index}`}
                 inline={item}
-                textColor={textColor}
+                textColor={colors.text}
               />
             );
           }}
