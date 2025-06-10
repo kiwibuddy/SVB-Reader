@@ -3,9 +3,37 @@
     "version": ">= 3.13.3"
   },
   "build": {
-    "preview": {
-      "distribution": "internal"
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "resourceClass": "m1-medium"
+      }
     },
-    "production": {}
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "resourceClass": "m1-medium"
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "ios": {
+        "resourceClass": "m1-medium",
+        "autoIncrement": "buildNumber"
+      },
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "your-apple-id@example.com",
+        "ascAppId": "placeholder-will-be-generated",
+        "appleTeamId": "your-team-id"
+      }
+    }
   }
 }

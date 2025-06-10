@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useFontSize } from '@/context/FontSizeContext';
 import { useAppSettings } from '@/context/AppSettingsContext';
+import LegalModal from '@/components/LegalModal';
 
 const About = () => {
   const router = useRouter();
   const { sizes } = useFontSize();
   const { colors } = useAppSettings();
+  const [legalModalVisible, setLegalModalVisible] = useState(false);
+  const [legalModalType, setLegalModalType] = useState<'privacy' | 'terms'>('privacy');
 
   const styles = StyleSheet.create({
     container: {
@@ -282,11 +285,62 @@ const About = () => {
               Ready to get started? Tap "Get Started" and begin your journey through scripture—or better yet, invite a friend to join you.
             </Text>
           </View>
+
+          <Text style={styles.heading2}>Legal Information</Text>
+          
+          <Pressable 
+            style={styles.stepContainer}
+            onPress={() => {
+              setLegalModalType('privacy');
+              setLegalModalVisible(true);
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.stepTitle}>Privacy Policy</Text>
+                <Text style={styles.stepDescription}>
+                  Learn how we protect your privacy and handle your data
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            </View>
+          </Pressable>
+
+          <Pressable 
+            style={styles.stepContainer}
+            onPress={() => {
+              setLegalModalType('terms');
+              setLegalModalVisible(true);
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.stepTitle}>Terms of Service</Text>
+                <Text style={styles.stepDescription}>
+                  Understand your rights and responsibilities when using our app
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            </View>
+          </Pressable>
+
+          <Text style={styles.heading3}>App Information</Text>
+          <Text style={styles.paragraph}>
+            <Text style={{ fontWeight: '600' }}>Version:</Text> 1.1.0{'\n'}
+            <Text style={{ fontWeight: '600' }}>Developer:</Text> KiwiBuddy{'\n'}
+            <Text style={{ fontWeight: '600' }}>Support:</Text> [YOUR EMAIL]
+          </Text>
           
           {/* Bottom spacing */}
           <View style={{ height: 40 }} />
         </View>
       </ScrollView>
+      
+      <LegalModal
+        visible={legalModalVisible}
+        onClose={() => setLegalModalVisible(false)}
+        type={legalModalType}
+      />
     </SafeAreaView>
   );
 };
