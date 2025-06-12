@@ -326,9 +326,9 @@ const About = () => {
 
           <Text style={styles.heading3}>App Information</Text>
           <Text style={styles.paragraph}>
-            <Text style={{ fontWeight: '600' }}>Version:</Text> 1.1.0{'\n'}
-            <Text style={{ fontWeight: '600' }}>Developer:</Text> KiwiBuddy{'\n'}
-            <Text style={{ fontWeight: '600' }}>Support:</Text> [YOUR EMAIL]
+            <Text style={{ fontWeight: '600' }}>Version:</Text> 1.1.0{"\n"}
+            <Text style={{ fontWeight: '600' }}>Developer:</Text> KiwiBuddy{"\n"}
+            <Text style={{ fontWeight: '600' }}>Support:</Text> feedback@sourceviewbible.com
           </Text>
           
           {/* Bottom spacing */}

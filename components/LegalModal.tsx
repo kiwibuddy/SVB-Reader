@@ -20,65 +20,80 @@ const LegalModal: React.FC<LegalModalProps> = ({ visible, onClose, type }) => {
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
       justifyContent: 'center',
       alignItems: 'center',
+      padding: 20,
     },
     container: {
       backgroundColor: colors.background,
       borderRadius: 16,
-      margin: 20,
-      maxHeight: '85%',
       width: '90%',
+      maxWidth: 400,
+      maxHeight: '80%',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+      elevation: 8,
+      padding: 0,
+      flex: 1,
     },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: 20,
+      padding: 14,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
+      backgroundColor: colors.card,
+      borderTopLeftRadius: 16,
+      borderTopRightRadius: 16,
     },
     title: {
       color: colors.text,
       fontSize: sizes.title,
       fontWeight: 'bold',
+      flex: 1,
     },
     closeButton: {
       padding: 8,
+      borderRadius: 20,
+      backgroundColor: colors.background,
     },
     scrollContainer: {
       flex: 1,
     },
     content: {
-      padding: 20,
+      padding: 12,
+      paddingBottom: 20,
     },
     heading2: {
-      color: colors.text,
+      color: '#000',
       fontSize: sizes.subtitle + 2,
       fontWeight: '700',
-      marginTop: 20,
-      marginBottom: 12,
+      marginTop: 16,
+      marginBottom: 8,
     },
     heading3: {
-      color: colors.text,
+      color: '#000',
       fontSize: sizes.subtitle,
       fontWeight: '600',
       marginTop: 16,
       marginBottom: 8,
     },
     paragraph: {
-      color: colors.text,
+      color: '#000',
       fontSize: sizes.body,
-      lineHeight: sizes.body * 1.5,
+      lineHeight: sizes.body * 1.4,
       marginBottom: 12,
     },
     bulletPoint: {
-      color: colors.text,
+      color: '#000',
       fontSize: sizes.body,
-      lineHeight: sizes.body * 1.5,
-      marginBottom: 6,
+      lineHeight: sizes.body * 1.4,
+      marginBottom: 4,
       marginLeft: 16,
     },
     effectiveDate: {
-      color: colors.textSecondary,
+      color: '#333',
       fontSize: sizes.caption,
       fontStyle: 'italic',
       textAlign: 'center',
@@ -90,13 +105,19 @@ const LegalModal: React.FC<LegalModalProps> = ({ visible, onClose, type }) => {
     <>
       <Text style={styles.effectiveDate}>Effective Date: {new Date().toLocaleDateString()}</Text>
       
-      <Text style={styles.heading2}>Information We Collect</Text>
+      <Text style={styles.paragraph}>
+        <Text style={{ fontWeight: 'bold' }}>No Personal Data Collection:</Text> We do not collect, store, or share any personal information. All your data is saved locally on your device and is never transmitted to us or any third party.
+      </Text>
+      <Text style={styles.paragraph}>
+        <Text style={{ fontWeight: 'bold' }}>Children's Privacy:</Text> If you are under 13, please use this app with parental permission.
+      </Text>
+      <Text style={styles.heading2}>Information Saved on Your Device</Text>
       <Text style={styles.bulletPoint}>• Reading preferences and Bible translations</Text>
       <Text style={styles.bulletPoint}>• Emoji reactions and role selections</Text>
       <Text style={styles.bulletPoint}>• Reading progress and achievements</Text>
       <Text style={styles.bulletPoint}>• All data stored locally on your device</Text>
       
-      <Text style={styles.heading2}>How We Use Your Information</Text>
+      <Text style={styles.heading2}>How Your Information Is Used</Text>
       <Text style={styles.bulletPoint}>• Enable collaborative Bible reading</Text>
       <Text style={styles.bulletPoint}>• Track your reading progress</Text>
       <Text style={styles.bulletPoint}>• Maintain streaks and achievements</Text>
@@ -112,10 +133,10 @@ const LegalModal: React.FC<LegalModalProps> = ({ visible, onClose, type }) => {
       <Text style={styles.bulletPoint}>• Delete data by uninstalling the app</Text>
       <Text style={styles.bulletPoint}>• Contact us with questions</Text>
       
-             <Text style={styles.heading2}>Contact</Text>
-       <Text style={styles.paragraph}>
-         Questions? Contact us at support@svbyouthreader.com
-       </Text>
+      <Text style={styles.heading2}>Contact</Text>
+      <Text style={styles.paragraph}>
+        Questions? Contact us at feedback@sourceviewbible.com
+      </Text>
     </>
   );
 
@@ -123,6 +144,9 @@ const LegalModal: React.FC<LegalModalProps> = ({ visible, onClose, type }) => {
     <>
       <Text style={styles.effectiveDate}>Effective Date: {new Date().toLocaleDateString()}</Text>
       
+      <Text style={styles.paragraph}>
+        By using this app, you agree to our <Text style={{textDecorationLine: 'underline'}}>Privacy Policy</Text>.
+      </Text>
       <Text style={styles.heading2}>What SVB Youth Reader Does</Text>
       <Text style={styles.bulletPoint}>• Collaborative Bible reading with friends</Text>
       <Text style={styles.bulletPoint}>• Color-coded reading roles</Text>
@@ -146,10 +170,15 @@ const LegalModal: React.FC<LegalModalProps> = ({ visible, onClose, type }) => {
         Suitable for all ages. Users under 13 should have parental permission.
       </Text>
       
-             <Text style={styles.heading2}>Contact</Text>
-       <Text style={styles.paragraph}>
-         Questions about these terms? Contact us at support@svbyouthreader.com
-       </Text>
+      <Text style={styles.heading2}>Disclaimer & Limitation of Liability</Text>
+      <Text style={styles.paragraph}>
+        This app is provided "as is" without warranties of any kind. The developer is not responsible for any loss of data, damages, or other issues arising from the use of this app. Use at your own risk.
+      </Text>
+      
+      <Text style={styles.heading2}>Contact</Text>
+      <Text style={styles.paragraph}>
+        Questions about these terms? Contact us at feedback@sourceviewbible.com
+      </Text>
     </>
   );
 
@@ -157,11 +186,11 @@ const LegalModal: React.FC<LegalModalProps> = ({ visible, onClose, type }) => {
     <Modal
       visible={visible}
       transparent={true}
-      animationType="fade"
+      animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <View style={styles.container}>
+      <Pressable style={styles.overlay} onPress={onClose}>
+        <Pressable style={styles.container} onPress={(e) => e.stopPropagation()}>
           <View style={styles.header}>
             <Text style={styles.title}>
               {type === 'privacy' ? 'Privacy Policy' : 'Terms of Service'}
@@ -171,14 +200,17 @@ const LegalModal: React.FC<LegalModalProps> = ({ visible, onClose, type }) => {
             </Pressable>
           </View>
           
-          <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+          <ScrollView 
+            style={styles.scrollContainer} 
+            contentContainerStyle={{ paddingBottom: 20 }}
+            showsVerticalScrollIndicator={true}
+          >
             <View style={styles.content}>
               {type === 'privacy' ? renderPrivacyPolicy() : renderTermsOfService()}
-              <View style={{ height: 20 }} />
             </View>
           </ScrollView>
-        </View>
-      </View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 };
