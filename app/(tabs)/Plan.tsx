@@ -1,5 +1,4 @@
-import React from 'react';
-import { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -8,21 +7,22 @@ import {
   StyleSheet,
   Alert,
   FlatList,
+  Image,
   useWindowDimensions,
-  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
-import Accordion, { accordionColor } from "@/components/navigation/NavBook";
+import Accordion, { AccordionItem, accordionColor } from "@/components/navigation/NavBook";
 import Books from "@/assets/data/BookChapterList.json";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useAppContext } from "@/context/GlobalContext";
 import { StatusIndicator } from '@/components/StatusIndicator';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
+import { FontAwesome5 } from '@expo/vector-icons';
+import { markSegmentComplete, getSegmentCompletionStatus, unlockAchievement } from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
-import CelebrationModal from '@/components/gamification/CelebrationModal';
-import { LinearGradient } from 'expo-linear-gradient';
 
 interface BookSegments {
   segments: string[];
@@ -42,13 +42,6 @@ interface Plan {
       segments: string[];
     } | undefined;  // Add undefined as possible type
   };
-}
-
-// Fix the interface for plan progress to match the actual data structure
-interface PlanProgressData {
-  completedSegments: string[];
-  isCompleted: boolean;
-  isPaused: boolean;
 }
 
 const PLAN_STYLES = {
@@ -81,806 +74,610 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    padding: 16,
   },
-  header: {
-    paddingVertical: 20,
-    paddingBottom: 16,
+  welcomeSection: {
+    marginBottom: 24,
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  title: {
+  titleBackground: {
+    backgroundColor: isDarkMode ? 'rgba(255, 99, 99, 0.15)' : 'rgba(255, 99, 99, 0.08)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginBottom: 12,
+  },
+  welcomeTitle: {
     fontSize: 28,
     fontWeight: "700",
     color: colors.text,
-    marginBottom: 8,
+    marginBottom: 12,
+    textAlign: "center"
   },
-  subtitle: {
-    fontSize: 16,
+  welcomeText: {
+    fontSize: 15,
     color: colors.secondary,
     lineHeight: 22,
   },
-  section: {
-    marginBottom: 32,
+  scrollContainer: {
+    flex: 1,
+  },
+  headerContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 8,
+    backgroundColor: colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  screenTitle: {
+    fontSize: 24,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: colors.text,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "600",
-    color: colors.text,
-    marginBottom: 16,
-  },
-  planCard: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 20,
+    fontWeight: "500",
     marginBottom: 12,
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-    overflow: 'hidden',
+    color: "#FF9F0A",
   },
-  completedPlanCard: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 12,
-    shadowColor: '#4CAF50',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
-    borderWidth: 2,
-    borderColor: '#4CAF5040',
-    overflow: 'hidden',
+  listContainer: {
+    paddingTop: 8,
+    gap: 16,
+    marginBottom:80
   },
-  completedPlanGradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0.05,
-  },
-  planHeader: {
-    marginBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-  },
-  planHeaderContent: {
-    flex: 1,
-    marginRight: 12,
-  },
-  completedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#4CAF5020',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#4CAF50',
-  },
-  completedBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#4CAF50',
-    marginLeft: 4,
-  },
-  planTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colors.text,
-    marginBottom: 4,
-  },
-  planMeta: {
-    fontSize: 14,
-    color: colors.secondary,
-  },
-  progressSection: {
-    marginBottom: 16,
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#4CAF50',
-    borderRadius: 4,
-  },
-  progressText: {
-    fontSize: 12,
-    color: colors.secondary,
-  },
-  planActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    gap: 8,
-  },
-  actionButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  primaryButton: {
-    backgroundColor: '#007AFF',
-  },
-  secondaryButton: {
-    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-  },
-  restartButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  buttonText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-  },
-  secondaryButtonText: {
-    color: colors.text,
-  },
-  expandedContent: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-  },
-  booksSection: {
-    marginBottom: 20,
-  },
-  subsectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.text,
-    marginBottom: 12,
-  },
-  booksGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 16,
-  },
-  bookChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+  planContainer: {
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  bookChipActive: {
-    backgroundColor: '#007AFF20',
-    borderColor: '#007AFF',
-  },
-  bookChipCompleted: {
-    backgroundColor: '#4CAF5020',
-    borderColor: '#4CAF50',
-  },
-  bookChipText: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: colors.secondary,
-  },
-  bookChipTextActive: {
-    color: '#007AFF',
-  },
-  bookChipTextCompleted: {
-    color: '#4CAF50',
-  },
-  storiesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginTop: 12,
-    paddingLeft: 16,
-  },
-  storyChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-  },
-  storyChipCompleted: {
-    backgroundColor: '#4CAF5015',
-    borderColor: '#4CAF50',
-  },
-  storyChipText: {
-    fontSize: 11,
-    color: colors.secondary,
-    fontWeight: "500",
-  },
-  storyChipTextCompleted: {
-    color: '#4CAF50',
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  emptyStateIcon: {
     marginBottom: 16,
-    opacity: 0.3,
-  },
-  emptyStateTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colors.text,
-    marginBottom: 8,
-  },
-  emptyStateText: {
-    fontSize: 14,
-    color: colors.secondary,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  completedPlanCardCompact: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    borderWidth: 2,
-    borderColor: '#4CAF50',
-    opacity: 0.95,
-  },
-  completedPlanRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  completedPlanLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flex: 1,
-  },
-  completedPlanTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.text,
-  },
-  restartButtonText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: colors.secondary,
-  },
-  // Horizontal slider styles
-  sliderContainer: {
-    marginBottom: 24,
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 16,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  activeTab: {
+    overflow: 'hidden',
     backgroundColor: colors.card,
     shadowColor: colors.text,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  tabText: {
+  planHeader: {
+    padding: 16,
+  },
+  planInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  leftContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  rightContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  planTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    marginRight: 8,
+  },
+  segmentCount: {
     fontSize: 14,
-    fontWeight: '600',
     color: colors.secondary,
+    marginTop: 4,
   },
-  activeTabText: {
+  booksContainer: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.background,
+    paddingTop: 8,
+  },
+  titleContainer: {
+    flexDirection: 'column',
+    flex: 1,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  title: {
     color: colors.text,
   },
-  sliderContent: {
-    minHeight: 200,
+  description: {
+    color: colors.secondary,
+    marginTop: 8,
+    fontSize: 14,
+    lineHeight: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  card: {
+    backgroundColor: colors.card,
+    borderColor: colors.border,
+  },
+  actionButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 4,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  accordionContainer: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginHorizontal: 12,
+    marginBottom: 16,
   },
 });
 
 const PlanScreen = () => {
-  const router = useRouter();
-  const params = useLocalSearchParams();
-  const {
+  const { 
+    readingPlan, 
+    updateReadingPlan, 
     activePlan,
     startPlan,
     pausePlan,
     resumePlan,
     switchPlan,
-    completedSegments,
-    updateSegmentId,
+    readingPlanProgress,
+    updateReadingPlanProgress,
+    updateEmojiActions
   } = useAppContext();
 
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [expandedBookId, setExpandedBookId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const scrollViewRef = useRef<ScrollView>(null);
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const { colors, isDarkMode } = useAppSettings();
   const styles = createStyles(isLargeScreen, colors, isDarkMode);
-  const scrollViewRef = useRef<ScrollView>(null);
-  const [celebrationModal, setCelebrationModal] = useState<{
-    visible: boolean;
-    title: string;
-    message: string;
-    type: 'plan' | 'challenge' | 'streak' | 'milestone' | 'book' | 'story';
-    stats?: any;
-  }>({
-    visible: false,
-    title: '',
-    message: '',
-    type: 'plan',
-  });
 
-  // Filter and organize plans
-  const availablePlans = useMemo(() => {
+  // Initialize selectedPlan with the active plan if it exists, otherwise use first plan
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [planProgress, setPlanProgress] = useState<Record<string, string[]>>({});
+
+  // Load initial progress data
+  useEffect(() => {
+    loadPlanProgress();
+  }, []);
+
+  const loadPlanProgress = async () => {
+    const progress: Record<string, string[]> = {};
+    
+    // Load progress for each plan
+    for (const plan of readingPlansData.plans) {
+      const completedSegments: string[] = [];
+      
+      // Check completion status for each segment
+      for (const [bookKey, bookData] of Object.entries(plan.segments)) {
+        if (bookData?.segments) {
+          for (const segmentId of bookData.segments) {
+            const status = await getSegmentCompletionStatus(
+              segmentId,
+              'plan',
+              plan.id
+            );
+            if (status.isCompleted) {
+              completedSegments.push(segmentId);
+            }
+          }
+        }
+      }
+      
+      progress[plan.id] = completedSegments;
+    }
+    
+    setPlanProgress(progress);
+  };
+
+  const handleSegmentComplete = async (planId: string, segmentId: string) => {
+    try {
+      // Mark segment as complete in database
+      await markSegmentComplete(segmentId, 'plan', planId, undefined);
+      
+      // Update local state
+      setPlanProgress(prev => ({
+        ...prev,
+        [planId]: [...(prev[planId] || []), segmentId]
+      }));
+
+      // Check for achievements
+      const completedCount = (planProgress[planId] || []).length + 1;
+      
+      // Achievement for starting a plan
+      if (completedCount === 1) {
+        await unlockAchievement(
+          'plan_started',
+          'Plan Started!',
+          'Started your first reading plan'
+        );
+      }
+
+      // Achievement for completing 10 segments
+      if (completedCount === 10) {
+        await unlockAchievement(
+          'plan_milestone_10',
+          'First Milestone!',
+          'Completed 10 segments in a reading plan'
+        );
+      }
+
+      // Check if plan is completed
+      const plan = readingPlansData.plans.find(p => p.id === planId);
+      if (plan) {
+        const totalSegments = Object.values(plan.segments)
+          .reduce((acc, book) => acc + (book?.segments?.length || 0), 0);
+        
+        if (completedCount === totalSegments) {
+          await unlockAchievement(
+            `plan_complete_${planId}`,
+            'Plan Completed!',
+            `Completed the ${plan.title} reading plan`
+          );
+        }
+      }
+
+    } catch (error) {
+      console.error('Error completing segment:', error);
+    }
+  };
+
+  // Move these function definitions up here
+  const getPlanBooksData = (planId: string) => {
+    const plan = readingPlansData.plans.find(p => p.id === planId);
+    if (!plan?.segments) return [];
+    
+    return Object.keys(plan.segments).map((key) => ({
+      djhBook: key as SegmentIds,
+      bookName: Books[key as SegmentIds]?.bookName ?? "Unknown Book",
+      segments: (plan.segments[key as SegmentIds]?.segments ?? []) as SegmentKey[],
+    }));
+  };
+
+  const getPlanSegmentCount = (planId: string) => {
+    const plan = readingPlansData.plans.find(p => p.id === planId) as Plan | undefined;
+    if (!plan?.segments) return 0;
+    
+    return Object.values(plan.segments).reduce(
+      (acc, book) => acc + (book?.segments?.filter(s => !s.startsWith('I')).length ?? 0),
+      0
+    );
+  };
+
+  // Now use the functions
+  const filteredPlans = useMemo(() => {
     return readingPlansData.plans.filter(plan => 
       !['SchoolYear2', 'SchoolYear3', 'test'].includes(plan.id)
     );
   }, []);
 
-  const activePlans = useMemo(() => {
-    return activePlan ? [activePlan] : [];
-  }, [activePlan]);
+  const planBooksData = useMemo(() => {
+    if (!selectedPlanId) return [];
+    return getPlanBooksData(selectedPlanId);
+  }, [selectedPlanId]);
 
-  // Helper functions
-  const getPlanSegmentCount = (planId: string) => {
-    const plan = readingPlansData.plans.find(p => p.id === planId);
-    if (!plan?.segments) return 0;
-    
-    return Object.values(plan.segments).reduce(
-      (acc, book) => acc + (book?.segments?.filter((s: string) => !s.startsWith('I')).length ?? 0),
-      0
-    );
-  };
+  const booksArray = Object.keys(Books);
 
-  const calculateProgress = (plan: any) => {
-    if (!plan.completedSegments) return 0;
-    const totalSegments = getPlanSegmentCount(plan.planId);
-    return Math.round((plan.completedSegments.length / totalSegments) * 100);
-  };
-
-  const getEstimatedDuration = (segmentCount: number) => {
-    const weeks = Math.ceil(segmentCount / 7);
-    return weeks === 1 ? '1 week' : `${weeks} weeks`;
-  };
-
-  const isPlanCompleted = (planId: string) => {
-    // For now, return false since we don't have completed plans tracking
-    return false;
-  };
-
-  const getPlanBooksWithProgress = (planId: string) => {
-    const plan = readingPlansData.plans.find(p => p.id === planId);
-    if (!plan?.segments) return [];
-    
-    // Get plan-specific completion data
-    const planCompletion = (activePlan?.planId === planId ? activePlan.completedSegments : []) || [];
-    
-    return Object.entries(plan.segments)
-      .filter(([_, bookData]) => bookData?.segments?.length > 0)
-      .map(([key, bookData]) => {
-        const segments = bookData?.segments?.filter((s: string) => !s.startsWith('I')) || [];
-        const completedCount = segments.filter((segId: string) => planCompletion.includes(segId)).length;
-        const isCompleted = completedCount === segments.length && segments.length > 0;
+  // Add planBooksData to dependencies array
+  useEffect(() => {
+    if (params.scrollToPlan && scrollViewRef.current && planBooksData) {
+      const planIndex = planBooksData.findIndex(item => item.djhBook === params.scrollToPlan);
+      if (planIndex !== -1) {
+        // Calculate approximate scroll position
+        const headerOffset = 200; // Adjust based on your header height
+        const itemHeight = 150; // Adjust based on your item height
+        const scrollPosition = headerOffset + (planIndex * itemHeight);
         
-        return {
-          key,
-          name: Books[key as keyof typeof Books]?.bookName || key,
-          segments,
-          completedCount,
-          totalCount: segments.length,
-          isCompleted
-        };
-      });
-  };
-
-  const handlePlanAction = async (planId: string, action: 'start' | 'continue' | 'pause' | 'resume' | 'switch' | 'restart') => {
-    try {
-      switch (action) {
-        case 'start':
-          await startPlan(planId);
-          setCelebrationModal({
-            visible: true,
-            title: 'Plan Started!',
-            message: 'Your reading journey begins now. Stay consistent and enjoy discovering God\'s word!',
-            type: 'plan',
-            stats: {
-              storiesRead: 0,
-              totalProgress: 0,
-            }
+        // Use setTimeout to ensure the scroll happens after render
+        setTimeout(() => {
+          scrollViewRef.current?.scrollTo({
+            y: scrollPosition,
+            animated: true
           });
-          break;
-        case 'continue':
-          // Navigate to next reading
-          break;
-        case 'pause':
-          await pausePlan();
-          break;
-        case 'resume':
-          await resumePlan();
-          break;
-        case 'restart':
-          Alert.alert(
-            'Restart Reading Plan',
-            'Are you sure you want to restart this plan? Your current progress will be reset.',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              { 
-                text: 'Restart', 
-                style: 'destructive',
-                onPress: async () => {
-                  // TODO: Implement restart functionality when available
-                  setCelebrationModal({
-                    visible: true,
-                    title: 'Plan Restarted!',
-                    message: 'Fresh start! Ready to dive back into God\'s word with renewed energy.',
-                    type: 'plan',
-                  });
-                }
-              }
-            ]
-          );
-          break;
-        case 'switch':
-          Alert.alert(
-            'Switch Reading Plan',
-            'Are you sure you want to switch to this plan? Your current progress will be saved.',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Switch', onPress: () => switchPlan(planId) }
-            ]
-          );
-          break;
+        }, 100);
       }
-    } catch (error) {
-      console.error('Plan action error:', error);
-      Alert.alert('Error', 'Something went wrong. Please try again.');
     }
-  };
+  }, [params.scrollToPlan, params.timestamp, planBooksData]);
 
-  const handleStoryPress = async (segmentId: string, planId: string) => {
-    await updateSegmentId(`ENG-NLT-${segmentId}`);
-    const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
-    router.push({
-      pathname: "/[segment]",
-      params: {
-        segment: `ENG-NLT-${segmentId}`,
-        book: segmentData?.book[0] || '',
-        planId: planId
-      }
-    });
-  };
+  const currentProgress = readingPlanProgress[selectedPlanId || ''];
 
-  const renderPlanCard = (plan: any, isActive: boolean = false) => {
-    const planData = readingPlansData.plans.find(p => p.id === (isActive ? plan.planId : plan.id));
-    if (!planData) return null;
-
-    const planId = isActive ? plan.planId : plan.id;
-    const segmentCount = getPlanSegmentCount(planId);
-    const progress = isActive ? calculateProgress(plan) : 0;
-    const duration = getEstimatedDuration(segmentCount);
-    const isExpanded = selectedPlanId === planId;
-    const books = getPlanBooksWithProgress(planId);
-    const isPaused = plan?.isPaused || false;
-    const isCompleted = isPlanCompleted(planId);
-
-    // Check if plan was just completed
-    useEffect(() => {
-      if (isActive && progress === 100 && !isCompleted) {
-        setCelebrationModal({
-          visible: true,
-          title: 'Plan Completed! 🎉',
-          message: 'Congratulations! You\'ve completed your reading plan. What an amazing achievement!',
-          type: 'plan',
-          stats: {
-            storiesRead: plan.completedSegments?.length || 0,
-            totalProgress: 100,
+  const handlePlanSelection = async (planId: string) => {
+    if (activePlan && activePlan.planId !== planId) {
+      Alert.alert(
+        'Switch Reading Plan?',
+        `You are currently on "${activePlan.planId}". Would you like to pause it and switch to "${planId}"?`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          },
+          {
+            text: 'Switch Plan',
+            onPress: async () => {
+              await switchPlan(planId);
+              setSelectedPlanId(planId); // Update selected plan after switching
+            }
           }
-        });
-      }
-    }, [progress, isCompleted]);
-
-    // Compact design for completed plans
-    if (isCompleted) {
-      return (
-        <View key={planId} style={styles.completedPlanCardCompact}>
-          <View style={styles.completedPlanRow}>
-            <View style={styles.completedPlanLeft}>
-              <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
-              <Text style={styles.completedPlanTitle}>{planData.title}</Text>
-            </View>
-            <Pressable
-              style={styles.restartButton}
-              onPress={() => handlePlanAction(planId, 'restart')}
-            >
-              <Ionicons name="refresh" size={14} color={colors.secondary} />
-              <Text style={styles.restartButtonText}>Again</Text>
-            </Pressable>
-          </View>
-        </View>
+        ]
       );
+    } else {
+      setSelectedPlanId(planId); // Update selected plan immediately if no active plan
     }
+  };
 
-    const cardStyle = styles.planCard;
+  const getPlanStatus = (planId: string) => {
+    if (!activePlan || activePlan.planId !== planId) return 'not-started';
+    if (activePlan.isCompleted) return 'completed';
+    return activePlan.isPaused ? 'paused' : 'active';
+  };
+
+  // Get the plan description based on the selected plan
+  const getPlanDescription = (planId: string) => {
+    switch (planId) {
+      case "Bible1Year":
+        return "Experience the entire Biblical narrative in one year. This comprehensive plan takes you through the complete story of Scripture, from Creation to Revelation, helping you understand God's grand plan of redemption.";
+      case "SchoolYear1":
+        return "Perfect for students and educators, this plan follows the academic calendar with carefully selected narrative passages that tell the Bible's key stories and teachings.";
+      case "SchoolYear2":
+        return "Continue your Biblical education with this second academic year plan, diving deeper into historical books, prophecy, and New Testament teachings.";
+      case "SchoolYear3":
+        return "Complete your Biblical foundation with this third academic year plan, exploring wisdom literature, prophetic books, and the life of Christ.";
+      case "NT100Days":
+        return "An intensive journey through the New Testament in 100 days. Perfect for understanding the life of Jesus, the early church, and the foundations of Christian faith.";
+      default:
+        return "";
+    }
+  };
+
+  const handlePress = (segmentId: string) => {
+    router.push({
+      pathname: `/${segmentId}`,
+      query: { 
+        showGlobalCompletion: 'false',
+        planId: selectedPlanId
+      }
+    } as any);
+  };
+
+  const getStatusStyle = (status: string) => {
+    switch(status) {
+      case 'active':
+        return {
+          backgroundColor: isDarkMode ? '#4CAF5055' : '#4CAF5033',
+          color: '#4CAF50'
+        };
+      case 'paused':
+        return {
+          backgroundColor: isDarkMode ? '#FFC10755' : '#FFC10733',
+          color: '#FFC107'
+        };
+      case 'completed':
+        return {
+          backgroundColor: isDarkMode ? '#2196F355' : '#2196F333',
+          color: '#2196F3'
+        };
+      default:
+        return {
+          backgroundColor: colors.border,
+          color: colors.secondary
+        };
+    }
+  };
+
+  const renderPlanItem = ({ item: plan }: { item: Plan }) => {
+    const isSelected = selectedPlanId === plan.id;
+    const isActive = activePlan?.planId === plan.id;
+    const isPaused = activePlan && isActive && activePlan.isPaused;
+    const isCompleted = activePlan && isActive && activePlan.isCompleted;
+    const segmentCount = getPlanSegmentCount(plan.id);
+    const planBooksData = isSelected ? getPlanBooksData(plan.id) : [];
+    const completedSegments = planProgress[plan.id] || [];
+    const totalSegments = Object.values(plan.segments)
+      .reduce((acc, book) => acc + (book?.segments?.length || 0), 0);
+    
+    const progress = (completedSegments.length / totalSegments) * 100;
+    const planStyle = PLAN_STYLES[plan.id as keyof typeof PLAN_STYLES] || {
+      color: "#888888",
+      icon: "book"
+    };
+    const status = getPlanStatus(plan.id);
+    const statusStyle = getStatusStyle(status);
 
     return (
-      <View key={planId} style={cardStyle}>
-        <View style={styles.planHeader}>
-          <View style={styles.planHeaderContent}>
-            <Text style={styles.planTitle}>{planData.title}</Text>
-            <Text style={styles.planMeta}>
-              {segmentCount} stories · {duration}
-            </Text>
-          </View>
-        </View>
-
-        {isActive && (
-          <View style={styles.progressSection}>
-            <View style={styles.progressBar}>
-              <View 
-                style={[styles.progressFill, { width: `${progress}%` }]}
-              />
-            </View>
-            <Text style={styles.progressText}>
-              {progress}% complete · {plan.completedSegments?.length || 0}/{segmentCount} stories
-            </Text>
-          </View>
-        )}
-
-        <View style={styles.planActions}>
-          {!isActive && (
-            <>
-              {activePlan && (
-                <Pressable
-                  style={[styles.actionButton, styles.secondaryButton]}
-                  onPress={() => handlePlanAction(plan.id, 'switch')}
-                >
-                  <Text style={[styles.buttonText, styles.secondaryButtonText]}>Switch</Text>
-                </Pressable>
-              )}
-              <Pressable
-                style={[styles.actionButton, styles.primaryButton]}
-                onPress={() => handlePlanAction(plan.id, 'start')}
-              >
-                <Ionicons name="play" size={16} color="#FFFFFF" />
-                <Text style={[styles.buttonText, styles.primaryButtonText]}>Start</Text>
-              </Pressable>
-            </>
-          )}
-
-          {isActive && (
-            <>
-              {isPaused ? (
-                <Pressable
-                  style={[styles.actionButton, styles.primaryButton]}
-                  onPress={() => handlePlanAction(plan.planId, 'resume')}
-                >
-                  <Ionicons name="play" size={16} color="#FFFFFF" />
-                  <Text style={[styles.buttonText, styles.primaryButtonText]}>Resume</Text>
-                </Pressable>
-              ) : (
-                <>
-                  <Pressable
-                    style={[styles.actionButton, styles.secondaryButton]}
-                    onPress={() => handlePlanAction(plan.planId, 'pause')}
-                  >
-                    <Text style={[styles.buttonText, styles.secondaryButtonText]}>Pause</Text>
-                  </Pressable>
-                  <Pressable
-                    style={[styles.actionButton, styles.primaryButton]}
-                    onPress={() => handlePlanAction(plan.planId, 'continue')}
-                  >
-                    <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
-                    <Text style={[styles.buttonText, styles.primaryButtonText]}>Continue</Text>
-                  </Pressable>
-                </>
-              )}
-            </>
-          )}
-
-          <Pressable
-            style={[styles.actionButton, styles.secondaryButton]}
-            onPress={() => setSelectedPlanId(isExpanded ? null : planId)}
-          >
-            <Ionicons 
-              name={isExpanded ? "chevron-up" : "chevron-down"} 
-              size={16} 
-              color={colors.text} 
-            />
-          </Pressable>
-        </View>
-
-        {isExpanded && (
-          <View style={styles.expandedContent}>
-            <View style={styles.booksSection}>
-              <Text style={styles.subsectionTitle}>Books & Stories</Text>
-              
-              <View style={styles.booksGrid}>
-                {books.map((book) => (
-                  <View key={book.key}>
-                    <Pressable
-                      style={[
-                        styles.bookChip,
-                        expandedBookId === `${planId}-${book.key}` && styles.bookChipActive,
-                        book.isCompleted && styles.bookChipCompleted,
-                      ]}
-                      onPress={() => {
-                        const bookId = `${planId}-${book.key}`;
-                        setExpandedBookId(expandedBookId === bookId ? null : bookId);
-                      }}
-                    >
-                      <Text style={[
-                        styles.bookChipText,
-                        expandedBookId === `${planId}-${book.key}` && styles.bookChipTextActive,
-                        book.isCompleted && styles.bookChipTextCompleted,
-                      ]}>
-                        {book.name} ({book.completedCount}/{book.totalCount})
+      <View style={styles.planContainer}>
+        <TouchableOpacity 
+          style={styles.planHeader}
+          onPress={() => setSelectedPlanId(isSelected ? null : plan.id)}
+        >
+          <View style={styles.planInfo}>
+            <View style={styles.leftContent}>
+              <View style={[styles.iconContainer, { backgroundColor: planStyle.color + '20' }]}>
+                <FontAwesome5 name={planStyle.icon} size={20} color={planStyle.color} />
+              </View>
+              <View style={styles.titleContainer}>
+                <View style={styles.titleRow}>
+                  <Text style={styles.planTitle}>{plan.title}</Text>
+                  {status !== 'not-started' && (
+                    <View style={[styles.statusBadge, { backgroundColor: statusStyle.backgroundColor }]}>
+                      <Text style={[styles.statusText, { color: statusStyle.color }]}>
+                        {status === 'active' ? 'Active' : status === 'paused' ? 'Paused' : 'Completed'}
                       </Text>
-                    </Pressable>
-
-                    {/* Show stories immediately under this book when expanded */}
-                    {expandedBookId === `${planId}-${book.key}` && (
-                      <View style={[styles.storiesGrid, { width: '100%', marginTop: 8 }]}>
-                        {book.segments.map((segmentId: string) => {
-                          // Get plan-specific completion data with null safety
-                          const planCompletion = (activePlan && activePlan.planId === planId ? activePlan.completedSegments : []) || [];
-                          const isCompleted = planCompletion.includes(segmentId);
-                          const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
-                          
-                          return (
-                            <Pressable
-                              key={segmentId}
-                              style={[
-                                styles.storyChip,
-                                isCompleted && styles.storyChipCompleted,
-                              ]}
-                              onPress={() => handleStoryPress(segmentId, planId)}
-                            >
-                              <Text style={[
-                                styles.storyChipText,
-                                isCompleted && styles.storyChipTextCompleted,
-                              ]}>
-                                {segmentData?.title || segmentId}
-                              </Text>
-                            </Pressable>
-                          );
-                        })}
-                      </View>
-                    )}
-                  </View>
-                ))}
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.segmentCount}>
+                  {segmentCount} {segmentCount === 1 ? 'story' : 'stories'}
+                </Text>
               </View>
             </View>
+            <View style={styles.rightContent}>
+              {!isActive && (
+                <TouchableOpacity 
+                  onPress={() => startPlan(plan.id)}
+                  style={[styles.actionButton, { backgroundColor: planStyle.color + '20' }]}
+                >
+                  <Feather name="play" size={20} color={planStyle.color} />
+                </TouchableOpacity>
+              )}
+              {isPaused && (
+                <TouchableOpacity 
+                  onPress={() => resumePlan()}
+                  style={[styles.actionButton, { backgroundColor: planStyle.color + '20' }]}
+                >
+                  <Feather name="play" size={20} color={planStyle.color} />
+                </TouchableOpacity>
+              )}
+              {isActive && !isPaused && !isCompleted && (
+                <TouchableOpacity 
+                  onPress={() => pausePlan()}
+                  style={[styles.actionButton, { backgroundColor: planStyle.color + '20' }]}
+                >
+                  <Feather name="pause" size={20} color={planStyle.color} />
+                </TouchableOpacity>
+              )}
+              <Ionicons 
+                name={isSelected ? "chevron-up" : "chevron-down"} 
+                size={24} 
+                color={colors.secondary}
+              />
+            </View>
           </View>
+        </TouchableOpacity>
+
+        {/* Progress text has been commented out as requested */}
+        {/* {!isSelected && (
+          <Text style={styles.progressText}>
+            Progress: {progress.toFixed(1)}%
+          </Text>
+        )} */}
+
+        {isSelected && (
+          <>
+            <Text style={styles.description}>
+              {getPlanDescription(plan.id)}
+            </Text>
+            
+            {/* Progress text has been commented out as requested */}
+            {/* <Text style={styles.progressText}>
+              Progress: {progress.toFixed(1)}%
+            </Text> */}
+
+            <View style={styles.booksContainer}>
+              <View style={styles.accordionContainer}>
+                <FlatList
+                  data={planBooksData}
+                  renderItem={({ item }) => {
+                    const bookIndex = booksArray.findIndex(
+                      (book) => book === item.djhBook
+                    );
+                    // Map completedSegments array to Record<string, boolean>
+                    const completedSegmentsMap = completedSegments.reduce((acc, id) => {
+                      acc[id] = true;
+                      return acc;
+                    }, {} as Record<string, boolean>);
+                    return (
+                      <Accordion 
+                        item={item} 
+                        bookIndex={bookIndex}
+                        onSegmentComplete={(segmentId) => handleSegmentComplete(plan.id, segmentId)}
+                        context="plan"
+                        showGlobalCompletion={false}
+                        planId={plan.id}
+                        completedSegments={completedSegmentsMap}
+                        key={completedSegments.join(',') + '-' + item.djhBook}
+                        style={{ 
+                          backgroundColor: colors.card,
+                          borderBottomWidth: 1,
+                          borderBottomColor: colors.border
+                        }}
+                      />
+                    );
+                  }}
+                  keyExtractor={(item) => item.djhBook}
+                />
+              </View>
+            </View>
+          </>
         )}
       </View>
     );
   };
 
+  // Organize plans by status
+  const organizedPlans = useMemo(() => {
+    const plans = [...filteredPlans];
+    return plans.sort((a, b) => {
+      const aStatus = activePlan?.planId === a.id 
+        ? (activePlan.isPaused ? 1 : 0)
+        : 2;
+      const bStatus = activePlan?.planId === b.id
+        ? (activePlan.isPaused ? 1 : 0)
+        : 2;
+      if (aStatus !== bStatus) return aStatus - bStatus;
+      return a.title.localeCompare(b.title);
+    });
+  }, [filteredPlans, activePlan]);
+
+  // Add handleScroll function to match Home.tsx
+  const handleScroll = (event: any) => {
+    // Implementation of handleScroll function
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Reading Plans</Text>
-          <Text style={styles.subtitle}>
-            Choose a structured path through Scripture designed to deepen your understanding and build consistent reading habits.
+      <ScrollView 
+        style={styles.content}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.welcomeSection}>
+          <View >
+            <Text style={styles.welcomeTitle}>Reading Plans</Text>
+          </View>
+          <Text style={styles.welcomeText}>
+            Welcome to the Bible Reading Plans and Challenges screen, where you can find personalized reading plans and spiritual challenges designed to deepen your understanding of Scripture and transform your faith.
           </Text>
         </View>
 
-        {/* Horizontal Slider for Available/Completed */}
-        <View style={styles.sliderContainer}>
-          <View style={styles.tabsContainer}>
-            <Pressable
-              style={[styles.tab, activeTab === 'active' && styles.activeTab]}
-              onPress={() => setActiveTab('active')}
-            >
-              <Text style={[styles.tabText, activeTab === 'active' && styles.activeTabText]}>
-                Available ({activePlans.length + availablePlans.filter(plan => !isPlanCompleted(plan.id) && (!activePlan || activePlan.planId !== plan.id)).length})
-              </Text>
-            </Pressable>
-            <Pressable
-              style={[styles.tab, activeTab === 'completed' && styles.activeTab]}
-              onPress={() => setActiveTab('completed')}
-            >
-              <Text style={[styles.tabText, activeTab === 'completed' && styles.activeTabText]}>
-                Completed (0)
-              </Text>
-            </Pressable>
-          </View>
-
-          <View style={styles.sliderContent}>
-            {activeTab === 'active' ? (
-              <>
-                {activePlans.length > 0 && (
-                  <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Your Active Plan</Text>
-                    {activePlans.map(plan => renderPlanCard(plan, true))}
-                  </View>
-                )}
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Available Plans</Text>
-                  {availablePlans
-                    .filter(plan => !isPlanCompleted(plan.id) && (!activePlan || activePlan.planId !== plan.id))
-                    .length > 0 ? (
-                    availablePlans
-                      .filter(plan => !isPlanCompleted(plan.id) && (!activePlan || activePlan.planId !== plan.id))
-                      .map(plan => renderPlanCard(plan, false))
-                  ) : (
-                    <View style={styles.emptyState}>
-                      <Ionicons 
-                        name="book-outline" 
-                        size={48} 
-                        color={colors.secondary} 
-                        style={styles.emptyStateIcon}
-                      />
-                      <Text style={styles.emptyStateTitle}>All Plans Active!</Text>
-                      <Text style={styles.emptyStateText}>
-                        You have an active plan running. Complete or pause it to start a new one.
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </>
-            ) : (
-              <View style={styles.section}>
-                <View style={styles.emptyState}>
-                  <Ionicons 
-                    name="checkmark-circle-outline" 
-                    size={48} 
-                    color={colors.secondary} 
-                    style={styles.emptyStateIcon}
-                  />
-                  <Text style={styles.emptyStateTitle}>No Completed Plans</Text>
-                  <Text style={styles.emptyStateText}>
-                    Complete a reading plan to see it here! Start with one of the available plans in the Available tab.
-                  </Text>
-                </View>
-              </View>
-            )}
-          </View>
-        </View>
+        <FlatList
+          data={organizedPlans}
+          renderItem={renderPlanItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContainer}
+          scrollEnabled={false}
+        />
       </ScrollView>
-
-      <CelebrationModal
-        visible={celebrationModal.visible}
-        onClose={() => setCelebrationModal(prev => ({ ...prev, visible: false }))}
-        title={celebrationModal.title}
-        message={celebrationModal.message}
-        type={celebrationModal.type}
-        stats={celebrationModal.stats}
-      />
     </SafeAreaView>
   );
 };

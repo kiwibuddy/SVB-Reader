@@ -1,6 +1,6 @@
 import { Text, type TextProps, StyleSheet } from 'react-native';
+
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { useAppSettings } from '@/context/AppSettingsContext';
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
@@ -15,16 +15,12 @@ export function ThemedText({
   type = 'default',
   ...rest
 }: ThemedTextProps) {
-  const { theme } = useAppSettings();
   const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
-  
-  // Use theme colors for link text instead of hardcoded blue
-  const linkColor = type === 'link' ? theme.colors.primary : color;
 
   return (
     <Text
       style={[
-        { color: linkColor },
+        { color },
         type === 'default' ? styles.default : undefined,
         type === 'title' ? styles.title : undefined,
         type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
@@ -59,6 +55,6 @@ const styles = StyleSheet.create({
   link: {
     lineHeight: 30,
     fontSize: 16,
-    // Remove hardcoded color - now handled in component logic
+    color: '#0a7ea4',
   },
 });

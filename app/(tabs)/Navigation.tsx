@@ -1,10 +1,10 @@
 import { View, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, useWindowDimensions, Platform } from "react-native";
 import Accordion from "@/components/navigation/NavBook";
-import Books from "@/assets/data/BookChapterList.json";
-import SegmentTitles from "@/assets/data/SegmentTitles.json";
+import BooksJson from "@/assets/data/BookChapterList.json";
+import SegmentTitlesJson from "@/assets/data/SegmentTitles.json";
 import { useAppContext } from "@/context/GlobalContext";
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from "react";
 import { parseReference } from '@/utils/parseReference';
 import { findSegmentId } from '@/utils/referenceMapping';
@@ -16,13 +16,132 @@ import { getSegmentCompletionStatus } from "@/api/sqlite";
 export type SegmentKey = keyof typeof SegmentTitles;
 export type SegmentIds = keyof typeof Books;
 
+interface BookType {
+  [key: string]: {
+    verseCount: number;
+    bookName: string;
+    chapters: string;
+    FCBH: string;
+    YV: string;
+    segments: string[];
+  };
+}
+
+interface SegmentTitleType {
+  [key: string]: {
+    Segment: string;
+    title: string;
+    book: string[];
+    ref?: string;
+  };
+}
+
+const Books: BookType = BooksJson;
+const SegmentTitles: SegmentTitleType = SegmentTitlesJson;
+
 const data = Object.keys(Books).map((key) => ({
-  djhBook: key as keyof typeof Books,
-  ...Books[key as SegmentIds],
-  segments: Books[key as SegmentIds].segments as SegmentKey[],
+  djhBook: String(key),
+  ...Books[key],
+  segments: Books[key].segments as SegmentKey[],
 }));
 
 const booksArray = Object.keys(Books);
+
+// Enhanced reference parsing function
+const parseReferenceEnhanced = (input: string) => {
+  if (!input || typeof input !== 'string') return null;
+  
+  const normalized = input.trim().replace(/\s+/g, ' ');
+  
+  // Match patterns like "John 3:13", "Joh 3:13", "John 3", "1 John 3:13", etc.
+  const patterns = [
+    /^(\d?\s?[A-Za-z]+)\s+(\d+):(\d+)$/, // "John 3:13" or "1 John 3:13"
+    /^(\d?\s?[A-Za-z]+)\s+(\d+)$/, // "John 3"
+  ];
+  
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
+    if (match) {
+      const bookName = match[1].trim();
+      const chapter = parseInt(match[2]);
+      const verse = match[3] ? parseInt(match[3]) : null;
+      
+      return {
+        book: bookName,
+        chapter,
+        verse,
+        original: input
+      };
+    }
+  }
+  
+  return null;
+};
+
+// Function to find which segment contains a specific verse
+const findSegmentForVerse = (bookKey: string, chapter: number, verse: number | null = null) => {
+  const bookData = Books[bookKey];
+  if (!bookData) return null;
+  
+  // Get all segments for this book
+  const segments = bookData.segments;
+  
+  for (const segmentId of segments) {
+    const segmentData = SegmentTitles[segmentId];
+    if (!segmentData || !segmentData.ref) continue;
+    
+    // Parse the verse reference (e.g., "3:1-5:32")
+    const refMatch = segmentData.ref.match(/(\d+):(\d+)-(\d+):(\d+)/);
+    if (refMatch) {
+      const startChapter = parseInt(refMatch[1]);
+      const startVerse = parseInt(refMatch[2]);
+      const endChapter = parseInt(refMatch[3]);
+      const endVerse = parseInt(refMatch[4]);
+      
+      // Check if the target chapter:verse falls within this segment's range
+      if (chapter >= startChapter && chapter <= endChapter) {
+        if (chapter === startChapter && verse && verse < startVerse) continue;
+        if (chapter === endChapter && verse && verse > endVerse) continue;
+        return segmentId;
+      }
+    } else {
+      // Handle single chapter references (e.g., "1:1-25")
+      const singleChapterMatch = segmentData.ref.match(/(\d+):(\d+)-(\d+)/);
+      if (singleChapterMatch) {
+        const segmentChapter = parseInt(singleChapterMatch[1]);
+        const startVerse = parseInt(singleChapterMatch[2]);
+        const endVerse = parseInt(singleChapterMatch[3]);
+        
+        if (chapter === segmentChapter) {
+          if (!verse || (verse >= startVerse && verse <= endVerse)) {
+            return segmentId;
+          }
+        }
+      }
+    }
+  }
+  
+  return null;
+};
+
+// Function to find book key by name
+const findBookByName = (searchName: string) => {
+  const lowerSearchName = searchName.toLowerCase();
+  
+  for (const [bookKey, bookData] of Object.entries(Books)) {
+    const bookName = bookData.bookName.toLowerCase();
+    const shortName = bookKey.toLowerCase();
+    
+    if (bookName === lowerSearchName || 
+        shortName === lowerSearchName ||
+        bookName.startsWith(lowerSearchName) ||
+        shortName.startsWith(lowerSearchName)) {
+      return bookKey;
+    }
+  }
+  
+  return null;
+};
 
 const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create({
   container: {
@@ -73,40 +192,33 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     marginVertical: 12,
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 8,
   },
   filterScrollContent: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
     paddingRight: 8,
-    flex: 1,
   },
   filterButton: {
     paddingVertical: 8,
-    paddingHorizontal: 8,
-    borderRadius: 20,
-    backgroundColor: colors.isDark ? colors.card : '#F0F0F0',
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: colors.isDark ? colors.card : '#E8E8E8',
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    minWidth: 0,
-    borderWidth: 1,
-    borderColor: colors.isDark ? colors.border : '#E0E0E0',
-  },
-  filterButtonAll: {
-    flex: 0.6,
+    marginRight: 8,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    elevation: 4,
   },
   filterButtonActive: {
     backgroundColor: '#FF6B00',
-    borderColor: '#FF6B00',
   },
   filterText: {
-    fontSize: 11,
+    fontSize: 14,
     color: colors.text,
     fontWeight: '500',
-    textAlign: 'center',
-    flexShrink: 1,
   },
   filterTextActive: {
     color: '#FFF',
@@ -122,7 +234,11 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
-    flexShrink: 0,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   searchButtonActive: {
     backgroundColor: '#FF6B00',
@@ -144,6 +260,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     marginRight: 8,
   },
   searchInput: {
+    flex: 1,
     paddingVertical: 12,
     fontSize: 16,
     color: colors.text,
@@ -155,25 +272,14 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     backgroundColor: colors.card,
     borderColor: colors.border,
   },
-  inlineVerseButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    marginLeft: 4,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255, 107, 0, 0.1)',
-  },
-  inlineVerseText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#FF6B00',
-    marginRight: 3,
-  },
-  spacer: {
-    flex: 1,
-  },
 });
+
+// Update AccordionItem type to accept string for djhBook
+export interface AccordionItem {
+  djhBook: string;
+  bookName: string;
+  segments: SegmentKey[];
+}
 
 const Navigation = () => {
   const { completedSegments, language, version } = useAppContext();
@@ -182,8 +288,7 @@ const Navigation = () => {
   const [isAscending, setIsAscending] = useState(true);
   const [showSearch, setShowSearch] = useState(false);
   const [selectedBook, setSelectedBook] = useState<string | null>(null);
-  const [targetSegmentId, setTargetSegmentId] = useState<string | null>(null);
-  const [targetVerse, setTargetVerse] = useState<number | null>(null);
+  const [highlightedSegment, setHighlightedSegment] = useState<string | null>(null);
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
@@ -197,52 +302,91 @@ const Navigation = () => {
   // Add state for completed segments
   const [completedSegmentIds, setCompletedSegmentIds] = useState<{[key: string]: boolean}>({});
 
-  // Check if search query is a valid scripture reference with verse
-  const isValidScriptureReference = React.useMemo(() => {
-    if (!searchQuery || !showSearch) return false;
-    const parsedRef = parseReference(searchQuery);
-    if (parsedRef?.book && parsedRef?.chapter && parsedRef?.verse) {
-      const segmentId = findSegmentId(parsedRef.book, parsedRef.chapter, parsedRef.verse);
-      if (segmentId) {
-        // Additional validation: check for reasonable verse numbers
-        // Most chapters don't have more than 80 verses, very few go above 100
-        const verse = parsedRef.verse;
-        if (verse > 150) {
-          return false; // Clearly invalid verse number
-        }
-        
-        // Additional checks for specific books with known limits could be added here
-        // For now, we'll trust the referenceMapping utility but add basic sanity checks
-        return true;
-      }
-    }
-    return false;
-  }, [searchQuery, showSearch]);
+  // Enhanced filtered data with verse search
+  const filteredData = React.useMemo(() => {
+    let filtered = [...data];
+    let targetSegment = null;
+    let targetBookKey: string | null = null;
 
-  // Handle direct navigation to scripture reference
-  const handleDirectScriptureNavigation = () => {
-    const parsedRef = parseReference(searchQuery);
-    if (parsedRef?.book && parsedRef?.chapter && parsedRef?.verse) {
-      const segmentId = findSegmentId(parsedRef.book, parsedRef.chapter, parsedRef.verse);
-      if (segmentId) {
-        handleSegmentSelect(segmentId, parsedRef.verse);
+    // Apply testament filter
+    if (filter === 'ot') {
+      filtered = filtered.filter(item => oldTestamentBooks.includes(item.djhBook));
+    } else if (filter === 'nt') {
+      filtered = filtered.filter(item => newTestamentBooks.includes(item.djhBook));
+    }
+
+    // Apply search filter with enhanced verse detection
+    if (searchQuery && showSearch) {
+      const parsedRef = parseReferenceEnhanced(searchQuery);
+      
+      if (parsedRef?.book && parsedRef?.chapter) {
+        // Find the book that matches the search
+        targetBookKey = findBookByName(parsedRef.book);
+        
+        if (targetBookKey) {
+          // Find the specific segment that contains this verse
+          if (parsedRef.verse) {
+            targetSegment = findSegmentForVerse(targetBookKey, parsedRef.chapter, parsedRef.verse);
+          } else {
+            // If no specific verse, find segment for the chapter
+            targetSegment = findSegmentForVerse(targetBookKey, parsedRef.chapter);
+          }
+          
+          // Filter to show only the matching book
+          filtered = filtered.filter(item => item.djhBook === targetBookKey);
+          setSelectedBook(targetBookKey);
+        }
+      } else {
+        // Fallback to book name search
+        filtered = filtered.filter(item => {
+          const bookName = Books[item.djhBook].bookName.toLowerCase();
+          return bookName.includes(searchQuery.toLowerCase());
+        });
       }
     }
-  };
+
+    // Update highlighted segment
+    setHighlightedSegment(targetSegment);
+
+    // Apply sort order
+    return filtered.sort((a, b) => {
+      const indexA = booksArray.indexOf(a.djhBook);
+      const indexB = booksArray.indexOf(b.djhBook);
+      return isAscending ? indexA - indexB : indexB - indexA;
+    });
+  }, [filter, searchQuery, showSearch, isAscending]);
+
+  // Fetch completion status for all visible segments when filteredData changes
+  useEffect(() => {
+    const fetchCompletion = async () => {
+      const completed: {[key: string]: boolean} = {};
+      await Promise.all(
+        filteredData.map(async book => {
+          await Promise.all(
+            book.segments.map(async segmentId => {
+              const status = await getSegmentCompletionStatus(String(segmentId), 'main');
+              if (status.isCompleted) {
+                completed[segmentId] = true;
+              }
+            })
+          );
+        })
+      );
+      setCompletedSegmentIds(completed);
+    };
+    fetchCompletion();
+  }, [filteredData]);
 
   // Handle book title click
   const handleBookSelect = (bookName: string) => {
-    // Only update search if search is active
     if (showSearch) {
       setSearchQuery(bookName);
       setSelectedBook(bookName);
     }
   };
 
-  // Handle segment click when chapter is selected
-  const handleSegmentSelect = (segmentId: string, verseOverride?: number) => {
-    console.log('🚀 Navigation: handleSegmentSelect called with:', { segmentId, verseOverride, targetVerse });
-    
+  // Enhanced segment click handler
+  const handleSegmentSelect = (segmentId: string) => {
     // Reset any scroll position that might be stored
     if (Platform.OS === 'web') {
       window.scrollTo(0, 0);
@@ -253,27 +397,13 @@ const Navigation = () => {
       scrollReset: 'true'
     };
     
-    // Use verse override if provided, otherwise use stored target verse
-    const verseToUse = verseOverride || targetVerse;
-    console.log('🔧 Navigation: verseToUse calculated as:', verseToUse);
-    
-    if (verseToUse) {
-      params.verse = verseToUse.toString();
-      console.log('✅ Navigation: Added verse to params:', params.verse);
-      
-      // Also add chapter information if we have a parsed reference
-      if (searchQuery && showSearch) {
-        const parsedRef = parseReference(searchQuery);
-        if (parsedRef?.chapter) {
-          params.chapter = parsedRef.chapter.toString();
-          console.log('✅ Navigation: Added chapter to params:', params.chapter);
-        }
+    // If this segment was found through verse search, pass the verse reference
+    if (highlightedSegment === segmentId && searchQuery) {
+      const parsedRef = parseReferenceEnhanced(searchQuery);
+      if (parsedRef?.verse) {
+        params.highlightVerse = `${parsedRef.chapter}:${parsedRef.verse}`;
       }
-    } else {
-      console.log('❌ Navigation: No verse to add to params');
     }
-    
-    console.log('🎯 Navigation: Final params being sent:', JSON.stringify(params, null, 2));
     
     router.push({
       pathname: "/(tabs)/[segment]" as const,
@@ -281,93 +411,20 @@ const Navigation = () => {
     });
   };
 
-  const filteredData = React.useMemo(() => {
-    let filtered = [...data];
-
-    // Apply testament filter
-    if (filter === 'ot') {
-      filtered = filtered.filter(item => oldTestamentBooks.includes(item.djhBook));
-    } else if (filter === 'nt') {
-      filtered = filtered.filter(item => newTestamentBooks.includes(item.djhBook));
-    }
-
-    // Reset target segment when search changes
-    setTargetSegmentId(null);
-    setSelectedBook(null);
-    setTargetVerse(null);
-
-    // Apply search filter
-    if (searchQuery && showSearch) {
-      const parsedRef = parseReference(searchQuery);
-      
-      if (parsedRef?.book && parsedRef?.chapter) {
-        // Handle specific scripture reference (e.g., "John 3:16")
-        const targetSegment = findSegmentId(parsedRef.book, parsedRef.chapter, parsedRef.verse);
-        
-        if (targetSegment) {
-          // Filter to show only the book that contains this segment
-          filtered = filtered.filter(item => {
-            return item.segments.includes(targetSegment as any);
-          });
-          
-          // Set the target segment for accordion expansion and highlighting
-          setTargetSegmentId(targetSegment);
-          // Store the verse number for navigation
-          if (parsedRef.verse) {
-            setTargetVerse(parsedRef.verse);
-          }
-          const bookKey = parsedRef.book as keyof typeof Books;
-          setSelectedBook(Books[bookKey]?.bookName || '');
-        } else {
-          // If no segment found, show the book that matches
-          filtered = filtered.filter(item => {
-            const bookName = Books[item.djhBook].bookName.toLowerCase();
-            return bookName.includes(parsedRef.book.toLowerCase()) || item.djhBook === parsedRef.book;
-          });
-          
-          // Set selected book for expansion even if no specific segment
-          const bookKey = parsedRef.book as keyof typeof Books;
-          setSelectedBook(Books[bookKey]?.bookName || '');
-        }
-      } else if (parsedRef?.book) {
-        // Handle partial reference (e.g., "John" or "1 Corinthians")
-        filtered = filtered.filter(item => {
-          const bookName = Books[item.djhBook].bookName.toLowerCase();
-          return bookName.includes(parsedRef.book.toLowerCase()) || item.djhBook === parsedRef.book;
-        });
-      } else {
-        // Handle general text search
-        filtered = filtered.filter(item => {
-          const bookName = Books[item.djhBook].bookName.toLowerCase();
-          return bookName.includes(searchQuery.toLowerCase());
-        });
-      }
-    }
-
-    // Apply sort order
-    return filtered.sort((a, b) => {
-      const indexA = booksArray.indexOf(a.djhBook);
-      const indexB = booksArray.indexOf(b.djhBook);
-      return isAscending ? indexA - indexB : indexB - indexA;
-    });
-  }, [filter, searchQuery, showSearch, isAscending]);
-
   const handleSearchToggle = () => {
     setShowSearch(!showSearch);
     if (showSearch) {
       // Clear search when closing
       setSearchQuery('');
       setSelectedBook(null);
-      setTargetSegmentId(null);
-      setTargetVerse(null);
+      setHighlightedSegment(null);
     }
   };
 
   const handleClearSearch = () => {
     setSearchQuery('');
     setSelectedBook(null);
-    setTargetSegmentId(null);
-    setTargetVerse(null);
+    setHighlightedSegment(null);
   };
 
   // Handle filter button press
@@ -393,125 +450,109 @@ const Navigation = () => {
           </Text>
         </View>
 
-      {/* Filter and Search Container */}
-<View style={styles.filterContainer}>
-  <View style={styles.filterScrollContent}>
-    <TouchableOpacity 
-      style={[
-        styles.filterButton, 
-        styles.filterButtonAll,
-        filter === 'all' && styles.filterButtonActive
-      ]}
-      onPress={() => handleFilterPress('all')}
-    >
-      <Text 
-        style={[styles.filterText, filter === 'all' && styles.filterTextActive]}
-        numberOfLines={1}
-      >
-        All
-      </Text>
-      {filter === 'all' && (
-        <Ionicons 
-          name={isAscending ? "chevron-down" : "chevron-up"} 
-          size={16} 
-          color="#FFF" 
-          style={styles.sortIcon}
-        />
-      )}
-    </TouchableOpacity>
-    <TouchableOpacity 
-      style={[styles.filterButton, filter === 'ot' && styles.filterButtonActive]}
-      onPress={() => handleFilterPress('ot')}
-    >
-      <Text 
-        style={[styles.filterText, filter === 'ot' && styles.filterTextActive]}
-        numberOfLines={1}
-      >
-        Old Testament
-      </Text>
-      {filter === 'ot' && (
-        <Ionicons 
-          name={isAscending ? "chevron-down" : "chevron-up"} 
-          size={16} 
-          color="#FFF" 
-          style={styles.sortIcon}
-        />
-      )}
-    </TouchableOpacity>
-    <TouchableOpacity 
-      style={[styles.filterButton, filter === 'nt' && styles.filterButtonActive]}
-      onPress={() => handleFilterPress('nt')}
-    >
-      <Text 
-        style={[styles.filterText, filter === 'nt' && styles.filterTextActive]}
-        numberOfLines={1}
-      >
-        New Testament
-      </Text>
-      {filter === 'nt' && (
-        <Ionicons 
-          name={isAscending ? "chevron-down" : "chevron-up"} 
-          size={16} 
-          color="#FFF" 
-          style={styles.sortIcon}
-        />
-      )}
-    </TouchableOpacity>
-  </View>
-  <TouchableOpacity 
-    style={[styles.searchButton, showSearch && styles.searchButtonActive]}
-    onPress={handleSearchToggle}
-  >
-    <Ionicons 
-      name={showSearch ? "close" : "search"} 
-      size={20} 
-      color={showSearch ? '#FFF' : colors.text} 
-    />
-  </TouchableOpacity>
-</View>
+        {/* Filter and Search Container */}
+        <View style={styles.filterContainer}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterScrollContent}
+          >
+            <TouchableOpacity 
+              style={[styles.filterButton, filter === 'all' && styles.filterButtonActive]}
+              onPress={() => handleFilterPress('all')}
+            >
+              <Text style={[styles.filterText, filter === 'all' && styles.filterTextActive]}>
+                All
+              </Text>
+              {filter === 'all' && (
+                <Ionicons 
+                  name={isAscending ? "chevron-down" : "chevron-up"} 
+                  size={16} 
+                  color="#FFF" 
+                  style={styles.sortIcon}
+                />
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.filterButton, filter === 'ot' && styles.filterButtonActive]}
+              onPress={() => handleFilterPress('ot')}
+            >
+              <Text style={[styles.filterText, filter === 'ot' && styles.filterTextActive]}>
+                Old Testament
+              </Text>
+              {filter === 'ot' && (
+                <Ionicons 
+                  name={isAscending ? "chevron-down" : "chevron-up"} 
+                  size={16} 
+                  color="#FFF" 
+                  style={styles.sortIcon}
+                />
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.filterButton, filter === 'nt' && styles.filterButtonActive]}
+              onPress={() => handleFilterPress('nt')}
+            >
+              <Text style={[styles.filterText, filter === 'nt' && styles.filterTextActive]}>
+                New Testament
+              </Text>
+              {filter === 'nt' && (
+                <Ionicons 
+                  name={isAscending ? "chevron-down" : "chevron-up"} 
+                  size={16} 
+                  color="#FFF" 
+                  style={styles.sortIcon}
+                />
+              )}
+            </TouchableOpacity>
+          </ScrollView>
+          <TouchableOpacity 
+            style={[styles.searchButton, showSearch && styles.searchButtonActive]}
+            onPress={handleSearchToggle}
+          >
+            <Ionicons 
+              name={showSearch ? "close" : "search"} 
+              size={20} 
+              color={showSearch ? '#FFF' : colors.text} 
+            />
+          </TouchableOpacity>
+        </View>
 
-{/* Search Bar - Only show when search is active */}
-{showSearch && (
-  <View style={styles.searchContainer}>
-    <Ionicons 
-      name="search"
-      size={20} 
-      color={colors.secondary} 
-      style={styles.searchInputIcon} 
-    />
-    <TextInput
-      style={[styles.searchInput, { color: colors.text, flex: isValidScriptureReference ? 0 : 1 }]}
-      placeholder="Search books or verses (e.g., John 3:16)..."
-      placeholderTextColor={colors.secondary}
-      value={searchQuery}
-      onChangeText={setSearchQuery}
-      autoFocus
-    />
-    {isValidScriptureReference && (
-      <TouchableOpacity 
-        style={styles.inlineVerseButton}
-        onPress={handleDirectScriptureNavigation}
-      >
-        <Text style={styles.inlineVerseText}>Go To</Text>
-        <Ionicons name="arrow-forward" size={12} color="#FF6B00" />
-      </TouchableOpacity>
-    )}
-    <View style={styles.spacer} />
-    {searchQuery.length > 0 && (
-      <TouchableOpacity 
-        onPress={handleClearSearch}
-        style={styles.clearButton}
-      >
-        <Ionicons name="close-circle" size={20} color={colors.secondary} />
-      </TouchableOpacity>
-    )}
-  </View>
-)}
+        {/* Search Bar - Only show when search is active */}
+        {showSearch && (
+          <View style={styles.searchContainer}>
+            <Ionicons 
+              name="search" 
+              size={20} 
+              color={colors.secondary} 
+              style={styles.searchInputIcon} 
+            />
+            <TextInput
+              style={[styles.searchInput, { color: colors.text }]}
+              placeholder="Search books or verses (e.g., John 3:13)..."
+              placeholderTextColor={colors.secondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoFocus
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity 
+                onPress={handleClearSearch}
+                style={styles.clearButton}
+              >
+                <Ionicons name="close-circle" size={20} color={colors.secondary} />
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
         <FlatList
           data={filteredData}
           renderItem={({ item }) => {
             const bookIndex = booksArray.findIndex(book => book === item.djhBook);
-            const isSelected = Books[item.djhBook].bookName.toLowerCase() === selectedBook?.toLowerCase();
+            const parsedRef = parseReferenceEnhanced(searchQuery);
+            const isSelected = (showSearch && selectedBook === item.djhBook) || 
+                             (parsedRef && findBookByName(parsedRef.book) === item.djhBook);
             
             return (
               <Accordion 
@@ -520,15 +561,16 @@ const Navigation = () => {
                 context="main"
                 showGlobalCompletion={true}
                 style={{ backgroundColor: '#FFF' }}
-                isExpanded={isSelected && showSearch}
+                isExpanded={!!(isSelected && showSearch)}
                 onBookSelect={handleBookSelect}
                 onSegmentSelect={handleSegmentSelect}
                 completedSegments={completedSegmentIds}
-                targetSegmentId={targetSegmentId}
+                highlightedSegment={highlightedSegment}
+                searchQuery={searchQuery}
               />
             );
           }}
-          keyExtractor={(item) => item.djhBook}
+          keyExtractor={(item) => String(item.djhBook)}
         />
       </ScrollView>
     </SafeAreaView>

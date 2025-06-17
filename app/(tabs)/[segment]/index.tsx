@@ -13,7 +13,6 @@ import { SegmentType, IntroType, isIntroType, isSegmentType } from "@/types";
 import Intro from '@/components/Bible/Intro';
 import Questions from '@/components/Questions';
 import CheckCircle from '@/components/CheckCircle';
-import CelebrationPopup from '@/components/Bible/CelebrationPopup';
 import StickyHeader from '@/components/StickyHeader';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { startReadingSession, updateReadingSession } from '@/api/sqlite';
@@ -60,15 +59,14 @@ const createStyles = (colors: any) => StyleSheet.create({
     height: 16,
   },
   buttonContainer: {
-    position: 'absolute',
-    bottom: 104,
+    position: "absolute",
     left: 0,
     right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     zIndex: 1000,
-    backgroundColor: 'transparent'
+    backgroundColor: 'transparent',
   },
   roundButton: {
     width: 50,
@@ -94,8 +92,8 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   checkCircleContainer: {
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 104,
+    paddingVertical: 20,
+    marginBottom: 60,
   },
   centered: {
     justifyContent: 'center',
@@ -127,18 +125,14 @@ export default function BibleScreen() {
   const { updateSegmentId, language, version } = useAppContext();
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { planId, challengeId, verse } = params;
+  const { planId, challengeId } = params;
   const scrollViewRef = useRef<ScrollView>(null);
   const { isVisible } = useBottomNavAnimation();
   
-  // Create our own animation value that matches the bottom nav
-  const [bottomNavVisible] = useState(new Animated.Value(1));
-  const lastScrollY = useRef(0);
-  
-  // Celebration popup state
-  const [showCelebration, setShowCelebration] = useState(false);
-  
-  // Parse segmentID first
+  // Create styles
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  // Parse segmentID
   const segID = useMemo(() => {
     const segment = params.segment as string;
     return segment.includes('-') ? segment.split('-').pop() || '' : segment;
@@ -149,32 +143,6 @@ export default function BibleScreen() {
     if (!segID) return undefined;
     return Bible[segID];
   }, [segID]);
-  
-  // Create styles AFTER we ensure we have all the data we need
-  const styles = useMemo(() => {
-    if (!colors) {
-      // Provide minimal fallback styles
-      return StyleSheet.create({
-        container: { flex: 1, backgroundColor: '#fff' },
-        screenContainer: { flex: 1 },
-        headerSpacer: { height: 20 },
-        checkCircleContainer: { 
-          alignItems: 'center', 
-          paddingHorizontal: 20,
-        },
-        buttonContainer: { position: 'absolute', bottom: 24, right: 16, flexDirection: 'row', gap: 12 },
-        navigationButton: { 
-          backgroundColor: '#f0f0f0', 
-          borderRadius: 25, 
-          width: 50, 
-          height: 50, 
-          justifyContent: 'center', 
-          alignItems: 'center' 
-        }
-      });
-    }
-    return createStyles(colors);
-  }, [colors]);
 
   // Update segment ID when it changes
   useEffect(() => {
@@ -183,39 +151,11 @@ export default function BibleScreen() {
     }
   }, [segID, updateSegmentId]);
 
-  // Add debugging for verse parameter
-  useEffect(() => {
-    if (verse) {
-      console.log('BibleScreen received verse parameter:', verse);
-    }
-  }, [verse]);
-
-  // Celebration handlers
-  const handleCelebration = () => {
-    setShowCelebration(true);
-  };
-
-  const handleCelebrationComplete = () => {
-    setShowCelebration(false);
-    
-    // Use setTimeout to ensure navigation happens after render cycle
-    setTimeout(() => {
-      // Navigate based on context
-      if (params.planId) {
-        router.push('/Plan');
-      } else if (params.challengeId) {
-        router.push('/Reading-Challenges');
-      } else {
-        router.push('/Navigation');
-      }
-    }, 0);
-  };
-
   // Show loading state if data isn't ready
-  if (!segID || !segmentData || !colors) {
+  if (!segID || !segmentData) {
     return (
-      <View style={[{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors?.background || '#fff' }]}>
-        <Text style={{ color: colors?.text || '#000' }}>Loading...</Text>
+      <View style={[styles.container, styles.centered]}>
+        <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
   }
@@ -284,28 +224,7 @@ export default function BibleScreen() {
 
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
-    
-    // Same animation logic as bottom navigation bar
-    if (currentOffset > lastScrollY.current && currentOffset > 50) {
-      // Scrolling down - hide bottom nav and move buttons down
-      Animated.spring(bottomNavVisible, {
-        toValue: 0,
-        useNativeDriver: true, // Match bottom nav exactly
-        tension: 100,
-        friction: 10
-      }).start();
-    } else if (currentOffset < lastScrollY.current) {
-      // Scrolling up - show bottom nav and move buttons up
-      Animated.spring(bottomNavVisible, {
-        toValue: 1,
-        useNativeDriver: true, // Match bottom nav exactly
-        tension: 100,
-        friction: 10
-      }).start();
-    }
-    lastScrollY.current = currentOffset;
-    
-    // Call the global scroll handler for the actual bottom nav
+    // Call the global scroll handler if it exists
     if (global.handleBottomNavScroll) {
       global.handleBottomNavScroll(event);
     }
@@ -330,30 +249,17 @@ export default function BibleScreen() {
               context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
               planId={planId as string}
               challengeId={challengeId as string}
-              verse={verse}
             />
             <Questions segmentId={segID} />
-            <Animated.View style={[
-              styles.checkCircleContainer,
-              {
-                transform: [{
-                  translateY: bottomNavVisible.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [-20, 0], // Move up 20px when nav is hidden, normal position when visible
-                    extrapolate: 'clamp'
-                  })
-                }]
-              }
-            ]}>
+            <View style={styles.checkCircleContainer}>
               <CheckCircle 
                 segmentId={segID} 
                 iconSize={60}
                 context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
                 planId={planId as string || undefined}
                 challengeId={challengeId as string || undefined}
-                onCelebration={handleCelebration}
               />
-            </Animated.View>
+            </View>
           </>
         )}
       </ScrollView>
@@ -361,12 +267,21 @@ export default function BibleScreen() {
       <Animated.View style={[
         styles.buttonContainer,
         {
-          transform: [{
-            translateY: bottomNavVisible.interpolate({
+         /*  transform: [{
+            translateY: isVisible.interpolate({
               inputRange: [0, 1],
-              outputRange: [80, 0], // Move down 80px when nav is hidden, normal position when visible
+              outputRange: [0, -16], // Reduced movement when nav is visible
             })
-          }]
+          }],
+          bottom: isVisible.interpolate({
+            inputRange: [0, 1],
+            outputRange: [24, 80], // 24px from bottom when hidden, 80px when nav visible
+          }) */
+         // Position relative to the bottom navigation bar
+          bottom: isVisible.interpolate({
+            inputRange: [0, 1],
+            outputRange: [16, 72], // 16px above screen bottom when nav hidden, 72px when visible (floating above nav)
+          })
         }
       ]}>
         {prevSegId && (
@@ -387,12 +302,6 @@ export default function BibleScreen() {
           </TouchableOpacity>
         )}
       </Animated.View>
-
-      {/* Render CelebrationPopup at root level for proper screen positioning */}
-      <CelebrationPopup 
-        visible={showCelebration} 
-        onComplete={handleCelebrationComplete}
-      />
     </View>
   );
 }

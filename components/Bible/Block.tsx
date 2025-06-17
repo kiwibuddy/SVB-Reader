@@ -1,5 +1,5 @@
-import React, { useEffect, useState, memo, useRef } from "react";
-import { View, Text, FlatList, Pressable, GestureResponderEvent, TouchableOpacity } from "react-native";
+import React, { useEffect, useState, memo } from "react";
+import { View, Text, FlatList, Pressable, GestureResponderEvent } from "react-native";
 import BibleInlineComponent from "./Inline";
 import { BibleBlock } from "@/types";
 import SourceNameComponent from "./SourceName";
@@ -13,35 +13,16 @@ import EmojiPicker from "@/components/EmojiPicker";
 import { useAppSettings } from "@/context/AppSettingsContext";
 import { baseSizes as sizes } from "@/context/FontSizeContext";
 import { Ionicons } from '@expo/vector-icons';
-import { Platform } from 'react-native';
 
 interface BibleBlockProps {
   block: BibleBlock;
   bIndex: number;
   toRead: boolean;
   hasTail: boolean;
-  onLongPress?: (block: BibleBlock, index: number, position?: { x: number; y: number }) => void;
-  hideEmoji?: boolean;
-  renderBubbleExtra?: React.ReactNode;
-  isFirstInSequence?: boolean;
-  isLastInSequence?: boolean;
-  previousSpeaker?: string;
-  nextSpeaker?: string;
+  onLongPress?: (block: BibleBlock, index: number) => void;
 }
 
-const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({ 
-  block, 
-  bIndex, 
-  toRead, 
-  hasTail, 
-  onLongPress, 
-  hideEmoji, 
-  renderBubbleExtra,
-  isFirstInSequence,
-  isLastInSequence,
-  previousSpeaker,
-  nextSpeaker
-}) => {
+const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({ block, bIndex, toRead, hasTail, onLongPress }) => {
   const { segmentId, emojiActions, updateEmojiActions } = useAppContext();
   const { colors } = useAppSettings();
   const idSplit = segmentId.split("-");
@@ -49,58 +30,28 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
   const [existingEmoji, setExistingEmoji] = useState<string | null>(null);
   const { source, children } = block;
   const { color, sourceName } = source;
-  const [bubbleLayout, setBubbleLayout] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
-  const touchableRef = useRef<React.ElementRef<typeof TouchableOpacity>>(null);
 
-  // **SIMPLIFIED PERFECT SPACING SYSTEM** - Exactly as requested
-  const getAdvancedSpacing = () => {
-    const isSpeakerChange = previousSpeaker && previousSpeaker !== sourceName;
-    const isNarrator = color === 'black';
-    
-    let topMargin;
-    
-    if (isSpeakerChange) {
-      // **ALL SPEAKER TRANSITIONS: 14px** - No exceptions
-      topMargin = 14;
-    } else {
-      // **SAME SPEAKER CONTINUATION** - Only these get different heights
-      if (isNarrator) {
-        // Narrator continuation paragraphs
-        topMargin = 10;
-      } else {
-        // Character speech continuation
-        topMargin = 8;
-      }
-    }
-    
-    return {
-      marginTop: topMargin,
-      marginBottom: 4, // Consistent bottom spacing
-      paddingHorizontal: 2, // Subtle horizontal padding for better flow
-    };
-  };
+  console.log('Block rendered:', { bIndex, toRead, hasTail });
 
   useEffect(() => {
     const fetchEmoji = async () => {
-      if (segID && bIndex !== undefined && !hideEmoji) {
+      if (segID && bIndex !== undefined) {
         const emoji = await getEmoji(segID, bIndex.toString());
         setExistingEmoji(emoji);
       }
     };
     fetchEmoji();
-  }, [segID, bIndex, emojiActions, hideEmoji]);
+  }, [segID, bIndex, emojiActions]);
 
-  const handleLongPress = (event: any) => {
-    if (onLongPress && touchableRef.current) {
-      const { locationX, locationY } = event.nativeEvent;
-      
-      touchableRef.current.measureInWindow((x: number, y: number, width: number, height: number) => {
-        const screenX = x + locationX;
-        const screenY = y + locationY;
-        
-        onLongPress(block, bIndex, { x: screenX, y: screenY });
-      });
-    } else if (onLongPress) {
+  useEffect(() => {
+    console.log(`Block ${bIndex} re-rendered. Reason:`, {
+      segmentId,
+      emojiActions,
+    });
+  }, [segmentId, emojiActions]);
+
+  const handleLongPress = () => {
+    if (onLongPress) {
       onLongPress(block, bIndex);
     }
   };
@@ -117,31 +68,6 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
     }
   };
 
-  // Enhanced bubble color with subtle variations
-  const getBubbleColor = (color: string | undefined) => {
-    const bubbleKey = color === 'black' ? 'black' : (color || 'default');
-    return colors.bubbles[bubbleKey as keyof typeof colors.bubbles] || colors.bubbles.default;
-  };
-
-  // Advanced shadow and depth based on speaker type
-  const getBubbleElevation = () => {
-    const isNarrator = color === 'black';
-    return {
-      shadowColor: isNarrator ? '#000' : '#000',
-      shadowOffset: {
-        width: 0,
-        height: isNarrator ? 1.5 : 3, // Refined shadow depth
-      },
-      shadowOpacity: isNarrator ? 0.08 : 0.15, // Enhanced contrast
-      shadowRadius: isNarrator ? 3 : 8, // Softer shadows
-      elevation: isNarrator ? 2 : 4, // Better Android elevation
-      // **EXPERT VISUAL ENHANCEMENTS**
-      ...(Platform.OS === 'ios' && {
-        shadowPath: undefined, // Let iOS calculate optimal shadow
-      }),
-    };
-  };
-
   if (toRead) {
     return (
       <GlowBubble 
@@ -153,40 +79,26 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
     );
   }
 
-  const tailAlignment = color !== "black" ? {left: 12} : {right: 12};
-  const emojiAlignment = color !== "black" ? { right: -8 } : { left: -8 };
-  const emojiTopPosition = hasTail ? { top: -20 } : { top: -20 };
-  const isNarrator = color === 'black';
-  const advancedSpacing = getAdvancedSpacing();
+  const tailAlignment = color !== "black" ? {left: 15} : {right: 15};
+  const emojiAlignment = color !== "black" ? { right: 10 } : { left: 10 };
+  const emojiTopPosition = hasTail ? { top: 35 } : { top: 15 };
 
   const styles = StyleSheet.create({
     outerContainer: {
-      ...advancedSpacing,
+      marginBottom: 8,
       position: 'relative',
       zIndex: 1,
     },
     container: {
-      // **EXPERT BUBBLE STYLING** - Publication quality
-      borderRadius: isNarrator ? 18 : 22, // Refined corner radius
-      padding: isNarrator ? 15 : 17, // Optimized internal padding
-      paddingHorizontal: isNarrator ? 17 : 19, // Perfect horizontal spacing
+      borderRadius: 12,
+      padding: 16,
       zIndex: 1,
       position: 'relative',
-      maxWidth: isNarrator ? '94%' : '86%', // Better width constraints
-      alignSelf: color !== "black" ? 'flex-start' : 'flex-end',
-      marginHorizontal: isNarrator ? 10 : 18, // Refined margins
-      ...getBubbleElevation(),
-      width: 'auto',
-      flexShrink: 1,
-      // **ENHANCED VISUAL REFINEMENTS**
-      minHeight: 44, // Ensure minimum bubble height
-      justifyContent: 'center', // Center content vertically
     },
     text: {
       color: colors.text,
       fontSize: sizes.body,
-      lineHeight: sizes.body * 1.45, // Match expert typography
-      letterSpacing: 0.15, // Consistent with expert system
+      lineHeight: 24,
     },
     sourceName: {
       color: colors.secondary,
@@ -194,107 +106,96 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
     },
     tail: {
       position: "absolute",
-      top: isNarrator ? -5 : -7, // Refined tail positioning
+      top: -9,
       width: 0,
       height: 0,
-      borderLeftWidth: isNarrator ? 7 : 9, // Proportional tail sizing
-      borderRightWidth: isNarrator ? 7 : 9,
-      borderBottomWidth: isNarrator ? 7 : 9,
+      borderLeftWidth: 10,
+      borderRightWidth: 10,
+      borderBottomWidth: 10,
       borderLeftColor: "transparent",
       borderRightColor: "transparent",
       zIndex: 2,
     },
     reactionContainer: {
+      flexDirection: "row",
+      padding: 5,
       position: "absolute",
       zIndex: 100,
-      width: 34, // Slightly larger emoji container
-      height: 34,
-      justifyContent: 'center',
-      alignItems: 'center',
+      elevation: 3,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 2,
     },
     reactionText: {
-      fontSize: 30, // Slightly larger emoji
-      lineHeight: 34,
-      textAlign: 'center',
-    },
-    bubbleExtra: {
-      position: 'absolute',
-      top: -14, // Refined positioning
-      zIndex: 10,
+      fontSize: 30,
     },
   });
 
   return (
-    <View style={styles.outerContainer}>
-      <TouchableOpacity
-        onLongPress={handleLongPress}
-        delayLongPress={500}
-        activeOpacity={0.95}
-        onLayout={handleEmojiDelete}
-        ref={touchableRef}
-      >
-        <View key={bIndex}>
+    <Pressable
+      onLongPress={handleLongPress}
+      delayLongPress={300}
+      style={[
+        styles.outerContainer,
+        { backgroundColor: 'rgba(0,0,0,0.01)' }
+      ]}
+    >
+      <View key={bIndex}>
+        {hasTail && (
+          <SourceNameComponent
+            sourceName={sourceName}
+            align={color !== "black" ? "left" : "right"}
+          />
+        )}
+        <View
+          style={[
+            styles.container,
+            { backgroundColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')] }
+          ]}
+        >
           {hasTail && (
-            <SourceNameComponent
-              sourceName={sourceName}
-              align={color !== "black" ? "left" : "right"}
+            <View
+              style={[
+                styles.tail,
+                {
+                  borderBottomColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')],
+                },
+                tailAlignment,
+              ]}
             />
           )}
-          <View
-            style={[
-              styles.container,
-              { backgroundColor: getBubbleColor(color) }
-            ]}
-          >
-            {hasTail && (
-              <View
-                style={[
-                  styles.tail,
-                  {
-                    borderBottomColor: getBubbleColor(color),
-                  },
-                  tailAlignment,
-                ]}
-              />
-            )}
-            {renderBubbleExtra && (
-              <View style={[styles.bubbleExtra, color !== "black" ? { right: -8 } : { left: -8 }]}> 
-                {renderBubbleExtra}
-              </View>
-            )}
-            {existingEmoji && !hideEmoji && (
-              <View style={[styles.reactionContainer, emojiAlignment, emojiTopPosition]}>
-                <Pressable onPress={handleEmojiDelete}>
-                  <Text style={styles.reactionText}>{existingEmoji}</Text>
-                </Pressable>
-              </View>
-            )}
-            <View>
-              {children.map((item: any, index: number) => {
-                if (item.type === "break") return null;
-                return (
-                  <BibleInlineComponent
-                    key={`${bIndex}-${index}`}
-                    iIndex={`${bIndex}-${index}`}
-                    inline={item}
-                    textColor={colors.text}
-                  />
-                );
-              })}
-            </View>
+          <View>
+            {children.map((item: any, index: number) => {
+              if (item.type === "break") return null;
+              return (
+                <BibleInlineComponent
+                  key={`${bIndex}-${index}`}
+                  iIndex={`${bIndex}-${index}`}
+                  inline={item}
+                  textColor={colors.text}
+                />
+              );
+            })}
           </View>
         </View>
-      </TouchableOpacity>
-    </View>
+        
+        {existingEmoji && (
+          <View style={[styles.reactionContainer, emojiAlignment, emojiTopPosition]}>
+            <Pressable onPress={handleEmojiDelete}>
+              <Text style={styles.reactionText}>{existingEmoji}</Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
+    </Pressable>
   );
 }, (prevProps, nextProps) => {
   return (
     prevProps.bIndex === nextProps.bIndex &&
     prevProps.toRead === nextProps.toRead &&
     prevProps.hasTail === nextProps.hasTail &&
-    prevProps.block === nextProps.block &&
-    prevProps.previousSpeaker === nextProps.previousSpeaker &&
-    prevProps.nextSpeaker === nextProps.nextSpeaker
+    prevProps.block === nextProps.block
   );
 });
 

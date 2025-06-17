@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -87,14 +87,6 @@ const CelebrationPopup: React.FC<CelebrationPopupProps> = ({
     () => Math.floor(Math.random() * COLORS.length), 
     [visible]
   );
-
-  // Wrap onComplete in useCallback to prevent unnecessary re-renders
-  const handleComplete = useCallback(() => {
-    // Use setTimeout to ensure callback happens outside render cycle
-    setTimeout(() => {
-      onComplete();
-    }, 0);
-  }, [onComplete]);
   
   React.useEffect(() => {
     if (visible) {
@@ -111,10 +103,10 @@ const CelebrationPopup: React.FC<CelebrationPopupProps> = ({
           useNativeDriver: true,
         })
       ]).start(() => {
-        handleComplete();
+        onComplete();
       });
     }
-  }, [visible, fadeAnim, handleComplete]);
+  }, [visible, fadeAnim, onComplete]);
 
   if (!visible) return null;
 
@@ -151,11 +143,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
+    right: 0,
+    bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 9999,
+    zIndex: 1000,
   },
   popup: {
     width: POPUP_WIDTH,

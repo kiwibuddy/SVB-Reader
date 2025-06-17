@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppContext } from '@/context/GlobalContext';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import CelebrationPopup from '@/components/Bible/CelebrationPopup';
 import { getCheckColor } from '@/scripts/getCheckColors';
 import { getSegmentReadCount, getSegmentCompletionStatus } from '@/api/sqlite';
 
@@ -12,7 +13,6 @@ interface CheckCircleProps {
   context?: 'main' | 'plan' | 'challenge';
   planId?: string;
   challengeId?: string;
-  onCelebration?: () => void;
 }
 
 export default function CheckCircle({ 
@@ -20,8 +20,7 @@ export default function CheckCircle({
   iconSize = 24, 
   context = 'main',
   planId,
-  challengeId,
-  onCelebration
+  challengeId
 }: CheckCircleProps) {
   const { 
     completedSegments, 
@@ -31,6 +30,7 @@ export default function CheckCircle({
     activeChallenges
   } = useAppContext();
   
+  const [showCelebration, setShowCelebration] = useState(false);
   const [readCount, setReadCount] = useState(0);
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -40,21 +40,14 @@ export default function CheckCircle({
 
   useEffect(() => {
     const loadCompletionStatus = async () => {
-      try {
-        const status = await getSegmentCompletionStatus(
-          segmentId,
-          context,
-          planId,
-          challengeId
-        );
-        setIsCompleted(status.isCompleted);
-        setCompletionColor(status.color);
-      } catch (error) {
-        console.log('Error loading completion status:', error);
-        // Set defaults if there's an error
-        setIsCompleted(false);
-        setCompletionColor(null);
-      }
+      const status = await getSegmentCompletionStatus(
+        segmentId,
+        context,
+        planId,
+        challengeId
+      );
+      setIsCompleted(status.isCompleted);
+      setCompletionColor(status.color);
     };
     loadCompletionStatus();
   }, [segmentId, context, planId, challengeId]);
@@ -62,50 +55,34 @@ export default function CheckCircle({
   useEffect(() => {
     // Load total read count for the segment
     const loadReadCount = async () => {
-      try {
-        const count = await getSegmentReadCount(segmentId);
-        setReadCount(count);
-      } catch (error) {
-        console.log('Error loading read count:', error);
-        setReadCount(0);
-      }
+      const count = await getSegmentReadCount(segmentId);
+      setReadCount(count);
     };
     loadReadCount();
   }, [segmentId, isCompleted]);
 
-  const handlePress = useCallback(async () => {
-    try {
-      // Always allow clicking for multiple reads
-      const contextId = context === 'plan' ? planId : 
-                        context === 'challenge' ? challengeId : 
-                        undefined;
-                          
-      await markSegmentComplete(segmentId, true, null, context, contextId);
-      
-      // Update local state
-      setIsCompleted(true);
-      
-      // Trigger celebration callback
-      if (onCelebration) {
-        onCelebration();
-      }
-      
-      // Refresh read count
-      const newCount = await getSegmentReadCount(segmentId);
-      setReadCount(newCount);
-    } catch (error) {
-      console.log('Error marking segment complete:', error);
+  const handlePress = async () => {
+    if (!isCompleted) {
+      await markSegmentComplete(segmentId, true, null, context, planId, challengeId);
+      setShowCelebration(true);
     }
-  }, [segmentId, context, planId, challengeId, markSegmentComplete, onCelebration]);
+  };
+
+  const handleCelebrationComplete = () => {
+    setShowCelebration(false);
+    // Navigate based on context
+    if (params.planId) {
+      router.push('/Plan');
+    } else if (params.challengeId) {
+      router.push('/Reading-Challenges');
+    } else {
+      router.push('/Navigation');
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Pressable 
-        style={styles.pressableArea}
-        onPress={handlePress}
-        hitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}
-        android_ripple={{ color: 'rgba(0,0,0,0.1)', radius: 50, borderless: false }}
-      >
+      <Pressable onPress={handlePress}>
         <Ionicons
           name={isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'}
           size={iconSize}
@@ -117,6 +94,10 @@ export default function CheckCircle({
           Read {readCount} time{readCount !== 1 ? 's' : ''}
         </Text>
       )}
+      <CelebrationPopup 
+        visible={showCelebration} 
+        onComplete={handleCelebrationComplete}
+      />
     </View>
   );
 }
@@ -125,18 +106,10 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
   },
-  pressableArea: {
-    padding: 20,
-    borderRadius: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 100,
-    minHeight: 100,
-  },
   readCount: {
     fontSize: 12,
     color: '#666',
-    marginTop: 12,
+    marginTop: 4,
     textAlign: 'center'
   }
 });

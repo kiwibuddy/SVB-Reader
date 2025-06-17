@@ -23,32 +23,31 @@ const DonutChartComponent: React.FC<DonutChartComponentProps> = ({
   const { colors, isDarkMode } = useAppSettings();
 
   const getChartColors = (type: string) => {
-    // Use exactly the same color logic as reading role selection buttons (active state)
     if (isDarkMode) {
       switch (type) {
         case 'black':
-          return '#2A2A2A'; // Slightly brighter than bubble black
+          return colors.bubbles.default;
         case 'red':
-          return '#D32F2F'; // Colors.error[700] - brighter than bubble red
+          return '#FF6B6B'; // Brighter red for dark mode
         case 'green':
-          return '#388E3C'; // Colors.success[700] - brighter than bubble green
+          return '#4CAF50'; // Brighter green for dark mode
         case 'blue':
-          return '#1976D2'; // Colors.secondary[700] - brighter than bubble blue
+          return '#64B5F6'; // Brighter blue for dark mode
         default:
           return colors.bubbles.default;
       }
     } else {
       switch (type) {
         case 'black':
-          return '#E0E0E0'; // Colors.neutral[300] - brighter than bubble black
+          return '#808080'; // Grey for light mode
         case 'red':
-          return '#EF9A9A'; // Colors.error[200] - brighter than bubble red
+          return getColors("red").light;
         case 'green':
-          return '#A5D6A7'; // Colors.success[200] - brighter than bubble green
+          return getColors("green").light;
         case 'blue':
-          return '#90CAF9'; // Colors.secondary[200] - brighter than bubble blue
+          return getColors("blue").light;
         default:
-          return colors.bubbles.default;
+          return '#808080';
       }
     }
   };

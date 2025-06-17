@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { 
   View, 
   Text, 
@@ -7,8 +7,7 @@ import {
   StyleSheet, 
   useWindowDimensions,
   Platform,
-  TouchableOpacity,
-  Animated
+  TouchableOpacity
 } from "react-native";
 import { useAppContext } from "@/context/GlobalContext";
 import { useRouter } from "expo-router";
@@ -48,6 +47,7 @@ interface SegmentItemProps {
   planId?: string;
   challengeId?: string;
   onPress?: (segmentId: string) => void;
+  completedSegments?: Record<string, boolean>;
 }
 
 const SegmentItem: React.FC<SegmentItemProps> = ({ 
@@ -55,7 +55,8 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
   context = 'main',
   planId,
   challengeId,
-  onPress
+  onPress,
+  completedSegments
 }) => {
   const router = useRouter();
   const { language, version } = useAppContext();
@@ -64,61 +65,26 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
     color: null
   });
   const { colors } = useAppSettings();
-  
-  // Animation values for the check icon
-  const scaleAnim = useRef(new Animated.Value(0)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const loadStatus = async () => {
-      const status = await getSegmentCompletionStatus(
-        segment.id,
-        context,
-        planId,
-        challengeId
-      );
-      setCompletionStatus(status);
-    };
-    loadStatus();
-  }, [segment.id, context, planId, challengeId]);
-
-  // Animate the check icon when completion status changes
-  useEffect(() => {
-    if (completionStatus.isCompleted) {
-      // Pop-in animation with bounce effect
-      Animated.parallel([
-        Animated.sequence([
-          Animated.timing(scaleAnim, {
-            toValue: 1.3,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-          Animated.spring(scaleAnim, {
-            toValue: 1,
-            friction: 4,
-            tension: 100,
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(rotateAnim, {
-          toValue: 1,
-          duration: 400,
-          useNativeDriver: true,
-        }),
-      ]).start();
+    if (completedSegments && segment.id in completedSegments) {
+      setCompletionStatus({
+        isCompleted: !!completedSegments[segment.id],
+        color: null
+      });
     } else {
-      // Reset animation values
-      scaleAnim.setValue(0);
-      opacityAnim.setValue(0);
-      rotateAnim.setValue(0);
+      const loadStatus = async () => {
+        const status = await getSegmentCompletionStatus(
+          segment.id,
+          context,
+          planId,
+          challengeId
+        );
+        setCompletionStatus(status);
+      };
+      loadStatus();
     }
-  }, [completionStatus.isCompleted]);
+  }, [segment.id, context, planId, challengeId, completedSegments]);
 
   const handlePress = () => {
     if (onPress) {
@@ -134,12 +100,6 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
       });
     }
   };
-
-  // Create rotation interpolation
-  const rotation = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
 
   const styles = StyleSheet.create({
     container: {
@@ -164,13 +124,6 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
     },
     checkIcon: {
       marginLeft: 8,
-    },
-    checkIconContainer: {
-      width: 28,
-      height: 28,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginLeft: 8,
     }
   });
 
@@ -189,26 +142,12 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
           </Text>
         )}
       </View>
-      {completionStatus.isCompleted && (
-        <View style={styles.checkIconContainer}>
-          <Animated.View
-            style={{
-              transform: [
-                { scale: scaleAnim },
-                { rotate: rotation }
-              ],
-              opacity: opacityAnim,
-            }}
-          >
-            <Ionicons 
-              name="checkmark-circle" 
-              size={20} 
-              color="#4CAF50" 
-              style={styles.checkIcon} 
-            />
-          </Animated.View>
-        </View>
-      )}
+      <Ionicons 
+        name={completionStatus.isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'} 
+        size={20} 
+        color={completionStatus.isCompleted ? '#4CAF50' : '#CCCCCC'} 
+        style={styles.checkIcon} 
+      />
     </TouchableOpacity>
   );
 };

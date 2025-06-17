@@ -11,10 +11,6 @@ let db: SQLiteDatabase;
 async function initializeDatabase() {
   try {
     db = await SQLite.openDatabaseAsync("sourceview");
-    
-    // First, ensure we have the current schema
-    await migrateDatabase();
-    
     await db.execAsync(`
       PRAGMA journal_mode = 'wal';
       
@@ -36,7 +32,7 @@ async function initializeDatabase() {
         UNIQUE(segmentID, blockID)
       );
 
-      -- Enhanced segment completion table with read counts
+      -- New segment completion table
       CREATE TABLE IF NOT EXISTS segment_completion (
         id INTEGER PRIMARY KEY NOT NULL,
         segmentID TEXT NOT NULL,
@@ -45,58 +41,6 @@ async function initializeDatabase() {
         challengeID TEXT,
         completionDate TEXT NOT NULL,
         readerColor TEXT
-      );
-
-      -- New table to track individual segment reads (allows multiple reads)
-      CREATE TABLE IF NOT EXISTS segment_reads (
-        id INTEGER PRIMARY KEY NOT NULL,
-        segmentID TEXT NOT NULL,
-        readDate TEXT NOT NULL,
-        readDuration INTEGER, -- in seconds
-        context TEXT NOT NULL DEFAULT 'free', -- 'free', 'plan', 'challenge'
-        planID TEXT,
-        challengeID TEXT,
-        isCompleted BOOLEAN NOT NULL DEFAULT 1
-      );
-
-      -- Enhanced table for reading plan progress tracking
-      CREATE TABLE IF NOT EXISTS reading_plan_progress (
-        id INTEGER PRIMARY KEY NOT NULL,
-        planID TEXT NOT NULL,
-        segmentID TEXT NOT NULL,
-        completionDate TEXT,
-        isCompleted BOOLEAN NOT NULL DEFAULT 0,
-        readCount INTEGER NOT NULL DEFAULT 0,
-        lastReadDate TEXT,
-        UNIQUE(planID, segmentID)
-      );
-
-      -- Enhanced table for reading challenge progress tracking  
-      CREATE TABLE IF NOT EXISTS reading_challenge_progress (
-        id INTEGER PRIMARY KEY NOT NULL,
-        challengeID TEXT NOT NULL,
-        segmentID TEXT NOT NULL,
-        completionDate TEXT,
-        isCompleted BOOLEAN NOT NULL DEFAULT 0,
-        readCount INTEGER NOT NULL DEFAULT 0,
-        lastReadDate TEXT,
-        UNIQUE(challengeID, segmentID)
-      );
-
-      -- Table to track overall plan/challenge status
-      CREATE TABLE IF NOT EXISTS plan_challenge_status (
-        id INTEGER PRIMARY KEY NOT NULL,
-        itemID TEXT NOT NULL, -- planID or challengeID
-        itemType TEXT NOT NULL, -- 'plan' or 'challenge'
-        isActive BOOLEAN NOT NULL DEFAULT 1,
-        isPaused BOOLEAN NOT NULL DEFAULT 0,
-        isCompleted BOOLEAN NOT NULL DEFAULT 0,
-        startDate TEXT,
-        completionDate TEXT,
-        totalSegments INTEGER,
-        completedSegments INTEGER NOT NULL DEFAULT 0,
-        progressPercentage REAL NOT NULL DEFAULT 0,
-        UNIQUE(itemID, itemType)
       );
 
       -- New achievements table
@@ -187,101 +131,6 @@ async function initializeDatabase() {
   }
 }
 
-// Function to handle database migrations
-async function migrateDatabase() {
-  try {
-    console.log('Starting database migration...');
-    
-    // Check if segment_completion table has readerColor column
-    const tableInfo = await db.getAllAsync(`PRAGMA table_info(segment_completion)`);
-    const hasReaderColor = tableInfo.some((col: any) => col.name === 'readerColor');
-    
-    console.log('segment_completion table columns:', tableInfo.map((col: any) => col.name));
-    console.log('Has readerColor column:', hasReaderColor);
-    
-    if (!hasReaderColor) {
-      console.log('Adding readerColor column to segment_completion...');
-      try {
-        await db.execAsync(`
-          ALTER TABLE segment_completion ADD COLUMN readerColor TEXT;
-        `);
-        console.log('Successfully added readerColor column');
-      } catch (e) {
-        console.log('Error adding readerColor column:', e);
-        // If we can't add the column, recreate the table
-        console.log('Recreating segment_completion table...');
-        await db.execAsync(`
-          DROP TABLE IF EXISTS segment_completion_old;
-          ALTER TABLE segment_completion RENAME TO segment_completion_old;
-          
-          CREATE TABLE segment_completion (
-            id INTEGER PRIMARY KEY NOT NULL,
-            segmentID TEXT NOT NULL,
-            completionType TEXT NOT NULL,
-            planID TEXT,
-            challengeID TEXT,
-            completionDate TEXT NOT NULL,
-            readerColor TEXT
-          );
-          
-          INSERT INTO segment_completion (segmentID, completionType, planID, challengeID, completionDate)
-          SELECT segmentID, completionType, planID, challengeID, completionDate 
-          FROM segment_completion_old;
-          
-          DROP TABLE segment_completion_old;
-        `);
-        console.log('Successfully recreated segment_completion table');
-      }
-    }
-    
-    // Add any missing columns to existing tables
-    
-    // Check if reading_plan_progress exists and has the required columns
-    try {
-      await db.execAsync(`
-        ALTER TABLE reading_plan_progress ADD COLUMN readCount INTEGER NOT NULL DEFAULT 0;
-      `);
-      console.log('Added readCount to reading_plan_progress');
-    } catch (e) {
-      // Column already exists, ignore
-    }
-    
-    try {
-      await db.execAsync(`
-        ALTER TABLE reading_plan_progress ADD COLUMN lastReadDate TEXT;
-      `);
-      console.log('Added lastReadDate to reading_plan_progress');
-    } catch (e) {
-      // Column already exists, ignore
-    }
-    
-    // Check if reading_challenge_progress exists and has the required columns
-    try {
-      await db.execAsync(`
-        ALTER TABLE reading_challenge_progress ADD COLUMN readCount INTEGER NOT NULL DEFAULT 0;
-      `);
-      console.log('Added readCount to reading_challenge_progress');
-    } catch (e) {
-      // Column already exists, ignore
-    }
-    
-    try {
-      await db.execAsync(`
-        ALTER TABLE reading_challenge_progress ADD COLUMN lastReadDate TEXT;
-      `);
-      console.log('Added lastReadDate to reading_challenge_progress');
-    } catch (e) {
-      // Column already exists, ignore
-    }
-    
-    console.log('Database migration completed');
-    
-  } catch (error) {
-    console.error("Error migrating database:", error);
-    // Don't throw here, let initialization continue
-  }
-}
-
 // Add this function to populate the segments table
 async function populateSegmentsTable() {
   try {
@@ -315,303 +164,6 @@ async function populateSegmentsTable() {
 
 initializeDatabase();
 
-// Enhanced tracking functions
-export async function recordSegmentRead(
-  segmentID: string,
-  context: 'free' | 'plan' | 'challenge' = 'free',
-  planID?: string,
-  challengeID?: string,
-  readDuration?: number
-): Promise<void> {
-  try {
-    // Record the individual read
-    await db.runAsync(`
-      INSERT INTO segment_reads (
-        segmentID, readDate, readDuration, context, planID, challengeID, isCompleted
-      ) VALUES (?, datetime('now', 'localtime'), ?, ?, ?, ?, 1)
-    `, segmentID, readDuration || 0, context, planID || null, challengeID || null);
-
-    // Update specific tracking based on context
-    if (context === 'plan' && planID) {
-      await updateReadingPlanProgress(planID, segmentID);
-    } else if (context === 'challenge' && challengeID) {
-      await updateReadingChallengeProgress(challengeID, segmentID);
-    }
-
-    // Update daily activity and streak
-    await updateDailyActivity(segmentID);
-    
-  } catch (error) {
-    console.error("Error recording segment read:", error);
-    throw error;
-  }
-}
-
-export async function updateReadingPlanProgress(
-  planID: string,
-  segmentID: string
-): Promise<void> {
-  try {
-    // Insert or update the plan progress
-    await db.runAsync(`
-      INSERT INTO reading_plan_progress (planID, segmentID, readCount, lastReadDate, isCompleted, completionDate)
-      VALUES (?, ?, 1, datetime('now', 'localtime'), 1, datetime('now', 'localtime'))
-      ON CONFLICT(planID, segmentID) DO UPDATE SET
-        readCount = readCount + 1,
-        lastReadDate = datetime('now', 'localtime'),
-        isCompleted = 1,
-        completionDate = CASE 
-          WHEN isCompleted = 0 THEN datetime('now', 'localtime')
-          ELSE completionDate
-        END
-    `, planID, segmentID);
-
-    // Update overall plan status
-    await updatePlanChallengeStatus(planID, 'plan');
-    
-  } catch (error) {
-    console.error("Error updating reading plan progress:", error);
-    throw error;
-  }
-}
-
-export async function updateReadingChallengeProgress(
-  challengeID: string,
-  segmentID: string
-): Promise<void> {
-  try {
-    // Insert or update the challenge progress
-    await db.runAsync(`
-      INSERT INTO reading_challenge_progress (challengeID, segmentID, readCount, lastReadDate, isCompleted, completionDate)
-      VALUES (?, ?, 1, datetime('now', 'localtime'), 1, datetime('now', 'localtime'))
-      ON CONFLICT(challengeID, segmentID) DO UPDATE SET
-        readCount = readCount + 1,
-        lastReadDate = datetime('now', 'localtime'),
-        isCompleted = 1,
-        completionDate = CASE 
-          WHEN isCompleted = 0 THEN datetime('now', 'localtime')
-          ELSE completionDate
-        END
-    `, challengeID, segmentID);
-
-    // Update overall challenge status
-    await updatePlanChallengeStatus(challengeID, 'challenge');
-    
-  } catch (error) {
-    console.error("Error updating reading challenge progress:", error);
-    throw error;
-  }
-}
-
-async function updatePlanChallengeStatus(
-  itemID: string,
-  itemType: 'plan' | 'challenge'
-): Promise<void> {
-  try {
-    const progressTable = itemType === 'plan' ? 'reading_plan_progress' : 'reading_challenge_progress';
-    const idColumn = itemType === 'plan' ? 'planID' : 'challengeID';
-    
-    // Get completion counts
-    const result = await db.getFirstAsync<{total: number, completed: number}>(`
-      SELECT 
-        COUNT(*) as total,
-        SUM(CASE WHEN isCompleted = 1 THEN 1 ELSE 0 END) as completed
-      FROM ${progressTable}
-      WHERE ${idColumn} = ?
-    `, itemID);
-
-    const total = result?.total || 0;
-    const completed = result?.completed || 0;
-    const progressPercentage = total > 0 ? (completed / total) * 100 : 0;
-    const isCompleted = progressPercentage >= 100;
-
-    // Update or insert status
-    await db.runAsync(`
-      INSERT INTO plan_challenge_status (
-        itemID, itemType, completedSegments, totalSegments, progressPercentage, isCompleted,
-        startDate
-      ) VALUES (?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))
-      ON CONFLICT(itemID, itemType) DO UPDATE SET
-        completedSegments = ?,
-        totalSegments = ?,
-        progressPercentage = ?,
-        isCompleted = ?,
-        completionDate = CASE 
-          WHEN ? = 1 AND isCompleted = 0 THEN datetime('now', 'localtime')
-          ELSE completionDate
-        END
-    `, itemID, itemType, completed, total, progressPercentage, isCompleted ? 1 : 0,
-       completed, total, progressPercentage, isCompleted ? 1 : 0, isCompleted ? 1 : 0);
-    
-  } catch (error) {
-    console.error(`Error updating ${itemType} status:`, error);
-    throw error;
-  }
-}
-
-export async function getSegmentReadCount(segmentID: string): Promise<number> {
-  try {
-    const result = await db.getFirstAsync<{count: number}>(`
-      SELECT COUNT(*) as count FROM segment_reads WHERE segmentID = ?
-    `, segmentID);
-    
-    return result?.count || 0;
-  } catch (error) {
-    console.error("Error getting segment read count:", error);
-    return 0;
-  }
-}
-
-export async function getPlanProgress(planID: string): Promise<{
-  totalSegments: number;
-  completedSegments: number;
-  progressPercentage: number;
-  isCompleted: boolean;
-  completedSegmentIds: string[];
-}> {
-  try {
-    // Get overall status
-    const status = await db.getFirstAsync<{
-      totalSegments: number;
-      completedSegments: number;
-      progressPercentage: number;
-      isCompleted: boolean;
-    }>(`
-      SELECT totalSegments, completedSegments, progressPercentage, isCompleted
-      FROM plan_challenge_status
-      WHERE itemID = ? AND itemType = 'plan'
-    `, planID);
-
-    // Get completed segment IDs
-    const completedRows = await db.getAllAsync<{segmentID: string}>(`
-      SELECT segmentID FROM reading_plan_progress
-      WHERE planID = ? AND isCompleted = 1
-    `, planID);
-
-    const completedSegmentIds = completedRows.map(row => row.segmentID);
-
-    return {
-      totalSegments: status?.totalSegments || 0,
-      completedSegments: status?.completedSegments || 0,
-      progressPercentage: status?.progressPercentage || 0,
-      isCompleted: status?.isCompleted || false,
-      completedSegmentIds
-    };
-  } catch (error) {
-    console.error("Error getting plan progress:", error);
-    return {
-      totalSegments: 0,
-      completedSegments: 0,
-      progressPercentage: 0,
-      isCompleted: false,
-      completedSegmentIds: []
-    };
-  }
-}
-
-export async function getChallengeProgress(challengeID: string): Promise<{
-  totalSegments: number;
-  completedSegments: number;
-  progressPercentage: number;
-  isCompleted: boolean;
-  completedSegmentIds: string[];
-}> {
-  try {
-    // Get overall status
-    const status = await db.getFirstAsync<{
-      totalSegments: number;
-      completedSegments: number;
-      progressPercentage: number;
-      isCompleted: boolean;
-    }>(`
-      SELECT totalSegments, completedSegments, progressPercentage, isCompleted
-      FROM plan_challenge_status
-      WHERE itemID = ? AND itemType = 'challenge'
-    `, challengeID);
-
-    // Get completed segment IDs
-    const completedRows = await db.getAllAsync<{segmentID: string}>(`
-      SELECT segmentID FROM reading_challenge_progress
-      WHERE challengeID = ? AND isCompleted = 1
-    `, challengeID);
-
-    const completedSegmentIds = completedRows.map(row => row.segmentID);
-
-    return {
-      totalSegments: status?.totalSegments || 0,
-      completedSegments: status?.completedSegments || 0,
-      progressPercentage: status?.progressPercentage || 0,
-      isCompleted: status?.isCompleted || false,
-      completedSegmentIds
-    };
-  } catch (error) {
-    console.error("Error getting challenge progress:", error);
-    return {
-      totalSegments: 0,
-      completedSegments: 0,
-      progressPercentage: 0,
-      isCompleted: false,
-      completedSegmentIds: []
-    };
-  }
-}
-
-export async function initializePlanProgress(planID: string, segmentIDs: string[]): Promise<void> {
-  try {
-    await db.execAsync('BEGIN TRANSACTION');
-    
-    // Initialize plan status
-    await db.runAsync(`
-      INSERT OR REPLACE INTO plan_challenge_status (
-        itemID, itemType, totalSegments, completedSegments, progressPercentage, 
-        isActive, startDate
-      ) VALUES (?, 'plan', ?, 0, 0, 1, datetime('now', 'localtime'))
-    `, planID, segmentIDs.length);
-
-    // Initialize segment progress
-    for (const segmentID of segmentIDs) {
-      await db.runAsync(`
-        INSERT OR IGNORE INTO reading_plan_progress (planID, segmentID, readCount, isCompleted)
-        VALUES (?, ?, 0, 0)
-      `, planID, segmentID);
-    }
-    
-    await db.execAsync('COMMIT');
-  } catch (error) {
-    await db.execAsync('ROLLBACK');
-    console.error("Error initializing plan progress:", error);
-    throw error;
-  }
-}
-
-export async function initializeChallengeProgress(challengeID: string, segmentIDs: string[]): Promise<void> {
-  try {
-    await db.execAsync('BEGIN TRANSACTION');
-    
-    // Initialize challenge status
-    await db.runAsync(`
-      INSERT OR REPLACE INTO plan_challenge_status (
-        itemID, itemType, totalSegments, completedSegments, progressPercentage, 
-        isActive, startDate
-      ) VALUES (?, 'challenge', ?, 0, 0, 1, datetime('now', 'localtime'))
-    `, challengeID, segmentIDs.length);
-
-    // Initialize segment progress
-    for (const segmentID of segmentIDs) {
-      await db.runAsync(`
-        INSERT OR IGNORE INTO reading_challenge_progress (challengeID, segmentID, readCount, isCompleted)
-        VALUES (?, ?, 0, 0)
-      `, challengeID, segmentID);
-    }
-    
-    await db.execAsync('COMMIT');
-  } catch (error) {
-    await db.execAsync('ROLLBACK');
-    console.error("Error initializing challenge progress:", error);
-    throw error;
-  }
-}
-
 // Segment completion functions
 export async function markSegmentComplete(
   segmentID: string,
@@ -620,18 +172,7 @@ export async function markSegmentComplete(
   challengeID?: string | null
 ): Promise<void> {
   try {
-    // Map legacy context to new context
-    const newContext = context === 'main' ? 'free' : context;
-    
-    // Use the new comprehensive tracking system
-    await recordSegmentRead(
-      segmentID, 
-      newContext as 'free' | 'plan' | 'challenge',
-      planID || undefined,
-      challengeID || undefined
-    );
-    
-    // Keep legacy segment_completion for backward compatibility
+    // Insert completion record with context-specific IDs
     await db.runAsync(`
       INSERT OR REPLACE INTO segment_completion (
         segmentID, 
@@ -640,9 +181,14 @@ export async function markSegmentComplete(
         challengeID,
         completionDate
       ) VALUES (?, ?, ?, ?, datetime('now', 'localtime'))
-    `, segmentID, context, planID || null, challengeID || null);
+    `, 
+      segmentID, 
+      context, 
+      context === 'plan' ? planID || null : null,
+      context === 'challenge' ? challengeID || null : null
+    );
     
-    // Extract book ID and check book completion
+    // Extract book ID from segment ID using the pattern
     const segmentTitles = require('../assets/data/SegmentTitles.json');
     const segment = segmentTitles[segmentID];
     
@@ -659,52 +205,33 @@ export async function markSegmentComplete(
 
 export const getSegmentCompletionStatus = async (
   segmentId: string,
-  context: string = 'main',
+  context: 'main' | 'plan' | 'challenge' = 'main',
   planId?: string,
   challengeId?: string
 ): Promise<CompletionData> => {
   try {
-    // Add defensive checks
     if (!segmentId) {
       console.warn('No segmentId provided to getSegmentCompletionStatus');
       return { isCompleted: false, color: null };
     }
 
-    // Context-aware completion checking
-    if (context === 'plan' && planId) {
-      // Check if segment is completed in the specific plan (no readerColor in this table)
-      const result = await db.getFirstAsync<{ segmentID: string }>(
-        `SELECT segmentID FROM reading_plan_progress 
-         WHERE planID = ? AND segmentID = ? AND isCompleted = 1`,
-        [planId, segmentId]
-      );
-      return {
-        isCompleted: !!result,
-        color: null // Plan progress doesn't track colors
-      };
-    } else if (context === 'challenge' && challengeId) {
-      // Check if segment is completed in the specific challenge (no readerColor in this table)
-      const result = await db.getFirstAsync<{ segmentID: string }>(
-        `SELECT segmentID FROM reading_challenge_progress 
-         WHERE challengeID = ? AND segmentID = ? AND isCompleted = 1`,
-        [challengeId, segmentId]
-      );
-      return {
-        isCompleted: !!result,
-        color: null // Challenge progress doesn't track colors
-      };
-    } else {
-      // Default: check general completion (free reading) - this table does have readerColor
-      const result = await db.getFirstAsync<{ readerColor: string | null }>(
-        `SELECT readerColor FROM segment_completion WHERE segmentID = ?`,
-        [segmentId]
-      );
-      
-      return {
-        isCompleted: !!result,
-        color: result?.readerColor || null
-      };
+    let query = `SELECT readerColor FROM segment_completion WHERE segmentID = ? AND completionType = ?`;
+    let params: any[] = [segmentId, context];
+
+    if (context === 'plan') {
+      query += ' AND planID = ?';
+      params.push(planId || null);
+    } else if (context === 'challenge') {
+      query += ' AND challengeID = ?';
+      params.push(challengeId || null);
     }
+
+    const result = await db.getFirstAsync<{ readerColor: string | null }>(query, params);
+    
+    return {
+      isCompleted: !!result,
+      color: result?.readerColor || null
+    };
   } catch (error) {
     console.error('Error getting segment completion status:', error);
     return { isCompleted: false, color: null };
@@ -845,6 +372,20 @@ export async function getEmojis() {
   } catch (error) {
     console.error("Error getting emojis:", error);
     return [];
+  }
+}
+
+export async function getSegmentReadCount(segmentID: string): Promise<number> {
+  try {
+    const result = await db.getFirstAsync<{ count: number }>(
+      `SELECT COUNT(*) as count FROM segment_completion 
+       WHERE segmentID = ?`,
+      segmentID
+    );
+    return result?.count || 0;
+  } catch (error) {
+    console.error("Error getting segment read count:", error);
+    return 0;
   }
 }
 
@@ -1269,124 +810,5 @@ export async function getAchievementDates(): Promise<{[key: string]: string}> {
   } catch (error) {
     console.error("Error getting achievement dates:", error);
     return {};
-  }
-}
-
-// Plan and Challenge Management Functions
-export async function activateReadingPlan(planID: string, segmentIDs: string[]): Promise<void> {
-  try {
-    // Initialize plan progress if not exists
-    await initializePlanProgress(planID, segmentIDs);
-    
-    // Activate the plan
-    await db.runAsync(`
-      UPDATE plan_challenge_status 
-      SET isActive = 1, isPaused = 0, startDate = datetime('now', 'localtime')
-      WHERE itemID = ? AND itemType = 'plan'
-    `, planID);
-    
-  } catch (error) {
-    console.error("Error activating reading plan:", error);
-    throw error;
-  }
-}
-
-export async function activateReadingChallenge(challengeID: string, segmentIDs: string[]): Promise<void> {
-  try {
-    // Initialize challenge progress if not exists
-    await initializeChallengeProgress(challengeID, segmentIDs);
-    
-    // Activate the challenge
-    await db.runAsync(`
-      UPDATE plan_challenge_status 
-      SET isActive = 1, isPaused = 0, startDate = datetime('now', 'localtime')
-      WHERE itemID = ? AND itemType = 'challenge'
-    `, challengeID);
-    
-  } catch (error) {
-    console.error("Error activating reading challenge:", error);
-    throw error;
-  }
-}
-
-export async function pausePlanOrChallenge(itemID: string, itemType: 'plan' | 'challenge'): Promise<void> {
-  try {
-    await db.runAsync(`
-      UPDATE plan_challenge_status 
-      SET isPaused = 1 
-      WHERE itemID = ? AND itemType = ?
-    `, itemID, itemType);
-  } catch (error) {
-    console.error(`Error pausing ${itemType}:`, error);
-    throw error;
-  }
-}
-
-export async function resumePlanOrChallenge(itemID: string, itemType: 'plan' | 'challenge'): Promise<void> {
-  try {
-    await db.runAsync(`
-      UPDATE plan_challenge_status 
-      SET isPaused = 0 
-      WHERE itemID = ? AND itemType = ?
-    `, itemID, itemType);
-  } catch (error) {
-    console.error(`Error resuming ${itemType}:`, error);
-    throw error;
-  }
-}
-
-export async function getActivePlansAndChallenges(): Promise<{
-  activePlans: any[];
-  activeChallenges: any[];
-}> {
-  try {
-    const activePlans = await db.getAllAsync(`
-      SELECT * FROM plan_challenge_status 
-      WHERE itemType = 'plan' AND isActive = 1 AND isPaused = 0 AND isCompleted = 0
-    `);
-    
-    const activeChallenges = await db.getAllAsync(`
-      SELECT * FROM plan_challenge_status 
-      WHERE itemType = 'challenge' AND isActive = 1 AND isPaused = 0 AND isCompleted = 0
-    `);
-    
-    return {
-      activePlans,
-      activeChallenges
-    };
-  } catch (error) {
-    console.error("Error getting active plans and challenges:", error);
-    return {
-      activePlans: [],
-      activeChallenges: []
-    };
-  }
-}
-
-export async function isSegmentCompletedInPlan(planID: string, segmentID: string): Promise<boolean> {
-  try {
-    const result = await db.getFirstAsync<{isCompleted: number}>(`
-      SELECT isCompleted FROM reading_plan_progress
-      WHERE planID = ? AND segmentID = ?
-    `, planID, segmentID);
-    
-    return result?.isCompleted === 1;
-  } catch (error) {
-    console.error("Error checking plan segment completion:", error);
-    return false;
-  }
-}
-
-export async function isSegmentCompletedInChallenge(challengeID: string, segmentID: string): Promise<boolean> {
-  try {
-    const result = await db.getFirstAsync<{isCompleted: number}>(`
-      SELECT isCompleted FROM reading_challenge_progress
-      WHERE challengeID = ? AND segmentID = ?
-    `, challengeID, segmentID);
-    
-    return result?.isCompleted === 1;
-  } catch (error) {
-    console.error("Error checking challenge segment completion:", error);
-    return false;
   }
 }

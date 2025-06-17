@@ -2,7 +2,6 @@
 import { getColors } from "@/scripts/getColors";
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { useAppSettings } from '@/context/AppSettingsContext';
 
 interface ColorData {
   total: number;
@@ -13,44 +12,11 @@ interface ColorData {
 }
 
 const LegendComponent: React.FC<{ colorData: ColorData }> = ({ colorData }) => {
-  const { colors, isDarkMode } = useAppSettings();
-  
-  const getLegendColors = (type: string) => {
-    // Use exactly the same color logic as reading role selection buttons (active state)
-    if (isDarkMode) {
-      switch (type) {
-        case 'black':
-          return '#2A2A2A'; // Slightly brighter than bubble black
-        case 'red':
-          return '#D32F2F'; // Colors.error[700] - brighter than bubble red
-        case 'green':
-          return '#388E3C'; // Colors.success[700] - brighter than bubble green
-        case 'blue':
-          return '#1976D2'; // Colors.secondary[700] - brighter than bubble blue
-        default:
-          return colors.bubbles.default;
-      }
-    } else {
-      switch (type) {
-        case 'black':
-          return '#E0E0E0'; // Colors.neutral[300] - brighter than bubble black
-        case 'red':
-          return '#EF9A9A'; // Colors.error[200] - brighter than bubble red
-        case 'green':
-          return '#A5D6A7'; // Colors.success[200] - brighter than bubble green
-        case 'blue':
-          return '#90CAF9'; // Colors.secondary[200] - brighter than bubble blue
-        default:
-          return colors.bubbles.default;
-      }
-    }
-  };
-  
   const data = [
-    { label: "Narrator", color: getLegendColors('black'), value: colorData.black },
-    { label: "God", color: getLegendColors('red'), value: colorData.red },
-    { label: "Main Character(s)", color: getLegendColors('green'), value: colorData.green },
-    { label: "Others", color: getLegendColors('blue'), value: colorData.blue },
+    { label: "Narrator", color: "grey", value: colorData.black },
+    { label: "God", color: getColors("red").light, value: colorData.red }, // Use a color code or function as needed
+    { label: "Main Character(s)", color: getColors("green").light, value: colorData.green },
+    { label: "Others", color: getColors("blue").light, value: colorData.blue },
   ];
 
   return (

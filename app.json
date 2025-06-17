@@ -1,61 +1,17 @@
 {
   "expo": {
-    "name": "SVB Youth Reader",
+    "name": "SVB-Youth",
     "slug": "SVB-Youth",
-    "version": "1.1.0",
+    "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "description": "Transform Bible reading into a shared experience with friends and family. Assign color-coded roles, react to verses, and grow together through scripture. Perfect for youth groups, families, and study circles.\n\nKEY FEATURES:\n• Collaborative reading for 2-4 people\n• Color-coded speaking roles (Narrator, God, Characters, Others)\n• Emoji reactions to express spiritual practices\n• Reading streak tracking and achievements\n• Flexible reading plans and challenges\n• Dark/light modes and text customization\n\nSOCIAL BIBLE READING REIMAGINED:\nNo more confusion about who reads what. Each person's lines glow when it's their turn, making scripture come alive through multiple voices.\n\nREACT & REFLECT:\nLong-press verses to mark them with heart (love), pray (moved to prayer), think (makes you ponder), or thumbs up (strongly agree).\n\nTRACK YOUR GROWTH:\nWatch your reading streaks grow, earn achievement badges, and see your progress through Old and New Testament books.\n\nPERFECT FOR:\n• Youth groups and Bible studies\n• Families with teens\n• College roommates\n• Friend groups exploring faith\n• Couples reading together\n\nThe Bible was meant to be experienced in community. Download SVB Youth Reader and rediscover scripture through shared reading.",
-    "privacy": "public",
-    "primaryCategory": "Reference",
-    "secondaryCategory": "Education",
-    "keywords": ["Bible", "Scripture", "Reading", "Social", "Collaborative", "Study", "Christian", "Devotional", "Group", "Youth"],
-    "subtitle": "Collaborative Scripture Reading",
-    "copyright": "© 2024 KiwiBuddy",
-    "supportUrl": "mailto:support@svbyouthreader.com",
-    "marketingUrl": "https://svbyouthreader.com",
-    "contentRating": "4+",
-    "ageRatingOverride": {
-      "violenceCartoon": 0,
-      "violenceRealistic": 0,
-      "violenceIntense": 0,
-      "bloodGore": 0,
-      "sexualContent": 0,
-      "nudity": 0,
-      "profanityHumor": 0,
-      "alcohol": 0,
-      "smoking": 0,
-      "drugs": 0,
-      "matureThemes": 0,
-      "horror": 0,
-      "gambling": 0,
-      "unrestricted": 0
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "y"
     },
-          "ios": {
-        "supportsTablet": true,
-        "bundleIdentifier": "com.kiwibuddy.svbyouthreader",
-        "buildNumber": "1",
-        "privacyManifests": {
-          "NSPrivacyAccessedAPITypes": []
-        },
-        "infoPlist": {
-          "NSCameraUsageDescription": "This app does not use the camera.",
-          "NSMicrophoneUsageDescription": "This app does not use the microphone.",
-          "NSLocationWhenInUseUsageDescription": "This app does not use location services.",
-          "CFBundleDisplayName": "SVB Youth Reader",
-          "CFBundleShortVersionString": "1.1.0",
-          "ITSAppUsesNonExemptEncryption": false,
-          "LSRequiresIPhoneOS": true
-        },
-        "config": {
-          "usesNonExemptEncryption": false
-        },
-        "appStoreUrl": "https://apps.apple.com/app/svb-youth-reader/id[APP_ID]",
-        "associatedDomains": ["applinks:svbyouthreader.com"]
-      },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -107,6 +63,7 @@
       "watchman": false
     },
     "owner": "kiwibuddy",
+    "privacy": "public",
     "runtimeVersion": {
       "policy": "appVersion"
     },

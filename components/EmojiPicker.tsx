@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  Platform,
 } from "react-native";
 
 interface EmojiPickerProps {
@@ -17,63 +16,66 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onEmojiSelect, onClose }) => 
   const EMOJIS = ["👍", "❤️", "🤔", "🙏"];
 
   return (
-    <View style={styles.container}>
+    <Pressable onPress={e => e.stopPropagation()} style={styles.container}>
+      <TouchableOpacity 
+        style={styles.closeButton} 
+        onPress={onClose}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
+        <Text style={styles.closeText}>✕</Text>
+      </TouchableOpacity>
+      
       <View style={styles.emojiContainer}>
         {EMOJIS.map((emoji, index) => (
           <TouchableOpacity
             key={index}
-            style={styles.emojiButton}
+            style={styles.emojiItem}
             onPress={() => onEmojiSelect(emoji)}
-            activeOpacity={0.6}
           >
             <Text style={styles.emojiText}>{emoji}</Text>
           </TouchableOpacity>
         ))}
       </View>
-    </View>
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgba(100, 100, 100, 0.6)',
-    borderRadius: 25,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    minWidth: 240,
-    ...Platform.select({
-      web: {
-        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
-      },
-      default: {
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 8,
-        elevation: 8,
-      },
-    }),
+    backgroundColor: 'white',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 6,
+    minWidth: 200,
   },
   emojiContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingTop: 8,
   },
-  emojiButton: {
-    padding: 14,
-    borderRadius: 20,
-    minWidth: 56,
-    minHeight: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
+  emojiItem: {
+    padding: 8,
   },
   emojiText: {
-    fontSize: 32,
-    lineHeight: 36,
-    textAlign: 'center',
+    fontSize: 24,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    zIndex: 1,
+  },
+  closeText: {
+    fontSize: 16,
+    color: '#666',
   },
 });
 

@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { type FontSize, type TextSizes } from './FontSizeContext';
 import { Appearance, ColorSchemeName } from 'react-native';
-import { createTheme, Theme } from '@/constants/DesignSystem';
+import { type ColorScheme } from './types';
 import i18next from 'i18next';
 
 // Create the context
@@ -19,14 +19,42 @@ export interface AppSettingsContextType {
   setOrientationLock: (locked: boolean) => Promise<void>;
   isDarkMode: boolean;
   setDarkMode: (enabled: boolean) => Promise<void>;
-  colors: Theme['colors'] & {
-    // Backward compatibility properties
-    secondary: string;
-  };
-  theme: Theme;
+  colors: ColorScheme;
   language: SupportedLanguage;
   setLanguage: (language: SupportedLanguage) => void;
 }
+
+const lightColors: ColorScheme = {
+  background: '#FFFFFF',
+  text: '#000000',
+  primary: '#FF5733',
+  secondary: '#666666',
+  bubbles: {
+    default: '#F5F5F5',
+    red: '#FFE5E5',
+    blue: '#E5F1FF',
+    green: '#E5FFE5',
+    black: '#F5F5F5',
+  },
+  card: '#FFFFFF',
+  border: '#E5E5E5',
+};
+
+const darkColors: ColorScheme = {
+  background: '#121212',
+  text: '#FFFFFF',
+  primary: '#FF7B5C',
+  secondary: '#A0A0A0',
+  bubbles: {
+    default: '#2A2A2A',
+    red: '#4A2A2A',
+    blue: '#2A2A4A',
+    green: '#2A4A2A',
+    black: '#2A2A2A',
+  },
+  card: '#1E1E1E',
+  border: '#333333',
+};
 
 export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOrientationLocked, setIsOrientationLocked] = useState(true);
@@ -49,16 +77,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   });
   const [language, setLanguage] = useState<SupportedLanguage>('en');
   
-  // Create theme using the new design system
-  const theme = createTheme(isDarkMode);
-  
-  // Create backward-compatible colors object
-  const colors = {
-    ...theme.colors,
-    // Map secondary to textSecondary for backward compatibility
-    // This ensures all existing code using colors.secondary gets gray text instead of blue
-    secondary: theme.colors.textSecondary,
-  };
+  const colors = isDarkMode ? darkColors : lightColors;
 
   // Load saved orientation setting
   useEffect(() => {
@@ -151,7 +170,6 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       isDarkMode,
       setDarkMode,
       colors,
-      theme,
       language,
       setLanguage: handleSetLanguage,
     }}>

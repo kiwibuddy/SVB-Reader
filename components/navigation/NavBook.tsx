@@ -15,9 +15,8 @@ import { Ionicons } from '@expo/vector-icons';
 import Books from "@/assets/data/BookChapterList.json";
 import { markSegmentComplete, getSegmentCompletionStatus } from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
-import { useAppContext } from '@/context/GlobalContext';
 
-// Image mapping
+// Image mapping OLD - ALL ICONS NOT SHOWING
 export const imageMap: { [key: string]: any } = {
   'Gen': require('@/assets/images/BibleIcons/genesis-free-bible-icon.png'),
   'Exo': require('@/assets/images/BibleIcons/exodus-free-bible-icon.png'),
@@ -86,6 +85,78 @@ export const imageMap: { [key: string]: any } = {
   Jud: require('@/assets/images/BibleIcons/jude-free-bible-icon.png'),
   Rev: require('@/assets/images/BibleIcons/revelation-free-bible-icon.png')
 };
+
+// Located in: src/components/navigation/NavBook.js (or similar)
+
+// Image mapping NEW -
+/* export const imageMap: { [key: string]: any } = {
+  'Gen': require('@/assets/images/BibleIcons/genesis-free-bible-icon.png'),
+  'Exo': require('@/assets/images/BibleIcons/exodus-free-bible-icon.png'),
+  'Lev': require('@/assets/images/BibleIcons/leviticus-free-bible-icon.png'),
+  'Num': require('@/assets/images/BibleIcons/numbers-free-bible-icon.png'),
+  'Deu': require('@/assets/images/BibleIcons/deuteronomy-free-bible-icon.png'),
+  'Jos': require('@/assets/images/BibleIcons/joshua-free-bible-icon.png'),
+  'Jdg': require('@/assets/images/BibleIcons/judges-free-bible-icon.png'),
+  'Rut': require('@/assets/images/BibleIcons/ruth-free-bible-icon.png'),
+  '1Sa': require('@/assets/images/BibleIcons/samuel-free-bible-icon.png'), // Note: Same icon for 1 & 2 Samuel
+  '2Sa': require('@/assets/images/BibleIcons/samuel-free-bible-icon.png'),
+  '1Ki': require('@/assets/images/BibleIcons/kings-free-bible-icon.png'), // Note: Same icon for 1 & 2 Kings
+  '2Ki': require('@/assets/images/BibleIcons/kings-free-bible-icon.png'),
+  '1Ch': require('@/assets/images/BibleIcons/chronicles-free-bible-icon.png'), // Note: Same icon for 1 & 2 Chronicles
+  '2Ch': require('@/assets/images/BibleIcons/chronicles-free-bible-icon.png'),
+  'Ezr': require('@/assets/images/BibleIcons/ezra-free-bible-icon.png'),
+  'Neh': require('@/assets/images/BibleIcons/nehemiah-free-bible-icon.png'),
+  'Est': require('@/assets/images/BibleIcons/esther-free-bible-icon.png'),
+  'Job': require('@/assets/images/BibleIcons/job-free-bible-icon.png'),
+  'Psa': require('@/assets/images/BibleIcons/psalms-free-bible-icon.png'),
+  'Pro': require('@/assets/images/BibleIcons/proverbs-free-bible-icon.png'),
+  'Ecc': require('@/assets/images/BibleIcons/ecclesiastes-free-bible-icon.png'),
+  'SoS': require('@/assets/images/BibleIcons/song-of-solomon-free-bible-icon.png'),
+  'Isa': require('@/assets/images/BibleIcons/isaiah-free-bible-icon.png'),
+  'Jer': require('@/assets/images/BibleIcons/jeremiah-free-bible-icon.png'),
+  'Lam': require('@/assets/images/BibleIcons/lamentations-free-bible-icon.png'),
+  'Eze': require('@/assets/images/BibleIcons/ezekiel-free-bible-icon.png'),
+  'Dan': require('@/assets/images/BibleIcons/daniel-free-bible-icon.png'),
+  'Hos': require('@/assets/images/BibleIcons/hosea-free-bible-icon.png'),
+  'Joe': require('@/assets/images/BibleIcons/joel-free-bible-icon.png'),
+  'Amo': require('@/assets/images/BibleIcons/amos-free-bible-icon.png'),
+  'Oba': require('@/assets/images/BibleIcons/obadiah-free-bible-icon.png'),
+  'Jon': require('@/assets/images/BibleIcons/Jonah-free-bible-icon.png'),
+  'Mic': require('@/assets/images/BibleIcons/micah-free-bible-icon.png'),
+  'Nah': require('@/assets/images/BibleIcons/nahum-free-bible-icon.png'),
+  'Hab': require('@/assets/images/BibleIcons/habakkuk-free-bible-icon.png'),
+  'Zep': require('@/assets/images/BibleIcons/zephaniah-free-bible-icon.png'),
+  'Hag': require('@/assets/images/BibleIcons/haggai-free-bible-icon.png'),
+  'Zec': require('@/assets/images/BibleIcons/zechariah-free-bible-icon.png'),
+  'Mal': require('@/assets/images/BibleIcons/malachi-free-bible-icon.png'),
+  'Mat': require('@/assets/images/BibleIcons/matthew-free-bible-icon.png'),
+  'Mrk': require('@/assets/images/BibleIcons/mark-free-bible-icon.png'), // <<< FIX: Changed 'Mar' to 'Mrk'
+  'Luk': require('@/assets/images/BibleIcons/luke-free-bible-icon.png'),
+  'Jhn': require('@/assets/images/BibleIcons/john-free-bible-icon.png'), // <<< FIX: Changed 'Joh' to 'Jhn'
+  'Act': require('@/assets/images/BibleIcons/acts-free-bible-icon.png'),
+  'Rom': require('@/assets/images/BibleIcons/romans-free-bible-icon.png'),
+  '1Co': require('@/assets/images/BibleIcons/1-corinthians-free-bible-icon.png'),
+  '2Co': require('@/assets/images/BibleIcons/2-corinthians-free-bible-icon.png'),
+  'Gal': require('@/assets/images/BibleIcons/galatians-free-bible-icon.png'),
+  'Eph': require('@/assets/images/BibleIcons/ephesians-free-bible-icon.png'),
+  'Php': require('@/assets/images/BibleIcons/philippians-free-bible-icon.png'),
+  'Col': require('@/assets/images/BibleIcons/colossians-free-bible-icon.png'),
+  '1Th': require('@/assets/images/BibleIcons/1-thessalonians-free-bible-icon.png'),
+  '2Th': require('@/assets/images/BibleIcons/2-thessalonians-free-bible-icon.png'),
+  '1Ti': require('@/assets/images/BibleIcons/1-timothy-free-bible-icon.png'),
+  '2Ti': require('@/assets/images/BibleIcons/2-timothy-free-bible-icon.png'),
+  'Tit': require('@/assets/images/BibleIcons/titus-free-bible-icon.png'),
+  'Phm': require('@/assets/images/BibleIcons/philemon-free-bible-icon.png'),
+  'Heb': require('@/assets/images/BibleIcons/hebrews-free-bible-icon.png'),
+  'Jas': require('@/assets/images/BibleIcons/james-free-bible-icon.png'), // <<< FIX: Changed 'Jam' to 'Jas'
+  '1Pe': require('@/assets/images/BibleIcons/1-peter-free-bible-icon.png'),
+  '2Pe': require('@/assets/images/BibleIcons/2-peter-free-bible-icon.png'),
+  '1Jn': require('@/assets/images/BibleIcons/1-john-free-bible-icon.png'),
+  '2Jn': require('@/assets/images/BibleIcons/2-john-free-bible-icon.png'),
+  '3Jn': require('@/assets/images/BibleIcons/3-john-free-bible-icon.png'),
+  'Jud': require('@/assets/images/BibleIcons/jude-free-bible-icon.png'),
+  'Rev': require('@/assets/images/BibleIcons/revelation-free-bible-icon.png')
+}; */
 
 export const accordionColor = {
   Gen: "#f3e2e2",
@@ -174,7 +245,7 @@ interface BibleData {
 const Bible: BibleData = require('@/assets/data/newBibleNLT1.json');
 
 export interface AccordionItem {
-  djhBook: keyof typeof Books;
+  djhBook: string;
   bookName: string;
   segments: SegmentKey[];
 }
@@ -192,7 +263,8 @@ export interface AccordionProps {
   onBookSelect?: (bookName: string) => void;
   onSegmentSelect?: (segmentId: string) => void;
   completedSegments?: {[key: string]: boolean};
-  targetSegmentId?: string | null;
+  highlightedSegment?: string | null; // New prop
+  searchQuery?: string | null; // New prop
 }
 
 // Define a type for the structure of SegmentTitles
@@ -243,51 +315,16 @@ const Accordion: React.FC<AccordionProps> = ({
   onBookSelect,
   onSegmentSelect,
   completedSegments = {},
-  targetSegmentId
+  highlightedSegment = null, // New prop
+  searchQuery = null // New prop
 }) => {
   const { colors } = useAppSettings();
-  const { completedSegments: globalCompletedSegments } = useAppContext();
   const [isExpandedState, setIsExpanded] = useState(isExpanded || false);
-  const [contextCompletionStatus, setContextCompletionStatus] = useState<{[key: string]: boolean}>({});
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const flatListRef = useRef<FlatList<SegmentKey>>(null);
 
   useEffect(() => {
     setIsExpanded(isExpanded || false);
   }, [isExpanded]);
-
-  // Trigger refresh when global completed segments change
-  useEffect(() => {
-    setRefreshTrigger(prev => prev + 1);
-  }, [globalCompletedSegments]);
-
-  // Load completion status for all segments in this book based on context
-  useEffect(() => {
-    const loadCompletionStatus = async () => {
-      const actualSegments = item.segments.filter(seg => !seg.startsWith('I'));
-      const completionMap: {[key: string]: boolean} = {};
-
-      // Load completion status for each segment
-      for (const segmentId of actualSegments) {
-        try {
-          const status = await getSegmentCompletionStatus(
-            segmentId,
-            context,
-            planId,
-            challengeId
-          );
-          completionMap[segmentId] = status.isCompleted;
-        } catch (error) {
-          console.error(`Error loading completion for ${segmentId}:`, error);
-          completionMap[segmentId] = false;
-        }
-      }
-
-      setContextCompletionStatus(completionMap);
-    };
-
-    loadCompletionStatus();
-  }, [item.segments, context, planId, challengeId, refreshTrigger]);
 
   useEffect(() => {
     // Log all imageMap keys
@@ -298,12 +335,10 @@ const Accordion: React.FC<AccordionProps> = ({
     console.log('Image exists for book:', !!imageMap[item.djhBook]);
   }, [item.djhBook]);
 
-  const actualSegments = item.segments.filter(seg => !seg.startsWith('I'));
+  const actualSegments = item.segments.filter(seg => String(seg).startsWith('S') || String(seg).startsWith('I'));
   const totalSegments = actualSegments.length;
-  
-  // Use context-aware completion status instead of the prop
-  const completedCount = actualSegments.reduce((count, segmentId) => {
-    return contextCompletionStatus[segmentId] ? count + 1 : count;
+  const completedCount = actualSegments.reduce((count: number, segmentId) => {
+    return completedSegments[String(segmentId)] ? count + 1 : count;
   }, 0);
 
   const handleHeaderPress = () => {
@@ -316,6 +351,27 @@ const Accordion: React.FC<AccordionProps> = ({
   // Add this for debugging
   const imageSource = imageMap[item.djhBook];
   console.log('Book:', item.djhBook, 'Image source:', imageSource);
+
+  // Custom render function for segments with highlighting
+  const renderSegment = ({ item: segment }: { item: SegmentKey }) => {
+    const isHighlighted = highlightedSegment === String(segment);
+    const segmentData = SegmentTitles[String(segment)];
+    return (
+      <SegmentItem
+        segment={{
+          id: String(segment),
+          title: segmentData?.title || 'Untitled Segment',
+          ref: segmentData?.ref,
+          book: segmentData?.book || []
+        }}
+        context={context}
+        planId={planId}
+        challengeId={challengeId}
+        completedSegments={completedSegments}
+        onPress={onSegmentSelect}
+      />
+    );
+  };
 
   const styles = StyleSheet.create({
     accordion: {
@@ -367,7 +423,40 @@ const Accordion: React.FC<AccordionProps> = ({
     },
     chevron: {
       color: colors.secondary,
-    }
+    },
+    // New styles for segment highlighting
+    segmentItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    segmentContent: {
+      flex: 1,
+    },
+    segmentTitle: {
+      fontSize: 16,
+      fontWeight: '500',
+      marginBottom: 4,
+      color: colors.text,
+    },
+    segmentRef: {
+      fontSize: 12,
+      color: colors.secondary,
+      marginBottom: 4,
+    },
+    verseIndicator: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 4,
+    },
+    verseText: {
+      fontSize: 11,
+      color: '#FF6B00',
+      fontStyle: 'italic',
+      marginLeft: 4,
+    },
   });
 
   return (
@@ -407,23 +496,10 @@ const Accordion: React.FC<AccordionProps> = ({
         <View style={styles.segmentList}>
           <FlatList
             ref={flatListRef}
-            data={targetSegmentId ? item.segments.filter(seg => seg === targetSegmentId) : item.segments}
+            data={item.segments.map(String)}
             style={styles.flatListContainer}
-            renderItem={({ item: segment }) => (
-              <SegmentItem
-                segment={{
-                  id: segment,
-                  title: SegmentTitles[segment].title,
-                  ref: SegmentTitles[segment].ref,
-                  book: SegmentTitles[segment].book
-                }}
-                context={context}
-                planId={planId}
-                challengeId={challengeId}
-                onPress={onSegmentSelect}
-              />
-            )}
-            keyExtractor={(segment) => segment}
+            renderItem={renderSegment}
+            keyExtractor={(segment) => String(segment)}
           />
         </View>
       )}

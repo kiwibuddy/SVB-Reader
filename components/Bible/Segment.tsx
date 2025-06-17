@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"; // Ensure useEffect is imported
 import { View, Text, FlatList, Pressable, TouchableOpacity, Modal, StyleSheet, useWindowDimensions, Platform, ScrollView } from "react-native";
 import { BlurView } from "expo-blur";
-import BibleBlockComponent from './Block';
+import BibleBlockComponent from './BibleBlock';
 import { BibleBlock, SegmentType } from "@/types";
 import PieChart from "../PieChart";
 import ChartLegend from "../ChartLegend";
@@ -24,7 +24,6 @@ interface SegmentProps {
   context?: 'main' | 'plan' | 'challenge';
   planId?: string;
   challengeId?: string;
-  verse?: string | string[];
 }
 
 const icons = [
@@ -47,13 +46,12 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   segmentData, 
   context = 'main',
   planId,
-  challengeId,
-  verse: verseProp
+  challengeId
 }) => {
-  // Move ALL hooks to the very top - consolidate useLocalSearchParams calls
   const { width: screenWidth } = useWindowDimensions();
+  const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenWidth > 768);
+
   const router = useRouter();
-  const { colors, isDarkMode } = useAppSettings();
   const { 
     completedSegments, 
     markSegmentComplete,
@@ -64,29 +62,10 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     updateReadingPlanProgress,
     updateChallengeProgress,
   } = useAppContext();
-  
-  // Consolidate ALL useLocalSearchParams calls here
-  const allParams = useLocalSearchParams();
-  const { scrollReset, verse: urlVerse, chapter: urlChapter } = allParams;
-  
-  // Use verse from props, fallback to URL params for backward compatibility
-  const verseParam = verseProp || urlVerse;
-  const verse = Array.isArray(verseParam) ? verseParam[0] : verseParam;
 
-  const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenWidth > 768);
+  const { colors } = useAppSettings();
 
-  // Add debugging for verse parameter
-  useEffect(() => {
-    console.log('🎯 Verse parameter received:', verse, typeof verse);
-    console.log('🔧 verseProp:', verseProp);
-    console.log('🔧 urlVerse:', urlVerse);
-    console.log('🔧 Final verse value:', verse);
-  }, [verse, verseProp, urlVerse]);
-
-  // Simplified debugging for all search params
-  useEffect(() => {
-    console.log('🔧 ALL useLocalSearchParams():', allParams);
-  }, [allParams]);
+  const { scrollReset } = useLocalSearchParams();
 
   // Add null checks for segmentData
   if (!segmentData || !segmentData.id) {
@@ -94,11 +73,10 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return null; // Or return an error state component
   }
 
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<{
     block: BibleBlock;
     index: number;
-    position: { x: number; y: number };
   } | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const { content, readers = [], id } = segmentData;
@@ -112,9 +90,11 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     total: 0
   });
 
-  // Updated reader selection state - store selected reader number (0-3)
-  const [readerNumber, setReaderNumber] = useState<number | null>(null);
-  const [selectedReaderColor, setSelectedReaderColor] = useState<string | null>(null);
+  // Track which reader role is currently selected
+  const [selectedReaderPosition, setSelectedReaderPosition] = useState<{
+    color: string;
+    position: number;
+  } | null>(null);
 
   // Determine which completion state to use
   const getIsCompleted = () => {
@@ -132,15 +112,9 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   const isCompleted = getIsCompleted();
 
-  const handleLongPress = (block: BibleBlock, index: number, position?: { x: number; y: number }) => {
-    // Use the bubble position if provided, otherwise use screen center as fallback
-    const finalPosition = position || { 
-      x: screenWidth / 2, 
-      y: 300 
-    };
-
-    setSelectedBlock({ block, index, position: finalPosition });
-    setShowEmojiPicker(true);
+  const handleLongPress = (block: BibleBlock, index: number) => {
+    setSelectedBlock({ block, index });
+    setIsModalVisible(true);
   };
 
   const handleEmojiSelect = async (emoji: string) => {
@@ -155,13 +129,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
         console.error("Error setting emoji:", error);
       }
     }
-    setShowEmojiPicker(false);
-    setSelectedBlock(null);
-  };
-
-  const handleEmojiPickerClose = () => {
-    setShowEmojiPicker(false);
-    setSelectedBlock(null);
+    setIsModalVisible(false);
   };
 
   // Memoize the content to prevent unnecessary re-renders
@@ -169,13 +137,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return splitIntoParagraphs(segmentData.content);
   }, [segmentData.content]);
 
-  // **IMPROVED TURN-BASED READING ALGORITHM**
-  const colorRenderCount = useRef(new Map<string, number>()).current; // Persistent render count
-
-  // Reset render counts when reader selection changes
-  useEffect(() => {
-    colorRenderCount.clear();
-  }, [readerNumber, selectedReaderColor]);
+  const colorRenderCount = new Map<string, number>(); // Track render counts
 
   useEffect(() => {
     // Calculate color counts from content
@@ -195,249 +157,91 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     setColorData(counts);
   }, [memoizedContent]);
 
-  // Add debugging for content structure
-  useEffect(() => {
-    if (memoizedContent && memoizedContent.length > 0) {
-      console.log('📚 Content loaded, total blocks:', memoizedContent.length);
-      console.log('📝 First block structure:', JSON.stringify(memoizedContent[0], null, 2));
-    }
-  }, [memoizedContent]);
-
-  const flatListRef = useRef<FlatList>(null);
-
-  // Force scroll to top whenever the segment changes
-  useEffect(() => {
-    // Immediate scroll
-    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-    
-    // Double-check after a brief moment to ensure content is rendered
-    const timer = setTimeout(() => {
-      flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-      if (Platform.OS === 'web') {
-        window.scrollTo(0, 0);
-      }
-    }, 50);
-
-    return () => clearTimeout(timer);
-  }, [segmentData.id]);
-
-  // REAL VERSE SCROLLING: Enhanced verse detection logic  
-  useEffect(() => {
-    console.log('🔄 Verse scrolling effect triggered with verse:', verse, 'content length:', memoizedContent.length);
-    
-    if (verse && flatListRef.current && memoizedContent.length > 0) {
-      const targetVerse = parseInt(verse as string);
-      console.log('🎯 Attempting to scroll to verse:', targetVerse);
-      console.log('📊 Total blocks in content:', memoizedContent.length);
-      
-      // Parse the URL params to get the chapter information
-      const segmentParam = allParams.segment as string;
-      console.log('🔍 Segment param:', segmentParam);
-      
-      // Extract chapter from the navigation context - we need to determine which chapter we're looking for
-      // For now, let's find ALL chapters and verses in this segment
-      console.log('🔍 DEBUGGING: Available chapters and verses in this segment:');
-      const chaptersAndVerses: {[chapter: number]: number[]} = {};
-      let currentChapter = 0;
-      
-      memoizedContent.forEach((block, index) => {
-        if (block.children && Array.isArray(block.children)) {
-          // Search in the inline children (BibleInline[])
-          block.children.forEach((inline: any) => {
-            if (inline.children && Array.isArray(inline.children)) {
-              // Search in the leaf children (BibleLeaf[])
-              inline.children.forEach((leaf: any) => {
-                if (leaf && typeof leaf === 'object') {
-                  // Look for chapter markers: tag array containing "c"
-                  if (Array.isArray(leaf.tag) && leaf.tag.includes('c') && leaf.text) {
-                    const chapterNum = parseInt(leaf.text);
-                    if (!isNaN(chapterNum)) {
-                      currentChapter = chapterNum;
-                      if (!chaptersAndVerses[currentChapter]) {
-                        chaptersAndVerses[currentChapter] = [];
-                      }
-                      console.log(`📖 Found chapter ${chapterNum} in block ${index}`);
-                    }
-                  }
-                  
-                  // Look for verse tags: tag array containing "v" and text with verse number
-                  if (Array.isArray(leaf.tag) && leaf.tag.includes('v') && leaf.text && currentChapter > 0) {
-                    const verseNum = parseInt(leaf.text);
-                    if (!isNaN(verseNum)) {
-                      if (!chaptersAndVerses[currentChapter]) {
-                        chaptersAndVerses[currentChapter] = [];
-                      }
-                      chaptersAndVerses[currentChapter].push(verseNum);
-                      console.log(`✅ Found chapter ${currentChapter}, verse ${verseNum} in block ${index}`);
-                    }
-                  }
-                }
-              });
-            }
-          });
-        }
-      });
-      
-      console.log('📋 Chapters and verses in this segment:', chaptersAndVerses);
-      
-      // Get target chapter from URL params, fallback to 3 for backward compatibility
-      const targetChapter = urlChapter ? parseInt(Array.isArray(urlChapter) ? urlChapter[0] : urlChapter) : 3;
-      console.log(`🎯 Looking for chapter ${targetChapter}, verse ${targetVerse}`);
-      
-      if (!chaptersAndVerses[targetChapter]) {
-        console.log(`⚠️ WARNING: Chapter ${targetChapter} not found in this segment!`);
-        console.log('📖 Available chapters:', Object.keys(chaptersAndVerses).map(Number).sort((a, b) => a - b));
-        return;
-      }
-      
-      if (!chaptersAndVerses[targetChapter].includes(targetVerse)) {
-        console.log(`⚠️ WARNING: Verse ${targetVerse} not found in chapter ${targetChapter}!`);
-        console.log(`📖 Available verses in chapter ${targetChapter}:`, chaptersAndVerses[targetChapter].sort((a, b) => a - b));
-        return;
-      }
-
-      // Find the block that contains the target chapter and verse
-      currentChapter = 0;
-      const targetBlockIndex = memoizedContent.findIndex((block, index) => {
-        if (block.children && Array.isArray(block.children)) {
-          return block.children.some((inline: any) => {
-            if (inline.children && Array.isArray(inline.children)) {
-              return inline.children.some((leaf: any) => {
-                if (leaf && typeof leaf === 'object') {
-                  // Update current chapter when we find a chapter marker
-                  if (Array.isArray(leaf.tag) && leaf.tag.includes('c') && leaf.text) {
-                    const chapterNum = parseInt(leaf.text);
-                    if (!isNaN(chapterNum)) {
-                      currentChapter = chapterNum;
-                    }
-                  }
-                  
-                  // Look for the target verse in the target chapter
-                  if (Array.isArray(leaf.tag) && leaf.tag.includes('v') && 
-                      leaf.text && currentChapter === targetChapter) {
-                    const verseNum = parseInt(leaf.text);
-                    if (verseNum === targetVerse) {
-                      console.log(`✅ Found target chapter ${targetChapter}, verse ${targetVerse} in block ${index}`);
-                      return true;
-                    }
-                  }
-                }
-                return false;
-              });
-            }
-            return false;
-          });
-        }
-        return false;
-      });
-
-      console.log('🎯 Final target block index:', targetBlockIndex);
-
-      if (targetBlockIndex !== -1) {
-        console.log('🚀 Attempting to scroll to verse block:', targetBlockIndex);
-        
-        const scrollTimer = setTimeout(() => {
-          console.log('⏰ Timer fired, executing scroll...');
-          
-          // Step 1: Scroll to approximate position (conservative estimate)
-          const conservativeOffset = targetBlockIndex * 60; // Conservative estimate
-          console.log(`📍 First scroll to conservative offset: ${conservativeOffset}`);
-          
-          flatListRef.current?.scrollToOffset({
-            offset: conservativeOffset,
-            animated: false, // Non-animated for first position
-          });
-          
-          // Step 2: After a brief moment, try scrollToIndex for precise positioning
-          setTimeout(() => {
-            console.log('🎯 Attempting precise scrollToIndex...');
-            try {
-              flatListRef.current?.scrollToIndex({
-                index: targetBlockIndex,
-                animated: true,
-                viewPosition: 0.0,
-              });
-              console.log('✅ Final scrollToIndex executed successfully');
-            } catch (error) {
-              console.log('❌ Final scrollToIndex failed, staying at conservative position');
-            }
-          }, 500); // Short delay for the second scroll
-          
-          console.log('✅ Two-stage scroll initiated for chapter', targetChapter, 'verse', targetVerse);
-        }, 3000);
-
-        return () => clearTimeout(scrollTimer);
-      } else {
-        console.log('❌ Verse not found with any search method');
-        console.log(`💡 Suggestion: Check if chapter ${targetChapter}, verse ${targetVerse} exists in this segment`);
-      }
-    }
-  }, [verse, memoizedContent, allParams]);
-
+  // Add handler for completion toggle
   const handleCompletion = async () => {
     if (context === 'main') {
-      await markSegmentComplete(segID, true);
-    } else if (planId) {
-      await updateReadingPlanProgress(planId, segID);
-    } else if (challengeId) {
-      await updateChallengeProgress(challengeId, segID);
+      await markSegmentComplete(segID, !isCompleted, null, 'main');
+      if (!isCompleted) {
+        setShowCelebration(true);
+      }
+    } else if (planId && activePlan) {
+      // Handle plan completion
+      await markSegmentComplete(segID, true, null, 'plan', planId, undefined);
+      setShowCelebration(true);
+    } else if (challengeId && activeChallenges[challengeId]) {
+      // Handle challenge completion
+      await markSegmentComplete(segID, true, null, 'challenge', undefined, challengeId);
+      setShowCelebration(true);
     }
-    setShowCelebration(true);
   };
 
   const handleCelebrationComplete = () => {
     setShowCelebration(false);
-    
-    // Check if this is part of a plan or challenge
-    if (planId && activePlan) {
-      const remainingSegments = activePlan.completedSegments;
-      // Note: We don't have access to the full segment list here
-      // You may need to adjust this logic based on your data structure
-    }
-    
-    if (challengeId && activeChallenges[challengeId]) {
-      const challenge = activeChallenges[challengeId];
-      const remainingSegments = challenge.completedSegments;
-      // Note: We don't have access to the full segment list here
-      // You may need to adjust this logic based on your data structure
+    // Navigate back based on context
+    if (planId) {
+      router.replace({
+        pathname: '/Plan',
+        params: { 
+          scrollToPlan: planId,
+          timestamp: Date.now() // Force refresh
+        }
+      });
+    } else if (challengeId) {
+      router.replace({
+        pathname: '/Reading-Challenges',
+        params: { 
+          scrollToChallenge: challengeId,
+          timestamp: Date.now() // Force refresh
+        }
+      });
     }
   };
 
   const handleComplete = async () => {
-    await handleCompletion();
+    if (selectedBlock) {
+      if (context === 'main') {
+        await markSegmentComplete(segmentData.id, true, readers[selectedBlock.index], 'main');
+      } else if (context === 'plan') {
+        await markSegmentComplete(segmentData.id, true, readers[selectedBlock.index], 'plan', planId, undefined);
+      } else if (context === 'challenge') {
+        await markSegmentComplete(segmentData.id, true, readers[selectedBlock.index], 'challenge', undefined, challengeId);
+      }
+      setShowCelebration(true);
+    }
   };
 
+  // Add speech bubble colors based on theme
   const getSpeakerStyle = (speaker: string) => {
     const baseStyle = {
-      ...styles.verseContainer,
-      marginVertical: 4,
-      padding: 12,
+      padding: 16,
       borderRadius: 8,
+      marginBottom: 8,
+      borderWidth: 1,
     };
 
-    switch (speaker) {
-      case 'red':
+    switch (speaker.toLowerCase()) {
+      case 'narrator':
+        return {
+          ...baseStyle,
+          backgroundColor: colors.bubbles.default,
+          borderColor: colors.border,
+        };
+      case 'god':
         return {
           ...baseStyle,
           backgroundColor: colors.bubbles.red,
           borderColor: colors.border,
         };
-      case 'green':
+      case 'jesus':
         return {
           ...baseStyle,
-          backgroundColor: colors.bubbles.green,
+          backgroundColor: colors.bubbles.red,
           borderColor: colors.border,
         };
-      case 'blue':
+      case 'people':
         return {
           ...baseStyle,
           backgroundColor: colors.bubbles.blue,
-          borderColor: colors.border,
-        };
-      case 'black':
-        return {
-          ...baseStyle,
-          backgroundColor: colors.bubbles.black,
           borderColor: colors.border,
         };
       default:
@@ -449,17 +253,18 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     }
   };
 
-  // **IMPROVED READER ROLE SELECTION**
-  const handleIconPress = (index: number) => {
-    const readerColor = readers[index];
-    setReaderNumber((prev) => {
-      const newValue = prev === index ? null : index;
-      setSelectedReaderColor(newValue === null ? null : readerColor);
-      return newValue;
+  const handleReaderRoleSelect = (color: string, position: number) => {
+    setSelectedReaderPosition(prev => {
+      // If clicking the already selected role, deselect it
+      if (prev?.color === color && prev?.position === position) {
+        return null;
+      }
+      // Otherwise select this new role (deselecting any previous role)
+      return { color, position };
     });
   };
 
-  // Group readers by color to know position within that color
+  // Group readers by color to know position
   const readersByColor = useMemo(() => {
     return readers.reduce((acc, color, index) => {
       if (!acc[color]) {
@@ -470,48 +275,31 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     }, {} as { [color: string]: number[] });
   }, [readers]);
 
-  // **FIXED TURN-BASED ALGORITHM** - This is the core logic from the documentation
+  // Update shouldBlockGlow to use the new state
   const shouldBlockGlow = useCallback((blockColor: string, blockIndex: number) => {
-    if (!selectedReaderColor || readerNumber === null) return false;
-    if (blockColor !== selectedReaderColor) return false;
+    if (!selectedReaderPosition) return false;
+    
+    const { color, position } = selectedReaderPosition;
+    if (blockColor !== color) return false;
 
-    // Count how many readers selected this color
-    const colorReaders = readers.filter((reader) => reader === blockColor);
-    const numberOfColorReaders = colorReaders.length;
-
-    // Initialize render count tracking for this color
-    if (!colorRenderCount.has(blockColor)) {
-      colorRenderCount.set(blockColor, 0);
+    const colorPositions = readersByColor[blockColor] || [];
+    if (colorPositions.length <= 1) {
+      return position === 0;
     }
 
-    const currentRenderCount = colorRenderCount.get(blockColor)!;
-    let shouldRead = false;
-
-    if (numberOfColorReaders === 1) {
-      // Single color reader logic - they read all bubbles of their color
-      shouldRead = blockColor === selectedReaderColor;
-    } else {
-      // Multiple color readers logic - take turns
-      const indices = readers.reduce<number[]>((acc, reader, index) => {
-        if (reader === selectedReaderColor) acc.push(index);
-        return acc;
-      }, []);
-      const position = indices.indexOf(readerNumber!);
-      shouldRead = currentRenderCount % numberOfColorReaders === position;
-    }
-
-    // Increment render count after determining shouldRead
-    colorRenderCount.set(blockColor, currentRenderCount + 1);
-
-    return shouldRead;
-  }, [readers, selectedReaderColor, readerNumber, colorRenderCount]);
+    // For multiple readers of same color
+    const blocksOfThisColor = content.filter(item => item.source.color === blockColor);
+    const positionInSequence = blocksOfThisColor.findIndex(item => 
+      content.indexOf(item) === blockIndex
+    );
+    return positionInSequence % colorPositions.length === position;
+  }, [content, readersByColor, selectedReaderPosition]);
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: 12,
-    paddingVertical: 16,
+    padding: 16,
   },
   roleContainer: {
     backgroundColor: colors.card,
@@ -592,17 +380,91 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     margin: 10,
   },
-  emojiPickerOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1000,
+  blurContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Add semi-transparent overlay
   },
-  emojiPickerWrapper: {
-    position: 'absolute',
-    zIndex: 1001,
+modalContainer: {
+  width: '85%',
+  maxHeight: '75%', // Restore maxHeight to prevent always expanding
+  maxWidth: 350,
+  backgroundColor: colors.background || 'white',
+  borderRadius: 20,
+  padding: 0,
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 10,
+  },
+  shadowOpacity: 0.25,
+  shadowRadius: 20,
+  elevation: 15,
+  // Remove marginTop and flex - let it size naturally based on content
+},
+  emojiPickerContainer: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border || '#E5E5EA',
+  },
+  blockContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: colors.card || '#F8F9FA',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  // Add new styles for enhanced messaging look
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: colors.text || '#000',
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 16,
+   // backgroundColor: colors.secondary || '#E5E5EA',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  reactionText: {
+    fontSize: 30, // Adjust size as needed
+    elevation: 3, // Optional: add shadow on Android
+    shadowColor: "#000", // Optional: shadow color for iOS
+    shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
+    shadowOpacity: 0.2, // Optional: shadow opacity for iOS
+    shadowRadius: 2, // Optional: shadow radius for iOS
+  },
+  reactionPosition: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    zIndex: 1,
+  },
+  reactionContainer: {
+    flexDirection: "row",
+    padding: 5, // Padding for the circle
+    position: "absolute",
+    top: -25, // Adjust as needed for overlap
+    right: 0, // Adjust as needed for spacing from the right
+    elevation: 3, // Optional: add shadow on Android
+    shadowColor: "#000", // Optional: shadow color for iOS
+    shadowOffset: { width: 0, height: 2 }, // Optional: shadow offset for iOS
+    shadowOpacity: 0.2, // Optional: shadow opacity for iOS
+    shadowRadius: 2, // Optional: shadow radius for iOS
   },
   readerRoleSelector: {
     marginVertical: 10,
@@ -638,42 +500,48 @@ const styles = StyleSheet.create({
     </View>
   );
 
-  // **IMPROVED RENDER ITEM** - Uses advanced conversation flow analysis
+  // Update renderItem to use new glow logic
   const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
     const { sourceName } = item.source;
     const showSourceName = index === 0 || 
-      memoizedContent[index - 1].source.sourceName !== sourceName;
+      content[index - 1].source.sourceName !== sourceName;
 
     const isGlowing = shouldBlockGlow(item.source.color, index);
-
-    // Advanced conversation context analysis
-    const previousSpeaker = index > 0 ? memoizedContent[index - 1].source.sourceName : undefined;
-    const nextSpeaker = index < memoizedContent.length - 1 ? memoizedContent[index + 1].source.sourceName : undefined;
-    
-    // Detect speaker sequences for advanced spacing
-    const isFirstInSequence = previousSpeaker !== sourceName;
-    const isLastInSequence = nextSpeaker !== sourceName;
 
     return (
       <BibleBlockComponent
         block={item}
         bIndex={index}
         hasTail={showSourceName}
-        toRead={isGlowing}
+        isGlowing={isGlowing}
         onLongPress={handleLongPress}
-        isFirstInSequence={isFirstInSequence}
-        isLastInSequence={isLastInSequence}
-        previousSpeaker={previousSpeaker}
-        nextSpeaker={nextSpeaker}
       />
     );
-  }, [memoizedContent, shouldBlockGlow]);
+  }, [content, shouldBlockGlow]);
+
+  const flatListRef = useRef<FlatList>(null);
+
+  // Force scroll to top whenever the segment changes
+  useEffect(() => {
+    // Immediate scroll
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+    
+    // Double-check after a brief moment to ensure content is rendered
+    const timer = setTimeout(() => {
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+      if (Platform.OS === 'web') {
+        window.scrollTo(0, 0);
+      }
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [segmentData.id]);
 
   return (
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
-        data={memoizedContent}
+        data={content}
         ListHeaderComponent={() => (
           <>
             <SegmentTitle segmentId={segID} />
@@ -707,50 +575,20 @@ const styles = StyleSheet.create({
                     </Text>
                     <View style={styles.iconContainer}>
                       {readers.map((readerColor, index) => {
-                        const isActive = readerNumber === index;
-                        
-                        // Get proper icon color using speech bubble colors
-                        const getIconColor = () => {
-                          if (isActive) {
-                            // Use slightly brighter colors than speech bubbles to make buttons stand out
-                            if (isDarkMode) {
-                              switch (readerColor) {
-                                case "black": return "#2A2A2A"; // Slightly brighter than bubble black
-                                case "red": return "#D32F2F"; // Colors.error[700] - brighter than bubble red
-                                case "green": return "#388E3C"; // Colors.success[700] - brighter than bubble green
-                                case "blue": return "#1976D2"; // Colors.secondary[700] - brighter than bubble blue
-                                default: return colors.bubbles.default;
-                              }
-                            } else {
-                              switch (readerColor) {
-                                case "black": return "#E0E0E0"; // Colors.neutral[300] - brighter than bubble black
-                                case "red": return "#EF9A9A"; // Colors.error[200] - brighter than bubble red
-                                case "green": return "#A5D6A7"; // Colors.success[200] - brighter than bubble green
-                                case "blue": return "#90CAF9"; // Colors.secondary[200] - brighter than bubble blue
-                                default: return colors.bubbles.default;
-                              }
-                            }
-                          } else {
-                            // Use lighter/faded versions when not selected
-                            switch (readerColor) {
-                              case "black": return "#A0AEC0"; // Light grey
-                              case "red": return "#F687B3"; // Light pink
-                              case "green": return "#81E6D9"; // Light teal 
-                              case "blue": return "#90CDF4"; // Light blue
-                              default: return colors.bubbles.default;
-                            }
-                          }
-                        };
+                        const colors = getColors(readerColor);
+                        const position = readersByColor[readerColor].indexOf(index);
+                        const isActive = selectedReaderPosition?.color === readerColor && 
+                                      selectedReaderPosition?.position === position;
                         
                         return (
                           <TouchableOpacity
                             key={index}
-                            onPress={() => handleIconPress(index)}
+                            onPress={() => handleReaderRoleSelect(readerColor, position)}
                           >
                             <MaterialIcons
                               name={isActive ? "mark-chat-read" : "chat-bubble"}
                               size={30}
-                              color={getIconColor()}
+                              color={readerColor === "black" ? "grey" : isActive ? colors.dark : colors.light}
                             />
                           </TouchableOpacity>
                         );
@@ -765,75 +603,77 @@ const styles = StyleSheet.create({
         )}
         renderItem={renderItem}
         keyExtractor={(item, index) => `${item.source.sourceName}-${index}`}
-        ListFooterComponent={() => (
-          <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-            <CheckCircle
-              segmentId={segID}
-              context={context}
-              planId={planId}
-              challengeId={challengeId}
-              onCelebration={() => setShowCelebration(true)}
-            />
-          </View>
-        )}
-        // Expert-level performance and UX optimizations
-        initialNumToRender={8}
-        maxToRenderPerBatch={6}
-        windowSize={4}
-        updateCellsBatchingPeriod={100}
-        removeClippedSubviews={true}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
         onLayout={() => {
           flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
         }}
-        contentContainerStyle={{ 
-          flexGrow: 1,
-          paddingBottom: 24,
-        }}
-        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ flexGrow: 1 }}
         automaticallyAdjustKeyboardInsets={true}
-        showsVerticalScrollIndicator={false}
-        bounces={true}
-        alwaysBounceVertical={false}
-        onScrollToIndexFailed={(error) => {
-          // Handle scroll failure gracefully with improved logging
-          console.log('❌ onScrollToIndexFailed called:', error);
-          console.log(`📊 Error details: index=${error.index}, highestMeasuredFrameIndex=${error.highestMeasuredFrameIndex}, averageItemLength=${error.averageItemLength}`);
-          
-          // Use a more conservative offset calculation
-          const conservativeOffset = Math.min(
-            error.averageItemLength * error.index,
-            error.averageItemLength * error.highestMeasuredFrameIndex + (error.index - error.highestMeasuredFrameIndex) * 60
-          );
-          
-          console.log(`📍 Fallback scroll offset: ${conservativeOffset}`);
-          flatListRef.current?.scrollToOffset({ offset: conservativeOffset, animated: true });
+        onEndReached={async () => {
+          if (!isCompleted) {
+            if (context === 'main') {
+              await markSegmentComplete(segID, true, null, 'main');
+            } else if (planId && activePlan) {
+              await markSegmentComplete(segID, true, null, 'plan', planId, undefined);
+            } else if (challengeId && activeChallenges[challengeId]) {
+              await markSegmentComplete(segID, true, null, 'challenge', undefined, challengeId);
+            }
+          }
         }}
+        onEndReachedThreshold={0.2}
       />
-
-      {/* Simple positioned emoji picker - no modal or overlay */}
-      {showEmojiPicker && selectedBlock && (
-        <>
-          <Pressable
-            style={styles.emojiPickerOverlay}
-            onPress={handleEmojiPickerClose}
-          />
-          <View
-            style={[
-              styles.emojiPickerWrapper,
-              {
-                left: Math.max(10, Math.min(selectedBlock.position.x - 100, screenWidth - 210)),
-                top: Math.max(100, selectedBlock.position.y - 60),
-              }
-            ]}
-          >
+<Modal
+  visible={isModalVisible}
+  transparent={true}
+  animationType="slide"
+  onRequestClose={() => setIsModalVisible(false)}
+>
+  <BlurView intensity={60} tint="dark" style={styles.blurContainer}>
+    <Pressable
+      style={styles.blurContainer}
+      onPress={() => setIsModalVisible(false)}
+    >
+      {selectedBlock && (
+        <View style={styles.modalContainer}>
+          {/* Add modern header */}
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Add Reaction</Text>
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => setIsModalVisible(false)}
+            >
+              <Ionicons name="close" size={25} color={"red"} />
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.emojiPickerContainer}>
             <EmojiPicker
               onEmojiSelect={handleEmojiSelect}
-              onClose={handleEmojiPickerClose}
+              onClose={() => setIsModalVisible(false)}
             />
           </View>
-        </>
+          
+          <ScrollView 
+            style={styles.blockContainer}
+            showsVerticalScrollIndicator={true}
+            bounces={false}
+            contentContainerStyle={{ flexGrow: 1 }}
+          >
+            <BibleBlockComponent
+              block={selectedBlock.block}
+              bIndex={selectedBlock.index}
+              hasTail={true}
+              isGlowing={false}
+              onLongPress={handleLongPress}
+            />
+          </ScrollView>
+        </View>
       )}
-
+    </Pressable>
+  </BlurView>
+</Modal>
       <View style={styles.divider} />
 
       <CelebrationPopup 

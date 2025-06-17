@@ -1,14 +1,14 @@
 export const getColors = (color: string) => {
   switch (color) {
     case "black":
-      return { dark: "#2D3748", light: "#F7FAFC" }; // Narrator - clean bright neutral
+      return { dark: "#000000", light: "#e6e6e6" };
     case "red":
-      return { dark: "#FFFFFF", light: "#FBB6CE" }; // God - bright vibrant pink, matches app's pink gradients
+      return { dark: "#d60000", light: "#fdc1c1" }; // Dark red and light red
     case "green":
-      return { dark: "#FFFFFF", light: "#81E6D9" }; // Main character - bright vibrant teal, energetic and modern
+      return { dark: "#006400", light: "#b9f8b9" }; // Dark green and light green
     case "blue":
-      return { dark: "#FFFFFF", light: "#90CDF4" }; // Supporting characters - bright vibrant blue, matches app's energy
+      return { dark: "#00008B", light: "#8EE3FF" }; // Dark blue and light blue
     default:
-      return { dark: "#2D3748", light: "#F7FAFC" }; // Fallback to bright neutrals
+      return { dark: "#000000", light: "#FFFFFF" }; // Fallback to black and white
   }
 };
