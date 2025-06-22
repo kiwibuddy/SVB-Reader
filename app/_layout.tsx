@@ -14,11 +14,49 @@ import {
 import { BottomNavProvider } from '@/context/BottomNavContext';
 import { FontSizeProvider } from '@/context/FontSizeContext';
 import { AppSettingsProvider, useAppSettings } from '@/context/AppSettingsContext';
+import { GroupReadingProvider } from '@/context/GroupReadingContext';
 import { View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '../config/i18n'; // Import this to initialize i18next
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+function AppContent() {
+  const { isDarkMode, colors } = useAppSettings();
+  
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider value={isDarkMode ? DarkTheme : DefaultTheme}>
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
+          <FontSizeProvider>
+            <GroupReadingProvider>
+              <AppProvider>
+                <BottomNavProvider>
+                  <SQLiteProvider databaseName="test.db">
+                    <StatusBar 
+                      style={isDarkMode ? "light" : "dark"}
+                      backgroundColor={colors.background}
+                    />
+                    <Stack
+                      screenOptions={{
+                        headerShown: false,
+                        contentStyle: { backgroundColor: colors.background },
+                      }}
+                    >
+                      <Stack.Screen name="(tabs)" />
+                      <Stack.Screen name="+not-found" />
+                    </Stack>
+                  </SQLiteProvider>
+                </BottomNavProvider>
+              </AppProvider>
+            </GroupReadingProvider>
+          </FontSizeProvider>
+        </View>
+      </ThemeProvider>
+    </GestureHandlerRootView>
+  );
+}
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -38,43 +76,7 @@ export default function RootLayout() {
 
   return (
     <AppSettingsProvider>
-      <FontSizeProvider>
-        <AppProvider>
-          <Stack screenOptions={{ headerShown: false }} />
-        </AppProvider>
-      </FontSizeProvider>
+      <AppContent />
     </AppSettingsProvider>
-  );
-}
-
-function AppContent() {
-  const { isDarkMode, colors } = useAppSettings();
-  
-  return (
-    <ThemeProvider value={isDarkMode ? DarkTheme : DefaultTheme}>
-      <View style={{ flex: 1, backgroundColor: colors.background }}>
-        <AppProvider>
-          <FontSizeProvider>
-            <BottomNavProvider>
-              <SQLiteProvider databaseName="test.db">
-                <StatusBar 
-                  style={isDarkMode ? "light" : "dark"}
-                  backgroundColor={colors.background}
-                />
-                <Stack
-                  screenOptions={{
-                    headerShown: false,
-                    contentStyle: { backgroundColor: colors.background },
-                  }}
-                >
-                  <Stack.Screen name="(tabs)" />
-                  <Stack.Screen name="+not-found" />
-                </Stack>
-              </SQLiteProvider>
-            </BottomNavProvider>
-          </FontSizeProvider>
-        </AppProvider>
-      </View>
-    </ThemeProvider>
   );
 }

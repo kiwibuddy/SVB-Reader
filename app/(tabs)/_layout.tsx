@@ -39,6 +39,13 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="Navigation"
+          options={{
+            title: "Navigation",
+            tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
+          }}
+        />
+        <Tabs.Screen
           name="Reading-emoji"
           options={{
             title: "Emojis",
@@ -60,13 +67,6 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="[segment]/index"
-          options={{
-            title: "Bible",
-            tabBarIcon: ({ color }) => <TabBarIcon name="book" color={color} />,
-          }}
-        />
-        <Tabs.Screen
           name="Achievements"
           options={{
             title: 'Achievements',
@@ -75,6 +75,18 @@ export default function TabLayout() {
             tabBarIcon: ({ color, size }) => (
               <MaterialIcons name="emoji-events" size={size} color={color} />
             ),
+          }}
+        />
+        <Tabs.Screen
+          name="explore"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="[segment]"
+          options={{
+            href: null,
           }}
         />
       </Tabs>

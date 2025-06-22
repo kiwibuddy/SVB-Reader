@@ -1,11 +1,10 @@
+import React, { useState, useEffect } from "react";
 import { View, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, useWindowDimensions, Platform } from "react-native";
 import Accordion from "@/components/navigation/NavBook";
 import BooksJson from "@/assets/data/BookChapterList.json";
 import SegmentTitlesJson from "@/assets/data/SegmentTitles.json";
 import { useAppContext } from "@/context/GlobalContext";
 import { Ionicons } from '@expo/vector-icons';
-import { useState, useEffect } from "react";
-import React from "react";
 import { parseReference } from '@/utils/parseReference';
 import { findSegmentId } from '@/utils/referenceMapping';
 import { useRouter } from 'expo-router';
@@ -406,7 +405,7 @@ const Navigation = () => {
     }
     
     router.push({
-      pathname: "/(tabs)/[segment]" as const,
+      pathname: "/[segment]" as const,
       params
     });
   };

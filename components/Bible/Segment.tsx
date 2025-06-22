@@ -3,10 +3,10 @@ import { View, Text, FlatList, Pressable, TouchableOpacity, Modal, StyleSheet, u
 import { BlurView } from "expo-blur";
 import BibleBlockComponent from './BibleBlock';
 import { BibleBlock, SegmentType } from "@/types";
-import PieChart from "../PieChart";
+import RoleProgressBar from "../RoleProgressBar";
 import ChartLegend from "../ChartLegend";
 import { Ionicons, MaterialIcons } from '@expo/vector-icons'; // Example icon library
-// import { splitContentIntoReaderParts } from "@/scripts/splitContentIntoReaderParts";
+import { splitContentIntoReaderParts } from "@/scripts/splitContentIntoReaderParts";
 import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
 import { getColors } from "@/scripts/getColors";
 import SegmentTitle from "./SegmentTitle";
@@ -134,8 +134,18 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   // Memoize the content to prevent unnecessary re-renders
   const memoizedContent = useMemo(() => {
-    return splitIntoParagraphs(segmentData.content);
-  }, [segmentData.content]);
+    // Check if there are duplicate colors in readers array
+    const uniqueColors = new Set(readers);
+    const hasDuplicateColors = uniqueColors.size !== readers.length;
+    
+    if (hasDuplicateColors) {
+      // Use splitContentIntoReaderParts for multiple readers of same color
+      return splitContentIntoReaderParts(segmentData.content, readers);
+    } else {
+      // Use splitIntoParagraphs for unique colors
+      return splitIntoParagraphs(segmentData.content);
+    }
+  }, [segmentData.content, readers]);
 
   const colorRenderCount = new Map<string, number>(); // Track render counts
 
@@ -344,31 +354,17 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginBottom: 4,
   },
-  chartSection: {
-    flex: 1,
-    maxWidth: '40%',
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 10,
-  },
   readerSection: {
-    flex: 3, 
-    justifyContent: "center", 
-    alignItems: "center", 
-    height: "100%",
-    paddingLeft: 10,
-  },
-  readerContainer: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingLeft: 20
+    width: '100%',
   },
   readerText: {
-    fontSize: 14,
-    marginBottom: 15,
+    fontSize: 16,
+    marginBottom: 12,
     textAlign: 'center',
-    color: colors.text, // Add theme color
+    color: colors.text,
+    fontWeight: '500',
   },
   iconContainer: {
     flexDirection: 'row',
@@ -546,59 +542,47 @@ modalContainer: {
           <>
             <SegmentTitle segmentId={segID} />
             <View style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingHorizontal: 10,
-              paddingVertical: isIPad ? 5 : 5,
+              paddingHorizontal: 16,
+              paddingTop: 20,
+              paddingBottom: 0,
               width: '100%',
-              height: isIPad ? 120 : 100,
             }}>
-              {/* Chart Section */}
-              <View style={{
-                flex: 1,
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                height: "100%",
-              }}>
-                <View style={styles.chartSection}>
-                  <PieChart 
-                    colorData={colorData}
-                    size={isIPad ? Math.min(screenWidth * 0.15, 120) : 80}
-                  />
-                </View>
-                <View style={styles.readerSection}>
-                  <View style={styles.readerContainer}>
-                    <Text style={styles.readerText}>
-                      Select your reading role:
-                    </Text>
-                    <View style={styles.iconContainer}>
-                      {readers.map((readerColor, index) => {
-                        const colors = getColors(readerColor);
-                        const position = readersByColor[readerColor].indexOf(index);
-                        const isActive = selectedReaderPosition?.color === readerColor && 
-                                      selectedReaderPosition?.position === position;
-                        
-                        return (
-                          <TouchableOpacity
-                            key={index}
-                            onPress={() => handleReaderRoleSelect(readerColor, position)}
-                          >
-                            <MaterialIcons
-                              name={isActive ? "mark-chat-read" : "chat-bubble"}
-                              size={30}
-                              color={readerColor === "black" ? "grey" : isActive ? colors.dark : colors.light}
-                            />
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                  </View>
+              {/* Role Selection Section - Full Width */}
+              <View style={styles.readerSection}>
+                <Text style={styles.readerText}>
+                  Select your reading role:
+                </Text>
+                <View style={styles.iconContainer}>
+                  {readers.map((readerColor, index) => {
+                    const colors = getColors(readerColor);
+                    const position = readersByColor[readerColor].indexOf(index);
+                    const isActive = selectedReaderPosition?.color === readerColor && 
+                                  selectedReaderPosition?.position === position;
+                    
+                    return (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() => handleReaderRoleSelect(readerColor, position)}
+                      >
+                        <MaterialIcons
+                          name={isActive ? "mark-chat-read" : "chat-bubble"}
+                          size={30}
+                          color={readerColor === "black" ? "grey" : isActive ? colors.dark : colors.light}
+                        />
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
+              
+              {/* Progress Bar Section - As Divider */}
+              <View style={{ marginTop: 24, marginBottom: 20, marginHorizontal: -16 }}>
+                <RoleProgressBar 
+                  colorData={colorData}
+                  height={4}
+                />
+              </View>
             </View>
-            <View style={styles.divider} />
           </>
         )}
         renderItem={renderItem}

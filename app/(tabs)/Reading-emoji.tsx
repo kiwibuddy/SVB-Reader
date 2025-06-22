@@ -1,4 +1,5 @@
 "use client"
+import React, { useState, useEffect, useRef } from "react"
 import {
   View,
   Text,
@@ -12,7 +13,6 @@ import {
   Platform,
   Animated,
 } from "react-native"
-import { useState, useEffect, useRef } from "react"
 import { useRouter } from "expo-router"
 import { useAppContext } from "@/context/GlobalContext"
 import { useAppSettings } from "@/context/AppSettingsContext"

@@ -141,3 +141,65 @@ export type BooksObject = {
 
 import Books from "@/assets/data/BookChapterList.json";
 export type SegmentIds = keyof typeof Books;
+
+// Group Reading Bluetooth Types
+export type Role = 'narrator' | 'god' | 'main_character' | 'other_voices';
+
+export interface Participant {
+  deviceId: string;
+  deviceName: string;
+  userName: string;
+  role: Role;
+  isReady: boolean;
+  isConnected: boolean;
+}
+
+export interface GroupSession {
+  id: string;
+  storyId: string;
+  storyTitle: string;
+  scriptureReference: string;
+  hostDeviceId: string;
+  hostUserName: string;
+  participants: Participant[];
+  status: 'forming' | 'ready' | 'reading' | 'paused' | 'ended';
+  createdAt: number;
+  expiresAt: number;
+  planId?: string;
+  challengeId?: string;
+}
+
+export interface GroupSessionState {
+  currentSession: GroupSession | null;
+  isHost: boolean;
+  currentRole: Role | null;
+  currentUserName: string;
+  scrollPosition: number;
+  isScanning: boolean;
+  nearbyGroups: GroupSession[];
+}
+
+export interface BluetoothSessionManager {
+  // Host functions
+  startBroadcasting(storyId: string, storyTitle: string, scriptureRef: string, hostRole: Role, hostUserName: string, planId?: string, challengeId?: string): Promise<string>;
+  stopBroadcasting(): Promise<void>;
+  acceptJoiner(deviceId: string, userName: string, requestedRole: Role): Promise<boolean>;
+  syncScrollPosition(position: number): Promise<void>;
+  
+  // Joiner functions
+  discoverNearbyGroups(): Promise<GroupSession[]>;
+  requestToJoin(sessionId: string, role: Role, userName: string): Promise<boolean>;
+  leaveGroup(): Promise<void>;
+  
+  // Shared functions
+  onGroupStateChange(callback: (session: GroupSession) => void): void;
+  onScrollSync(callback: (position: number) => void): void;
+  onParticipantJoined(callback: (participant: Participant) => void): void;
+  onParticipantLeft(callback: (deviceId: string) => void): void;
+  handleDisconnection(): void;
+  
+  // State management
+  getCurrentSession(): GroupSession | null;
+  isCurrentHost(): boolean;
+  getCurrentRole(): Role | null;
+}

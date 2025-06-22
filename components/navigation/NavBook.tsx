@@ -1,3 +1,4 @@
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +8,6 @@ import {
   Image,
   Platform
 } from "react-native";
-import { useEffect, useRef, useState } from "react";
 import { SegmentKey, SegmentIds } from "@/app/(tabs)/Navigation";
 import DonutChart from "../DonutChart";
 import SegmentItem from "./SegmentItem";

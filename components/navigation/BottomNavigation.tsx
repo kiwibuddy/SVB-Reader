@@ -23,7 +23,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
 
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
-    if (currentOffset > lastScrollY.current && currentOffset > 50) {
+    if (currentOffset > lastScrollY.current && currentOffset > 100) {
       // Scrolling down - hide
       Animated.spring(isVisible, {
         toValue: 0,
@@ -47,6 +47,11 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   React.useEffect(() => {
     if (isHome) return;
     
+    // Ensure navigation starts visible on segment pages
+    if (pathname.includes('segment') || pathname.startsWith('/S') || pathname.startsWith('/I')) {
+      isVisible.setValue(1);
+    }
+    
     // You can expose the handleScroll function to other components
     if (global) {
       global.handleBottomNavScroll = handleScroll;
@@ -57,7 +62,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
         delete global.handleBottomNavScroll;
       }
     };
-  }, [isHome]);
+  }, [isHome, pathname]);
 
   // Don't render the navigation on the index screen - move after hooks
   if (pathname === "/" || pathname === "/index") {

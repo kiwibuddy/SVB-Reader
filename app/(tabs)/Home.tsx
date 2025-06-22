@@ -27,8 +27,14 @@ import { useAppSettings } from '@/context/AppSettingsContext';
 import { type ColorScheme } from '@/context/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useGroupReading } from '@/context/GroupReadingContext';
+import NearbyGroupCard from '@/components/GroupReading/NearbyGroupCard';
+import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
+import BibleData from '@/assets/data/newBibleNLT1.json';
+import { SegmentType } from '@/types';
 
 const SegmentTitles = require("@/assets/data/SegmentTitles.json") as { [key: string]: SegmentTitle };
+const Bible: { [key: string]: SegmentType } = BibleData as { [key: string]: SegmentType };
 
 type SegmentTitle = {
   Segment: string;
@@ -742,14 +748,14 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
     calculateInsights();
   }, [completedSegments]);
 
-  const handleBookPress = () => {
+    const handleBookPress = () => {
     // Find first segment of favorite book
-    const firstSegment = Object.entries(SegmentTitles).find(([_, data]) => 
+    const firstSegment = Object.entries(SegmentTitles).find(([_, data]) =>
       data.book[0] === insights.favoriteBook
     );
     if (firstSegment) {
       router.push({
-        pathname: "/[segment]",
+        pathname: "/(tabs)/[segment]",
         params: {
           segment: `ENG-NLT-${firstSegment[0]}`,
           book: insights.favoriteBook
@@ -761,7 +767,7 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
   const handleStoryPress = () => {
     if (insights.favoriteSegmentId) {
       router.push({
-        pathname: "/[segment]",
+        pathname: "/(tabs)/[segment]",
         params: {
           segment: `ENG-NLT-${insights.favoriteSegmentId}`,
           book: SegmentTitles[insights.favoriteSegmentId]?.book[0] || ''
@@ -873,6 +879,23 @@ const HomeScreen = () => {
   const { t } = useTranslation();
   const styles = createStyles(width >= 768, colors);
   const [currentStreak, setCurrentStreak] = useState(0);
+  
+  // Group Reading Context
+  const { 
+    nearbyGroups, 
+    currentSession, 
+    joinSession,
+    setUserName,
+    currentUserName,
+  } = useGroupReading();
+  
+  const [dismissedGroups, setDismissedGroups] = useState<Set<string>>(new Set());
+  
+  // Reading Mode Modal State
+  const [showReadingModeModal, setShowReadingModeModal] = useState(false);
+  const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
+  const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
+  const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
 
   // Add useEffect to fetch streak data
   useEffect(() => {
@@ -916,52 +939,20 @@ const HomeScreen = () => {
   };
 
   const handleContinueReading = async () => {
+    let segmentToRead = lastReadSegment;
+    
     if (!lastReadSegment) {
       // For new users, start with the first story segment (S001) in Genesis
+      segmentToRead = 'S001';
       await setLastReadSegment('S001');
-      await updateSegmentId(`ENG-NLT-S001`);
-      router.push({
-        pathname: "/[segment]",
-        params: {
-          segment: `ENG-NLT-S001`,
-          book: 'Gen'
-        }
-      });
-      return;
     }
 
-    const currentIndex = segIDs.indexOf(lastReadSegment);
-    let nextSegment = segIDs[currentIndex + 1];
-    
-    // Skip any introduction segments
-    while (nextSegment && nextSegment.startsWith('I')) {
-      const skipIndex = segIDs.indexOf(nextSegment);
-      nextSegment = segIDs[skipIndex + 1];
-    }
-
-    if (nextSegment) {
-      // If there's a next segment, go to it
-      await setLastReadSegment(nextSegment);
-      await updateSegmentId(`ENG-NLT-${nextSegment}`);
-      const segment = SegmentTitles[nextSegment as keyof typeof SegmentTitles];
-      router.push({
-        pathname: "/[segment]",
-        params: {
-          segment: `ENG-NLT-${nextSegment}`,
-          book: segment?.book[0] || ''
-        }
-      });
-    } else {
-      // If no next segment (or at the end), resume the last segment
-      await updateSegmentId(`ENG-NLT-${lastReadSegment}`);
-      const segment = SegmentTitles[lastReadSegment as keyof typeof SegmentTitles];
-      router.push({
-        pathname: "/[segment]",
-        params: {
-          segment: `ENG-NLT-${lastReadSegment}`,
-          book: segment?.book[0] || ''
-        }
-      });
+    const segmentData = SegmentTitles[segmentToRead as keyof typeof SegmentTitles];
+    if (segmentData && segmentToRead) {
+      setSelectedSegmentId(segmentToRead);
+      setSelectedSegmentTitle(segmentData.title);
+      setSelectedSegmentRef(segmentData.ref || '');
+      setShowReadingModeModal(true);
     }
   };
 
@@ -976,6 +967,59 @@ const HomeScreen = () => {
       }
     });
   };
+
+  // Group Reading Handlers
+  const handleJoinGroup = async (sessionId: string) => {
+    console.log('Join group:', sessionId);
+    router.push({
+      pathname: '/join-group' as any,
+      params: { sessionId }
+    });
+  };
+
+  const handleDismissGroup = (sessionId: string) => {
+    setDismissedGroups(prev => new Set([...prev, sessionId]));
+  };
+
+  // Reading Mode Modal Handlers
+  const handleIndividualReading = async () => {
+    setShowReadingModeModal(false);
+    await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
+    const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
+    router.push({
+      pathname: "/(tabs)/[segment]",
+      params: {
+        segment: `ENG-NLT-${selectedSegmentId}`,
+        book: segment?.book[0] || ''
+      }
+    });
+  };
+
+  const handleGroupReading = () => {
+    setShowReadingModeModal(false);
+    router.push({
+      pathname: '/group-setup' as any,
+      params: {
+        storyId: selectedSegmentId,
+        storyTitle: selectedSegmentTitle,
+        scriptureReference: selectedSegmentRef,
+      }
+    });
+  };
+
+  const handleCancelModal = () => {
+    setShowReadingModeModal(false);
+  };
+
+  // Get story data for the modal
+  const getStoryData = () => {
+    return Bible[selectedSegmentId] || SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
+  };
+
+  // Filter nearby groups to show only non-dismissed ones
+  const visibleNearbyGroups = nearbyGroups.filter(group => 
+    !dismissedGroups.has(group.id) && !currentSession
+  );
 
   const combinedStyles: SectionStyles = {
     ...styles,
@@ -1138,6 +1182,16 @@ const HomeScreen = () => {
         colors={colors}
       />
 
+        {/* Nearby Group Cards */}
+        {visibleNearbyGroups.map((group) => (
+          <NearbyGroupCard
+            key={group.id}
+            session={group}
+            onJoin={() => handleJoinGroup(group.id)}
+            onDismiss={() => handleDismissGroup(group.id)}
+          />
+        ))}
+
         <View style={styles.statsContainer}>
           <View style={localStyles.statItem}>
             <View style={[localStyles.statIcon, { backgroundColor: 'rgba(255, 193, 7, 0.15)' }]}>
@@ -1165,6 +1219,16 @@ const HomeScreen = () => {
         <InsightsSection styles={combinedStyles} />
         <View style={{ height: 80 }} />
       </ScrollView>
+
+      <ReadingModeModal
+        visible={showReadingModeModal}
+        story={getStoryData()}
+        storyTitle={selectedSegmentTitle}
+        scriptureReference={selectedSegmentRef}
+        onIndividual={handleIndividualReading}
+        onGroup={handleGroupReading}
+        onCancel={handleCancelModal}
+      />
     </View>
   );
 };
