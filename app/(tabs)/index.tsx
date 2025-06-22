@@ -8,7 +8,7 @@ import {
   Pressable, 
   useWindowDimensions, 
   Platform,
-  ScrollView,
+  FlatList,
   Dimensions
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -22,7 +22,7 @@ const IndexScreen = () => {
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const flatListRef = useRef<FlatList>(null);
 
   const onboardingData = [
     {
@@ -81,9 +81,9 @@ const IndexScreen = () => {
     setCurrentIndex(pageNum);
   };
 
-  const renderCard = (item: any, index: number) => {
+  const renderCard = ({ item, index }: { item: any; index: number }) => {
     return (
-      <View key={item.id} style={[styles.card, { backgroundColor: item.backgroundColor }]}>
+      <View style={[styles.card, { backgroundColor: item.backgroundColor }]}>
         <View style={styles.cardContent}>
           <View style={styles.iconContainer}>
             <Text style={styles.iconText}>{item.icon}</Text>
@@ -149,8 +149,11 @@ const IndexScreen = () => {
       </View>
 
       {/* Cards Carousel */}
-      <ScrollView
-        ref={scrollViewRef}
+      <FlatList
+        ref={flatListRef}
+        data={onboardingData}
+        renderItem={renderCard}
+        keyExtractor={(item) => item.id.toString()}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
@@ -158,9 +161,7 @@ const IndexScreen = () => {
         scrollEventThrottle={16}
         style={styles.carousel}
         contentContainerStyle={styles.carouselContent}
-      >
-        {onboardingData.map((item, index) => renderCard(item, index))}
-      </ScrollView>
+      />
 
       {/* Page Indicators */}
       <View style={styles.indicatorContainer}>

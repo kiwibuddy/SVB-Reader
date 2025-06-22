@@ -653,31 +653,30 @@ const PlanScreen = () => {
     // Implementation of handleScroll function
   };
 
+  const ListHeaderComponent = () => (
+    <View style={styles.welcomeSection}>
+      <View >
+        <Text style={styles.welcomeTitle}>Reading Plans</Text>
+      </View>
+      <Text style={styles.welcomeText}>
+        Welcome to the Bible Reading Plans and Challenges screen, where you can find personalized reading plans and spiritual challenges designed to deepen your understanding of Scripture and transform your faith.
+      </Text>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
+      <FlatList
         style={styles.content}
+        data={organizedPlans}
+        renderItem={renderPlanItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContainer}
+        ListHeaderComponent={ListHeaderComponent}
         onScroll={handleScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.welcomeSection}>
-          <View >
-            <Text style={styles.welcomeTitle}>Reading Plans</Text>
-          </View>
-          <Text style={styles.welcomeText}>
-            Welcome to the Bible Reading Plans and Challenges screen, where you can find personalized reading plans and spiritual challenges designed to deepen your understanding of Scripture and transform your faith.
-          </Text>
-        </View>
-
-        <FlatList
-          data={organizedPlans}
-          renderItem={renderPlanItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
-          scrollEnabled={false}
-        />
-      </ScrollView>
+      />
     </SafeAreaView>
   );
 };

@@ -437,142 +437,144 @@ const Navigation = () => {
     }
   };
 
+  const ListHeaderComponent = () => (
+    <View>
+      <View style={styles.welcomeSection}>
+        <Text style={styles.welcomeTitle}>Story Finder</Text>
+        <Text style={styles.welcomeText}>
+          Navigate through books and chapters to find your next story
+        </Text>
+      </View>
+
+      {/* Filter and Search Container */}
+      <View style={styles.filterContainer}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScrollContent}
+        >
+          <TouchableOpacity 
+            style={[styles.filterButton, filter === 'all' && styles.filterButtonActive]}
+            onPress={() => handleFilterPress('all')}
+          >
+            <Text style={[styles.filterText, filter === 'all' && styles.filterTextActive]}>
+              All
+            </Text>
+            {filter === 'all' && (
+              <Ionicons 
+                name={isAscending ? "chevron-down" : "chevron-up"} 
+                size={16} 
+                color="#FFF" 
+                style={styles.sortIcon}
+              />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.filterButton, filter === 'ot' && styles.filterButtonActive]}
+            onPress={() => handleFilterPress('ot')}
+          >
+            <Text style={[styles.filterText, filter === 'ot' && styles.filterTextActive]}>
+              Old Testament
+            </Text>
+            {filter === 'ot' && (
+              <Ionicons 
+                name={isAscending ? "chevron-down" : "chevron-up"} 
+                size={16} 
+                color="#FFF" 
+                style={styles.sortIcon}
+              />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.filterButton, filter === 'nt' && styles.filterButtonActive]}
+            onPress={() => handleFilterPress('nt')}
+          >
+            <Text style={[styles.filterText, filter === 'nt' && styles.filterTextActive]}>
+              New Testament
+            </Text>
+            {filter === 'nt' && (
+              <Ionicons 
+                name={isAscending ? "chevron-down" : "chevron-up"} 
+                size={16} 
+                color="#FFF" 
+                style={styles.sortIcon}
+              />
+            )}
+          </TouchableOpacity>
+        </ScrollView>
+        <TouchableOpacity 
+          style={[styles.searchButton, showSearch && styles.searchButtonActive]}
+          onPress={handleSearchToggle}
+        >
+          <Ionicons 
+            name={showSearch ? "close" : "search"} 
+            size={20} 
+            color={showSearch ? '#FFF' : colors.text} 
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Search Bar - Only show when search is active */}
+      {showSearch && (
+        <View style={styles.searchContainer}>
+          <Ionicons 
+            name="search" 
+            size={20} 
+            color={colors.secondary} 
+            style={styles.searchInputIcon} 
+          />
+          <TextInput
+            style={[styles.searchInput, { color: colors.text }]}
+            placeholder="Search books or verses (e.g., John 3:13)..."
+            placeholderTextColor={colors.secondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoFocus
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity 
+              onPress={handleClearSearch}
+              style={styles.clearButton}
+            >
+              <Ionicons name="close-circle" size={20} color={colors.secondary} />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
+      <FlatList
         style={styles.content}
         contentContainerStyle={{ paddingTop: 8 }}
-      >
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>Story Finder</Text>
-          <Text style={styles.welcomeText}>
-            Navigate through books and chapters to find your next story
-          </Text>
-        </View>
-
-        {/* Filter and Search Container */}
-        <View style={styles.filterContainer}>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterScrollContent}
-          >
-            <TouchableOpacity 
-              style={[styles.filterButton, filter === 'all' && styles.filterButtonActive]}
-              onPress={() => handleFilterPress('all')}
-            >
-              <Text style={[styles.filterText, filter === 'all' && styles.filterTextActive]}>
-                All
-              </Text>
-              {filter === 'all' && (
-                <Ionicons 
-                  name={isAscending ? "chevron-down" : "chevron-up"} 
-                  size={16} 
-                  color="#FFF" 
-                  style={styles.sortIcon}
-                />
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.filterButton, filter === 'ot' && styles.filterButtonActive]}
-              onPress={() => handleFilterPress('ot')}
-            >
-              <Text style={[styles.filterText, filter === 'ot' && styles.filterTextActive]}>
-                Old Testament
-              </Text>
-              {filter === 'ot' && (
-                <Ionicons 
-                  name={isAscending ? "chevron-down" : "chevron-up"} 
-                  size={16} 
-                  color="#FFF" 
-                  style={styles.sortIcon}
-                />
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.filterButton, filter === 'nt' && styles.filterButtonActive]}
-              onPress={() => handleFilterPress('nt')}
-            >
-              <Text style={[styles.filterText, filter === 'nt' && styles.filterTextActive]}>
-                New Testament
-              </Text>
-              {filter === 'nt' && (
-                <Ionicons 
-                  name={isAscending ? "chevron-down" : "chevron-up"} 
-                  size={16} 
-                  color="#FFF" 
-                  style={styles.sortIcon}
-                />
-              )}
-            </TouchableOpacity>
-          </ScrollView>
-          <TouchableOpacity 
-            style={[styles.searchButton, showSearch && styles.searchButtonActive]}
-            onPress={handleSearchToggle}
-          >
-            <Ionicons 
-              name={showSearch ? "close" : "search"} 
-              size={20} 
-              color={showSearch ? '#FFF' : colors.text} 
+        data={filteredData}
+        ListHeaderComponent={ListHeaderComponent}
+        renderItem={({ item }) => {
+          const bookIndex = booksArray.findIndex(book => book === item.djhBook);
+          const parsedRef = parseReferenceEnhanced(searchQuery);
+          const isSelected = (showSearch && selectedBook === item.djhBook) || 
+                           (parsedRef && findBookByName(parsedRef.book) === item.djhBook);
+          
+          return (
+            <Accordion 
+              item={item} 
+              bookIndex={bookIndex}
+              context="main"
+              showGlobalCompletion={true}
+              style={{ backgroundColor: '#FFF' }}
+              isExpanded={!!(isSelected && showSearch)}
+              onBookSelect={handleBookSelect}
+              onSegmentSelect={handleSegmentSelect}
+              completedSegments={completedSegmentIds}
+              highlightedSegment={highlightedSegment}
+              searchQuery={searchQuery}
             />
-          </TouchableOpacity>
-        </View>
-
-        {/* Search Bar - Only show when search is active */}
-        {showSearch && (
-          <View style={styles.searchContainer}>
-            <Ionicons 
-              name="search" 
-              size={20} 
-              color={colors.secondary} 
-              style={styles.searchInputIcon} 
-            />
-            <TextInput
-              style={[styles.searchInput, { color: colors.text }]}
-              placeholder="Search books or verses (e.g., John 3:13)..."
-              placeholderTextColor={colors.secondary}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoFocus
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity 
-                onPress={handleClearSearch}
-                style={styles.clearButton}
-              >
-                <Ionicons name="close-circle" size={20} color={colors.secondary} />
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-
-        <FlatList
-          data={filteredData}
-          renderItem={({ item }) => {
-            const bookIndex = booksArray.findIndex(book => book === item.djhBook);
-            const parsedRef = parseReferenceEnhanced(searchQuery);
-            const isSelected = (showSearch && selectedBook === item.djhBook) || 
-                             (parsedRef && findBookByName(parsedRef.book) === item.djhBook);
-            
-            return (
-              <Accordion 
-                item={item} 
-                bookIndex={bookIndex}
-                context="main"
-                showGlobalCompletion={true}
-                style={{ backgroundColor: '#FFF' }}
-                isExpanded={!!(isSelected && showSearch)}
-                onBookSelect={handleBookSelect}
-                onSegmentSelect={handleSegmentSelect}
-                completedSegments={completedSegmentIds}
-                highlightedSegment={highlightedSegment}
-                searchQuery={searchQuery}
-              />
-            );
-          }}
-          keyExtractor={(item) => String(item.djhBook)}
-        />
-      </ScrollView>
+          );
+        }}
+        keyExtractor={(item) => String(item.djhBook)}
+      />
     </SafeAreaView>
   );
 };

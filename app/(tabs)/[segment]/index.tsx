@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar } from 'react-native';
+import { StyleSheet, Image, Platform, FlatList, View, TouchableOpacity, Text, SafeAreaView, StatusBar } from 'react-native';
 import { useAppContext } from '@/context/GlobalContext';
 import BibleData from "@/assets/data/newBibleNLT1.json"
 import readingPlansData from "@/assets/data/ReadingPlansChallenges.json";
@@ -126,7 +126,7 @@ export default function BibleScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { planId, challengeId } = params;
-  const scrollViewRef = useRef<ScrollView>(null);
+  const flatListRef = useRef<FlatList>(null);
   const { isVisible } = useBottomNavAnimation();
   
   // Create styles
@@ -173,8 +173,8 @@ export default function BibleScreen() {
         ...(challengeId ? { challengeId } : {})
       }
     });
-    scrollViewRef.current?.scrollTo({
-      y: 0,
+    flatListRef.current?.scrollToOffset({
+      offset: 0,
       animated: false,
     });
   };
@@ -230,39 +230,48 @@ export default function BibleScreen() {
     }
   };
 
+  // Render the header content that was previously in ScrollView
+  const renderHeader = () => (
+    <View>
+      <View style={styles.headerSpacer} />
+      {segID[0] === "I" && isIntroType(segmentData) && (
+        <Intro segmentData={{...segmentData, id: segID}} />
+      )}
+      {segID[0] === "S" && isSegmentType(segmentData) && (
+        <>
+          <Segment 
+            segmentData={segmentData}
+            context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
+            planId={planId as string}
+            challengeId={challengeId as string}
+          />
+          <Questions segmentId={segID} />
+          <View style={styles.checkCircleContainer}>
+            <CheckCircle 
+              segmentId={segID} 
+              iconSize={60}
+              context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
+              planId={planId as string || undefined}
+              challengeId={challengeId as string || undefined}
+            />
+          </View>
+        </>
+      )}
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      <ScrollView 
-        ref={scrollViewRef} 
+      <FlatList 
+        ref={flatListRef} 
         style={styles.screenContainer}
+        data={[]} // Empty data array since we're only using ListHeaderComponent
+        renderItem={() => null} // No items to render
+        ListHeaderComponent={renderHeader}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-      >
-        <View style={styles.headerSpacer} />
-        {segID[0] === "I" && isIntroType(segmentData) && (
-          <Intro segmentData={{...segmentData, id: segID}} />
-        )}
-        {segID[0] === "S" && isSegmentType(segmentData) && (
-          <>
-            <Segment 
-              segmentData={segmentData}
-              context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
-              planId={planId as string}
-              challengeId={challengeId as string}
-            />
-            <Questions segmentId={segID} />
-            <View style={styles.checkCircleContainer}>
-              <CheckCircle 
-                segmentId={segID} 
-                iconSize={60}
-                context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
-                planId={planId as string || undefined}
-                challengeId={challengeId as string || undefined}
-              />
-            </View>
-          </>
-        )}
-      </ScrollView>
+        contentContainerStyle={{ flexGrow: 1 }}
+      />
 
       <Animated.View style={[
         styles.buttonContainer,
