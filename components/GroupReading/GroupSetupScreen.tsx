@@ -25,7 +25,6 @@ interface GroupSetupScreenProps {
   scriptureReference: string;
   onStartBroadcasting: (role: Role, userName: string) => void;
   onBack: () => void;
-  onShowQR: () => void;
   planId?: string;
   challengeId?: string;
 }
@@ -70,7 +69,6 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
   scriptureReference,
   onStartBroadcasting,
   onBack,
-  onShowQR,
   planId,
   challengeId,
 }) => {
@@ -557,9 +555,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.qrButton} onPress={onShowQR}>
-          <Text style={styles.qrButtonText}>Can't connect? Use QR Code</Text>
-        </TouchableOpacity>
+
       </View>
     </SafeAreaView>
   );

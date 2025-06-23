@@ -38,7 +38,7 @@ class BluetoothSessionManagerImpl implements BluetoothSessionManager {
     try {
       await this.requestPermissions();
       
-      this.bleManager.onStateChange((state) => {
+      this.bleManager.onStateChange((state: any) => {
         if (state === 'PoweredOn') {
           console.log('BLE is ready');
           this.generateDeviceId();
@@ -276,7 +276,7 @@ class BluetoothSessionManagerImpl implements BluetoothSessionManager {
       await this.bleManager.startDeviceScan(
         [SERVICE_UUID],
         { allowDuplicates: false },
-        async (error, device) => {
+        async (error: any, device: any) => {
           if (error) {
             console.log('Scan error:', error);
             return;

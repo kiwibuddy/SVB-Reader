@@ -26,13 +26,14 @@ export default function GroupSetupRoute() {
         challengeId
       );
       
-      // Navigate to the reading screen with group session
+      // Navigate to the host waiting screen where others can join
       router.replace({
-        pathname: '/(tabs)/[segment]' as any,
+        pathname: '/host-waiting' as any,
         params: {
-          segment: `en-NLT-${storyId}`,
-          groupSession: 'true',
-          sessionId: sessionId
+          sessionId: sessionId,
+          storyId: storyId,
+          storyTitle: storyTitle,
+          scriptureReference: scriptureReference
         }
       });
     } catch (error) {
@@ -44,11 +45,6 @@ export default function GroupSetupRoute() {
     router.back();
   };
 
-  const handleShowQR = () => {
-    // TODO: Implement QR code sharing
-    console.log('Show QR code for session sharing');
-  };
-
   return (
     <GroupSetupScreen
       storyId={storyId}
@@ -56,7 +52,6 @@ export default function GroupSetupRoute() {
       scriptureReference={scriptureReference}
       onStartBroadcasting={handleStartBroadcasting}
       onBack={handleBack}
-      onShowQR={handleShowQR}
       planId={planId}
       challengeId={challengeId}
     />

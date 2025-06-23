@@ -32,7 +32,8 @@
         "android.permission.BLUETOOTH_CONNECT",
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
-      ]
+      ],
+      "package": "com.sourceview.svbyouth"
     },
     "web": {
       "bundler": "metro",
@@ -57,8 +58,19 @@
           "version": "latest"
         }
       ],
-            "expo-video"
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": true,
+          "modes": [
+            "peripheral",
+            "central"
+          ],
+          "bluetoothAlwaysPermission": "This app uses Bluetooth to connect with nearby readers for group Bible reading sessions."
+        }
       ],
+      "expo-video"
+    ],
     "experiments": {
       "typedRoutes": true
     },

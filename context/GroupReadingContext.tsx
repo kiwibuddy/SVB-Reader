@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
-// import { bluetoothSessionManager } from '@/services/BluetoothSessionManager';
+import { bluetoothSessionManager } from '@/services/BluetoothSessionManager';
 import { GroupSession, Participant, Role, GroupSessionState } from '@/types';
 
 interface GroupReadingContextType {
@@ -120,7 +120,7 @@ const GroupReadingContext = createContext<GroupReadingContextType | undefined>(u
 export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(groupReadingReducer, initialState);
 
-  // Mock implementations for development build
+  // Real Bluetooth implementations
   const startHostSession = useCallback(async (
     storyId: string,
     storyTitle: string,
@@ -130,138 +130,109 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
     planId?: string,
     challengeId?: string
   ): Promise<string> => {
-    console.log('Mock: Starting host session', { storyId, storyTitle, scriptureRef, role, userName });
-    dispatch({ type: 'SET_USER_NAME', payload: userName });
-    dispatch({ type: 'SET_HOST', payload: true });
-    dispatch({ type: 'SET_ROLE', payload: role });
-    
-    // Mock session creation
-    const mockSession: GroupSession = {
-      id: 'mock-session-' + Date.now(),
-      hostDeviceId: 'mock-host',
-      hostUserName: userName,
-      storyId,
-      storyTitle,
-      scriptureReference: scriptureRef,
-      status: 'forming',
-      createdAt: Date.now(),
-      expiresAt: Date.now() + 300000, // 5 minutes
-      participants: [{
-        deviceId: 'mock-host',
-        deviceName: 'Mock Host Device',
-        userName: userName,
+    try {
+      dispatch({ type: 'SET_USER_NAME', payload: userName });
+      dispatch({ type: 'SET_HOST', payload: true });
+      dispatch({ type: 'SET_ROLE', payload: role });
+      
+      const sessionId = await bluetoothSessionManager.startBroadcasting(
+        storyId,
+        storyTitle,
+        scriptureRef,
         role,
-        isReady: true,
-        isConnected: true,
-      }],
-      planId,
-      challengeId,
-    };
-    
-    dispatch({ type: 'SET_SESSION', payload: mockSession });
-    return mockSession.id;
+        userName,
+        planId,
+        challengeId
+      );
+      
+      return sessionId;
+    } catch (error) {
+      console.error('Error starting host session:', error);
+      dispatch({ type: 'SET_HOST', payload: false });
+      throw error;
+    }
   }, []);
 
   const stopSession = useCallback(async (): Promise<void> => {
-    console.log('Mock: Stopping session');
-    dispatch({ type: 'SET_SESSION', payload: null });
-    dispatch({ type: 'SET_HOST', payload: false });
-    dispatch({ type: 'SET_ROLE', payload: null });
+    try {
+      await bluetoothSessionManager.stopBroadcasting();
+      dispatch({ type: 'SET_SESSION', payload: null });
+      dispatch({ type: 'SET_HOST', payload: false });
+      dispatch({ type: 'SET_ROLE', payload: null });
+    } catch (error) {
+      console.error('Error stopping session:', error);
+    }
   }, []);
 
   const joinSession = useCallback(async (sessionId: string, role: Role, userName: string): Promise<boolean> => {
-    console.log('Mock: Joining session', { sessionId, role, userName });
-    dispatch({ type: 'SET_USER_NAME', payload: userName });
-    dispatch({ type: 'SET_ROLE', payload: role });
-    return true;
+    try {
+      const success = await bluetoothSessionManager.requestToJoin(sessionId, role, userName);
+      if (success) {
+        dispatch({ type: 'SET_USER_NAME', payload: userName });
+        dispatch({ type: 'SET_ROLE', payload: role });
+      }
+      return success;
+    } catch (error) {
+      console.error('Error joining session:', error);
+      return false;
+    }
   }, []);
 
   const leaveSession = useCallback(async (): Promise<void> => {
-    console.log('Mock: Leaving session');
-    dispatch({ type: 'SET_SESSION', payload: null });
-    dispatch({ type: 'SET_HOST', payload: false });
-    dispatch({ type: 'SET_ROLE', payload: null });
+    try {
+      await bluetoothSessionManager.leaveGroup();
+      dispatch({ type: 'SET_SESSION', payload: null });
+      dispatch({ type: 'SET_HOST', payload: false });
+      dispatch({ type: 'SET_ROLE', payload: null });
+    } catch (error) {
+      console.error('Error leaving session:', error);
+    }
   }, []);
 
   const startScanning = useCallback(async (): Promise<void> => {
-    console.log('Mock: Starting scanning');
-    dispatch({ type: 'SET_SCANNING', payload: true });
-    
-    // Mock some nearby groups for testing
-    setTimeout(() => {
-      const mockGroups: GroupSession[] = [
-        {
-          id: 'mock-group-1',
-          hostDeviceId: 'mock-host-1',
-          hostUserName: 'Sarah',
-          storyId: 'S001',
-          storyTitle: 'In the Beginning',
-          scriptureReference: 'Genesis 1:1-2:3',
-          status: 'forming',
-          createdAt: Date.now(),
-          expiresAt: Date.now() + 300000,
-          participants: [
-            { deviceId: 'mock-host-1', deviceName: 'Sarah Device', userName: 'Sarah', role: 'narrator', isReady: true, isConnected: true },
-          ],
-        },
-        {
-          id: 'mock-group-2',
-          hostDeviceId: 'mock-host-2',
-          hostUserName: 'David',
-          storyId: 'S015',
-          storyTitle: 'The Call of Abraham',
-          scriptureReference: 'Genesis 12:1-9',
-          status: 'forming',
-          createdAt: Date.now() - 30000,
-          expiresAt: Date.now() + 270000,
-          participants: [
-            { deviceId: 'mock-host-2', deviceName: 'David Device', userName: 'David', role: 'god', isReady: true, isConnected: true },
-            { deviceId: 'mock-joiner-1', deviceName: 'Emma Device', userName: 'Emma', role: 'narrator', isReady: true, isConnected: true },
-          ],
-        },
-        {
-          id: 'mock-group-3',
-          hostDeviceId: 'mock-host-3',
-          hostUserName: 'Michael',
-          storyId: 'S042',
-          storyTitle: 'The Burning Bush',
-          scriptureReference: 'Exodus 3:1-15',
-          status: 'forming',
-          createdAt: Date.now() - 60000,
-          expiresAt: Date.now() + 240000,
-          participants: [
-            { deviceId: 'mock-host-3', deviceName: 'Michael Device', userName: 'Michael', role: 'main_character', isReady: true, isConnected: true },
-            { deviceId: 'mock-joiner-2', deviceName: 'Lisa Device', userName: 'Lisa', role: 'narrator', isReady: true, isConnected: true },
-            { deviceId: 'mock-joiner-3', deviceName: 'James Device', userName: 'James', role: 'other_voices', isReady: true, isConnected: true },
-          ],
-        },
-      ];
-      dispatch({ type: 'SET_NEARBY_GROUPS', payload: mockGroups });
-    }, 1000);
+    try {
+      dispatch({ type: 'SET_SCANNING', payload: true });
+      const nearbyGroups = await bluetoothSessionManager.discoverNearbyGroups();
+      dispatch({ type: 'SET_NEARBY_GROUPS', payload: nearbyGroups });
+    } catch (error) {
+      console.error('Error starting scan:', error);
+      dispatch({ type: 'SET_SCANNING', payload: false });
+    }
   }, []);
 
   const stopScanning = useCallback((): void => {
-    console.log('Mock: Stopping scanning');
     dispatch({ type: 'SET_SCANNING', payload: false });
     dispatch({ type: 'SET_NEARBY_GROUPS', payload: [] });
+    // Note: bluetoothSessionManager.stopScanning() is called automatically in discoverNearbyGroups
   }, []);
 
   const acceptJoiner = useCallback(async (deviceId: string, userName: string, role: Role): Promise<boolean> => {
-    console.log('Mock: Accepting joiner', { deviceId, userName, role });
-    const newParticipant: Participant = {
-      deviceId,
-      deviceName: 'Joined Device',
-      userName: userName,
-      role,
-      isReady: true,
-      isConnected: true,
-    };
-    dispatch({ type: 'ADD_PARTICIPANT', payload: newParticipant });
-    return true;
+    try {
+      const success = await bluetoothSessionManager.acceptJoiner(deviceId, userName, role);
+      if (success) {
+        const newParticipant: Participant = {
+          deviceId,
+          deviceName: 'Joined Device',
+          userName: userName,
+          role,
+          isReady: true,
+          isConnected: true,
+        };
+        dispatch({ type: 'ADD_PARTICIPANT', payload: newParticipant });
+      }
+      return success;
+    } catch (error) {
+      console.error('Error accepting joiner:', error);
+      return false;
+    }
   }, []);
 
-  const updateScrollPosition = useCallback((position: number): void => {
-    console.log('Mock: Updating scroll position', { position });
+  const updateScrollPosition = useCallback(async (position: number): Promise<void> => {
+    try {
+      await bluetoothSessionManager.syncScrollPosition(position);
+    } catch (error) {
+      console.error('Error syncing scroll position:', error);
+    }
   }, []);
 
   const setUserName = useCallback((name: string): void => {
@@ -269,11 +240,43 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, []);
 
   const startReading = useCallback((): void => {
-    console.log('Mock: Starting reading');
     if (state.currentSession) {
       dispatch({ type: 'UPDATE_SESSION', payload: { status: 'reading' } });
     }
   }, [state.currentSession]);
+
+  // Set up Bluetooth session event listeners
+  useEffect(() => {
+    // Listen for session state changes
+    const sessionCallback = (session: GroupSession) => {
+      dispatch({ type: 'SET_SESSION', payload: session });
+    };
+
+    // Listen for scroll sync events
+    const scrollCallback = (position: number) => {
+      // Handle incoming scroll sync
+      console.log('Received scroll sync:', position);
+    };
+
+    // Listen for participant events
+    const participantJoinedCallback = (participant: Participant) => {
+      dispatch({ type: 'ADD_PARTICIPANT', payload: participant });
+    };
+
+    const participantLeftCallback = (deviceId: string) => {
+      dispatch({ type: 'REMOVE_PARTICIPANT', payload: deviceId });
+    };
+
+    // Register callbacks with Bluetooth manager
+    bluetoothSessionManager.onGroupStateChange(sessionCallback);
+    bluetoothSessionManager.onScrollSync(scrollCallback);
+    bluetoothSessionManager.onParticipantJoined(participantJoinedCallback);
+    bluetoothSessionManager.onParticipantLeft(participantLeftCallback);
+
+    return () => {
+      // Cleanup would go here if the manager supported callback removal
+    };
+  }, []);
 
   // Handle app state changes for background scanning
   useEffect(() => {
