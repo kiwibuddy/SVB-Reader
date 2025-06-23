@@ -435,7 +435,7 @@ const Achievements = () => {
         <Text style={styles.statCardTitle}>{title}</Text>
         <Text style={styles.statCardValue}>{value}</Text>
       </View>
-    </View>
+      </View>
   );
 
   const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
@@ -490,7 +490,7 @@ const Achievements = () => {
           )}
         </View>
         <Text style={[styles.bookName, !isCompleted && styles.uncompletedBookName]}>{book.bookName}</Text>
-      </View>
+          </View>
     );
   };
 
@@ -502,7 +502,7 @@ const Achievements = () => {
           <AchievementCard key={achievement.id} achievement={achievement} />
         ))}
       </View>
-    </View>
+              </View>
   );
 
   const renderBooksSection = (title: string, books: BookCompletion[]) => (
@@ -512,8 +512,8 @@ const Achievements = () => {
         {books.map((book) => (
           <BookIcon key={book.bookCode} book={book} />
         ))}
-      </View>
-    </View>
+            </View>
+          </View>
   );
 
   return (
@@ -523,9 +523,9 @@ const Achievements = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Achievements</Text>
-          <Text style={styles.subtitle}>
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeTitle}>Achievements</Text>
+          <Text style={styles.welcomeText}>
             Track your Bible reading progress and celebrate your milestones
           </Text>
         </View>
@@ -542,13 +542,13 @@ const Achievements = () => {
             icon="flame-outline"
             title="Current Streak"
             value={stats.currentStreak.toString()}
-            backgroundColor="#FF69B4"
+            backgroundColor="#7B68EE"
           />
           <StatCard
             icon="trending-up-outline"
             title="Complete Bible"
             value={`${stats.completionPercentage}%`}
-            backgroundColor="#7B68EE"
+            backgroundColor="#FF8C00"
           />
         </View>
 
@@ -581,7 +581,7 @@ const Achievements = () => {
 
         {/* New Testament Books */}
         {renderBooksSection('New Testament Books', newTestamentBooks)}
-      </ScrollView>
+    </ScrollView>
     </SafeAreaView>
   );
 };
@@ -597,21 +597,21 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   contentContainer: {
     paddingBottom: 20,
   },
-  header: {
-    padding: 16,
-    paddingBottom: 8,
+  welcomeSection: {
+    marginTop: 16,
+    marginBottom: 16,
+    paddingHorizontal: 16,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: '600',
     color: colors.text,
     marginBottom: 8,
-    letterSpacing: -0.5,
   },
-  subtitle: {
+  welcomeText: {
     fontSize: 16,
     color: colors.secondary,
-    lineHeight: 24,
+    lineHeight: 22,
   },
   statsContainer: {
     flexDirection: 'row',
