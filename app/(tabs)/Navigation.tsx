@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { View, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, useWindowDimensions, Platform } from "react-native";
 import Accordion from "@/components/navigation/NavBook";
 import BooksJson from "@/assets/data/BookChapterList.json";
@@ -11,6 +11,9 @@ import { useRouter } from 'expo-router';
 import SearchResults from '@/components/navigation/SearchResults';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { getSegmentCompletionStatus } from "@/api/sqlite";
+import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
+import BibleData from '@/assets/data/newBibleNLT1.json';
+import { useFocusEffect } from '@react-navigation/native';
 
 export type SegmentKey = keyof typeof SegmentTitles;
 export type SegmentIds = keyof typeof Books;
@@ -281,10 +284,10 @@ export interface AccordionItem {
 }
 
 const Navigation = () => {
-  const { completedSegments, language, version } = useAppContext();
-  const [filter, setFilter] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const { completedSegments, language, version, updateSegmentId } = useAppContext();
+  const [filter, setFilter] = useState('All');
   const [isAscending, setIsAscending] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [selectedBook, setSelectedBook] = useState<string | null>(null);
   const [highlightedSegment, setHighlightedSegment] = useState<string | null>(null);
@@ -300,6 +303,12 @@ const Navigation = () => {
 
   // Add state for completed segments
   const [completedSegmentIds, setCompletedSegmentIds] = useState<{[key: string]: boolean}>({});
+
+  // Reading Mode Modal State
+  const [showReadingModeModal, setShowReadingModeModal] = useState(false);
+  const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
+  const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
+  const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
 
   // Enhanced filtered data with verse search
   const filteredData = React.useMemo(() => {
@@ -376,6 +385,29 @@ const Navigation = () => {
     fetchCompletion();
   }, [filteredData]);
 
+  // Refresh completion status when returning from reading segments
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchCompletion = async () => {
+        const completed: {[key: string]: boolean} = {};
+        await Promise.all(
+          filteredData.map(async book => {
+            await Promise.all(
+              book.segments.map(async segmentId => {
+                const status = await getSegmentCompletionStatus(String(segmentId), 'main');
+                if (status.isCompleted) {
+                  completed[segmentId] = true;
+                }
+              })
+            );
+          })
+        );
+        setCompletedSegmentIds(completed);
+      };
+      fetchCompletion();
+    }, [filteredData])
+  );
+
   // Handle book title click
   const handleBookSelect = (bookName: string) => {
     if (showSearch) {
@@ -384,30 +416,50 @@ const Navigation = () => {
     }
   };
 
-  // Enhanced segment click handler
+  // Handle segment selection - show ReadingModeModal instead of direct navigation
   const handleSegmentSelect = (segmentId: string) => {
-    // Reset any scroll position that might be stored
-    if (Platform.OS === 'web') {
-      window.scrollTo(0, 0);
+    const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+    if (segmentData) {
+      setSelectedSegmentId(segmentId);
+      setSelectedSegmentTitle(segmentData.title);
+      setSelectedSegmentRef(segmentData.ref || '');
+      setShowReadingModeModal(true);
     }
-    
-    const params: any = {
-      segment: `${language}-${version}-${segmentId}`,
-      scrollReset: 'true'
-    };
-    
-    // If this segment was found through verse search, pass the verse reference
-    if (highlightedSegment === segmentId && searchQuery) {
-      const parsedRef = parseReferenceEnhanced(searchQuery);
-      if (parsedRef?.verse) {
-        params.highlightVerse = `${parsedRef.chapter}:${parsedRef.verse}`;
-      }
-    }
-    
+  };
+
+  // Reading Mode Modal Handlers
+  const handleIndividualReading = async () => {
+    setShowReadingModeModal(false);
+    await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
+    const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
     router.push({
-      pathname: "/[segment]" as const,
-      params
+      pathname: "/(tabs)/[segment]",
+      params: {
+        segment: `ENG-NLT-${selectedSegmentId}`,
+        book: segment?.book[0] || ''
+      }
     });
+  };
+
+  const handleGroupReading = () => {
+    setShowReadingModeModal(false);
+    router.push({
+      pathname: '/group-setup' as any,
+      params: {
+        storyId: selectedSegmentId,
+        storyTitle: selectedSegmentTitle,
+        scriptureReference: selectedSegmentRef,
+      }
+    });
+  };
+
+  const handleCancelModal = () => {
+    setShowReadingModeModal(false);
+  };
+
+  // Get story data for the modal
+  const getStoryData = () => {
+    return BibleData[selectedSegmentId as keyof typeof BibleData] || SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
   };
 
   const handleSearchToggle = () => {
@@ -575,6 +627,16 @@ const Navigation = () => {
           keyExtractor={(item) => String(item.djhBook)}
         />
       </View>
+              <ReadingModeModal
+          visible={showReadingModeModal}
+          story={getStoryData()}
+          storyTitle={selectedSegmentTitle}
+          scriptureReference={selectedSegmentRef}
+          storyId={selectedSegmentId}
+          onIndividual={handleIndividualReading}
+          onGroup={handleGroupReading}
+          onCancel={handleCancelModal}
+        />
     </SafeAreaView>
   );
 };

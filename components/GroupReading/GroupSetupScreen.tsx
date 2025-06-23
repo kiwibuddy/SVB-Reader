@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   Platform,
   ScrollView,
+  Dimensions,
+  Animated,
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -18,9 +20,14 @@ import { Role, SegmentType } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RoleProgressBar from '@/components/RoleProgressBar';
 import BibleData from "@/assets/data/newBibleNLT1.json";
+import SegmentTitles from "@/assets/data/SegmentTitles.json";
+import Books from "@/assets/data/BookChapterList.json";
 import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
 import { splitContentIntoReaderParts } from "@/scripts/splitContentIntoReaderParts";
 import { getColors } from "@/scripts/getColors";
+import { getSegmentReadingTime } from '@/utils/readingTime';
+
+const { height: screenHeight } = Dimensions.get('window');
 
 interface GroupSetupScreenProps {
   storyId: string;
@@ -34,6 +41,14 @@ interface GroupSetupScreenProps {
 
 // Type assertion for Bible data
 const Bible: { [key: string]: SegmentType } = BibleData as { [key: string]: SegmentType };
+
+
+
+// Helper function to get book name
+const getBookName = (bookCode: string): string => {
+  const book = Books[bookCode as keyof typeof Books];
+  return book?.bookName || bookCode;
+};
 
 const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
   storyId,
@@ -51,10 +66,25 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
   } | null>(null);
   const [userName, setUserName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [slideAnim] = useState(new Animated.Value(screenHeight));
+
+  // Animation for fullscreen slide up
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   // Get segment data and calculate memoized content (same as main Segment component)
   const segmentData = useMemo(() => {
     return Bible[storyId];
+  }, [storyId]);
+
+  // Get segment title data
+  const segmentTitleData = useMemo(() => {
+    return SegmentTitles[storyId as keyof typeof SegmentTitles];
   }, [storyId]);
 
   // Use pre-calculated color data from segmentData instead of recalculating from split content
@@ -68,6 +98,17 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
       total: 0
     };
   }, [segmentData?.colors]);
+
+  // Get reading time from pre-calculated data
+  const readingTime = useMemo(() => {
+    return getSegmentReadingTime(storyId);
+  }, [storyId]);
+
+  // Get book name
+  const bookName = useMemo(() => {
+    if (!segmentTitleData?.book?.[0]) return '';
+    return getBookName(segmentTitleData.book[0]);
+  }, [segmentTitleData?.book]);
 
   // Memoize the content to prevent unnecessary re-renders (same logic as main Segment component)
   const memoizedContent = useMemo(() => {
@@ -193,6 +234,9 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
       flex: 1,
       backgroundColor: colors.background,
     },
+    animatedContainer: {
+      flex: 1,
+    },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -210,183 +254,134 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
       fontSize: 18,
       fontWeight: '600',
       color: colors.text,
-      flex: 1,
-      textAlign: 'center',
-      marginHorizontal: 16,
     },
     helpButton: {
       padding: 8,
     },
     content: {
       flex: 1,
-      paddingHorizontal: 24,
-      paddingTop: 32,
+      padding: 16,
+      justifyContent: 'space-between',
     },
-    iconContainer: {
+    storyInfo: {
+      marginBottom: 20,
       alignItems: 'center',
-      marginBottom: 32,
     },
-    iconRow: {
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginBottom: 16,
-    },
-    phoneIcon: {
-      width: 50,
-      height: 50,
-      borderRadius: 12,
-      backgroundColor: colors.primary + '20',
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginHorizontal: 4,
-    },
-    title: {
-      fontSize: 28,
+    storyTitle: {
+      fontSize: 24,
       fontWeight: '700',
       color: colors.text,
       textAlign: 'center',
-      marginBottom: 12,
+      marginBottom: 8,
     },
-    subtitle: {
+    bookName: {
+      fontSize: 18,
+      fontWeight: '500',
+      color: colors.secondary,
+      textAlign: 'center',
+      marginBottom: 4,
+    },
+    scriptureRef: {
       fontSize: 16,
       color: colors.secondary,
       textAlign: 'center',
-      lineHeight: 22,
       marginBottom: 8,
     },
-    storyName: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: colors.primary,
+    readingTime: {
+      fontSize: 14,
+      color: colors.secondary,
       textAlign: 'center',
-    },
-    storyInfoSection: {
-      backgroundColor: colors.card,
-      borderRadius: 12,
-      padding: 16,
-      marginBottom: 24,
-      borderColor: colors.border,
-      borderWidth: 1,
-    },
-    progressSection: {
       marginBottom: 16,
     },
-    progressTitle: {
-      fontSize: 14,
-      fontWeight: '500',
-      color: colors.text,
-      marginBottom: 8,
+    rolePreviewSection: {
+      marginBottom: 24,
     },
-    progressExplanation: {
-      fontSize: 12,
-      color: colors.secondary,
-      marginTop: 8,
-      lineHeight: 16,
-    },
-    nameSection: {
-      marginBottom: 32,
-    },
-    nameLabel: {
-      fontSize: 16,
+    rolePreviewTitle: {
+      fontSize: 20,
       fontWeight: '600',
       color: colors.text,
-      marginBottom: 12,
+      marginBottom: 16,
     },
-    nameInput: {
-      backgroundColor: colors.card,
-      borderColor: colors.border,
-      borderWidth: 1,
-      borderRadius: 12,
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      fontSize: 16,
+    rolesPreview: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      gap: 8,
+      marginTop: 16,
+    },
+    rolePreviewItem: {
+      alignItems: 'center',
+      flex: 1,
+    },
+    rolePreviewIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    rolePreviewLabel: {
+      fontSize: 12,
       color: colors.text,
+      textAlign: 'center',
+      fontWeight: '500',
     },
-    nameInputFocused: {
-      borderColor: colors.primary,
-      shadowColor: colors.primary,
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.3,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    roleSection: {
-      marginBottom: 40,
-    },
-    roleSectionTitle: {
+    sectionTitle: {
       fontSize: 18,
       fontWeight: '600',
       color: colors.text,
+      marginBottom: 12,
+    },
+    userNameSection: {
       marginBottom: 16,
     },
-    roleIconsContainer: {
-      backgroundColor: colors.card,
-      borderRadius: 12,
-      padding: 16,
-      borderColor: colors.border,
-      borderWidth: 1,
-      marginBottom: 16,
-    },
-    roleIconsTitle: {
-      fontSize: 14,
+    label: {
+      fontSize: 16,
       fontWeight: '500',
       color: colors.text,
-      marginBottom: 12,
-      textAlign: 'center',
+      marginBottom: 8,
     },
-    roleIconsRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-      alignItems: 'center',
-    },
-    roleOptions: {
-      backgroundColor: colors.card,
-      borderRadius: 12,
-      borderColor: colors.border,
+    input: {
       borderWidth: 1,
-      overflow: 'hidden',
+      borderColor: colors.border,
+      borderRadius: 12,
+      padding: 16,
+      fontSize: 16,
+      color: colors.text,
+      backgroundColor: colors.card,
+    },
+    roleSelectionSection: {
+      flex: 1,
+      marginBottom: 16,
+    },
+    rolesContainer: {
+      gap: 8,
     },
     roleOption: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 16,
-      paddingVertical: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    lastRoleOption: {
-      borderBottomWidth: 0,
+      padding: 12,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.card,
     },
     selectedRoleOption: {
-      backgroundColor: colors.primary + '10',
+      borderColor: '#007AFF',
+      backgroundColor: '#007AFF10',
     },
-    roleRadio: {
-      width: 20,
-      height: 20,
-      borderRadius: 10,
-      borderWidth: 2,
-      borderColor: colors.border,
-      marginRight: 12,
-      alignItems: 'center',
+    roleColorIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       justifyContent: 'center',
-    },
-    selectedRoleRadio: {
-      borderColor: colors.primary,
-    },
-    radioInner: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: colors.primary,
-    },
-    roleIcon: {
+      alignItems: 'center',
       marginRight: 12,
     },
     roleInfo: {
       flex: 1,
     },
-    roleLabel: {
+    roleName: {
       fontSize: 16,
       fontWeight: '600',
       color: colors.text,
@@ -396,54 +391,32 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
       fontSize: 14,
       color: colors.secondary,
     },
-    buttonContainer: {
-      paddingBottom: Platform.OS === 'ios' ? 40 : 24,
-    },
     startButton: {
-      backgroundColor: colors.primary,
+      backgroundColor: '#007AFF',
       paddingVertical: 16,
+      paddingHorizontal: 32,
       borderRadius: 12,
       alignItems: 'center',
-      marginBottom: 16,
-      shadowColor: colors.primary,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-      elevation: 3,
+      shadowColor: '#007AFF',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 5,
     },
-    startButtonDisabled: {
+    disabledButton: {
       backgroundColor: colors.border,
       shadowOpacity: 0,
       elevation: 0,
     },
-    startButtonText: {
-      color: '#FFFFFF',
-      fontSize: 18,
-      fontWeight: '600',
-    },
-    startButtonTextDisabled: {
-      color: colors.secondary,
-    },
-    qrButton: {
-      backgroundColor: 'transparent',
-      paddingVertical: 12,
-      alignItems: 'center',
-    },
-    qrButtonText: {
-      color: colors.primary,
+    buttonText: {
       fontSize: 16,
-      fontWeight: '500',
+      fontWeight: '600',
+      color: '#FFFFFF',
     },
     loadingContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flex: 1,
       justifyContent: 'center',
-    },
-    loadingText: {
-      color: '#FFFFFF',
-      fontSize: 18,
-      fontWeight: '600',
-      marginLeft: 8,
+      alignItems: 'center',
     },
   });
 
@@ -463,48 +436,38 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
 
   const loadSavedUserName = async () => {
     try {
-      const savedName = await AsyncStorage.getItem('userName');
+      const savedName = await AsyncStorage.getItem('groupUserName');
       if (savedName) {
         setUserName(savedName);
       }
     } catch (error) {
-      console.log('Error loading saved username:', error);
+      console.error('Error loading saved user name:', error);
     }
   };
 
   const saveUserName = async (name: string) => {
     try {
-      await AsyncStorage.setItem('userName', name);
+      await AsyncStorage.setItem('groupUserName', name);
     } catch (error) {
-      console.log('Error saving username:', error);
+      console.error('Error saving user name:', error);
     }
   };
 
   const handleStartBroadcasting = async () => {
-    if (!userName.trim()) {
-      Alert.alert('Name Required', 'Please enter your name to continue.');
-      return;
-    }
-
-    if (!selectedReaderPosition) {
-      Alert.alert('Role Required', 'Please select a reading role to continue.');
+    if (!selectedReaderPosition || !userName.trim()) {
+      Alert.alert('Missing Information', 'Please select a reading role and enter your name.');
       return;
     }
 
     setIsLoading(true);
     
     try {
-      // Save username for next time
       await saveUserName(userName.trim());
-      
-      // Convert to legacy role format for compatibility
       const role = getRole(selectedReaderPosition.color, selectedReaderPosition.position);
-      
-      // Start broadcasting
       onStartBroadcasting(role, userName.trim());
     } catch (error) {
-      Alert.alert('Error', 'Failed to start group session. Please try again.');
       console.error('Error starting broadcast:', error);
+      Alert.alert('Error', 'Failed to start group reading session. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -516,209 +479,210 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
 
   const handleHelpPress = () => {
     Alert.alert(
-      'Group Reading Help',
-      'Start a group reading session by:\n\n1. Enter your name\n2. Choose your reading role\n3. Tap "Start Broadcasting"\n4. Others can join from their home screen\n\nIf others can\'t see your session, use the QR code option.',
-      [{ text: 'Got it!' }]
+      'Group Reading',
+      'Choose your reading role and share with friends. Everyone will read together in sync!',
+      [{ text: 'Got it', style: 'default' }]
     );
   };
 
-  const renderPhoneIcons = () => {
+
+
+  // Render role preview icons (elegant role cards)
+  const renderRoleIcons = () => {
+    const roleColors = {
+      'black': '#8E8E93',
+      'red': '#FF3B30', 
+      'green': '#30D158',
+      'blue': '#007AFF'
+    };
+
+    const roleLabels = {
+      'black': 'Narrator',
+      'red': 'God',
+      'green': 'Main Character',
+      'blue': 'Other Voices'
+    };
+
     return (
-      <View style={styles.iconRow}>
-        {[1, 2, 3, 4].map((index) => (
-          <View key={index} style={styles.phoneIcon}>
-            <Ionicons 
-              name="phone-portrait-outline" 
-              size={24} 
-              color={colors.primary}
-            />
-          </View>
-        ))}
+      <View style={styles.rolesPreview}>
+        {Object.entries(readersByColor).map(([color, positions]) => 
+          positions.map((position, index) => (
+            <View 
+              key={`${color}-${position}`}
+              style={styles.rolePreviewItem}
+            >
+              <View 
+                style={[
+                  styles.rolePreviewIcon, 
+                  { backgroundColor: roleColors[color as keyof typeof roleColors] + '15' }
+                ]}
+              >
+                <Ionicons 
+                  name="person" 
+                  size={18} 
+                  color={roleColors[color as keyof typeof roleColors]} 
+                />
+              </View>
+              <Text style={styles.rolePreviewLabel}>
+                {roleLabels[color as keyof typeof roleLabels]} {positions.length > 1 ? position + 1 : ''}
+              </Text>
+            </View>
+          ))
+        )}
       </View>
     );
   };
 
-  const renderRoleIcons = () => {
-    const roleIcons: React.ReactElement[] = [];
-    
-    // Use the same logic as readersByColor to create icons
-    Object.entries(readersByColor).forEach(([color, positions]) => {
-      positions.forEach((position) => {
-        const isActive = selectedReaderPosition?.color === color && 
-                        selectedReaderPosition?.position === position;
-        const colorUtils = getColors(color);
-        
-        roleIcons.push(
-          <TouchableOpacity
-            key={`${color}-${position}`}
-            onPress={() => handleRoleSelect(color, position)}
-          >
-            <MaterialIcons
-              name={isActive ? "mark-chat-read" : "chat-bubble"}
-              size={30}
-              color={color === "black" ? "grey" : isActive ? colorUtils.dark : colorUtils.light}
-            />
-          </TouchableOpacity>
-        );
-      });
-    });
-    
-    return roleIcons;
-  };
-
-  // Get all available role options for the dropdown
   const getAllRoleOptions = () => {
     const options: Array<{
       color: string;
       position: number;
-      label: string;
+      displayName: string;
       description: string;
     }> = [];
-    
+
     Object.entries(readersByColor).forEach(([color, positions]) => {
       positions.forEach((position) => {
         options.push({
           color,
           position,
-          label: getRoleDisplayName(color, position),
+          displayName: getRoleDisplayName(color, position),
           description: getRoleDescription(color),
         });
       });
     });
-    
-    return options;
+
+    return options.sort((a, b) => {
+      const colorOrder = ['black', 'red', 'green', 'blue'];
+      const colorDiff = colorOrder.indexOf(a.color) - colorOrder.indexOf(b.color);
+      if (colorDiff !== 0) return colorDiff;
+      return a.position - b.position;
+    });
   };
 
-  const isStartDisabled = !userName.trim() || !selectedReaderPosition || isLoading;
+  const handleBack = () => {
+    Animated.timing(slideAnim, {
+      toValue: screenHeight,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      onBack();
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={{ color: colors.text, marginTop: 16 }}>Starting group session...</Text>
+      </View>
+    );
+  }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={onBack}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Group Reading</Text>
-        <TouchableOpacity style={styles.helpButton} onPress={handleHelpPress}>
-          <Ionicons name="help-circle-outline" size={24} color={colors.text} />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {renderPhoneIcons()}
-        
-        <View style={styles.iconContainer}>
-          <Text style={styles.title}>Gather Your Group</Text>
-          <Text style={styles.subtitle}>Invite up to 3 friends to read</Text>
-          <Text style={styles.storyName}>"{storyTitle}"</Text>
-          <Text style={styles.subtitle}>together</Text>
-        </View>
-
-        {/* Story Role Distribution */}
-        <View style={styles.storyInfoSection}>
-          <View style={styles.progressSection}>
-            <Text style={styles.progressTitle}>Story role distribution:</Text>
-            <RoleProgressBar 
-              colorData={colorData}
-              height={6}
-            />
-            <Text style={styles.progressExplanation}>
-              Shows the speaking parts in this story: Gray (Narrator), Red (God), Green (Main Character), Blue (Other Voices). Choose your reading role as the host.
-            </Text>
+    <View style={styles.container}>
+      <Animated.View 
+        style={[
+          styles.animatedContainer,
+          {
+            transform: [{ translateY: slideAnim }]
+          }
+        ]}
+      >
+        <SafeAreaView style={{ flex: 1 }}>
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+              <Ionicons name="close" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Start Group Reading</Text>
+            <TouchableOpacity style={styles.helpButton} onPress={handleHelpPress}>
+              <Ionicons name="help-circle-outline" size={24} color={colors.text} />
+            </TouchableOpacity>
           </View>
-        </View>
 
-        <View style={styles.nameSection}>
-          <Text style={styles.nameLabel}>Your Name</Text>
-          <TextInput
-            style={styles.nameInput}
-            placeholder="Enter your name"
-            placeholderTextColor={colors.secondary}
-            value={userName}
-            onChangeText={setUserName}
-            maxLength={30}
-            autoCapitalize="words"
-            autoCorrect={false}
-          />
-        </View>
-
-        <View style={styles.roleSection}>
-          <Text style={styles.roleSectionTitle}>Your Role</Text>
-          
-          {/* Role Icons Preview */}
-          <View style={styles.roleIconsContainer}>
-            <Text style={styles.roleIconsTitle}>Select your reading role:</Text>
-            <View style={styles.roleIconsRow}>
-              {renderRoleIcons()}
+          <View style={styles.content}>
+            <View style={styles.storyInfo}>
+              <Text style={styles.storyTitle}>{storyTitle}</Text>
+              <Text style={styles.bookName}>{bookName}</Text>
+              <Text style={styles.scriptureRef}>{scriptureReference}</Text>
+              <Text style={styles.readingTime}>
+                {readingTime} minute{readingTime !== 1 ? 's' : ''} estimated reading time
+              </Text>
             </View>
-          </View>
 
-          {/* Role Options List */}
-          <View style={styles.roleOptions}>
-            {getAllRoleOptions().map((roleOption, index) => {
-              const isSelected = selectedReaderPosition?.color === roleOption.color && 
-                               selectedReaderPosition?.position === roleOption.position;
-              const colorUtils = getColors(roleOption.color);
+            <View style={styles.userNameSection}>
+              <Text style={styles.label}>Your Name</Text>
+              <TextInput
+                style={styles.input}
+                value={userName}
+                onChangeText={setUserName}
+                placeholder="Enter your name"
+                placeholderTextColor={colors.secondary}
+                autoCapitalize="words"
+                autoCorrect={false}
+              />
+            </View>
+
+            <View style={styles.roleSelectionSection}>
+              <Text style={styles.sectionTitle}>Select Your Reading Role</Text>
               
-              return (
-                <TouchableOpacity
-                  key={`${roleOption.color}-${roleOption.position}`}
-                  style={[
-                    styles.roleOption,
-                    index === getAllRoleOptions().length - 1 && styles.lastRoleOption,
-                    isSelected && styles.selectedRoleOption,
-                  ]}
-                  onPress={() => handleRoleSelect(roleOption.color, roleOption.position)}
-                  activeOpacity={0.7}
-                >
-                  <View style={[
-                    styles.roleRadio,
-                    isSelected && styles.selectedRoleRadio,
-                  ]}>
-                    {isSelected && <View style={styles.radioInner} />}
-                  </View>
-                  <MaterialIcons
-                    name="chat-bubble"
-                    size={20}
-                    color={roleOption.color === "black" ? "grey" : colorUtils.light}
-                    style={styles.roleIcon}
-                  />
-                  <View style={styles.roleInfo}>
-                    <Text style={styles.roleLabel}>{roleOption.label}</Text>
-                    <Text style={styles.roleDescription}>{roleOption.description}</Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
-      </ScrollView>
+              <View style={styles.rolesContainer}>
+                {getAllRoleOptions().map((option, index) => {
+                  const isSelected = selectedReaderPosition?.color === option.color && 
+                                   selectedReaderPosition?.position === option.position;
+                  
+                  const roleColors = {
+                    'black': '#8E8E93',
+                    'red': '#FF3B30',
+                    'green': '#30D158',
+                    'blue': '#007AFF'
+                  };
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[
-            styles.startButton,
-            isStartDisabled && styles.startButtonDisabled,
-          ]}
-          onPress={handleStartBroadcasting}
-          disabled={isStartDisabled}
-          activeOpacity={0.7}
-        >
-          {isLoading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator color="#FFFFFF" size="small" />
-              <Text style={styles.loadingText}>Starting...</Text>
+                  return (
+                    <TouchableOpacity
+                      key={`${option.color}-${option.position}`}
+                      style={[styles.roleOption, isSelected && styles.selectedRoleOption]}
+                      onPress={() => handleRoleSelect(option.color, option.position)}
+                    >
+                      <View 
+                        style={[
+                          styles.roleColorIcon, 
+                          { backgroundColor: roleColors[option.color as keyof typeof roleColors] + '20' }
+                        ]}
+                      >
+                        <Ionicons 
+                          name="person" 
+                          size={20} 
+                          color={roleColors[option.color as keyof typeof roleColors]} 
+                        />
+                      </View>
+                      <View style={styles.roleInfo}>
+                        <Text style={styles.roleName}>{option.displayName}</Text>
+                        <Text style={styles.roleDescription}>{option.description}</Text>
+                      </View>
+                      {isSelected && (
+                        <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
-          ) : (
-            <Text style={[
-              styles.startButtonText,
-              isStartDisabled && styles.startButtonTextDisabled,
-            ]}>
-              Start Broadcasting
-            </Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+
+            <TouchableOpacity
+              style={[
+                styles.startButton,
+                (!selectedReaderPosition || !userName.trim()) && styles.disabledButton
+              ]}
+              onPress={handleStartBroadcasting}
+              disabled={!selectedReaderPosition || !userName.trim()}
+            >
+              <Text style={styles.buttonText}>Start Broadcasting</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </Animated.View>
+    </View>
   );
 };
 

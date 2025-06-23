@@ -573,14 +573,10 @@ const ReadingEmoji = () => {
       {
         text: t("UI.emojiPage.go"),
         onPress: () => {
-          updateSegmentId(`ENG-NLT-${reaction.segmentID}`)
+          // Navigate to Navigation tab instead of direct navigation
           router.push({
-            pathname: "/[segment]",
-            params: {
-              segment: `ENG-NLT-${reaction.segmentID}`,
-              book: segment?.book[0] || "",
-            },
-          })
+            pathname: "/Navigation"
+          });
         },
       },
     ])

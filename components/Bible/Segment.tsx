@@ -160,60 +160,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   // Note: We now use pre-calculated colorData from segmentData.colors instead of recalculating
 
-  // Add handler for completion toggle
-  const handleCompletion = async () => {
-    if (context === 'main') {
-      await markSegmentComplete(segID, !isCompleted, null, 'main');
-      if (!isCompleted) {
-        setShowCelebration(true);
-      }
-    } else if (planId && activePlan) {
-      // Handle plan completion
-      await markSegmentComplete(segID, true, null, 'plan', planId, undefined);
-      setShowCelebration(true);
-    } else if (challengeId && activeChallenges[challengeId]) {
-      // Handle challenge completion
-      await markSegmentComplete(segID, true, null, 'challenge', undefined, challengeId);
-      setShowCelebration(true);
-    }
-  };
-
-  const handleCelebrationComplete = () => {
-    setShowCelebration(false);
-    // Navigate back based on context
-    if (planId) {
-      router.replace({
-        pathname: '/Plan',
-        params: { 
-          scrollToPlan: planId,
-          timestamp: Date.now() // Force refresh
-        }
-      });
-    } else if (challengeId) {
-      router.replace({
-        pathname: '/Reading-Challenges',
-        params: { 
-          scrollToChallenge: challengeId,
-          timestamp: Date.now() // Force refresh
-        }
-      });
-    }
-  };
-
-  const handleComplete = async () => {
-    if (selectedBlock) {
-      if (context === 'main') {
-        await markSegmentComplete(segmentData.id, true, readers[selectedBlock.index], 'main');
-      } else if (context === 'plan') {
-        await markSegmentComplete(segmentData.id, true, readers[selectedBlock.index], 'plan', planId, undefined);
-      } else if (context === 'challenge') {
-        await markSegmentComplete(segmentData.id, true, readers[selectedBlock.index], 'challenge', undefined, challengeId);
-      }
-      setShowCelebration(true);
-    }
-  };
-
-  // Add speech bubble colors based on theme
   const getSpeakerStyle = (speaker: string) => {
     const baseStyle = {
       padding: 16,
@@ -656,18 +602,6 @@ modalContainer: {
         }}
         contentContainerStyle={{ flexGrow: 1 }}
         automaticallyAdjustKeyboardInsets={true}
-        onEndReached={async () => {
-          if (!isCompleted) {
-            if (context === 'main') {
-              await markSegmentComplete(segID, true, null, 'main');
-            } else if (planId && activePlan) {
-              await markSegmentComplete(segID, true, null, 'plan', planId, undefined);
-            } else if (challengeId && activeChallenges[challengeId]) {
-              await markSegmentComplete(segID, true, null, 'challenge', undefined, challengeId);
-            }
-          }
-        }}
-        onEndReachedThreshold={0.2}
       />
 <Modal
   visible={isModalVisible}
@@ -723,7 +657,7 @@ modalContainer: {
 
       <CelebrationPopup 
         visible={showCelebration} 
-        onComplete={handleCelebrationComplete}
+        onComplete={() => setShowCelebration(false)}
       />
     </View>
   );

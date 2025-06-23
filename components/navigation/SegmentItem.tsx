@@ -17,10 +17,6 @@ import CelebrationPopup from "@/components/CelebrationPopup";
 import { getCheckColor } from '@/scripts/getCheckColors';
 import { markSegmentComplete, getSegmentCompletionStatus } from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
-import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
-import { useGroupReading } from '@/context/GroupReadingContext';
-import BibleData from '@/assets/data/newBibleNLT1.json';
-import SegmentTitles from '@/assets/data/SegmentTitles.json';
 
 interface ColorData {
   total: number;
@@ -68,10 +64,6 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
     color: null
   });
   const { colors } = useAppSettings();
-  
-  // Group Reading State
-  const { currentSession, startHostSession } = useGroupReading();
-  const [showReadingModeModal, setShowReadingModeModal] = useState(false);
 
   useEffect(() => {
     if (completedSegments && segment.id in completedSegments) {
@@ -97,48 +89,16 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
     if (onPress) {
       onPress(segment.id);
     } else {
-      // Show the Reading Mode Selection Modal instead of directly navigating
-      setShowReadingModeModal(true);
+      // Fallback to direct navigation if no onPress provided
+      router.push({
+        pathname: "/(tabs)/[segment]" as const,
+        params: {
+          segment: `${language}-${version}-${segment.id}`,
+          ...(context === 'plan' && planId ? { planId } : {}),
+          ...(context === 'challenge' && challengeId ? { challengeId } : {})
+        }
+      });
     }
-  };
-
-  const handleIndividualReading = () => {
-    setShowReadingModeModal(false);
-    // Navigate to the segment as before
-    router.push({
-      pathname: "/[segment]" as const,
-      params: {
-        segment: `${language}-${version}-${segment.id}`,
-        ...(context === 'plan' && planId ? { planId } : {}),
-        ...(context === 'challenge' && challengeId ? { challengeId } : {})
-      }
-    });
-  };
-
-  const handleGroupReading = () => {
-    setShowReadingModeModal(false);
-    // Navigate to Group Setup screen
-    router.push({
-      pathname: '/group-setup' as any,
-      params: {
-        storyId: segment.id,
-        storyTitle: segment.title,
-        scriptureReference: segment.ref || '',
-        ...(context === 'plan' && planId ? { planId } : {}),
-        ...(context === 'challenge' && challengeId ? { challengeId } : {})
-      }
-    });
-  };
-
-  const handleCancel = () => {
-    setShowReadingModeModal(false);
-  };
-
-  // Get story data for the modal
-  const getStoryData = () => {
-    const segmentData = BibleData[segment.id as keyof typeof BibleData];
-    const segmentTitleData = SegmentTitles[segment.id as keyof typeof SegmentTitles];
-    return segmentData || segmentTitleData;
   };
 
   const styles = StyleSheet.create({
@@ -168,39 +128,27 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
   });
 
   return (
-    <>
-      <TouchableOpacity 
-        style={styles.container}
-        onPress={handlePress}
-      >
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>
-            {segment.title}
+    <TouchableOpacity 
+      style={styles.container}
+      onPress={handlePress}
+    >
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>
+          {segment.title}
+        </Text>
+        {segment.ref && (
+          <Text style={styles.reference}>
+            {segment.ref}
           </Text>
-          {segment.ref && (
-            <Text style={styles.reference}>
-              {segment.ref}
-            </Text>
-          )}
-        </View>
-        <Ionicons 
-          name={completionStatus.isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'} 
-          size={20} 
-          color={completionStatus.isCompleted ? '#4CAF50' : '#CCCCCC'} 
-          style={styles.checkIcon} 
-        />
-      </TouchableOpacity>
-
-      <ReadingModeModal
-        visible={showReadingModeModal}
-        story={getStoryData()}
-        storyTitle={segment.title}
-        scriptureReference={segment.ref || ''}
-        onIndividual={handleIndividualReading}
-        onGroup={handleGroupReading}
-        onCancel={handleCancel}
+        )}
+      </View>
+      <Ionicons 
+        name={completionStatus.isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'} 
+        size={20} 
+        color={completionStatus.isCompleted ? '#4CAF50' : '#CCCCCC'} 
+        style={styles.checkIcon} 
       />
-    </>
+    </TouchableOpacity>
   );
 };
 

@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
-  FlatList,
   StyleSheet,
   Image,
   Platform
@@ -320,7 +319,6 @@ const Accordion: React.FC<AccordionProps> = ({
 }) => {
   const { colors } = useAppSettings();
   const [isExpandedState, setIsExpanded] = useState(isExpanded || false);
-  const flatListRef = useRef<FlatList<SegmentKey>>(null);
 
   useEffect(() => {
     setIsExpanded(isExpanded || false);
@@ -353,11 +351,12 @@ const Accordion: React.FC<AccordionProps> = ({
   console.log('Book:', item.djhBook, 'Image source:', imageSource);
 
   // Custom render function for segments with highlighting
-  const renderSegment = ({ item: segment }: { item: SegmentKey }) => {
+  const renderSegment = (segment: SegmentKey, index: number) => {
     const isHighlighted = highlightedSegment === String(segment);
     const segmentData = SegmentTitles[String(segment)];
     return (
       <SegmentItem
+        key={String(segment)}
         segment={{
           id: String(segment),
           title: segmentData?.title || 'Untitled Segment',
@@ -416,9 +415,6 @@ const Accordion: React.FC<AccordionProps> = ({
     segmentList: {
       borderTopWidth: 1,
       borderTopColor: colors.border,
-      backgroundColor: colors.background,
-    },
-    flatListContainer: {
       backgroundColor: colors.background,
     },
     chevron: {
@@ -494,13 +490,7 @@ const Accordion: React.FC<AccordionProps> = ({
 
       {isExpandedState && (
         <View style={styles.segmentList}>
-          <FlatList
-            ref={flatListRef}
-            data={item.segments.map(String)}
-            style={styles.flatListContainer}
-            renderItem={renderSegment}
-            keyExtractor={(segment) => String(segment)}
-          />
+          {item.segments.map((segment, index) => renderSegment(segment, index))}
         </View>
       )}
     </View>

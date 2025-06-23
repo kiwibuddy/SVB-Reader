@@ -32,7 +32,7 @@ async function initializeDatabase() {
         UNIQUE(segmentID, blockID)
       );
 
-      -- New segment completion table
+      -- Updated segment completion table to track individual completions
       CREATE TABLE IF NOT EXISTS segment_completion (
         id INTEGER PRIMARY KEY NOT NULL,
         segmentID TEXT NOT NULL,
@@ -40,7 +40,27 @@ async function initializeDatabase() {
         planID TEXT,
         challengeID TEXT,
         completionDate TEXT NOT NULL,
-        readerColor TEXT
+        readerColor TEXT,
+        isCurrentlyCompleted BOOLEAN DEFAULT 1
+      );
+
+      -- New table to track total read counts per segment
+      CREATE TABLE IF NOT EXISTS segment_read_count (
+        segmentID TEXT PRIMARY KEY NOT NULL,
+        totalReads INTEGER NOT NULL DEFAULT 0,
+        lastReadDate TEXT NOT NULL
+      );
+
+      -- New table to track current completion status (for UI display)
+      CREATE TABLE IF NOT EXISTS segment_current_status (
+        id INTEGER PRIMARY KEY NOT NULL,
+        segmentID TEXT NOT NULL,
+        completionType TEXT NOT NULL,
+        planID TEXT,
+        challengeID TEXT,
+        isCompleted BOOLEAN NOT NULL DEFAULT 0,
+        lastCompletionDate TEXT,
+        UNIQUE(segmentID, completionType, planID, challengeID)
       );
 
       -- New achievements table
@@ -164,7 +184,7 @@ async function populateSegmentsTable() {
 
 initializeDatabase();
 
-// Segment completion functions
+// Updated segment completion functions
 export async function markSegmentComplete(
   segmentID: string,
   context: 'main' | 'plan' | 'challenge' = 'main',
@@ -172,23 +192,46 @@ export async function markSegmentComplete(
   challengeID?: string | null
 ): Promise<void> {
   try {
-    // Insert completion record with context-specific IDs
+    // Insert completion record (this tracks every completion)
     await db.runAsync(`
-      INSERT OR REPLACE INTO segment_completion (
+      INSERT INTO segment_completion (
         segmentID, 
         completionType,
         planID,
         challengeID,
         completionDate
       ) VALUES (?, ?, ?, ?, datetime('now', 'localtime'))
-    `, 
-      segmentID, 
-      context, 
-      context === 'plan' ? planID || null : null,
-      context === 'challenge' ? challengeID || null : null
-    );
-    
-    // Extract book ID from segment ID using the pattern
+    `, segmentID, context, planID || null, challengeID || null);
+
+    // Update or insert current status
+    await db.runAsync(`
+      INSERT OR REPLACE INTO segment_current_status (
+        segmentID,
+        completionType,
+        planID,
+        challengeID,
+        isCompleted,
+        lastCompletionDate
+      ) VALUES (?, ?, ?, ?, 1, datetime('now', 'localtime'))
+    `, segmentID, context, planID || null, challengeID || null);
+
+    // Update read count
+    await db.runAsync(`
+      INSERT OR REPLACE INTO segment_read_count (
+        segmentID,
+        totalReads,
+        lastReadDate
+      ) VALUES (
+        ?,
+        COALESCE((SELECT totalReads FROM segment_read_count WHERE segmentID = ?), 0) + 1,
+        datetime('now', 'localtime')
+      )
+    `, segmentID, segmentID);
+
+    // Update daily activity and streak
+    await updateDailyActivity(segmentID);
+
+    // Check book completion
     const segmentTitles = require('../assets/data/SegmentTitles.json');
     const segment = segmentTitles[segmentID];
     
@@ -196,9 +239,40 @@ export async function markSegmentComplete(
       const bookId = segment.book[0];
       await checkBookCompletion(bookId);
     }
-    
+
+    console.log(`Marked segment ${segmentID} as complete in context ${context}`);
   } catch (error) {
     console.error("Error marking segment complete:", error);
+    throw error;
+  }
+}
+
+// New function to reset segment completion status (for next reading)
+export async function resetSegmentCompletion(
+  segmentID: string,
+  context: 'main' | 'plan' | 'challenge' = 'main',
+  planID?: string | null,
+  challengeID?: string | null
+): Promise<void> {
+  try {
+    // Update current status to not completed
+    await db.runAsync(`
+      INSERT OR REPLACE INTO segment_current_status (
+        segmentID,
+        completionType,
+        planID,
+        challengeID,
+        isCompleted,
+        lastCompletionDate
+      ) VALUES (?, ?, ?, ?, 0, datetime('now', 'localtime'))
+    `,
+      segmentID,
+      context,
+      planID || null,
+      challengeID || null
+    );
+  } catch (error) {
+    console.error("Error resetting segment completion:", error);
     throw error;
   }
 }
@@ -215,7 +289,7 @@ export const getSegmentCompletionStatus = async (
       return { isCompleted: false, color: null };
     }
 
-    let query = `SELECT readerColor FROM segment_completion WHERE segmentID = ? AND completionType = ?`;
+    let query = `SELECT isCompleted FROM segment_current_status WHERE segmentID = ? AND completionType = ?`;
     let params: any[] = [segmentId, context];
 
     if (context === 'plan') {
@@ -226,11 +300,11 @@ export const getSegmentCompletionStatus = async (
       params.push(challengeId || null);
     }
 
-    const result = await db.getFirstAsync<{ readerColor: string | null }>(query, params);
+    const result = await db.getFirstAsync<{ isCompleted: number }>(query, params);
     
     return {
-      isCompleted: !!result,
-      color: result?.readerColor || null
+      isCompleted: !!result?.isCompleted,
+      color: null // We'll handle color separately if needed
     };
   } catch (error) {
     console.error('Error getting segment completion status:', error);
@@ -377,12 +451,11 @@ export async function getEmojis() {
 
 export async function getSegmentReadCount(segmentID: string): Promise<number> {
   try {
-    const result = await db.getFirstAsync<{ count: number }>(
-      `SELECT COUNT(*) as count FROM segment_completion 
-       WHERE segmentID = ?`,
+    const result = await db.getFirstAsync<{ totalReads: number }>(
+      `SELECT totalReads FROM segment_read_count WHERE segmentID = ?`,
       segmentID
     );
-    return result?.count || 0;
+    return result?.totalReads || 0;
   } catch (error) {
     console.error("Error getting segment read count:", error);
     return 0;

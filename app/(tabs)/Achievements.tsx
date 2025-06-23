@@ -1,261 +1,57 @@
-"use client"
-
-import React, { useEffect, useState, useMemo } from "react"
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  Image,
-  Animated,
-  Platform,
+  ScrollView,
   SafeAreaView,
-} from "react-native"
-import { Ionicons } from "@expo/vector-icons"
-import { useAppSettings } from "@/context/AppSettingsContext"
-import { useAppContext } from "@/context/GlobalContext"
-import {
-  getCompletedSegmentsCount,
-  getEmojiStats,
-  getSourceStats,
-  getOldTestamentProgress,
-  getNewTestamentProgress,
-  getCompletedBooks,
-  checkEmojiCollection,
-  getTotalSegmentsCount,
-  getReadingStreak,
-} from "@/api/sqlite"
-import { imageMap } from "@/components/navigation/NavBook"
-import { LinearGradient } from "expo-linear-gradient"
+  useWindowDimensions,
+  Platform,
+  Image,
+  Pressable,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useAppContext } from '@/context/GlobalContext';
+import { useAppSettings } from '@/context/AppSettingsContext';
+import { getCurrentStreak, getEmojis } from '@/api/sqlite';
+import SegmentTitles from '@/assets/data/SegmentTitles.json';
+import { imageMap } from '@/components/navigation/NavBook';
 
-// Update the AchievementStats interface to include all properties used in the component
+// Types
 interface AchievementStats {
-  totalStories: number
-  completedStories: number
-  completionPercentage: number
-  currentStreak: number
-  bestStreak: number
-  oldTestament: { completed: number; total: number }
-  newTestament: { completed: number; total: number }
-  emojiCount: { total: number; heart: number; prayer: number; question: number; thumbsUp: number }
-  sourceReading: { red: number; green: number; blue: number; black: number }
-  plans?: { completed: number; total: number }
-  challenges?: { completed: number; total: number }
-  longestSession?: number
-  booksCompleted?: string[]
-  emojiCollection?: { complete: boolean }
-  firstStoryDate?: string
+  totalStories: number;
+  completedStories: number;
+  completionPercentage: number;
+  currentStreak: number;
+  bestStreak: number;
+  oldTestament: { completed: number; total: number };
+  newTestament: { completed: number; total: number };
+  emojiCount: { total: number; heart: number; prayer: number; question: number; thumbsUp: number };
 }
 
-// Add these interfaces for component props
-interface AchievementBadgeProps {
-  icon: keyof typeof Ionicons.glyphMap
-  title: string
-  value: string | number
-  color: string
-  max?: number | null
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  color: string;
+  progress: number;
+  total: number;
+  category: 'milestones' | 'streaks' | 'testament' | 'engagement';
 }
 
-// Update the TrophyProps interface
-interface TrophyProps {
-  id: string
-  title: string
-  description: string
-  icon: string
-  achieved: boolean
+interface BookCompletion {
+  bookCode: string;
+  bookName: string;
+  isCompleted: boolean;
 }
 
-// <<< FIX 1: Add the optional 'code' property to the Trophy interface.
-interface Trophy {
-  id: string
-  title: string
-  description: string
-  icon: string
-  achieved: boolean
-  achievedDate?: string
-  code?: string // This will hold the correct book code like '1Jn' or 'Mar'
-}
-
-// First, create a ProgressBar component at the top of the file
-const ProgressBar = ({ progress, total, color }: { progress: number; total: number; color: string }) => {
-  const percentage = total > 0 ? (progress / total) * 100 : 0
-  const { colors } = useAppSettings()
-
-  return (
-    <View style={[styles.progressBarOuter, { backgroundColor: colors.border + "30" }]}>
-      <View style={[styles.progressBarInner, { width: `${percentage}%`, backgroundColor: color }]} />
-    </View>
-  )
-}
-
-// Add this component after your existing components
-const TrophyGrid = ({ trophies, colors }: { trophies: Trophy[]; colors: any }) => {
-  // Split trophies into completed and locked
-  const completedTrophies = trophies.filter((t) => t.achieved)
-  const lockedTrophies = trophies.filter((t) => !t.achieved)
-
-  // <<< FIX 4: Correctly use the `trophy.code` property instead of guessing.
-  const renderTrophyIcon = (trophy: Trophy, isAchieved: boolean) => {
-    // Check if it's a book trophy by checking for the 'code' property
-    if (trophy.code) {
-      // Use the correct code directly from the trophy object
-      const imageSource = imageMap[trophy.code]
-
-      // Return an Image component if the source is found
-      if (imageSource) {
-        return (
-          <Image
-            source={imageSource}
-            style={[{ width: 56, height: 56 }, isAchieved ? styles.achievedIcon : styles.lockedIcon]}
-            resizeMode="contain"
-          />
-        )
-      }
-    }
-    
-    // Fallback for non-book trophies or if image source is missing
-    return (
-      <Ionicons
-        name={(trophy.icon || "help-outline") as any}
-        size={56}
-        color={isAchieved ? colors.primary : colors.border}
-        style={isAchieved ? styles.achievedIcon : styles.lockedIcon}
-      />
-    )
-  }
-
-  // <<< FIX 5: Improve category filtering to be more robust.
-  const newTestamentCodes = [
-    "Mat", "Mar", "Luk", "Joh", "Act", "Rom", "1Co", "2Co", "Gal", "Eph", "Php", "Col", 
-    "1Th", "2Th", "1Ti", "2Ti", "Tit", "Phm", "Heb", "Jam", "1Pe", "2Pe", "1Jn", 
-    "2Jn", "3Jn", "Jud", "Rev"
-  ];
-
-  const categories = {
-    "Reading Progress": lockedTrophies.filter(
-      (t) =>
-        !t.code && // Ensure it's not a book trophy
-        (t.id.includes("story") || t.id.includes("bible") || t.id.includes("collection") ||
-         t.id === "ot_master" || t.id === "nt_master")
-    ),
-    Streaks: lockedTrophies.filter((t) => !t.code && t.id.includes("streak")),
-    "Old Testament Books": lockedTrophies.filter(
-      (t) => t.code && !newTestamentCodes.includes(t.code)
-    ),
-    "New Testament Books": lockedTrophies.filter(
-      (t) => t.code && newTestamentCodes.includes(t.code)
-    ),
-    "Emoji Reactions": lockedTrophies.filter(
-      (t) =>
-        !t.code && // Ensure it's not a book trophy
-        (t.id.includes("emoji") || t.id.includes("reaction") || t.id.includes("heart") ||
-         t.id.includes("prayer") || t.id.includes("thinker") || t.id.includes("encourager"))
-    ),
-  }
-
-  return (
-    <>
-      {/* Completed Trophies Section */}
-      {completedTrophies.length > 0 && (
-        <View style={styles.trophyCategory}>
-          <Text style={[styles.trophyCategoryTitle, { color: colors.text }]}>Completed Achievements</Text>
-          <View style={styles.trophyGrid}>
-            {completedTrophies.map((trophy) => (
-              <TouchableOpacity
-                key={trophy.id}
-                style={[
-                  styles.trophyGridItem,
-                  {
-                    backgroundColor: colors.card,
-                    borderColor: colors.primary + "40",
-                  },
-                ]}
-              >
-                <LinearGradient
-                  colors={[colors.primary + "10", colors.primary + "30"]}
-                  style={[styles.trophyIconContainer, { borderColor: colors.primary }]}
-                >
-                  {renderTrophyIcon(trophy, true)}
-                </LinearGradient>
-                <Text
-                  style={[
-                    styles.trophyGridTitle,
-                    {
-                      color: colors.text,
-                      fontWeight: "600",
-                    },
-                  ]}
-                  numberOfLines={2}
-                >
-                  {trophy.title}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      )}
-
-      {/* Remaining Categories */}
-      {Object.entries(categories).map(([category, categoryTrophies]) =>
-        categoryTrophies.length > 0 ? (
-          <View key={category} style={styles.trophyCategory}>
-            <Text style={[styles.trophyCategoryTitle, { color: colors.text }]}>{category}</Text>
-            <View style={styles.trophyGrid}>
-              {categoryTrophies.map((trophy) => (
-                <TouchableOpacity
-                  key={trophy.id}
-                  style={[
-                    styles.trophyGridItem,
-                    {
-                      backgroundColor: colors.card,
-                      borderColor: colors.border + "30",
-                    },
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.trophyIconContainer,
-                      {
-                        backgroundColor: colors.border + "10",
-                        borderColor: "transparent",
-                      },
-                    ]}
-                  >
-                    {renderTrophyIcon(trophy, false)}
-                    <Ionicons name="lock-closed" size={12} color={colors.border} style={styles.lockIcon} />
-                  </View>
-                  <Text
-                    style={[
-                      styles.trophyGridTitle,
-                      {
-                        color: colors.secondary,
-                        fontWeight: "400",
-                      },
-                    ]}
-                    numberOfLines={2}
-                  >
-                    {trophy.title}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        ) : null,
-      )}
-    </>
-  )
-}
-
-function Achievements() {
-  const { colors } = useAppSettings()
-  const { completedSegments } = useAppContext()
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const fadeAnim = useState(new Animated.Value(0))[0]
-  const [refreshTrigger, setRefreshTrigger] = useState(0)
-
+const Achievements = () => {
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 768;
+  const { colors } = useAppSettings();
+  const { completedSegments } = useAppContext();
   const [stats, setStats] = useState<AchievementStats>({
     totalStories: 0,
     completedStories: 0,
@@ -264,549 +60,757 @@ function Achievements() {
     bestStreak: 0,
     oldTestament: { completed: 0, total: 219 },
     newTestament: { completed: 0, total: 146 },
-    emojiCount: { total: 0, heart: 0, prayer: 0, question: 0, thumbsUp: 0 },
-    sourceReading: { red: 0, green: 0, blue: 0, black: 0 },
-  })
+    emojiCount: { total: 0, heart: 0, prayer: 0, question: 0, thumbsUp: 0 }
+  });
+
+  const styles = createStyles(isLargeScreen, colors);
+
+  // Bible books data
+  const oldTestamentBooks: BookCompletion[] = [
+    { bookCode: 'Gen', bookName: 'Genesis', isCompleted: false },
+    { bookCode: 'Exo', bookName: 'Exodus', isCompleted: false },
+    { bookCode: 'Lev', bookName: 'Leviticus', isCompleted: false },
+    { bookCode: 'Num', bookName: 'Numbers', isCompleted: false },
+    { bookCode: 'Deu', bookName: 'Deuteronomy', isCompleted: false },
+    { bookCode: 'Jos', bookName: 'Joshua', isCompleted: false },
+    { bookCode: 'Jdg', bookName: 'Judges', isCompleted: false },
+    { bookCode: 'Rut', bookName: 'Ruth', isCompleted: false },
+    { bookCode: '1Sa', bookName: '1 Samuel', isCompleted: false },
+    { bookCode: '2Sa', bookName: '2 Samuel', isCompleted: false },
+    { bookCode: '1Ki', bookName: '1 Kings', isCompleted: false },
+    { bookCode: '2Ki', bookName: '2 Kings', isCompleted: false },
+    { bookCode: '1Ch', bookName: '1 Chronicles', isCompleted: false },
+    { bookCode: '2Ch', bookName: '2 Chronicles', isCompleted: false },
+    { bookCode: 'Ezr', bookName: 'Ezra', isCompleted: false },
+    { bookCode: 'Neh', bookName: 'Nehemiah', isCompleted: false },
+    { bookCode: 'Est', bookName: 'Esther', isCompleted: false },
+    { bookCode: 'Job', bookName: 'Job', isCompleted: false },
+    { bookCode: 'Psa', bookName: 'Psalms', isCompleted: false },
+    { bookCode: 'Pro', bookName: 'Proverbs', isCompleted: false },
+    { bookCode: 'Ecc', bookName: 'Ecclesiastes', isCompleted: false },
+    { bookCode: 'SoS', bookName: 'Song of Solomon', isCompleted: false },
+    { bookCode: 'Isa', bookName: 'Isaiah', isCompleted: false },
+    { bookCode: 'Jer', bookName: 'Jeremiah', isCompleted: false },
+    { bookCode: 'Lam', bookName: 'Lamentations', isCompleted: false },
+    { bookCode: 'Eze', bookName: 'Ezekiel', isCompleted: false },
+    { bookCode: 'Dan', bookName: 'Daniel', isCompleted: false },
+    { bookCode: 'Hos', bookName: 'Hosea', isCompleted: false },
+    { bookCode: 'Joe', bookName: 'Joel', isCompleted: false },
+    { bookCode: 'Amo', bookName: 'Amos', isCompleted: false },
+    { bookCode: 'Oba', bookName: 'Obadiah', isCompleted: false },
+    { bookCode: 'Jon', bookName: 'Jonah', isCompleted: false },
+    { bookCode: 'Mic', bookName: 'Micah', isCompleted: false },
+    { bookCode: 'Nah', bookName: 'Nahum', isCompleted: false },
+    { bookCode: 'Hab', bookName: 'Habakkuk', isCompleted: false },
+    { bookCode: 'Zep', bookName: 'Zephaniah', isCompleted: false },
+    { bookCode: 'Hag', bookName: 'Haggai', isCompleted: false },
+    { bookCode: 'Zec', bookName: 'Zechariah', isCompleted: false },
+    { bookCode: 'Mal', bookName: 'Malachi', isCompleted: false },
+  ];
+
+  const newTestamentBooks: BookCompletion[] = [
+    { bookCode: 'Mat', bookName: 'Matthew', isCompleted: false },
+    { bookCode: 'Mar', bookName: 'Mark', isCompleted: false },
+    { bookCode: 'Luk', bookName: 'Luke', isCompleted: false },
+    { bookCode: 'Joh', bookName: 'John', isCompleted: false },
+    { bookCode: 'Act', bookName: 'Acts', isCompleted: false },
+    { bookCode: 'Rom', bookName: 'Romans', isCompleted: false },
+    { bookCode: '1Co', bookName: '1 Corinthians', isCompleted: false },
+    { bookCode: '2Co', bookName: '2 Corinthians', isCompleted: false },
+    { bookCode: 'Gal', bookName: 'Galatians', isCompleted: false },
+    { bookCode: 'Eph', bookName: 'Ephesians', isCompleted: false },
+    { bookCode: 'Php', bookName: 'Philippians', isCompleted: false },
+    { bookCode: 'Col', bookName: 'Colossians', isCompleted: false },
+    { bookCode: '1Th', bookName: '1 Thessalonians', isCompleted: false },
+    { bookCode: '2Th', bookName: '2 Thessalonians', isCompleted: false },
+    { bookCode: '1Ti', bookName: '1 Timothy', isCompleted: false },
+    { bookCode: '2Ti', bookName: '2 Timothy', isCompleted: false },
+    { bookCode: 'Tit', bookName: 'Titus', isCompleted: false },
+    { bookCode: 'Phm', bookName: 'Philemon', isCompleted: false },
+    { bookCode: 'Heb', bookName: 'Hebrews', isCompleted: false },
+    { bookCode: 'Jam', bookName: 'James', isCompleted: false },
+    { bookCode: '1Pe', bookName: '1 Peter', isCompleted: false },
+    { bookCode: '2Pe', bookName: '2 Peter', isCompleted: false },
+    { bookCode: '1Jn', bookName: '1 John', isCompleted: false },
+    { bookCode: '2Jn', bookName: '2 John', isCompleted: false },
+    { bookCode: '3Jn', bookName: '3 John', isCompleted: false },
+    { bookCode: 'Jud', bookName: 'Jude', isCompleted: false },
+    { bookCode: 'Rev', bookName: 'Revelation', isCompleted: false },
+  ];
 
   useEffect(() => {
     const loadStats = async () => {
-      setIsLoading(true)
-      setError(null)
       try {
-        const completed = await getCompletedSegmentsCount()
-        const total = await getTotalSegmentsCount()
-        const streakData = await getReadingStreak()
-        const emojiData = await getEmojiStats()
-        const sourceData = await getSourceStats()
-        const otProgress = await getOldTestamentProgress()
-        const ntProgress = await getNewTestamentProgress()
-        const booksCompleted = await getCompletedBooks()
-        const emojiCollection = await checkEmojiCollection()
+        // Calculate completion statistics
+        const totalSegments = Object.keys(SegmentTitles).length;
+        const completedCount = Object.values(completedSegments).filter(
+          segment => segment.isCompleted
+        ).length;
+        const completionPercentage = Math.round((completedCount / totalSegments) * 100);
+
+        // Get current streak
+        const currentStreak = await getCurrentStreak();
+
+        // Calculate Old Testament vs New Testament completion
+        const oldTestamentBookCodes = oldTestamentBooks.map(book => book.bookCode);
+        const newTestamentBookCodes = newTestamentBooks.map(book => book.bookCode);
+
+        let otCompleted = 0;
+        let ntCompleted = 0;
+
+        Object.entries(SegmentTitles).forEach(([segmentId, segment]) => {
+          if (completedSegments[segmentId]?.isCompleted) {
+            const bookCode = segment.book[0];
+            if (oldTestamentBookCodes.includes(bookCode)) {
+              otCompleted++;
+            } else if (newTestamentBookCodes.includes(bookCode)) {
+              ntCompleted++;
+            }
+          }
+        });
+
+        // Get emoji statistics
+        const emojiData = await getEmojis();
+        const emojiStats = {
+          total: emojiData.length,
+          heart: emojiData.filter(e => e.emoji === '❤️').length,
+          prayer: emojiData.filter(e => e.emoji === '🙏').length,
+          question: emojiData.filter(e => e.emoji === '🤔').length,
+          thumbsUp: emojiData.filter(e => e.emoji === '👍').length
+        };
 
         setStats({
-          totalStories: total,
-          completedStories: completed,
-          completionPercentage: total > 0 ? Math.round((completed / total) * 100) : 0,
-          currentStreak: streakData.currentStreak,
-          bestStreak: streakData.longestStreak,
-          oldTestament: otProgress,
-          newTestament: ntProgress,
-          emojiCount: emojiData,
-          sourceReading: sourceData,
-          booksCompleted,
-          emojiCollection,
-        })
-
-        Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }).start()
+          totalStories: totalSegments,
+          completedStories: completedCount,
+          completionPercentage,
+          currentStreak,
+          bestStreak: Math.max(currentStreak, 15), // Placeholder for best streak
+          oldTestament: { completed: otCompleted, total: 219 },
+          newTestament: { completed: ntCompleted, total: 146 },
+          emojiCount: emojiStats
+        });
       } catch (error) {
-        console.error("Error loading achievement stats:", error)
-        setError("Failed to load achievements")
-      } finally {
-        setIsLoading(false)
+        console.error('Error loading achievement stats:', error);
       }
+    };
+
+    loadStats();
+  }, [completedSegments]);
+
+  // Check if a book is completed based on segments (excluding intro segments)
+  const isBookCompleted = (bookCode: string): boolean => {
+    const bookSegments = Object.entries(SegmentTitles).filter(
+      ([segmentId, segment]) => segment.book[0] === bookCode && !segmentId.startsWith('I')
+    );
+    return bookSegments.length > 0 && bookSegments.every(
+      ([segmentId, _]) => completedSegments[segmentId]?.isCompleted
+    );
+  };
+
+  // Achievement definitions
+  const achievements: Achievement[] = [
+    // Reading Milestones
+    {
+      id: 'first_steps',
+      title: 'First Steps',
+      description: 'Read your first Bible story',
+      icon: 'book-outline',
+      color: '#4CAF50',
+      progress: Math.min(stats.completedStories, 1),
+      total: 1,
+      category: 'milestones'
+    },
+    {
+      id: 'bible_explorer',
+      title: 'Bible Explorer',
+      description: 'Read 10 Bible stories',
+      icon: 'compass-outline',
+      color: '#2196F3',
+      progress: Math.min(stats.completedStories, 10),
+      total: 10,
+      category: 'milestones'
+    },
+    {
+      id: 'scripture_enthusiast',
+      title: 'Scripture Enthusiast',
+      description: 'Read 25 Bible stories',
+      icon: 'library-outline',
+      color: '#9C27B0',
+      progress: Math.min(stats.completedStories, 25),
+      total: 25,
+      category: 'milestones'
+    },
+    {
+      id: 'bible_scholar',
+      title: 'Bible Scholar',
+      description: 'Read 50 Bible stories',
+      icon: 'school-outline',
+      color: '#FF9800',
+      progress: Math.min(stats.completedStories, 50),
+      total: 50,
+      category: 'milestones'
+    },
+    {
+      id: 'word_warrior',
+      title: 'Word Warrior',
+      description: 'Read 100 Bible stories',
+      icon: 'shield-outline',
+      color: '#F44336',
+      progress: Math.min(stats.completedStories, 100),
+      total: 100,
+      category: 'milestones'
+    },
+    {
+      id: 'complete_collection',
+      title: 'Complete Collection',
+      description: 'Read all 365 Bible stories',
+      icon: 'trophy-outline',
+      color: '#FFD700',
+      progress: Math.min(stats.completedStories, 365),
+      total: 365,
+      category: 'milestones'
+    },
+    // Reading Streaks
+    {
+      id: 'consistent_reader',
+      title: 'Consistent Reader',
+      description: 'Maintain a 7-day reading streak',
+      icon: 'flame-outline',
+      color: '#FF5722',
+      progress: Math.min(stats.currentStreak, 7),
+      total: 7,
+      category: 'streaks'
+    },
+    {
+      id: 'scripture_habit',
+      title: 'Scripture Habit',
+      description: 'Maintain a 30-day reading streak',
+      icon: 'flame-outline',
+      color: '#FF5722',
+      progress: Math.min(stats.currentStreak, 30),
+      total: 30,
+      category: 'streaks'
+    },
+    {
+      id: 'faithful_follower',
+      title: 'Faithful Follower',
+      description: 'Maintain a 100-day reading streak',
+      icon: 'flame-outline',
+      color: '#FF5722',
+      progress: Math.min(stats.currentStreak, 100),
+      total: 100,
+      category: 'streaks'
+    },
+    // Testament Progress
+    {
+      id: 'old_testament',
+      title: 'Old Testament',
+      description: 'Complete the Old Testament',
+      icon: 'bookmark-outline',
+      color: '#8D6E63',
+      progress: stats.oldTestament.completed,
+      total: stats.oldTestament.total,
+      category: 'testament'
+    },
+    {
+      id: 'new_testament',
+      title: 'New Testament',
+      description: 'Complete the New Testament',
+      icon: 'bookmark-outline',
+      color: '#607D8B',
+      progress: stats.newTestament.completed,
+      total: stats.newTestament.total,
+      category: 'testament'
+    },
+    // Engagement
+    {
+      id: 'first_reaction',
+      title: 'First Reaction',
+      description: 'Add your first emoji reaction',
+      icon: 'happy-outline',
+      color: '#FFC107',
+      progress: Math.min(stats.emojiCount.total, 1),
+      total: 1,
+      category: 'engagement'
+    },
+    {
+      id: 'heart_collector',
+      title: 'Heart Collector',
+      description: 'Use the ❤️ emoji 10 times',
+      icon: 'heart-outline',
+      color: '#E91E63',
+      progress: Math.min(stats.emojiCount.heart, 10),
+      total: 10,
+      category: 'engagement'
+    },
+    {
+      id: 'prayer_warrior',
+      title: 'Prayer Warrior',
+      description: 'Use the 🙏 emoji 10 times',
+      icon: 'hand-right-outline',
+      color: '#9C27B0',
+      progress: Math.min(stats.emojiCount.prayer, 10),
+      total: 10,
+      category: 'engagement'
+    },
+    {
+      id: 'encourager',
+      title: 'Encourager',
+      description: 'Use the 👍 emoji 10 times',
+      icon: 'thumbs-up-outline',
+      color: '#4CAF50',
+      progress: Math.min(stats.emojiCount.thumbsUp, 10),
+      total: 10,
+      category: 'engagement'
+    },
+    {
+      id: 'deep_thinker',
+      title: 'Deep Thinker',
+      description: 'Use the 🤔 emoji 10 times',
+      icon: 'bulb-outline',
+      color: '#607D8B',
+      progress: Math.min(stats.emojiCount.question, 10),
+      total: 10,
+      category: 'engagement'
+    },
+    {
+      id: 'emoji_enthusiast',
+      title: 'Emoji Enthusiast',
+      description: 'Use 50 emoji reactions',
+      icon: 'chatbubble-outline',
+      color: '#FF9800',
+      progress: Math.min(stats.emojiCount.total, 50),
+      total: 50,
+      category: 'engagement'
+    },
+    {
+      id: 'emoji_master',
+      title: 'Emoji Master',
+      description: 'Use 100 emoji reactions',
+      icon: 'chatbubble-ellipses-outline',
+      color: '#9C27B0',
+      progress: Math.min(stats.emojiCount.total, 100),
+      total: 100,
+      category: 'engagement'
+    },
+    {
+      id: 'emoji_champion',
+      title: 'Emoji Champion',
+      description: 'Use 200 emoji reactions',
+      icon: 'medal-outline',
+      color: '#E91E63',
+      progress: Math.min(stats.emojiCount.total, 200),
+      total: 200,
+      category: 'engagement'
     }
-    loadStats()
-  }, [completedSegments, fadeAnim, refreshTrigger])
+  ];
 
-  const trophies = useMemo(() => {
-    // <<< FIX 2: Correct the book codes to match your JSON source of truth.
-    const oldTestamentBooks = [
-        { id: "book_gen", code: "Gen", title: "Genesis" }, { id: "book_exo", code: "Exo", title: "Exodus" },
-        { id: "book_lev", code: "Lev", title: "Leviticus" }, { id: "book_num", code: "Num", title: "Numbers" },
-        { id: "book_deu", code: "Deu", title: "Deuteronomy" }, { id: "book_jos", code: "Jos", title: "Joshua" },
-        { id: "book_jdg", code: "Jdg", title: "Judges" }, { id: "book_rut", code: "Rut", title: "Ruth" },
-        { id: "book_1sa", code: "1Sa", title: "1 Samuel" }, { id: "book_2sa", code: "2Sa", title: "2 Samuel" },
-        { id: "book_1ki", code: "1Ki", title: "1 Kings" }, { id: "book_2ki", code: "2Ki", title: "2 Kings" },
-        { id: "book_1ch", code: "1Ch", title: "1 Chronicles" }, { id: "book_2ch", code: "2Ch", title: "2 Chronicles" },
-        { id: "book_ezr", code: "Ezr", title: "Ezra" }, { id: "book_neh", code: "Neh", title: "Nehemiah" },
-        { id: "book_est", code: "Est", title: "Esther" }, { id: "book_job", code: "Job", title: "Job" },
-        { id: "book_psa", code: "Psa", title: "Psalms" }, { id: "book_pro", code: "Pro", title: "Proverbs" },
-        { id: "book_ecc", code: "Ecc", title: "Ecclesiastes" }, { id: "book_sos", code: "SoS", title: "Song of Songs" },
-        { id: "book_isa", code: "Isa", title: "Isaiah" }, { id: "book_jer", code: "Jer", title: "Jeremiah" },
-        { id: "book_lam", code: "Lam", title: "Lamentations" }, { id: "book_ezk", code: "Eze", title: "Ezekiel" },
-        { id: "book_dan", code: "Dan", title: "Daniel" }, { id: "book_hos", code: "Hos", title: "Hosea" },
-        { id: "book_jol", code: "Joe", title: "Joel" }, { id: "book_amo", code: "Amo", title: "Amos" },
-        { id: "book_oba", code: "Oba", title: "Obadiah" }, { id: "book_jon", code: "Jon", title: "Jonah" },
-        { id: "book_mic", code: "Mic", title: "Micah" }, { id: "book_nam", code: "Nah", title: "Nahum" },
-        { id: "book_hab", code: "Hab", title: "Habakkuk" }, { id: "book_zep", code: "Zep", title: "Zephaniah" },
-        { id: "book_hag", code: "Hag", title: "Haggai" }, { id: "book_zec", code: "Zec", title: "Zechariah" },
-        { id: "book_mal", code: "Mal", title: "Malachi" },
-    ];
-
-    const newTestamentBooks = [
-        { id: "book_mat", code: "Mat", title: "Matthew" }, { id: "book_mrk", code: "Mar", title: "Mark" },
-        { id: "book_luk", code: "Luk", title: "Luke" }, { id: "book_jhn", code: "Joh", title: "John" },
-        { id: "book_act", code: "Act", title: "Acts" }, { id: "book_rom", code: "Rom", title: "Romans" },
-        { id: "book_1co", code: "1Co", title: "1 Corinthians" }, { id: "book_2co", code: "2Co", title: "2 Corinthians" },
-        { id: "book_gal", code: "Gal", title: "Galatians" }, { id: "book_eph", code: "Eph", title: "Ephesians" },
-        { id: "book_php", code: "Php", title: "Philippians" }, { id: "book_col", code: "Col", title: "Colossians" },
-        { id: "book_1th", code: "1Th", title: "1 Thessalonians" }, { id: "book_2th", code: "2Th", title: "2 Thessalonians" },
-        { id: "book_1ti", code: "1Ti", title: "1 Timothy" }, { id: "book_2ti", code: "2Ti", title: "2 Timothy" },
-        { id: "book_tit", code: "Tit", title: "Titus" }, { id: "book_phm", code: "Phm", title: "Philemon" },
-        { id: "book_heb", code: "Heb", title: "Hebrews" }, { id: "book_jas", code: "Jam", title: "James" },
-        { id: "book_1pe", code: "1Pe", title: "1 Peter" }, { id: "book_2pe", code: "2Pe", title: "2 Peter" },
-        { id: "book_1jn", code: "1Jn", title: "1 John" }, { id: "book_2jn", code: "2Jn", title: "2 John" },
-        { id: "book_3jn", code: "3Jn", title: "3 John" }, { id: "book_jud", code: "Jud", title: "Jude" },
-        { id: "book_rev", code: "Rev", title: "Revelation" },
-    ];
-
-    const baseTrophies: Trophy[] = [
-      { id: "first_story", title: "First Story", description: "Read your first Bible story", icon: "book-outline", achieved: stats.completedStories > 0, },
-      { id: "bible_explorer", title: "Bible Explorer", description: "Read 10 Bible stories", icon: "compass-outline", achieved: stats.completedStories >= 10, },
-      { id: "scripture_enthusiast", title: "Scripture Enthusiast", description: "Read 25 Bible stories", icon: "library-outline", achieved: stats.completedStories >= 25, },
-      { id: "bible_scholar", title: "Bible Scholar", description: "Read 50 Bible stories", icon: "school-outline", achieved: stats.completedStories >= 50, },
-      { id: "word_warrior", title: "Word Warrior", description: "Read 100 Bible stories", icon: "shield-outline", achieved: stats.completedStories >= 100, },
-      { id: "bible_master", title: "Bible Master", description: "Read 200 Bible stories", icon: "ribbon-outline", achieved: stats.completedStories >= 200, },
-      { id: "complete_collection", title: "Complete Collection", description: "Read all 365 Bible stories", icon: "trophy-outline", achieved: stats.completedStories >= 365, },
-      { id: "ot_master", title: "Old Testament Master", description: "Complete the Old Testament", icon: "bookmarks-outline", achieved: stats.oldTestament.total > 0 && stats.oldTestament.completed >= stats.oldTestament.total, },
-      { id: "nt_master", title: "New Testament Master", description: "Complete the New Testament", icon: "bookmarks-outline", achieved: stats.newTestament.total > 0 && stats.newTestament.completed >= stats.newTestament.total, },
-      { id: "streak_3", title: "Getting Started", description: "Maintain a 3-day reading streak", icon: "flame-outline", achieved: stats.currentStreak >= 3, },
-      { id: "streak_7", title: "Consistent Reader", description: "Maintain a 7-day reading streak", icon: "flame-outline", achieved: stats.currentStreak >= 7, },
-      { id: "streak_14", title: "Dedicated Disciple", description: "Maintain a 14-day reading streak", icon: "flame-outline", achieved: stats.currentStreak >= 14, },
-      { id: "streak_30", title: "Scripture Habit", description: "Maintain a 30-day reading streak", icon: "flame-outline", achieved: stats.currentStreak >= 30, },
-      //{ id: "streak_60", title: "Bible Devotee", description: "Maintain a 60-day reading streak", icon: "flame-outline", achieved: stats.currentStreak >= 60, },
-      { id: "streak_100", title: "Faithful Follower", description: "Maintain a 100-day reading streak", icon: "flame-outline", achieved: stats.currentStreak >= 100, },
-      { id: "streak_365", title: "Scripture Champion", description: "Maintain a 365-day reading streak", icon: "flame-outline", achieved: stats.currentStreak >= 365, },
-      { id: "first_reaction", title: "First Reaction", description: "Add your first emoji reaction", icon: "happy-outline", achieved: stats.emojiCount.total > 0, },
-      { id: "heart_collector", title: "Heart Collector", description: "Use the ❤️ emoji 10 times", icon: "heart-outline", achieved: stats.emojiCount.heart >= 10, },
-      { id: "prayer_warrior", title: "Prayer Warrior", description: "Use the 🙏 emoji 10 times", icon: "hand-left-outline", achieved: stats.emojiCount.prayer >= 10, },
-      { id: "deep_thinker", title: "Deep Thinker", description: "Use the 🤔 emoji 10 times", icon: "help-circle-outline", achieved: stats.emojiCount.question >= 10, },
-      { id: "encourager", title: "Encourager", description: "Use the 👍 emoji 10 times", icon: "thumbs-up-outline", achieved: stats.emojiCount.thumbsUp >= 10, },
-      { id: "emoji_master", title: "Emoji Master", description: "Use all emoji types at least 5 times each", icon: "apps-outline", achieved: stats.emojiCollection?.complete || false, },
-    ]
-
-    if (stats.booksCompleted && Array.isArray(stats.booksCompleted)) {
-      // <<< FIX 3: Add the `code` property when mapping over the books.
-      const otBookTrophies = oldTestamentBooks.map((book) => ({
-        id: book.id,
-        title: book.title,
-        description: `Complete all stories in ${book.title}`,
-        icon: "book-outline", // This is a placeholder, `renderTrophyIcon` uses the code.
-        achieved: stats.booksCompleted?.includes(book.code) || false,
-        code: book.code, // Pass the correct code to the trophy object
-      }))
-
-      const ntBookTrophies = newTestamentBooks.map((book) => ({
-        id: book.id,
-        title: book.title,
-        description: `Complete all stories in ${book.title}`,
-        icon: "book-outline", // This is a placeholder, `renderTrophyIcon` uses the code.
-        achieved: stats.booksCompleted?.includes(book.code) || false,
-        code: book.code, // Pass the correct code to the trophy object
-      }))
-
-      return [...baseTrophies, ...otBookTrophies, ...ntBookTrophies]
-    }
-
-    return baseTrophies
-  }, [stats])
-
-  const sortedTrophies = useMemo(() => {
-    return [...trophies].sort((a, b) => {
-      if (a.achieved && !b.achieved) return -1
-      if (!a.achieved && b.achieved) return 1
-      return 0
-    })
-  }, [trophies])
-
-  const AchievementBadge = ({ icon, title, value, color, max = null }: AchievementBadgeProps) => (
-    <View style={[ styles.achievementItem, { backgroundColor: colors.card, shadowColor: color, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
-      <LinearGradient colors={[color + "20", color + "40"]} style={[styles.iconContainer]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
-        <Ionicons name={icon} size={28} color={color} />
-      </LinearGradient>
-      <View style={styles.achievementContent}>
-        <Text style={[styles.achievementTitle, { color: colors.text }]}>{title}</Text>
-        {max ? (
-          <View style={styles.progressContainer}>
-            <View style={[styles.progressBarOuter, { backgroundColor: colors.border + "30" }]}>
-              <View style={[ styles.progressBarInner, { width: `${(Number(value) / Number(max)) * 100}%`, backgroundColor: color }, ]} />
-            </View>
-            <Text style={[styles.progressText, { color: colors.secondary }]}>
-              {value} of {max}
-            </Text>
-          </View>
-        ) : (
-          <Text style={[styles.achievementValue, { color: color }]}>{value}</Text>
-        )}
+  const ProgressBar = ({ progress, total, color }: { progress: number; total: number; color: string }) => (
+    <View style={styles.progressBarContainer}>
+      <View style={[styles.progressBar, { backgroundColor: color + '20' }]}>
+        <View 
+          style={[
+            styles.progressFill, 
+            { 
+              backgroundColor: color,
+              width: `${Math.min((progress / total) * 100, 100)}%`
+            }
+          ]} 
+        />
       </View>
     </View>
-  )
-  
-  const Trophy = ({ id, title, description, icon, achieved }: TrophyProps) => {
-    const { colors } = useAppSettings()
-    return (
-      <View style={[ styles.trophyItem, { backgroundColor: colors.card, borderColor: achieved ? colors.primary + "30" : colors.border, }, ]} >
-        <LinearGradient colors={ achieved ? [colors.primary + "20", colors.primary + "40"] : [colors.border + "10", colors.border + "20"] } style={[styles.trophyIcon]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
-          <Ionicons name={icon as any} size={24} color={achieved ? colors.primary : colors.border} />
-        </LinearGradient>
-        <View style={styles.trophyContent}>
-          <Text style={[styles.trophyTitle, { color: colors.text }]}>{title}</Text>
-          <Text style={[styles.trophyDesc, { color: colors.secondary }]}>{description}</Text>
+  );
+
+  const StatCard = ({ icon, title, value, backgroundColor }: { 
+    icon: keyof typeof Ionicons.glyphMap; 
+    title: string; 
+    value: string; 
+    backgroundColor: string;
+  }) => (
+    <View style={[styles.statCard, { backgroundColor }]}>
+      <View style={styles.statCardContent}>
+        <View style={styles.statCardIconContainer}>
+          <Ionicons name={icon} size={32} color="white" />
         </View>
-        {achieved && (
-          <View style={styles.achievedBadge}>
-            <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+        <Text style={styles.statCardTitle}>{title}</Text>
+        <Text style={styles.statCardValue}>{value}</Text>
+      </View>
+    </View>
+  );
+
+  const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
+    const isCompleted = achievement.progress >= achievement.total;
+    
+    return (
+      <View style={[styles.achievementCard, isCompleted && styles.completedCard]}>
+        <View style={styles.achievementHeader}>
+          <View style={[styles.achievementIcon, { backgroundColor: achievement.color + '20' }]}>
+            <Ionicons 
+              name={achievement.icon} 
+              size={24} 
+              color={achievement.color} 
+            />
           </View>
-        )}
+          <View style={styles.achievementInfo}>
+            <Text style={styles.achievementTitle}>
+              {achievement.title}
+            </Text>
+            <Text style={styles.achievementProgress}>
+              {achievement.progress} of {achievement.total}
+            </Text>
+          </View>
+        </View>
+        <Text style={styles.achievementDescription}>{achievement.description}</Text>
+        <ProgressBar 
+          progress={achievement.progress} 
+          total={achievement.total} 
+          color={achievement.color} 
+        />
       </View>
-    )
-  }
+    );
+  };
 
-  if (isLoading) {
+    const BookIcon = ({ book }: { book: BookCompletion }) => {
+    const isCompleted = isBookCompleted(book.bookCode);
+    const imageSource = imageMap[book.bookCode];
+    
     return (
-      <View style={[styles.container, styles.centerContent, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={[styles.loadingText, { color: colors.secondary, marginTop: 16 }]}>
-          Loading your achievements...
-        </Text>
+      <View style={styles.bookIconContainer}>
+        <View style={[styles.bookIconWrapper, isCompleted && styles.completedBookIcon]}>
+          {imageSource ? (
+            <Image 
+              source={imageSource} 
+              style={[styles.bookIcon, !isCompleted && styles.uncompletedBookIcon]} 
+              resizeMode="contain"
+            />
+          ) : (
+            <View style={[styles.bookIcon, styles.fallbackIcon, !isCompleted && styles.uncompletedBookIcon]}>
+              <Text style={[styles.fallbackIconText, !isCompleted && styles.uncompletedBookText]}>{book.bookCode}</Text>
+            </View>
+          )}
+        </View>
+        <Text style={[styles.bookName, !isCompleted && styles.uncompletedBookName]}>{book.bookName}</Text>
       </View>
-    )
-  }
+    );
+  };
 
-  if (error) {
-    return (
-      <View style={[styles.container, styles.centerContent, { backgroundColor: colors.background }]}>
-        <Ionicons name="alert-circle-outline" size={48} color={"#FF3B30"} style={{ marginBottom: 16 }} />
-        <Text style={[styles.errorText, { color: colors.text }]}>{error}</Text>
-        <TouchableOpacity style={[styles.retryButton, { backgroundColor: colors.primary }]} onPress={() => setRefreshTrigger((prev) => prev + 1)} >
-          <Text style={styles.retryButtonText}>Try Again</Text>
-        </TouchableOpacity>
+  const renderSection = (title: string, achievements: Achievement[]) => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.achievementGrid}>
+        {achievements.map((achievement) => (
+          <AchievementCard key={achievement.id} achievement={achievement} />
+        ))}
       </View>
-    )
-  }
+    </View>
+  );
+
+  const renderBooksSection = (title: string, books: BookCompletion[]) => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.booksGrid}>
+        {books.map((book) => (
+          <BookIcon key={book.bookCode} book={book} />
+        ))}
+      </View>
+    </View>
+  );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-          <View style={styles.welcomeSection}>
-            <Text style={[styles.title, { color: colors.text }]}>Achievements</Text>
-            <Text style={[styles.subtitle, { color: colors.secondary }]}>Track your Bible reading journey</Text>
-          </View>
+    <SafeAreaView style={styles.container}>
+      <ScrollView 
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.contentContainer}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>Achievements</Text>
+          <Text style={styles.subtitle}>
+            Track your Bible reading progress and celebrate your milestones
+          </Text>
+        </View>
 
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Reading Progress</Text>
-          <View style={[ styles.achievementItem, { backgroundColor: colors.card, shadowColor: "#FF6B00", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
-            <LinearGradient colors={["#FF6B0020", "#FF6B0040"]} style={styles.iconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
-              <Ionicons name="book" size={24} color="#FF6B00" />
-            </LinearGradient>
-            <View style={styles.achievementContent}>
-              <Text style={[styles.achievementTitle, { color: colors.text }]}>Total Stories Read</Text>
-              <View style={[styles.largeProgressBarOuter, { backgroundColor: colors.border + "30" }]}>
-                <LinearGradient colors={["#FF6B00", "#FF8C40"]} style={[ styles.largeProgressBarInner, { width: `${(stats.completedStories / (stats.totalStories || 1)) * 100}%` }, ]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
-              </View>
-              <Text style={[styles.achievementValue, { color: "#FF6B00" }]}>
-                {stats.completedStories} of {stats.totalStories} stories
-              </Text>
-            </View>
-          </View>
+        {/* Top Statistics */}
+        <View style={styles.statsContainer}>
+          <StatCard
+            icon="book-outline"
+            title="Stories Read"
+            value={stats.completedStories.toString()}
+            backgroundColor="#4CAF50"
+          />
+          <StatCard
+            icon="flame-outline"
+            title="Current Streak"
+            value={stats.currentStreak.toString()}
+            backgroundColor="#FF69B4"
+          />
+          <StatCard
+            icon="trending-up-outline"
+            title="Complete Bible"
+            value={`${stats.completionPercentage}%`}
+            backgroundColor="#7B68EE"
+          />
+        </View>
 
-          <View style={styles.testamentContainer}>
-            <View style={[ styles.achievementItem, { backgroundColor: colors.card, shadowColor: "#8B5CF6", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
-              <LinearGradient colors={["#8B5CF620", "#8B5CF640"]} style={styles.iconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
-                <Ionicons name="book" size={24} color="#8B5CF6" />
-              </LinearGradient>
-              <View style={styles.achievementContent}>
-                <Text style={[styles.achievementTitle, { color: colors.text }]}>Old Testament</Text>
-                <View style={[styles.progressBarOuter, { backgroundColor: colors.border + "30" }]}>
-                  <LinearGradient colors={["#8B5CF6", "#A78BFA"]} style={[ styles.progressBarInner, { width: `${(stats.oldTestament.completed / (stats.oldTestament.total || 1)) * 100}%` }, ]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
-                </View>
-                <Text style={[styles.progressText, { color: colors.secondary }]}>
-                  {stats.oldTestament.completed} of {stats.oldTestament.total}
-                </Text>
-              </View>
-            </View>
+        {/* Reading Milestones */}
+        {renderSection(
+          'Reading Milestones',
+          achievements.filter(a => a.category === 'milestones')
+        )}
 
-            <View style={[ styles.achievementItem, { backgroundColor: colors.card, shadowColor: "#3B82F6", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
-              <LinearGradient colors={["#3B82F620", "#3B82F640"]} style={styles.iconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
-                <Ionicons name="book" size={24} color="#3B82F6" />
-              </LinearGradient>
-              <View style={styles.achievementContent}>
-                <Text style={[styles.achievementTitle, { color: colors.text }]}>New Testament</Text>
-                <View style={[styles.progressBarOuter, { backgroundColor: colors.border + "30" }]}>
-                  <LinearGradient colors={["#3B82F6", "#60A5FA"]} style={[ styles.progressBarInner, { width: `${(stats.newTestament.completed / (stats.newTestament.total || 1)) * 100}%` }, ]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
-                </View>
-                <Text style={[styles.progressText, { color: colors.secondary }]}>
-                  {stats.newTestament.completed} of {stats.newTestament.total}
-                </Text>
-              </View>
-            </View>
-          </View>
+        {/* Reading Streaks */}
+        {renderSection(
+          'Reading Streaks',
+          achievements.filter(a => a.category === 'streaks')
+        )}
 
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Streaks</Text>
-          <View style={styles.streaksRow}>
-            <View style={[ styles.streakCard, { backgroundColor: colors.card, shadowColor: "#FF6B00", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
-              <LinearGradient colors={["#FF6B0020", "#FF6B0040"]} style={styles.streakIconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
-                <Ionicons name="flame" size={28} color="#FF6B00" />
-              </LinearGradient>
-              <Text style={[styles.streakValue, { color: "#FF6B00" }]}>{stats.currentStreak}</Text>
-              <Text style={[styles.streakLabel, { color: colors.text }]}>Current Streak</Text>
-            </View>
-            <View style={[ styles.streakCard, { backgroundColor: colors.card, shadowColor: "#F59E0B", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
-              <LinearGradient colors={["#F59E0B20", "#F59E0B40"]} style={styles.streakIconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
-                <Ionicons name="trending-up" size={28} color="#F59E0B" />
-              </LinearGradient>
-              <Text style={[styles.streakValue, { color: "#F59E0B" }]}>{stats.bestStreak}</Text>
-              <Text style={[styles.streakLabel, { color: colors.text }]}>Best Streak</Text>
-            </View>
-            <View style={[ styles.streakCard, { backgroundColor: colors.card, shadowColor: "#6366F1", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
-              <LinearGradient colors={["#6366F120", "#6366F140"]} style={styles.streakIconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
-                <Ionicons name="time" size={28} color="#6366F1" />
-              </LinearGradient>
-              <Text style={[styles.streakValue, { color: "#6366F1" }]}>{stats.longestSession || 0}</Text>
-              <Text style={[styles.streakLabel, { color: colors.text }]}>Longest Session</Text>
-            </View>
-          </View>
+        {/* Testament Progress */}
+        {renderSection(
+          'Testament Progress',
+          achievements.filter(a => a.category === 'testament')
+        )}
 
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Trophies</Text>
-          <TrophyGrid trophies={sortedTrophies} colors={colors} />
-          <View style={{ height: 50 }} />
-        </Animated.View>
+        {/* Engagement */}
+        {renderSection(
+          'Engagement',
+          achievements.filter(a => a.category === 'engagement')
+        )}
+
+        {/* Old Testament Books */}
+        {renderBooksSection('Old Testament Books', oldTestamentBooks)}
+
+        {/* New Testament Books */}
+        {renderBooksSection('New Testament Books', newTestamentBooks)}
       </ScrollView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
-const styles = StyleSheet.create({
+const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.background,
   },
   content: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    flex: 1,
   },
-  welcomeSection: {
-    marginBottom: 24,
+  contentContainer: {
+    paddingBottom: 20,
+  },
+  header: {
+    padding: 16,
+    paddingBottom: 8,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "600",
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.text,
     marginBottom: 8,
-    letterSpacing: -0.3,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
-    marginTop: 4,
-    opacity: 0.8,
+    color: colors.secondary,
+    lineHeight: 24,
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 12,
-    letterSpacing: -0.5,
+  statsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    gap: 12,
+    marginBottom: 24,
   },
-  achievementItem: {
-    flexDirection: "row",
-    padding: 16,
+  statCard: {
+    flex: 1,
     borderRadius: 16,
-    marginBottom: 12,
-    overflow: "hidden",
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 140,
   },
-  testamentContainer: {
-    marginTop: 4,
-  },
-  streaksRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 8,
-  },
-  streakCard: {
-    width: "31%",
+  statCardContent: {
+    flex: 1,
     padding: 16,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
   },
-  streakIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  streakValue: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  streakLabel: {
-    fontSize: 14,
-    textAlign: "center",
-  },
-  iconContainer: {
+  statCardIconContainer: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
-  achievementContent: {
+  statCardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 6,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  statCardValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 16,
+    paddingHorizontal: 16,
+    letterSpacing: -0.3,
+  },
+  achievementGrid: {
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  achievementCard: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 16,
+    width: isLargeScreen ? '48%' : '48%',
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
+  },
+  completedCard: {
+    borderWidth: 2,
+    borderColor: 'rgba(76, 175, 80, 0.3)',
+  },
+  achievementHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  achievementIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  achievementInfo: {
     flex: 1,
   },
   achievementTitle: {
     fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 6,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 2,
   },
-  achievementValue: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginTop: 4,
-  },
-  progressContainer: {
-    marginTop: 8,
-  },
-  progressBarOuter: {
-    height: 8,
-    borderRadius: 4,
-    marginVertical: 6,
-    overflow: "hidden",
-  },
-  progressBarInner: {
-    height: "100%",
-    borderRadius: 4,
-  },
-  progressText: {
+  achievementProgress: {
     fontSize: 14,
+    color: colors.secondary,
+    fontWeight: '500',
+  },
+  achievementDescription: {
+    fontSize: 14,
+    color: colors.secondary,
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  progressBarContainer: {
     marginTop: 4,
   },
-  largeProgressBarOuter: {
-    height: 12,
-    borderRadius: 6,
-    marginVertical: 8,
-    overflow: "hidden",
+  progressBar: {
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
   },
-  largeProgressBarInner: {
-    height: "100%",
-    borderRadius: 6,
+  progressFill: {
+    height: '100%',
+    borderRadius: 3,
   },
-  centerContent: {
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 32,
+  // Bible Books Section Styles
+  booksGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 16,
+    gap: 16,
   },
-  errorText: {
-    fontSize: 18,
-    textAlign: "center",
+  bookIconContainer: {
+    width: '47%',
+    alignItems: 'center',
     marginBottom: 16,
+    flexDirection: 'row',
+    paddingHorizontal: 8,
+    paddingVertical: 8,
   },
-  loadingText: {
-    fontSize: 16,
-    textAlign: "center",
-  },
-  retryButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 16,
-  },
-  retryButtonText: {
-    color: "white",
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  trophyCategory: {
-    marginBottom: 24,
-  },
-  trophyCategoryTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 12,
-    marginLeft: 4,
-  },
-  trophyGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
-  trophyGridItem: {
-    width: "31%",
-    aspectRatio: 0.8,
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  trophyIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 10,
-    borderWidth: 2,
-    position: "relative",
-    overflow: "hidden",
-  },
-  trophyGridTitle: {
-    fontSize: 13,
-    textAlign: "center",
-    marginTop: 8,
-  },
-  achievedIcon: {
-    opacity: 1,
-  },
-  lockedIcon: {
-    opacity: 0.5,
-  },
-  lockIcon: {
-    position: "absolute",
-    bottom: -2,
-    right: -2,
-    backgroundColor: "white",
-    borderRadius: 8,
-    overflow: "hidden",
-    padding: 2,
-  },
-  trophyItem: {
-    flexDirection: "row",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    alignItems: "center",
-    borderWidth: 1,
-    position: "relative",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  trophyIcon: {
+  bookIconWrapper: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
-    overflow: "hidden",
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    backgroundColor: colors.card,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  trophyContent: {
+  completedBookIcon: {
+    backgroundColor: '#4CAF50',
+    shadowColor: '#4CAF50',
+    shadowOpacity: 0.3,
+  },
+  bookIcon: {
+    width: 32,
+    height: 32,
+  },
+  uncompletedBookIcon: {
+    opacity: 0.3,
+  },
+  fallbackIcon: {
+    backgroundColor: colors.secondary,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fallbackIconText: {
+    color: colors.background,
+    fontSize: 8,
+    fontWeight: '600',
+  },
+  uncompletedBookText: {
+    opacity: 0.3,
+  },
+  bookName: {
+    fontSize: 14,
+    color: colors.text,
+    fontWeight: '500',
     flex: 1,
   },
-  trophyTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
+  uncompletedBookName: {
+    color: colors.secondary,
+    opacity: 0.5,
   },
-  trophyDesc: {
-    fontSize: 14,
-    opacity: 0.8,
-  },
-  achievedBadge: {
-    position: "absolute",
-    top: 12,
-    right: 12,
-  },
-})
+});
 
-export default Achievements
+export default Achievements;

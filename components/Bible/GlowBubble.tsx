@@ -94,9 +94,8 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
             ]}
           />
         )}
-        <FlatList
-          data={children}
-          renderItem={({ item, index }) => {
+        <View>
+          {children.map((item, index) => {
             if (item.type === "break" || item.tag === "b") return null;
             return (
               <BibleInlineComponent
@@ -106,8 +105,8 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
                 textColor={colors.dark}
               />
             );
-          }}
-        />
+          })}
+        </View>
       </Animated.View>
       {emoji && (
         <View style={[styles.reactionContainer, { top: 35 }, emojiAlignment]}>

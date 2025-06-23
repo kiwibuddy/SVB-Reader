@@ -318,15 +318,63 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     challengeId?: string
   ) => {
     try {
-      await markSegmentCompleteDB(segmentId, context, planId, challengeId);
-      setCompletedSegments(prev => ({
-        ...prev,
-        [segmentId]: {
-          isCompleted,
-          color: readerColor
+      // Only mark as complete if isCompleted is true
+      if (isCompleted) {
+        await markSegmentCompleteDB(segmentId, context, planId, challengeId);
+        
+        // Update local state for main context
+        if (context === 'main') {
+          setCompletedSegments(prev => ({
+            ...prev,
+            [segmentId]: {
+              isCompleted: true,
+              color: readerColor
+            }
+          }));
         }
-      }));
-      await updateDailyActivity(segmentId);
+        
+        // Update plan progress if in plan context
+        if (context === 'plan' && planId && activePlan?.planId === planId) {
+          const updatedSegments = [...activePlan.completedSegments];
+          if (!updatedSegments.includes(segmentId)) {
+            updatedSegments.push(segmentId);
+          }
+          
+          const updatedPlan = {
+            ...activePlan,
+            completedSegments: updatedSegments
+          };
+          
+          setActivePlan(updatedPlan);
+          await AsyncStorage.setItem('activePlan', JSON.stringify(updatedPlan));
+        }
+        
+        // Update challenge progress if in challenge context
+        if (context === 'challenge' && challengeId && activeChallenges[challengeId]) {
+          const currentChallenge = activeChallenges[challengeId];
+          const updatedSegments = [...currentChallenge.completedSegments];
+          if (!updatedSegments.includes(segmentId)) {
+            updatedSegments.push(segmentId);
+          }
+          
+          const updatedChallenge = {
+            ...currentChallenge,
+            completedSegments: updatedSegments
+          };
+          
+          setActiveChallenges(prev => ({
+            ...prev,
+            [challengeId]: updatedChallenge
+          }));
+          
+          await AsyncStorage.setItem('activeChallenges', JSON.stringify({
+            ...activeChallenges,
+            [challengeId]: updatedChallenge
+          }));
+        }
+        
+        await updateDailyActivity(segmentId);
+      }
     } catch (error) {
       console.error('Error updating segment completion:', error);
     }

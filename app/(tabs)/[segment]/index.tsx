@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform, FlatList, View, TouchableOpacity, Text, SafeAreaView, StatusBar } from 'react-native';
+import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar } from 'react-native';
 import { useAppContext } from '@/context/GlobalContext';
 import BibleData from "@/assets/data/newBibleNLT1.json"
 import readingPlansData from "@/assets/data/ReadingPlansChallenges.json";
@@ -62,6 +62,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
+    bottom: 140, // Fixed position above bottom navigation
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 16,
@@ -92,8 +93,9 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   checkCircleContainer: {
     alignItems: 'center',
-    paddingVertical: 20,
-    marginBottom: 60,
+    paddingTop: 16,
+    paddingBottom: 100, // Keep this exact distance from bottom navigation bar
+    marginTop: 0,
   },
   centered: {
     justifyContent: 'center',
@@ -104,19 +106,24 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   navigationButton: {
     backgroundColor: 'white',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+  },
+  contentContainer: {
+    paddingBottom: 20, // Minimal padding to prevent over-scroll
   }
 });
 
@@ -126,8 +133,12 @@ export default function BibleScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { planId, challengeId } = params;
-  const flatListRef = useRef<FlatList>(null);
+  const flatListRef = useRef<ScrollView>(null);
   const { isVisible } = useBottomNavAnimation();
+  
+  // Scroll state
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [isArrowsVisible, setIsArrowsVisible] = useState(true);
   
   // Create styles
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -151,6 +162,12 @@ export default function BibleScreen() {
     }
   }, [segID, updateSegmentId]);
 
+  // Initialize navigation arrows as visible when entering segment
+  useEffect(() => {
+    setIsArrowsVisible(true);
+    isVisible.setValue(1);
+  }, [segID, isVisible]);
+
   // Show loading state if data isn't ready
   if (!segID || !segmentData) {
     return (
@@ -166,15 +183,15 @@ export default function BibleScreen() {
     
     updateSegmentId(cleanSegId);
     router.push({
-      pathname: "/[segment]",
+      pathname: "/(tabs)/[segment]",
       params: {
         segment: cleanSegId,
         ...(planId ? { planId } : {}),
         ...(challengeId ? { challengeId } : {})
       }
     });
-    flatListRef.current?.scrollToOffset({
-      offset: 0,
+    flatListRef.current?.scrollTo({
+      y: 0,
       animated: false,
     });
   };
@@ -224,10 +241,49 @@ export default function BibleScreen() {
 
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
-    // Call the global scroll handler if it exists
-    if (global.handleBottomNavScroll) {
+    
+    // Use the global bottom navigation scroll handler for coordinated animations
+    if (global?.handleBottomNavScroll) {
       global.handleBottomNavScroll(event);
     }
+    
+    // Coordinate navigation arrows with bottom navigation using iOS-style behavior
+    if (currentOffset <= 100) {
+      // Show when near top
+      if (!isArrowsVisible) {
+        setIsArrowsVisible(true);
+        Animated.spring(isVisible, {
+          toValue: 1,
+          useNativeDriver: true,
+          tension: 150,
+          friction: 8
+        }).start();
+      }
+    } else if (currentOffset > lastScrollY + 20) {
+      // Hide when scrolling down with momentum
+      if (isArrowsVisible) {
+        setIsArrowsVisible(false);
+        Animated.spring(isVisible, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 150,
+          friction: 8
+        }).start();
+      }
+    } else if (currentOffset < lastScrollY - 10) {
+      // Show when scrolling up (more sensitive)
+      if (!isArrowsVisible) {
+        setIsArrowsVisible(true);
+        Animated.spring(isVisible, {
+          toValue: 1,
+          useNativeDriver: true,
+          tension: 150,
+          friction: 8
+        }).start();
+      }
+    }
+    
+    setLastScrollY(currentOffset);
   };
 
   // Render the header content that was previously in ScrollView
@@ -262,34 +318,29 @@ export default function BibleScreen() {
 
   return (
     <View style={styles.container}>
-      <FlatList 
+      <ScrollView 
         ref={flatListRef} 
         style={styles.screenContainer}
-        data={[]} // Empty data array since we're only using ListHeaderComponent
-        renderItem={() => null} // No items to render
-        ListHeaderComponent={renderHeader}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        contentContainerStyle={{ flexGrow: 1 }}
-      />
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {renderHeader()}
+      </ScrollView>
 
       <Animated.View style={[
         styles.buttonContainer,
         {
-         /*  transform: [{
+          transform: [{
             translateY: isVisible.interpolate({
               inputRange: [0, 1],
-              outputRange: [0, -16], // Reduced movement when nav is visible
+              outputRange: [120, 0], // Smooth slide animation
             })
           }],
-          bottom: isVisible.interpolate({
+          opacity: isVisible.interpolate({
             inputRange: [0, 1],
-            outputRange: [24, 80], // 24px from bottom when hidden, 80px when nav visible
-          }) */
-         // Position relative to the bottom navigation bar
-          bottom: isVisible.interpolate({
-            inputRange: [0, 1],
-            outputRange: [16, 72], // 16px above screen bottom when nav hidden, 72px when visible (floating above nav)
+            outputRange: [0, 1], // Fade animation
           })
         }
       ]}>

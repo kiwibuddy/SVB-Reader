@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from '@react-navigation/native';
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
 import Accordion, { AccordionItem, accordionColor } from "@/components/navigation/NavBook";
 import Books from "@/assets/data/BookChapterList.json";
@@ -256,10 +257,17 @@ const PlanScreen = () => {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [planProgress, setPlanProgress] = useState<Record<string, string[]>>({});
 
-  // Load initial progress data
+  // Load plan progress when component mounts
   useEffect(() => {
     loadPlanProgress();
   }, []);
+
+  // Refresh when returning from reading a segment
+  useFocusEffect(
+    React.useCallback(() => {
+      loadPlanProgress();
+    }, [])
+  );
 
   const loadPlanProgress = async () => {
     const progress: Record<string, string[]> = {};
@@ -292,10 +300,11 @@ const PlanScreen = () => {
 
   const handleSegmentComplete = async (planId: string, segmentId: string) => {
     try {
-      // Mark segment as complete in database
-      await markSegmentComplete(segmentId, 'plan', planId, undefined);
+      // The actual completion is handled by CheckCircle component
+      // This function is called by the Accordion when a segment is completed
+      // We just need to refresh the local progress state
       
-      // Update local state
+      // Update local state immediately for UI responsiveness
       setPlanProgress(prev => ({
         ...prev,
         [planId]: [...(prev[planId] || []), segmentId]
@@ -339,6 +348,17 @@ const PlanScreen = () => {
 
     } catch (error) {
       console.error('Error completing segment:', error);
+    }
+  };
+
+  // Function to get completion status for a segment in a plan
+  const getSegmentCompletionForPlan = async (planId: string, segmentId: string) => {
+    try {
+      const status = await getSegmentCompletionStatus(segmentId, 'plan', planId);
+      return status.isCompleted;
+    } catch (error) {
+      console.error('Error getting segment completion status:', error);
+      return false;
     }
   };
 
@@ -451,12 +471,12 @@ const PlanScreen = () => {
 
   const handlePress = (segmentId: string) => {
     router.push({
-      pathname: `/${segmentId}`,
-      query: { 
-        showGlobalCompletion: 'false',
+      pathname: "/(tabs)/[segment]",
+      params: { 
+        segment: segmentId,
         planId: selectedPlanId
       }
-    } as any);
+    });
   };
 
   const getStatusStyle = (status: string) => {
@@ -571,37 +591,33 @@ const PlanScreen = () => {
 
             <View style={styles.booksContainer}>
               <View style={styles.accordionContainer}>
-                <FlatList
-                  data={planBooksData}
-                  renderItem={({ item }) => {
-                    const bookIndex = booksArray.findIndex(
-                      (book) => book === item.djhBook
-                    );
-                    // Map completedSegments array to Record<string, boolean>
-                    const completedSegmentsMap = completedSegments.reduce((acc, id) => {
-                      acc[id] = true;
-                      return acc;
-                    }, {} as Record<string, boolean>);
-                    return (
-                      <Accordion 
-                        item={item} 
-                        bookIndex={bookIndex}
-                        onSegmentComplete={(segmentId) => handleSegmentComplete(plan.id, segmentId)}
-                        context="plan"
-                        showGlobalCompletion={false}
-                        planId={plan.id}
-                        completedSegments={completedSegmentsMap}
-                        key={completedSegments.join(',') + '-' + item.djhBook}
-                        style={{ 
-                          backgroundColor: colors.card,
-                          borderBottomWidth: 1,
-                          borderBottomColor: colors.border
-                        }}
-                      />
-                    );
-                  }}
-                  keyExtractor={(item) => item.djhBook}
-                />
+                {planBooksData.map((item) => {
+                  const bookIndex = booksArray.findIndex(
+                    (book) => book === item.djhBook
+                  );
+                  // Use the plan-specific completion status
+                  const completedSegmentsMap = completedSegments.reduce((acc, id) => {
+                    acc[id] = true;
+                    return acc;
+                  }, {} as Record<string, boolean>);
+                  return (
+                    <Accordion 
+                      key={completedSegments.join(',') + '-' + item.djhBook}
+                      item={item} 
+                      bookIndex={bookIndex}
+                      onSegmentComplete={(segmentId) => handleSegmentComplete(plan.id, segmentId)}
+                      context="plan"
+                      showGlobalCompletion={false}
+                      planId={plan.id}
+                      completedSegments={completedSegmentsMap}
+                      style={{ 
+                        backgroundColor: colors.card,
+                        borderBottomWidth: 1,
+                        borderBottomColor: colors.border
+                      }}
+                    />
+                  );
+                })}
               </View>
             </View>
           </>
@@ -678,11 +694,11 @@ const PlanScreen = () => {
   const renderCategorySection = (title: string, plans: Plan[]) => (
     <View style={styles.categorySection}>
       <Text style={styles.categoryTitle}>{title}</Text>
-      <FlatList
-        data={plans}
-        renderItem={renderPlanItem}
-        keyExtractor={(item) => item.id}
-      />
+      {plans.map((plan) => (
+        <View key={plan.id}>
+          {renderPlanItem({ item: plan })}
+        </View>
+      ))}
     </View>
   );
 

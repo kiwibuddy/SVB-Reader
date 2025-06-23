@@ -7,22 +7,31 @@ import {
   Animated,
   Dimensions,
   Platform,
+  SafeAreaView,
+  ScrollView,
 } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { SegmentType, IntroType } from '@/types';
-import RoleProgressBar from '@/components/RoleProgressBar';
 import BibleData from "@/assets/data/newBibleNLT1.json";
-import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
-import { getColors } from "@/scripts/getColors";
+import SegmentTitles from "@/assets/data/SegmentTitles.json";
+import Books from "@/assets/data/BookChapterList.json";
+import { getSegmentReadingTime } from '@/utils/readingTime';
 
 const { height: screenHeight } = Dimensions.get('window');
+
+// Helper function to get book name
+const getBookName = (bookCode: string): string => {
+  const book = Books[bookCode as keyof typeof Books];
+  return book?.bookName || bookCode;
+};
 
 interface ReadingModeModalProps {
   visible: boolean;
   story: SegmentType | IntroType;
   storyTitle: string;
   scriptureReference: string;
+  storyId?: string; // Add optional storyId prop
   onIndividual: () => void;
   onGroup: () => void;
   onCancel: () => void;
@@ -36,6 +45,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
   story,
   storyTitle,
   scriptureReference,
+  storyId: propStoryId,
   onIndividual,
   onGroup,
   onCancel,
@@ -45,103 +55,66 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
   const [backdropOpacity] = React.useState(new Animated.Value(0));
   const [autoCloseTimer, setAutoCloseTimer] = React.useState<ReturnType<typeof setTimeout> | null>(null);
 
-  // Get segment data and calculate role distribution (same logic as main Segment component)
+  // Extract story ID - this should match the segment ID from the Bible data
+  const storyId = useMemo(() => {
+    // First, try to use the provided storyId prop
+    if (propStoryId) {
+      return propStoryId;
+    }
+    
+    // Then, try to use the story object if it has an ID
+    if (story && typeof story === 'object' && 'id' in story) {
+      return story.id;
+    }
+    
+    // If story is a string, it might be the segment ID directly
+    if (typeof story === 'string') {
+      return story;
+    }
+    
+    // Try to find segment ID by matching the story title
+    const foundSegment = Object.entries(SegmentTitles).find(([_, segment]) => 
+      segment.title === storyTitle
+    );
+    
+    if (foundSegment) {
+      return foundSegment[0];
+    }
+    
+    console.log('ReadingModeModal: Could not determine story ID', { story, storyTitle, propStoryId, SegmentTitlesKeys: Object.keys(SegmentTitles).slice(0, 5) });
+    return null;
+  }, [propStoryId, story, storyTitle]);
+
+  // Get segment data and calculate role distribution
   const segmentData = useMemo(() => {
-    if (!story || !('id' in story)) return null;
-    return Bible[story.id];
-  }, [story]);
+    if (!storyId) return null;
+    return Bible[storyId];
+  }, [storyId]);
 
-  // Use pre-calculated color data from segmentData
-  const colorData = useMemo(() => {
-    return segmentData?.colors || {
-      black: 0,
-      red: 0,
-      green: 0,
-      blue: 0,
-      total: 0
-    };
-  }, [segmentData?.colors]);
+  // Get segment title data
+  const segmentTitleData = useMemo(() => {
+    if (!storyId) return null;
+    return SegmentTitles[storyId as keyof typeof SegmentTitles];
+  }, [storyId]);
 
-  // Memoize the content to calculate role distribution
-  const memoizedContent = useMemo(() => {
-    if (!segmentData?.content) return [];
-    
-    // ALWAYS split content into paragraphs first (breaks long speeches into smaller bubbles)
-    const splitContent = splitIntoParagraphs(segmentData.content);
-    
-    // For group reading, we always want to show the full split content
-    return splitContent;
-  }, [segmentData?.content]);
-
-  // Calculate reader roles based on actual speech bubble distribution
-  const readersByColor = useMemo(() => {
-    const maxRoles = 4;
-    const result: { [color: string]: number[] } = {};
-    
-    // Count actual speech bubbles by color from memoized content
-    const bubblesByColor = memoizedContent.reduce((acc, block) => {
-      const color = block.source.color;
-      acc[color] = (acc[color] || 0) + 1;
-      return acc;
-    }, {} as { [color: string]: number });
-    
-    // Sort colors by bubble count (descending) to prioritize speakers with more bubbles
-    const colorsByBubbleCount = Object.entries(bubblesByColor)
-      .map(([color, count]) => ({ color, count }))
-      .sort((a, b) => b.count - a.count);
-    
-    let rolesAssigned = 0;
-    
-    // First pass: Ensure every speaker gets at least 1 role
-    colorsByBubbleCount.forEach(({ color }) => {
-      if (rolesAssigned < maxRoles) {
-        result[color] = [0];
-        rolesAssigned++;
-      }
+  // Get reading time from pre-calculated data
+  const readingTime = useMemo(() => {
+    if (!storyId) return 0;
+    const time = getSegmentReadingTime(storyId);
+    console.log('ReadingModeModal: Reading time from lookup', { 
+      storyId, 
+      readingTime: time
     });
-    
-    // Second pass: Distribute remaining roles proportionally to dominant speakers
-    if (rolesAssigned < maxRoles) {
-      const totalBubbles = Object.values(bubblesByColor).reduce((sum, c) => sum + c, 0);
-      
-      colorsByBubbleCount.forEach(({ color, count }) => {
-        if (rolesAssigned >= maxRoles) return;
-        
-        const proportion = count / totalBubbles;
-        const currentRoles = result[color]?.length || 0;
-        
-        // Calculate additional roles this color should get based on proportion
-        const targetRoles = Math.round(proportion * maxRoles);
-        const additionalRoles = Math.max(0, targetRoles - currentRoles);
-        
-        // Add additional roles up to remaining capacity
-        const rolesToAdd = Math.min(additionalRoles, maxRoles - rolesAssigned);
-        
-        if (rolesToAdd > 0) {
-          const currentPositions = result[color] || [];
-          for (let i = 0; i < rolesToAdd; i++) {
-            currentPositions.push(currentPositions.length);
-            rolesAssigned++;
-          }
-          result[color] = currentPositions;
-        }
-      });
-    }
-    
-    // Final pass: If still under 4 roles, give remaining to most dominant speaker
-    if (rolesAssigned < maxRoles && colorsByBubbleCount.length > 0) {
-      const dominantColor = colorsByBubbleCount[0].color;
-      const currentPositions = result[dominantColor] || [];
-      const additionalRoles = maxRoles - rolesAssigned;
-      
-      for (let i = 0; i < additionalRoles; i++) {
-        currentPositions.push(currentPositions.length);
-      }
-      result[dominantColor] = currentPositions;
-    }
-    
-    return result;
-  }, [memoizedContent]);
+    return time;
+  }, [storyId]);
+
+  // Get book name
+  const bookName = useMemo(() => {
+    if (!segmentTitleData?.book?.[0]) return '';
+    return getBookName(segmentTitleData.book[0]);
+  }, [segmentTitleData?.book]);
+
+
 
   const styles = StyleSheet.create({
     backdrop: {
@@ -155,42 +128,55 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
     },
     modalContainer: {
       position: 'absolute',
-      bottom: 0,
+      top: 0,
       left: 0,
       right: 0,
+      bottom: 0,
       backgroundColor: colors.background,
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
-      paddingHorizontal: 24,
-      paddingTop: 20,
-      paddingBottom: Platform.OS === 'ios' ? 40 : 24,
-      maxHeight: screenHeight * 0.7,
-      shadowColor: '#000',
-      shadowOffset: {
-        width: 0,
-        height: -4,
-      },
-      shadowOpacity: 0.1,
-      shadowRadius: 12,
-      elevation: 8,
       zIndex: 1001,
     },
-    handle: {
-      width: 40,
-      height: 4,
-      backgroundColor: colors.border,
-      borderRadius: 2,
-      alignSelf: 'center',
-      marginBottom: 20,
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    closeButton: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    headerTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: 20,
+      paddingTop: 24,
     },
     storyInfo: {
-      marginBottom: 32,
+      alignItems: 'center',
+      marginBottom: 40,
     },
     storyTitle: {
-      fontSize: 22,
+      fontSize: 24,
       fontWeight: '700',
       color: colors.text,
       marginBottom: 8,
+      textAlign: 'center',
+    },
+    bookName: {
+      fontSize: 16,
+      fontWeight: '500',
+      color: colors.text,
+      marginBottom: 4,
       textAlign: 'center',
     },
     scriptureRef: {
@@ -198,59 +184,29 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       color: colors.secondary,
       textAlign: 'center',
       fontStyle: 'italic',
+      marginBottom: 8,
     },
-    divider: {
-      height: 1,
-      backgroundColor: colors.border,
-      marginVertical: 24,
-    },
-    roleDistributionSection: {
-      backgroundColor: colors.card,
-      borderRadius: 12,
-      padding: 16,
-      marginBottom: 24,
-      borderColor: colors.border,
-      borderWidth: 1,
-    },
-    roleDistributionTitle: {
+    readingTime: {
       fontSize: 14,
-      fontWeight: '500',
-      color: colors.text,
-      marginBottom: 8,
-    },
-    roleDistributionExplanation: {
-      fontSize: 12,
       color: colors.secondary,
-      marginTop: 8,
-      lineHeight: 16,
-    },
-    roleIconsContainer: {
-      marginTop: 12,
-      marginBottom: 8,
-    },
-    roleIconsTitle: {
-      fontSize: 12,
-      fontWeight: '500',
-      color: colors.text,
-      marginBottom: 8,
       textAlign: 'center',
     },
-    roleIconsRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-      alignItems: 'center',
+
+    readingOptionsContainer: {
+      flex: 1,
     },
     readingOption: {
       backgroundColor: colors.card,
-      borderRadius: 12,
+      borderRadius: 16,
       padding: 20,
       marginBottom: 16,
       borderColor: colors.border,
       borderWidth: 1,
-    },
-    readingOptionPressed: {
-      backgroundColor: colors.primary + '10',
-      borderColor: colors.primary,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
     },
     optionHeader: {
       flexDirection: 'row',
@@ -259,6 +215,10 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
     },
     optionIcon: {
       marginRight: 12,
+      width: 24,
+      height: 24,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     optionTitle: {
       fontSize: 18,
@@ -266,32 +226,23 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       color: colors.text,
     },
     optionDescription: {
-      fontSize: 14,
+      fontSize: 15,
       color: colors.secondary,
-      lineHeight: 20,
-      marginLeft: 36,
+      lineHeight: 22,
+      marginBottom: 16,
     },
-    buttonContainer: {
-      marginTop: 8,
-      marginLeft: 36,
+    actionButton: {
+      paddingVertical: 14,
+      borderRadius: 12,
+      alignItems: 'center',
     },
     primaryButton: {
-      backgroundColor: colors.primary,
-      paddingVertical: 12,
-      paddingHorizontal: 24,
-      borderRadius: 8,
-      alignItems: 'center',
-      marginBottom: 8,
+      backgroundColor: '#FF5733',
     },
     secondaryButton: {
       backgroundColor: 'transparent',
-      paddingVertical: 12,
-      paddingHorizontal: 24,
-      borderRadius: 8,
-      alignItems: 'center',
-      borderColor: colors.primary,
-      borderWidth: 1,
-      marginBottom: 8,
+      borderWidth: 2,
+      borderColor: '#FF5733',
     },
     primaryButtonText: {
       color: '#FFFFFF',
@@ -299,28 +250,24 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       fontWeight: '600',
     },
     secondaryButtonText: {
-      color: colors.primary,
+      color: '#FF5733',
       fontSize: 16,
       fontWeight: '600',
     },
-    cancelButton: {
-      backgroundColor: 'transparent',
-      paddingVertical: 16,
+    bottomSection: {
+      paddingBottom: Platform.OS === 'ios' ? 34 : 20,
       alignItems: 'center',
-      marginTop: 16,
+    },
+    cancelButton: {
+      paddingVertical: 16,
+      paddingHorizontal: 32,
     },
     cancelButtonText: {
       color: colors.secondary,
       fontSize: 16,
       fontWeight: '500',
     },
-    autoCloseText: {
-      fontSize: 12,
-      color: colors.secondary,
-      textAlign: 'center',
-      marginTop: 12,
-      fontStyle: 'italic',
-    },
+
   });
 
   useEffect(() => {
@@ -386,28 +333,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
     onGroup();
   };
 
-  const renderRoleIcons = () => {
-    const roleIcons: React.ReactElement[] = [];
-    
-    // Use the same logic as readersByColor to create icons
-    Object.entries(readersByColor).forEach(([color, positions]) => {
-      positions.forEach((position) => {
-        const colorUtils = getColors(color);
-        
-        roleIcons.push(
-          <View key={`${color}-${position}`} style={{ alignItems: 'center' }}>
-            <MaterialIcons
-              name="chat-bubble"
-              size={24}
-              color={color === "black" ? "grey" : colorUtils.light}
-            />
-          </View>
-        );
-      });
-    });
-    
-    return roleIcons;
-  };
+
 
   if (!visible) return null;
 
@@ -423,95 +349,80 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
           { transform: [{ translateY: slideAnim }] }
         ]}
       >
-        <View style={styles.handle} />
-        
-        <View style={styles.storyInfo}>
-          <Text style={styles.storyTitle}>{storyTitle}</Text>
-          {scriptureReference && (
-            <Text style={styles.scriptureRef}>{scriptureReference}</Text>
-          )}
-        </View>
+        <SafeAreaView style={{ flex: 1 }}>
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.closeButton} onPress={onCancel}>
+              <Ionicons name="close" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Choose Reading Mode</Text>
+            <View style={{ width: 24 }} />
+          </View>
 
-        {/* Role Distribution Information */}
-        {colorData.total > 0 && (
-          <View style={styles.roleDistributionSection}>
-            <Text style={styles.roleDistributionTitle}>Story role distribution:</Text>
-            <RoleProgressBar 
-              colorData={colorData}
-              height={6}
-            />
-            <Text style={styles.roleDistributionExplanation}>
-              Shows the speaking parts in this story: Gray (Narrator), Red (God), Green (Main Character), Blue (Other Voices).
-            </Text>
-            
-            <View style={styles.roleIconsContainer}>
-              <Text style={styles.roleIconsTitle}>
-                Reading roles for group reading ({Object.values(readersByColor).flat().length} total):
+                    <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <View style={styles.storyInfo}>
+              <Text style={styles.storyTitle}>{storyTitle}</Text>
+              <Text style={styles.bookName}>{bookName}</Text>
+              {scriptureReference && (
+                <Text style={styles.scriptureRef}>{scriptureReference}</Text>
+              )}
+              <Text style={styles.readingTime}>
+                {readingTime} minute{readingTime !== 1 ? 's' : ''} estimated reading time
               </Text>
-              <View style={styles.roleIconsRow}>
-                {renderRoleIcons()}
+            </View>
+
+            <View style={styles.readingOptionsContainer}>
+              <View style={styles.readingOption}>
+                <View style={styles.optionHeader}>
+                  <View style={styles.optionIcon}>
+                    <Ionicons 
+                      name="person-outline" 
+                      size={24} 
+                      color="#FF5733" 
+                    />
+                  </View>
+                  <Text style={styles.optionTitle}>Read Alone</Text>
+                </View>
+                <Text style={styles.optionDescription}>
+                  Read this story by yourself. You can select any reading role or read all parts.
+                </Text>
+                <TouchableOpacity 
+                  style={[styles.actionButton, styles.primaryButton]} 
+                  onPress={handleIndividualPress}
+                >
+                  <Text style={styles.primaryButtonText}>Start Reading</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.readingOption}>
+                <View style={styles.optionHeader}>
+                  <View style={styles.optionIcon}>
+                    <Ionicons 
+                      name="people-outline" 
+                      size={24} 
+                      color="#FF5733" 
+                    />
+                  </View>
+                  <Text style={styles.optionTitle}>Read with Friends</Text>
+                </View>
+                <Text style={styles.optionDescription}>
+                  Start a group reading session. Up to 4 people can join and each person reads their assigned role parts.
+                </Text>
+                <TouchableOpacity 
+                  style={[styles.actionButton, styles.secondaryButton]} 
+                  onPress={handleGroupPress}
+                >
+                  <Text style={styles.secondaryButtonText}>Set Up Group</Text>
+                </TouchableOpacity>
               </View>
             </View>
-          </View>
-        )}
 
-        <View style={styles.divider} />
-
-        <TouchableOpacity
-          style={styles.readingOption}
-          onPress={handleIndividualPress}
-          activeOpacity={0.7}
-        >
-          <View style={styles.optionHeader}>
-            <Ionicons 
-              name="person-outline" 
-              size={24} 
-              color={colors.primary} 
-              style={styles.optionIcon}
-            />
-            <Text style={styles.optionTitle}>Read Alone</Text>
-          </View>
-          <Text style={styles.optionDescription}>
-            Read this story by yourself. You can select any reading role or read all parts.
-          </Text>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.primaryButton} onPress={handleIndividualPress}>
-              <Text style={styles.primaryButtonText}>Start Reading</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.readingOption}
-          onPress={handleGroupPress}
-          activeOpacity={0.7}
-        >
-          <View style={styles.optionHeader}>
-            <Ionicons 
-              name="people-outline" 
-              size={24} 
-              color={colors.primary} 
-              style={styles.optionIcon}
-            />
-            <Text style={styles.optionTitle}>Read with Friends</Text>
-          </View>
-          <Text style={styles.optionDescription}>
-            Start a group reading session. Up to 4 people can join and each person reads their assigned role parts.
-          </Text>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.secondaryButton} onPress={handleGroupPress}>
-              <Text style={styles.secondaryButtonText}>Set Up Group</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.autoCloseText}>
-          This will close automatically in a few seconds
-        </Text>
+            <View style={styles.bottomSection}>
+              <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
       </Animated.View>
     </>
   );

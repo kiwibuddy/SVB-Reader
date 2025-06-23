@@ -23,23 +23,34 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
 
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
-    if (currentOffset > lastScrollY.current && currentOffset > 100) {
-      // Scrolling down - hide
-      Animated.spring(isVisible, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 100,
-        friction: 10
-      }).start();
-    } else if (currentOffset < lastScrollY.current) {
-      // Scrolling up - show
+    
+    // iOS-style navigation bar behavior
+    if (currentOffset <= 100) {
+      // Show when near top
       Animated.spring(isVisible, {
         toValue: 1,
         useNativeDriver: true,
-        tension: 100,
-        friction: 10
+        tension: 150,
+        friction: 8
+      }).start();
+    } else if (currentOffset > lastScrollY.current + 20 && currentOffset > 100) {
+      // Hide when scrolling down with momentum
+      Animated.spring(isVisible, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 150,
+        friction: 8
+      }).start();
+    } else if (currentOffset < lastScrollY.current - 10) {
+      // Show when scrolling up (more sensitive)
+      Animated.spring(isVisible, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 150,
+        friction: 8
       }).start();
     }
+    
     lastScrollY.current = currentOffset;
   };
 
@@ -76,33 +87,44 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
       bottom: 0,
       left: 0,
       right: 0,
+      zIndex: 1000,
     },
     content: {
       flexDirection: 'row',
       justifyContent: 'space-evenly',
       alignItems: 'center',
-      paddingVertical: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 8,
     },
     navItem: {
       alignItems: 'center',
       justifyContent: 'center',
+      minHeight: 44,
+      paddingHorizontal: 8,
     },
     navText: {
       color: colors.text,
       fontSize: 12,
       marginTop: 4,
+      fontWeight: '500',
     },
     activeText: {
-      color: '#FF5733', // Your app's primary color
+      color: '#FF5733',
+      fontWeight: '600',
     },
   });
 
   const containerStyle = [
     styles.container,
     {
-      paddingBottom: insets.bottom,
+      paddingBottom: Math.max(insets.bottom, 8),
       backgroundColor: colors.background,
       borderTopColor: colors.border,
+      shadowColor: colors.text,
+      shadowOffset: { width: 0, height: -2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 8,
       transform: [{
         translateY: isVisible.interpolate({
           inputRange: [0, 1],

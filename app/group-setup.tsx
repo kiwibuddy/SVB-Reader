@@ -1,43 +1,45 @@
 import React from 'react';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useGroupReading } from '@/context/GroupReadingContext';
+import { View, StyleSheet } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import GroupSetupScreen from '@/components/GroupReading/GroupSetupScreen';
+import { useGroupReading } from '@/context/GroupReadingContext';
+import { Role } from '@/types';
 
-export default function GroupSetupRoute() {
-  const router = useRouter();
-  const params = useLocalSearchParams();
+export default function GroupSetupPage() {
+  const { storyId, storyTitle, scriptureReference, planId, challengeId } = useLocalSearchParams();
   const { startHostSession } = useGroupReading();
-  
-  const storyId = params.storyId as string;
-  const storyTitle = params.storyTitle as string;
-  const scriptureReference = params.scriptureReference as string;
-  const planId = params.planId as string;
-  const challengeId = params.challengeId as string;
+  const router = useRouter();
 
-  const handleStartBroadcasting = async (role: any, userName: string) => {
+  const handleStartBroadcasting = async (role: Role, userName: string) => {
     try {
       const sessionId = await startHostSession(
-        storyId,
-        storyTitle,
-        scriptureReference,
+        storyId as string,
+        storyTitle as string,
+        scriptureReference as string,
         role,
         userName,
-        planId,
-        challengeId
+        planId as string | undefined,
+        challengeId as string | undefined
       );
-      
-      // Navigate to the host waiting screen where others can join
+
+      // Navigate to host waiting screen
       router.replace({
         pathname: '/host-waiting' as any,
         params: {
-          sessionId: sessionId,
-          storyId: storyId,
-          storyTitle: storyTitle,
-          scriptureReference: scriptureReference
+          sessionId,
+          storyTitle,
+          scriptureReference,
+          storyColorData: JSON.stringify({
+            total: 0, // Will be calculated in the component
+            black: 0,
+            red: 0,
+            green: 0,
+            blue: 0,
+          })
         }
       });
     } catch (error) {
-      console.error('Error starting group session:', error);
+      console.error('Error starting broadcast:', error);
     }
   };
 
@@ -46,14 +48,22 @@ export default function GroupSetupRoute() {
   };
 
   return (
-    <GroupSetupScreen
-      storyId={storyId}
-      storyTitle={storyTitle}
-      scriptureReference={scriptureReference}
-      onStartBroadcasting={handleStartBroadcasting}
-      onBack={handleBack}
-      planId={planId}
-      challengeId={challengeId}
-    />
+    <View style={styles.container}>
+      <GroupSetupScreen
+        storyId={storyId as string}
+        storyTitle={storyTitle as string}
+        scriptureReference={scriptureReference as string}
+        onStartBroadcasting={handleStartBroadcasting}
+        onBack={handleBack}
+        planId={planId as string | undefined}
+        challengeId={challengeId as string | undefined}
+      />
+    </View>
   );
-} 
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+}); 

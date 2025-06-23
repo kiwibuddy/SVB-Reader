@@ -772,16 +772,14 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: Co
   const nextSegmentData = nextSegment ? SegmentTitles[nextSegment as keyof typeof SegmentTitles] : null;
 
   const handleComplete = async () => {
-    // Navigate back to the last segment
-    await updateSegmentId(`ENG-NLT-${lastReadSegment}`);
-    const segment = SegmentTitles[lastReadSegment as keyof typeof SegmentTitles];
-    router.push({
-      pathname: "/[segment]",
-      params: {
-        segment: `ENG-NLT-${lastReadSegment}`,
-        book: segment?.book[0] || ''
+    // Show reading mode modal for the current segment
+    if (lastReadSegment) {
+      const segment = SegmentTitles[lastReadSegment as keyof typeof SegmentTitles];
+      if (segment) {
+        // Call parent's onPress to handle modal display
+        onPress();
       }
-    });
+    }
   };
 
   return (
@@ -980,32 +978,18 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
     calculateInsights();
   }, [completedSegments]);
 
-    const handleBookPress = () => {
-    // Find first segment of favorite book
-    const firstSegment = Object.entries(SegmentTitles).find(([_, data]) =>
-      data.book[0] === insights.favoriteBook
-    );
-    if (firstSegment) {
-      router.push({
-        pathname: "/(tabs)/[segment]",
-        params: {
-          segment: `ENG-NLT-${firstSegment[0]}`,
-          book: insights.favoriteBook
-        }
-      });
-    }
+      const handleBookPress = () => {
+    // Navigate to Plan or Navigation to find the book instead of direct navigation
+    router.push({
+      pathname: "/Navigation",
+    });
   };
 
   const handleStoryPress = () => {
-    if (insights.favoriteSegmentId) {
-      router.push({
-        pathname: "/(tabs)/[segment]",
-        params: {
-          segment: `ENG-NLT-${insights.favoriteSegmentId}`,
-          book: SegmentTitles[insights.favoriteSegmentId]?.book[0] || ''
-        }
-      });
-    }
+    // Navigate to Navigation to find the story instead of direct navigation
+    router.push({
+      pathname: "/Navigation",
+    });
   };
 
   const handleEmojiPress = () => {
@@ -1189,15 +1173,88 @@ const HomeScreen = () => {
   };
 
   const handleComplete = async () => {
-    await updateSegmentId(`ENG-NLT-${lastReadSegment}`);
-    const segment = SegmentTitles[lastReadSegment as keyof typeof SegmentTitles];
-    router.push({
-      pathname: "/[segment]",
-      params: {
-        segment: `ENG-NLT-${lastReadSegment}`,
-        book: segment?.book[0] || ''
+    // Show reading mode modal for the current segment
+    if (lastReadSegment) {
+      const segment = SegmentTitles[lastReadSegment as keyof typeof SegmentTitles];
+      if (segment) {
+        setSelectedSegmentId(lastReadSegment);
+        setSelectedSegmentTitle(segment.title);
+        setSelectedSegmentRef(segment.ref || '');
+        setShowReadingModeModal(true);
       }
-    });
+    }
+  };
+
+  const handleActivePlanContinue = async () => {
+    if (!activePlan) return;
+    
+    // Find the next uncompleted segment in the active plan
+    const plan = ReadingPlansChallenges.plans.find((p: any) => p.id === activePlan.planId);
+    if (!plan?.segments) return;
+    
+    // Get all segments from the plan
+    const allSegments = Object.values(plan.segments)
+      .flatMap((book: any) => book?.segments || [])
+      .filter((seg: string) => !seg.startsWith('I')); // Filter out introductions
+    
+    // Find the first uncompleted segment
+    let nextSegmentId = null;
+    for (const segmentId of allSegments) {
+      if (!completedSegments[segmentId]?.isCompleted) {
+        nextSegmentId = segmentId;
+        break;
+      }
+    }
+    
+    // If we found a next segment, show the reading mode modal
+    if (nextSegmentId) {
+      const segmentData = SegmentTitles[nextSegmentId as keyof typeof SegmentTitles];
+      if (segmentData) {
+        setSelectedSegmentId(nextSegmentId);
+        setSelectedSegmentTitle(segmentData.title);
+        setSelectedSegmentRef(segmentData.ref || '');
+        setShowReadingModeModal(true);
+      }
+    } else {
+      // If no uncompleted segments, go to the plan page
+      router.push("/Plan");
+    }
+  };
+
+  const handleActiveChallengesContinue = async (challengeId: string) => {
+    if (!activeChallenges[challengeId]) return;
+    
+    // Find the next uncompleted segment in the active challenge
+    const challenge = ReadingPlansChallenges.challenges.find((c: any) => c.id === challengeId);
+    if (!challenge?.segments) return;
+    
+    // Get all segments from the challenge
+    const allSegments = Object.values(challenge.segments)
+      .flatMap((book: any) => book?.segments || [])
+      .filter((seg: string) => !seg.startsWith('I')); // Filter out introductions
+    
+    // Find the first uncompleted segment
+    let nextSegmentId = null;
+    for (const segmentId of allSegments) {
+      if (!completedSegments[segmentId]?.isCompleted) {
+        nextSegmentId = segmentId;
+        break;
+      }
+    }
+    
+    // If we found a next segment, show the reading mode modal
+    if (nextSegmentId) {
+      const segmentData = SegmentTitles[nextSegmentId as keyof typeof SegmentTitles];
+      if (segmentData) {
+        setSelectedSegmentId(nextSegmentId);
+        setSelectedSegmentTitle(segmentData.title);
+        setSelectedSegmentRef(segmentData.ref || '');
+        setShowReadingModeModal(true);
+      }
+    } else {
+      // If no uncompleted segments, go to the challenges page
+      router.push("/Reading-Challenges");
+    }
   };
 
   // Group Reading Handlers
@@ -1245,7 +1302,32 @@ const HomeScreen = () => {
 
   // Get story data for the modal
   const getStoryData = () => {
-    return Bible[selectedSegmentId] || SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
+    if (!selectedSegmentId) {
+      console.log('ReadingModeModal: No segment ID selected');
+      // Return a fallback object with required properties
+      return {
+        id: '',
+        content: [],
+        colors: { total: 0, black: 0, red: 0, green: 0, blue: 0 },
+        sources: {}
+      };
+    }
+    
+    const storyData = BibleData[selectedSegmentId as keyof typeof BibleData];
+    const segmentData = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
+    
+    if (!storyData && !segmentData) {
+      console.log('ReadingModeModal: Could not find story data for segment:', selectedSegmentId);
+      // Return a fallback object with required properties
+      return {
+        id: selectedSegmentId,
+        content: [],
+        colors: { total: 0, black: 0, red: 0, green: 0, blue: 0 },
+        sources: {}
+      };
+    }
+    
+    return storyData || segmentData;
   };
 
   // Filter nearby groups to show only non-dismissed ones
@@ -1418,7 +1500,7 @@ const HomeScreen = () => {
                     </Text>
                     <Text style={styles.activeReadingProgress}>0% complete</Text>
                   </View>
-                  <Pressable style={styles.continueButton} onPress={() => router.push("/Plan")}>
+                  <Pressable style={styles.continueButton} onPress={() => handleActivePlanContinue()}>
                     <Text style={styles.continueButtonText}>→ Continue</Text>
                   </Pressable>
                 </View>
@@ -1439,7 +1521,7 @@ const HomeScreen = () => {
                       <Text style={styles.activeReadingSubtitle}>Next: Completed!</Text>
                       <Text style={styles.activeReadingProgress}>NaN% complete</Text>
                     </View>
-                    <Pressable style={styles.continueButton} onPress={() => router.push("/Reading-Challenges")}>
+                    <Pressable style={styles.continueButton} onPress={() => handleActiveChallengesContinue(challenge.challengeId)}>
                       <Text style={styles.continueButtonText}>→ Continue</Text>
                     </Pressable>
                   </View>
@@ -1520,6 +1602,7 @@ const HomeScreen = () => {
         story={getStoryData()}
         storyTitle={selectedSegmentTitle}
         scriptureReference={selectedSegmentRef}
+        storyId={selectedSegmentId}
         onIndividual={handleIndividualReading}
         onGroup={handleGroupReading}
         onCancel={handleCancelModal}

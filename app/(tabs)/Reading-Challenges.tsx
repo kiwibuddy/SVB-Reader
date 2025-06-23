@@ -10,8 +10,10 @@ import {
   useWindowDimensions,
   Pressable,
   Platform,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from '@react-navigation/native';
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
 import Accordion, { accordionColor } from "@/components/navigation/NavBook";
 import Books from "@/assets/data/BookChapterList.json";
@@ -22,6 +24,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { getSegmentCompletionStatus, unlockAchievement } from '@/api/sqlite';
 
 // Add categories for challenges
 const CHALLENGE_CATEGORIES = {
@@ -109,6 +112,7 @@ interface AppContextType {
   pauseChallenge: (challengeId: string) => void;
   resumeChallenge: (challengeId: string) => void;
   restartChallenge: (challengeId: string) => void;
+  updateChallengeProgress: (challengeId: string, segmentId: string) => void;
 }
 
 interface BookSegments {
@@ -222,21 +226,66 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
 });
 
 const ChallengesScreen = () => {
-  const router = useRouter();
-  const params = useLocalSearchParams();
   const { 
-    activeChallenges,
-    startChallenge,
-    pauseChallenge,
-    resumeChallenge,
-    restartChallenge
+    activeChallenges, 
+    startChallenge, 
+    pauseChallenge, 
+    resumeChallenge, 
+    restartChallenge,
+    updateChallengeProgress
   } = useAppContext();
 
-  const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
+  const router = useRouter();
+  const params = useLocalSearchParams();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const { colors } = useAppSettings();
   const styles = createStyles(isLargeScreen, colors);
+
+  const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
+  const [challengeProgress, setChallengeProgress] = useState<Record<string, string[]>>({});
+
+  // Load challenge progress when component mounts
+  useEffect(() => {
+    loadChallengeProgress();
+  }, []);
+
+  // Refresh when returning from reading a segment
+  useFocusEffect(
+    React.useCallback(() => {
+      loadChallengeProgress();
+    }, [])
+  );
+
+  const loadChallengeProgress = async () => {
+    const progress: Record<string, string[]> = {};
+    
+    // Load progress for each challenge
+    for (const challenge of readingPlansData.challenges) {
+      const completedSegments: string[] = [];
+      
+      // Check completion status for each segment
+      for (const [bookKey, bookData] of Object.entries(challenge.segments)) {
+        if (bookData?.segments) {
+          for (const segmentId of bookData.segments) {
+            const status = await getSegmentCompletionStatus(
+              segmentId,
+              'challenge',
+              undefined,
+              challenge.id
+            );
+            if (status.isCompleted) {
+              completedSegments.push(segmentId);
+            }
+          }
+        }
+      }
+      
+      progress[challenge.id] = completedSegments;
+    }
+    
+    setChallengeProgress(progress);
+  };
 
   // Move function definitions up
   const getChallengeSegmentCount = (challengeId: string) => {
@@ -304,6 +353,7 @@ const ChallengesScreen = () => {
     const isPaused = isActive?.isPaused;
     const segmentCount = getChallengeSegmentCount(challenge.id);
     const challengeBooksData = isSelected ? getChallengeBooksData(challenge.id) : [];
+    const completedSegments = challengeProgress[challenge.id] || [];
 
     return (
       <View style={styles.challengeContainer}>
@@ -353,26 +403,29 @@ const ChallengesScreen = () => {
 
         {isSelected && (
           <View style={styles.booksContainer}>
-            <FlatList
-              data={challengeBooksData}
-              renderItem={({ item }) => {
-                const bookIndex = booksArray.findIndex(
-                  (book) => book === item.djhBook
-                );
-                return (
-                  <Accordion 
-                    item={item} 
-                    bookIndex={bookIndex}
-                    onSegmentComplete={handleSegmentComplete}
-                    context="challenge"
-                    showGlobalCompletion={false}
-                    challengeId={challenge.id}
-                    style={{ backgroundColor: '#FFF' }}
-                  />
-                );
-              }}
-              keyExtractor={(item) => item.djhBook}
-            />
+            {challengeBooksData.map((item) => {
+              const bookIndex = booksArray.findIndex(
+                (book) => book === item.djhBook
+              );
+              // Use the challenge-specific completion status
+              const completedSegmentsMap = completedSegments.reduce((acc, id) => {
+                acc[id] = true;
+                return acc;
+              }, {} as Record<string, boolean>);
+              return (
+                <Accordion 
+                  key={completedSegments.join(',') + '-' + item.djhBook}
+                  item={item} 
+                  bookIndex={bookIndex}
+                  onSegmentComplete={(segmentId) => handleSegmentComplete(challenge.id, segmentId)}
+                  context="challenge"
+                  showGlobalCompletion={false}
+                  challengeId={challenge.id}
+                  completedSegments={completedSegmentsMap}
+                  style={{ backgroundColor: '#FFF' }}
+                />
+              );
+            })}
           </View>
         )}
       </View>
@@ -382,17 +435,47 @@ const ChallengesScreen = () => {
   const renderCategorySection = (title: string, challenges: Challenge[]) => (
     <View style={styles.categorySection}>
       <Text style={styles.categoryTitle}>{title}</Text>
-      <FlatList
-        data={challenges}
-        renderItem={renderChallengeItem}
-        keyExtractor={(item) => item.id}
-      />
+      {challenges.map((challenge) => (
+        <View key={challenge.id}>
+          {renderChallengeItem({ item: challenge })}
+        </View>
+      ))}
     </View>
   );
 
-  const handleSegmentComplete = (segmentId: string) => {
-    // This will be handled by the context's markSegmentComplete function
-    // which now handles both global and challenge-specific completions
+  const handleSegmentComplete = async (challengeId: string, segmentId: string) => {
+    try {
+      // The actual completion is handled by CheckCircle component
+      // This function is called by the Accordion when a segment is completed
+      // We just need to refresh the local progress state
+      
+      // Update local state immediately for UI responsiveness
+      setChallengeProgress(prev => ({
+        ...prev,
+        [challengeId]: [...(prev[challengeId] || []), segmentId]
+      }));
+
+      // Check for achievements (you can add challenge-specific achievements here)
+      const completedCount = (challengeProgress[challengeId] || []).length + 1;
+      
+      // Check if challenge is completed
+      const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+      if (challenge) {
+        const totalSegments = Object.values(challenge.segments)
+          .reduce((acc, book) => acc + (book?.segments?.length || 0), 0);
+        
+        if (completedCount === totalSegments) {
+          await unlockAchievement(
+            `challenge_complete_${challengeId}`,
+            'Challenge Completed!',
+            `Completed the ${challenge.title} reading challenge`
+          );
+        }
+      }
+
+    } catch (error) {
+      console.error('Error completing segment:', error);
+    }
   };
 
   const scrollViewRef = useRef<ScrollView>(null);

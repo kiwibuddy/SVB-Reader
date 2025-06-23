@@ -1,0 +1,3881 @@
+{
+  "I001": {
+    "segmentId": "I001",
+    "title": "Introduction to Genesis",
+    "wordCount": 35892,
+    "estimatedReadingTimeMinutes": 160,
+    "book": "Gen",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S001": {
+    "segmentId": "S001",
+    "title": "God Creates",
+    "wordCount": 1285,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Gen",
+    "reference": "1:1-2:25",
+    "isIntroduction": false
+  },
+  "S002": {
+    "segmentId": "S002",
+    "title": "People Sin",
+    "wordCount": 1711,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Gen",
+    "reference": "3:1-5:32",
+    "isIntroduction": false
+  },
+  "S003": {
+    "segmentId": "S003",
+    "title": "The Flood",
+    "wordCount": 2046,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Gen",
+    "reference": "6:1-9:29",
+    "isIntroduction": false
+  },
+  "S004": {
+    "segmentId": "S004",
+    "title": "The Tower",
+    "wordCount": 930,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Gen",
+    "reference": "10:1-11:26",
+    "isIntroduction": false
+  },
+  "S005": {
+    "segmentId": "S005",
+    "title": "Abraham Obeys God's Call",
+    "wordCount": 1664,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Gen",
+    "reference": "11:27-14:24",
+    "isIntroduction": false
+  },
+  "S006": {
+    "segmentId": "S006",
+    "title": "God Makes a Covenant with Abraham",
+    "wordCount": 1847,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Gen",
+    "reference": "15:1-18:15",
+    "isIntroduction": false
+  },
+  "S007": {
+    "segmentId": "S007",
+    "title": "Sodom & Gomorrah",
+    "wordCount": 1498,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Gen",
+    "reference": "18:16-19:38",
+    "isIntroduction": false
+  },
+  "S008": {
+    "segmentId": "S008",
+    "title": "Abraham's Faith Tested",
+    "wordCount": 2167,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Gen",
+    "reference": "20:1-23:20",
+    "isIntroduction": false
+  },
+  "S009": {
+    "segmentId": "S009",
+    "title": "Isaac: The Family Expands",
+    "wordCount": 2198,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Gen",
+    "reference": "24:1-25:26",
+    "isIntroduction": false
+  },
+  "S010": {
+    "segmentId": "S010",
+    "title": "Jacob Deceives Isaac & Steals the Blessing",
+    "wordCount": 2354,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Gen",
+    "reference": "25:27-28:9",
+    "isIntroduction": false
+  },
+  "S011": {
+    "segmentId": "S011",
+    "title": "Jacob: The Family Expands",
+    "wordCount": 2187,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Gen",
+    "reference": "28:10-30:43",
+    "isIntroduction": false
+  },
+  "S012": {
+    "segmentId": "S012",
+    "title": "Jacob Flees Laban & Wrestles with God",
+    "wordCount": 2766,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Gen",
+    "reference": "31:1-33:20",
+    "isIntroduction": false
+  },
+  "S013": {
+    "segmentId": "S013",
+    "title": "Jacob Resettles in Canaan",
+    "wordCount": 2185,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Gen",
+    "reference": "34:1-36:43",
+    "isIntroduction": false
+  },
+  "S014": {
+    "segmentId": "S014",
+    "title": "Joseph the Dreamer Suffers Hardship",
+    "wordCount": 2805,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Gen",
+    "reference": "37:1-40:23",
+    "isIntroduction": false
+  },
+  "S015": {
+    "segmentId": "S015",
+    "title": "Joseph the Interpreter is Exalted",
+    "wordCount": 1348,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Gen",
+    "reference": "41:1-57",
+    "isIntroduction": false
+  },
+  "S016": {
+    "segmentId": "S016",
+    "title": "Joseph's Brothers Seek Food in Egypt",
+    "wordCount": 1877,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Gen",
+    "reference": "42:1-43:34",
+    "isIntroduction": false
+  },
+  "S017": {
+    "segmentId": "S017",
+    "title": "Joseph Reunites with His Family",
+    "wordCount": 2985,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Gen",
+    "reference": "44:1-47:26",
+    "isIntroduction": false
+  },
+  "S018": {
+    "segmentId": "S018",
+    "title": "The Last Days of Jacob & Joseph",
+    "wordCount": 2208,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Gen",
+    "reference": "47:27-50:26",
+    "isIntroduction": false
+  },
+  "I002": {
+    "segmentId": "I002",
+    "title": "Introduction to Exodus",
+    "wordCount": 30011,
+    "estimatedReadingTimeMinutes": 134,
+    "book": "Exo",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S019": {
+    "segmentId": "S019",
+    "title": "Israelites Enslaved & Moses Called",
+    "wordCount": 2664,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Exo",
+    "reference": "1:1-4:31",
+    "isIntroduction": false
+  },
+  "S020": {
+    "segmentId": "S020",
+    "title": "Moses Returns to Egypt & Faces Pharaoh",
+    "wordCount": 1565,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Exo",
+    "reference": "5:1-7:13",
+    "isIntroduction": false
+  },
+  "S021": {
+    "segmentId": "S021",
+    "title": "The Nine Plagues",
+    "wordCount": 2951,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Exo",
+    "reference": "7:14-10:29",
+    "isIntroduction": false
+  },
+  "S022": {
+    "segmentId": "S022",
+    "title": "The Passover",
+    "wordCount": 2217,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Exo",
+    "reference": "11:1-13:16",
+    "isIntroduction": false
+  },
+  "S023": {
+    "segmentId": "S023",
+    "title": "Israelites Leave Egypt & Cross the Red Sea",
+    "wordCount": 1510,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Exo",
+    "reference": "13:17-15:21",
+    "isIntroduction": false
+  },
+  "S024": {
+    "segmentId": "S024",
+    "title": "The Wilderness Journey to Sinai",
+    "wordCount": 2430,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Exo",
+    "reference": "15:22-18:27",
+    "isIntroduction": false
+  },
+  "S025": {
+    "segmentId": "S025",
+    "title": "The Ten Commandments",
+    "wordCount": 1124,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Exo",
+    "reference": "19:1-20:21",
+    "isIntroduction": false
+  },
+  "S026": {
+    "segmentId": "S026",
+    "title": "Covenantal Laws",
+    "wordCount": 2762,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Exo",
+    "reference": "20:22-23:33",
+    "isIntroduction": false
+  },
+  "S027": {
+    "segmentId": "S027",
+    "title": "Instructions for the Tabernacle 1",
+    "wordCount": 2431,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Exo",
+    "reference": "24:1-27:21",
+    "isIntroduction": false
+  },
+  "S028": {
+    "segmentId": "S028",
+    "title": "Instructions for the Priests",
+    "wordCount": 2221,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Exo",
+    "reference": "28:1-29:46",
+    "isIntroduction": false
+  },
+  "S029": {
+    "segmentId": "S029",
+    "title": "Instructions for the Tabernacle 2",
+    "wordCount": 1258,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Exo",
+    "reference": "30:1-31:18",
+    "isIntroduction": false
+  },
+  "S030": {
+    "segmentId": "S030",
+    "title": "Israel's Idolatry & God's Mercy",
+    "wordCount": 2722,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Exo",
+    "reference": "32:1-34:35",
+    "isIntroduction": false
+  },
+  "S031": {
+    "segmentId": "S031",
+    "title": "Tabernacle Construction Begins",
+    "wordCount": 2898,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Exo",
+    "reference": "35:1-38:31",
+    "isIntroduction": false
+  },
+  "S032": {
+    "segmentId": "S032",
+    "title": "Tabernacle Finished & Filled with God's Glory",
+    "wordCount": 1692,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Exo",
+    "reference": "39:1-40:38",
+    "isIntroduction": false
+  },
+  "I003": {
+    "segmentId": "I003",
+    "title": "Introduction to Leviticus",
+    "wordCount": 23018,
+    "estimatedReadingTimeMinutes": 103,
+    "book": "Lev",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S033": {
+    "segmentId": "S033",
+    "title": "Offerings 1",
+    "wordCount": 2391,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Lev",
+    "reference": "1:1-4:35",
+    "isIntroduction": false
+  },
+  "S034": {
+    "segmentId": "S034",
+    "title": "Offerings 2",
+    "wordCount": 2485,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Lev",
+    "reference": "5:1-7:38",
+    "isIntroduction": false
+  },
+  "S035": {
+    "segmentId": "S035",
+    "title": "Ordination of Priests",
+    "wordCount": 2295,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Lev",
+    "reference": "8:1-10:20",
+    "isIntroduction": false
+  },
+  "S036": {
+    "segmentId": "S036",
+    "title": "Clean & Unclean 1",
+    "wordCount": 2939,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Lev",
+    "reference": "11:1-13:59",
+    "isIntroduction": false
+  },
+  "S037": {
+    "segmentId": "S037",
+    "title": "Clean & Unclean 2",
+    "wordCount": 2372,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Lev",
+    "reference": "14:1-15:33",
+    "isIntroduction": false
+  },
+  "S038": {
+    "segmentId": "S038",
+    "title": "Atonement & Purification",
+    "wordCount": 1607,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Lev",
+    "reference": "16:1-17:16",
+    "isIntroduction": false
+  },
+  "S039": {
+    "segmentId": "S039",
+    "title": "Be Holy for I am Holy",
+    "wordCount": 2325,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Lev",
+    "reference": "18:1-20:27",
+    "isIntroduction": false
+  },
+  "S040": {
+    "segmentId": "S040",
+    "title": "Laws for Priests",
+    "wordCount": 1447,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Lev",
+    "reference": "21:1-22:33",
+    "isIntroduction": false
+  },
+  "S041": {
+    "segmentId": "S041",
+    "title": "Special Days",
+    "wordCount": 1835,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Lev",
+    "reference": "23:1-24:23",
+    "isIntroduction": false
+  },
+  "S042": {
+    "segmentId": "S042",
+    "title": "Special Years",
+    "wordCount": 1519,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Lev",
+    "reference": "25:1-25:55",
+    "isIntroduction": false
+  },
+  "S043": {
+    "segmentId": "S043",
+    "title": "Blessings & Curses",
+    "wordCount": 2139,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Lev",
+    "reference": "26:1-27:34",
+    "isIntroduction": false
+  },
+  "I004": {
+    "segmentId": "I004",
+    "title": "Introduction to Numbers",
+    "wordCount": 28419,
+    "estimatedReadingTimeMinutes": 127,
+    "book": "Num",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S044": {
+    "segmentId": "S044",
+    "title": "The First Census",
+    "wordCount": 1040,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Num",
+    "reference": "1:1-2:34",
+    "isIntroduction": false
+  },
+  "S045": {
+    "segmentId": "S045",
+    "title": "Levites Numbered & Set Apart",
+    "wordCount": 2217,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Num",
+    "reference": "3:1-4:49",
+    "isIntroduction": false
+  },
+  "S046": {
+    "segmentId": "S046",
+    "title": "Purity, Consecration & Blessing",
+    "wordCount": 1583,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Num",
+    "reference": "5:1-6:27",
+    "isIntroduction": false
+  },
+  "S047": {
+    "segmentId": "S047",
+    "title": "Celebration & Preparation for the Journey",
+    "wordCount": 2601,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Num",
+    "reference": "7:1-8:26",
+    "isIntroduction": false
+  },
+  "S048": {
+    "segmentId": "S048",
+    "title": "Departure & Complaining in the Desert",
+    "wordCount": 2740,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Num",
+    "reference": "9:1-12:16",
+    "isIntroduction": false
+  },
+  "S049": {
+    "segmentId": "S049",
+    "title": "Promised Land Explored & Inheritance Rejected",
+    "wordCount": 2556,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Num",
+    "reference": "13:1-15:31",
+    "isIntroduction": false
+  },
+  "S050": {
+    "segmentId": "S050",
+    "title": "Rebellion in the Desert",
+    "wordCount": 2873,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Num",
+    "reference": "15:32-18:32",
+    "isIntroduction": false
+  },
+  "S051": {
+    "segmentId": "S051",
+    "title": "Provision & Victories in the Desert",
+    "wordCount": 2317,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Num",
+    "reference": "19:1-21:35",
+    "isIntroduction": false
+  },
+  "S052": {
+    "segmentId": "S052",
+    "title": "Balaam",
+    "wordCount": 2795,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Num",
+    "reference": "22:1-25:18",
+    "isIntroduction": false
+  },
+  "S053": {
+    "segmentId": "S053",
+    "title": "The Second Census",
+    "wordCount": 1887,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Num",
+    "reference": "26:1-27:23",
+    "isIntroduction": false
+  },
+  "S054": {
+    "segmentId": "S054",
+    "title": "Offerings & Vows",
+    "wordCount": 2197,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Num",
+    "reference": "28:1-30:16",
+    "isIntroduction": false
+  },
+  "S055": {
+    "segmentId": "S055",
+    "title": "Wars & Wanderings",
+    "wordCount": 2581,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Num",
+    "reference": "31:1-33:49",
+    "isIntroduction": false
+  },
+  "S056": {
+    "segmentId": "S056",
+    "title": "Preparing to Inherit the Promised Land",
+    "wordCount": 1699,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Num",
+    "reference": "33:50-36:13",
+    "isIntroduction": false
+  },
+  "I005": {
+    "segmentId": "I005",
+    "title": "Introduction to Deuteronomy",
+    "wordCount": 25673,
+    "estimatedReadingTimeMinutes": 115,
+    "book": "Deu",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S057": {
+    "segmentId": "S057",
+    "title": "Remembering a 40 Year Journey",
+    "wordCount": 2794,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Deu",
+    "reference": "1:1-3:20",
+    "isIntroduction": false
+  },
+  "S058": {
+    "segmentId": "S058",
+    "title": "Hear & Obey",
+    "wordCount": 1455,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Deu",
+    "reference": "3:21-4:43",
+    "isIntroduction": false
+  },
+  "S059": {
+    "segmentId": "S059",
+    "title": "The Heart of the Covenant",
+    "wordCount": 2402,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Deu",
+    "reference": "4:44-7:26",
+    "isIntroduction": false
+  },
+  "S060": {
+    "segmentId": "S060",
+    "title": "The Goal of the Covenant",
+    "wordCount": 2964,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Deu",
+    "reference": "8:1-11:32",
+    "isIntroduction": false
+  },
+  "S061": {
+    "segmentId": "S061",
+    "title": "Covenantal Laws 1",
+    "wordCount": 2147,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Deu",
+    "reference": "12:1-14:29",
+    "isIntroduction": false
+  },
+  "S062": {
+    "segmentId": "S062",
+    "title": "Covenantal Laws 2",
+    "wordCount": 2486,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Deu",
+    "reference": "15:1-18:22",
+    "isIntroduction": false
+  },
+  "S063": {
+    "segmentId": "S063",
+    "title": "Covenantal Laws 3",
+    "wordCount": 2117,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Deu",
+    "reference": "19:1-22:12",
+    "isIntroduction": false
+  },
+  "S064": {
+    "segmentId": "S064",
+    "title": "Covenantal Laws 4",
+    "wordCount": 2731,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Deu",
+    "reference": "22:13-26:19",
+    "isIntroduction": false
+  },
+  "S065": {
+    "segmentId": "S065",
+    "title": "Blessings & Curses",
+    "wordCount": 2326,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Deu",
+    "reference": "27:1-28:68",
+    "isIntroduction": false
+  },
+  "S066": {
+    "segmentId": "S066",
+    "title": "Life & Death",
+    "wordCount": 1445,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Deu",
+    "reference": "29:1-30:20",
+    "isIntroduction": false
+  },
+  "S067": {
+    "segmentId": "S067",
+    "title": "Joshua Appointed & Moses' Song",
+    "wordCount": 2229,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Deu",
+    "reference": "31:1-32:52",
+    "isIntroduction": false
+  },
+  "S068": {
+    "segmentId": "S068",
+    "title": "Moses' Blessing & Death",
+    "wordCount": 1096,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Deu",
+    "reference": "33:1-34:12",
+    "isIntroduction": false
+  },
+  "I006": {
+    "segmentId": "I006",
+    "title": "Introduction to Joshua",
+    "wordCount": 16350,
+    "estimatedReadingTimeMinutes": 73,
+    "book": "Jos",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S069": {
+    "segmentId": "S069",
+    "title": "Preparing to Inherit the Land",
+    "wordCount": 2346,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Jos",
+    "reference": "1:1-5:1",
+    "isIntroduction": false
+  },
+  "S070": {
+    "segmentId": "S070",
+    "title": "Victory at Jericho",
+    "wordCount": 1165,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Jos",
+    "reference": "5:2-6:27",
+    "isIntroduction": false
+  },
+  "S071": {
+    "segmentId": "S071",
+    "title": "Defeat at Ai",
+    "wordCount": 1873,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Jos",
+    "reference": "7:1-8:35",
+    "isIntroduction": false
+  },
+  "S072": {
+    "segmentId": "S072",
+    "title": "Possessing of the Inheritance",
+    "wordCount": 2965,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Jos",
+    "reference": "9:1-12:24",
+    "isIntroduction": false
+  },
+  "S073": {
+    "segmentId": "S073",
+    "title": "Inheritance 1",
+    "wordCount": 2200,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Jos",
+    "reference": "13:1-15:63",
+    "isIntroduction": false
+  },
+  "S074": {
+    "segmentId": "S074",
+    "title": "Inheritance 2",
+    "wordCount": 2363,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Jos",
+    "reference": "16:1-19:51",
+    "isIntroduction": false
+  },
+  "S075": {
+    "segmentId": "S075",
+    "title": "Inheritance 3",
+    "wordCount": 2248,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Jos",
+    "reference": "20:1-22:34",
+    "isIntroduction": false
+  },
+  "S076": {
+    "segmentId": "S076",
+    "title": "Joshua's Farewell Words",
+    "wordCount": 1415,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Jos",
+    "reference": "23:1-24:33",
+    "isIntroduction": false
+  },
+  "I007": {
+    "segmentId": "I007",
+    "title": "Introduction to Judges",
+    "wordCount": 16502,
+    "estimatedReadingTimeMinutes": 74,
+    "book": "Jdg",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S077": {
+    "segmentId": "S077",
+    "title": "Sin, Servitude, Supplication, Salvation",
+    "wordCount": 1629,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Jdg",
+    "reference": "1:1-3:6",
+    "isIntroduction": false
+  },
+  "S078": {
+    "segmentId": "S078",
+    "title": "Othniel, Ehud, Shamgar & Deborah",
+    "wordCount": 1984,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Jdg",
+    "reference": "3:7-5:31",
+    "isIntroduction": false
+  },
+  "S079": {
+    "segmentId": "S079",
+    "title": "Gideon",
+    "wordCount": 2805,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Jdg",
+    "reference": "6:1-8:32",
+    "isIntroduction": false
+  },
+  "S080": {
+    "segmentId": "S080",
+    "title": "Abimilech, Tola & Jair",
+    "wordCount": 1583,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Jdg",
+    "reference": "8:33-10:5",
+    "isIntroduction": false
+  },
+  "S081": {
+    "segmentId": "S081",
+    "title": "Jephthah, Ibzan, Elon & Abdon",
+    "wordCount": 1745,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Jdg",
+    "reference": "10:6-12:15",
+    "isIntroduction": false
+  },
+  "S082": {
+    "segmentId": "S082",
+    "title": "Samson",
+    "wordCount": 3006,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Jdg",
+    "reference": "13:1-16:31",
+    "isIntroduction": false
+  },
+  "S083": {
+    "segmentId": "S083",
+    "title": "Doing Right in Their Own Eyes 1",
+    "wordCount": 1193,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Jdg",
+    "reference": "17:1-18:31",
+    "isIntroduction": false
+  },
+  "S084": {
+    "segmentId": "S084",
+    "title": "Doing Right in Their Own Eyes 2",
+    "wordCount": 2730,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Jdg",
+    "reference": "19:1-21:25",
+    "isIntroduction": false
+  },
+  "I008": {
+    "segmentId": "I008",
+    "title": "Introduction to Ruth",
+    "wordCount": 2402,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Rut",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S085": {
+    "segmentId": "S085",
+    "title": "A Surprising Love Story",
+    "wordCount": 2420,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Rut",
+    "reference": "1:1-4:22",
+    "isIntroduction": false
+  },
+  "I009": {
+    "segmentId": "I009",
+    "title": "Introduction to 1 Samuel",
+    "wordCount": 21709,
+    "estimatedReadingTimeMinutes": 97,
+    "book": "1Sa",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S086": {
+    "segmentId": "S086",
+    "title": "God is with Samuel",
+    "wordCount": 2178,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "1Sa",
+    "reference": "1:1-4:1a",
+    "isIntroduction": false
+  },
+  "S087": {
+    "segmentId": "S087",
+    "title": "Israel Demands a King",
+    "wordCount": 2628,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "1Sa",
+    "reference": "4:1b-8:22",
+    "isIntroduction": false
+  },
+  "S088": {
+    "segmentId": "S088",
+    "title": "Saul Becomes King",
+    "wordCount": 2688,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "1Sa",
+    "reference": "9:1-12:25",
+    "isIntroduction": false
+  },
+  "S089": {
+    "segmentId": "S089",
+    "title": "Saul's Foolishness",
+    "wordCount": 2080,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "1Sa",
+    "reference": "13:1-14:52",
+    "isIntroduction": false
+  },
+  "S090": {
+    "segmentId": "S090",
+    "title": "God Rejects Saul & Samuel Anoints David",
+    "wordCount": 1537,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "1Sa",
+    "reference": "15:1-16:23",
+    "isIntroduction": false
+  },
+  "S091": {
+    "segmentId": "S091",
+    "title": "Saul Decreases & David Increases 1",
+    "wordCount": 2131,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "1Sa",
+    "reference": "17:1-18:30",
+    "isIntroduction": false
+  },
+  "S092": {
+    "segmentId": "S092",
+    "title": "Saul Decreases & David Increases 2",
+    "wordCount": 1777,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "1Sa",
+    "reference": "19:1-20:42",
+    "isIntroduction": false
+  },
+  "S093": {
+    "segmentId": "S093",
+    "title": "Saul Decreases & David Increases 3",
+    "wordCount": 1766,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "1Sa",
+    "reference": "21:1-23:29",
+    "isIntroduction": false
+  },
+  "S094": {
+    "segmentId": "S094",
+    "title": "Saul Decreases & David Increases 4",
+    "wordCount": 2800,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "1Sa",
+    "reference": "24:1-27:12",
+    "isIntroduction": false
+  },
+  "S095": {
+    "segmentId": "S095",
+    "title": "Saul Decreases & David Increases 5",
+    "wordCount": 1772,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "1Sa",
+    "reference": "28:1-30:31",
+    "isIntroduction": false
+  },
+  "S096": {
+    "segmentId": "S096",
+    "title": "Saul's Death & David's Lament",
+    "wordCount": 1146,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "1Sa",
+    "reference": "31:1-2:7",
+    "isIntroduction": false
+  },
+  "I010": {
+    "segmentId": "I010",
+    "title": "Introduction to 2 Samuel",
+    "wordCount": 18306,
+    "estimatedReadingTimeMinutes": 82,
+    "book": "2Sa",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S097": {
+    "segmentId": "S097",
+    "title": "David Becomes King",
+    "wordCount": 2639,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "2Sa",
+    "reference": "2:8-5:25",
+    "isIntroduction": false
+  },
+  "S098": {
+    "segmentId": "S098",
+    "title": "God Makes a Covenant with David",
+    "wordCount": 1443,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "2Sa",
+    "reference": "6:1-7:29",
+    "isIntroduction": false
+  },
+  "S099": {
+    "segmentId": "S099",
+    "title": "David's Victories",
+    "wordCount": 1280,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "2Sa",
+    "reference": "8:1-10:19",
+    "isIntroduction": false
+  },
+  "S100": {
+    "segmentId": "S100",
+    "title": "David's Failures",
+    "wordCount": 2545,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "2Sa",
+    "reference": "11:1-13:39",
+    "isIntroduction": false
+  },
+  "S101": {
+    "segmentId": "S101",
+    "title": "Absalom's Coup 1",
+    "wordCount": 2294,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "2Sa",
+    "reference": "14:1-16:14",
+    "isIntroduction": false
+  },
+  "S102": {
+    "segmentId": "S102",
+    "title": "Absalom's Coup 2",
+    "wordCount": 2309,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "2Sa",
+    "reference": "16:15-19:8a",
+    "isIntroduction": false
+  },
+  "S103": {
+    "segmentId": "S103",
+    "title": "David Restored as King",
+    "wordCount": 2241,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "2Sa",
+    "reference": "19:8b-21:14",
+    "isIntroduction": false
+  },
+  "S104": {
+    "segmentId": "S104",
+    "title": "David's Latter Reign",
+    "wordCount": 2646,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "2Sa",
+    "reference": "21:15-24:25",
+    "isIntroduction": false
+  },
+  "I011": {
+    "segmentId": "I011",
+    "title": "Introduction to 1 Kings",
+    "wordCount": 22178,
+    "estimatedReadingTimeMinutes": 99,
+    "book": "1Ki",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S105": {
+    "segmentId": "S105",
+    "title": "Solomon Becomes King",
+    "wordCount": 2687,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "1Ki",
+    "reference": "1:1-2:46",
+    "isIntroduction": false
+  },
+  "S106": {
+    "segmentId": "S106",
+    "title": "Solomon's Wise Beginning",
+    "wordCount": 2779,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "1Ki",
+    "reference": "3:1-6:38",
+    "isIntroduction": false
+  },
+  "S107": {
+    "segmentId": "S107",
+    "title": "Solomon Completes The Temple",
+    "wordCount": 1281,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "1Ki",
+    "reference": "7:1-51",
+    "isIntroduction": false
+  },
+  "S108": {
+    "segmentId": "S108",
+    "title": "Solomon Dedicates The Temple",
+    "wordCount": 1919,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "1Ki",
+    "reference": "8:1-9:1",
+    "isIntroduction": false
+  },
+  "S109": {
+    "segmentId": "S109",
+    "title": "Solomon's Foolish Ending",
+    "wordCount": 2630,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "1Ki",
+    "reference": "9:2-11:43",
+    "isIntroduction": false
+  },
+  "S110": {
+    "segmentId": "S110",
+    "title": "Kingdom Divided! Rehoboam of Judah; Jeroboam I of Israel",
+    "wordCount": 2490,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "1Ki",
+    "reference": "12:1-14:20",
+    "isIntroduction": false
+  },
+  "S111": {
+    "segmentId": "S111",
+    "title": "Jeroboam, Ahijah & Asa of Judah; Nadab, Baasha, Elah, Zimri & Omri of Israel",
+    "wordCount": 1944,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "1Ki",
+    "reference": "14:21-16:28",
+    "isIntroduction": false
+  },
+  "S112": {
+    "segmentId": "S112",
+    "title": "Elijah the Prophet & Ahab of Israel 1",
+    "wordCount": 2137,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "1Ki",
+    "reference": "16:29-18:46",
+    "isIntroduction": false
+  },
+  "S113": {
+    "segmentId": "S113",
+    "title": "Elijah the Prophet & Ahab of Israel 2",
+    "wordCount": 1960,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "1Ki",
+    "reference": "19:1-20:43",
+    "isIntroduction": false
+  },
+  "S114": {
+    "segmentId": "S114",
+    "title": "Elijah the Prophet & Ahab of Israel 3",
+    "wordCount": 1790,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "1Ki",
+    "reference": "21:1-22:40",
+    "isIntroduction": false
+  },
+  "S115": {
+    "segmentId": "S115",
+    "title": "Jehoshaphat of Judah; Ahaziah & Joram of Israel",
+    "wordCount": 2523,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "1Ki",
+    "reference": "22:41-3:27",
+    "isIntroduction": false
+  },
+  "I012": {
+    "segmentId": "I012",
+    "title": "Introduction to 2 Kings",
+    "wordCount": 22925,
+    "estimatedReadingTimeMinutes": 102,
+    "book": "2Ki",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S116": {
+    "segmentId": "S116",
+    "title": "Elisha's Ministry to Individuals",
+    "wordCount": 2370,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "2Ki",
+    "reference": "4:1-6:7",
+    "isIntroduction": false
+  },
+  "S117": {
+    "segmentId": "S117",
+    "title": "Elisha's Ministry to Nations",
+    "wordCount": 2054,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "2Ki",
+    "reference": "6:8-8:15",
+    "isIntroduction": false
+  },
+  "S118": {
+    "segmentId": "S118",
+    "title": "Jehoram & Ahaziah of Judah; Jehu of Israel",
+    "wordCount": 2606,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "2Ki",
+    "reference": "8:16-10:36",
+    "isIntroduction": false
+  },
+  "S119": {
+    "segmentId": "S119",
+    "title": "Athaliah & Jehoash of Judah; Jehoahaz & Jehoash of Israel",
+    "wordCount": 1973,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "2Ki",
+    "reference": "11:1-13:25",
+    "isIntroduction": false
+  },
+  "S120": {
+    "segmentId": "S120",
+    "title": "Amaziah & Azariah of Judah; Jeroboam II, Zechariah, Shallum, Menahem, Pekahiah & Pekah of Israel",
+    "wordCount": 1625,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "2Ki",
+    "reference": "14:1-15:31",
+    "isIntroduction": false
+  },
+  "S121": {
+    "segmentId": "S121",
+    "title": "Jotham & Ahaz of Judah; Hoshea of Israel",
+    "wordCount": 1939,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "2Ki",
+    "reference": "15:32-17:41",
+    "isIntroduction": false
+  },
+  "S122": {
+    "segmentId": "S122",
+    "title": "Hezekiah of Judah",
+    "wordCount": 2939,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "2Ki",
+    "reference": "18:1-20:21",
+    "isIntroduction": false
+  },
+  "S123": {
+    "segmentId": "S123",
+    "title": "Manasseh, Amon & Josiah of Judah",
+    "wordCount": 2536,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "2Ki",
+    "reference": "21:1-23:30",
+    "isIntroduction": false
+  },
+  "S124": {
+    "segmentId": "S124",
+    "title": "Jehoahaz, Jehoiakim, Jehoiachin & Zedekiah of Judah",
+    "wordCount": 1523,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "2Ki",
+    "reference": "23:31-25:30",
+    "isIntroduction": false
+  },
+  "I013": {
+    "segmentId": "I013",
+    "title": "Introduction to 1 Chronicles",
+    "wordCount": 18708,
+    "estimatedReadingTimeMinutes": 84,
+    "book": "1Ch",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S125": {
+    "segmentId": "S125",
+    "title": "Geneology from Adam to the Returned Exiles 1",
+    "wordCount": 2315,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "1Ch",
+    "reference": "1:1-4:23",
+    "isIntroduction": false
+  },
+  "S126": {
+    "segmentId": "S126",
+    "title": "Geneology from Adam to the Returned Exiles 2",
+    "wordCount": 1878,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "1Ch",
+    "reference": "4:24-6:81",
+    "isIntroduction": false
+  },
+  "S127": {
+    "segmentId": "S127",
+    "title": "Geneology from Adam to the Returned Exiles 3",
+    "wordCount": 2083,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "1Ch",
+    "reference": "7:1-9:44",
+    "isIntroduction": false
+  },
+  "S128": {
+    "segmentId": "S128",
+    "title": "Saul Killed & David Becomes King",
+    "wordCount": 2197,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "1Ch",
+    "reference": "10:1-12:40",
+    "isIntroduction": false
+  },
+  "S129": {
+    "segmentId": "S129",
+    "title": "David Brings the Ark to Jerusalem",
+    "wordCount": 2161,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "1Ch",
+    "reference": "13:1-16:43",
+    "isIntroduction": false
+  },
+  "S130": {
+    "segmentId": "S130",
+    "title": "God's Covenant; David's Victories",
+    "wordCount": 1936,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "1Ch",
+    "reference": "17:1-20:8",
+    "isIntroduction": false
+  },
+  "S131": {
+    "segmentId": "S131",
+    "title": "Census & Temple Preparations",
+    "wordCount": 1467,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "1Ch",
+    "reference": "21:1-23:1",
+    "isIntroduction": false
+  },
+  "S132": {
+    "segmentId": "S132",
+    "title": "David Organizes Religious Structures",
+    "wordCount": 2568,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "1Ch",
+    "reference": "23:2-26:32",
+    "isIntroduction": false
+  },
+  "S133": {
+    "segmentId": "S133",
+    "title": "David Organizes Governmental Structures",
+    "wordCount": 2384,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "1Ch",
+    "reference": "27:1-29:30",
+    "isIntroduction": false
+  },
+  "I014": {
+    "segmentId": "I014",
+    "title": "Introduction to 2 Chronicles",
+    "wordCount": 23657,
+    "estimatedReadingTimeMinutes": 106,
+    "book": "2Ch",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S134": {
+    "segmentId": "S134",
+    "title": "Solomon Builds The Temple",
+    "wordCount": 2105,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "2Ch",
+    "reference": "1:1-5:1",
+    "isIntroduction": false
+  },
+  "S135": {
+    "segmentId": "S135",
+    "title": "Solomon Dedicates The Temple",
+    "wordCount": 2321,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "2Ch",
+    "reference": "5:2-7:22",
+    "isIntroduction": false
+  },
+  "S136": {
+    "segmentId": "S136",
+    "title": "Solomon's Accomplishments",
+    "wordCount": 1306,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "2Ch",
+    "reference": "8:1-9:31",
+    "isIntroduction": false
+  },
+  "S137": {
+    "segmentId": "S137",
+    "title": "Rehoboam of Judah",
+    "wordCount": 1394,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "2Ch",
+    "reference": "10:1-12:16",
+    "isIntroduction": false
+  },
+  "S138": {
+    "segmentId": "S138",
+    "title": "Abijah & Asa of Judah",
+    "wordCount": 2009,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "2Ch",
+    "reference": "13:1-16:14",
+    "isIntroduction": false
+  },
+  "S139": {
+    "segmentId": "S139",
+    "title": "Jehoshaphat of Judah",
+    "wordCount": 2813,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "2Ch",
+    "reference": "17:1-20:37",
+    "isIntroduction": false
+  },
+  "S140": {
+    "segmentId": "S140",
+    "title": "Jehoram, Ahaziah, Athaliah & Joash of Judah",
+    "wordCount": 2582,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "2Ch",
+    "reference": "21:1-24:27",
+    "isIntroduction": false
+  },
+  "S141": {
+    "segmentId": "S141",
+    "title": "Amaziah, Uzziah, Jotham & Ahaz of Judah",
+    "wordCount": 2582,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "2Ch",
+    "reference": "25:1-28:27",
+    "isIntroduction": false
+  },
+  "S142": {
+    "segmentId": "S142",
+    "title": "Hezekiah (Part 1) of Judah",
+    "wordCount": 2639,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "2Ch",
+    "reference": "29:1-31:21",
+    "isIntroduction": false
+  },
+  "S143": {
+    "segmentId": "S143",
+    "title": "Hezekiah (Part 2), Manasseh & Amnon of Judah",
+    "wordCount": 1733,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "2Ch",
+    "reference": "32:1-33:25",
+    "isIntroduction": false
+  },
+  "S144": {
+    "segmentId": "S144",
+    "title": "Josiah, Jehoahaz, Jehoiakim, Jehoiachin & Zedekiah of Judah",
+    "wordCount": 2696,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "2Ch",
+    "reference": "34:1-36:23",
+    "isIntroduction": false
+  },
+  "I015": {
+    "segmentId": "I015",
+    "title": "Introduction to Ezra",
+    "wordCount": 6262,
+    "estimatedReadingTimeMinutes": 28,
+    "book": "Ezr",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S145": {
+    "segmentId": "S145",
+    "title": "First Return of the Exiles: Zerubbabel",
+    "wordCount": 1230,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Ezr",
+    "reference": "1:1-3:13",
+    "isIntroduction": false
+  },
+  "S146": {
+    "segmentId": "S146",
+    "title": "Opposition & Rebuilding of the Temple",
+    "wordCount": 1904,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Ezr",
+    "reference": "4:1-6:22",
+    "isIntroduction": false
+  },
+  "S147": {
+    "segmentId": "S147",
+    "title": "Second Return of the Exiles: Ezra",
+    "wordCount": 1711,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Ezr",
+    "reference": "7:1-8:36",
+    "isIntroduction": false
+  },
+  "S148": {
+    "segmentId": "S148",
+    "title": "Disobedience & Repentance of the People",
+    "wordCount": 1473,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Ezr",
+    "reference": "9:1-10:44",
+    "isIntroduction": false
+  },
+  "I016": {
+    "segmentId": "I016",
+    "title": "Introduction to Nehemiah",
+    "wordCount": 9606,
+    "estimatedReadingTimeMinutes": 43,
+    "book": "Neh",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S149": {
+    "segmentId": "S149",
+    "title": "Nehemiah Begins Rebuilding the Wall",
+    "wordCount": 1909,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Neh",
+    "reference": "1:1-3:32",
+    "isIntroduction": false
+  },
+  "S150": {
+    "segmentId": "S150",
+    "title": "The Wall is Rebuilt Amidst Opposition",
+    "wordCount": 2619,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Neh",
+    "reference": "4:1-7:73a",
+    "isIntroduction": false
+  },
+  "S151": {
+    "segmentId": "S151",
+    "title": "The People Are Restored",
+    "wordCount": 2590,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Neh",
+    "reference": "7:73b-10:39",
+    "isIntroduction": false
+  },
+  "S152": {
+    "segmentId": "S152",
+    "title": "The Wall & the People Are Rededicated",
+    "wordCount": 2744,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Neh",
+    "reference": "11:1-13:31",
+    "isIntroduction": false
+  },
+  "I017": {
+    "segmentId": "I017",
+    "title": "Introduction to Esther",
+    "wordCount": 5159,
+    "estimatedReadingTimeMinutes": 23,
+    "book": "Est",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S153": {
+    "segmentId": "S153",
+    "title": "Esther Becomes Queen",
+    "wordCount": 2412,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Est",
+    "reference": "1:1-4:17",
+    "isIntroduction": false
+  },
+  "S154": {
+    "segmentId": "S154",
+    "title": "Esther Saves Her People",
+    "wordCount": 2770,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Est",
+    "reference": "5:1-10:3",
+    "isIntroduction": false
+  },
+  "I018": {
+    "segmentId": "I018",
+    "title": "Introduction to Job",
+    "wordCount": 16673,
+    "estimatedReadingTimeMinutes": 75,
+    "book": "Job",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S155": {
+    "segmentId": "S155",
+    "title": "A Cosmic Challenge; Job Speaks",
+    "wordCount": 1313,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Job",
+    "reference": "1:1-3:26",
+    "isIntroduction": false
+  },
+  "S156": {
+    "segmentId": "S156",
+    "title": "Eliphaz & Bildad Speak; Job Responds",
+    "wordCount": 2792,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Job",
+    "reference": "4:1-10:22",
+    "isIntroduction": false
+  },
+  "S157": {
+    "segmentId": "S157",
+    "title": "Zophar & Eliphaz Speak; Job Responds",
+    "wordCount": 2581,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Job",
+    "reference": "11:1-17:16",
+    "isIntroduction": false
+  },
+  "S158": {
+    "segmentId": "S158",
+    "title": "Bildad, Zophar & Eliphaz Speak; Job Responds",
+    "wordCount": 2827,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Job",
+    "reference": "18:1-24:25",
+    "isIntroduction": false
+  },
+  "S159": {
+    "segmentId": "S159",
+    "title": "Bildad Speaks; Job Responds",
+    "wordCount": 2472,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Job",
+    "reference": "25:1-31:40",
+    "isIntroduction": false
+  },
+  "S160": {
+    "segmentId": "S160",
+    "title": "Elihu Speaks",
+    "wordCount": 2469,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Job",
+    "reference": "32:1-37:24",
+    "isIntroduction": false
+  },
+  "S161": {
+    "segmentId": "S161",
+    "title": "God Speaks; Job Responds",
+    "wordCount": 2249,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Job",
+    "reference": "38:1-42:17",
+    "isIntroduction": false
+  },
+  "I019": {
+    "segmentId": "I019",
+    "title": "Introduction to Psalms",
+    "wordCount": 41259,
+    "estimatedReadingTimeMinutes": 184,
+    "book": "Psa",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S162": {
+    "segmentId": "S162",
+    "title": "Book 1: Songs of Praise & Prayers of Faith 1",
+    "wordCount": 2558,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Psa",
+    "reference": "1:1-13:6",
+    "isIntroduction": false
+  },
+  "S163": {
+    "segmentId": "S163",
+    "title": "Book 1: Songs of Praise & Prayers of Faith 2",
+    "wordCount": 2845,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Psa",
+    "reference": "14:1-22:31",
+    "isIntroduction": false
+  },
+  "S164": {
+    "segmentId": "S164",
+    "title": "Book 1: Songs of Praise & Prayers of Faith 3",
+    "wordCount": 2807,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Psa",
+    "reference": "23:1-33:22",
+    "isIntroduction": false
+  },
+  "S165": {
+    "segmentId": "S165",
+    "title": "Book 1: Songs of Praise & Prayers of Faith 4",
+    "wordCount": 3029,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Psa",
+    "reference": "34:1-41:13",
+    "isIntroduction": false
+  },
+  "S166": {
+    "segmentId": "S166",
+    "title": "Book 2: Songs of Conflict & Salvation 1",
+    "wordCount": 2813,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Psa",
+    "reference": "42:1-51:19",
+    "isIntroduction": false
+  },
+  "S167": {
+    "segmentId": "S167",
+    "title": "Book 2: Songs of Conflict & Salvation 2",
+    "wordCount": 2972,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Psa",
+    "reference": "52:1-64:10",
+    "isIntroduction": false
+  },
+  "S168": {
+    "segmentId": "S168",
+    "title": "Book 2: Songs of Conflict & Salvation 3",
+    "wordCount": 2982,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Psa",
+    "reference": "65:1-72:20",
+    "isIntroduction": false
+  },
+  "S169": {
+    "segmentId": "S169",
+    "title": "Book 3: Songs of Asaph 1",
+    "wordCount": 1536,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Psa",
+    "reference": "73:1-77:20",
+    "isIntroduction": false
+  },
+  "S170": {
+    "segmentId": "S170",
+    "title": "Book 3: Songs of Asaph 2",
+    "wordCount": 2489,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Psa",
+    "reference": "78:1-83:18",
+    "isIntroduction": false
+  },
+  "S171": {
+    "segmentId": "S171",
+    "title": "Book 3: Songs by Many Psalmists",
+    "wordCount": 2051,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Psa",
+    "reference": "84:1-89:52",
+    "isIntroduction": false
+  },
+  "S172": {
+    "segmentId": "S172",
+    "title": "Book 4: God our King & Refuge",
+    "wordCount": 2251,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Psa",
+    "reference": "90:1-100:5",
+    "isIntroduction": false
+  },
+  "S173": {
+    "segmentId": "S173",
+    "title": "Book 4: God our Deliverer",
+    "wordCount": 2931,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Psa",
+    "reference": "101:1-106:48",
+    "isIntroduction": false
+  },
+  "S174": {
+    "segmentId": "S174",
+    "title": "Book 5: God our Deliverer",
+    "wordCount": 1801,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Psa",
+    "reference": "107:1-112:10",
+    "isIntroduction": false
+  },
+  "S175": {
+    "segmentId": "S175",
+    "title": "Book 5: The Egyptian Hallel",
+    "wordCount": 1255,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Psa",
+    "reference": "113:1-118:29",
+    "isIntroduction": false
+  },
+  "S176": {
+    "segmentId": "S176",
+    "title": "Book 5: The Word of God",
+    "wordCount": 2347,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Psa",
+    "reference": "119:1-119:176",
+    "isIntroduction": false
+  },
+  "S177": {
+    "segmentId": "S177",
+    "title": "Book 5: The Great Hallel",
+    "wordCount": 2377,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Psa",
+    "reference": "120:1-136:26",
+    "isIntroduction": false
+  },
+  "S178": {
+    "segmentId": "S178",
+    "title": "Book 5: Prayers for Deliverance",
+    "wordCount": 2194,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Psa",
+    "reference": "137:1-145:21",
+    "isIntroduction": false
+  },
+  "S179": {
+    "segmentId": "S179",
+    "title": "Book 5: The Final Hallel",
+    "wordCount": 862,
+    "estimatedReadingTimeMinutes": 4,
+    "book": "Psa",
+    "reference": "146:1-150:6",
+    "isIntroduction": false
+  },
+  "I020": {
+    "segmentId": "I020",
+    "title": "Introduction to Proverbs",
+    "wordCount": 13510,
+    "estimatedReadingTimeMinutes": 61,
+    "book": "Pro",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S180": {
+    "segmentId": "S180",
+    "title": "Proverbs Reveal Wisdom & Folly 1",
+    "wordCount": 2101,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Pro",
+    "reference": "1:1-5:23",
+    "isIntroduction": false
+  },
+  "S181": {
+    "segmentId": "S181",
+    "title": "Proverbs Reveal Wisdom & Folly 2",
+    "wordCount": 1695,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Pro",
+    "reference": "6:1-9:18",
+    "isIntroduction": false
+  },
+  "S182": {
+    "segmentId": "S182",
+    "title": "The Proverbs of Solomon 1",
+    "wordCount": 2671,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Pro",
+    "reference": "10:1-15:33",
+    "isIntroduction": false
+  },
+  "S183": {
+    "segmentId": "S183",
+    "title": "The Proverbs of Solomon 2",
+    "wordCount": 2767,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Pro",
+    "reference": "16:1-22:16",
+    "isIntroduction": false
+  },
+  "S184": {
+    "segmentId": "S184",
+    "title": "The Proverbs of the Wise 1",
+    "wordCount": 1228,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Pro",
+    "reference": "22:17-24:34",
+    "isIntroduction": false
+  },
+  "S185": {
+    "segmentId": "S185",
+    "title": "The Proverbs of Solomon 3",
+    "wordCount": 2162,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Pro",
+    "reference": "25:1-29:27",
+    "isIntroduction": false
+  },
+  "S186": {
+    "segmentId": "S186",
+    "title": "The Proverbs of the Wise 2",
+    "wordCount": 975,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Pro",
+    "reference": "30:1-31:31",
+    "isIntroduction": false
+  },
+  "I021": {
+    "segmentId": "I021",
+    "title": "Introduction to Ecclesiastes",
+    "wordCount": 4903,
+    "estimatedReadingTimeMinutes": 22,
+    "book": "Ecc",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S187": {
+    "segmentId": "S187",
+    "title": "Life Under the Sun",
+    "wordCount": 2539,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Ecc",
+    "reference": "1:1-6:12",
+    "isIntroduction": false
+  },
+  "S188": {
+    "segmentId": "S188",
+    "title": "Enjoy Life & Fear God",
+    "wordCount": 2364,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Ecc",
+    "reference": "7:1-12:14",
+    "isIntroduction": false
+  },
+  "I022": {
+    "segmentId": "I022",
+    "title": "Introduction to Song of Solomon",
+    "wordCount": 2555,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "SoS",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S189": {
+    "segmentId": "S189",
+    "title": "Romantic Love at It's Best",
+    "wordCount": 2555,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "SoS",
+    "reference": "1:1-8:14",
+    "isIntroduction": false
+  },
+  "I023": {
+    "segmentId": "I023",
+    "title": "Introduction to Isaiah",
+    "wordCount": 34574,
+    "estimatedReadingTimeMinutes": 154,
+    "book": "Isa",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S190": {
+    "segmentId": "S190",
+    "title": "Isaiah Prophesies During Uzziah's Reign",
+    "wordCount": 2804,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Isa",
+    "reference": "1:1-5:30",
+    "isIntroduction": false
+  },
+  "S191": {
+    "segmentId": "S191",
+    "title": "Isaiah Volunteers; God Promises Emmanuel",
+    "wordCount": 1768,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Isa",
+    "reference": "6:1-9:7",
+    "isIntroduction": false
+  },
+  "S192": {
+    "segmentId": "S192",
+    "title": "Judah's Enemies Judged; Emmanuel's Coming Reign",
+    "wordCount": 1822,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Isa",
+    "reference": "9:8-12:6",
+    "isIntroduction": false
+  },
+  "S193": {
+    "segmentId": "S193",
+    "title": "Prophecies for Babylon, Assyria, Philistia, Moab, Syria & Israel",
+    "wordCount": 2405,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Isa",
+    "reference": "13:1-17:14",
+    "isIntroduction": false
+  },
+  "S194": {
+    "segmentId": "S194",
+    "title": "Prophecies for Ethiopia, Egypt, Babylon, Edom, Arabia, Judah & Tyre",
+    "wordCount": 2549,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Isa",
+    "reference": "18:1-23:18",
+    "isIntroduction": false
+  },
+  "S195": {
+    "segmentId": "S195",
+    "title": "Coming Judgment & Salvation 1",
+    "wordCount": 1683,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Isa",
+    "reference": "24:1-27:13",
+    "isIntroduction": false
+  },
+  "S196": {
+    "segmentId": "S196",
+    "title": "Coming Judgment & Salvation 2",
+    "wordCount": 2366,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Isa",
+    "reference": "28:1-30:33",
+    "isIntroduction": false
+  },
+  "S197": {
+    "segmentId": "S197",
+    "title": "Coming Judgment & Salvation 3",
+    "wordCount": 2040,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Isa",
+    "reference": "31:1-35:10",
+    "isIntroduction": false
+  },
+  "S198": {
+    "segmentId": "S198",
+    "title": "Hezekiah's Reign: A Miraculous Deliverance & Disasterous Mistakes",
+    "wordCount": 2641,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Isa",
+    "reference": "36:1-39:8",
+    "isIntroduction": false
+  },
+  "S199": {
+    "segmentId": "S199",
+    "title": "The Gospel Proclaimed; God & Idols Contrasted",
+    "wordCount": 1504,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Isa",
+    "reference": "40:1-41:29",
+    "isIntroduction": false
+  },
+  "S200": {
+    "segmentId": "S200",
+    "title": "First Servant Song; God & Idols Contrasted",
+    "wordCount": 2051,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Isa",
+    "reference": "42:1-44:23",
+    "isIntroduction": false
+  },
+  "S201": {
+    "segmentId": "S201",
+    "title": "God's Servant Cyrus; God & Idols Contrasted",
+    "wordCount": 2285,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Isa",
+    "reference": "44:24-48:22",
+    "isIntroduction": false
+  },
+  "S202": {
+    "segmentId": "S202",
+    "title": "Two Servant Songs",
+    "wordCount": 2181,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Isa",
+    "reference": "49:1-52:12",
+    "isIntroduction": false
+  },
+  "S203": {
+    "segmentId": "S203",
+    "title": "A Final Servant Song - God's Way of Salvation",
+    "wordCount": 2170,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Isa",
+    "reference": "52:13-57:21",
+    "isIntroduction": false
+  },
+  "S204": {
+    "segmentId": "S204",
+    "title": "Preparing for God's Reign & Salvation",
+    "wordCount": 2367,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Isa",
+    "reference": "58:1-62:12",
+    "isIntroduction": false
+  },
+  "S205": {
+    "segmentId": "S205",
+    "title": "Coming Judgment & Salvation 3",
+    "wordCount": 2423,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Isa",
+    "reference": "63:1-66:24",
+    "isIntroduction": false
+  },
+  "I024": {
+    "segmentId": "I024",
+    "title": "Introduction to Jeremiah",
+    "wordCount": 37807,
+    "estimatedReadingTimeMinutes": 169,
+    "book": "Jer",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S206": {
+    "segmentId": "S206",
+    "title": "Jeremiah Called To Prophesy; Judah Called To Repentance",
+    "wordCount": 2407,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Jer",
+    "reference": "1:1-4:2",
+    "isIntroduction": false
+  },
+  "S207": {
+    "segmentId": "S207",
+    "title": "Shall I Not Punish? Judah Must Be Punished!",
+    "wordCount": 2371,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Jer",
+    "reference": "4:3-6:30",
+    "isIntroduction": false
+  },
+  "S208": {
+    "segmentId": "S208",
+    "title": "Shall I Not Punish? Judah Will Be Punished!",
+    "wordCount": 3015,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Jer",
+    "reference": "7:1-10:25",
+    "isIntroduction": false
+  },
+  "S209": {
+    "segmentId": "S209",
+    "title": "The Covenant Broken",
+    "wordCount": 1163,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Jer",
+    "reference": "11:1-12:17",
+    "isIntroduction": false
+  },
+  "S210": {
+    "segmentId": "S210",
+    "title": "God Reluctant to Relent",
+    "wordCount": 2069,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Jer",
+    "reference": "13:1-15:21",
+    "isIntroduction": false
+  },
+  "S211": {
+    "segmentId": "S211",
+    "title": "God Willing to Relent",
+    "wordCount": 1427,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Jer",
+    "reference": "16:1-17:27",
+    "isIntroduction": false
+  },
+  "S212": {
+    "segmentId": "S212",
+    "title": "Jeremiah Prophesies & Suffers Persecution 1",
+    "wordCount": 1604,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Jer",
+    "reference": "18:1-20:18",
+    "isIntroduction": false
+  },
+  "S213": {
+    "segmentId": "S213",
+    "title": "Judgment on Civil & Religious Leaders",
+    "wordCount": 2741,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Jer",
+    "reference": "21:1-24:10",
+    "isIntroduction": false
+  },
+  "S214": {
+    "segmentId": "S214",
+    "title": "Jeremiah Prophesies & Suffers Persecution 2",
+    "wordCount": 2953,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Jer",
+    "reference": "25:1-28:17",
+    "isIntroduction": false
+  },
+  "S215": {
+    "segmentId": "S215",
+    "title": "Letter to Exiles in Babylon: A New Covenant Promised",
+    "wordCount": 2689,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Jer",
+    "reference": "29:1-31:40",
+    "isIntroduction": false
+  },
+  "S216": {
+    "segmentId": "S216",
+    "title": "Covenantal Hope Inspires Jeremiah to Buy a Field",
+    "wordCount": 2003,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Jer",
+    "reference": "32:1-33:26",
+    "isIntroduction": false
+  },
+  "S217": {
+    "segmentId": "S217",
+    "title": "Zedekiah's Covenant Broken; Jonadab's Covenant Unbroken",
+    "wordCount": 1118,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Jer",
+    "reference": "34:1-35:19",
+    "isIntroduction": false
+  },
+  "S218": {
+    "segmentId": "S218",
+    "title": "Jeremiah Prophesies & Suffers Persecution 3",
+    "wordCount": 2258,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Jer",
+    "reference": "36:1-38:28",
+    "isIntroduction": false
+  },
+  "S219": {
+    "segmentId": "S219",
+    "title": "Jerusalem Falls!",
+    "wordCount": 1504,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Jer",
+    "reference": "39:1-41:18",
+    "isIntroduction": false
+  },
+  "S220": {
+    "segmentId": "S220",
+    "title": "Futile Flight to Egypt",
+    "wordCount": 2128,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Jer",
+    "reference": "42:1-45:5",
+    "isIntroduction": false
+  },
+  "S221": {
+    "segmentId": "S221",
+    "title": "Babylon: An Agent of God's Judgment 1",
+    "wordCount": 2040,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Jer",
+    "reference": "46:1-48:47",
+    "isIntroduction": false
+  },
+  "S222": {
+    "segmentId": "S222",
+    "title": "Babylon: An Agent of God's Judgment 2",
+    "wordCount": 1120,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Jer",
+    "reference": "49:1-39",
+    "isIntroduction": false
+  },
+  "S223": {
+    "segmentId": "S223",
+    "title": "Babylon: A Recipient of God's Judgment",
+    "wordCount": 2984,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Jer",
+    "reference": "50:1-51:64",
+    "isIntroduction": false
+  },
+  "S224": {
+    "segmentId": "S224",
+    "title": "Jerusalem Falls!",
+    "wordCount": 910,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Jer",
+    "reference": "52:1-34",
+    "isIntroduction": false
+  },
+  "I025": {
+    "segmentId": "I025",
+    "title": "Introduction to Lamentations",
+    "wordCount": 3207,
+    "estimatedReadingTimeMinutes": 15,
+    "book": "Lam",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S225": {
+    "segmentId": "S225",
+    "title": "All Hope is Lost Because of God's Judgment",
+    "wordCount": 1524,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Lam",
+    "reference": "1:1-2:22",
+    "isIntroduction": false
+  },
+  "S226": {
+    "segmentId": "S226",
+    "title": "Hope Yet Again Because of God's Mercy",
+    "wordCount": 1720,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Lam",
+    "reference": "3:1-5:22",
+    "isIntroduction": false
+  },
+  "I026": {
+    "segmentId": "I026",
+    "title": "Introduction to Ezekiel",
+    "wordCount": 34467,
+    "estimatedReadingTimeMinutes": 154,
+    "book": "Eze",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S227": {
+    "segmentId": "S227",
+    "title": "A Vision of the Glory of the Lord",
+    "wordCount": 1249,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Eze",
+    "reference": "1:1-3:15",
+    "isIntroduction": false
+  },
+  "S228": {
+    "segmentId": "S228",
+    "title": "The Coming Destruction Dramatized",
+    "wordCount": 2437,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Eze",
+    "reference": "3:16-7:27",
+    "isIntroduction": false
+  },
+  "S229": {
+    "segmentId": "S229",
+    "title": "The Glory of the Lord Leaves",
+    "wordCount": 2123,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Eze",
+    "reference": "8:1-11:25",
+    "isIntroduction": false
+  },
+  "S230": {
+    "segmentId": "S230",
+    "title": "The Coming Exile Dramatized",
+    "wordCount": 2077,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Eze",
+    "reference": "12:1-14:23",
+    "isIntroduction": false
+  },
+  "S231": {
+    "segmentId": "S231",
+    "title": "The Worthless Vine & the Faithless Wife",
+    "wordCount": 1658,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Eze",
+    "reference": "15:1-16:63",
+    "isIntroduction": false
+  },
+  "S232": {
+    "segmentId": "S232",
+    "title": "Eagles & Funerals; Justice & Mercy",
+    "wordCount": 1845,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Eze",
+    "reference": "17:1-19:14",
+    "isIntroduction": false
+  },
+  "S233": {
+    "segmentId": "S233",
+    "title": "Idolatry Leads to Judgment",
+    "wordCount": 2289,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Eze",
+    "reference": "20:1-21:32",
+    "isIntroduction": false
+  },
+  "S234": {
+    "segmentId": "S234",
+    "title": "Allegory of Oholah & Oholibah",
+    "wordCount": 2647,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Eze",
+    "reference": "22:1-24:27",
+    "isIntroduction": false
+  },
+  "S235": {
+    "segmentId": "S235",
+    "title": "Judgment Upon Amnon, Moab, Edom, Philistia, Tyre & Sidon",
+    "wordCount": 2529,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Eze",
+    "reference": "25:1-28:26",
+    "isIntroduction": false
+  },
+  "S236": {
+    "segmentId": "S236",
+    "title": "Judgment Upon Egypt & Ethiopia",
+    "wordCount": 2853,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Eze",
+    "reference": "29:1-32:32",
+    "isIntroduction": false
+  },
+  "S237": {
+    "segmentId": "S237",
+    "title": "The Watchman Learns of Jerusalem's Fall",
+    "wordCount": 929,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Eze",
+    "reference": "33:1-33:33",
+    "isIntroduction": false
+  },
+  "S238": {
+    "segmentId": "S238",
+    "title": "The Good Shepherd Restores His People",
+    "wordCount": 2286,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Eze",
+    "reference": "34:1-36:38",
+    "isIntroduction": false
+  },
+  "S239": {
+    "segmentId": "S239",
+    "title": "Prophecy of Hope & Restoration",
+    "wordCount": 2244,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Eze",
+    "reference": "37:1-39:29",
+    "isIntroduction": false
+  },
+  "S240": {
+    "segmentId": "S240",
+    "title": "A Vision of the Temple Measured",
+    "wordCount": 2776,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Eze",
+    "reference": "40:1-42:20",
+    "isIntroduction": false
+  },
+  "S241": {
+    "segmentId": "S241",
+    "title": "The Glory of the Lord Returns",
+    "wordCount": 1762,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Eze",
+    "reference": "43:1-44:31",
+    "isIntroduction": false
+  },
+  "S242": {
+    "segmentId": "S242",
+    "title": "A Vision of the Holy Land & Feasts",
+    "wordCount": 1658,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Eze",
+    "reference": "45:1-46:24",
+    "isIntroduction": false
+  },
+  "S243": {
+    "segmentId": "S243",
+    "title": "The River of Life & the City of God's Presence",
+    "wordCount": 1556,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Eze",
+    "reference": "47:1-48:35",
+    "isIntroduction": false
+  },
+  "I027": {
+    "segmentId": "I027",
+    "title": "Introduction to Daniel",
+    "wordCount": 10515,
+    "estimatedReadingTimeMinutes": 47,
+    "book": "Dan",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S244": {
+    "segmentId": "S244",
+    "title": "Faithful to God in a Pagan Nation",
+    "wordCount": 1893,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Dan",
+    "reference": "1:1-2:49",
+    "isIntroduction": false
+  },
+  "S245": {
+    "segmentId": "S245",
+    "title": "Companions Saved; Nebuchadnezzar Humbled",
+    "wordCount": 2006,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Dan",
+    "reference": "3:1-4:37",
+    "isIntroduction": false
+  },
+  "S246": {
+    "segmentId": "S246",
+    "title": "Beltshazzar Humbled: Daniel Saved",
+    "wordCount": 1729,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Dan",
+    "reference": "5:1-6:28",
+    "isIntroduction": false
+  },
+  "S247": {
+    "segmentId": "S247",
+    "title": "Three Visions of God's Future Rule",
+    "wordCount": 2548,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Dan",
+    "reference": "7:1-9:27",
+    "isIntroduction": false
+  },
+  "S248": {
+    "segmentId": "S248",
+    "title": "A Vision of the Kings of the North & the South",
+    "wordCount": 2354,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Dan",
+    "reference": "10:1-12:13",
+    "isIntroduction": false
+  },
+  "I028": {
+    "segmentId": "I028",
+    "title": "Introduction to Hosea",
+    "wordCount": 5224,
+    "estimatedReadingTimeMinutes": 24,
+    "book": "Hos",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S249": {
+    "segmentId": "S249",
+    "title": "Hosea Loves a Wayward Wife",
+    "wordCount": 2288,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Hos",
+    "reference": "1:1-6:11",
+    "isIntroduction": false
+  },
+  "S250": {
+    "segmentId": "S250",
+    "title": "God Loves a Wayward People",
+    "wordCount": 2989,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Hos",
+    "reference": "7:1-14:9",
+    "isIntroduction": false
+  },
+  "I029": {
+    "segmentId": "I029",
+    "title": "Introduction to Joel",
+    "wordCount": 1910,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Joe",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S251": {
+    "segmentId": "S251",
+    "title": "The Coming Day of the Lord",
+    "wordCount": 1946,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Joe",
+    "reference": "1:1-3:21",
+    "isIntroduction": false
+  },
+  "I030": {
+    "segmentId": "I030",
+    "title": "Introduction to Amos",
+    "wordCount": 4038,
+    "estimatedReadingTimeMinutes": 18,
+    "book": "Amo",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S252": {
+    "segmentId": "S252",
+    "title": "Prophecies of Judgment",
+    "wordCount": 2742,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Amo",
+    "reference": "1:1-6:14",
+    "isIntroduction": false
+  },
+  "S253": {
+    "segmentId": "S253",
+    "title": "Visions of Judgment & Restoration",
+    "wordCount": 1377,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Amo",
+    "reference": "7:1-9:15",
+    "isIntroduction": false
+  },
+  "I031": {
+    "segmentId": "I031",
+    "title": "Introduction to Obadiah",
+    "wordCount": 686,
+    "estimatedReadingTimeMinutes": 4,
+    "book": "Oba",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S254": {
+    "segmentId": "S254",
+    "title": "Poetic Justice",
+    "wordCount": 694,
+    "estimatedReadingTimeMinutes": 4,
+    "book": "Oba",
+    "reference": "1:1-1:21",
+    "isIntroduction": false
+  },
+  "I032": {
+    "segmentId": "I032",
+    "title": "Introduction to Jonah",
+    "wordCount": 1209,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Jon",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S255": {
+    "segmentId": "S255",
+    "title": "Nineveh Spared!",
+    "wordCount": 1236,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Jon",
+    "reference": "1:1-4:11",
+    "isIntroduction": false
+  },
+  "I033": {
+    "segmentId": "I033",
+    "title": "Introduction to Micah",
+    "wordCount": 3017,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Mic",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S256": {
+    "segmentId": "S256",
+    "title": "Glimpses of a Matchless God",
+    "wordCount": 1449,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Mic",
+    "reference": "1:1-4:8",
+    "isIntroduction": false
+  },
+  "S257": {
+    "segmentId": "S257",
+    "title": "No God like Our God",
+    "wordCount": 1615,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Mic",
+    "reference": "4:9-7:20",
+    "isIntroduction": false
+  },
+  "I034": {
+    "segmentId": "I034",
+    "title": "Introduction to Nahum",
+    "wordCount": 1190,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Nah",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S258": {
+    "segmentId": "S258",
+    "title": "Ninevah Doomed!",
+    "wordCount": 1200,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Nah",
+    "reference": "1:1-3:19",
+    "isIntroduction": false
+  },
+  "I035": {
+    "segmentId": "I035",
+    "title": "Introduction to Habakkuk",
+    "wordCount": 1368,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Hab",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S259": {
+    "segmentId": "S259",
+    "title": "A Gripping Confrontation with God",
+    "wordCount": 1382,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Hab",
+    "reference": "1:1-3:19",
+    "isIntroduction": false
+  },
+  "I036": {
+    "segmentId": "I036",
+    "title": "Introduction to Zephaniah",
+    "wordCount": 1531,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Zep",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S260": {
+    "segmentId": "S260",
+    "title": "From Gloom to Ecstasy",
+    "wordCount": 1567,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Zep",
+    "reference": "1:1-3:20",
+    "isIntroduction": false
+  },
+  "I037": {
+    "segmentId": "I037",
+    "title": "Introduction to Haggai",
+    "wordCount": 1021,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Hag",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S261": {
+    "segmentId": "S261",
+    "title": "The Prophet Who Got Results",
+    "wordCount": 1055,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Hag",
+    "reference": "1:1-2:23",
+    "isIntroduction": false
+  },
+  "I038": {
+    "segmentId": "I038",
+    "title": "Introduction to Zechariah",
+    "wordCount": 5801,
+    "estimatedReadingTimeMinutes": 26,
+    "book": "Zec",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S262": {
+    "segmentId": "S262",
+    "title": "A Call to Build the Temple (9 Visions)",
+    "wordCount": 2153,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Zec",
+    "reference": "1:1-6:15",
+    "isIntroduction": false
+  },
+  "S263": {
+    "segmentId": "S263",
+    "title": "A Call to Holiness (2 Prophecies)",
+    "wordCount": 1052,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Zec",
+    "reference": "7:1-8:23",
+    "isIntroduction": false
+  },
+  "S264": {
+    "segmentId": "S264",
+    "title": "The Coming Shepherd King",
+    "wordCount": 2729,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Zec",
+    "reference": "9:1-14:21",
+    "isIntroduction": false
+  },
+  "I039": {
+    "segmentId": "I039",
+    "title": "Introduction to Malachi",
+    "wordCount": 1829,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Mal",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S265": {
+    "segmentId": "S265",
+    "title": "Crucial Questions for Spiritual Leaders",
+    "wordCount": 1877,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Mal",
+    "reference": "1:1-4:6",
+    "isIntroduction": false
+  },
+  "I040": {
+    "segmentId": "I040",
+    "title": "Introduction to Matthew",
+    "wordCount": 23462,
+    "estimatedReadingTimeMinutes": 105,
+    "book": "Mat",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S266": {
+    "segmentId": "S266",
+    "title": "The Kingdom is Inaugurated",
+    "wordCount": 2104,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Mat",
+    "reference": "1:1-4:25",
+    "isIntroduction": false
+  },
+  "S267": {
+    "segmentId": "S267",
+    "title": "Principles for Kingdom Living",
+    "wordCount": 2436,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Mat",
+    "reference": "5:1-7:29",
+    "isIntroduction": false
+  },
+  "S268": {
+    "segmentId": "S268",
+    "title": "Prepared to Extend the Kingdom",
+    "wordCount": 2522,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Mat",
+    "reference": "8:1-11:1",
+    "isIntroduction": false
+  },
+  "S269": {
+    "segmentId": "S269",
+    "title": "Stories of the Kingdom",
+    "wordCount": 3045,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Mat",
+    "reference": "11:2-13:53",
+    "isIntroduction": false
+  },
+  "S270": {
+    "segmentId": "S270",
+    "title": "The King Acts: Faith & Opposition",
+    "wordCount": 2851,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "Mat",
+    "reference": "13:54-17:27",
+    "isIntroduction": false
+  },
+  "S271": {
+    "segmentId": "S271",
+    "title": "Practical Values of the Kingdom",
+    "wordCount": 827,
+    "estimatedReadingTimeMinutes": 4,
+    "book": "Mat",
+    "reference": "18:1-18:35",
+    "isIntroduction": false
+  },
+  "S272": {
+    "segmentId": "S272",
+    "title": "The King Approaches Jerusalem",
+    "wordCount": 1408,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Mat",
+    "reference": "19:1-20:34",
+    "isIntroduction": false
+  },
+  "S273": {
+    "segmentId": "S273",
+    "title": "The King Enters Jerusalem",
+    "wordCount": 1951,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Mat",
+    "reference": "21:1-22:46",
+    "isIntroduction": false
+  },
+  "S274": {
+    "segmentId": "S274",
+    "title": "The King Warns & Encourages",
+    "wordCount": 2941,
+    "estimatedReadingTimeMinutes": 14,
+    "book": "Mat",
+    "reference": "23:1-25:46",
+    "isIntroduction": false
+  },
+  "S275": {
+    "segmentId": "S275",
+    "title": "The King's Final Days",
+    "wordCount": 2159,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Mat",
+    "reference": "26:1-27:26",
+    "isIntroduction": false
+  },
+  "S276": {
+    "segmentId": "S276",
+    "title": "The King Dead & Alive",
+    "wordCount": 1232,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Mat",
+    "reference": "27:27-28:20",
+    "isIntroduction": false
+  },
+  "I041": {
+    "segmentId": "I041",
+    "title": "Introduction to Mark",
+    "wordCount": 14991,
+    "estimatedReadingTimeMinutes": 67,
+    "book": "Mar",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S277": {
+    "segmentId": "S277",
+    "title": "The Good News of Jesus Christ",
+    "wordCount": 1738,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Mar",
+    "reference": "1:1-3:6",
+    "isIntroduction": false
+  },
+  "S278": {
+    "segmentId": "S278",
+    "title": "Serving in Deed & Word",
+    "wordCount": 2343,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Mar",
+    "reference": "3:7-5:43",
+    "isIntroduction": false
+  },
+  "S279": {
+    "segmentId": "S279",
+    "title": "Power, Servanthood & Persecution",
+    "wordCount": 2032,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Mar",
+    "reference": "6:1-7:37",
+    "isIntroduction": false
+  },
+  "S280": {
+    "segmentId": "S280",
+    "title": "Jesus is the Christ",
+    "wordCount": 2010,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Mar",
+    "reference": "8:1-9:50",
+    "isIntroduction": false
+  },
+  "S281": {
+    "segmentId": "S281",
+    "title": "Jesus Came to Serve",
+    "wordCount": 1787,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Mar",
+    "reference": "10:1-11:26",
+    "isIntroduction": false
+  },
+  "S282": {
+    "segmentId": "S282",
+    "title": "Challenged by Religious Leaders",
+    "wordCount": 2059,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Mar",
+    "reference": "11:27-13:37",
+    "isIntroduction": false
+  },
+  "S283": {
+    "segmentId": "S283",
+    "title": "Betrayed, Arrested & Denied",
+    "wordCount": 1615,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Mar",
+    "reference": "14:1-14:72",
+    "isIntroduction": false
+  },
+  "S284": {
+    "segmentId": "S284",
+    "title": "Tried, Crucified & Risen",
+    "wordCount": 1451,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Mar",
+    "reference": "15:1-16:20",
+    "isIntroduction": false
+  },
+  "I042": {
+    "segmentId": "I042",
+    "title": "Introduction to Luke",
+    "wordCount": 25319,
+    "estimatedReadingTimeMinutes": 113,
+    "book": "Luk",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S285": {
+    "segmentId": "S285",
+    "title": "Two Miraculous Births",
+    "wordCount": 2249,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Luk",
+    "reference": "1:1-2:40",
+    "isIntroduction": false
+  },
+  "S286": {
+    "segmentId": "S286",
+    "title": "Preparing for the Mission in Galilee",
+    "wordCount": 2191,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Luk",
+    "reference": "2:41-4:44",
+    "isIntroduction": false
+  },
+  "S287": {
+    "segmentId": "S287",
+    "title": "Calling, Healing & Teaching",
+    "wordCount": 2095,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Luk",
+    "reference": "5:1-6:49",
+    "isIntroduction": false
+  },
+  "S288": {
+    "segmentId": "S288",
+    "title": "Power, Miracles & Faith",
+    "wordCount": 2645,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Luk",
+    "reference": "7:1-8:56",
+    "isIntroduction": false
+  },
+  "S289": {
+    "segmentId": "S289",
+    "title": "The Mission in Galilee Completed",
+    "wordCount": 1176,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Luk",
+    "reference": "9:1-9:50",
+    "isIntroduction": false
+  },
+  "S290": {
+    "segmentId": "S290",
+    "title": "Jesus Set His Face to Jerusalem",
+    "wordCount": 2572,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Luk",
+    "reference": "9:51-11:54",
+    "isIntroduction": false
+  },
+  "S291": {
+    "segmentId": "S291",
+    "title": "Teaching on True Discipleship",
+    "wordCount": 1523,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Luk",
+    "reference": "12:1-13:9",
+    "isIntroduction": false
+  },
+  "S292": {
+    "segmentId": "S292",
+    "title": "Power & Parables",
+    "wordCount": 2141,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Luk",
+    "reference": "13:10-15:32",
+    "isIntroduction": false
+  },
+  "S293": {
+    "segmentId": "S293",
+    "title": "More Teaching on True Discipleship",
+    "wordCount": 1030,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Luk",
+    "reference": "16:1-17:10",
+    "isIntroduction": false
+  },
+  "S294": {
+    "segmentId": "S294",
+    "title": "More Power & Parables",
+    "wordCount": 2004,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Luk",
+    "reference": "17:11-19:27",
+    "isIntroduction": false
+  },
+  "S295": {
+    "segmentId": "S295",
+    "title": "Jesus Entered Jerusalem",
+    "wordCount": 2174,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Luk",
+    "reference": "19:28-21:38",
+    "isIntroduction": false
+  },
+  "S296": {
+    "segmentId": "S296",
+    "title": "Betrayed, Arrested & Denied",
+    "wordCount": 1415,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Luk",
+    "reference": "22:1-22:71",
+    "isIntroduction": false
+  },
+  "S297": {
+    "segmentId": "S297",
+    "title": "Tried, Crucified & Risen",
+    "wordCount": 2114,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Luk",
+    "reference": "23:1-24:53",
+    "isIntroduction": false
+  },
+  "I043": {
+    "segmentId": "I043",
+    "title": "Introduction to John",
+    "wordCount": 18386,
+    "estimatedReadingTimeMinutes": 82,
+    "book": "Joh",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S298": {
+    "segmentId": "S298",
+    "title": "God Came to Us",
+    "wordCount": 998,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Joh",
+    "reference": "1:1-1:51",
+    "isIntroduction": false
+  },
+  "S299": {
+    "segmentId": "S299",
+    "title": "The First Sign",
+    "wordCount": 2078,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Joh",
+    "reference": "2:1-4:42",
+    "isIntroduction": false
+  },
+  "S300": {
+    "segmentId": "S300",
+    "title": "Four More Signs",
+    "wordCount": 2570,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Joh",
+    "reference": "4:43-6:71",
+    "isIntroduction": false
+  },
+  "S301": {
+    "segmentId": "S301",
+    "title": "Who is this Doer of Signs?",
+    "wordCount": 2342,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Joh",
+    "reference": "7:1-8:59",
+    "isIntroduction": false
+  },
+  "S302": {
+    "segmentId": "S302",
+    "title": "The Sixth Sign",
+    "wordCount": 1667,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Joh",
+    "reference": "9:1-10:42",
+    "isIntroduction": false
+  },
+  "S303": {
+    "segmentId": "S303",
+    "title": "The Seventh Sign",
+    "wordCount": 2142,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Joh",
+    "reference": "11:1-12:50",
+    "isIntroduction": false
+  },
+  "S304": {
+    "segmentId": "S304",
+    "title": "Last Supper: Servanthood & Identity",
+    "wordCount": 1537,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Joh",
+    "reference": "13:1-14:31",
+    "isIntroduction": false
+  },
+  "S305": {
+    "segmentId": "S305",
+    "title": "Last Supper: Fruitfulness & Unity",
+    "wordCount": 1930,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Joh",
+    "reference": "15:1-17:26",
+    "isIntroduction": false
+  },
+  "S306": {
+    "segmentId": "S306",
+    "title": "Tried, Crucified & Buried",
+    "wordCount": 1848,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Joh",
+    "reference": "18:1-19:42",
+    "isIntroduction": false
+  },
+  "S307": {
+    "segmentId": "S307",
+    "title": "The Ultimate Sign: Christ's Life-giving Resurrection!",
+    "wordCount": 1307,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Joh",
+    "reference": "20:1-21:25",
+    "isIntroduction": false
+  },
+  "I044": {
+    "segmentId": "I044",
+    "title": "Introduction to Acts",
+    "wordCount": 23508,
+    "estimatedReadingTimeMinutes": 105,
+    "book": "Act",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S308": {
+    "segmentId": "S308",
+    "title": "Ascension & Pentecost",
+    "wordCount": 1636,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Act",
+    "reference": "1:1-2:47",
+    "isIntroduction": false
+  },
+  "S309": {
+    "segmentId": "S309",
+    "title": "Growth & Persecution",
+    "wordCount": 1690,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Act",
+    "reference": "3:1-5:11",
+    "isIntroduction": false
+  },
+  "S310": {
+    "segmentId": "S310",
+    "title": "Multiplication & Martyrdom",
+    "wordCount": 2585,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Act",
+    "reference": "5:12-8:4",
+    "isIntroduction": false
+  },
+  "S311": {
+    "segmentId": "S311",
+    "title": "Paul's Conversion",
+    "wordCount": 1467,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Act",
+    "reference": "8:5-9:31",
+    "isIntroduction": false
+  },
+  "S312": {
+    "segmentId": "S312",
+    "title": "Cornelius' Conversion",
+    "wordCount": 2569,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Act",
+    "reference": "9:32-12:25",
+    "isIntroduction": false
+  },
+  "S313": {
+    "segmentId": "S313",
+    "title": "First Missionary Journey",
+    "wordCount": 1965,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Act",
+    "reference": "13:1-14:28",
+    "isIntroduction": false
+  },
+  "S314": {
+    "segmentId": "S314",
+    "title": "Council at Jerusalem",
+    "wordCount": 817,
+    "estimatedReadingTimeMinutes": 4,
+    "book": "Act",
+    "reference": "15:1-15:36",
+    "isIntroduction": false
+  },
+  "S315": {
+    "segmentId": "S315",
+    "title": "Second Missionary Journey",
+    "wordCount": 2413,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Act",
+    "reference": "15:37-18:22",
+    "isIntroduction": false
+  },
+  "S316": {
+    "segmentId": "S316",
+    "title": "Third Missionary Journey",
+    "wordCount": 2348,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Act",
+    "reference": "18:23-21:16",
+    "isIntroduction": false
+  },
+  "S317": {
+    "segmentId": "S317",
+    "title": "Paul Arrested in Jerusalem",
+    "wordCount": 1646,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Act",
+    "reference": "21:17-23:11",
+    "isIntroduction": false
+  },
+  "S318": {
+    "segmentId": "S318",
+    "title": "Paul on Trial in Caesarea",
+    "wordCount": 2504,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Act",
+    "reference": "23:12-26:32",
+    "isIntroduction": false
+  },
+  "S319": {
+    "segmentId": "S319",
+    "title": "Paul Sent to Rome",
+    "wordCount": 1880,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Act",
+    "reference": "27:1-28:31",
+    "isIntroduction": false
+  },
+  "I045": {
+    "segmentId": "I045",
+    "title": "Introduction to Romans",
+    "wordCount": 11068,
+    "estimatedReadingTimeMinutes": 50,
+    "book": "Rom",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S320": {
+    "segmentId": "S320",
+    "title": "Jews & Gentiles Have Sinned",
+    "wordCount": 1907,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Rom",
+    "reference": "1:1-3:20",
+    "isIntroduction": false
+  },
+  "S321": {
+    "segmentId": "S321",
+    "title": "Jews & Gentiles Justified by Faith",
+    "wordCount": 1536,
+    "estimatedReadingTimeMinutes": 7,
+    "book": "Rom",
+    "reference": "3:21-5:21",
+    "isIntroduction": false
+  },
+  "S322": {
+    "segmentId": "S322",
+    "title": "God's Children Adopted by the Spirit",
+    "wordCount": 2336,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Rom",
+    "reference": "6:1-8:39",
+    "isIntroduction": false
+  },
+  "S323": {
+    "segmentId": "S323",
+    "title": "History of Redemptive Mercy",
+    "wordCount": 2363,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "Rom",
+    "reference": "9:1-11:36",
+    "isIntroduction": false
+  },
+  "S324": {
+    "segmentId": "S324",
+    "title": "Fruit of Transformational Grace",
+    "wordCount": 1799,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Rom",
+    "reference": "12:1-15:13",
+    "isIntroduction": false
+  },
+  "S325": {
+    "segmentId": "S325",
+    "title": "Travel Plans & Greetings",
+    "wordCount": 1137,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Rom",
+    "reference": "15:14-16:27",
+    "isIntroduction": false
+  },
+  "I046": {
+    "segmentId": "I046",
+    "title": "Introduction to 1 Corinthians",
+    "wordCount": 10572,
+    "estimatedReadingTimeMinutes": 47,
+    "book": "1Co",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S326": {
+    "segmentId": "S326",
+    "title": "Regarding Unity",
+    "wordCount": 2212,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "1Co",
+    "reference": "1:1-4:21",
+    "isIntroduction": false
+  },
+  "S327": {
+    "segmentId": "S327",
+    "title": "Regarding Sex & Marriage",
+    "wordCount": 1989,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "1Co",
+    "reference": "5:1-7:40",
+    "isIntroduction": false
+  },
+  "S328": {
+    "segmentId": "S328",
+    "title": "Regarding Freedom & Self-control",
+    "wordCount": 1812,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "1Co",
+    "reference": "8:1-11:1",
+    "isIntroduction": false
+  },
+  "S329": {
+    "segmentId": "S329",
+    "title": "Regarding Love & Worship",
+    "wordCount": 2764,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "1Co",
+    "reference": "11:2-14:40",
+    "isIntroduction": false
+  },
+  "S330": {
+    "segmentId": "S330",
+    "title": "Regarding the Resurrection & Generosity",
+    "wordCount": 1809,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "1Co",
+    "reference": "15:1-16:24",
+    "isIntroduction": false
+  },
+  "I047": {
+    "segmentId": "I047",
+    "title": "Introduction to 2 Corinthians",
+    "wordCount": 6874,
+    "estimatedReadingTimeMinutes": 31,
+    "book": "2Co",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S331": {
+    "segmentId": "S331",
+    "title": "Ministers of the Gospel",
+    "wordCount": 1589,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "2Co",
+    "reference": "1:1-3:18",
+    "isIntroduction": false
+  },
+  "S332": {
+    "segmentId": "S332",
+    "title": "Ministers by Grace",
+    "wordCount": 1968,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "2Co",
+    "reference": "4:1-7:16",
+    "isIntroduction": false
+  },
+  "S333": {
+    "segmentId": "S333",
+    "title": "Practice Generosity",
+    "wordCount": 1045,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "2Co",
+    "reference": "8:1-9:15",
+    "isIntroduction": false
+  },
+  "S334": {
+    "segmentId": "S334",
+    "title": "True & False Ministers",
+    "wordCount": 2275,
+    "estimatedReadingTimeMinutes": 11,
+    "book": "2Co",
+    "reference": "10:1-13:14",
+    "isIntroduction": false
+  },
+  "I048": {
+    "segmentId": "I048",
+    "title": "Introduction to Galatians",
+    "wordCount": 3857,
+    "estimatedReadingTimeMinutes": 18,
+    "book": "Gal",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S335": {
+    "segmentId": "S335",
+    "title": "How God Revealed the Gospel",
+    "wordCount": 1223,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Gal",
+    "reference": "1:1-2:21",
+    "isIntroduction": false
+  },
+  "S336": {
+    "segmentId": "S336",
+    "title": "Foundation & Fruit of the Gospel",
+    "wordCount": 2650,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Gal",
+    "reference": "3:1-6:18",
+    "isIntroduction": false
+  },
+  "I049": {
+    "segmentId": "I049",
+    "title": "Introduction to Ephesians",
+    "wordCount": 3402,
+    "estimatedReadingTimeMinutes": 16,
+    "book": "Eph",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S337": {
+    "segmentId": "S337",
+    "title": "Adopted into God's Family",
+    "wordCount": 1617,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Eph",
+    "reference": "1:1-3:21",
+    "isIntroduction": false
+  },
+  "S338": {
+    "segmentId": "S338",
+    "title": "Living as God's Family",
+    "wordCount": 1785,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Eph",
+    "reference": "4:1-6:24",
+    "isIntroduction": false
+  },
+  "I050": {
+    "segmentId": "I050",
+    "title": "Introduction to Philippians",
+    "wordCount": 2508,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Php",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S339": {
+    "segmentId": "S339",
+    "title": "Rejoice!",
+    "wordCount": 2508,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Php",
+    "reference": "1:1-4:23",
+    "isIntroduction": false
+  },
+  "I051": {
+    "segmentId": "I051",
+    "title": "Introduction to Colossians",
+    "wordCount": 2208,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Col",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S340": {
+    "segmentId": "S340",
+    "title": "Fully God & Fully Human",
+    "wordCount": 2217,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Col",
+    "reference": "1:1-4:18",
+    "isIntroduction": false
+  },
+  "I052": {
+    "segmentId": "I052",
+    "title": "Introduction to 1 Thessalonians",
+    "wordCount": 2092,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "1Th",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S341": {
+    "segmentId": "S341",
+    "title": "Live Holy Awaiting His Return",
+    "wordCount": 2092,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "1Th",
+    "reference": "1:1-5:28",
+    "isIntroduction": false
+  },
+  "I053": {
+    "segmentId": "I053",
+    "title": "Introduction to 2 Thessalonians",
+    "wordCount": 1118,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "2Th",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S342": {
+    "segmentId": "S342",
+    "title": "Stand Strong in Hope",
+    "wordCount": 1140,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "2Th",
+    "reference": "1:1-3:18",
+    "isIntroduction": false
+  },
+  "I054": {
+    "segmentId": "I054",
+    "title": "Introduction to 1 Timothy",
+    "wordCount": 2738,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "1Ti",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S343": {
+    "segmentId": "S343",
+    "title": "Mentoring a Young Leader",
+    "wordCount": 2738,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "1Ti",
+    "reference": "1:1-6:21",
+    "isIntroduction": false
+  },
+  "I055": {
+    "segmentId": "I055",
+    "title": "Introduction to 2 Timothy",
+    "wordCount": 1948,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "2Ti",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S344": {
+    "segmentId": "S344",
+    "title": "An Old Mentor's Final Words",
+    "wordCount": 1950,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "2Ti",
+    "reference": "1:1-4:22",
+    "isIntroduction": false
+  },
+  "I056": {
+    "segmentId": "I056",
+    "title": "Introduction to Titus",
+    "wordCount": 1147,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Tit",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S345": {
+    "segmentId": "S345",
+    "title": "The Essential Gospel",
+    "wordCount": 1147,
+    "estimatedReadingTimeMinutes": 6,
+    "book": "Tit",
+    "reference": "1:1-3:15",
+    "isIntroduction": false
+  },
+  "I057": {
+    "segmentId": "I057",
+    "title": "Introduction to Philemon",
+    "wordCount": 501,
+    "estimatedReadingTimeMinutes": 3,
+    "book": "Phm",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S346": {
+    "segmentId": "S346",
+    "title": "Grace for a Runaway Slave",
+    "wordCount": 524,
+    "estimatedReadingTimeMinutes": 3,
+    "book": "Phm",
+    "reference": "1:1-1:25",
+    "isIntroduction": false
+  },
+  "I058": {
+    "segmentId": "I058",
+    "title": "Introduction to Hebrews",
+    "wordCount": 7876,
+    "estimatedReadingTimeMinutes": 36,
+    "book": "Heb",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S347": {
+    "segmentId": "S347",
+    "title": "Better than Angels, Moses & Joshua",
+    "wordCount": 1611,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Heb",
+    "reference": "1:1-4:13",
+    "isIntroduction": false
+  },
+  "S348": {
+    "segmentId": "S348",
+    "title": "Better than Melchizedek, Aaron & Priests",
+    "wordCount": 1667,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Heb",
+    "reference": "4:14-7:28",
+    "isIntroduction": false
+  },
+  "S349": {
+    "segmentId": "S349",
+    "title": "A Better Covenant, Promise & Sacrifice",
+    "wordCount": 1681,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Heb",
+    "reference": "8:1-10:18",
+    "isIntroduction": false
+  },
+  "S350": {
+    "segmentId": "S350",
+    "title": "Better Than All Heroes of the Faith",
+    "wordCount": 1959,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Heb",
+    "reference": "10:19-12:13",
+    "isIntroduction": false
+  },
+  "S351": {
+    "segmentId": "S351",
+    "title": "Jesus' Way is Better",
+    "wordCount": 968,
+    "estimatedReadingTimeMinutes": 5,
+    "book": "Heb",
+    "reference": "12:14-13:25",
+    "isIntroduction": false
+  },
+  "I059": {
+    "segmentId": "I059",
+    "title": "Introduction to James",
+    "wordCount": 2543,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Jam",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S352": {
+    "segmentId": "S352",
+    "title": "Faith Works",
+    "wordCount": 2544,
+    "estimatedReadingTimeMinutes": 12,
+    "book": "Jam",
+    "reference": "1:1-5:20",
+    "isIntroduction": false
+  },
+  "I060": {
+    "segmentId": "I060",
+    "title": "Introduction to 1 Peter",
+    "wordCount": 2813,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "1Pe",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S353": {
+    "segmentId": "S353",
+    "title": "Do Right No Matter What",
+    "wordCount": 2815,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "1Pe",
+    "reference": "1:1-5:14",
+    "isIntroduction": false
+  },
+  "I061": {
+    "segmentId": "I061",
+    "title": "Introduction to 2 Peter",
+    "wordCount": 1684,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "2Pe",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S354": {
+    "segmentId": "S354",
+    "title": "Live Godly Lives",
+    "wordCount": 1684,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "2Pe",
+    "reference": "1:1-3:18",
+    "isIntroduction": false
+  },
+  "I062": {
+    "segmentId": "I062",
+    "title": "Introduction to 1 John",
+    "wordCount": 2731,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "1Jn",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S355": {
+    "segmentId": "S355",
+    "title": "Eternal Life Through Jesus",
+    "wordCount": 2731,
+    "estimatedReadingTimeMinutes": 13,
+    "book": "1Jn",
+    "reference": "1:1-5:21",
+    "isIntroduction": false
+  },
+  "I063": {
+    "segmentId": "I063",
+    "title": "Introduction to 2 John",
+    "wordCount": 324,
+    "estimatedReadingTimeMinutes": 2,
+    "book": "2Jn",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S356": {
+    "segmentId": "S356",
+    "title": "Close the Door",
+    "wordCount": 324,
+    "estimatedReadingTimeMinutes": 2,
+    "book": "2Jn",
+    "reference": "1:1-1:13",
+    "isIntroduction": false
+  },
+  "I064": {
+    "segmentId": "I064",
+    "title": "Introduction to 3 John",
+    "wordCount": 363,
+    "estimatedReadingTimeMinutes": 2,
+    "book": "3Jn",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S357": {
+    "segmentId": "S357",
+    "title": "Open the Door",
+    "wordCount": 363,
+    "estimatedReadingTimeMinutes": 2,
+    "book": "3Jn",
+    "reference": "1:1-1:14",
+    "isIntroduction": false
+  },
+  "I065": {
+    "segmentId": "I065",
+    "title": "Introduction to Jude",
+    "wordCount": 771,
+    "estimatedReadingTimeMinutes": 4,
+    "book": "Jud",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S358": {
+    "segmentId": "S358",
+    "title": "Holy Faith",
+    "wordCount": 771,
+    "estimatedReadingTimeMinutes": 4,
+    "book": "Jud",
+    "reference": "1:1-1:25",
+    "isIntroduction": false
+  },
+  "I066": {
+    "segmentId": "I066",
+    "title": "Introduction to Revelation",
+    "wordCount": 11593,
+    "estimatedReadingTimeMinutes": 52,
+    "book": "Rev",
+    "reference": "",
+    "isIntroduction": true
+  },
+  "S359": {
+    "segmentId": "S359",
+    "title": "Seven Churches",
+    "wordCount": 2142,
+    "estimatedReadingTimeMinutes": 10,
+    "book": "Rev",
+    "reference": "1:1-3:22",
+    "isIntroduction": false
+  },
+  "S360": {
+    "segmentId": "S360",
+    "title": "Seven Seals",
+    "wordCount": 1674,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Rev",
+    "reference": "4:1-8:1",
+    "isIntroduction": false
+  },
+  "S361": {
+    "segmentId": "S361",
+    "title": "Seven Trumpets",
+    "wordCount": 1709,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Rev",
+    "reference": "8:2-11:18",
+    "isIntroduction": false
+  },
+  "S362": {
+    "segmentId": "S362",
+    "title": "Endurance Amidst Hardship",
+    "wordCount": 1674,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Rev",
+    "reference": "11:19-14:20",
+    "isIntroduction": false
+  },
+  "S363": {
+    "segmentId": "S363",
+    "title": "Seven Bowls",
+    "wordCount": 809,
+    "estimatedReadingTimeMinutes": 4,
+    "book": "Rev",
+    "reference": "15:1-16:21",
+    "isIntroduction": false
+  },
+  "S364": {
+    "segmentId": "S364",
+    "title": "The Sinful City is Fallen",
+    "wordCount": 1973,
+    "estimatedReadingTimeMinutes": 9,
+    "book": "Rev",
+    "reference": "17:1-20:3",
+    "isIntroduction": false
+  },
+  "S365": {
+    "segmentId": "S365",
+    "title": "The Holy City is Coming",
+    "wordCount": 1619,
+    "estimatedReadingTimeMinutes": 8,
+    "book": "Rev",
+    "reference": "20:4-22:21",
+    "isIntroduction": false
+  }
+}
