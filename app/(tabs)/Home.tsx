@@ -15,6 +15,21 @@ import {
 } from "react-native";
 import Card from "@/components/Card";
 import ReadingPlansChallenges from "../../assets/data/ReadingPlansChallenges.json";
+
+type ReadingPlan = {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  segments: any;
+};
+
+type Challenge = {
+  id: string;
+  title: string;
+  description: string;
+  segments: string[];
+};
 import StickyHeader from "../../components/StickyHeader";
 import { useAppContext } from "@/context/GlobalContext";
 import { useRouter } from "expo-router";
@@ -53,21 +68,21 @@ const createStyles = (isLargeScreen: boolean, colors: ColorScheme) => StyleSheet
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
   continueReading: {
     backgroundColor: colors.card,
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 16,
-    marginBottom: 24,
+    marginBottom: 16,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
     borderWidth: 1,
     borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
   },
@@ -86,7 +101,7 @@ const createStyles = (isLargeScreen: boolean, colors: ColorScheme) => StyleSheet
   },
   resumeButton: {
     backgroundColor: "#FF5733",
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 12,
     shadowColor: "#000",
@@ -100,22 +115,83 @@ const createStyles = (isLargeScreen: boolean, colors: ColorScheme) => StyleSheet
     fontSize: 14,
     fontWeight: "700",
   },
+  getStartedSection: {
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: colors.text,
+    letterSpacing: -0.3,
+  },
   gridContainer: {
     flexDirection: "row",
-    gap: 16,
-    marginBottom: 24,
+    gap: 12,
+    marginBottom: 16,
     paddingHorizontal: 0,
+  },
+  onboardingCard: {
+    flex: 1,
+    height: 140,
+    borderRadius: 16,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  onboardingCardContent: {
+    flex: 1,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  onboardingIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  onboardingIconText: {
+    fontSize: 24,
+  },
+  onboardingCardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 6,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  onboardingCardSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    fontWeight: '500',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   gridItem: {
     flex: 1,
-    height: 180,
-    borderRadius: 20,
+    height: 140,
+    borderRadius: 16,
     overflow: "hidden",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   gridItemContent: {
     flex: 1,
@@ -128,9 +204,9 @@ const createStyles = (isLargeScreen: boolean, colors: ColorScheme) => StyleSheet
 },
 gridItemLabel: {
   textAlign: 'center',
-  marginTop: 12,
-  fontSize: 16,
-  fontWeight: '900',
+  marginTop: 8,
+  fontSize: 14,
+  fontWeight: '700',
   color: colors.text,
 },
   overlay: {
@@ -139,52 +215,216 @@ gridItemLabel: {
   },
   gridItemTitle: {
     color: "#FFF",
-    fontSize: 22,
-    fontWeight: "800",
-    marginBottom: 6,
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 4,
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
   },
   gridItemSubtitle: {
     color: "rgba(255,255,255,0.95)",
-    fontSize: 14,
+    fontSize: 12,
     flexDirection: "row",
     alignItems: "center",
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
+  activeReadingSection: {
+    marginBottom: 16,
+  },
+  activeReadingCard: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 8,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
+  },
+  activeReadingContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  activeReadingIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  activeReadingInfo: {
+    flex: 1,
+  },
+  activeReadingTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 2,
+  },
+  activeReadingSubtitle: {
+    fontSize: 13,
+    color: colors.secondary,
+    marginBottom: 2,
+  },
+  activeReadingProgress: {
+    fontSize: 11,
+    color: colors.secondary,
+  },
+  continueButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    marginLeft: 8,
+  },
+  continueButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  streakCard: {
+    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 7, 0.2)',
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  streakHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  streakIcon: {
+    fontSize: 20,
+    marginRight: 6,
+  },
+  streakTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  streakBest: {
+    fontSize: 13,
+    color: colors.secondary,
+    marginBottom: 12,
+  },
+  streakMainContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  streakCircleContainer: {
+    position: 'relative',
+    marginRight: 12,
+  },
+  streakCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: colors.card,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+  },
+  streakProgress: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 2,
+    borderColor: '#FF9800',
+    borderTopColor: '#FF9800',
+    borderRightColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderLeftColor: 'transparent',
+    transform: [{ rotate: '-90deg' }],
+  },
+  streakNumber: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  streakDaysText: {
+    fontSize: 10,
+    color: colors.secondary,
+    marginTop: 2,
+  },
+  streakTextContainer: {
+    flex: 1,
+  },
+  streakMessage: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  streakGoal: {
+    fontSize: 12,
+    color: '#FF9800',
+    fontWeight: '500',
+  },
+  streakStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  streakStatusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#4CAF50',
+    marginRight: 6,
+  },
+  streakStatusText: {
+    fontSize: 12,
+    color: colors.secondary,
+  },
   statsContainer: {
     flexDirection: "row",
     gap: 12,
-    marginBottom: 28,
+    marginBottom: 16,
   },
   statItem: {
     flex: 1,
     backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 12,
+    padding: 12,
     alignItems: "center",
     shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
     borderWidth: 1,
     borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
   },
   statNumber: {
-    fontSize: 24,
-    fontWeight: "800",
+    fontSize: 20,
+    fontWeight: "700",
     color: colors.text,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   statLabel: {
-    fontSize: 13,
+    fontSize: 11,
     color: colors.secondary,
     marginTop: 2,
     fontWeight: "500",
+    textAlign: 'center',
   },
   bottomNav: {
     flexDirection: "row",
@@ -202,25 +442,24 @@ gridItemLabel: {
     color: colors.secondary,
   },
   welcomeSection: {
-    marginTop: 20,
-    marginBottom: 28,
+    marginTop: 16,
+    marginBottom: 16,
   },
   welcomeTitle: {
-    fontSize: 32,
-    fontWeight: "800",
+    fontSize: 24,
+    fontWeight: "600",
     color: colors.text,
-    marginBottom: 10,
-    letterSpacing: -0.5,
+    marginBottom: 8,
   },
   welcomeText: {
     fontSize: 16,
     color: colors.secondary,
-    lineHeight: 24,
+    lineHeight: 22,
     fontWeight: "400",
   },
   buttonContainer: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
   },
   completeButton: {
     backgroundColor: '#4CAF50',
@@ -229,26 +468,19 @@ gridItemLabel: {
     backgroundColor: '#2196F3',
   },
   section: {
-    marginVertical: 12,
+    marginVertical: 8,
     padding: 0,
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    marginBottom: 18,
-    color: colors.text,
-    letterSpacing: -0.5,
   },
   insightCards: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 14,
+    gap: 12,
   },
   featuredCard: {
-    borderRadius: 16,
+    borderRadius: 12,
     backgroundColor: colors.card,
     padding: 16,
-    marginVertical: 8,
+    marginVertical: 6,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -258,45 +490,45 @@ gridItemLabel: {
   },
   activityCard: {
     backgroundColor: colors.card,
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 16,
     marginRight: 12,
-    width: 180,
+    width: 160,
     shadowColor: colors.text,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowRadius: 6,
+    elevation: 2,
   },
   activityTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 8,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 6,
     color: colors.text,
   },
   emojiContainer: {
     flexDirection: 'row',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   emoji: {
-    fontSize: 20,
+    fontSize: 18,
     marginRight: 4,
   },
   timestamp: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.secondary,
   },
   insightCard: {
     backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 18,
+    borderRadius: 12,
+    padding: 16,
     flex: 1,
     minWidth: isLargeScreen ? '23%' : '48%',
     shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
     opacity: 1,
     borderWidth: 1,
     borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
@@ -306,29 +538,29 @@ gridItemLabel: {
     transform: [{ scale: 0.98 }],
   },
   insightTitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: colors.secondary,
-    marginBottom: 8,
+    marginBottom: 6,
     fontWeight: "500",
   },
   insightValue: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 16,
+    fontWeight: '700',
     color: colors.text,
   },
   gridItemImage: {
-    borderRadius: 20,
+    borderRadius: 16,
   },
   headerIcon: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 22,
+    borderRadius: 20,
     backgroundColor: colors.card,
     shadowColor: colors.text,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -338,36 +570,36 @@ gridItemLabel: {
     right: 0,
     bottom: 0,
     height: '70%',
-    borderRadius: 20,
+    borderRadius: 16,
   },
   iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#FF5733', // App's orange
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
-    top: 20,
-    left: 20,
+    top: 16,
+    left: 16,
     opacity: 0.9,
     zIndex: 2,
   },
   badge: {
     position: 'absolute',
-    left: 16,
-    bottom: 16,
+    left: 12,
+    bottom: 12,
     backgroundColor: 'rgba(255,255,255,0.18)',
-    borderRadius: 16,
-    paddingHorizontal: 14,
+    borderRadius: 12,
+    paddingHorizontal: 12,
     paddingVertical: 4,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.35)',
   },
   badgeText: {
     color: '#fff',
-    fontWeight: '700',
-    fontSize: 15,
+    fontWeight: '600',
+    fontSize: 13,
     letterSpacing: 0.2,
   },
 });
@@ -391,14 +623,14 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: Co
   const localStyles = StyleSheet.create({
     container: {
       backgroundColor: colors.card,
-      borderRadius: 16,
-      padding: 10,
-      marginBottom: 20,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 16,
       shadowColor: colors.text,
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.08,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
       shadowRadius: 6,
-      elevation: 4,
+      elevation: 2,
       borderWidth: 1,
       borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
       position: 'relative',
@@ -1039,10 +1271,10 @@ const HomeScreen = () => {
       backgroundColor: colors.background,
     },
     welcomeTitle: {
+      fontSize: 24,
+      fontWeight: "600",
       color: colors.text,
-      fontSize: sizes.title,
-      fontWeight: '800',
-      letterSpacing: -0.5,
+      marginBottom: 8,
     },
     welcomeText: {
       color: colors.secondary,
@@ -1129,51 +1361,36 @@ const HomeScreen = () => {
           <Text style={localStyles.welcomeText}>{t('UI.home.subheading')}</Text>
         </View>
 
-<View style={styles.gridContainer}>
-  <View style={styles.gridItemWrapper}>
-    <Pressable 
-      style={styles.gridItem}
-      onPress={() => router.push("/Plan")}
-    >
-      <LinearGradient
-        colors={[colors.primary, colors.secondary]}
-        style={styles.gridItemContent}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={styles.iconCircle}>
-          <Ionicons name="calendar-outline" size={32} color="#fff" />
-        </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>3 Plans</Text>
-        </View>
-      </LinearGradient>
-    </Pressable>
-    <Text style={styles.gridItemLabel}>Reading Plans</Text>
-  </View>
+        <View style={styles.getStartedSection}>
+          <Text style={styles.sectionTitle}>Get Started</Text>
+          <View style={styles.gridContainer}>
+            <Pressable 
+              style={[styles.onboardingCard, { backgroundColor: '#7B68EE' }]}
+              onPress={() => router.push("/Plan")}
+            >
+              <View style={styles.onboardingCardContent}>
+                <View style={styles.onboardingIconContainer}>
+                  <Ionicons name="calendar-outline" size={32} color="#FFFFFF" />
+                </View>
+                <Text style={styles.onboardingCardTitle}>Reading Plans</Text>
+                <Text style={styles.onboardingCardSubtitle}>{getAvailablePlansCount()} Plans</Text>
+              </View>
+            </Pressable>
 
-  <View style={styles.gridItemWrapper}>
-    <Pressable 
-      style={styles.gridItem}
-      onPress={() => router.push("/Reading-Challenges")}
-    >
-      <LinearGradient
-        colors={[colors.secondary, colors.primary]}
-        style={styles.gridItemContent}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={styles.iconCircle}>
-          <Ionicons name="flag-outline" size={32} color="#fff" />
+            <Pressable 
+              style={[styles.onboardingCard, { backgroundColor: '#FF69B4' }]}
+              onPress={() => router.push("/Reading-Challenges")}
+            >
+              <View style={styles.onboardingCardContent}>
+                <View style={styles.onboardingIconContainer}>
+                  <Ionicons name="flag-outline" size={32} color="#FFFFFF" />
+                </View>
+                <Text style={styles.onboardingCardTitle}>Challenges</Text>
+                <Text style={styles.onboardingCardSubtitle}>New</Text>
+              </View>
+            </Pressable>
+          </View>
         </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>New</Text>
-        </View>
-      </LinearGradient>
-    </Pressable>
-    <Text style={styles.gridItemLabel}>Reading Challenges</Text>
-  </View>
-</View>
 
       <ContinueReadingSection 
         lastReadSegment={lastReadSegment}
@@ -1181,6 +1398,91 @@ const HomeScreen = () => {
         styles={combinedStyles}
         colors={colors}
       />
+
+        {/* Active Reading Plans */}
+        {(activePlan || Object.values(activeChallenges).some(challenge => challenge && !challenge.isPaused && !challenge.isCompleted)) && (
+          <View style={styles.activeReadingSection}>
+            <Text style={styles.sectionTitle}>Your Active Reading</Text>
+            {activePlan && (
+              <View style={styles.activeReadingCard}>
+                <View style={styles.activeReadingContent}>
+                  <View style={[styles.activeReadingIcon, { backgroundColor: '#7B68EE' }]}>
+                    <Ionicons name="calendar-outline" size={24} color="#FFFFFF" />
+                  </View>
+                  <View style={styles.activeReadingInfo}>
+                    <Text style={styles.activeReadingTitle}>
+                      {ReadingPlansChallenges.plans.find((plan: any) => plan.id === activePlan.planId)?.title || 'Bible in 1 year'}
+                    </Text>
+                    <Text style={styles.activeReadingSubtitle}>
+                      Next: God Creates
+                    </Text>
+                    <Text style={styles.activeReadingProgress}>0% complete</Text>
+                  </View>
+                  <Pressable style={styles.continueButton} onPress={() => router.push("/Plan")}>
+                    <Text style={styles.continueButtonText}>→ Continue</Text>
+                  </Pressable>
+                </View>
+              </View>
+            )}
+            {Object.entries(activeChallenges).map(([id, challenge]) => {
+              if (!challenge || challenge.isPaused || challenge.isCompleted) return null;
+              const challengeData = ReadingPlansChallenges.challenges.find((c: any) => c.id === challenge.challengeId);
+              const progress = challengeData ? Math.round((challenge.completedSegments.length / 10) * 100) : 0;
+              return (
+                <View key={id} style={styles.activeReadingCard}>
+                  <View style={styles.activeReadingContent}>
+                    <View style={[styles.activeReadingIcon, { backgroundColor: '#FF69B4' }]}>
+                      <Ionicons name="flag-outline" size={24} color="#FFFFFF" />
+                    </View>
+                    <View style={styles.activeReadingInfo}>
+                      <Text style={styles.activeReadingTitle}>{challengeData?.title || '12 Days of Christmas'}</Text>
+                      <Text style={styles.activeReadingSubtitle}>Next: Completed!</Text>
+                      <Text style={styles.activeReadingProgress}>NaN% complete</Text>
+                    </View>
+                    <Pressable style={styles.continueButton} onPress={() => router.push("/Reading-Challenges")}>
+                      <Text style={styles.continueButtonText}>→ Continue</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
+        {/* Reading Streak Card */}
+        <View style={styles.streakCard}>
+          <View style={styles.streakHeader}>
+            <Text style={styles.streakIcon}>🔥</Text>
+            <Text style={styles.streakTitle}>Reading Streak</Text>
+          </View>
+          <Text style={styles.streakBest}>Best: 15 days</Text>
+          
+          <View style={styles.streakMainContent}>
+            <View style={styles.streakCircleContainer}>
+              <View style={styles.streakCircle}>
+                <Text style={styles.streakNumber}>{currentStreak}</Text>
+                <Text style={styles.streakDaysText}>days</Text>
+              </View>
+              <View style={styles.streakProgress} />
+            </View>
+            
+            <View style={styles.streakTextContainer}>
+              <Text style={styles.streakMessage}>
+                {currentStreak === 1 ? 'Great start! Keep it going!' : 
+                 currentStreak < 7 ? `Great start! Keep it going!` :
+                 'Amazing streak! Keep it up!'}
+              </Text>
+              <Text style={styles.streakGoal}>
+                {currentStreak < 7 ? `${7 - currentStreak} more days to 7!` : 'Keep building your streak!'}
+              </Text>
+            </View>
+          </View>
+          
+          <View style={styles.streakStatus}>
+            <View style={styles.streakStatusDot} />
+            <Text style={styles.streakStatusText}>Today's reading complete</Text>
+          </View>
+        </View>
 
         {/* Nearby Group Cards */}
         {visibleNearbyGroups.map((group) => (
@@ -1193,13 +1495,6 @@ const HomeScreen = () => {
         ))}
 
         <View style={styles.statsContainer}>
-          <View style={localStyles.statItem}>
-            <View style={[localStyles.statIcon, { backgroundColor: 'rgba(255, 193, 7, 0.15)' }]}>
-              <Ionicons name="flame-outline" size={20} color="#FF9800" />
-            </View>
-            <Text style={localStyles.statNumber}>{currentStreak}</Text>
-            <Text style={localStyles.statLabel}>{t('UI.home.dayStreak')}</Text>
-          </View>
           <View style={localStyles.statItem}>
             <View style={[localStyles.statIcon, { backgroundColor: 'rgba(76, 175, 80, 0.15)' }]}>
               <Ionicons name="book-outline" size={20} color="#4CAF50" />

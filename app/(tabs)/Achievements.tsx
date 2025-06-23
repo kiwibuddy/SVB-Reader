@@ -11,6 +11,7 @@ import {
   Image,
   Animated,
   Platform,
+  SafeAreaView,
 } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import { useAppSettings } from "@/context/AppSettingsContext"
@@ -475,96 +476,93 @@ function Achievements() {
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
-      <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
-        <LinearGradient colors={[colors.primary + "20", "transparent"]} style={styles.headerGradient} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} >
-          <View style={styles.titleContainer}>
-            <Ionicons name="trophy" size={32} color={colors.primary} style={styles.titleIcon} />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+          <View style={styles.welcomeSection}>
             <Text style={[styles.title, { color: colors.text }]}>Achievements</Text>
+            <Text style={[styles.subtitle, { color: colors.secondary }]}>Track your Bible reading journey</Text>
           </View>
-          <Text style={[styles.subtitle, { color: colors.secondary }]}>Track your Bible reading journey</Text>
-        </LinearGradient>
-      </Animated.View>
 
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Reading Progress</Text>
-        <View style={[ styles.achievementItem, { backgroundColor: colors.card, shadowColor: "#FF6B00", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
-          <LinearGradient colors={["#FF6B0020", "#FF6B0040"]} style={styles.iconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
-            <Ionicons name="book" size={24} color="#FF6B00" />
-          </LinearGradient>
-          <View style={styles.achievementContent}>
-            <Text style={[styles.achievementTitle, { color: colors.text }]}>Total Stories Read</Text>
-            <View style={[styles.largeProgressBarOuter, { backgroundColor: colors.border + "30" }]}>
-              <LinearGradient colors={["#FF6B00", "#FF8C40"]} style={[ styles.largeProgressBarInner, { width: `${(stats.completedStories / (stats.totalStories || 1)) * 100}%` }, ]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
-            </View>
-            <Text style={[styles.achievementValue, { color: "#FF6B00" }]}>
-              {stats.completedStories} of {stats.totalStories} stories
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.testamentContainer}>
-          <View style={[ styles.achievementItem, { backgroundColor: colors.card, shadowColor: "#8B5CF6", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
-            <LinearGradient colors={["#8B5CF620", "#8B5CF640"]} style={styles.iconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
-              <Ionicons name="book" size={24} color="#8B5CF6" />
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Reading Progress</Text>
+          <View style={[ styles.achievementItem, { backgroundColor: colors.card, shadowColor: "#FF6B00", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
+            <LinearGradient colors={["#FF6B0020", "#FF6B0040"]} style={styles.iconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
+              <Ionicons name="book" size={24} color="#FF6B00" />
             </LinearGradient>
             <View style={styles.achievementContent}>
-              <Text style={[styles.achievementTitle, { color: colors.text }]}>Old Testament</Text>
-              <View style={[styles.progressBarOuter, { backgroundColor: colors.border + "30" }]}>
-                <LinearGradient colors={["#8B5CF6", "#A78BFA"]} style={[ styles.progressBarInner, { width: `${(stats.oldTestament.completed / (stats.oldTestament.total || 1)) * 100}%` }, ]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
+              <Text style={[styles.achievementTitle, { color: colors.text }]}>Total Stories Read</Text>
+              <View style={[styles.largeProgressBarOuter, { backgroundColor: colors.border + "30" }]}>
+                <LinearGradient colors={["#FF6B00", "#FF8C40"]} style={[ styles.largeProgressBarInner, { width: `${(stats.completedStories / (stats.totalStories || 1)) * 100}%` }, ]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
               </View>
-              <Text style={[styles.progressText, { color: colors.secondary }]}>
-                {stats.oldTestament.completed} of {stats.oldTestament.total}
+              <Text style={[styles.achievementValue, { color: "#FF6B00" }]}>
+                {stats.completedStories} of {stats.totalStories} stories
               </Text>
             </View>
           </View>
 
-          <View style={[ styles.achievementItem, { backgroundColor: colors.card, shadowColor: "#3B82F6", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
-            <LinearGradient colors={["#3B82F620", "#3B82F640"]} style={styles.iconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
-              <Ionicons name="book" size={24} color="#3B82F6" />
-            </LinearGradient>
-            <View style={styles.achievementContent}>
-              <Text style={[styles.achievementTitle, { color: colors.text }]}>New Testament</Text>
-              <View style={[styles.progressBarOuter, { backgroundColor: colors.border + "30" }]}>
-                <LinearGradient colors={["#3B82F6", "#60A5FA"]} style={[ styles.progressBarInner, { width: `${(stats.newTestament.completed / (stats.newTestament.total || 1)) * 100}%` }, ]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
+          <View style={styles.testamentContainer}>
+            <View style={[ styles.achievementItem, { backgroundColor: colors.card, shadowColor: "#8B5CF6", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
+              <LinearGradient colors={["#8B5CF620", "#8B5CF640"]} style={styles.iconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
+                <Ionicons name="book" size={24} color="#8B5CF6" />
+              </LinearGradient>
+              <View style={styles.achievementContent}>
+                <Text style={[styles.achievementTitle, { color: colors.text }]}>Old Testament</Text>
+                <View style={[styles.progressBarOuter, { backgroundColor: colors.border + "30" }]}>
+                  <LinearGradient colors={["#8B5CF6", "#A78BFA"]} style={[ styles.progressBarInner, { width: `${(stats.oldTestament.completed / (stats.oldTestament.total || 1)) * 100}%` }, ]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
+                </View>
+                <Text style={[styles.progressText, { color: colors.secondary }]}>
+                  {stats.oldTestament.completed} of {stats.oldTestament.total}
+                </Text>
               </View>
-              <Text style={[styles.progressText, { color: colors.secondary }]}>
-                {stats.newTestament.completed} of {stats.newTestament.total}
-              </Text>
+            </View>
+
+            <View style={[ styles.achievementItem, { backgroundColor: colors.card, shadowColor: "#3B82F6", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
+              <LinearGradient colors={["#3B82F620", "#3B82F640"]} style={styles.iconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
+                <Ionicons name="book" size={24} color="#3B82F6" />
+              </LinearGradient>
+              <View style={styles.achievementContent}>
+                <Text style={[styles.achievementTitle, { color: colors.text }]}>New Testament</Text>
+                <View style={[styles.progressBarOuter, { backgroundColor: colors.border + "30" }]}>
+                  <LinearGradient colors={["#3B82F6", "#60A5FA"]} style={[ styles.progressBarInner, { width: `${(stats.newTestament.completed / (stats.newTestament.total || 1)) * 100}%` }, ]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
+                </View>
+                <Text style={[styles.progressText, { color: colors.secondary }]}>
+                  {stats.newTestament.completed} of {stats.newTestament.total}
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Streaks</Text>
-        <View style={styles.streaksRow}>
-          <View style={[ styles.streakCard, { backgroundColor: colors.card, shadowColor: "#FF6B00", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
-            <LinearGradient colors={["#FF6B0020", "#FF6B0040"]} style={styles.streakIconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
-              <Ionicons name="flame" size={28} color="#FF6B00" />
-            </LinearGradient>
-            <Text style={[styles.streakValue, { color: "#FF6B00" }]}>{stats.currentStreak}</Text>
-            <Text style={[styles.streakLabel, { color: colors.text }]}>Current Streak</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Streaks</Text>
+          <View style={styles.streaksRow}>
+            <View style={[ styles.streakCard, { backgroundColor: colors.card, shadowColor: "#FF6B00", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
+              <LinearGradient colors={["#FF6B0020", "#FF6B0040"]} style={styles.streakIconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
+                <Ionicons name="flame" size={28} color="#FF6B00" />
+              </LinearGradient>
+              <Text style={[styles.streakValue, { color: "#FF6B00" }]}>{stats.currentStreak}</Text>
+              <Text style={[styles.streakLabel, { color: colors.text }]}>Current Streak</Text>
+            </View>
+            <View style={[ styles.streakCard, { backgroundColor: colors.card, shadowColor: "#F59E0B", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
+              <LinearGradient colors={["#F59E0B20", "#F59E0B40"]} style={styles.streakIconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
+                <Ionicons name="trending-up" size={28} color="#F59E0B" />
+              </LinearGradient>
+              <Text style={[styles.streakValue, { color: "#F59E0B" }]}>{stats.bestStreak}</Text>
+              <Text style={[styles.streakLabel, { color: colors.text }]}>Best Streak</Text>
+            </View>
+            <View style={[ styles.streakCard, { backgroundColor: colors.card, shadowColor: "#6366F1", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
+              <LinearGradient colors={["#6366F120", "#6366F140"]} style={styles.streakIconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
+                <Ionicons name="time" size={28} color="#6366F1" />
+              </LinearGradient>
+              <Text style={[styles.streakValue, { color: "#6366F1" }]}>{stats.longestSession || 0}</Text>
+              <Text style={[styles.streakLabel, { color: colors.text }]}>Longest Session</Text>
+            </View>
           </View>
-          <View style={[ styles.streakCard, { backgroundColor: colors.card, shadowColor: "#F59E0B", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
-            <LinearGradient colors={["#F59E0B20", "#F59E0B40"]} style={styles.streakIconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
-              <Ionicons name="trending-up" size={28} color="#F59E0B" />
-            </LinearGradient>
-            <Text style={[styles.streakValue, { color: "#F59E0B" }]}>{stats.bestStreak}</Text>
-            <Text style={[styles.streakLabel, { color: colors.text }]}>Best Streak</Text>
-          </View>
-          <View style={[ styles.streakCard, { backgroundColor: colors.card, shadowColor: "#6366F1", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 3, }, ]} >
-            <LinearGradient colors={["#6366F120", "#6366F140"]} style={styles.streakIconContainer} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} >
-              <Ionicons name="time" size={28} color="#6366F1" />
-            </LinearGradient>
-            <Text style={[styles.streakValue, { color: "#6366F1" }]}>{stats.longestSession || 0}</Text>
-            <Text style={[styles.streakLabel, { color: colors.text }]}>Longest Session</Text>
-          </View>
-        </View>
 
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Trophies</Text>
-        <TrophyGrid trophies={sortedTrophies} colors={colors} />
-      </Animated.View>
-      <View style={{ height: 50 }} />
-    </ScrollView>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Trophies</Text>
+          <TrophyGrid trophies={sortedTrophies} colors={colors} />
+          <View style={{ height: 50 }} />
+        </Animated.View>
+      </ScrollView>
+    </SafeAreaView>
   )
 }
 
@@ -572,42 +570,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    paddingTop: Platform.OS === "ios" ? 60 : 40,
-    paddingBottom: 16,
+  content: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
-  headerGradient: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  titleIcon: {
-    marginRight: 12,
+  welcomeSection: {
+    marginBottom: 24,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    letterSpacing: -0.5,
+    fontSize: 24,
+    fontWeight: "600",
+    marginBottom: 8,
+    letterSpacing: -0.3,
   },
   subtitle: {
     fontSize: 16,
     marginTop: 4,
-    marginLeft: 44,
     opacity: 0.8,
-  },
-  content: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "700",
-    marginTop: 24,
     marginBottom: 12,
     letterSpacing: -0.5,
   },

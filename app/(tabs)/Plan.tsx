@@ -20,7 +20,6 @@ import { StatusIndicator } from '@/components/StatusIndicator';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
-import { FontAwesome5 } from '@expo/vector-icons';
 import { markSegmentComplete, getSegmentCompletionStatus, unlockAchievement } from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
 
@@ -78,14 +77,6 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
   },
   welcomeSection: {
     marginBottom: 24,
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   titleBackground: {
     backgroundColor: isDarkMode ? 'rgba(255, 99, 99, 0.15)' : 'rgba(255, 99, 99, 0.08)',
@@ -96,11 +87,10 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
     marginBottom: 12,
   },
   welcomeTitle: {
-    fontSize: 28,
-    fontWeight: "700",
+    fontSize: 24,
+    fontWeight: "600",
     color: colors.text,
-    marginBottom: 12,
-    textAlign: "center"
+    marginBottom: 8,
   },
   welcomeText: {
     fontSize: 15,
@@ -132,21 +122,20 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
   },
   listContainer: {
     paddingTop: 8,
-    gap: 16,
-    marginBottom:80
+    marginBottom: 80
   },
   planContainer: {
-    borderRadius: 16,
-    marginBottom: 16,
-    overflow: 'hidden',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
     backgroundColor: colors.card,
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: colors.border,
+    marginHorizontal: 0,
+    marginBottom: 0,
+    borderRadius: 0,
+    shadowColor: "none",
+    shadowOffset: undefined,
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    borderWidth: 0,
   },
   planHeader: {
     padding: 16,
@@ -158,21 +147,11 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
   },
   leftContent: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   rightContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 8,
   },
   planTitle: {
     fontSize: 18,
@@ -188,8 +167,9 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
   booksContainer: {
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    backgroundColor: colors.background,
-    paddingTop: 8,
+    backgroundColor: colors.card,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
   },
   titleContainer: {
     flexDirection: 'column',
@@ -237,6 +217,16 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
     overflow: 'hidden',
     marginHorizontal: 12,
     marginBottom: 16,
+  },
+  categorySection: {
+    paddingHorizontal: 0,
+  },
+  categoryTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginLeft: 16,
+    marginBottom: 12,
+    color: "#FF9F0A",
   },
 });
 
@@ -521,19 +511,9 @@ const PlanScreen = () => {
         >
           <View style={styles.planInfo}>
             <View style={styles.leftContent}>
-              <View style={[styles.iconContainer, { backgroundColor: planStyle.color + '20' }]}>
-                <FontAwesome5 name={planStyle.icon} size={20} color={planStyle.color} />
-              </View>
               <View style={styles.titleContainer}>
                 <View style={styles.titleRow}>
                   <Text style={styles.planTitle}>{plan.title}</Text>
-                  {status !== 'not-started' && (
-                    <View style={[styles.statusBadge, { backgroundColor: statusStyle.backgroundColor }]}>
-                      <Text style={[styles.statusText, { color: statusStyle.color }]}>
-                        {status === 'active' ? 'Active' : status === 'paused' ? 'Paused' : 'Completed'}
-                      </Text>
-                    </View>
-                  )}
                 </View>
                 <Text style={styles.segmentCount}>
                   {segmentCount} {segmentCount === 1 ? 'story' : 'stories'}
@@ -544,25 +524,22 @@ const PlanScreen = () => {
               {!isActive && (
                 <TouchableOpacity 
                   onPress={() => startPlan(plan.id)}
-                  style={[styles.actionButton, { backgroundColor: planStyle.color + '20' }]}
                 >
-                  <Feather name="play" size={20} color={planStyle.color} />
+                  <Feather name="play-circle" size={24} color="#666666" />
                 </TouchableOpacity>
               )}
               {isPaused && (
                 <TouchableOpacity 
                   onPress={() => resumePlan()}
-                  style={[styles.actionButton, { backgroundColor: planStyle.color + '20' }]}
                 >
-                  <Feather name="play" size={20} color={planStyle.color} />
+                  <Feather name="play-circle" size={24} color="#666666" />
                 </TouchableOpacity>
               )}
               {isActive && !isPaused && !isCompleted && (
                 <TouchableOpacity 
                   onPress={() => pausePlan()}
-                  style={[styles.actionButton, { backgroundColor: planStyle.color + '20' }]}
                 >
-                  <Feather name="pause" size={20} color={planStyle.color} />
+                  <Feather name="pause-circle" size={24} color="#666666" />
                 </TouchableOpacity>
               )}
               <Ionicons 
@@ -635,17 +612,30 @@ const PlanScreen = () => {
 
   // Organize plans by status
   const organizedPlans = useMemo(() => {
-    const plans = [...filteredPlans];
-    return plans.sort((a, b) => {
-      const aStatus = activePlan?.planId === a.id 
-        ? (activePlan.isPaused ? 1 : 0)
-        : 2;
-      const bStatus = activePlan?.planId === b.id
-        ? (activePlan.isPaused ? 1 : 0)
-        : 2;
-      if (aStatus !== bStatus) return aStatus - bStatus;
-      return a.title.localeCompare(b.title);
+    const active: Plan[] = [];
+    const inactive: Plan[] = [];
+
+    filteredPlans.forEach(plan => {
+      const isActive = activePlan?.planId === plan.id && !activePlan.isPaused;
+      
+      if (isActive) {
+        active.push(plan);
+      } else {
+        inactive.push(plan);
+      }
     });
+
+    // Sort inactive plans 
+    const sortPlans = (plans: Plan[]) => {
+      return plans.sort((a, b) => {
+        const aStatus = activePlan?.planId === a.id && activePlan.isPaused ? 1 : 2;
+        const bStatus = activePlan?.planId === b.id && activePlan.isPaused ? 1 : 2;
+        if (aStatus !== bStatus) return aStatus - bStatus;
+        return a.title.localeCompare(b.title);
+      });
+    };
+
+    return { active, inactive: sortPlans(inactive) };
   }, [filteredPlans, activePlan]);
 
   // Add handleScroll function to match Home.tsx
@@ -664,13 +654,49 @@ const PlanScreen = () => {
     </View>
   );
 
+  // Create sections data for FlatList
+  const sections = useMemo(() => {
+    const result = [];
+    
+    if (organizedPlans.active.length > 0) {
+      result.push({
+        title: 'Active Plans',
+        data: organizedPlans.active
+      });
+    }
+    
+    if (organizedPlans.inactive.length > 0) {
+      result.push({
+        title: 'Available Plans',
+        data: organizedPlans.inactive
+      });
+    }
+    
+    return result;
+  }, [organizedPlans]);
+
+  const renderCategorySection = (title: string, plans: Plan[]) => (
+    <View style={styles.categorySection}>
+      <Text style={styles.categoryTitle}>{title}</Text>
+      <FlatList
+        data={plans}
+        renderItem={renderPlanItem}
+        keyExtractor={(item) => item.id}
+      />
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
         style={styles.content}
-        data={organizedPlans}
-        renderItem={renderPlanItem}
-        keyExtractor={(item) => item.id}
+        data={sections}
+        renderItem={({ item }) => (
+          <>
+            {renderCategorySection(item.title, item.data)}
+          </>
+        )}
+        keyExtractor={(item) => item.title}
         contentContainerStyle={styles.listContainer}
         ListHeaderComponent={ListHeaderComponent}
         onScroll={handleScroll}

@@ -41,7 +41,7 @@ const RoleProgressBar: React.FC<RoleProgressBarProps> = ({
   }
 
   if (!showIndividualParts) {
-    // Original grouped behavior
+    // Original grouped behavior - shows word-based proportions
     const blackPercent = (colorData.black / total) * 100;
     const redPercent = (colorData.red / total) * 100;
     const greenPercent = (colorData.green / total) * 100;
@@ -79,48 +79,62 @@ const RoleProgressBar: React.FC<RoleProgressBarProps> = ({
     );
   }
 
-  // New behavior: Show reading roles for group reading (max 4 roles)
-  const individualParts: Array<{ color: string; type: string; roleNumber: number }> = [];
+  // Individual parts behavior: Show proportional reading roles based on word counts
+  // This represents how the 4 reading roles share the speaking time
+  const individualParts: Array<{ 
+    color: string; 
+    type: string; 
+    roleNumber: number;
+    wordCount: number;
+    proportion: number;
+  }> = [];
   
-  // Calculate how to distribute speaking parts among 4 reading roles
-  const totalParts = colorData.total;
   const maxRoles = 4;
   
-  // Always ensure narrator appears, even if there are 0 narrator parts in the story
-  // Determine which color has the most parts and needs to be split
-  const colorCounts = [
-    { color: 'black', count: Math.max(colorData.black, 1), progressColor: progressColors.black }, // Ensure at least 1 narrator for visual
-    { color: 'red', count: colorData.red, progressColor: progressColors.red },
-    { color: 'green', count: colorData.green, progressColor: progressColors.green },
-    { color: 'blue', count: colorData.blue, progressColor: progressColors.blue },
-  ].filter(c => c.count > 0).sort((a, b) => b.count - a.count);
+  // Get colors with word counts, sorted by speaking time (most to least)
+  const colorsByWordCount = [
+    { color: 'black', count: colorData.black, progressColor: progressColors.black, label: 'Narrator' },
+    { color: 'red', count: colorData.red, progressColor: progressColors.red, label: 'God' },
+    { color: 'green', count: colorData.green, progressColor: progressColors.green, label: 'Main Character' },
+    { color: 'blue', count: colorData.blue, progressColor: progressColors.blue, label: 'Other Voices' },
+  ]
+    .filter(c => c.count > 0)
+    .sort((a, b) => b.count - a.count);
   
   let rolesAssigned = 0;
   
-  colorCounts.forEach(({ color, count, progressColor }) => {
+  // Distribute roles based on speaking time, with larger roles potentially getting multiple readers
+  colorsByWordCount.forEach(({ color, count, progressColor, label }) => {
     if (rolesAssigned >= maxRoles) return;
     
     const remainingRoles = maxRoles - rolesAssigned;
+    const totalRemainingWords = colorsByWordCount
+      .slice(colorsByWordCount.findIndex(c => c.color === color))
+      .reduce((sum, c) => sum + c.count, 0);
     
-    if (count === 1 || remainingRoles === 1) {
-      // Single role for this color
+    // Determine how many roles this color should get based on its proportion
+    // Colors with more speaking time may get multiple readers to balance the workload
+    let rolesToAssign = 1;
+    
+    if (remainingRoles > 1 && count > totalRemainingWords * 0.6) {
+      // If this color has >60% of remaining words, give it multiple readers
+      rolesToAssign = Math.min(2, remainingRoles);
+    } else {
+      rolesToAssign = 1;
+    }
+    
+    // Create the individual parts with proper word count proportions
+    const wordsPerRole = count / rolesToAssign;
+    
+    for (let i = 0; i < rolesToAssign; i++) {
       individualParts.push({ 
         color: progressColor, 
-        type: color, 
-        roleNumber: 1 
+        type: color,
+        roleNumber: i + 1,
+        wordCount: wordsPerRole,
+        proportion: wordsPerRole / total
       });
       rolesAssigned++;
-    } else {
-      // Multiple roles needed for this color
-      const rolesToAssign = Math.min(count, remainingRoles);
-      for (let i = 0; i < rolesToAssign; i++) {
-        individualParts.push({ 
-          color: progressColor, 
-          type: color, 
-          roleNumber: i + 1 
-        });
-        rolesAssigned++;
-      }
     }
   });
 
@@ -134,7 +148,7 @@ const RoleProgressBar: React.FC<RoleProgressBarProps> = ({
                 styles.segment,
                 {
                   backgroundColor: part.color,
-                  flex: 1, // Each part gets equal width
+                  flex: part.proportion * 100, // Use proportional width based on word count
                   height,
                   borderTopLeftRadius: index === 0 ? height / 2 : 0,
                   borderBottomLeftRadius: index === 0 ? height / 2 : 0,

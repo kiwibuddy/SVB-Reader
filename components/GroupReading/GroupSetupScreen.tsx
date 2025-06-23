@@ -11,13 +11,16 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { Role, SegmentType } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RoleProgressBar from '@/components/RoleProgressBar';
 import BibleData from "@/assets/data/newBibleNLT1.json";
+import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
+import { splitContentIntoReaderParts } from "@/scripts/splitContentIntoReaderParts";
+import { getColors } from "@/scripts/getColors";
 
 interface GroupSetupScreenProps {
   storyId: string;
@@ -28,37 +31,6 @@ interface GroupSetupScreenProps {
   planId?: string;
   challengeId?: string;
 }
-
-const ROLES: { key: Role; label: string; description: string; icon: string; color: string }[] = [
-  { 
-    key: 'narrator', 
-    label: 'Narrator', 
-    description: 'Read the story narration',
-    icon: 'book-outline',
-    color: '#8E8E93'
-  },
-  { 
-    key: 'god', 
-    label: 'God', 
-    description: 'Read God\'s words',
-    icon: 'flash-outline',
-    color: '#FF3B30'
-  },
-  { 
-    key: 'main_character', 
-    label: 'Main Character', 
-    description: 'Read the main character\'s words',
-    icon: 'person-outline',
-    color: '#30D158'
-  },
-  { 
-    key: 'other_voices', 
-    label: 'Other Voices', 
-    description: 'Read other characters\' words',
-    icon: 'people-outline',
-    color: '#007AFF'
-  },
-];
 
 // Type assertion for Bible data
 const Bible: { [key: string]: SegmentType } = BibleData as { [key: string]: SegmentType };
@@ -73,52 +45,147 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
   challengeId,
 }) => {
   const { colors } = useAppSettings();
-  const [selectedRole, setSelectedRole] = useState<Role>('narrator');
+  const [selectedReaderPosition, setSelectedReaderPosition] = useState<{
+    color: string;
+    position: number;
+  } | null>(null);
   const [userName, setUserName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Calculate story color data from the actual story sources
-  const storyColorData = useMemo(() => {
-    if (!storyId) {
-      return { total: 0, black: 0, red: 0, green: 0, blue: 0 };
-    }
+  // Get segment data and calculate memoized content (same as main Segment component)
+  const segmentData = useMemo(() => {
+    return Bible[storyId];
+  }, [storyId]);
 
-    const segmentData = Bible[storyId];
-    if (!segmentData || !segmentData.sources) {
-      return { total: 0, black: 0, red: 0, green: 0, blue: 0 };
-    }
-
-    // Calculate color counts from sources data
-    const counts = Object.values(segmentData.sources).reduce((acc, source: any) => {
-      const color = source.color;
-      if (color === 'black') acc.black += 1;
-      else if (color === 'red') acc.red += 1;
-      else if (color === 'green') acc.green += 1;
-      else if (color === 'blue') acc.blue += 1;
-      acc.total += 1;
-      return acc;
-    }, {
+  // Use pre-calculated color data from segmentData instead of recalculating from split content
+  const colorData = useMemo(() => {
+    // Use the original pre-calculated color data that's based on word counts
+    return segmentData?.colors || {
       black: 0,
       red: 0,
       green: 0,
       blue: 0,
       total: 0
-    });
+    };
+  }, [segmentData?.colors]);
 
-    return counts;
-  }, [storyId]);
+  // Memoize the content to prevent unnecessary re-renders (same logic as main Segment component)
+  const memoizedContent = useMemo(() => {
+    if (!segmentData?.content) return [];
+    
+    // ALWAYS split content into paragraphs first (breaks long speeches into smaller bubbles)
+    const splitContent = splitIntoParagraphs(segmentData.content);
+    
+    // For group reading, we always want to show the full split content
+    // This ensures proper role distribution based on actual speech bubbles
+    return splitContent;
+  }, [segmentData?.content]);
 
-  // Filter roles based on what's available in this story
-  const getAvailableRoles = (): typeof ROLES => {
-    return ROLES.filter(role => {
-      switch (role.key) {
-        case 'narrator': return storyColorData.black > 0;
-        case 'god': return storyColorData.red > 0;
-        case 'main_character': return storyColorData.green > 0;
-        case 'other_voices': return storyColorData.blue > 0;
-        default: return false;
+  // Calculate reader roles based on actual speech bubble distribution (same logic as main Segment component)
+  const readersByColor = useMemo(() => {
+    const maxRoles = 4;
+    const result: { [color: string]: number[] } = {};
+    
+    // Count actual speech bubbles by color from memoized content
+    const bubblesByColor = memoizedContent.reduce((acc, block) => {
+      const color = block.source.color;
+      acc[color] = (acc[color] || 0) + 1;
+      return acc;
+    }, {} as { [color: string]: number });
+    
+    // Sort colors by bubble count (descending) to prioritize speakers with more bubbles
+    const colorsByBubbleCount = Object.entries(bubblesByColor)
+      .map(([color, count]) => ({ color, count }))
+      .sort((a, b) => b.count - a.count);
+    
+    let rolesAssigned = 0;
+    
+    // First pass: Ensure every speaker gets at least 1 role
+    colorsByBubbleCount.forEach(({ color }) => {
+      if (rolesAssigned < maxRoles) {
+        result[color] = [0];
+        rolesAssigned++;
       }
     });
+    
+    // Second pass: Distribute remaining roles proportionally to dominant speakers
+    if (rolesAssigned < maxRoles) {
+      const totalBubbles = Object.values(bubblesByColor).reduce((sum, c) => sum + c, 0);
+      
+      colorsByBubbleCount.forEach(({ color, count }) => {
+        if (rolesAssigned >= maxRoles) return;
+        
+        const proportion = count / totalBubbles;
+        const currentRoles = result[color]?.length || 0;
+        
+        // Calculate additional roles this color should get based on proportion
+        const targetRoles = Math.round(proportion * maxRoles);
+        const additionalRoles = Math.max(0, targetRoles - currentRoles);
+        
+        // Add additional roles up to remaining capacity
+        const rolesToAdd = Math.min(additionalRoles, maxRoles - rolesAssigned);
+        
+        if (rolesToAdd > 0) {
+          const currentPositions = result[color] || [];
+          for (let i = 0; i < rolesToAdd; i++) {
+            currentPositions.push(currentPositions.length);
+            rolesAssigned++;
+          }
+          result[color] = currentPositions;
+        }
+      });
+    }
+    
+    // Final pass: If still under 4 roles, give remaining to most dominant speaker
+    if (rolesAssigned < maxRoles && colorsByBubbleCount.length > 0) {
+      const dominantColor = colorsByBubbleCount[0].color;
+      const currentPositions = result[dominantColor] || [];
+      const additionalRoles = maxRoles - rolesAssigned;
+      
+      for (let i = 0; i < additionalRoles; i++) {
+        currentPositions.push(currentPositions.length);
+      }
+      result[dominantColor] = currentPositions;
+    }
+    
+    return result;
+  }, [memoizedContent]);
+
+  // Convert color/position to legacy Role type for compatibility
+  const getRole = (color: string, position: number): Role => {
+    switch (color) {
+      case 'black': return 'narrator';
+      case 'red': return 'god';
+      case 'green': return 'main_character';
+      case 'blue': return 'other_voices';
+      default: return 'narrator';
+    }
+  };
+
+  // Get display name for color/position combination
+  const getRoleDisplayName = (color: string, position: number): string => {
+    const colorPositions = readersByColor[color] || [];
+    const baseName = {
+      'black': 'Narrator',
+      'red': 'God',
+      'green': 'Main Character',
+      'blue': 'Other Voices'
+    }[color] || 'Reader';
+    
+    if (colorPositions.length > 1) {
+      return `${baseName} ${position + 1}`;
+    }
+    return baseName;
+  };
+
+  // Get description for color
+  const getRoleDescription = (color: string): string => {
+    return {
+      'black': 'Read the story narration',
+      'red': 'Read God\'s words',
+      'green': 'Read the main character\'s words',
+      'blue': 'Read other characters\' words'
+    }[color] || 'Read story content';
   };
 
   const styles = StyleSheet.create({
@@ -253,6 +320,26 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
       color: colors.text,
       marginBottom: 16,
     },
+    roleIconsContainer: {
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      padding: 16,
+      borderColor: colors.border,
+      borderWidth: 1,
+      marginBottom: 16,
+    },
+    roleIconsTitle: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: colors.text,
+      marginBottom: 12,
+      textAlign: 'center',
+    },
+    roleIconsRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+    },
     roleOptions: {
       backgroundColor: colors.card,
       borderRadius: 12,
@@ -367,11 +454,12 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
 
   useEffect(() => {
     // Set initial role to first available role for this story
-    const availableRoles = getAvailableRoles();
-    if (availableRoles.length > 0) {
-      setSelectedRole(availableRoles[0].key);
+    const roleEntries = Object.entries(readersByColor);
+    if (roleEntries.length > 0) {
+      const [firstColor, positions] = roleEntries[0];
+      setSelectedReaderPosition({ color: firstColor, position: positions[0] });
     }
-  }, [storyColorData]);
+  }, [readersByColor]);
 
   const loadSavedUserName = async () => {
     try {
@@ -398,14 +486,22 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
       return;
     }
 
+    if (!selectedReaderPosition) {
+      Alert.alert('Role Required', 'Please select a reading role to continue.');
+      return;
+    }
+
     setIsLoading(true);
     
     try {
       // Save username for next time
       await saveUserName(userName.trim());
       
+      // Convert to legacy role format for compatibility
+      const role = getRole(selectedReaderPosition.color, selectedReaderPosition.position);
+      
       // Start broadcasting
-      onStartBroadcasting(selectedRole, userName.trim());
+      onStartBroadcasting(role, userName.trim());
     } catch (error) {
       Alert.alert('Error', 'Failed to start group session. Please try again.');
       console.error('Error starting broadcast:', error);
@@ -414,8 +510,8 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
     }
   };
 
-  const handleRoleSelect = (role: Role) => {
-    setSelectedRole(role);
+  const handleRoleSelect = (color: string, position: number) => {
+    setSelectedReaderPosition({ color, position });
   };
 
   const handleHelpPress = () => {
@@ -442,7 +538,58 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
     );
   };
 
-  const isStartDisabled = !userName.trim() || isLoading;
+  const renderRoleIcons = () => {
+    const roleIcons: React.ReactElement[] = [];
+    
+    // Use the same logic as readersByColor to create icons
+    Object.entries(readersByColor).forEach(([color, positions]) => {
+      positions.forEach((position) => {
+        const isActive = selectedReaderPosition?.color === color && 
+                        selectedReaderPosition?.position === position;
+        const colorUtils = getColors(color);
+        
+        roleIcons.push(
+          <TouchableOpacity
+            key={`${color}-${position}`}
+            onPress={() => handleRoleSelect(color, position)}
+          >
+            <MaterialIcons
+              name={isActive ? "mark-chat-read" : "chat-bubble"}
+              size={30}
+              color={color === "black" ? "grey" : isActive ? colorUtils.dark : colorUtils.light}
+            />
+          </TouchableOpacity>
+        );
+      });
+    });
+    
+    return roleIcons;
+  };
+
+  // Get all available role options for the dropdown
+  const getAllRoleOptions = () => {
+    const options: Array<{
+      color: string;
+      position: number;
+      label: string;
+      description: string;
+    }> = [];
+    
+    Object.entries(readersByColor).forEach(([color, positions]) => {
+      positions.forEach((position) => {
+        options.push({
+          color,
+          position,
+          label: getRoleDisplayName(color, position),
+          description: getRoleDescription(color),
+        });
+      });
+    });
+    
+    return options;
+  };
+
+  const isStartDisabled = !userName.trim() || !selectedReaderPosition || isLoading;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -471,7 +618,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
           <View style={styles.progressSection}>
             <Text style={styles.progressTitle}>Story role distribution:</Text>
             <RoleProgressBar 
-              colorData={storyColorData}
+              colorData={colorData}
               height={6}
             />
             <Text style={styles.progressExplanation}>
@@ -496,36 +643,52 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
 
         <View style={styles.roleSection}>
           <Text style={styles.roleSectionTitle}>Your Role</Text>
+          
+          {/* Role Icons Preview */}
+          <View style={styles.roleIconsContainer}>
+            <Text style={styles.roleIconsTitle}>Select your reading role:</Text>
+            <View style={styles.roleIconsRow}>
+              {renderRoleIcons()}
+            </View>
+          </View>
+
+          {/* Role Options List */}
           <View style={styles.roleOptions}>
-            {getAvailableRoles().map((role, index) => (
-              <TouchableOpacity
-                key={role.key}
-                style={[
-                  styles.roleOption,
-                  index === getAvailableRoles().length - 1 && styles.lastRoleOption,
-                  selectedRole === role.key && styles.selectedRoleOption,
-                ]}
-                onPress={() => handleRoleSelect(role.key)}
-                activeOpacity={0.7}
-              >
-                <View style={[
-                  styles.roleRadio,
-                  selectedRole === role.key && styles.selectedRoleRadio,
-                ]}>
-                  {selectedRole === role.key && <View style={styles.radioInner} />}
-                </View>
-                <Ionicons 
-                  name={role.icon as any} 
-                  size={20} 
-                  color={role.color} 
-                  style={styles.roleIcon}
-                />
-                <View style={styles.roleInfo}>
-                  <Text style={styles.roleLabel}>{role.label}</Text>
-                  <Text style={styles.roleDescription}>{role.description}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+            {getAllRoleOptions().map((roleOption, index) => {
+              const isSelected = selectedReaderPosition?.color === roleOption.color && 
+                               selectedReaderPosition?.position === roleOption.position;
+              const colorUtils = getColors(roleOption.color);
+              
+              return (
+                <TouchableOpacity
+                  key={`${roleOption.color}-${roleOption.position}`}
+                  style={[
+                    styles.roleOption,
+                    index === getAllRoleOptions().length - 1 && styles.lastRoleOption,
+                    isSelected && styles.selectedRoleOption,
+                  ]}
+                  onPress={() => handleRoleSelect(roleOption.color, roleOption.position)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[
+                    styles.roleRadio,
+                    isSelected && styles.selectedRoleRadio,
+                  ]}>
+                    {isSelected && <View style={styles.radioInner} />}
+                  </View>
+                  <MaterialIcons
+                    name="chat-bubble"
+                    size={20}
+                    color={roleOption.color === "black" ? "grey" : colorUtils.light}
+                    style={styles.roleIcon}
+                  />
+                  <View style={styles.roleInfo}>
+                    <Text style={styles.roleLabel}>{roleOption.label}</Text>
+                    <Text style={styles.roleDescription}>{roleOption.description}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
       </ScrollView>
@@ -554,8 +717,6 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
             </Text>
           )}
         </TouchableOpacity>
-
-
       </View>
     </SafeAreaView>
   );

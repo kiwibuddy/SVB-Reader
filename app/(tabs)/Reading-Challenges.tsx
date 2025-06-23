@@ -130,7 +130,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     padding: 16,
   },
   welcomeSection: {
-    marginBottom: 16,
+    marginBottom: 24,
   },
   welcomeTitle: {
     fontSize: 24,
@@ -155,13 +155,12 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     borderBottomColor: colors.border,
   },
   screenTitle: {
-    fontSize: 28,
-    fontWeight: "700",
+    fontSize: 24,
+    fontWeight: "600",
     marginBottom: 8,
     color: colors.text,
   },
   categorySection: {
-    marginTop: 16,
     paddingHorizontal: 0,
   },
   categoryTitle: {

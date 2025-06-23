@@ -152,7 +152,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     padding: 16,
   },
   welcomeSection: {
-    marginBottom: 16,
+    marginBottom: 24,
   },
   welcomeTitle: {
     fontSize: 24,
@@ -188,7 +188,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   },
   filterContainer: {
     flexDirection: 'row',
-    marginVertical: 12,
+    marginBottom: 12,
     alignItems: 'center',
     justifyContent: 'space-between',
   },
@@ -438,13 +438,6 @@ const Navigation = () => {
 
   const ListHeaderComponent = () => (
     <View>
-      <View style={styles.welcomeSection}>
-        <Text style={styles.welcomeTitle}>Story Finder</Text>
-        <Text style={styles.welcomeText}>
-          Navigate through books and chapters to find your next story
-        </Text>
-      </View>
-
       {/* Filter and Search Container */}
       <View style={styles.filterContainer}>
         <ScrollView 
@@ -545,35 +538,43 @@ const Navigation = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList
-        style={styles.content}
-        contentContainerStyle={{ paddingTop: 8 }}
-        data={filteredData}
-        ListHeaderComponent={ListHeaderComponent}
-        renderItem={({ item }) => {
-          const bookIndex = booksArray.findIndex(book => book === item.djhBook);
-          const parsedRef = parseReferenceEnhanced(searchQuery);
-          const isSelected = (showSearch && selectedBook === item.djhBook) || 
-                           (parsedRef && findBookByName(parsedRef.book) === item.djhBook);
-          
-          return (
-            <Accordion 
-              item={item} 
-              bookIndex={bookIndex}
-              context="main"
-              showGlobalCompletion={true}
-              style={{ backgroundColor: '#FFF' }}
-              isExpanded={!!(isSelected && showSearch)}
-              onBookSelect={handleBookSelect}
-              onSegmentSelect={handleSegmentSelect}
-              completedSegments={completedSegmentIds}
-              highlightedSegment={highlightedSegment}
-              searchQuery={searchQuery}
-            />
-          );
-        }}
-        keyExtractor={(item) => String(item.djhBook)}
-      />
+      <View style={styles.content}>
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeTitle}>Story Finder</Text>
+          <Text style={styles.welcomeText}>
+            Navigate through books and chapters to find your next story
+          </Text>
+        </View>
+        
+        <FlatList
+          style={{ flex: 1 }}
+          data={filteredData}
+          ListHeaderComponent={ListHeaderComponent}
+          renderItem={({ item }) => {
+            const bookIndex = booksArray.findIndex(book => book === item.djhBook);
+            const parsedRef = parseReferenceEnhanced(searchQuery);
+            const isSelected = (showSearch && selectedBook === item.djhBook) || 
+                             (parsedRef && findBookByName(parsedRef.book) === item.djhBook);
+            
+            return (
+              <Accordion 
+                item={item} 
+                bookIndex={bookIndex}
+                context="main"
+                showGlobalCompletion={true}
+                style={{ backgroundColor: '#FFF' }}
+                isExpanded={!!(isSelected && showSearch)}
+                onBookSelect={handleBookSelect}
+                onSegmentSelect={handleSegmentSelect}
+                completedSegments={completedSegmentIds}
+                highlightedSegment={highlightedSegment}
+                searchQuery={searchQuery}
+              />
+            );
+          }}
+          keyExtractor={(item) => String(item.djhBook)}
+        />
+      </View>
     </SafeAreaView>
   );
 };

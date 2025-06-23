@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,11 +10,14 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { useGroupReading } from '@/context/GroupReadingContext';
-import { Role, Participant } from '@/types';
+import { Role, Participant, SegmentType } from '@/types';
 import RoleProgressBar from '@/components/RoleProgressBar';
+import BibleData from "@/assets/data/newBibleNLT1.json";
+import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
+import { getColors } from "@/scripts/getColors";
 
 interface HostWaitingScreenProps {
   sessionId: string;
@@ -31,6 +34,9 @@ interface HostWaitingScreenProps {
   onEndSession: () => void;
   onShowQR: () => void;
 }
+
+// Type assertion for Bible data
+const Bible: { [key: string]: SegmentType } = BibleData as { [key: string]: SegmentType };
 
 const ROLE_COLORS: Record<Role, string> = {
   narrator: '#8E8E93',
@@ -60,6 +66,122 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
   const [isStarting, setIsStarting] = useState(false);
 
   const participants = currentSession?.participants || [];
+  const storyId = currentSession?.storyId;
+
+  // Get segment data and calculate memoized content (same as main Segment component)
+  const segmentData = useMemo(() => {
+    if (!storyId) return null;
+    return Bible[storyId];
+  }, [storyId]);
+
+  // Memoize the content to prevent unnecessary re-renders (same logic as main Segment component)
+  const memoizedContent = useMemo(() => {
+    if (!segmentData?.content) return [];
+    
+    // ALWAYS split content into paragraphs first (breaks long speeches into smaller bubbles)
+    const splitContent = splitIntoParagraphs(segmentData.content);
+    
+    // For group reading, we always want to show the full split content
+    // This ensures proper role distribution based on actual speech bubbles
+    return splitContent;
+  }, [segmentData?.content]);
+
+  // Calculate reader roles based on actual speech bubble distribution (same logic as main Segment component)
+  const readersByColor = useMemo(() => {
+    const maxRoles = 4;
+    const result: { [color: string]: number[] } = {};
+    
+    // Count actual speech bubbles by color from memoized content
+    const bubblesByColor = memoizedContent.reduce((acc, block) => {
+      const color = block.source.color;
+      acc[color] = (acc[color] || 0) + 1;
+      return acc;
+    }, {} as { [color: string]: number });
+    
+    // Sort colors by bubble count (descending) to prioritize speakers with more bubbles
+    const colorsByBubbleCount = Object.entries(bubblesByColor)
+      .map(([color, count]) => ({ color, count }))
+      .sort((a, b) => b.count - a.count);
+    
+    let rolesAssigned = 0;
+    
+    // First pass: Ensure every speaker gets at least 1 role
+    colorsByBubbleCount.forEach(({ color }) => {
+      if (rolesAssigned < maxRoles) {
+        result[color] = [0];
+        rolesAssigned++;
+      }
+    });
+    
+    // Second pass: Distribute remaining roles proportionally to dominant speakers
+    if (rolesAssigned < maxRoles) {
+      const totalBubbles = Object.values(bubblesByColor).reduce((sum, c) => sum + c, 0);
+      
+      colorsByBubbleCount.forEach(({ color, count }) => {
+        if (rolesAssigned >= maxRoles) return;
+        
+        const proportion = count / totalBubbles;
+        const currentRoles = result[color]?.length || 0;
+        
+        // Calculate additional roles this color should get based on proportion
+        const targetRoles = Math.round(proportion * maxRoles);
+        const additionalRoles = Math.max(0, targetRoles - currentRoles);
+        
+        // Add additional roles up to remaining capacity
+        const rolesToAdd = Math.min(additionalRoles, maxRoles - rolesAssigned);
+        
+        if (rolesToAdd > 0) {
+          const currentPositions = result[color] || [];
+          for (let i = 0; i < rolesToAdd; i++) {
+            currentPositions.push(currentPositions.length);
+            rolesAssigned++;
+          }
+          result[color] = currentPositions;
+        }
+      });
+    }
+    
+    // Final pass: If still under 4 roles, give remaining to most dominant speaker
+    if (rolesAssigned < maxRoles && colorsByBubbleCount.length > 0) {
+      const dominantColor = colorsByBubbleCount[0].color;
+      const currentPositions = result[dominantColor] || [];
+      const additionalRoles = maxRoles - rolesAssigned;
+      
+      for (let i = 0; i < additionalRoles; i++) {
+        currentPositions.push(currentPositions.length);
+      }
+      result[dominantColor] = currentPositions;
+    }
+    
+    return result;
+  }, [memoizedContent]);
+
+  // Convert legacy Role to color/position
+  const getColorFromRole = (role: Role): string => {
+    switch (role) {
+      case 'narrator': return 'black';
+      case 'god': return 'red';
+      case 'main_character': return 'green';
+      case 'other_voices': return 'blue';
+      default: return 'black';
+    }
+  };
+
+  // Get display name for color/position combination
+  const getRoleDisplayName = (color: string, position: number): string => {
+    const colorPositions = readersByColor[color] || [];
+    const baseName = {
+      'black': 'Narrator',
+      'red': 'God',
+      'green': 'Main Character',
+      'blue': 'Other Voices'
+    }[color] || 'Reader';
+    
+    if (colorPositions.length > 1) {
+      return `${baseName} ${position + 1}`;
+    }
+    return baseName;
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -166,6 +288,26 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
       color: colors.text,
       marginBottom: 16,
     },
+    roleIconsContainer: {
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 16,
+      borderColor: colors.border,
+      borderWidth: 1,
+    },
+    roleIconsTitle: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: colors.text,
+      marginBottom: 12,
+      textAlign: 'center',
+    },
+    roleIconsRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+    },
     participantCard: {
       backgroundColor: colors.card,
       borderRadius: 12,
@@ -201,31 +343,28 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
       fontSize: 16,
       fontWeight: '600',
       color: colors.text,
-      marginBottom: 2,
+      flexDirection: 'row',
+      alignItems: 'center',
     },
     participantRole: {
       fontSize: 14,
       color: colors.secondary,
-    },
-    statusIndicator: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    statusText: {
-      fontSize: 12,
-      color: colors.secondary,
-      marginLeft: 4,
+      marginTop: 2,
     },
     emptyState: {
       alignItems: 'center',
       paddingVertical: 32,
     },
-    emptyText: {
-      fontSize: 16,
-      color: colors.secondary,
+    emptyIcon: {
+      marginBottom: 16,
+    },
+    emptyTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.text,
       marginBottom: 8,
     },
-    emptySubtext: {
+    emptySubtitle: {
       fontSize: 14,
       color: colors.secondary,
       textAlign: 'center',
@@ -233,13 +372,13 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
     },
     buttonContainer: {
       paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+      gap: 12,
     },
     startButton: {
       backgroundColor: colors.primary,
       paddingVertical: 16,
       borderRadius: 12,
       alignItems: 'center',
-      marginBottom: 12,
       shadowColor: colors.primary,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
@@ -259,24 +398,16 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
     startButtonTextDisabled: {
       color: colors.secondary,
     },
-    qrButton: {
+    secondaryButton: {
       backgroundColor: 'transparent',
       paddingVertical: 12,
+      borderRadius: 12,
       alignItems: 'center',
-      marginBottom: 8,
+      borderColor: colors.border,
+      borderWidth: 1,
     },
-    qrButtonText: {
-      color: colors.primary,
-      fontSize: 16,
-      fontWeight: '500',
-    },
-    endButton2: {
-      backgroundColor: 'transparent',
-      paddingVertical: 12,
-      alignItems: 'center',
-    },
-    endButtonText: {
-      color: colors.secondary,
+    secondaryButtonText: {
+      color: colors.text,
       fontSize: 16,
       fontWeight: '500',
     },
@@ -296,60 +427,136 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
   const handleStartReading = async () => {
     if (participants.length < 2) {
       Alert.alert(
-        'Need More Readers',
-        'You need at least 2 readers to start a group reading session.',
+        'Not Enough Readers',
+        'You need at least 2 people to start group reading. Share your session ID or QR code to invite others.',
         [{ text: 'OK' }]
       );
       return;
     }
 
-    Alert.alert(
-      'Start Reading',
-      'Are you ready to start the group reading? All participants will be taken to the story.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Start Reading',
-          onPress: async () => {
-            setIsStarting(true);
-            try {
-              await onStartReading();
-            } finally {
-              setIsStarting(false);
-            }
-          },
-        },
-      ]
-    );
+    setIsStarting(true);
+    
+    try {
+      onStartReading();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to start reading session. Please try again.');
+      console.error('Error starting reading:', error);
+    } finally {
+      setIsStarting(false);
+    }
   };
 
   const handleEndSession = () => {
     Alert.alert(
       'End Session',
-      'Are you sure you want to end this group reading session?',
+      'Are you sure you want to end this group reading session? All participants will be disconnected.',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'End Session',
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'End Session', 
           style: 'destructive',
-          onPress: onEndSession,
-        },
+          onPress: onEndSession
+        }
       ]
     );
   };
 
   const handleHelpPress = () => {
     Alert.alert(
-      'Group Reading Host',
-      '• Others can join from their home screen\n• You need at least 2 readers to start\n• Each person reads their assigned role\n• Use the QR code if others can\'t find your session\n• Tap "Start Reading" when everyone is ready',
+      'Group Reading Help',
+      'You\'re hosting a group reading session. Others can join by:\n\n1. Finding your session on their home screen\n2. Scanning your QR code\n3. Entering your session ID\n\nOnce you have at least 2 people, you can start reading together!',
       [{ text: 'Got it!' }]
     );
+  };
+
+  const renderRoleIcons = () => {
+    const roleIcons: React.ReactElement[] = [];
+    
+    // Use the same logic as readersByColor to create icons
+    Object.entries(readersByColor).forEach(([color, positions]) => {
+      positions.forEach((position) => {
+        // Check if this role is taken by a participant
+        const participantWithRole = participants.find(p => {
+          const participantColor = getColorFromRole(p.role);
+          // For now, assume position 0 since we don't track positions in participants yet
+          return participantColor === color && position === 0;
+        });
+        
+        const isActive = !!participantWithRole;
+        const colorUtils = getColors(color);
+        
+        roleIcons.push(
+          <View key={`${color}-${position}`} style={{ alignItems: 'center' }}>
+            <MaterialIcons
+              name={isActive ? "mark-chat-read" : "chat-bubble"}
+              size={30}
+              color={color === "black" ? "grey" : isActive ? colorUtils.dark : colorUtils.light}
+            />
+            {participantWithRole && (
+              <Text style={{ 
+                fontSize: 10, 
+                color: colors.secondary, 
+                marginTop: 4,
+                textAlign: 'center',
+                maxWidth: 60
+              }} numberOfLines={1}>
+                {participantWithRole.userName}
+              </Text>
+            )}
+          </View>
+        );
+      });
+    });
+    
+    return roleIcons;
+  };
+
+  const renderParticipants = () => {
+    if (participants.length === 0) {
+      return (
+        <View style={styles.emptyState}>
+          <Ionicons 
+            name="people-outline" 
+            size={48} 
+            color={colors.secondary} 
+            style={styles.emptyIcon}
+          />
+          <Text style={styles.emptyTitle}>Waiting for readers...</Text>
+          <Text style={styles.emptySubtitle}>
+            Share your session ID or QR code with friends so they can join your reading group.
+          </Text>
+        </View>
+      );
+    }
+
+    return participants.map((participant, index) => {
+      const participantColor = getColorFromRole(participant.role);
+      const colorUtils = getColors(participantColor);
+      // For now, assume position 0 since we don't track positions in participants yet
+      const roleDisplayName = getRoleDisplayName(participantColor, 0);
+      
+      return (
+        <View key={participant.deviceId} style={styles.participantCard}>
+          <View 
+            style={[
+              styles.roleIndicator,
+              { backgroundColor: participantColor === "black" ? "grey" : colorUtils.light }
+            ]}
+          />
+          <View style={styles.participantInfo}>
+            <View style={styles.participantName}>
+              <Text style={styles.participantName}>{participant.userName}</Text>
+              {index === 0 && (
+                <View style={styles.hostBadge}>
+                  <Text style={styles.hostBadgeText}>HOST</Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.participantRole}>{roleDisplayName}</Text>
+          </View>
+        </View>
+      );
+    });
   };
 
   const canStartReading = participants.length >= 2 && !isStarting;
@@ -360,7 +567,7 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
         <TouchableOpacity style={styles.endButton} onPress={handleEndSession}>
           <Ionicons name="close" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Group Reading Host</Text>
+        <Text style={styles.headerTitle}>Group Reading</Text>
         <TouchableOpacity style={styles.helpButton} onPress={handleHelpPress}>
           <Ionicons name="help-circle-outline" size={24} color={colors.text} />
         </TouchableOpacity>
@@ -372,12 +579,12 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
             <Ionicons name="radio" size={40} color={colors.primary} />
           </View>
           <Text style={styles.title}>Broadcasting</Text>
-          <Text style={styles.subtitle}>Waiting for others to join</Text>
+          <Text style={styles.subtitle}>Others can now join</Text>
           <Text style={styles.storyName}>"{storyTitle}"</Text>
         </View>
 
         <View style={styles.sessionInfo}>
-          <Text style={styles.sessionId}>Session: {sessionId.slice(-8).toUpperCase()}</Text>
+          <Text style={styles.sessionId}>Session ID: {sessionId}</Text>
           
           <View style={styles.progressSection}>
             <Text style={styles.progressTitle}>Story role distribution:</Text>
@@ -391,55 +598,19 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
           </View>
         </View>
 
+        {/* Role Icons Display */}
+        <View style={styles.roleIconsContainer}>
+          <Text style={styles.roleIconsTitle}>Reading roles for this story:</Text>
+          <View style={styles.roleIconsRow}>
+            {renderRoleIcons()}
+          </View>
+        </View>
+
         <View style={styles.participantsSection}>
           <Text style={styles.sectionTitle}>
-            Readers ({participants.length}/4)
+            Readers ({participants.length} of 4)
           </Text>
-          
-          {participants.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>Only you so far</Text>
-              <Text style={styles.emptySubtext}>
-                Others can join from their home screen by finding your session
-              </Text>
-            </View>
-          ) : (
-            participants.map((participant, index) => (
-              <View key={participant.deviceId} style={styles.participantCard}>
-                <View 
-                  style={[
-                    styles.roleIndicator,
-                    { backgroundColor: ROLE_COLORS[participant.role] }
-                  ]}
-                />
-                <View style={styles.participantInfo}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={styles.participantName}>
-                      {participant.userName}
-                    </Text>
-                    {index === 0 && (
-                      <View style={styles.hostBadge}>
-                        <Text style={styles.hostBadgeText}>HOST</Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text style={styles.participantRole}>
-                    {ROLE_LABELS[participant.role]}
-                  </Text>
-                </View>
-                <View style={styles.statusIndicator}>
-                  <Ionicons 
-                    name={participant.isConnected ? "checkmark-circle" : "time-outline"} 
-                    size={16} 
-                    color={participant.isConnected ? colors.primary : colors.secondary} 
-                  />
-                  <Text style={styles.statusText}>
-                    {participant.isConnected ? 'Ready' : 'Connecting...'}
-                  </Text>
-                </View>
-              </View>
-            ))
-          )}
+          {renderParticipants()}
         </View>
       </ScrollView>
 
@@ -463,17 +634,17 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
               styles.startButtonText,
               !canStartReading && styles.startButtonTextDisabled,
             ]}>
-              Start Reading ({participants.length} readers)
+              Start Reading Together
             </Text>
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.qrButton} onPress={onShowQR}>
-          <Text style={styles.qrButtonText}>Share QR Code</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.endButton2} onPress={handleEndSession}>
-          <Text style={styles.endButtonText}>End Session</Text>
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={onShowQR}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.secondaryButtonText}>Show QR Code</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

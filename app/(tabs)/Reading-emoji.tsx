@@ -82,21 +82,18 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
     },
     welcomeSection: {
       marginBottom: 24,
-      paddingHorizontal: 4,
     },
-    welcomeTitle: {
-      fontSize: 28,
-      fontWeight: "700",
-      color: colors.text,
-      marginBottom: 10,
-      letterSpacing: -0.5,
-    },
-    welcomeText: {
-      fontSize: 16,
-      color: colors.secondary,
-      lineHeight: 24,
-      opacity: 0.9,
-    },
+      welcomeTitle: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: colors.text,
+    marginBottom: 8,
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: colors.secondary,
+    lineHeight: 22,
+  },
     header: {
       padding: 16,
       paddingBottom: 20,
@@ -111,7 +108,6 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
     gridContainer: {
       flexDirection: "row",
       flexWrap: "wrap",
-      padding: 4,
       gap: 12,
       marginBottom: 24,
       justifyContent: "space-between",
@@ -237,7 +233,6 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       marginBottom: 10,
     },
     reactionsContainer: {
-      paddingHorizontal: 4,
     },
     reactionItem: {
       marginBottom: 20,

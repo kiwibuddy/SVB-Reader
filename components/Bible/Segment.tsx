@@ -82,19 +82,23 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const { content, readers = [], id } = segmentData;
   const segID = id.split("-")[id.split("-").length - 1];
 
-  const [colorData, setColorData] = useState({
-    black: 0,
-    red: 0,
-    green: 0,
-    blue: 0,
-    total: 0
-  });
-
   // Track which reader role is currently selected
   const [selectedReaderPosition, setSelectedReaderPosition] = useState<{
     color: string;
     position: number;
   } | null>(null);
+
+  // Use pre-calculated color data from segmentData instead of recalculating from split content
+  const colorData = useMemo(() => {
+    // Use the original pre-calculated color data that's based on word counts
+    return segmentData.colors || {
+      black: 0,
+      red: 0,
+      green: 0,
+      blue: 0,
+      total: 0
+    };
+  }, [segmentData.colors]);
 
   // Determine which completion state to use
   const getIsCompleted = () => {
@@ -134,38 +138,27 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   // Memoize the content to prevent unnecessary re-renders
   const memoizedContent = useMemo(() => {
+    // ALWAYS split content into paragraphs first (breaks long speeches into smaller bubbles)
+    // This ensures Moses' long speeches get broken up into multiple bubbles as shown in the example
+    const splitContent = splitIntoParagraphs(segmentData.content);
+    
     // Check if there are duplicate colors in readers array
     const uniqueColors = new Set(readers);
     const hasDuplicateColors = uniqueColors.size !== readers.length;
     
     if (hasDuplicateColors) {
-      // Use splitContentIntoReaderParts for multiple readers of same color
-      return splitContentIntoReaderParts(segmentData.content, readers);
+      // If multiple readers have same color, apply additional splitting logic
+      // This further splits content for turn-taking among readers of the same color
+      return splitContentIntoReaderParts(splitContent, readers);
     } else {
-      // Use splitIntoParagraphs for unique colors
-      return splitIntoParagraphs(segmentData.content);
+      // If all readers have unique colors, just return the paragraph-split content
+      return splitContent;
     }
   }, [segmentData.content, readers]);
 
   const colorRenderCount = new Map<string, number>(); // Track render counts
 
-  useEffect(() => {
-    // Calculate color counts from content
-    const counts = memoizedContent.reduce((acc, block) => {
-      const color = block.source.color as keyof typeof acc;
-      acc[color] = (acc[color] || 0) + 1;
-      acc.total += 1;
-      return acc;
-    }, {
-      black: 0,
-      red: 0,
-      green: 0,
-      blue: 0,
-      total: 0
-    } as ColorData);
-    
-    setColorData(counts);
-  }, [memoizedContent]);
+  // Note: We now use pre-calculated colorData from segmentData.colors instead of recalculating
 
   // Add handler for completion toggle
   const handleCompletion = async () => {
@@ -274,16 +267,75 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     });
   };
 
-  // Group readers by color to know position
+  // Calculate reader roles based on actual speech bubble distribution
   const readersByColor = useMemo(() => {
-    return readers.reduce((acc, color, index) => {
-      if (!acc[color]) {
-        acc[color] = [];
-      }
-      acc[color].push(index);
+    const maxRoles = 4;
+    const result: { [color: string]: number[] } = {};
+    
+    // Count actual speech bubbles by color from memoized content
+    const bubblesByColor = memoizedContent.reduce((acc, block) => {
+      const color = block.source.color;
+      acc[color] = (acc[color] || 0) + 1;
       return acc;
-    }, {} as { [color: string]: number[] });
-  }, [readers]);
+    }, {} as { [color: string]: number });
+    
+    // Sort colors by bubble count (descending) to prioritize speakers with more bubbles
+    const colorsByBubbleCount = Object.entries(bubblesByColor)
+      .map(([color, count]) => ({ color, count }))
+      .sort((a, b) => b.count - a.count);
+    
+    let rolesAssigned = 0;
+    
+         // First pass: Ensure every speaker gets at least 1 role
+     colorsByBubbleCount.forEach(({ color }) => {
+       if (rolesAssigned < maxRoles) {
+         result[color] = [0];
+         rolesAssigned++;
+       }
+     });
+     
+     // Second pass: Distribute remaining roles proportionally to dominant speakers
+     if (rolesAssigned < maxRoles) {
+       const totalBubbles = Object.values(bubblesByColor).reduce((sum, c) => sum + c, 0);
+       
+       colorsByBubbleCount.forEach(({ color, count }) => {
+         if (rolesAssigned >= maxRoles) return;
+         
+         const proportion = count / totalBubbles;
+         const currentRoles = result[color]?.length || 0;
+         
+         // Calculate additional roles this color should get based on proportion
+         const targetRoles = Math.round(proportion * maxRoles);
+         const additionalRoles = Math.max(0, targetRoles - currentRoles);
+         
+         // Add additional roles up to remaining capacity
+         const rolesToAdd = Math.min(additionalRoles, maxRoles - rolesAssigned);
+         
+         if (rolesToAdd > 0) {
+           const currentPositions = result[color] || [];
+           for (let i = 0; i < rolesToAdd; i++) {
+             currentPositions.push(currentPositions.length);
+             rolesAssigned++;
+           }
+           result[color] = currentPositions;
+         }
+       });
+     }
+     
+     // Final pass: If still under 4 roles, give remaining to most dominant speaker
+     if (rolesAssigned < maxRoles && colorsByBubbleCount.length > 0) {
+       const dominantColor = colorsByBubbleCount[0].color;
+       const currentPositions = result[dominantColor] || [];
+       const additionalRoles = maxRoles - rolesAssigned;
+       
+       for (let i = 0; i < additionalRoles; i++) {
+         currentPositions.push(currentPositions.length);
+       }
+       result[dominantColor] = currentPositions;
+     }
+    
+    return result;
+  }, [memoizedContent]);
 
   // Update shouldBlockGlow to use the new state
   const shouldBlockGlow = useCallback((blockColor: string, blockIndex: number) => {
@@ -297,13 +349,13 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       return position === 0;
     }
 
-    // For multiple readers of same color
-    const blocksOfThisColor = content.filter(item => item.source.color === blockColor);
+    // For multiple readers of same color - USE MEMOIZED CONTENT (the split content)
+    const blocksOfThisColor = memoizedContent.filter(item => item.source.color === blockColor);
     const positionInSequence = blocksOfThisColor.findIndex(item => 
-      content.indexOf(item) === blockIndex
+      memoizedContent.indexOf(item) === blockIndex
     );
     return positionInSequence % colorPositions.length === position;
-  }, [content, readersByColor, selectedReaderPosition]);
+  }, [memoizedContent, readersByColor, selectedReaderPosition]);
 
 const styles = StyleSheet.create({
   container: {
@@ -500,7 +552,7 @@ modalContainer: {
   const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
     const { sourceName } = item.source;
     const showSourceName = index === 0 || 
-      content[index - 1].source.sourceName !== sourceName;
+      memoizedContent[index - 1].source.sourceName !== sourceName;
 
     const isGlowing = shouldBlockGlow(item.source.color, index);
 
@@ -513,7 +565,7 @@ modalContainer: {
         onLongPress={handleLongPress}
       />
     );
-  }, [content, shouldBlockGlow]);
+  }, [memoizedContent, shouldBlockGlow]);
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -537,7 +589,7 @@ modalContainer: {
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
-        data={content}
+        data={memoizedContent}
         ListHeaderComponent={() => (
           <>
             <SegmentTitle segmentId={segID} />
@@ -553,25 +605,34 @@ modalContainer: {
                   Select your reading role:
                 </Text>
                 <View style={styles.iconContainer}>
-                  {readers.map((readerColor, index) => {
-                    const colors = getColors(readerColor);
-                    const position = readersByColor[readerColor].indexOf(index);
-                    const isActive = selectedReaderPosition?.color === readerColor && 
-                                  selectedReaderPosition?.position === position;
+                  {/* Create reader role icons based on actual speech bubble distribution */}
+                  {(() => {
+                    const roleIcons: React.ReactElement[] = [];
                     
-                    return (
-                      <TouchableOpacity
-                        key={index}
-                        onPress={() => handleReaderRoleSelect(readerColor, position)}
-                      >
-                        <MaterialIcons
-                          name={isActive ? "mark-chat-read" : "chat-bubble"}
-                          size={30}
-                          color={readerColor === "black" ? "grey" : isActive ? colors.dark : colors.light}
-                        />
-                      </TouchableOpacity>
-                    );
-                  })}
+                    // Use the same logic as readersByColor to create icons
+                    Object.entries(readersByColor).forEach(([color, positions]) => {
+                      positions.forEach((position) => {
+                        const isActive = selectedReaderPosition?.color === color && 
+                                        selectedReaderPosition?.position === position;
+                        const colors = getColors(color);
+                        
+                        roleIcons.push(
+                          <TouchableOpacity
+                            key={`${color}-${position}`}
+                            onPress={() => handleReaderRoleSelect(color, position)}
+                          >
+                            <MaterialIcons
+                              name={isActive ? "mark-chat-read" : "chat-bubble"}
+                              size={30}
+                              color={color === "black" ? "grey" : isActive ? colors.dark : colors.light}
+                            />
+                          </TouchableOpacity>
+                        );
+                      });
+                    });
+                    
+                    return roleIcons;
+                  })()}
                 </View>
               </View>
               

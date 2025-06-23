@@ -18,35 +18,25 @@ export default function HostWaitingRoute() {
   const storyTitle = params.storyTitle as string;
   const scriptureReference = params.scriptureReference as string;
 
-  // Calculate story color data from the actual story sources
+  // Use pre-calculated color data from segmentData (same as updated components)
   const storyColorData = useMemo(() => {
     if (!storyId) {
       return { total: 0, black: 0, red: 0, green: 0, blue: 0 };
     }
 
     const segmentData = Bible[storyId];
-    if (!segmentData || !segmentData.sources) {
+    if (!segmentData) {
       return { total: 0, black: 0, red: 0, green: 0, blue: 0 };
     }
 
-    // Calculate color counts from sources data
-    const counts = Object.values(segmentData.sources).reduce((acc, source: any) => {
-      const color = source.color;
-      if (color === 'black') acc.black += 1;
-      else if (color === 'red') acc.red += 1;
-      else if (color === 'green') acc.green += 1;
-      else if (color === 'blue') acc.blue += 1;
-      acc.total += 1;
-      return acc;
-    }, {
+    // Use the pre-calculated color data that's based on word counts
+    return segmentData.colors || {
       black: 0,
       red: 0,
       green: 0,
       blue: 0,
       total: 0
-    });
-
-    return counts;
+    };
   }, [storyId]);
 
   const handleStartReading = async () => {

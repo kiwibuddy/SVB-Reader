@@ -83,8 +83,9 @@ const IndexScreen = () => {
 
   const renderCard = ({ item, index }: { item: any; index: number }) => {
     return (
-      <View style={[styles.card, { backgroundColor: item.backgroundColor }]}>
-        <View style={styles.cardContent}>
+      <View style={styles.cardWrapper}>
+        <View style={[styles.card, { backgroundColor: item.backgroundColor }]}>
+          <View style={styles.cardContent}>
           <View style={styles.iconContainer}>
             <Text style={styles.iconText}>{item.icon}</Text>
           </View>
@@ -128,6 +129,7 @@ const IndexScreen = () => {
           {item.description && (
             <Text style={styles.cardDescription}>{item.description}</Text>
           )}
+        </View>
         </View>
       </View>
     );
@@ -229,12 +231,14 @@ const styles = StyleSheet.create({
   carouselContent: {
     alignItems: 'center',
   },
+  cardWrapper: {
+    borderRadius: 1,
+    overflow: 'hidden',
+    marginHorizontal: 20,
+  },
   card: {
     width: screenWidth - 40,
     height: 420,
-    marginHorizontal: 20,
-    borderRadius: 20,
-    overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: "#000",
@@ -248,7 +252,7 @@ const styles = StyleSheet.create({
   },
   cardContent: {
     flex: 1,
-    padding: 20,
+    padding: 10,
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
@@ -261,6 +265,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
+    shadowColor: 'rgba(0, 0, 0, 0.1)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   iconText: {
     fontSize: 40,
@@ -268,34 +277,46 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#333333',
+    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 20,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   cardDescription: {
     fontSize: 15,
-    color: '#333333',
+    color: '#FFFFFF',
     textAlign: 'center',
     lineHeight: 22,
     opacity: 0.9,
     marginTop: 15,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   buttonGrid: {
-    marginBottom: 15,
+    marginBottom: 16,
     width: '100%',
+    paddingHorizontal: 0,
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   roleButton: {
     flex: 0.48,
-    height: 36,
-    borderRadius: 18,
+    height: 38,
+    borderRadius: 19,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 12,
+    shadowColor: 'rgba(0, 0, 0, 0.15)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 2,
   },
   roleButtonText: {
     fontSize: 18,
@@ -303,46 +324,54 @@ const styles = StyleSheet.create({
     color: '#333333',
   },
   roleButtonSubtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#333333',
-    opacity: 0.8,
-    fontWeight: '600',
+    opacity: 0.85,
+    fontWeight: '700',
   },
   chatContainer: {
     width: '100%',
     marginBottom: 15,
   },
   speakerName: {
-    fontSize: 14,
-    color: '#333333',
-    marginBottom: 6,
-    opacity: 0.8,
-    fontWeight: '500',
+    fontSize: 15,
+    color: '#FFFFFF',
+    marginBottom: 8,
+    opacity: 0.9,
+    fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   speakerRight: {
     textAlign: 'right',
-    marginTop: 15,
+    marginTop: 18,
   },
   chatBubble: {
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    marginBottom: 8,
-    maxWidth: '85%',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginBottom: 10,
+    maxWidth: '88%',
+    shadowColor: 'rgba(0, 0, 0, 0.15)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   chatBubbleLeft: {
-    backgroundColor: '#fdc1c1',
+    backgroundColor: 'rgba(253, 193, 193, 0.9)',
     alignSelf: 'flex-start',
   },
   chatBubbleRight: {
-    backgroundColor: '#b9f8b9',
+    backgroundColor: 'rgba(185, 248, 185, 0.9)',
     alignSelf: 'flex-end',
   },
   chatText: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#333333',
-    fontWeight: '500',
-    lineHeight: 20,
+    fontWeight: '600',
+    lineHeight: 22,
   },
   indicatorContainer: {
     flexDirection: 'row',

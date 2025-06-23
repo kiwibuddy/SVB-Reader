@@ -22,6 +22,8 @@
     "@react-native-picker/picker": "2.11.0",
     "@react-navigation/native": "^7.0.14",
     "@shopify/react-native-skia": "^1.4.2",
+    "ajv": "^8.17.1",
+    "ajv-keywords": "^5.1.0",
     "date-fns": "^4.1.0",
     "expo": "^53.0.0",
     "expo-av": "~15.1.6",
