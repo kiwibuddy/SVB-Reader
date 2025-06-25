@@ -25,6 +25,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { getSegmentCompletionStatus, unlockAchievement } from '@/api/sqlite';
+import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
+import BibleData from '@/assets/data/newBibleNLT1.json';
 
 // Add categories for challenges
 const CHALLENGE_CATEGORIES = {
@@ -232,7 +234,8 @@ const ChallengesScreen = () => {
     pauseChallenge, 
     resumeChallenge, 
     restartChallenge,
-    updateChallengeProgress
+    updateChallengeProgress,
+    updateSegmentId
   } = useAppContext();
 
   const router = useRouter();
@@ -244,6 +247,12 @@ const ChallengesScreen = () => {
 
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
   const [challengeProgress, setChallengeProgress] = useState<Record<string, string[]>>({});
+  
+  // Reading Mode Modal State
+  const [showReadingModeModal, setShowReadingModeModal] = useState(false);
+  const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
+  const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
+  const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
 
   // Load challenge progress when component mounts
   useEffect(() => {
@@ -418,6 +427,7 @@ const ChallengesScreen = () => {
                   item={item} 
                   bookIndex={bookIndex}
                   onSegmentComplete={(segmentId) => handleSegmentComplete(challenge.id, segmentId)}
+                  onSegmentSelect={handleSegmentSelect}
                   context="challenge"
                   showGlobalCompletion={false}
                   challengeId={challenge.id}
@@ -476,6 +486,53 @@ const ChallengesScreen = () => {
     } catch (error) {
       console.error('Error completing segment:', error);
     }
+  };
+
+  // Handle segment selection - show ReadingModeModal instead of direct navigation
+  const handleSegmentSelect = (segmentId: string) => {
+    const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+    if (segmentData) {
+      setSelectedSegmentId(segmentId);
+      setSelectedSegmentTitle(segmentData.title);
+      setSelectedSegmentRef((segmentData as any).ref || '');
+      setShowReadingModeModal(true);
+    }
+  };
+
+  // Reading Mode Modal Handlers
+  const handleIndividualReading = async () => {
+    setShowReadingModeModal(false);
+    await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
+    const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
+    router.push({
+      pathname: "/(tabs)/[segment]",
+      params: {
+        segment: `ENG-NLT-${selectedSegmentId}`,
+        book: segment?.book[0] || '',
+        ...(selectedChallengeId ? { challengeId: selectedChallengeId } : {})
+      }
+    });
+  };
+
+  const handleGroupReading = () => {
+    setShowReadingModeModal(false);
+    router.push({
+      pathname: '/group-setup' as any,
+      params: {
+        storyId: selectedSegmentId,
+        storyTitle: selectedSegmentTitle,
+        scriptureReference: selectedSegmentRef,
+      }
+    });
+  };
+
+  const handleCancelModal = () => {
+    setShowReadingModeModal(false);
+  };
+
+  // Get story data for the modal
+  const getStoryData = () => {
+    return BibleData[selectedSegmentId as keyof typeof BibleData] || SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
   };
 
   const scrollViewRef = useRef<ScrollView>(null);
@@ -547,6 +604,17 @@ const ChallengesScreen = () => {
         renderItem={({ item }) => renderCategorySection(item.title, item.data)}
         keyExtractor={(item) => item.title}
         contentContainerStyle={{ paddingTop: 8 }}
+      />
+      
+      <ReadingModeModal
+        visible={showReadingModeModal}
+        story={getStoryData()}
+        storyTitle={selectedSegmentTitle}
+        scriptureReference={selectedSegmentRef}
+        storyId={selectedSegmentId}
+        onIndividual={handleIndividualReading}
+        onGroup={handleGroupReading}
+        onCancel={handleCancelModal}
       />
     </SafeAreaView>
   );

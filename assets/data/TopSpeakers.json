@@ -1,0 +1,1231 @@
+{
+  "metadata": {
+    "generatedAt": "2025-06-25T13:12:30.813Z",
+    "description": "Top 20 Old Testament and 20 New Testament speakers with green speaking roles (ranked by green words, includes all green+blue appearances)",
+    "totalOTSpeakers": 65,
+    "totalNTSpeakers": 25,
+    "totalGreenSpeakers": 90
+  },
+  "oldTestament": [
+    {
+      "name": "Moses",
+      "greenWords": 59430,
+      "totalWords": 59989,
+      "segmentCount": 38,
+      "colors": [
+        "green",
+        "blue"
+      ],
+      "segments": [
+        "I002",
+        "I003",
+        "I004",
+        "I005",
+        "I019",
+        "S019",
+        "S020",
+        "S021",
+        "S022",
+        "S023",
+        "S024",
+        "S025",
+        "S027",
+        "S030",
+        "S031",
+        "S035",
+        "S048",
+        "S049",
+        "S050",
+        "S051",
+        "S052",
+        "S053",
+        "S054",
+        "S055",
+        "S056",
+        "S057",
+        "S058",
+        "S059",
+        "S060",
+        "S061",
+        "S062",
+        "S063",
+        "S064",
+        "S065",
+        "S066",
+        "S067",
+        "S068",
+        "S172"
+      ]
+    },
+    {
+      "name": "David",
+      "greenWords": 57765,
+      "totalWords": 57765,
+      "segmentCount": 39,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I009",
+        "I010",
+        "I011",
+        "I013",
+        "I019",
+        "S091",
+        "S092",
+        "S093",
+        "S094",
+        "S095",
+        "S096",
+        "S097",
+        "S098",
+        "S099",
+        "S100",
+        "S101",
+        "S102",
+        "S103",
+        "S104",
+        "S105",
+        "S128",
+        "S129",
+        "S130",
+        "S131",
+        "S132",
+        "S133",
+        "S162",
+        "S163",
+        "S164",
+        "S165",
+        "S166",
+        "S167",
+        "S168",
+        "S171",
+        "S172",
+        "S173",
+        "S174",
+        "S177",
+        "S178"
+      ]
+    },
+    {
+      "name": "Solomon",
+      "greenWords": 22171,
+      "totalWords": 23105,
+      "segmentCount": 15,
+      "colors": [
+        "green",
+        "blue"
+      ],
+      "segments": [
+        "I011",
+        "I014",
+        "I019",
+        "I020",
+        "S105",
+        "S106",
+        "S108",
+        "S134",
+        "S135",
+        "S136",
+        "S168",
+        "S177",
+        "S182",
+        "S183",
+        "S185"
+      ]
+    },
+    {
+      "name": "Job",
+      "greenWords": 16120,
+      "totalWords": 16120,
+      "segmentCount": 7,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I018",
+        "S155",
+        "S156",
+        "S157",
+        "S158",
+        "S159",
+        "S161"
+      ]
+    },
+    {
+      "name": "Jeremiah",
+      "greenWords": 11291,
+      "totalWords": 11365,
+      "segmentCount": 18,
+      "colors": [
+        "green",
+        "blue"
+      ],
+      "segments": [
+        "I024",
+        "I025",
+        "S206",
+        "S207",
+        "S208",
+        "S209",
+        "S210",
+        "S211",
+        "S212",
+        "S213",
+        "S214",
+        "S215",
+        "S216",
+        "S217",
+        "S218",
+        "S220",
+        "S223",
+        "S226"
+      ]
+    },
+    {
+      "name": "Jacob-Israel",
+      "greenWords": 6183,
+      "totalWords": 6183,
+      "segmentCount": 9,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I001",
+        "S010",
+        "S011",
+        "S012",
+        "S013",
+        "S014",
+        "S016",
+        "S017",
+        "S018"
+      ]
+    },
+    {
+      "name": "Joshua",
+      "greenWords": 5247,
+      "totalWords": 5273,
+      "segmentCount": 12,
+      "colors": [
+        "blue",
+        "green"
+      ],
+      "segments": [
+        "I002",
+        "I004",
+        "I006",
+        "S030",
+        "S048",
+        "S069",
+        "S070",
+        "S071",
+        "S072",
+        "S074",
+        "S075",
+        "S076"
+      ]
+    },
+    {
+      "name": "Daniel",
+      "greenWords": 4770,
+      "totalWords": 4770,
+      "segmentCount": 5,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I027",
+        "S244",
+        "S246",
+        "S247",
+        "S248"
+      ]
+    },
+    {
+      "name": "Joseph",
+      "greenWords": 3284,
+      "totalWords": 3284,
+      "segmentCount": 6,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I001",
+        "S014",
+        "S015",
+        "S016",
+        "S017",
+        "S018"
+      ]
+    },
+    {
+      "name": "Isaiah",
+      "greenWords": 3227,
+      "totalWords": 4635,
+      "segmentCount": 13,
+      "colors": [
+        "blue",
+        "green"
+      ],
+      "segments": [
+        "I012",
+        "I023",
+        "S122",
+        "S190",
+        "S191",
+        "S194",
+        "S195",
+        "S197",
+        "S198",
+        "S199",
+        "S201",
+        "S202",
+        "S205"
+      ]
+    },
+    {
+      "name": "Saul",
+      "greenWords": 3130,
+      "totalWords": 3130,
+      "segmentCount": 12,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I009",
+        "I013",
+        "S088",
+        "S089",
+        "S090",
+        "S091",
+        "S092",
+        "S093",
+        "S094",
+        "S095",
+        "S096",
+        "S128"
+      ]
+    },
+    {
+      "name": "The Bride",
+      "greenWords": 2672,
+      "totalWords": 2672,
+      "segmentCount": 2,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I022",
+        "S189"
+      ]
+    },
+    {
+      "name": "Nehemiah",
+      "greenWords": 2196,
+      "totalWords": 2196,
+      "segmentCount": 5,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I016",
+        "S149",
+        "S150",
+        "S151",
+        "S152"
+      ]
+    },
+    {
+      "name": "Abraham",
+      "greenWords": 1881,
+      "totalWords": 1881,
+      "segmentCount": 6,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I001",
+        "S005",
+        "S006",
+        "S007",
+        "S008",
+        "S009"
+      ]
+    },
+    {
+      "name": "Deborah & Barak",
+      "greenWords": 1378,
+      "totalWords": 1378,
+      "segmentCount": 2,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I007",
+        "S078"
+      ]
+    },
+    {
+      "name": "Habakkuk",
+      "greenWords": 1360,
+      "totalWords": 1360,
+      "segmentCount": 2,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I035",
+        "S259"
+      ]
+    },
+    {
+      "name": "Jehoshaphat of Judah",
+      "greenWords": 1240,
+      "totalWords": 1240,
+      "segmentCount": 6,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I011",
+        "I012",
+        "I014",
+        "S114",
+        "S115",
+        "S139"
+      ]
+    },
+    {
+      "name": "Ahab of Israel",
+      "greenWords": 1202,
+      "totalWords": 1202,
+      "segmentCount": 6,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I011",
+        "I014",
+        "S112",
+        "S113",
+        "S114",
+        "S139"
+      ]
+    },
+    {
+      "name": "Hezekiah of Judah",
+      "greenWords": 1129,
+      "totalWords": 2126,
+      "segmentCount": 7,
+      "colors": [
+        "green",
+        "blue"
+      ],
+      "segments": [
+        "I012",
+        "I014",
+        "I023",
+        "S122",
+        "S142",
+        "S143",
+        "S198"
+      ]
+    },
+    {
+      "name": "Jephthah",
+      "greenWords": 1122,
+      "totalWords": 1122,
+      "segmentCount": 2,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I007",
+        "S081"
+      ]
+    }
+  ],
+  "newTestament": [
+    {
+      "name": "Paul",
+      "greenWords": 7090,
+      "totalWords": 7090,
+      "segmentCount": 9,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I044",
+        "S311",
+        "S313",
+        "S314",
+        "S315",
+        "S316",
+        "S317",
+        "S318",
+        "S319"
+      ]
+    },
+    {
+      "name": "Simon Peter",
+      "greenWords": 5375,
+      "totalWords": 5375,
+      "segmentCount": 27,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I040",
+        "I041",
+        "I042",
+        "I043",
+        "I044",
+        "S270",
+        "S271",
+        "S272",
+        "S275",
+        "S280",
+        "S281",
+        "S283",
+        "S287",
+        "S288",
+        "S289",
+        "S291",
+        "S294",
+        "S296",
+        "S300",
+        "S304",
+        "S306",
+        "S307",
+        "S308",
+        "S309",
+        "S311",
+        "S312",
+        "S314"
+      ]
+    },
+    {
+      "name": "The Disciples",
+      "greenWords": 1234,
+      "totalWords": 1234,
+      "segmentCount": 27,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I040",
+        "I041",
+        "I042",
+        "I043",
+        "S268",
+        "S269",
+        "S270",
+        "S271",
+        "S272",
+        "S273",
+        "S274",
+        "S275",
+        "S277",
+        "S278",
+        "S279",
+        "S280",
+        "S281",
+        "S283",
+        "S288",
+        "S289",
+        "S293",
+        "S294",
+        "S296",
+        "S299",
+        "S300",
+        "S302",
+        "S303"
+      ]
+    },
+    {
+      "name": "John the Disciple",
+      "greenWords": 404,
+      "totalWords": 404,
+      "segmentCount": 10,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I041",
+        "I042",
+        "I043",
+        "I066",
+        "S280",
+        "S289",
+        "S304",
+        "S307",
+        "S359",
+        "S360"
+      ]
+    },
+    {
+      "name": "Paul & Barnabas",
+      "greenWords": 304,
+      "totalWords": 304,
+      "segmentCount": 2,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I044",
+        "S313"
+      ]
+    },
+    {
+      "name": "The Apostles",
+      "greenWords": 282,
+      "totalWords": 282,
+      "segmentCount": 2,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I044",
+        "S310"
+      ]
+    },
+    {
+      "name": "Eleven Disciples",
+      "greenWords": 206,
+      "totalWords": 206,
+      "segmentCount": 7,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I042",
+        "I043",
+        "I044",
+        "S296",
+        "S297",
+        "S305",
+        "S308"
+      ]
+    },
+    {
+      "name": "Judas Iscariot",
+      "greenWords": 168,
+      "totalWords": 168,
+      "segmentCount": 6,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I040",
+        "I041",
+        "I043",
+        "S275",
+        "S283",
+        "S303"
+      ]
+    },
+    {
+      "name": "Thomas",
+      "greenWords": 120,
+      "totalWords": 120,
+      "segmentCount": 4,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I043",
+        "S303",
+        "S304",
+        "S307"
+      ]
+    },
+    {
+      "name": "James the Disciple & John the Disciple",
+      "greenWords": 118,
+      "totalWords": 118,
+      "segmentCount": 6,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I040",
+        "I041",
+        "I042",
+        "S272",
+        "S281",
+        "S290"
+      ]
+    },
+    {
+      "name": "Philip the Disciple",
+      "greenWords": 102,
+      "totalWords": 102,
+      "segmentCount": 4,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I043",
+        "S298",
+        "S300",
+        "S304"
+      ]
+    },
+    {
+      "name": "Four Disciples",
+      "greenWords": 78,
+      "totalWords": 78,
+      "segmentCount": 4,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I041",
+        "I042",
+        "S282",
+        "S295"
+      ]
+    },
+    {
+      "name": "One Disciple",
+      "greenWords": 70,
+      "totalWords": 70,
+      "segmentCount": 6,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I040",
+        "I041",
+        "I042",
+        "S268",
+        "S282",
+        "S290"
+      ]
+    },
+    {
+      "name": "Three Disciples",
+      "greenWords": 64,
+      "totalWords": 64,
+      "segmentCount": 4,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I040",
+        "I041",
+        "S270",
+        "S280"
+      ]
+    },
+    {
+      "name": "Simon Peter & John the Disciple",
+      "greenWords": 62,
+      "totalWords": 62,
+      "segmentCount": 4,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I042",
+        "I044",
+        "S296",
+        "S309"
+      ]
+    },
+    {
+      "name": "Andrew",
+      "greenWords": 52,
+      "totalWords": 52,
+      "segmentCount": 3,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I043",
+        "S298",
+        "S300"
+      ]
+    },
+    {
+      "name": "Nathanael-Bartholomew",
+      "greenWords": 48,
+      "totalWords": 48,
+      "segmentCount": 2,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I043",
+        "S298"
+      ]
+    },
+    {
+      "name": "Judas-Thaddaeus",
+      "greenWords": 36,
+      "totalWords": 36,
+      "segmentCount": 2,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I043",
+        "S304"
+      ]
+    },
+    {
+      "name": "Paul & Silas",
+      "greenWords": 32,
+      "totalWords": 32,
+      "segmentCount": 2,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I044",
+        "S315"
+      ]
+    },
+    {
+      "name": "72 Disciples",
+      "greenWords": 22,
+      "totalWords": 22,
+      "segmentCount": 2,
+      "colors": [
+        "green"
+      ],
+      "segments": [
+        "I042",
+        "S290"
+      ]
+    }
+  ],
+  "speakerSegmentMap": {
+    "Moses": [
+      "I002",
+      "I003",
+      "I004",
+      "I005",
+      "I019",
+      "S019",
+      "S020",
+      "S021",
+      "S022",
+      "S023",
+      "S024",
+      "S025",
+      "S027",
+      "S030",
+      "S031",
+      "S035",
+      "S048",
+      "S049",
+      "S050",
+      "S051",
+      "S052",
+      "S053",
+      "S054",
+      "S055",
+      "S056",
+      "S057",
+      "S058",
+      "S059",
+      "S060",
+      "S061",
+      "S062",
+      "S063",
+      "S064",
+      "S065",
+      "S066",
+      "S067",
+      "S068",
+      "S172"
+    ],
+    "David": [
+      "I009",
+      "I010",
+      "I011",
+      "I013",
+      "I019",
+      "S091",
+      "S092",
+      "S093",
+      "S094",
+      "S095",
+      "S096",
+      "S097",
+      "S098",
+      "S099",
+      "S100",
+      "S101",
+      "S102",
+      "S103",
+      "S104",
+      "S105",
+      "S128",
+      "S129",
+      "S130",
+      "S131",
+      "S132",
+      "S133",
+      "S162",
+      "S163",
+      "S164",
+      "S165",
+      "S166",
+      "S167",
+      "S168",
+      "S171",
+      "S172",
+      "S173",
+      "S174",
+      "S177",
+      "S178"
+    ],
+    "Solomon": [
+      "I011",
+      "I014",
+      "I019",
+      "I020",
+      "S105",
+      "S106",
+      "S108",
+      "S134",
+      "S135",
+      "S136",
+      "S168",
+      "S177",
+      "S182",
+      "S183",
+      "S185"
+    ],
+    "Job": [
+      "I018",
+      "S155",
+      "S156",
+      "S157",
+      "S158",
+      "S159",
+      "S161"
+    ],
+    "Jeremiah": [
+      "I024",
+      "I025",
+      "S206",
+      "S207",
+      "S208",
+      "S209",
+      "S210",
+      "S211",
+      "S212",
+      "S213",
+      "S214",
+      "S215",
+      "S216",
+      "S217",
+      "S218",
+      "S220",
+      "S223",
+      "S226"
+    ],
+    "Jacob-Israel": [
+      "I001",
+      "S010",
+      "S011",
+      "S012",
+      "S013",
+      "S014",
+      "S016",
+      "S017",
+      "S018"
+    ],
+    "Joshua": [
+      "I002",
+      "I004",
+      "I006",
+      "S030",
+      "S048",
+      "S069",
+      "S070",
+      "S071",
+      "S072",
+      "S074",
+      "S075",
+      "S076"
+    ],
+    "Daniel": [
+      "I027",
+      "S244",
+      "S246",
+      "S247",
+      "S248"
+    ],
+    "Joseph": [
+      "I001",
+      "S014",
+      "S015",
+      "S016",
+      "S017",
+      "S018"
+    ],
+    "Isaiah": [
+      "I012",
+      "I023",
+      "S122",
+      "S190",
+      "S191",
+      "S194",
+      "S195",
+      "S197",
+      "S198",
+      "S199",
+      "S201",
+      "S202",
+      "S205"
+    ],
+    "Saul": [
+      "I009",
+      "I013",
+      "S088",
+      "S089",
+      "S090",
+      "S091",
+      "S092",
+      "S093",
+      "S094",
+      "S095",
+      "S096",
+      "S128"
+    ],
+    "The Bride": [
+      "I022",
+      "S189"
+    ],
+    "Nehemiah": [
+      "I016",
+      "S149",
+      "S150",
+      "S151",
+      "S152"
+    ],
+    "Abraham": [
+      "I001",
+      "S005",
+      "S006",
+      "S007",
+      "S008",
+      "S009"
+    ],
+    "Deborah & Barak": [
+      "I007",
+      "S078"
+    ],
+    "Habakkuk": [
+      "I035",
+      "S259"
+    ],
+    "Jehoshaphat of Judah": [
+      "I011",
+      "I012",
+      "I014",
+      "S114",
+      "S115",
+      "S139"
+    ],
+    "Ahab of Israel": [
+      "I011",
+      "I014",
+      "S112",
+      "S113",
+      "S114",
+      "S139"
+    ],
+    "Hezekiah of Judah": [
+      "I012",
+      "I014",
+      "I023",
+      "S122",
+      "S142",
+      "S143",
+      "S198"
+    ],
+    "Jephthah": [
+      "I007",
+      "S081"
+    ],
+    "Paul": [
+      "I044",
+      "S311",
+      "S313",
+      "S314",
+      "S315",
+      "S316",
+      "S317",
+      "S318",
+      "S319"
+    ],
+    "Simon Peter": [
+      "I040",
+      "I041",
+      "I042",
+      "I043",
+      "I044",
+      "S270",
+      "S271",
+      "S272",
+      "S275",
+      "S280",
+      "S281",
+      "S283",
+      "S287",
+      "S288",
+      "S289",
+      "S291",
+      "S294",
+      "S296",
+      "S300",
+      "S304",
+      "S306",
+      "S307",
+      "S308",
+      "S309",
+      "S311",
+      "S312",
+      "S314"
+    ],
+    "The Disciples": [
+      "I040",
+      "I041",
+      "I042",
+      "I043",
+      "S268",
+      "S269",
+      "S270",
+      "S271",
+      "S272",
+      "S273",
+      "S274",
+      "S275",
+      "S277",
+      "S278",
+      "S279",
+      "S280",
+      "S281",
+      "S283",
+      "S288",
+      "S289",
+      "S293",
+      "S294",
+      "S296",
+      "S299",
+      "S300",
+      "S302",
+      "S303"
+    ],
+    "John the Disciple": [
+      "I041",
+      "I042",
+      "I043",
+      "I066",
+      "S280",
+      "S289",
+      "S304",
+      "S307",
+      "S359",
+      "S360"
+    ],
+    "Paul & Barnabas": [
+      "I044",
+      "S313"
+    ],
+    "The Apostles": [
+      "I044",
+      "S310"
+    ],
+    "Eleven Disciples": [
+      "I042",
+      "I043",
+      "I044",
+      "S296",
+      "S297",
+      "S305",
+      "S308"
+    ],
+    "Judas Iscariot": [
+      "I040",
+      "I041",
+      "I043",
+      "S275",
+      "S283",
+      "S303"
+    ],
+    "Thomas": [
+      "I043",
+      "S303",
+      "S304",
+      "S307"
+    ],
+    "James the Disciple & John the Disciple": [
+      "I040",
+      "I041",
+      "I042",
+      "S272",
+      "S281",
+      "S290"
+    ],
+    "Philip the Disciple": [
+      "I043",
+      "S298",
+      "S300",
+      "S304"
+    ],
+    "Four Disciples": [
+      "I041",
+      "I042",
+      "S282",
+      "S295"
+    ],
+    "One Disciple": [
+      "I040",
+      "I041",
+      "I042",
+      "S268",
+      "S282",
+      "S290"
+    ],
+    "Three Disciples": [
+      "I040",
+      "I041",
+      "S270",
+      "S280"
+    ],
+    "Simon Peter & John the Disciple": [
+      "I042",
+      "I044",
+      "S296",
+      "S309"
+    ],
+    "Andrew": [
+      "I043",
+      "S298",
+      "S300"
+    ],
+    "Nathanael-Bartholomew": [
+      "I043",
+      "S298"
+    ],
+    "Judas-Thaddaeus": [
+      "I043",
+      "S304"
+    ],
+    "Paul & Silas": [
+      "I044",
+      "S315"
+    ],
+    "72 Disciples": [
+      "I042",
+      "S290"
+    ]
+  }
+}

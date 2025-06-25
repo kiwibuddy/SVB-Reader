@@ -264,6 +264,7 @@ export interface AccordionProps {
   completedSegments?: {[key: string]: boolean};
   highlightedSegment?: string | null; // New prop
   searchQuery?: string | null; // New prop
+  originalSegmentCount?: number; // New prop for showing filtered count
 }
 
 // Define a type for the structure of SegmentTitles
@@ -315,7 +316,8 @@ const Accordion: React.FC<AccordionProps> = ({
   onSegmentSelect,
   completedSegments = {},
   highlightedSegment = null, // New prop
-  searchQuery = null // New prop
+  searchQuery = null, // New prop
+  originalSegmentCount // New prop
 }) => {
   const { colors } = useAppSettings();
   const [isExpandedState, setIsExpanded] = useState(isExpanded || false);
@@ -474,7 +476,10 @@ const Accordion: React.FC<AccordionProps> = ({
           <View style={styles.titleContainer}>
             <Text style={styles.title}>{item.bookName}</Text>
             <Text style={styles.subtitle}>
-              {completedCount} of {totalSegments} stories read
+              {originalSegmentCount && originalSegmentCount !== totalSegments 
+                ? `${totalSegments} of ${originalSegmentCount} stories match • ${completedCount} read`
+                : `${completedCount} of ${totalSegments} stories read`
+              }
             </Text>
           </View>
         </View>

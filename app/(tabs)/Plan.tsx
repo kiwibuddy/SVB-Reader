@@ -23,6 +23,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { markSegmentComplete, getSegmentCompletionStatus, unlockAchievement } from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
+import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
+import BibleData from '@/assets/data/newBibleNLT1.json';
 
 interface BookSegments {
   segments: string[];
@@ -242,7 +244,8 @@ const PlanScreen = () => {
     switchPlan,
     readingPlanProgress,
     updateReadingPlanProgress,
-    updateEmojiActions
+    updateEmojiActions,
+    updateSegmentId
   } = useAppContext();
 
   const router = useRouter();
@@ -256,6 +259,12 @@ const PlanScreen = () => {
   // Initialize selectedPlan with the active plan if it exists, otherwise use first plan
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [planProgress, setPlanProgress] = useState<Record<string, string[]>>({});
+  
+  // Reading Mode Modal State
+  const [showReadingModeModal, setShowReadingModeModal] = useState(false);
+  const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
+  const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
+  const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
 
   // Load plan progress when component mounts
   useEffect(() => {
@@ -469,6 +478,53 @@ const PlanScreen = () => {
     }
   };
 
+  // Handle segment selection - show ReadingModeModal instead of direct navigation
+  const handleSegmentSelect = (segmentId: string) => {
+    const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+    if (segmentData) {
+      setSelectedSegmentId(segmentId);
+      setSelectedSegmentTitle(segmentData.title);
+      setSelectedSegmentRef((segmentData as any).ref || '');
+      setShowReadingModeModal(true);
+    }
+  };
+
+  // Reading Mode Modal Handlers
+  const handleIndividualReading = async () => {
+    setShowReadingModeModal(false);
+    await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
+    const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
+    router.push({
+      pathname: "/(tabs)/[segment]",
+      params: {
+        segment: `ENG-NLT-${selectedSegmentId}`,
+        book: segment?.book[0] || '',
+        ...(selectedPlanId ? { planId: selectedPlanId } : {})
+      }
+    });
+  };
+
+  const handleGroupReading = () => {
+    setShowReadingModeModal(false);
+    router.push({
+      pathname: '/group-setup' as any,
+      params: {
+        storyId: selectedSegmentId,
+        storyTitle: selectedSegmentTitle,
+        scriptureReference: selectedSegmentRef,
+      }
+    });
+  };
+
+  const handleCancelModal = () => {
+    setShowReadingModeModal(false);
+  };
+
+  // Get story data for the modal
+  const getStoryData = () => {
+    return BibleData[selectedSegmentId as keyof typeof BibleData] || SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
+  };
+
   const handlePress = (segmentId: string) => {
     router.push({
       pathname: "/(tabs)/[segment]",
@@ -606,6 +662,7 @@ const PlanScreen = () => {
                       item={item} 
                       bookIndex={bookIndex}
                       onSegmentComplete={(segmentId) => handleSegmentComplete(plan.id, segmentId)}
+                      onSegmentSelect={handleSegmentSelect}
                       context="plan"
                       showGlobalCompletion={false}
                       planId={plan.id}
@@ -718,6 +775,17 @@ const PlanScreen = () => {
         onScroll={handleScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
+      />
+      
+      <ReadingModeModal
+        visible={showReadingModeModal}
+        story={getStoryData()}
+        storyTitle={selectedSegmentTitle}
+        scriptureReference={selectedSegmentRef}
+        storyId={selectedSegmentId}
+        onIndividual={handleIndividualReading}
+        onGroup={handleGroupReading}
+        onCancel={handleCancelModal}
       />
     </SafeAreaView>
   );
