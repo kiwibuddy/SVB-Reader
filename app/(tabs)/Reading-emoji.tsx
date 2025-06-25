@@ -52,15 +52,15 @@ type SegmentTitle = {
 }
 
 const EMOJI_TYPES = [
-  { emoji: "❤️", label: "love", color: "#FF6B6B", icon: "heart-outline", gradientColors: ["#FF6B6B", "#FF8E8E"] },
-  { emoji: "👍", label: "agree", color: "#4ECDC4", icon: "thumbs-up-outline", gradientColors: ["#4ECDC4", "#7EDFD9"] },
-  { emoji: "🤔", label: "reflecting", color: "#FFB347", icon: "bulb-outline", gradientColors: ["#FFB347", "#FFCB7D"] },
+  { emoji: "❤️", label: "love", color: "#FF6B47", icon: "heart-outline", backgroundColor: "#FF6B47" },
+  { emoji: "👍", label: "agree", color: "#4ECDC4", icon: "thumbs-up-outline", backgroundColor: "#4ECDC4" },
+  { emoji: "🤔", label: "reflecting", color: "#FFB347", icon: "bulb-outline", backgroundColor: "#FFB347" },
   {
     emoji: "🙏",
     label: "praying",
-    color: "#9B59B6",
+    color: "#7B68EE",
     icon: "hand-right-outline",
-    gradientColors: ["#9B59B6", "#B07CC6"],
+    backgroundColor: "#7B68EE",
   },
 ]
 
@@ -114,7 +114,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
     },
     emojiCard: {
       width: isLargeScreen ? "23%" : "48%",
-      minHeight: 90,
+      height: 140,
       padding: 16,
       marginBottom: 0,
       borderRadius: 16,
@@ -124,14 +124,14 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       shadowColor: "#000",
       shadowOffset: {
         width: 0,
-        height: 3,
+        height: 4,
       },
       shadowOpacity: 0.15,
-      shadowRadius: 6,
-      elevation: 5,
+      shadowRadius: 8,
+      elevation: 4,
       transform: [{ scale: 1 }],
       borderWidth: 1,
-      borderColor: "rgba(255,255,255,0.1)",
+      borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
       overflow: "hidden",
     },
     selectedCard: {
@@ -157,8 +157,9 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       height: 48,
       alignItems: "center",
       justifyContent: "center",
-      marginBottom: 10,
+      marginBottom: 12,
       borderRadius: 24,
+      // Removed grey background to match modern design
     },
     emojiText: {
       fontSize: 32,
@@ -167,29 +168,36 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       alignItems: "center",
     },
     emojiLabel: {
-      fontSize: 14,
+      fontSize: 16,
       color: "white",
-      fontWeight: "600",
+      fontWeight: "bold",
       letterSpacing: 0.3,
       textAlign: "center",
+      marginBottom: 6,
+      textShadowColor: 'rgba(0, 0, 0, 0.3)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
     },
     emojiCount: {
       fontSize: 12,
       color: "rgba(255, 255, 255, 0.9)",
-      marginTop: 4,
       textAlign: "center",
+      fontWeight: '500',
+      textShadowColor: 'rgba(0, 0, 0, 0.3)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
     },
     descriptionCard: {
       marginVertical: 16,
-      borderRadius: 20,
+      borderRadius: 16,
       shadowColor: colors.text,
       shadowOffset: {
         width: 0,
         height: 4,
       },
-      shadowOpacity: 0.1,
+      shadowOpacity: 0.08,
       shadowRadius: 8,
-      elevation: 5,
+      elevation: 4,
       borderWidth: 1,
       borderColor: Platform.OS === "ios" ? "rgba(0,0,0,0.05)" : "transparent",
       overflow: "hidden",
@@ -291,7 +299,9 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       paddingVertical: 12,
       paddingHorizontal: 20,
       borderTopWidth: 1,
-      borderTopColor: "rgba(255,255,255,0.1)",
+      borderTopColor: "rgba(255,255,255,0.15)",
+      borderRadius: 12,
+      marginTop: 16,
     },
     recentHeader: {
       marginBottom: 20,
@@ -556,9 +566,9 @@ const ReadingEmoji = () => {
     return emojiType?.color || "#FF6B6B"
   }
 
-  const getEmojiGradient = (emoji: string) => {
+  const getEmojiBackground = (emoji: string) => {
     const emojiType = EMOJI_TYPES.find((type) => type.emoji === emoji)
-    return emojiType?.gradientColors || ["#FF6B6B", "#FF8E8E"]
+    return emojiType?.backgroundColor || "#FF6B47"
   }
 
   const handleLongPress = (reaction: EmojiReaction) => {
@@ -591,16 +601,13 @@ const ReadingEmoji = () => {
     if (!selectedEmoji) return null
 
     const emojiKey = getEmojiKey(selectedEmoji)
-    const gradientColors = getEmojiGradient(selectedEmoji)
+    const backgroundColor = getEmojiBackground(selectedEmoji)
     const count = getEmojiCount(selectedEmoji)
 
     return (
       <Animated.View style={[styles.descriptionCard, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-        <LinearGradient
-          colors={gradientColors as any}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.descriptionHeader}
+        <View
+          style={[styles.descriptionHeader, { backgroundColor }]}
         >
           <View style={styles.descriptionHeaderIcon}>
             <Ionicons name={getEmojiIcon(selectedEmoji) as any} size={24} color="white" />
@@ -611,7 +618,7 @@ const ReadingEmoji = () => {
           <TouchableOpacity style={styles.backButton} onPress={() => setSelectedEmoji(null)}>
             <Ionicons name="close" size={20} color="white" />
           </TouchableOpacity>
-        </LinearGradient>
+        </View>
 
         <View style={styles.descriptionCardContent}>
           <View style={styles.emojiDetailCount}>
@@ -624,11 +631,8 @@ const ReadingEmoji = () => {
 
           <Text style={styles.emojiDetailIntro}>{t(`UI.emojiPage.emojiDescriptions.${emojiKey}.intro`)}</Text>
 
-          <LinearGradient
-            colors={gradientColors as any}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.expandButton}
+          <View
+            style={[styles.expandButton, { backgroundColor }]}
           >
             <TouchableOpacity
               onPress={() => setIsExpanded(!isExpanded)}
@@ -646,7 +650,7 @@ const ReadingEmoji = () => {
                 style={{ marginLeft: 4 }}
               />
             </TouchableOpacity>
-          </LinearGradient>
+          </View>
 
           {isExpanded && (
             <View style={styles.stepsContainer}>
@@ -708,17 +712,15 @@ const ReadingEmoji = () => {
               onPress={() => handleEmojiTypeSelect(type.emoji)}
               android_ripple={{ color: "rgba(255,255,255,0.2)", borderless: false }}
             >
-              <LinearGradient
-                colors={type.gradientColors as any}
+              <View
                 style={{
                   position: "absolute",
                   left: 0,
                   right: 0,
                   top: 0,
                   bottom: 0,
+                  backgroundColor: type.backgroundColor,
                 }}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
               />
               <View style={styles.emojiWrapper}>
                 <Text style={styles.emojiText}>{type.emoji}</Text>

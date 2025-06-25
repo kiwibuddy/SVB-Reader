@@ -1,26 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Animated, FlatList, Pressable, Platform } from "react-native";
+import React, { useEffect } from "react";
+import { View, Text, StyleSheet, Animated, Platform } from "react-native";
 import { getColors } from "@/scripts/getColors";
 import { BibleBlock } from "@/types";
 import SourceNameComponent from "./SourceName";
 import BibleInlineComponent from "./Inline";
-import { useAppContext } from "@/context/GlobalContext";
-import { deleteEmoji, getEmoji } from "@/api/sqlite";
+import EmojiHandler from "@/components/EmojiHandler";
 
 interface BibleBlockProps {
   block: BibleBlock;
   bIndex: number;
   hasTail: boolean;
   isGlowing: boolean;
+  onLongPress?: (block: BibleBlock, index: number) => void;
 }
 
-const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) => {
-  const { segmentId, emojiActions } = useAppContext();
-   const idSplit = segmentId.split("-");
-   const language = idSplit[0];
-   const version = idSplit[1];
-   const segID = idSplit[idSplit.length - 1];
-  const [emoji, setEmoji] = useState<string | null>(null);
+const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: BibleBlockProps) => {
   const { source, children } = block;
   const { color, sourceName } = source;
   const colors = getColors(color);
@@ -36,16 +30,6 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
     ).start();
   }, []);
 
-  useEffect(() => {
-    const checkForEmoji = async () => {
-      if (segID && bIndex !== undefined) {
-        const result = await getEmoji(segID, bIndex.toString());
-        setEmoji(result);
-      }
-    };
-    checkForEmoji();
-  }, [segID, bIndex, emojiActions]);
-
   const glowColor = glowAnim.interpolate({
     inputRange: [0, 0.33, 0.66, 1],
     outputRange: [
@@ -57,69 +41,62 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing }: BibleBlockProps) =
   });
 
   const tailAlignment = color !== "black" ? { left: 15 } : { right: 15 };
-  const emojiAlignment = color !== "black" ? { right: 10 } : { left: 10 };
 
   return (
     <View key={bIndex}>
-      {hasTail && <SourceNameComponent sourceName={sourceName} align={color !== "black" ? "left" : "right"} />}
-      <Animated.View
-        style={[
-          styles.bubble,
-          {
-            backgroundColor: colors.light,
-            ...(isGlowing ? {
-              shadowColor: glowColor,
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 1,
-              shadowRadius: 10,
-            } : {
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 3,
-            }),
-            borderWidth: 0,
-            elevation: isGlowing ? 5 : 3,
-          },
-        ]}
+      <EmojiHandler
+        block={block}
+        blockIndex={bIndex}
+        onLongPress={onLongPress}
       >
-        {hasTail && (
-          <View
-            style={[
-              styles.tail,
-              {
-                borderBottomColor: colors.light,
-              },
-              tailAlignment
-            ]}
-          />
-        )}
-        <View>
-          {children.map((item, index) => {
-            if (item.type === "break" || item.tag === "b") return null;
-            return (
-              <BibleInlineComponent
-                key={`${bIndex}-${index}`}
-                iIndex={`${bIndex}-${index}`}
-                inline={item}
-                textColor={colors.dark}
-              />
-            );
-          })}
-        </View>
-      </Animated.View>
-      {emoji && (
-        <View style={[styles.reactionContainer, { top: 35 }, emojiAlignment]}>
-          <Pressable
-            onPress={async () => {
-              await deleteEmoji(segID, bIndex.toString());
-              setEmoji(null);
-            }}
-          >
-            <Text style={styles.reactionText}>{`${emoji}`}</Text>
-          </Pressable>
-        </View>
-      )}
+        {hasTail && <SourceNameComponent sourceName={sourceName} align={color !== "black" ? "left" : "right"} />}
+        <Animated.View
+          style={[
+            styles.bubble,
+            {
+              backgroundColor: colors.light,
+              ...(isGlowing ? {
+                shadowColor: glowColor,
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 1,
+                shadowRadius: 10,
+              } : {
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 3,
+              }),
+              borderWidth: 0,
+              elevation: isGlowing ? 5 : 3,
+            },
+          ]}
+        >
+          {hasTail && (
+            <View
+              style={[
+                styles.tail,
+                {
+                  borderBottomColor: colors.light,
+                },
+                tailAlignment
+              ]}
+            />
+          )}
+          <View>
+            {children.map((item, index) => {
+              if (item.type === "break" || item.tag === "b") return null;
+              return (
+                <BibleInlineComponent
+                  key={`${bIndex}-${index}`}
+                  iIndex={`${bIndex}-${index}`}
+                  inline={item}
+                  textColor={colors.dark}
+                />
+              );
+            })}
+          </View>
+        </Animated.View>
+      </EmojiHandler>
     </View>
   );
 };
@@ -150,7 +127,6 @@ const styles = StyleSheet.create({
   tail: {
     position: "absolute",
     top: -9, // Position above the bubble
-    // left: 15, // Adjust as needed for positioning
     width: 0,
     height: 0,
     borderLeftWidth: 10,
@@ -158,52 +134,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 10,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
-    // borderBottomColor: "#FF6347", // Same as bubble background
-  },
-  reactionText: {
-    fontSize: 30,
-    ...Platform.select({
-      web: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
-      },
-      default: {
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        elevation: 3,
-      },
-    }),
-  },
-  reactionPosition: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    zIndex: 1,
-  },
-  reactionContainer: {
-    flexDirection: "row",
-    padding: 5,
-    position: "absolute",
-    zIndex: 100,
-    ...Platform.select({
-      web: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
-      },
-      default: {
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        elevation: 3,
-      },
-    }),
   },
 });
 

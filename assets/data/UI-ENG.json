@@ -5,7 +5,7 @@
       "emoji": "Emoji",
       "achievements": "Achievements",
       "search": "Search",
-      "title": "SourceView Reader"
+      "title": "SourceView Together"
     },
     "settings": {
       "title": "Settings",
@@ -17,7 +17,7 @@
     },
     "landing": {
       "title": "SourceView",
-      "subtitle": "Reader",
+      "subtitle": "Together",
       "heading": "Get ready for a new Bible reading journey!",
       "subheading": "A Digital Bible Designed For A Digital Generation.",
       "getStarted": "Get Started"

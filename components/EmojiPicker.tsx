@@ -1,81 +1,295 @@
-import React from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 import {
   View,
   TouchableOpacity,
   Text,
   StyleSheet,
   Pressable,
+  Animated,
+  Dimensions,
+  Platform,
+  Easing,
 } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from "expo-blur";
 
 interface EmojiPickerProps {
   onEmojiSelect: (emoji: string) => void;
   onClose: () => void;
+  position?: { x: number; y: number };
 }
 
-const EmojiPicker: React.FC<EmojiPickerProps> = ({ onEmojiSelect, onClose }) => {
-  const EMOJIS = ["👍", "❤️", "🤔", "🙏"];
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+
+const EmojiPicker: React.FC<EmojiPickerProps> = ({ 
+  onEmojiSelect, 
+  onClose, 
+  position = { x: screenWidth / 2, y: screenHeight / 2 } 
+}) => {
+  const EMOJIS = useMemo(() => [
+    { emoji: "❤️", label: "love", color: "#FF6B47" },
+    { emoji: "👍", label: "agree", color: "#4ECDC4" },
+    { emoji: "🤔", label: "reflecting", color: "#FFB347" },
+    { emoji: "🙏", label: "praying", color: "#7B68EE" }
+  ], []);
+
+  // Animation values - use useMemo to prevent recreation
+  const scaleAnim = useMemo(() => new Animated.Value(0), []);
+  const opacityAnim = useMemo(() => new Animated.Value(0), []);
+  const emojiScales = useMemo(() => 
+    EMOJIS.map(() => new Animated.Value(0)), [EMOJIS]
+  );
+  const slideAnim = useMemo(() => new Animated.Value(30), []);
+
+  useEffect(() => {
+    // Use requestAnimationFrame to ensure animations start after render
+    const animationFrame = requestAnimationFrame(() => {
+      // Entrance animation sequence
+      Animated.parallel([
+        // Main container animation
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 180,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 250,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 300,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Staggered emoji animations
+      const emojiAnimations = emojiScales.map((scale, index) =>
+        Animated.timing(scale, {
+          toValue: 1,
+          duration: 200,
+          delay: index * 40,
+          easing: Easing.out(Easing.back(1.2)),
+          useNativeDriver: true,
+        })
+      );
+
+      Animated.stagger(40, emojiAnimations).start();
+    });
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+    };
+  }, [scaleAnim, opacityAnim, slideAnim, emojiScales]);
+
+  const handleEmojiPress = (emoji: string, index: number) => {
+    // Haptic feedback
+    if (Platform.OS === 'ios') {
+      try {
+        const Haptics = require('expo-haptics');
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {
+        // Haptics not available, continue without feedback
+      }
+    }
+
+    // Selection animation
+    Animated.sequence([
+      Animated.spring(emojiScales[index], {
+        toValue: 1.4,
+        tension: 300,
+        friction: 5,
+        useNativeDriver: true,
+      }),
+      Animated.spring(emojiScales[index], {
+        toValue: 0,
+        tension: 200,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Exit animation
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 0,
+        tension: 200,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      onEmojiSelect(emoji);
+    });
+  };
+
+  const handleClose = () => {
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 0,
+        tension: 200,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(onClose);
+  };
 
   return (
-    <Pressable onPress={e => e.stopPropagation()} style={styles.container}>
-      <TouchableOpacity 
-        style={styles.closeButton} 
-        onPress={onClose}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      >
-        <Text style={styles.closeText}>✕</Text>
-      </TouchableOpacity>
+    <View style={styles.container}>
+      {/* Background overlay pressable */}
+      <Pressable style={styles.backgroundOverlay} onPress={handleClose} />
       
-      <View style={styles.emojiContainer}>
-        {EMOJIS.map((emoji, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.emojiItem}
-            onPress={() => onEmojiSelect(emoji)}
-          >
-            <Text style={styles.emojiText}>{emoji}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </Pressable>
+      {/* Positioned emoji picker */}
+      <Animated.View
+        style={[
+          styles.pickerContainer,
+          {
+            left: position.x,
+            top: position.y,
+            transform: [
+              { scale: scaleAnim },
+              { translateY: slideAnim }
+            ],
+            opacity: opacityAnim,
+          },
+        ]}
+      >
+        <BlurView intensity={90} tint="systemMaterialLight" style={styles.blurContainer}>
+          {/* Floating pill design */}
+          <View style={styles.pillContainer}>
+            <View style={styles.emojiRow}>
+              {EMOJIS.map((item, index) => (
+                <Animated.View
+                  key={index}
+                  style={[
+                    styles.emojiWrapper,
+                    {
+                      transform: [{ scale: emojiScales[index] }],
+                    },
+                  ]}
+                >
+                  <TouchableOpacity
+                    style={[
+                      styles.emojiButton,
+                      { backgroundColor: `${item.color}15` }
+                    ]}
+                    onPress={() => handleEmojiPress(item.emoji, index)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.emojiText}>{item.emoji}</Text>
+                    <View style={[styles.ripple, { backgroundColor: item.color }]} />
+                  </TouchableOpacity>
+                </Animated.View>
+              ))}
+            </View>
+            
+            {/* Close button */}
+            <TouchableOpacity 
+              style={styles.closeButton} 
+              onPress={handleClose}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            >
+              <Ionicons name="close" size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+        </BlurView>
+      </Animated.View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    shadowColor: "#000",
+    flex: 1,
+    position: 'relative',
+  },
+  backgroundOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  pickerContainer: {
+    position: 'absolute',
+    zIndex: 1000,
+  },
+  blurContainer: {
+    borderRadius: 28,
+    overflow: 'hidden',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 8,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 6,
-    minWidth: 200,
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 15,
   },
-  emojiContainer: {
+  pillContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: 8,
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.08)',
   },
-  emojiItem: {
-    padding: 8,
+  emojiRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  emojiWrapper: {
+    position: 'relative',
+  },
+  emojiButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
   emojiText: {
-    fontSize: 24,
+    fontSize: 22,
+    zIndex: 2,
   },
-  closeButton: {
+  ripple: {
     position: 'absolute',
-    top: 8,
-    left: 8,
+    width: '100%',
+    height: '100%',
+    borderRadius: 22,
+    opacity: 0.12,
     zIndex: 1,
   },
-  closeText: {
-    fontSize: 16,
-    color: '#666',
+  closeButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(0, 0, 0, 0.06)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.08)',
   },
 });
 

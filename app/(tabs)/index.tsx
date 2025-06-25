@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { 
   View, 
   Text, 
@@ -9,7 +9,8 @@ import {
   useWindowDimensions, 
   Platform,
   FlatList,
-  Dimensions
+  Dimensions,
+  Animated
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Link, useRouter } from "expo-router";
@@ -23,6 +24,11 @@ const IndexScreen = () => {
   const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
+  
+  // Animation values
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const headerOpacity = useRef(new Animated.Value(0)).current;
+  const cardScale = useRef(new Animated.Value(1)).current;
 
   const onboardingData = [
     {
@@ -74,63 +80,114 @@ const IndexScreen = () => {
     }
   ];
 
-  const handleScroll = (event: any) => {
-    const contentOffset = event.nativeEvent.contentOffset;
-    const viewSize = event.nativeEvent.layoutMeasurement;
-    const pageNum = Math.floor(contentOffset.x / viewSize.width);
-    setCurrentIndex(pageNum);
-  };
+  // Premium entrance animation
+  useEffect(() => {
+    Animated.sequence([
+      Animated.timing(headerOpacity, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.spring(cardScale, {
+        toValue: 1,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+    {
+      useNativeDriver: false,
+      listener: (event: any) => {
+        const contentOffset = event.nativeEvent.contentOffset;
+        const viewSize = event.nativeEvent.layoutMeasurement;
+        const pageNum = Math.floor(contentOffset.x / viewSize.width);
+        setCurrentIndex(pageNum);
+      },
+    }
+  );
 
   const renderCard = ({ item, index }: { item: any; index: number }) => {
+    // Card parallax animation
+    const inputRange = [
+      (index - 1) * screenWidth,
+      index * screenWidth,
+      (index + 1) * screenWidth,
+    ];
+
+    const scale = scrollX.interpolate({
+      inputRange,
+      outputRange: [0.8, 1, 0.8],
+      extrapolate: 'clamp',
+    });
+
+    const opacity = scrollX.interpolate({
+      inputRange,
+      outputRange: [0.6, 1, 0.6],
+      extrapolate: 'clamp',
+    });
+
     return (
-      <View style={styles.cardWrapper}>
-        <View style={[styles.card, { backgroundColor: item.backgroundColor }]}>
-          <View style={styles.cardContent}>
-          <View style={styles.iconContainer}>
-            <Text style={styles.iconText}>{item.icon}</Text>
+      <View style={styles.slideContainer}>
+        <Animated.View 
+          style={[
+            { 
+              transform: [{ scale }],
+              opacity,
+            }
+          ]}
+        >
+          <View style={[styles.cardWrapper, { backgroundColor: item.backgroundColor }]}>
+            <View style={[styles.cardContent, item.id === 3 && styles.textStyleBibleContent]}>
+              <View style={styles.iconContainer}>
+                <Text style={styles.iconText}>{item.icon}</Text>
+              </View>
+              
+              <Text style={styles.cardTitle}>{item.title}</Text>
+              
+              {item.id === 2 && item.buttons && (
+                <View style={styles.buttonGrid}>
+                  <View style={styles.buttonRow}>
+                    <View style={[styles.roleButton, { backgroundColor: item.buttons[0].color }]}>
+                      <Text style={styles.roleButtonSubtitle}>{item.buttons[0].subtitle}</Text>
+                    </View>
+                    <View style={[styles.roleButton, { backgroundColor: item.buttons[1].color }]}>
+                      <Text style={styles.roleButtonSubtitle}>{item.buttons[1].subtitle}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.buttonRow}>
+                    <View style={[styles.roleButton, { backgroundColor: item.buttons[2].color }]}>
+                      <Text style={styles.roleButtonSubtitle}>{item.buttons[2].subtitle}</Text>
+                    </View>
+                    <View style={[styles.roleButton, { backgroundColor: item.buttons[3].color }]}>
+                      <Text style={styles.roleButtonSubtitle}>{item.buttons[3].subtitle}</Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+              
+              {item.id === 3 && item.chatExample && (
+                <View style={styles.chatContainer}>
+                  <Text style={styles.speakerName}>{item.chatExample.speaker1}</Text>
+                  <View style={[styles.chatBubble, styles.chatBubbleLeft]}>
+                    <Text style={styles.chatText}>{item.chatExample.message1}</Text>
+                  </View>
+                  <Text style={[styles.speakerName, styles.speakerRight]}>{item.chatExample.speaker2}</Text>
+                  <View style={[styles.chatBubble, styles.chatBubbleRight]}>
+                    <Text style={styles.chatText}>{item.chatExample.message2}</Text>
+                  </View>
+                </View>
+              )}
+              
+              {item.description && (
+                <Text style={styles.cardDescription}>{item.description}</Text>
+              )}
+            </View>
           </View>
-          
-          <Text style={styles.cardTitle}>{item.title}</Text>
-          
-          {item.id === 2 && item.buttons && (
-            <View style={styles.buttonGrid}>
-              <View style={styles.buttonRow}>
-                <View style={[styles.roleButton, { backgroundColor: item.buttons[0].color }]}>
-                  <Text style={styles.roleButtonSubtitle}>{item.buttons[0].subtitle}</Text>
-                </View>
-                <View style={[styles.roleButton, { backgroundColor: item.buttons[1].color }]}>
-                  <Text style={styles.roleButtonSubtitle}>{item.buttons[1].subtitle}</Text>
-                </View>
-              </View>
-              <View style={styles.buttonRow}>
-                <View style={[styles.roleButton, { backgroundColor: item.buttons[2].color }]}>
-                  <Text style={styles.roleButtonSubtitle}>{item.buttons[2].subtitle}</Text>
-                </View>
-                <View style={[styles.roleButton, { backgroundColor: item.buttons[3].color }]}>
-                  <Text style={styles.roleButtonSubtitle}>{item.buttons[3].subtitle}</Text>
-                </View>
-              </View>
-            </View>
-          )}
-          
-          {item.id === 3 && item.chatExample && (
-            <View style={styles.chatContainer}>
-              <Text style={styles.speakerName}>{item.chatExample.speaker1}</Text>
-              <View style={[styles.chatBubble, styles.chatBubbleLeft]}>
-                <Text style={styles.chatText}>{item.chatExample.message1}</Text>
-              </View>
-              <Text style={[styles.speakerName, styles.speakerRight]}>{item.chatExample.speaker2}</Text>
-              <View style={[styles.chatBubble, styles.chatBubbleRight]}>
-                <Text style={styles.chatText}>{item.chatExample.message2}</Text>
-              </View>
-            </View>
-          )}
-          
-          {item.description && (
-            <Text style={styles.cardDescription}>{item.description}</Text>
-          )}
-        </View>
-        </View>
+        </Animated.View>
       </View>
     );
   };
@@ -138,17 +195,17 @@ const IndexScreen = () => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <Animated.View style={[styles.header, { opacity: headerOpacity }]}>
         <View style={styles.logoSection}>
           <Image
             source={require("../../assets/images/icon.png")}
             style={styles.logo}
           />
           <Text style={styles.appTitle}>SourceView</Text>
-          <Text style={styles.appSubtitle}>Reader</Text>
+          <Text style={styles.appSubtitle}>Together</Text>
           <Text style={styles.tagline}>Read Together. Grow Together.</Text>
         </View>
-      </View>
+      </Animated.View>
 
       {/* Cards Carousel */}
       <FlatList
@@ -167,15 +224,39 @@ const IndexScreen = () => {
 
       {/* Page Indicators */}
       <View style={styles.indicatorContainer}>
-        {onboardingData.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.indicator,
-              { backgroundColor: index === currentIndex ? '#333' : '#CCC' }
-            ]}
-          />
-        ))}
+        {onboardingData.map((_, index) => {
+          const inputRange = [
+            (index - 1) * screenWidth,
+            index * screenWidth,
+            (index + 1) * screenWidth,
+          ];
+
+          const dotWidth = scrollX.interpolate({
+            inputRange,
+            outputRange: [8, 24, 8],
+            extrapolate: 'clamp',
+          });
+
+          const dotOpacity = scrollX.interpolate({
+            inputRange,
+            outputRange: [0.3, 1, 0.3],
+            extrapolate: 'clamp',
+          });
+
+          return (
+            <Animated.View
+              key={index}
+              style={[
+                styles.indicator,
+                {
+                  width: dotWidth,
+                  opacity: dotOpacity,
+                  backgroundColor: '#333',
+                }
+              ]}
+            />
+          );
+        })}
       </View>
 
       {/* Footer */}
@@ -215,10 +296,12 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   appSubtitle: {
-    fontSize: 24,
-    fontFamily: 'Mistrully',
-    color: '#FF5733',
-    marginBottom: 5,
+    fontSize: 22,
+    fontFamily: 'Manrope-Light',
+    color: '#FF6B47',
+    marginBottom: 8,
+    letterSpacing: 1.8,
+    opacity: 0.9,
   },
   tagline: {
     fontSize: 16,
@@ -231,79 +314,94 @@ const styles = StyleSheet.create({
   carouselContent: {
     alignItems: 'center',
   },
-  cardWrapper: {
-    borderRadius: 1,
-    overflow: 'hidden',
-    marginHorizontal: 20,
-  },
-  card: {
-    width: screenWidth - 40,
-    height: 420,
+  slideContainer: {
+    width: screenWidth,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: "#000",
+    paddingHorizontal: 20,
+  },
+  cardWrapper: {
+    borderRadius: 32,
+    overflow: 'hidden',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 8,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  onboardingCard: {
+    width: screenWidth - 40,
+    height: 420,
+    borderRadius: 32,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cardContent: {
     flex: 1,
-    padding: 10,
+    padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+  },
+  textStyleBibleContent: {
+    paddingTop: 40,
+    paddingBottom: 40,
   },
   iconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
-    shadowColor: 'rgba(0, 0, 0, 0.1)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
   },
   iconText: {
     fontSize: 40,
   },
   cardTitle: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#FFFFFF',
     textAlign: 'center',
-    marginBottom: 20,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    marginBottom: 10,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    textShadowRadius: 3,
   },
   cardDescription: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#FFFFFF',
     textAlign: 'center',
-    lineHeight: 22,
-    opacity: 0.9,
-    marginTop: 15,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    lineHeight: 24,
+    opacity: 0.95,
+    marginTop: 10,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
   buttonGrid: {
-    marginBottom: 16,
+    marginBottom: 2,
+    marginTop: 8,
     width: '100%',
     paddingHorizontal: 0,
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   roleButton: {
     flex: 0.48,
@@ -318,11 +416,6 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
-  roleButtonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
   roleButtonSubtitle: {
     fontSize: 14,
     color: '#333333',
@@ -331,7 +424,7 @@ const styles = StyleSheet.create({
   },
   chatContainer: {
     width: '100%',
-    marginBottom: 15,
+    marginBottom: 10,
   },
   speakerName: {
     fontSize: 15,
@@ -345,13 +438,13 @@ const styles = StyleSheet.create({
   },
   speakerRight: {
     textAlign: 'right',
-    marginTop: 18,
+    marginTop: 10,
   },
   chatBubble: {
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
-    marginBottom: 10,
+    marginBottom: 8,
     maxWidth: '88%',
     shadowColor: 'rgba(0, 0, 0, 0.15)',
     shadowOffset: { width: 0, height: 2 },
@@ -376,13 +469,22 @@ const styles = StyleSheet.create({
   indicatorContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingVertical: 20,
+    paddingVertical: 24,
+    alignItems: 'center',
   },
   indicator: {
-    width: 8,
     height: 8,
     borderRadius: 4,
     marginHorizontal: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+  },
+  activeIndicator: {
+    width: 24,
+    backgroundColor: '#333',
+  },
+  inactiveIndicator: {
+    width: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
   },
   footer: {
     paddingBottom: 40,
@@ -403,7 +505,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF5733',
     paddingVertical: 15,
     paddingHorizontal: 40,
-    borderRadius: 12,
+    borderRadius: 25,
+    shadowColor: '#FF5733',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   getStartedButtonText: {
     fontSize: 18,

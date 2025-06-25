@@ -86,7 +86,8 @@ export default function TabLayout() {
         <Tabs.Screen
           name="[segment]"
           options={{
-            href: null,
+            tabBarStyle: { display: 'none' },
+            title: 'Reading',
           }}
         />
       </Tabs>

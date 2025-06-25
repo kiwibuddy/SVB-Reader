@@ -1,87 +1,50 @@
-import React, { useEffect, useState, memo } from "react";
-import { View, Text, FlatList, Pressable, GestureResponderEvent } from "react-native";
+import React, { memo } from "react";
+import { View, Text, StyleSheet } from "react-native";
 import BibleInlineComponent from "./Inline";
 import { BibleBlock } from "@/types";
 import SourceNameComponent from "./SourceName";
-import { StyleSheet } from 'react-native';
 import { getColors } from "@/scripts/getColors";
 import GlowBubble from "./GlowBubble";
-import { useSQLiteContext } from "expo-sqlite";
-import { useAppContext } from "@/context/GlobalContext";
-import { deleteEmoji, getEmoji, addEmoji } from "@/api/sqlite";
-import EmojiPicker from "@/components/EmojiPicker";
 import { useAppSettings } from "@/context/AppSettingsContext";
 import { baseSizes as sizes } from "@/context/FontSizeContext";
-import { Ionicons } from '@expo/vector-icons';
+import EmojiHandler from "@/components/EmojiHandler";
 
 interface BibleBlockProps {
   block: BibleBlock;
   bIndex: number;
-  toRead: boolean;
+  toRead?: boolean;
+  isGlowing?: boolean;
   hasTail: boolean;
   onLongPress?: (block: BibleBlock, index: number) => void;
 }
 
-const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({ block, bIndex, toRead, hasTail, onLongPress }) => {
-  const { segmentId, emojiActions, updateEmojiActions } = useAppContext();
+const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({ 
+  block, 
+  bIndex, 
+  toRead, 
+  isGlowing,
+  hasTail, 
+  onLongPress 
+}) => {
   const { colors } = useAppSettings();
-  const idSplit = segmentId.split("-");
-  const segID = idSplit[idSplit.length - 1];
-  const [existingEmoji, setExistingEmoji] = useState<string | null>(null);
   const { source, children } = block;
   const { color, sourceName } = source;
 
-  console.log('Block rendered:', { bIndex, toRead, hasTail });
+  const shouldGlow = toRead || isGlowing;
 
-  useEffect(() => {
-    const fetchEmoji = async () => {
-      if (segID && bIndex !== undefined) {
-        const emoji = await getEmoji(segID, bIndex.toString());
-        setExistingEmoji(emoji);
-      }
-    };
-    fetchEmoji();
-  }, [segID, bIndex, emojiActions]);
-
-  useEffect(() => {
-    console.log(`Block ${bIndex} re-rendered. Reason:`, {
-      segmentId,
-      emojiActions,
-    });
-  }, [segmentId, emojiActions]);
-
-  const handleLongPress = () => {
-    if (onLongPress) {
-      onLongPress(block, bIndex);
-    }
-  };
-
-  const handleEmojiDelete = async () => {
-    try {
-      await deleteEmoji(segID, bIndex.toString());
-      setExistingEmoji(null);
-      if (emojiActions !== undefined) {
-        updateEmojiActions(emojiActions + 1);
-      }
-    } catch (error) {
-      console.error("Error deleting emoji:", error);
-    }
-  };
-
-  if (toRead) {
+  if (shouldGlow) {
     return (
       <GlowBubble 
         block={block} 
         bIndex={bIndex} 
         hasTail={hasTail}
-        isGlowing={toRead}
+        isGlowing={shouldGlow}
+        onLongPress={onLongPress}
       />
     );
   }
 
-  const tailAlignment = color !== "black" ? {left: 15} : {right: 15};
-  const emojiAlignment = color !== "black" ? { right: 10 } : { left: 10 };
-  const emojiTopPosition = hasTail ? { top: 35 } : { top: 15 };
+  const tailAlignment = color !== "black" ? { left: 15 } : { right: 15 };
 
   const styles = StyleSheet.create({
     outerContainer: {
@@ -90,19 +53,18 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({ block, bIndex, to
       zIndex: 1,
     },
     container: {
-      borderRadius: 12,
+      borderRadius: 16,
       padding: 16,
       zIndex: 1,
       position: 'relative',
-    },
-    text: {
-      color: colors.text,
-      fontSize: sizes.body,
-      lineHeight: 24,
-    },
-    sourceName: {
-      color: colors.secondary,
-      fontSize: sizes.caption,
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.08,
+      shadowRadius: 4,
+      elevation: 2,
     },
     tail: {
       position: "absolute",
@@ -116,32 +78,15 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({ block, bIndex, to
       borderRightColor: "transparent",
       zIndex: 2,
     },
-    reactionContainer: {
-      flexDirection: "row",
-      padding: 5,
-      position: "absolute",
-      zIndex: 100,
-      elevation: 3,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 2,
-    },
-    reactionText: {
-      fontSize: 30,
-    },
   });
 
   return (
-    <Pressable
-      onLongPress={handleLongPress}
-      delayLongPress={300}
-      style={[
-        styles.outerContainer,
-        { backgroundColor: 'rgba(0,0,0,0.01)' }
-      ]}
-    >
-      <View key={bIndex}>
+    <View style={styles.outerContainer}>
+      <EmojiHandler
+        block={block}
+        blockIndex={bIndex}
+        onLongPress={onLongPress}
+      >
         {hasTail && (
           <SourceNameComponent
             sourceName={sourceName}
@@ -179,21 +124,14 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({ block, bIndex, to
             })}
           </View>
         </View>
-        
-        {existingEmoji && (
-          <View style={[styles.reactionContainer, emojiAlignment, emojiTopPosition]}>
-            <Pressable onPress={handleEmojiDelete}>
-              <Text style={styles.reactionText}>{existingEmoji}</Text>
-            </Pressable>
-          </View>
-        )}
-      </View>
-    </Pressable>
+      </EmojiHandler>
+    </View>
   );
 }, (prevProps, nextProps) => {
   return (
     prevProps.bIndex === nextProps.bIndex &&
     prevProps.toRead === nextProps.toRead &&
+    prevProps.isGlowing === nextProps.isGlowing &&
     prevProps.hasTail === nextProps.hasTail &&
     prevProps.block === nextProps.block
   );

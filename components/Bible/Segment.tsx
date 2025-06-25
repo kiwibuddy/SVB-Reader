@@ -1,17 +1,14 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"; // Ensure useEffect is imported
-import { View, Text, FlatList, Pressable, TouchableOpacity, Modal, StyleSheet, useWindowDimensions, Platform, ScrollView } from "react-native";
-import { BlurView } from "expo-blur";
+import { View, Text, FlatList, ScrollView, Pressable, TouchableOpacity, StyleSheet, useWindowDimensions, Platform } from "react-native";
 import BibleBlockComponent from './BibleBlock';
 import { BibleBlock, SegmentType } from "@/types";
 import RoleProgressBar from "../RoleProgressBar";
 import ChartLegend from "../ChartLegend";
-import { Ionicons, MaterialIcons } from '@expo/vector-icons'; // Example icon library
+import { MaterialIcons } from '@expo/vector-icons'; // Example icon library
 import { splitContentIntoReaderParts } from "@/scripts/splitContentIntoReaderParts";
 import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
 import { getColors } from "@/scripts/getColors";
 import SegmentTitle from "./SegmentTitle";
-import EmojiPicker from "../EmojiPicker";
-import { addEmoji } from "@/api/sqlite";
 import { useAppContext } from "@/context/GlobalContext";
 import CelebrationPopup from "./CelebrationPopup";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -73,11 +70,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return null; // Or return an error state component
   }
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedBlock, setSelectedBlock] = useState<{
-    block: BibleBlock;
-    index: number;
-  } | null>(null);
+  // Removed modal-based emoji picker - now using floating picker in Block component
   const [showCelebration, setShowCelebration] = useState(false);
   const { content, readers = [], id } = segmentData;
   const segID = id.split("-")[id.split("-").length - 1];
@@ -116,24 +109,9 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   const isCompleted = getIsCompleted();
 
+  // Emoji handling is now done directly in the Block component
   const handleLongPress = (block: BibleBlock, index: number) => {
-    setSelectedBlock({ block, index });
-    setIsModalVisible(true);
-  };
-
-  const handleEmojiSelect = async (emoji: string) => {
-    if (selectedBlock) {
-      const { block, index } = selectedBlock;
-      try {
-        await addEmoji(segID, index.toString(), block, emoji);
-        if (emojiActions !== undefined) {
-          updateEmojiActions(emojiActions + 1);
-        }
-      } catch (error) {
-        console.error("Error setting emoji:", error);
-      }
-    }
-    setIsModalVisible(false);
+    // This is now handled by the Block component itself
   };
 
   // Memoize the content to prevent unnecessary re-renders
@@ -374,66 +352,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     margin: 10,
   },
-  blurContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Add semi-transparent overlay
-  },
-modalContainer: {
-  width: '85%',
-  maxHeight: '75%', // Restore maxHeight to prevent always expanding
-  maxWidth: 350,
-  backgroundColor: colors.background || 'white',
-  borderRadius: 20,
-  padding: 0,
-  shadowColor: '#000',
-  shadowOffset: {
-    width: 0,
-    height: 10,
-  },
-  shadowOpacity: 0.25,
-  shadowRadius: 20,
-  elevation: 15,
-  // Remove marginTop and flex - let it size naturally based on content
-},
-  emojiPickerContainer: {
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border || '#E5E5EA',
-  },
-  blockContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: colors.card || '#F8F9FA',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  // Add new styles for enhanced messaging look
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  modalTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: colors.text || '#000',
-  },
-  closeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 16,
-   // backgroundColor: colors.secondary || '#E5E5EA',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   reactionText: {
     fontSize: 30, // Adjust size as needed
     elevation: 3, // Optional: add shadow on Android
@@ -533,126 +451,84 @@ modalContainer: {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        ref={flatListRef}
-        data={memoizedContent}
-        ListHeaderComponent={() => (
-          <>
-            <SegmentTitle segmentId={segID} />
-            <View style={{
-              paddingHorizontal: 16,
-              paddingTop: 20,
-              paddingBottom: 0,
-              width: '100%',
-            }}>
-              {/* Role Selection Section - Full Width */}
-              <View style={styles.readerSection}>
-                <Text style={styles.readerText}>
-                  Select your reading role:
-                </Text>
-                <View style={styles.iconContainer}>
-                  {/* Create reader role icons based on actual speech bubble distribution */}
-                  {(() => {
-                    const roleIcons: React.ReactElement[] = [];
-                    
-                    // Use the same logic as readersByColor to create icons
-                    Object.entries(readersByColor).forEach(([color, positions]) => {
-                      positions.forEach((position) => {
-                        const isActive = selectedReaderPosition?.color === color && 
-                                        selectedReaderPosition?.position === position;
-                        const colors = getColors(color);
-                        
-                        roleIcons.push(
-                          <TouchableOpacity
-                            key={`${color}-${position}`}
-                            onPress={() => handleReaderRoleSelect(color, position)}
-                          >
-                            <MaterialIcons
-                              name={isActive ? "mark-chat-read" : "chat-bubble"}
-                              size={30}
-                              color={color === "black" ? "grey" : isActive ? colors.dark : colors.light}
-                            />
-                          </TouchableOpacity>
-                        );
-                      });
-                    });
-                    
-                    return roleIcons;
-                  })()}
-                </View>
-              </View>
-              
-              {/* Progress Bar Section - As Divider */}
-              <View style={{ marginTop: 24, marginBottom: 20, marginHorizontal: -16 }}>
-                <RoleProgressBar 
-                  colorData={colorData}
-                  height={4}
-                />
-              </View>
-            </View>
-          </>
-        )}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => `${item.source.sourceName}-${index}`}
-        initialNumToRender={10}
-        maxToRenderPerBatch={10}
-        windowSize={5}
-        onLayout={() => {
-          flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-        }}
+      <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         automaticallyAdjustKeyboardInsets={true}
-      />
-<Modal
-  visible={isModalVisible}
-  transparent={true}
-  animationType="slide"
-  onRequestClose={() => setIsModalVisible(false)}
->
-  <BlurView intensity={60} tint="dark" style={styles.blurContainer}>
-    <Pressable
-      style={styles.blurContainer}
-      onPress={() => setIsModalVisible(false)}
-    >
-      {selectedBlock && (
-        <View style={styles.modalContainer}>
-          {/* Add modern header */}
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Add Reaction</Text>
-            <TouchableOpacity 
-              style={styles.closeButton}
-              onPress={() => setIsModalVisible(false)}
-            >
-              <Ionicons name="close" size={25} color={"red"} />
-            </TouchableOpacity>
+      >
+        <SegmentTitle segmentId={segID} />
+        <View style={{
+          paddingHorizontal: 16,
+          paddingTop: 20,
+          paddingBottom: 0,
+          width: '100%',
+        }}>
+          {/* Role Selection Section - Full Width */}
+          <View style={styles.readerSection}>
+            <Text style={styles.readerText}>
+              Select your reading role:
+            </Text>
+            <View style={styles.iconContainer}>
+              {/* Create reader role icons based on actual speech bubble distribution */}
+              {(() => {
+                const roleIcons: React.ReactElement[] = [];
+                
+                // Use the same logic as readersByColor to create icons
+                Object.entries(readersByColor).forEach(([color, positions]) => {
+                  positions.forEach((position) => {
+                    const isActive = selectedReaderPosition?.color === color && 
+                                    selectedReaderPosition?.position === position;
+                    const colors = getColors(color);
+                    
+                    roleIcons.push(
+                      <TouchableOpacity
+                        key={`${color}-${position}`}
+                        onPress={() => handleReaderRoleSelect(color, position)}
+                      >
+                        <MaterialIcons
+                          name={isActive ? "mark-chat-read" : "chat-bubble"}
+                          size={30}
+                          color={color === "black" ? "grey" : isActive ? colors.dark : colors.light}
+                        />
+                      </TouchableOpacity>
+                    );
+                  });
+                });
+                
+                return roleIcons;
+              })()}
+            </View>
           </View>
           
-          <View style={styles.emojiPickerContainer}>
-            <EmojiPicker
-              onEmojiSelect={handleEmojiSelect}
-              onClose={() => setIsModalVisible(false)}
+          {/* Progress Bar Section - As Divider */}
+          <View style={{ marginTop: 24, marginBottom: 20, marginHorizontal: -16 }}>
+            <RoleProgressBar 
+              colorData={colorData}
+              height={4}
             />
           </View>
-          
-          <ScrollView 
-            style={styles.blockContainer}
-            showsVerticalScrollIndicator={true}
-            bounces={false}
-            contentContainerStyle={{ flexGrow: 1 }}
-          >
+        </View>
+
+        {/* Render blocks directly */}
+        {memoizedContent.map((item, index) => {
+          const { sourceName } = item.source;
+          const showSourceName = index === 0 || 
+            memoizedContent[index - 1].source.sourceName !== sourceName;
+
+          const isGlowing = shouldBlockGlow(item.source.color, index);
+
+          return (
             <BibleBlockComponent
-              block={selectedBlock.block}
-              bIndex={selectedBlock.index}
-              hasTail={true}
-              isGlowing={false}
+              key={`${item.source.sourceName}-${index}`}
+              block={item}
+              bIndex={index}
+              hasTail={showSourceName}
+              isGlowing={isGlowing}
               onLongPress={handleLongPress}
             />
-          </ScrollView>
-        </View>
-      )}
-    </Pressable>
-  </BlurView>
-</Modal>
+          );
+        })}
+      </ScrollView>
+      {/* Modal removed - emoji picker is now floating and handled by Block component */}
       <View style={styles.divider} />
 
       <CelebrationPopup 
