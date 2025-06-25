@@ -148,88 +148,82 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
   };
 
   return (
-    <View style={styles.container}>
-      {/* Background overlay pressable */}
-      <Pressable style={styles.backgroundOverlay} onPress={handleClose} />
-      
-      {/* Positioned emoji picker */}
-      <Animated.View
-        style={[
-          styles.pickerContainer,
-          {
-            left: position.x,
-            top: position.y,
-            transform: [
-              { scale: scaleAnim },
-              { translateY: slideAnim }
-            ],
-            opacity: opacityAnim,
-          },
-        ]}
+    <BlurView intensity={60} tint="dark" style={styles.blurContainer}>
+      <Pressable
+        style={styles.blurContainer}
+        onPress={handleClose}
       >
-        <BlurView intensity={90} tint="systemMaterialLight" style={styles.blurContainer}>
-          {/* Floating pill design */}
-          <View style={styles.pillContainer}>
-            <View style={styles.emojiRow}>
-              {EMOJIS.map((item, index) => (
-                <Animated.View
-                  key={index}
-                  style={[
-                    styles.emojiWrapper,
-                    {
-                      transform: [{ scale: emojiScales[index] }],
-                    },
-                  ]}
-                >
-                  <TouchableOpacity
+        {/* Centered modal container similar to working version */}
+        <View style={styles.modalContainer}>
+          <Animated.View
+            style={[
+              styles.pickerContainer,
+              {
+                transform: [
+                  { scale: scaleAnim },
+                  { translateY: slideAnim }
+                ],
+                opacity: opacityAnim,
+              },
+            ]}
+          >
+            <View style={styles.pillContainer}>
+              <View style={styles.emojiRow}>
+                {EMOJIS.map((item, index) => (
+                  <Animated.View
+                    key={index}
                     style={[
-                      styles.emojiButton,
-                      { backgroundColor: `${item.color}15` }
+                      styles.emojiWrapper,
+                      {
+                        transform: [{ scale: emojiScales[index] }],
+                      },
                     ]}
-                    onPress={() => handleEmojiPress(item.emoji, index)}
-                    activeOpacity={0.7}
                   >
-                    <Text style={styles.emojiText}>{item.emoji}</Text>
-                    <View style={[styles.ripple, { backgroundColor: item.color }]} />
-                  </TouchableOpacity>
-                </Animated.View>
-              ))}
+                    <TouchableOpacity
+                      style={[
+                        styles.emojiButton,
+                        { backgroundColor: `${item.color}15` }
+                      ]}
+                      onPress={() => handleEmojiPress(item.emoji, index)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.emojiText}>{item.emoji}</Text>
+                      <View style={[styles.ripple, { backgroundColor: item.color }]} />
+                    </TouchableOpacity>
+                  </Animated.View>
+                ))}
+              </View>
+              
+              {/* Close button */}
+              <TouchableOpacity 
+                style={styles.closeButton} 
+                onPress={handleClose}
+                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+              >
+                <Ionicons name="close" size={16} color="#666" />
+              </TouchableOpacity>
             </View>
-            
-            {/* Close button */}
-            <TouchableOpacity 
-              style={styles.closeButton} 
-              onPress={handleClose}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-            >
-              <Ionicons name="close" size={16} color="#666" />
-            </TouchableOpacity>
-          </View>
-        </BlurView>
-      </Animated.View>
-    </View>
+          </Animated.View>
+        </View>
+      </Pressable>
+    </BlurView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  // Use centered approach similar to working version
+  blurContainer: {
     flex: 1,
-    position: 'relative',
+    justifyContent: "center",  // Centers vertically
+    alignItems: "center",      // Centers horizontally
+    alignContent: "flex-start",
   },
-  backgroundOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  modalContainer: {
+    flex: 0,
+    justifyContent: "flex-start",
+    backgroundColor: "transparent",
   },
   pickerContainer: {
-    position: 'absolute',
-    zIndex: 1000,
-  },
-  blurContainer: {
-    borderRadius: 28,
-    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

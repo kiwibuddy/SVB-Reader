@@ -64,34 +64,188 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   const { scrollReset } = useLocalSearchParams();
 
-  // Add null checks for segmentData
-  if (!segmentData || !segmentData.id) {
-    console.error('Invalid segment data:', segmentData);
-    return null; // Or return an error state component
-  }
-
-  // Removed modal-based emoji picker - now using floating picker in Block component
+  // All hooks must be called before any early returns
   const [showCelebration, setShowCelebration] = useState(false);
-  const { content, readers = [], id } = segmentData;
-  const segID = id.split("-")[id.split("-").length - 1];
-
-  // Track which reader role is currently selected
   const [selectedReaderPosition, setSelectedReaderPosition] = useState<{
     color: string;
     position: number;
   } | null>(null);
 
-  // Use pre-calculated color data from segmentData instead of recalculating from split content
+  // Use pre-calculated color data from segmentData (with safe fallback)
   const colorData = useMemo(() => {
     // Use the original pre-calculated color data that's based on word counts
-    return segmentData.colors || {
+    return segmentData?.colors || {
       black: 0,
       red: 0,
       green: 0,
       blue: 0,
       total: 0
     };
-  }, [segmentData.colors]);
+  }, [segmentData?.colors]);
+
+  // Memoize the content to prevent unnecessary re-renders (with safe fallback)
+  const memoizedContent = useMemo(() => {
+    if (!segmentData?.content) return [];
+    
+    // ALWAYS split content into paragraphs first (breaks long speeches into smaller bubbles)
+    // This ensures Moses' long speeches get broken up into multiple bubbles as shown in the example
+    const splitContent = splitIntoParagraphs(segmentData.content);
+    
+    // Get readers array safely
+    const safeReaders = segmentData.readers || [];
+    
+    // Check if there are duplicate colors in readers array
+    const uniqueColors = new Set(safeReaders);
+    const hasDuplicateColors = uniqueColors.size !== safeReaders.length;
+    
+    if (hasDuplicateColors) {
+      // If multiple readers have same color, apply additional splitting logic
+      // This further splits content for turn-taking among readers of the same color
+      return splitContentIntoReaderParts(splitContent, safeReaders);
+    } else {
+      // If all readers have unique colors, just return the paragraph-split content
+      return splitContent;
+    }
+  }, [segmentData?.content, segmentData?.readers]);
+
+  // Calculate reader roles based on actual speech bubble distribution
+  const readersByColor = useMemo(() => {
+    const maxRoles = 4;
+    const result: { [color: string]: number[] } = {};
+    
+    // Count actual speech bubbles by color from memoized content
+    const bubblesByColor = memoizedContent.reduce((acc, block) => {
+      const color = block.source.color;
+      acc[color] = (acc[color] || 0) + 1;
+      return acc;
+    }, {} as { [color: string]: number });
+    
+    // Sort colors by bubble count (descending) to prioritize speakers with more bubbles
+    const colorsByBubbleCount = Object.entries(bubblesByColor)
+      .map(([color, count]) => ({ color, count }))
+      .sort((a, b) => b.count - a.count);
+    
+    let rolesAssigned = 0;
+    
+    // First pass: Ensure every speaker gets at least 1 role
+    colorsByBubbleCount.forEach(({ color }) => {
+      if (rolesAssigned < maxRoles) {
+        result[color] = [0];
+        rolesAssigned++;
+      }
+    });
+    
+    // Second pass: Distribute remaining roles proportionally to dominant speakers
+    if (rolesAssigned < maxRoles) {
+      const totalBubbles = Object.values(bubblesByColor).reduce((sum, c) => sum + c, 0);
+      
+      colorsByBubbleCount.forEach(({ color, count }) => {
+        if (rolesAssigned >= maxRoles) return;
+        
+        const proportion = count / totalBubbles;
+        const currentRoles = result[color]?.length || 0;
+        
+        // Calculate additional roles this color should get based on proportion
+        const targetRoles = Math.round(proportion * maxRoles);
+        const additionalRoles = Math.max(0, targetRoles - currentRoles);
+        
+        // Add additional roles up to remaining capacity
+        const rolesToAdd = Math.min(additionalRoles, maxRoles - rolesAssigned);
+        
+        if (rolesToAdd > 0) {
+          const currentPositions = result[color] || [];
+          for (let i = 0; i < rolesToAdd; i++) {
+            currentPositions.push(currentPositions.length);
+            rolesAssigned++;
+          }
+          result[color] = currentPositions;
+        }
+      });
+    }
+    
+    // Final pass: If still under 4 roles, give remaining to most dominant speaker
+    if (rolesAssigned < maxRoles && colorsByBubbleCount.length > 0) {
+      const dominantColor = colorsByBubbleCount[0].color;
+      const currentPositions = result[dominantColor] || [];
+      const additionalRoles = maxRoles - rolesAssigned;
+      
+      for (let i = 0; i < additionalRoles; i++) {
+        currentPositions.push(currentPositions.length);
+      }
+      result[dominantColor] = currentPositions;
+    }
+   
+    return result;
+  }, [memoizedContent]);
+
+  // Update shouldBlockGlow to use the new state
+  const shouldBlockGlow = useCallback((blockColor: string, blockIndex: number) => {
+    if (!selectedReaderPosition) return false;
+    
+    const { color, position } = selectedReaderPosition;
+    if (blockColor !== color) return false;
+
+    const colorPositions = readersByColor[blockColor] || [];
+    if (colorPositions.length <= 1) {
+      return position === 0;
+    }
+
+    // For multiple readers of same color - USE MEMOIZED CONTENT (the split content)
+    const blocksOfThisColor = memoizedContent.filter(item => item.source.color === blockColor);
+    const positionInSequence = blocksOfThisColor.findIndex(item => 
+      memoizedContent.indexOf(item) === blockIndex
+    );
+    return positionInSequence % colorPositions.length === position;
+  }, [memoizedContent, readersByColor, selectedReaderPosition]);
+
+  // Update renderItem to use new glow logic
+  const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
+    const { sourceName } = item.source;
+    const showSourceName = index === 0 || 
+      memoizedContent[index - 1].source.sourceName !== sourceName;
+
+    const isGlowing = shouldBlockGlow(item.source.color, index);
+
+    return (
+      <BibleBlockComponent
+        block={item}
+        bIndex={index}
+        hasTail={showSourceName}
+        isGlowing={isGlowing}
+        onLongPress={(block: BibleBlock, index: number) => {
+          // This is now handled by the Block component itself
+        }}
+      />
+    );
+  }, [memoizedContent, shouldBlockGlow]);
+
+  const flatListRef = useRef<FlatList>(null);
+
+  // Force scroll to top whenever the segment changes
+  useEffect(() => {
+    // Immediate scroll
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+    
+    // Double-check after a brief moment to ensure content is rendered
+    const timer = setTimeout(() => {
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+      if (Platform.OS === 'web') {
+        window.scrollTo(0, 0);
+      }
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [segmentData?.id]);
+
+  // Add null checks for segmentData AFTER all hooks
+  if (!segmentData || !segmentData.id) {
+    console.error('Invalid segment data:', segmentData);
+    return null; // Or return an error state component
+  }
+
+  // Safe to access segmentData after null check
+  const { content, readers = [], id } = segmentData;
+  const segID = id.split("-")[id.split("-").length - 1];
 
   // Determine which completion state to use
   const getIsCompleted = () => {
@@ -113,26 +267,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const handleLongPress = (block: BibleBlock, index: number) => {
     // This is now handled by the Block component itself
   };
-
-  // Memoize the content to prevent unnecessary re-renders
-  const memoizedContent = useMemo(() => {
-    // ALWAYS split content into paragraphs first (breaks long speeches into smaller bubbles)
-    // This ensures Moses' long speeches get broken up into multiple bubbles as shown in the example
-    const splitContent = splitIntoParagraphs(segmentData.content);
-    
-    // Check if there are duplicate colors in readers array
-    const uniqueColors = new Set(readers);
-    const hasDuplicateColors = uniqueColors.size !== readers.length;
-    
-    if (hasDuplicateColors) {
-      // If multiple readers have same color, apply additional splitting logic
-      // This further splits content for turn-taking among readers of the same color
-      return splitContentIntoReaderParts(splitContent, readers);
-    } else {
-      // If all readers have unique colors, just return the paragraph-split content
-      return splitContent;
-    }
-  }, [segmentData.content, readers]);
 
   const colorRenderCount = new Map<string, number>(); // Track render counts
 
@@ -191,95 +325,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     });
   };
 
-  // Calculate reader roles based on actual speech bubble distribution
-  const readersByColor = useMemo(() => {
-    const maxRoles = 4;
-    const result: { [color: string]: number[] } = {};
-    
-    // Count actual speech bubbles by color from memoized content
-    const bubblesByColor = memoizedContent.reduce((acc, block) => {
-      const color = block.source.color;
-      acc[color] = (acc[color] || 0) + 1;
-      return acc;
-    }, {} as { [color: string]: number });
-    
-    // Sort colors by bubble count (descending) to prioritize speakers with more bubbles
-    const colorsByBubbleCount = Object.entries(bubblesByColor)
-      .map(([color, count]) => ({ color, count }))
-      .sort((a, b) => b.count - a.count);
-    
-    let rolesAssigned = 0;
-    
-         // First pass: Ensure every speaker gets at least 1 role
-     colorsByBubbleCount.forEach(({ color }) => {
-       if (rolesAssigned < maxRoles) {
-         result[color] = [0];
-         rolesAssigned++;
-       }
-     });
-     
-     // Second pass: Distribute remaining roles proportionally to dominant speakers
-     if (rolesAssigned < maxRoles) {
-       const totalBubbles = Object.values(bubblesByColor).reduce((sum, c) => sum + c, 0);
-       
-       colorsByBubbleCount.forEach(({ color, count }) => {
-         if (rolesAssigned >= maxRoles) return;
-         
-         const proportion = count / totalBubbles;
-         const currentRoles = result[color]?.length || 0;
-         
-         // Calculate additional roles this color should get based on proportion
-         const targetRoles = Math.round(proportion * maxRoles);
-         const additionalRoles = Math.max(0, targetRoles - currentRoles);
-         
-         // Add additional roles up to remaining capacity
-         const rolesToAdd = Math.min(additionalRoles, maxRoles - rolesAssigned);
-         
-         if (rolesToAdd > 0) {
-           const currentPositions = result[color] || [];
-           for (let i = 0; i < rolesToAdd; i++) {
-             currentPositions.push(currentPositions.length);
-             rolesAssigned++;
-           }
-           result[color] = currentPositions;
-         }
-       });
-     }
-     
-     // Final pass: If still under 4 roles, give remaining to most dominant speaker
-     if (rolesAssigned < maxRoles && colorsByBubbleCount.length > 0) {
-       const dominantColor = colorsByBubbleCount[0].color;
-       const currentPositions = result[dominantColor] || [];
-       const additionalRoles = maxRoles - rolesAssigned;
-       
-       for (let i = 0; i < additionalRoles; i++) {
-         currentPositions.push(currentPositions.length);
-       }
-       result[dominantColor] = currentPositions;
-     }
-    
-    return result;
-  }, [memoizedContent]);
 
-  // Update shouldBlockGlow to use the new state
-  const shouldBlockGlow = useCallback((blockColor: string, blockIndex: number) => {
-    if (!selectedReaderPosition) return false;
-    
-    const { color, position } = selectedReaderPosition;
-    if (blockColor !== color) return false;
-
-    const colorPositions = readersByColor[blockColor] || [];
-    if (colorPositions.length <= 1) {
-      return position === 0;
-    }
-
-    // For multiple readers of same color - USE MEMOIZED CONTENT (the split content)
-    const blocksOfThisColor = memoizedContent.filter(item => item.source.color === blockColor);
-    const positionInSequence = blocksOfThisColor.findIndex(item => 
-      memoizedContent.indexOf(item) === blockIndex
-    );
-    return positionInSequence % colorPositions.length === position;
-  }, [memoizedContent, readersByColor, selectedReaderPosition]);
 
 const styles = StyleSheet.create({
   container: {
@@ -412,42 +458,7 @@ const styles = StyleSheet.create({
     </View>
   );
 
-  // Update renderItem to use new glow logic
-  const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
-    const { sourceName } = item.source;
-    const showSourceName = index === 0 || 
-      memoizedContent[index - 1].source.sourceName !== sourceName;
 
-    const isGlowing = shouldBlockGlow(item.source.color, index);
-
-    return (
-      <BibleBlockComponent
-        block={item}
-        bIndex={index}
-        hasTail={showSourceName}
-        isGlowing={isGlowing}
-        onLongPress={handleLongPress}
-      />
-    );
-  }, [memoizedContent, shouldBlockGlow]);
-
-  const flatListRef = useRef<FlatList>(null);
-
-  // Force scroll to top whenever the segment changes
-  useEffect(() => {
-    // Immediate scroll
-    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-    
-    // Double-check after a brief moment to ensure content is rendered
-    const timer = setTimeout(() => {
-      flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-      if (Platform.OS === 'web') {
-        window.scrollTo(0, 0);
-      }
-    }, 50);
-
-    return () => clearTimeout(timer);
-  }, [segmentData.id]);
 
   return (
     <View style={styles.container}>

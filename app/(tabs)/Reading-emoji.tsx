@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import {
   View,
   Text,
@@ -12,16 +12,20 @@ import {
   useWindowDimensions,
   Platform,
   Animated,
+  Modal,
+  TextInput,
+  ScrollView,
 } from "react-native"
 import { useRouter } from "expo-router"
 import { useAppContext } from "@/context/GlobalContext"
 import { useAppSettings } from "@/context/AppSettingsContext"
 import { useTranslation } from "@/hooks/useTranslation"
-import { getEmojis } from "@/api/sqlite"
+import { getEmojis, deleteEmoji } from "@/api/sqlite"
 import BibleBlockComponent from "@/components/Bible/Block"
 import type { BibleBlock } from "@/types"
 import { Ionicons } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
+import { BlurView } from "expo-blur"
 
 const SegmentTitles = require("@/assets/data/SegmentTitles.json")
 const Books = require("@/assets/data/BookChapterList.json")
@@ -81,19 +85,52 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       padding: 16,
     },
     welcomeSection: {
-      marginBottom: 24,
+      marginBottom: 20,
     },
-      welcomeTitle: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: colors.text,
-    marginBottom: 8,
-  },
-  welcomeText: {
-    fontSize: 16,
-    color: colors.secondary,
-    lineHeight: 22,
-  },
+    welcomeTitleRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      marginBottom: 16,
+    },
+    welcomeTitleContainer: {
+      flex: 1,
+    },
+    welcomeTitle: {
+      fontSize: 24,
+      fontWeight: "600",
+      color: colors.text,
+      marginBottom: 8,
+    },
+    welcomeText: {
+      fontSize: 16,
+      color: colors.secondary,
+      lineHeight: 22,
+    },
+    searchButton: {
+      padding: 8,
+      borderRadius: 8,
+      backgroundColor: colors.card,
+    },
+    searchContainer: {
+      marginTop: 12,
+      marginBottom: 4,
+      position: "relative",
+    },
+    searchInput: {
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      padding: 16,
+      fontSize: 16,
+      color: colors.text,
+      paddingRight: 50,
+    },
+    clearSearchButton: {
+      position: "absolute",
+      right: 16,
+      top: 16,
+      padding: 4,
+    },
     header: {
       padding: 16,
       paddingBottom: 20,
@@ -109,7 +146,8 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       flexDirection: "row",
       flexWrap: "wrap",
       gap: 12,
-      marginBottom: 24,
+      marginBottom: 20,
+      marginTop: 4,
       justifyContent: "space-between",
     },
     emojiCard: {
@@ -241,42 +279,27 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       marginBottom: 10,
     },
     reactionsContainer: {
+      paddingHorizontal: 4,
     },
-    reactionItem: {
-      marginBottom: 20,
+    reactionItemContainer: {
+      marginBottom: 8,
+    },
+    speechBubbleContainer: {
       position: "relative",
       zIndex: 1,
-      borderRadius: 16,
-      overflow: "hidden",
-      shadowColor: colors.text,
-      shadowOffset: {
-        width: 0,
-        height: 3,
-      },
-      shadowOpacity: 0.1,
-      shadowRadius: 6,
-      elevation: 4,
-      borderWidth: 1,
-      borderColor: Platform.OS === "ios" ? "rgba(0,0,0,0.05)" : "transparent",
+      marginBottom: 2,
     },
     reactionEmoji: {
       position: "absolute",
-      top: 12,
-      right: 12,
+      // top value now dynamically set in component (35 for hasTail=true, -15 for hasTail=false)
       fontSize: 30,
-      padding: 8,
-      zIndex: 2,
+      padding: 5,
+      zIndex: 100,
       elevation: 3,
-      backgroundColor: "rgba(0,0,0,0.1)",
-      borderRadius: 20,
-      overflow: "hidden",
       shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
+      shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
-      shadowRadius: 3,
+      shadowRadius: 2,
     },
     stepText: {
       fontWeight: "700",
@@ -304,8 +327,8 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       marginTop: 16,
     },
     recentHeader: {
-      marginBottom: 20,
-      marginTop: 8,
+      marginBottom: 16,
+      marginTop: 4,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
@@ -323,9 +346,9 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       fontSize: 12,
       color: colors.secondary,
       textAlign: "right",
-      marginTop: 4,
-      paddingRight: 12,
-      paddingBottom: 8,
+      marginTop: 1,
+      paddingRight: 16,
+      paddingBottom: 2,
       fontWeight: "500",
     },
     subtitle: {
@@ -335,7 +358,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       paddingHorizontal: 4,
     },
     contentContainer: {
-      paddingBottom: 20,
+      paddingBottom: 16,
     },
     divider: {
       height: 1,
@@ -351,7 +374,9 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
     emptyStateContainer: {
       alignItems: "center",
       justifyContent: "center",
-      padding: 40,
+      paddingVertical: 48,
+      paddingHorizontal: 32,
+      marginTop: 20,
       opacity: 0.7,
     },
     emptyStateText: {
@@ -374,7 +399,9 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       fontSize: 12,
       color: colors.secondary,
       textAlign: "center",
-      marginTop: 16,
+      marginTop: 8,
+      marginBottom: 4,
+      paddingHorizontal: 16,
       fontStyle: "italic",
       opacity: 0.7,
     },
@@ -461,6 +488,229 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       fontSize: 24,
       marginRight: 8,
     },
+    // Jump to passage modal styles
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContainer: {
+      backgroundColor: colors.card,
+      borderRadius: 20,
+      padding: 24,
+      marginHorizontal: 32,
+      maxWidth: 400,
+      width: '100%',
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 10,
+      },
+      shadowOpacity: 0.3,
+      shadowRadius: 20,
+      elevation: 10,
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: colors.text,
+      textAlign: 'center',
+      marginBottom: 8,
+    },
+    modalSubtitle: {
+      fontSize: 16,
+      color: colors.secondary,
+      textAlign: 'center',
+      marginBottom: 24,
+      lineHeight: 22,
+    },
+    modalButtonContainer: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+    modalButton: {
+      flex: 1,
+      paddingVertical: 14,
+      paddingHorizontal: 20,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    modalButtonPrimary: {
+      backgroundColor: '#007AFF',
+    },
+    modalButtonSecondary: {
+      backgroundColor: colors.border,
+    },
+    modalButtonDanger: {
+      backgroundColor: '#FF3B30',
+    },
+    modalButtonText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: 'white',
+    },
+    modalButtonTextSecondary: {
+      color: colors.text,
+    },
+    // Filter interface styles
+    filterHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 8,
+      marginTop: 4,
+      paddingHorizontal: 4,
+    },
+    filterHeaderLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    filterHeaderText: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: colors.text,
+      letterSpacing: -0.3,
+      marginRight: 8,
+    },
+    activeFilterBadge: {
+      backgroundColor: '#007AFF',
+      borderRadius: 10,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      minWidth: 20,
+      alignItems: 'center',
+    },
+    activeFilterText: {
+      color: 'white',
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    filterButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 8,
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    filterButtonActive: {
+      backgroundColor: '#E3F2FD',
+      borderColor: '#007AFF',
+    },
+    filterButtonText: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: colors.text,
+      marginLeft: 4,
+    },
+    filterButtonTextActive: {
+      color: '#007AFF',
+    },
+    // Filter panel styles
+    filterPanel: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      zIndex: 1000,
+    },
+    filterPanelContent: {
+      backgroundColor: colors.background,
+      flex: 1,
+      paddingTop: 60, // Account for status bar
+      paddingHorizontal: 20,
+      paddingBottom: 40,
+    },
+    filterPanelHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 20,
+      paddingBottom: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    filterPanelTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    clearAllButton: {
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 6,
+      backgroundColor: colors.card,
+    },
+    clearAllText: {
+      fontSize: 14,
+      color: '#007AFF',
+      fontWeight: '500',
+    },
+    filterSection: {
+      marginBottom: 24,
+    },
+    filterSectionTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 12,
+    },
+    filterOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 8,
+      paddingHorizontal: 4,
+    },
+    filterCheckbox: {
+      width: 20,
+      height: 20,
+      borderRadius: 4,
+      borderWidth: 2,
+      borderColor: colors.border,
+      marginRight: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    filterCheckboxActive: {
+      backgroundColor: '#007AFF',
+      borderColor: '#007AFF',
+    },
+    filterOptionText: {
+      fontSize: 16,
+      color: colors.text,
+      flex: 1,
+    },
+    sourceColorOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    },
+    sourceColorDot: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      marginRight: 8,
+    },
+    applyButton: {
+      backgroundColor: '#007AFF',
+      paddingVertical: 16,
+      paddingHorizontal: 24,
+      borderRadius: 12,
+      alignItems: 'center',
+      marginTop: 20,
+      marginBottom: 20,
+    },
+    applyButtonText: {
+      color: 'white',
+      fontSize: 16,
+      fontWeight: '600',
+    },
   })
 
 // Add this helper function near the top with other utility functions
@@ -481,27 +731,68 @@ const getEmojiKey = (emoji: string) => {
 
 const ReadingEmoji = () => {
   const router = useRouter()
-  const { width } = useWindowDimensions()
-  const isLargeScreen = width >= 768
+  const { width: screenWidth } = useWindowDimensions()
+  const isLargeScreen = screenWidth > 768
   const { colors } = useAppSettings()
-  const styles = createStyles(isLargeScreen, colors)
+  const styles = useMemo(() => createStyles(isLargeScreen, colors), [isLargeScreen, colors])
   const { updateSegmentId } = useAppContext()
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null)
   const [reactions, setReactions] = useState<EmojiReaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [showSearch, setShowSearch] = useState(false)
+  const [showFilterPanel, setShowFilterPanel] = useState(false)
+  const [activeFilters, setActiveFilters] = useState<{
+    testament: string[]
+    sourceColor: string[]
+    sourceName: string[]
+    book: string[]
+  }>({
+    testament: [],
+    sourceColor: [],
+    sourceName: [],
+    book: []
+  })
   const { t } = useTranslation()
+
+  // Jump to passage modal state
+  const [showJumpModal, setShowJumpModal] = useState(false)
+  const [selectedReaction, setSelectedReaction] = useState<EmojiReaction | null>(null)
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current
-  const slideAnim = useRef(new Animated.Value(50)).current
+  const slideAnim = useRef(new Animated.Value(30)).current
+  const modalScaleAnim = useRef(new Animated.Value(0)).current
+  const modalOpacityAnim = useRef(new Animated.Value(0)).current
+  const filterPanelAnim = useRef(new Animated.Value(-300)).current
+  const filterOpacityAnim = useRef(new Animated.Value(0)).current
+
+  // Get color for source color filter
+  const getSourceColorDisplay = (color: string) => {
+    const colorMap: { [key: string]: { bg: string, text: string } } = {
+      'black': { bg: '#2C2C2E', text: 'Narrator' },
+      'red': { bg: '#FF3B30', text: 'God/Jesus' },
+      'green': { bg: '#30D158', text: 'Main Speaker' },
+      'blue': { bg: '#007AFF', text: 'Other Speakers' }
+    }
+    return colorMap[color] || { bg: '#8E8E93', text: color }
+  }
+
+  // Get all possible speaker types (always show all 4)
+  const getAllSpeakerTypes = () => [
+    { color: 'black', display: getSourceColorDisplay('black') },
+    { color: 'red', display: getSourceColorDisplay('red') },
+    { color: 'green', display: getSourceColorDisplay('green') },
+    { color: 'blue', display: getSourceColorDisplay('blue') }
+  ]
 
   useEffect(() => {
     if (selectedEmoji) {
       // Reset animations
       fadeAnim.setValue(0)
-      slideAnim.setValue(50)
+      slideAnim.setValue(30)
 
       // Start animations
       Animated.parallel([
@@ -539,14 +830,150 @@ const ReadingEmoji = () => {
     return [...reactions].sort((a, b) => b.id - a.id)
   }
 
-  // Get filtered reactions based on selected emoji type
-  const getFilteredReactions = () => {
-    if (!selectedEmoji) {
-      // When no emoji is selected, show all reactions sorted by most recent
-      return sortReactionsByRecent(reactions)
+  // Get dynamic filter options based on saved reactions
+  const getFilterOptions = useMemo(() => {
+    const sourceNameOptions = new Set<string>()
+    const bookOptions = new Set<string>()
+
+    reactions.forEach(reaction => {
+      // Get segment reference to determine testament and book
+      const segmentRef = getSegmentReference(reaction.segmentID)
+      const book = segmentRef.split(' ')[0] // Extract book abbreviation
+      
+      sourceNameOptions.add(reaction.blockData.source.sourceName)
+      bookOptions.add(book)
+    })
+
+    return {
+      testament: ['Old Testament', 'New Testament'], // Always show both
+      sourceColor: getAllSpeakerTypes().map(type => type.color), // Always show all 4 types
+      sourceName: Array.from(sourceNameOptions).sort(), // Alphabetical
+      book: Array.from(bookOptions).sort() // Alphabetical
     }
-    // When emoji type is selected, filter by that type and sort by most recent
-    return sortReactionsByRecent(reactions.filter((r) => r.emoji === selectedEmoji))
+  }, [reactions])
+
+  // Enhanced filter function
+  const getFilteredReactions = () => {
+    let filteredReactions = reactions;
+    
+    // Apply search query filter
+    if (searchQuery.trim() !== "") {
+      filteredReactions = filteredReactions.filter((reaction) => {
+        const reference = getSegmentReference(reaction.segmentID).toLowerCase();
+        const blockTexts = reaction.blockData.children
+          .flatMap(inline => inline.children || [])
+          .map(leaf => leaf.text || "")
+          .join(" ");
+        const blockText = blockTexts.toLowerCase();
+        const query = searchQuery.toLowerCase();
+        
+        return reference.includes(query) || blockText.includes(query);
+      });
+    }
+
+    // Apply active filters
+    if (activeFilters.testament.length > 0) {
+      filteredReactions = filteredReactions.filter(reaction => {
+        const segmentRef = getSegmentReference(reaction.segmentID)
+        const book = segmentRef.split(' ')[0]
+        const oldTestamentBooks = ['Gen', 'Exo', 'Lev', 'Num', 'Deu', 'Jos', 'Jdg', 'Rut', '1Sa', '2Sa', '1Ki', '2Ki', '1Ch', '2Ch', 'Ezr', 'Neh', 'Est', 'Job', 'Psa', 'Pro', 'Ecc', 'SoS', 'Isa', 'Jer', 'Lam', 'Eze', 'Dan', 'Hos', 'Joe', 'Amo', 'Oba', 'Jon', 'Mic', 'Nah', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal']
+        const testament = oldTestamentBooks.includes(book) ? 'Old Testament' : 'New Testament'
+        return activeFilters.testament.includes(testament)
+      })
+    }
+
+    if (activeFilters.sourceColor.length > 0) {
+      filteredReactions = filteredReactions.filter(reaction => 
+        activeFilters.sourceColor.includes(reaction.blockData.source.color)
+      )
+    }
+
+    if (activeFilters.sourceName.length > 0) {
+      filteredReactions = filteredReactions.filter(reaction => 
+        activeFilters.sourceName.includes(reaction.blockData.source.sourceName)
+      )
+    }
+
+    if (activeFilters.book.length > 0) {
+      filteredReactions = filteredReactions.filter(reaction => {
+        const segmentRef = getSegmentReference(reaction.segmentID)
+        const book = segmentRef.split(' ')[0]
+        return activeFilters.book.includes(book)
+      })
+    }
+    
+    // Filter by emoji type if selected
+    if (selectedEmoji) {
+      filteredReactions = filteredReactions.filter((r) => r.emoji === selectedEmoji);
+    }
+    
+    // Sort by most recent
+    return sortReactionsByRecent(filteredReactions);
+  }
+
+  // Toggle filter panel
+  const toggleFilterPanel = () => {
+    if (showFilterPanel) {
+      // Close panel
+      Animated.parallel([
+        Animated.timing(filterPanelAnim, {
+          toValue: -300,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(filterOpacityAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => setShowFilterPanel(false))
+    } else {
+      // Open panel
+      setShowFilterPanel(true)
+      Animated.parallel([
+        Animated.timing(filterPanelAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(filterOpacityAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start()
+    }
+  }
+
+  // Toggle filter option
+  const toggleFilter = (category: keyof typeof activeFilters, value: string) => {
+    setActiveFilters(prev => {
+      const newFilters = { ...prev }
+      const currentValues = newFilters[category]
+      
+      if (currentValues.includes(value)) {
+        newFilters[category] = currentValues.filter(v => v !== value)
+      } else {
+        newFilters[category] = [...currentValues, value]
+      }
+      
+      return newFilters
+    })
+  }
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setActiveFilters({
+      testament: [],
+      sourceColor: [],
+      sourceName: [],
+      book: []
+    })
+  }
+
+  // Get active filter count
+  const getActiveFilterCount = () => {
+    return Object.values(activeFilters).flat().length
   }
 
   // Replace existing filteredReactions with the new function
@@ -571,26 +998,129 @@ const ReadingEmoji = () => {
     return emojiType?.backgroundColor || "#FF6B47"
   }
 
-  const handleLongPress = (reaction: EmojiReaction) => {
-    const segment = SegmentTitles[reaction.segmentID as keyof typeof SegmentTitles]
-    const reference = getSegmentReference(reaction.segmentID)
+  const handleLongPress = useCallback((reaction: EmojiReaction) => {
+    // Reset modal animations first
+    modalScaleAnim.setValue(0);
+    modalOpacityAnim.setValue(0);
+    
+    // Haptic feedback for premium feel
+    if (Platform.OS === 'ios') {
+      try {
+        const Haptics = require('expo-haptics');
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {
+        // Haptics not available
+      }
+    }
+    
+    setSelectedReaction(reaction);
+    setShowJumpModal(true);
+    
+    // Animate modal entrance
+    Animated.parallel([
+      Animated.spring(modalScaleAnim, {
+        toValue: 1,
+        tension: 100,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.timing(modalOpacityAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [modalScaleAnim, modalOpacityAnim]);
 
-    Alert.alert(t("UI.emojiPage.goToSegment"), t("UI.emojiPage.viewVersePrompt", { reference }), [
-      {
-        text: t("UI.emojiPage.cancel"),
-        style: "cancel",
-      },
-      {
-        text: t("UI.emojiPage.go"),
-        onPress: () => {
-          // Navigate to Navigation tab instead of direct navigation
-          router.push({
-            pathname: "/Navigation"
-          });
+  const handleJumpToPassage = useCallback(() => {
+    if (!selectedReaction) return;
+    
+    // Close modal with animation
+    Animated.parallel([
+      Animated.spring(modalScaleAnim, {
+        toValue: 0,
+        tension: 100,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.timing(modalOpacityAnim, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowJumpModal(false);
+      setSelectedReaction(null);
+      // Reset animations
+      modalScaleAnim.setValue(0);
+      modalOpacityAnim.setValue(0);
+      
+      // Navigate to the segment with correct pathname and params format
+      router.push({
+        pathname: "/(tabs)/[segment]" as const,
+        params: {
+          segment: `ENG-NLT-${selectedReaction.segmentID}`,
+        }
+      });
+    });
+  }, [selectedReaction, router, modalScaleAnim, modalOpacityAnim]);
+
+  const handleDeleteReaction = useCallback(() => {
+    if (!selectedReaction) return;
+    
+    Alert.alert(
+      "Remove Emoji",
+      "Are you sure you want to remove this emoji reaction?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
         },
-      },
-    ])
-  }
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteEmoji(selectedReaction.segmentID, selectedReaction.blockID);
+              
+              // Close modal and refresh
+              setShowJumpModal(false);
+              setSelectedReaction(null);
+              setRefreshTrigger((prev) => prev + 1);
+              
+              // Reset modal animations
+              modalScaleAnim.setValue(0);
+              modalOpacityAnim.setValue(0);
+            } catch (error) {
+              console.error('Error deleting emoji:', error);
+            }
+          },
+        },
+      ]
+    );
+  }, [selectedReaction, modalScaleAnim, modalOpacityAnim]);
+
+  const handleCloseModal = useCallback(() => {
+    Animated.parallel([
+      Animated.spring(modalScaleAnim, {
+        toValue: 0,
+        tension: 100,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.timing(modalOpacityAnim, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowJumpModal(false);
+      setSelectedReaction(null);
+      // Ensure animations are fully reset
+      modalScaleAnim.setValue(0);
+      modalOpacityAnim.setValue(0);
+    });
+  }, [modalScaleAnim, modalOpacityAnim]);
 
   const handleEmojiTypeSelect = (emoji: string) => {
     setSelectedEmoji(selectedEmoji === emoji ? null : emoji)
@@ -692,8 +1222,41 @@ const ReadingEmoji = () => {
   const renderHeader = () => (
     <>
       <View style={styles.welcomeSection}>
-        <Text style={styles.welcomeTitle}>{t("UI.emojiPage.title")}</Text>
-        <Text style={styles.welcomeText}>{t("UI.emojiPage.subtitle")}</Text>
+        <View style={styles.welcomeTitleRow}>
+          <View style={styles.welcomeTitleContainer}>
+            <Text style={styles.welcomeTitle}>{t("UI.emojiPage.title")}</Text>
+            <Text style={styles.welcomeText}>{t("UI.emojiPage.subtitle")}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={() => setShowSearch(!showSearch)}
+          >
+            <Ionicons name="search" size={24} color={colors.text} />
+          </TouchableOpacity>
+        </View>
+        
+        {showSearch && (
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search reactions by verse or content..."
+              placeholderTextColor={colors.secondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoCapitalize="none"
+              autoCorrect={false}
+              clearButtonMode="while-editing"
+            />
+            {searchQuery.trim() !== '' && (
+              <TouchableOpacity
+                style={styles.clearSearchButton}
+                onPress={() => setSearchQuery('')}
+              >
+                <Ionicons name="close" size={16} color={colors.secondary} />
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </View>
 
       <View style={styles.gridContainer}>
@@ -739,9 +1302,33 @@ const ReadingEmoji = () => {
       {selectedEmoji && renderEmojiDetailCard()}
 
       {!selectedEmoji && (
-        <View style={styles.recentHeader}>
-          <Ionicons name="time-outline" size={22} color={colors.text} style={styles.recentHeaderIcon} />
-          <Text style={styles.recentHeaderText}>{t("UI.emojiPage.recentReactions")}</Text>
+        <View style={[styles.filterHeader, { marginTop: 8 }]}>
+          <View style={styles.filterHeaderLeft}>
+            <Text style={styles.filterHeaderText}>
+              {filteredReactions.length} {filteredReactions.length === 1 ? 'Reaction' : 'Reactions'}
+            </Text>
+            {getActiveFilterCount() > 0 && (
+              <View style={styles.activeFilterBadge}>
+                <Text style={styles.activeFilterText}>{getActiveFilterCount()}</Text>
+              </View>
+            )}
+          </View>
+          <TouchableOpacity 
+            style={[styles.filterButton, getActiveFilterCount() > 0 && styles.filterButtonActive]}
+            onPress={toggleFilterPanel}
+          >
+            <Ionicons 
+              name="options-outline" 
+              size={20} 
+              color={getActiveFilterCount() > 0 ? '#007AFF' : colors.text} 
+            />
+            <Text style={[
+              styles.filterButtonText, 
+              getActiveFilterCount() > 0 && styles.filterButtonTextActive
+            ]}>
+              Filter
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -760,23 +1347,209 @@ const ReadingEmoji = () => {
   const renderItem = ({ item: reaction, index }: { item: EmojiReaction; index: number }) => {
     try {
       const blockData = typeof reaction.blockData === "string" ? JSON.parse(reaction.blockData) : reaction.blockData
+      
+      // Apply color-based alignment logic
+      const speakerColor = blockData.source.color;
+      
+      // ONLY BLACK (narrator) on left side, ALL OTHER COLORS (red, green, blue) on right side
+      const isLeftSide = speakerColor === "black";
+      const emojiAlignment = isLeftSide ? { left: 10 } : { right: 10 };
+      
+      // Dynamic height positioning - same logic as main reading view
+      // Since all bubbles in Reading-emoji page have hasTail={true}, use 35
+      const emojiTopOffset = 25; // hasTail is always true here
 
       return (
-        <Pressable
-          onLongPress={() => handleLongPress(reaction)}
-          style={styles.reactionItem}
-          android_ripple={{ color: "rgba(0,0,0,0.1)", borderless: false }}
-        >
-          <BibleBlockComponent block={blockData} bIndex={index} toRead={false} hasTail={true} />
-          <Text style={styles.reactionEmoji}>{reaction.emoji}</Text>
+        <View style={styles.reactionItemContainer}>
+          <View style={styles.speechBubbleContainer}>
+            <BibleBlockComponent 
+              block={blockData} 
+              bIndex={index} 
+              toRead={false} 
+              hasTail={true} 
+              disableEmojiHandler={true}
+              onLongPress={(block, blockIndex) => {
+                // Use our custom jump modal instead of EmojiHandler
+                handleLongPress(reaction);
+              }}
+            />
+            <Text style={[styles.reactionEmoji, { top: emojiTopOffset }, emojiAlignment]}>{reaction.emoji}</Text>
+          </View>
           <Text style={styles.referenceText}>{getSegmentReference(reaction.segmentID)}</Text>
-        </Pressable>
+        </View>
       )
     } catch (error) {
       console.error("Error parsing blockData:", error)
       return null
     }
   }
+
+  // Premium Jump to Passage Modal Component
+  const renderJumpToPassageModal = () => (
+    <Modal
+      visible={showJumpModal}
+      transparent={true}
+      animationType="none"
+      onRequestClose={handleCloseModal}
+    >
+      <Pressable style={styles.modalOverlay} onPress={handleCloseModal}>
+        <Animated.View
+          style={[
+            styles.modalContainer,
+            {
+              transform: [{ scale: modalScaleAnim }],
+              opacity: modalOpacityAnim,
+            },
+          ]}
+        >
+          <Text style={styles.modalTitle}>Jump to Passage</Text>
+          <Text style={styles.modalSubtitle}>
+            {selectedReaction ? `Go to ${getSegmentReference(selectedReaction.segmentID)} where you added this ${selectedReaction.emoji} reaction` : ''}
+          </Text>
+          
+          <View style={styles.modalButtonContainer}>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.modalButtonSecondary]}
+              onPress={handleDeleteReaction}
+            >
+              <Text style={[styles.modalButtonText, styles.modalButtonTextSecondary]}>Remove</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.modalButton, styles.modalButtonPrimary]}
+              onPress={handleJumpToPassage}
+            >
+              <Text style={styles.modalButtonText}>Go to Passage</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </Pressable>
+    </Modal>
+  );
+
+  // Premium Filter Panel Component
+  const renderFilterPanel = () => (
+    <Modal
+      visible={showFilterPanel}
+      transparent={false}
+      animationType="slide"
+      onRequestClose={toggleFilterPanel}
+    >
+      <View style={styles.filterPanelContent}>
+        <View style={styles.filterPanelHeader}>
+          <Text style={styles.filterPanelTitle}>Filter Reactions</Text>
+          <TouchableOpacity style={styles.clearAllButton} onPress={clearAllFilters}>
+            <Text style={styles.clearAllText}>Clear All</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+          {/* Testament Filter */}
+          <View style={styles.filterSection}>
+            <Text style={styles.filterSectionTitle}>Testament</Text>
+            {getFilterOptions.testament.map(testament => (
+              <TouchableOpacity
+                key={testament}
+                style={styles.filterOption}
+                onPress={() => toggleFilter('testament', testament)}
+              >
+                <View style={[
+                  styles.filterCheckbox,
+                  activeFilters.testament.includes(testament) && styles.filterCheckboxActive
+                ]}>
+                  {activeFilters.testament.includes(testament) && (
+                    <Ionicons name="checkmark" size={14} color="white" />
+                  )}
+                </View>
+                <Text style={styles.filterOptionText}>{testament}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Source Color Filter */}
+          <View style={styles.filterSection}>
+            <Text style={styles.filterSectionTitle}>Speaker Type</Text>
+            {getAllSpeakerTypes().map(({ color, display }) => (
+              <TouchableOpacity
+                key={color}
+                style={styles.filterOption}
+                onPress={() => toggleFilter('sourceColor', color)}
+              >
+                <View style={[
+                  styles.filterCheckbox,
+                  activeFilters.sourceColor.includes(color) && styles.filterCheckboxActive
+                ]}>
+                  {activeFilters.sourceColor.includes(color) && (
+                    <Ionicons name="checkmark" size={14} color="white" />
+                  )}
+                </View>
+                <View style={styles.sourceColorOption}>
+                  <View style={[styles.sourceColorDot, { backgroundColor: display.bg }]} />
+                  <Text style={styles.filterOptionText}>{display.text}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Source Name Filter */}
+          {getFilterOptions.sourceName.length > 0 && (
+            <View style={styles.filterSection}>
+              <Text style={styles.filterSectionTitle}>Speaker</Text>
+              {getFilterOptions.sourceName.map(sourceName => (
+                <TouchableOpacity
+                  key={sourceName}
+                  style={styles.filterOption}
+                  onPress={() => toggleFilter('sourceName', sourceName)}
+                >
+                  <View style={[
+                    styles.filterCheckbox,
+                    activeFilters.sourceName.includes(sourceName) && styles.filterCheckboxActive
+                  ]}>
+                    {activeFilters.sourceName.includes(sourceName) && (
+                      <Ionicons name="checkmark" size={14} color="white" />
+                    )}
+                  </View>
+                  <Text style={styles.filterOptionText}>{sourceName}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {/* Book Filter */}
+          {getFilterOptions.book.length > 0 && (
+            <View style={styles.filterSection}>
+              <Text style={styles.filterSectionTitle}>Book</Text>
+              {getFilterOptions.book.map(book => (
+                <TouchableOpacity
+                  key={book}
+                  style={styles.filterOption}
+                  onPress={() => toggleFilter('book', book)}
+                >
+                  <View style={[
+                    styles.filterCheckbox,
+                    activeFilters.book.includes(book) && styles.filterCheckboxActive
+                  ]}>
+                    {activeFilters.book.includes(book) && (
+                      <Ionicons name="checkmark" size={14} color="white" />
+                    )}
+                  </View>
+                  <Text style={styles.filterOptionText}>{book}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </ScrollView>
+
+        {/* Apply Button */}
+        <TouchableOpacity
+          style={styles.applyButton}
+          onPress={toggleFilterPanel}
+        >
+          <Text style={styles.applyButtonText}>Apply Filters</Text>
+        </TouchableOpacity>
+      </View>
+    </Modal>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -791,6 +1564,12 @@ const ReadingEmoji = () => {
         onRefresh={() => setRefreshTrigger((prev) => prev + 1)}
         showsVerticalScrollIndicator={false}
       />
+      
+      {/* Premium Jump to Passage Modal */}
+      {renderJumpToPassageModal()}
+      
+      {/* Premium Filter Panel */}
+      {renderFilterPanel()}
     </SafeAreaView>
   )
 }

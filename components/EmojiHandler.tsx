@@ -9,6 +9,7 @@ interface EmojiHandlerProps {
   block: BibleBlock;
   blockIndex: number;
   children: React.ReactNode;
+  hasTail: boolean;
   onLongPress?: (block: BibleBlock, index: number) => void;
 }
 
@@ -18,6 +19,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   block,
   blockIndex,
   children,
+  hasTail,
   onLongPress
 }) => {
   const { segmentId, emojiActions, updateEmojiActions } = useAppContext();
@@ -28,8 +30,17 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
 
   const blockId = `${blockIndex}-${block.source.sourceName}`;
 
-  // Determine if this is a right-aligned bubble (blue/green - Jesus, disciples, etc.)
-  const isRightAligned = block.source.color === "blue" || block.source.color === "green";
+  // Color-based alignment logic
+  const color = block.source.color;
+  
+  // ONLY BLACK (narrator) on left side, ALL OTHER COLORS (red, green, blue) on right side
+  const isLeftSide = color === "black";
+  const emojiAlignment = isLeftSide ? { left: 10 } : { right: 10 };
+  
+  // Adjust top positioning based on whether bubble has tail (source name)
+  // When hasTail=true: bubble has source name above, so emoji positioned at standard height
+  // When hasTail=false: consecutive bubbles need emoji positioned higher (smaller top value)
+  const emojiTopOffset = hasTail ? 35 : -15;
 
   // Load existing emoji when component mounts
   useEffect(() => {
@@ -130,17 +141,13 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
           {children}
         </Pressable>
         
-        {/* Emoji badge positioned based on bubble alignment and 50% overlapping */}
+        {/* Emoji positioned using the working version's logic */}
         {existingEmoji && (
-          <Pressable 
-            style={[
-              styles.emojiBadge,
-              isRightAligned ? styles.emojiBadgeLeft : styles.emojiBadgeRight
-            ]}
-            onPress={handleEmojiDelete}
-          >
-            <Text style={styles.emojiBadgeText}>{existingEmoji}</Text>
-          </Pressable>
+          <View style={[styles.reactionContainer, { top: emojiTopOffset }, emojiAlignment]}>
+            <Pressable onPress={handleEmojiDelete}>
+              <Text style={styles.reactionText}>{existingEmoji}</Text>
+            </Pressable>
+          </View>
         )}
       </View>
 
@@ -171,34 +178,25 @@ const styles = StyleSheet.create({
   pressableArea: {
     // Ensure the pressable area covers the entire bubble
   },
-  emojiBadge: {
-    position: 'absolute',
-    top: -8, // Position 50% above the speech bubble (half of badge height)
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    borderWidth: 2,
-    borderColor: '#fff',
+  // Using the working version's styling for emoji positioning
+  reactionContainer: {
+    flexDirection: "row",
+    padding: 5,
+    position: "absolute",  // CRITICAL: Must be absolute
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    zIndex: 100,  // CRITICAL: High z-index to appear above bubble
   },
-  emojiBadgeRight: {
-    right: 8, // For left-aligned bubbles (narrator, God) - position on right
-  },
-  emojiBadgeLeft: {
-    left: 8, // For right-aligned bubbles (Jesus, disciples) - position on left
-  },
-  emojiBadgeText: {
-    fontSize: 18,
+  reactionText: {
+    fontSize: 30, // Match the working version size
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
 });
 

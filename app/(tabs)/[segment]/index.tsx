@@ -168,35 +168,7 @@ export default function BibleScreen() {
     isVisible.setValue(1);
   }, [segID, isVisible]);
 
-  // Show loading state if data isn't ready
-  if (!segID || !segmentData) {
-    return (
-      <View style={[styles.container, styles.centered]}>
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
-    );
-  }
-
-  // Navigation handler
-  const handleNavigation = (segId: string) => {
-    const cleanSegId = segId.includes('-') ? segId.split('-').pop() || segId : segId;
-    
-    updateSegmentId(cleanSegId);
-    router.push({
-      pathname: "/(tabs)/[segment]",
-      params: {
-        segment: cleanSegId,
-        ...(planId ? { planId } : {}),
-        ...(challengeId ? { challengeId } : {})
-      }
-    });
-    flatListRef.current?.scrollTo({
-      y: 0,
-      animated: false,
-    });
-  };
-
-  // Get context-aware navigation segments
+  // Get context-aware navigation segments (MUST be before early return)
   const { prevSegId, nextSegId } = useMemo(() => {
     // Make sure language and version are defined
     if (!language || !version) {
@@ -238,6 +210,34 @@ export default function BibleScreen() {
       };
     }
   }, [segID, planId, challengeId, language, version]);
+
+  // Show loading state if data isn't ready
+  if (!segID || !segmentData) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
+
+  // Navigation handler
+  const handleNavigation = (segId: string) => {
+    const cleanSegId = segId.includes('-') ? segId.split('-').pop() || segId : segId;
+    
+    updateSegmentId(cleanSegId);
+    router.push({
+      pathname: "/(tabs)/[segment]",
+      params: {
+        segment: cleanSegId,
+        ...(planId ? { planId } : {}),
+        ...(challengeId ? { challengeId } : {})
+      }
+    });
+    flatListRef.current?.scrollTo({
+      y: 0,
+      animated: false,
+    });
+  };
 
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;

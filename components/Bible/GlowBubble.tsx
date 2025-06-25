@@ -43,10 +43,11 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: Bible
   const tailAlignment = color !== "black" ? { left: 15 } : { right: 15 };
 
   return (
-    <View key={bIndex}>
+    <View key={bIndex} style={{ position: 'relative' }}>
       <EmojiHandler
         block={block}
         blockIndex={bIndex}
+        hasTail={hasTail}
         onLongPress={onLongPress}
       >
         {hasTail && <SourceNameComponent sourceName={sourceName} align={color !== "black" ? "left" : "right"} />}
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
   bubble: {
     borderRadius: 10,
     padding: 10,
-    position: "relative",
+    position: "relative", // CRITICAL: Supports absolute positioning of emojis
     margin: 10,
     ...Platform.select({
       web: {

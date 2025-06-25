@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import BibleInlineComponent from "./Inline";
 import { BibleBlock } from "@/types";
 import SourceNameComponent from "./SourceName";
@@ -16,6 +16,7 @@ interface BibleBlockProps {
   isGlowing?: boolean;
   hasTail: boolean;
   onLongPress?: (block: BibleBlock, index: number) => void;
+  disableEmojiHandler?: boolean;
 }
 
 const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({ 
@@ -24,7 +25,8 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
   toRead, 
   isGlowing,
   hasTail, 
-  onLongPress 
+  onLongPress,
+  disableEmojiHandler = false
 }) => {
   const { colors } = useAppSettings();
   const { source, children } = block;
@@ -49,7 +51,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
   const styles = StyleSheet.create({
     outerContainer: {
       marginBottom: 8,
-      position: 'relative',
+      position: 'relative', // CRITICAL: Supports absolute positioning of emojis
       zIndex: 1,
     },
     container: {
@@ -80,11 +82,62 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
     },
   });
 
+  if (disableEmojiHandler) {
+    // Render without EmojiHandler for Reading-emoji page
+    return (
+      <View style={styles.outerContainer}>
+        <Pressable
+          onLongPress={() => onLongPress?.(block, bIndex)}
+          delayLongPress={500}
+        >
+          {hasTail && (
+            <SourceNameComponent
+              sourceName={sourceName}
+              align={color !== "black" ? "left" : "right"}
+            />
+          )}
+          <View
+            style={[
+              styles.container,
+              { backgroundColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')] }
+            ]}
+          >
+            {hasTail && (
+              <View
+                style={[
+                  styles.tail,
+                  {
+                    borderBottomColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')],
+                  },
+                  tailAlignment,
+                ]}
+              />
+            )}
+            <View>
+              {children.map((item: any, index: number) => {
+                if (item.type === "break") return null;
+                return (
+                  <BibleInlineComponent
+                    key={`${bIndex}-${index}`}
+                    iIndex={`${bIndex}-${index}`}
+                    inline={item}
+                    textColor={colors.text}
+                  />
+                );
+              })}
+            </View>
+          </View>
+        </Pressable>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.outerContainer}>
       <EmojiHandler
         block={block}
         blockIndex={bIndex}
+        hasTail={hasTail}
         onLongPress={onLongPress}
       >
         {hasTail && (

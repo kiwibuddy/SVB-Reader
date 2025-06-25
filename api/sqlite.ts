@@ -374,15 +374,20 @@ export async function addEmoji(
   emoji: string
 ) {
   try {
+    // Normalize segmentID format - remove language-version prefix if present
+    const normalizedSegmentID = segmentID.includes('-') 
+      ? segmentID.split('-').pop() || segmentID 
+      : segmentID;
+    
     // First delete any existing emoji
-    await deleteEmoji(segmentID, blockID);
+    await deleteEmoji(normalizedSegmentID, blockID);
     
     // Then insert the new emoji
     await db.runAsync(
       `INSERT INTO emojis (segmentID, blockID, blockData, emoji, note)
        VALUES (?, ?, ?, ?, ?)`,
       [
-        segmentID,
+        normalizedSegmentID,
         blockID,
         JSON.stringify(blockData),
         emoji,
@@ -398,10 +403,15 @@ export async function addEmoji(
 // New function to delete an emoji by segmentID and blockID
 export async function deleteEmoji(segmentID: string, blockID: string) {
   try {
+    // Normalize segmentID format - remove language-version prefix if present
+    const normalizedSegmentID = segmentID.includes('-') 
+      ? segmentID.split('-').pop() || segmentID 
+      : segmentID;
+    
     await db.runAsync(
       `DELETE FROM emojis 
        WHERE segmentID = ? AND blockID = ?`,
-      [segmentID, blockID]
+      [normalizedSegmentID, blockID]
     );
   } catch (error) {
     console.error("Error deleting emoji:", error);
@@ -412,10 +422,15 @@ export async function deleteEmoji(segmentID: string, blockID: string) {
 // New function to get the emoji for a given segmentID and blockID
 export async function getEmoji(segmentID: string, blockID: string): Promise<string | null> {
   try {
+    // Normalize segmentID format - remove language-version prefix if present
+    const normalizedSegmentID = segmentID.includes('-') 
+      ? segmentID.split('-').pop() || segmentID 
+      : segmentID;
+    
     const result = await db.getFirstAsync<{ emoji: string }>(
       `SELECT emoji FROM emojis 
        WHERE segmentID = ? AND blockID = ?`,
-      [segmentID, blockID]
+      [normalizedSegmentID, blockID]
     );
     return result?.emoji || null;
   } catch (error) {
