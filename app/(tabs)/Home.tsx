@@ -1300,36 +1300,6 @@ const HomeScreen = () => {
     setShowReadingModeModal(false);
   };
 
-  // Get story data for the modal
-  const getStoryData = () => {
-    if (!selectedSegmentId) {
-      console.log('ReadingModeModal: No segment ID selected');
-      // Return a fallback object with required properties
-      return {
-        id: '',
-        content: [],
-        colors: { total: 0, black: 0, red: 0, green: 0, blue: 0 },
-        sources: {}
-      };
-    }
-    
-    const storyData = BibleData[selectedSegmentId as keyof typeof BibleData];
-    const segmentData = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
-    
-    if (!storyData && !segmentData) {
-      console.log('ReadingModeModal: Could not find story data for segment:', selectedSegmentId);
-      // Return a fallback object with required properties
-      return {
-        id: selectedSegmentId,
-        content: [],
-        colors: { total: 0, black: 0, red: 0, green: 0, blue: 0 },
-        sources: {}
-      };
-    }
-    
-    return storyData || segmentData;
-  };
-
   // Filter nearby groups to show only non-dismissed ones
   const visibleNearbyGroups = nearbyGroups.filter(group => 
     !dismissedGroups.has(group.id) && !currentSession
@@ -1404,6 +1374,20 @@ const HomeScreen = () => {
       ? ['transparent', 'rgba(0,0,0,0.8)']
       : ['transparent', 'rgba(0,0,0,0.7)'];
   }; */
+
+  // Handle segment selection - show ReadingModeModal instead of direct navigation
+  const handleSegmentSelect = (segmentId: string) => {
+    if (!segmentId) {
+      return;
+    }
+    const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+    if (segmentData) {
+      setSelectedSegmentId(segmentId);
+      setSelectedSegmentTitle(segmentData.title);
+      setSelectedSegmentRef(segmentData.ref || '');
+      setShowReadingModeModal(true);
+    }
+  };
 
   return (
     <View style={localStyles.container}>
@@ -1598,11 +1582,10 @@ const HomeScreen = () => {
       </ScrollView>
 
       <ReadingModeModal
-        visible={showReadingModeModal}
-        story={getStoryData()}
+        visible={showReadingModeModal && !!selectedSegmentId}
         storyTitle={selectedSegmentTitle}
         scriptureReference={selectedSegmentRef}
-        storyId={selectedSegmentId}
+        storyId={selectedSegmentId || ''}
         onIndividual={handleIndividualReading}
         onGroup={handleGroupReading}
         onCancel={handleCancelModal}

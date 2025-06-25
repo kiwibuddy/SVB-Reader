@@ -1373,7 +1373,12 @@ const ReadingEmoji = () => {
                 handleLongPress(reaction);
               }}
             />
-            <Text style={[styles.reactionEmoji, { top: emojiTopOffset }, emojiAlignment]}>{reaction.emoji}</Text>
+            <Text 
+              style={[styles.reactionEmoji, { top: emojiTopOffset }, emojiAlignment]}
+              pointerEvents="none"
+            >
+              {reaction.emoji}
+            </Text>
           </View>
           <Text style={styles.referenceText}>{getSegmentReference(reaction.segmentID)}</Text>
         </View>
@@ -1563,6 +1568,8 @@ const ReadingEmoji = () => {
         refreshing={isLoading}
         onRefresh={() => setRefreshTrigger((prev) => prev + 1)}
         showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        removeClippedSubviews={false}
       />
       
       {/* Premium Jump to Passage Modal */}

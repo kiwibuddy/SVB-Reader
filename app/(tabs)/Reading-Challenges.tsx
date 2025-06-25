@@ -490,6 +490,9 @@ const ChallengesScreen = () => {
 
   // Handle segment selection - show ReadingModeModal instead of direct navigation
   const handleSegmentSelect = (segmentId: string) => {
+    if (!segmentId) {
+      return;
+    }
     const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
     if (segmentData) {
       setSelectedSegmentId(segmentId);
@@ -528,11 +531,6 @@ const ChallengesScreen = () => {
 
   const handleCancelModal = () => {
     setShowReadingModeModal(false);
-  };
-
-  // Get story data for the modal
-  const getStoryData = () => {
-    return BibleData[selectedSegmentId as keyof typeof BibleData] || SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
   };
 
   const scrollViewRef = useRef<ScrollView>(null);
@@ -607,11 +605,10 @@ const ChallengesScreen = () => {
       />
       
       <ReadingModeModal
-        visible={showReadingModeModal}
-        story={getStoryData()}
+        visible={showReadingModeModal && !!selectedSegmentId}
         storyTitle={selectedSegmentTitle}
         scriptureReference={selectedSegmentRef}
-        storyId={selectedSegmentId}
+        storyId={selectedSegmentId || ''}
         onIndividual={handleIndividualReading}
         onGroup={handleGroupReading}
         onCancel={handleCancelModal}

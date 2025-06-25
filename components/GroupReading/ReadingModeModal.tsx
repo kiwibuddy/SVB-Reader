@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,45 +7,28 @@ import {
   Animated,
   Dimensions,
   Platform,
-  SafeAreaView,
-  ScrollView,
+  Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
-import { SegmentType, IntroType } from '@/types';
-import BibleData from "@/assets/data/newBibleNLT1.json";
-import SegmentTitles from "@/assets/data/SegmentTitles.json";
-import Books from "@/assets/data/BookChapterList.json";
-import { getSegmentReadingTime } from '@/utils/readingTime';
 
 const { height: screenHeight } = Dimensions.get('window');
 
-// Helper function to get book name
-const getBookName = (bookCode: string): string => {
-  const book = Books[bookCode as keyof typeof Books];
-  return book?.bookName || bookCode;
-};
-
 interface ReadingModeModalProps {
   visible: boolean;
-  story: SegmentType | IntroType;
   storyTitle: string;
   scriptureReference: string;
-  storyId?: string; // Add optional storyId prop
+  storyId: string;
   onIndividual: () => void;
   onGroup: () => void;
   onCancel: () => void;
 }
 
-// Type assertion for Bible data
-const Bible: { [key: string]: SegmentType } = BibleData as { [key: string]: SegmentType };
-
 const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
   visible,
-  story,
   storyTitle,
   scriptureReference,
-  storyId: propStoryId,
+  storyId,
   onIndividual,
   onGroup,
   onCancel,
@@ -53,68 +36,38 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
   const { colors } = useAppSettings();
   const [slideAnim] = React.useState(new Animated.Value(screenHeight));
   const [backdropOpacity] = React.useState(new Animated.Value(0));
-  const [autoCloseTimer, setAutoCloseTimer] = React.useState<ReturnType<typeof setTimeout> | null>(null);
 
-  // Extract story ID - this should match the segment ID from the Bible data
-  const storyId = useMemo(() => {
-    // First, try to use the provided storyId prop
-    if (propStoryId) {
-      return propStoryId;
+  useEffect(() => {
+    if (visible) {
+      // Show animation
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      // Hide animation
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: screenHeight,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start();
     }
-    
-    // Then, try to use the story object if it has an ID
-    if (story && typeof story === 'object' && 'id' in story) {
-      return story.id;
-    }
-    
-    // If story is a string, it might be the segment ID directly
-    if (typeof story === 'string') {
-      return story;
-    }
-    
-    // Try to find segment ID by matching the story title
-    const foundSegment = Object.entries(SegmentTitles).find(([_, segment]) => 
-      segment.title === storyTitle
-    );
-    
-    if (foundSegment) {
-      return foundSegment[0];
-    }
-    
-    console.log('ReadingModeModal: Could not determine story ID', { story, storyTitle, propStoryId, SegmentTitlesKeys: Object.keys(SegmentTitles).slice(0, 5) });
-    return null;
-  }, [propStoryId, story, storyTitle]);
-
-  // Get segment data and calculate role distribution
-  const segmentData = useMemo(() => {
-    if (!storyId) return null;
-    return Bible[storyId];
-  }, [storyId]);
-
-  // Get segment title data
-  const segmentTitleData = useMemo(() => {
-    if (!storyId) return null;
-    return SegmentTitles[storyId as keyof typeof SegmentTitles];
-  }, [storyId]);
-
-  // Get reading time from pre-calculated data
-  const readingTime = useMemo(() => {
-    if (!storyId) return 0;
-    const time = getSegmentReadingTime(storyId);
-    console.log('ReadingModeModal: Reading time from lookup', { 
-      storyId, 
-      readingTime: time
-    });
-    return time;
-  }, [storyId]);
-
-  // Get book name
-  const bookName = useMemo(() => {
-    if (!segmentTitleData?.book?.[0]) return '';
-    return getBookName(segmentTitleData.book[0]);
-  }, [segmentTitleData?.book]);
-
-
+  }, [visible, slideAnim, backdropOpacity]);
 
   const styles = StyleSheet.create({
     backdrop: {
@@ -124,7 +77,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       right: 0,
       bottom: 0,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      zIndex: 1000,
+      zIndex: 99999,
     },
     modalContainer: {
       position: 'absolute',
@@ -133,7 +86,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       right: 0,
       bottom: 0,
       backgroundColor: colors.background,
-      zIndex: 1001,
+      zIndex: 100000,
     },
     header: {
       flexDirection: 'row',
@@ -172,13 +125,6 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       marginBottom: 8,
       textAlign: 'center',
     },
-    bookName: {
-      fontSize: 16,
-      fontWeight: '500',
-      color: colors.text,
-      marginBottom: 4,
-      textAlign: 'center',
-    },
     scriptureRef: {
       fontSize: 16,
       color: colors.secondary,
@@ -186,12 +132,6 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       fontStyle: 'italic',
       marginBottom: 8,
     },
-    readingTime: {
-      fontSize: 14,
-      color: colors.secondary,
-      textAlign: 'center',
-    },
-
     readingOptionsContainer: {
       flex: 1,
     },
@@ -202,11 +142,6 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       marginBottom: 16,
       borderColor: colors.border,
       borderWidth: 1,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 8,
-      elevation: 2,
     },
     optionHeader: {
       flexDirection: 'row',
@@ -263,166 +198,117 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       paddingHorizontal: 32,
     },
     cancelButtonText: {
-      color: colors.secondary,
       fontSize: 16,
+      color: colors.secondary,
       fontWeight: '500',
     },
-
   });
-
-  useEffect(() => {
-    if (visible) {
-      // Animate in
-      Animated.parallel([
-        Animated.timing(backdropOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: false,
-        }),
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          tension: 100,
-          friction: 8,
-          useNativeDriver: false,
-        }),
-      ]).start();
-
-      // Set auto-close timer for 30 seconds
-      const timer = setTimeout(() => {
-        onCancel();
-      }, 30000);
-      setAutoCloseTimer(timer);
-    } else {
-      // Animate out
-      Animated.parallel([
-        Animated.timing(backdropOpacity, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: false,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: screenHeight,
-          duration: 300,
-          useNativeDriver: false,
-        }),
-      ]).start();
-    }
-
-    return () => {
-      if (autoCloseTimer) {
-        clearTimeout(autoCloseTimer);
-      }
-    };
-  }, [visible]);
 
   const handleBackdropPress = () => {
     onCancel();
   };
 
   const handleIndividualPress = () => {
-    if (autoCloseTimer) {
-      clearTimeout(autoCloseTimer);
-    }
     onIndividual();
   };
 
   const handleGroupPress = () => {
-    if (autoCloseTimer) {
-      clearTimeout(autoCloseTimer);
-    }
     onGroup();
   };
 
+  if (!visible) {
+    return null;
+  }
 
-
-  if (!visible) return null;
+  if (!storyId) {
+    return null;
+  }
 
   return (
     <>
       <Animated.View 
         style={[styles.backdrop, { opacity: backdropOpacity }]}
-        onTouchEnd={handleBackdropPress}
-      />
+      >
+        <Pressable 
+          style={{ flex: 1 }} 
+          onPress={handleBackdropPress}
+        />
+      </Animated.View>
+      
       <Animated.View 
         style={[
-          styles.modalContainer,
-          { transform: [{ translateY: slideAnim }] }
+          styles.modalContainer, 
+          { 
+            transform: [{ translateY: slideAnim }] 
+          }
         ]}
       >
-        <SafeAreaView style={{ flex: 1 }}>
-          <View style={styles.header}>
-            <TouchableOpacity style={styles.closeButton} onPress={onCancel}>
-              <Ionicons name="close" size={24} color={colors.text} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Choose Reading Mode</Text>
-            <View style={{ width: 24 }} />
+        <View style={styles.header}>
+          <View style={{ width: 32 }} />
+          <Text style={styles.headerTitle}>Choose Reading Mode</Text>
+          <TouchableOpacity 
+            style={styles.closeButton}
+            onPress={onCancel}
+          >
+            <Ionicons name="close" size={24} color={colors.text} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.content}>
+          <View style={styles.storyInfo}>
+            <Text style={styles.storyTitle}>{storyTitle}</Text>
+            {scriptureReference && (
+              <Text style={styles.scriptureRef}>{scriptureReference}</Text>
+            )}
           </View>
 
-                    <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-            <View style={styles.storyInfo}>
-              <Text style={styles.storyTitle}>{storyTitle}</Text>
-              <Text style={styles.bookName}>{bookName}</Text>
-              {scriptureReference && (
-                <Text style={styles.scriptureRef}>{scriptureReference}</Text>
-              )}
-              <Text style={styles.readingTime}>
-                {readingTime} minute{readingTime !== 1 ? 's' : ''} estimated reading time
+          <View style={styles.readingOptionsContainer}>
+            <View style={styles.readingOption}>
+              <View style={styles.optionHeader}>
+                <View style={styles.optionIcon}>
+                  <Ionicons name="person-outline" size={24} color="#FF5733" />
+                </View>
+                <Text style={styles.optionTitle}>Read Alone</Text>
+              </View>
+              <Text style={styles.optionDescription}>
+                Enjoy a personal reading experience at your own pace with interactive features and personalized insights.
               </Text>
-            </View>
-
-            <View style={styles.readingOptionsContainer}>
-              <View style={styles.readingOption}>
-                <View style={styles.optionHeader}>
-                  <View style={styles.optionIcon}>
-                    <Ionicons 
-                      name="person-outline" 
-                      size={24} 
-                      color="#FF5733" 
-                    />
-                  </View>
-                  <Text style={styles.optionTitle}>Read Alone</Text>
-                </View>
-                <Text style={styles.optionDescription}>
-                  Read this story by yourself. You can select any reading role or read all parts.
-                </Text>
-                <TouchableOpacity 
-                  style={[styles.actionButton, styles.primaryButton]} 
-                  onPress={handleIndividualPress}
-                >
-                  <Text style={styles.primaryButtonText}>Start Reading</Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.readingOption}>
-                <View style={styles.optionHeader}>
-                  <View style={styles.optionIcon}>
-                    <Ionicons 
-                      name="people-outline" 
-                      size={24} 
-                      color="#FF5733" 
-                    />
-                  </View>
-                  <Text style={styles.optionTitle}>Read with Friends</Text>
-                </View>
-                <Text style={styles.optionDescription}>
-                  Start a group reading session. Up to 4 people can join and each person reads their assigned role parts.
-                </Text>
-                <TouchableOpacity 
-                  style={[styles.actionButton, styles.secondaryButton]} 
-                  onPress={handleGroupPress}
-                >
-                  <Text style={styles.secondaryButtonText}>Set Up Group</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <View style={styles.bottomSection}>
-              <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.primaryButton]}
+                onPress={handleIndividualPress}
+              >
+                <Text style={styles.primaryButtonText}>Start Individual Reading</Text>
               </TouchableOpacity>
             </View>
-          </ScrollView>
-        </SafeAreaView>
+
+            <View style={styles.readingOption}>
+              <View style={styles.optionHeader}>
+                <View style={styles.optionIcon}>
+                  <Ionicons name="people-outline" size={24} color="#FF5733" />
+                </View>
+                <Text style={styles.optionTitle}>Read with Others</Text>
+              </View>
+              <Text style={styles.optionDescription}>
+                Create or join a group reading session to experience Scripture together with synchronized reading and shared discussions.
+              </Text>
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.secondaryButton]}
+                onPress={handleGroupPress}
+              >
+                <Text style={styles.secondaryButtonText}>Start Group Reading</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.bottomSection}>
+            <TouchableOpacity 
+              style={styles.cancelButton}
+              onPress={onCancel}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Animated.View>
     </>
   );

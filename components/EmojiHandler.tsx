@@ -56,44 +56,9 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   }, [segmentId, blockId, emojiActions]);
 
   const handleLongPress = useCallback(() => {
-    if (bubbleRef.current) {
-      // Add a small delay to ensure the bubble is fully rendered
-      setTimeout(() => {
-        bubbleRef.current?.measure((x, y, width, height, pageX, pageY) => {
-          const PICKER_WIDTH = 240; // Approximate picker width
-          const PICKER_HEIGHT = 80; // Approximate picker height
-          const MARGIN = 20; // Margin from screen edges
-          const BUBBLE_SPACING = 15; // Space above the speech bubble
-
-          // Center horizontally on the bubble
-          let adjustedX = pageX + (width / 2) - (PICKER_WIDTH / 2);
-          
-          // Position above the speech bubble (not on top of it)
-          let adjustedY = pageY - PICKER_HEIGHT - BUBBLE_SPACING;
-
-          // Ensure picker stays within screen bounds horizontally
-          if (adjustedX < MARGIN) {
-            adjustedX = MARGIN;
-          } else if (adjustedX + PICKER_WIDTH > screenWidth - MARGIN) {
-            adjustedX = screenWidth - PICKER_WIDTH - MARGIN;
-          }
-
-          // Ensure picker stays within screen bounds vertically
-          // If there's not enough space above, place it below the bubble
-          if (adjustedY < MARGIN) {
-            adjustedY = pageY + height + BUBBLE_SPACING; // Below the bubble if no room above
-            
-            // If it still doesn't fit below, center it vertically on screen
-            if (adjustedY + PICKER_HEIGHT > screenHeight - MARGIN) {
-              adjustedY = (screenHeight - PICKER_HEIGHT) / 2;
-            }
-          }
-
-          setPickerPosition({ x: adjustedX, y: adjustedY });
-          setShowPicker(true);
-        });
-      }, 50);
-    }
+    // Simple test first - show picker immediately
+    setShowPicker(true);
+    setPickerPosition({ x: screenWidth / 2 - 120, y: screenHeight / 2 - 40 });
 
     // Call parent's onLongPress if provided
     if (onLongPress) {
@@ -177,6 +142,8 @@ const styles = StyleSheet.create({
   },
   pressableArea: {
     // Ensure the pressable area covers the entire bubble
+    flex: 1,
+    width: '100%',
   },
   // Using the working version's styling for emoji positioning
   reactionContainer: {
