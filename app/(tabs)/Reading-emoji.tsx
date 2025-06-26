@@ -1072,11 +1072,11 @@ const ReadingEmoji = () => {
       "Remove Emoji",
       "Are you sure you want to remove this emoji reaction?",
       [
-        {
+      {
           text: "Cancel",
-          style: "cancel",
-        },
-        {
+        style: "cancel",
+      },
+      {
           text: "Remove",
           style: "destructive",
           onPress: async () => {
@@ -1224,8 +1224,8 @@ const ReadingEmoji = () => {
       <View style={styles.welcomeSection}>
         <View style={styles.welcomeTitleRow}>
           <View style={styles.welcomeTitleContainer}>
-            <Text style={styles.welcomeTitle}>{t("UI.emojiPage.title")}</Text>
-            <Text style={styles.welcomeText}>{t("UI.emojiPage.subtitle")}</Text>
+        <Text style={styles.welcomeTitle}>{t("UI.emojiPage.title")}</Text>
+        <Text style={styles.welcomeText}>{t("UI.emojiPage.subtitle")}</Text>
           </View>
           <TouchableOpacity
             style={styles.searchButton}

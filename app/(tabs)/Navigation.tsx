@@ -793,15 +793,15 @@ const Navigation = () => {
           </Text>
         </View>
         
-        <FlatList
+      <FlatList
           style={{ flex: 1 }}
-          data={filteredData}
-          ListHeaderComponent={ListHeaderComponent}
-          renderItem={({ item }) => {
-            const bookIndex = booksArray.findIndex(book => book === item.djhBook);
-            const parsedRef = parseReferenceEnhanced(searchQuery);
-            const isSelected = (showSearch && selectedBook === item.djhBook) || 
-                             (parsedRef && findBookByName(parsedRef.book) === item.djhBook);
+        data={filteredData}
+        ListHeaderComponent={ListHeaderComponent}
+        renderItem={({ item }) => {
+          const bookIndex = booksArray.findIndex(book => book === item.djhBook);
+          const parsedRef = parseReferenceEnhanced(searchQuery);
+          const isSelected = (showSearch && selectedBook === item.djhBook) || 
+                           (parsedRef && findBookByName(parsedRef.book) === item.djhBook);
             
             // Get filtered segments for this book
             const filteredSegments = getFilteredSegments(item.segments, item.djhBook);
@@ -809,26 +809,26 @@ const Navigation = () => {
               ...item,
               segments: filteredSegments
             };
-
-            return (
-              <Accordion 
+          
+          return (
+            <Accordion 
                 item={itemWithFilteredSegments} 
-                bookIndex={bookIndex}
-                context="main"
-                showGlobalCompletion={true}
-                style={{ backgroundColor: '#FFF' }}
-                isExpanded={!!(isSelected && showSearch)}
-                onBookSelect={handleBookSelect}
-                onSegmentSelect={handleSegmentSelect}
-                completedSegments={completedSegmentIds}
-                highlightedSegment={highlightedSegment}
-                searchQuery={searchQuery}
+              bookIndex={bookIndex}
+              context="main"
+              showGlobalCompletion={true}
+              style={{ backgroundColor: '#FFF' }}
+              isExpanded={!!(isSelected && showSearch)}
+              onBookSelect={handleBookSelect}
+              onSegmentSelect={handleSegmentSelect}
+              completedSegments={completedSegmentIds}
+              highlightedSegment={highlightedSegment}
+              searchQuery={searchQuery}
                 originalSegmentCount={item.segments.length}
-              />
-            );
-          }}
-          keyExtractor={(item) => String(item.djhBook)}
-        />
+            />
+          );
+        }}
+        keyExtractor={(item) => String(item.djhBook)}
+      />
       </View>
               <ReadingModeModal
           visible={showReadingModeModal && !!selectedSegmentId}

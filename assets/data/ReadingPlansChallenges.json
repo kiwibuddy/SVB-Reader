@@ -468,46 +468,106 @@
           ]
         },
         "Rom": {
-          "segments": ["I045", "S320", "S321", "S322", "S323", "S324", "S325"]
+          "segments": [
+            "I045",
+            "S320",
+            "S321",
+            "S322",
+            "S323",
+            "S324",
+            "S325"
+          ]
         },
         "1Co": {
-          "segments": ["I046", "S326", "S327", "S328", "S329", "S330"]
+          "segments": [
+            "I046",
+            "S326",
+            "S327",
+            "S328",
+            "S329",
+            "S330"
+          ]
         },
         "2Co": {
-          "segments": ["I047", "S331", "S332", "S333", "S334"]
+          "segments": [
+            "I047",
+            "S331",
+            "S332",
+            "S333",
+            "S334"
+          ]
         },
         "Gal": {
-          "segments": ["I048", "S335", "S336"]
+          "segments": [
+            "I048",
+            "S335",
+            "S336"
+          ]
         },
         "Eph": {
-          "segments": ["I049", "S337", "S338"]
+          "segments": [
+            "I049",
+            "S337",
+            "S338"
+          ]
         },
         "Php": {
-          "segments": ["I050", "S339"]
+          "segments": [
+            "I050",
+            "S339"
+          ]
         },
         "Col": {
-          "segments": ["I051", "S340"]
+          "segments": [
+            "I051",
+            "S340"
+          ]
         },
         "1Th": {
-          "segments": ["I052", "S341"]
+          "segments": [
+            "I052",
+            "S341"
+          ]
         },
         "2Th": {
-          "segments": ["I053", "S342"]
+          "segments": [
+            "I053",
+            "S342"
+          ]
         },
         "1Ti": {
-          "segments": ["I054", "S343"]
+          "segments": [
+            "I054",
+            "S343"
+          ]
         },
         "2Ti": {
-          "segments": ["I055", "S344"]
+          "segments": [
+            "I055",
+            "S344"
+          ]
         },
         "Tit": {
-          "segments": ["I056", "S345"]
+          "segments": [
+            "I056",
+            "S345"
+          ]
         },
         "Phm": {
-          "segments": ["I057", "S346"]
+          "segments": [
+            "I057",
+            "S346"
+          ]
         },
         "Heb": {
-          "segments": ["I058", "S347", "S348", "S349", "S350", "S351"]
+          "segments": [
+            "I058",
+            "S347",
+            "S348",
+            "S349",
+            "S350",
+            "S351"
+          ]
         },
         "Jam": {
           "segments": ["I059", "S352"]
@@ -1365,67 +1425,148 @@
           ]
         },
         "Rom": {
-          "segments": ["I045", "S320", "S321", "S322", "S323", "S324", "S325"]
+          "segments": [
+            "I045",
+            "S320",
+            "S321",
+            "S322",
+            "S323",
+            "S324",
+            "S325"
+          ]
         },
         "1Co": {
-          "segments": ["I046", "S326", "S327", "S328", "S329", "S330"]
+          "segments": [
+            "I046",
+            "S326",
+            "S327",
+            "S328",
+            "S329",
+            "S330"
+          ]
         },
         "2Co": {
-          "segments": ["I047", "S331", "S332", "S333", "S334"]
+          "segments": [
+            "I047",
+            "S331",
+            "S332",
+            "S333",
+            "S334"
+          ]
         },
         "Gal": {
-          "segments": ["I048", "S335", "S336"]
+          "segments": [
+            "I048",
+            "S335",
+            "S336"
+          ]
         },
         "Eph": {
-          "segments": ["I049", "S337", "S338"]
+          "segments": [
+            "I049",
+            "S337",
+            "S338"
+          ]
         },
         "Php": {
-          "segments": ["I050", "S339"]
+          "segments": [
+            "I050",
+            "S339"
+          ]
         },
         "Col": {
-          "segments": ["I051", "S340"]
+          "segments": [
+            "I051",
+            "S340"
+          ]
         },
         "1Th": {
-          "segments": ["I052", "S341"]
+          "segments": [
+            "I052",
+            "S341"
+          ]
         },
         "2Th": {
-          "segments": ["I053", "S342"]
+          "segments": [
+            "I053",
+            "S342"
+          ]
         },
         "1Ti": {
-          "segments": ["I054", "S343"]
+          "segments": [
+            "I054",
+            "S343"
+          ]
         },
         "2Ti": {
-          "segments": ["I055", "S344"]
+          "segments": [
+            "I055",
+            "S344"
+          ]
         },
         "Tit": {
-          "segments": ["I056", "S345"]
+          "segments": [
+            "I056",
+            "S345"
+          ]
         },
         "Phm": {
-          "segments": ["I057", "S346"]
+          "segments": [
+            "I057",
+            "S346"
+          ]
         },
         "Heb": {
-          "segments": ["I058", "S347", "S348", "S349", "S350", "S351"]
+          "segments": [
+            "I058",
+            "S347",
+            "S348",
+            "S349",
+            "S350",
+            "S351"
+          ]
         },
         "Jam": {
-          "segments": ["I059", "S352"]
+          "segments": [
+            "I059",
+            "S352"
+          ]
         },
         "1Pe": {
-          "segments": ["I060", "S353"]
+          "segments": [
+            "I060",
+            "S353"
+          ]
         },
         "2Pe": {
-          "segments": ["I061", "S354"]
+          "segments": [
+            "I061",
+            "S354"
+          ]
         },
         "1Jn": {
-          "segments": ["I062", "S355"]
+          "segments": [
+            "I062",
+            "S355"
+          ]
         },
         "2Jn": {
-          "segments": ["I063", "S356"]
+          "segments": [
+            "I063",
+            "S356"
+          ]
         },
         "3Jn": {
-          "segments": ["I064", "S357"]
+          "segments": [
+            "I064",
+            "S357"
+          ]
         },
         "Jud": {
-          "segments": ["I065", "S358"]
+          "segments": [
+            "I065",
+            "S358"
+          ]
         },
         "Rev": {
           "segments": [
@@ -1440,56 +1581,8 @@
           ]
         }
       }
-    },
-    {
-      "id": "test",
-      "title": "test",
-      "description": "test",
-      "image": "test",
-      "segments": {
-        "Mat": {
-          "segments": [
-            "I040",
-            "S266",
-            "S267",
-            "S268",
-            "S269",
-            "S270",
-            "S271",
-            "S272",
-            "S273",
-            "S274",
-            "S275",
-            "S276"
-          ]
-        }
-      }
     }
   ],
-  "test": {
-    "id": "test",
-    "title": "test",
-    "description": "test",
-    "image": "test",
-    "segments": {
-      "Mat": {
-        "segments": [
-          "I040",
-          "S266",
-          "S267",
-          "S268",
-          "S269",
-          "S270",
-          "S271",
-          "S272",
-          "S273",
-          "S274",
-          "S275",
-          "S276"
-        ]
-      }
-    }
-  },
   "challenges": [
     {
       "id": "gospelsAndActs",
@@ -1587,10 +1680,96 @@
       "longDescription": "Journey through the epistles of Paul, exploring his teachings on faith, grace, and Christian living. Perfect for understanding early church doctrine and practical Christian wisdom.",
       "segments": {
         "Rom": {
-          "segments": ["S201", "S202", "S203"]
+          "segments": [
+            "I045",
+            "S320",
+            "S321",
+            "S322",
+            "S323",
+            "S324",
+            "S325"
+          ]
+        },
+        "1Co": {
+          "segments": [
+            "I046",
+            "S326",
+            "S327",
+            "S328",
+            "S329",
+            "S330"
+          ]
+        },
+        "2Co": {
+          "segments": [
+            "I047",
+            "S331",
+            "S332",
+            "S333",
+            "S334"
+          ]
         },
         "Gal": {
-          "segments": ["S204", "S205"]
+          "segments": [
+            "I048",
+            "S335",
+            "S336"
+          ]
+        },
+        "Eph": {
+          "segments": [
+            "I049",
+            "S337",
+            "S338"
+          ]
+        },
+        "Php": {
+          "segments": [
+            "I050",
+            "S339"
+          ]
+        },
+        "Col": {
+          "segments": [
+            "I051",
+            "S340"
+          ]
+        },
+        "1Th": {
+          "segments": [
+            "I052",
+            "S341"
+          ]
+        },
+        "2Th": {
+          "segments": [
+            "I053",
+            "S342"
+          ]
+        },
+        "1Ti": {
+          "segments": [
+            "I054",
+            "S343"
+          ]
+        },
+        "2Ti": {
+          "segments": [
+            "I055",
+            "S344"
+          ]
+        },
+        "Tit": {
+          "segments": [
+            "I056",
+            "S345"
+          ]
+        },
+        "Phm": {
+          "segments": [
+            "I057",
+            "S346"
+          ]
         }
       }
     },
@@ -1836,6 +2015,8 @@
           "segments": [
             "I023",
             "S191",
+            "S192",
+            "S193",
             "S200",
             "S203",
             "S204"
@@ -1893,7 +2074,97 @@
       "longDescription": "Journey through the first five books of the Bible - Genesis, Exodus, Leviticus, Numbers, and Deuteronomy. Discover the foundations of God's relationship with humanity, from Creation to the edge of the Promised Land.",
       "segments": {
         "Gen": {
-          "segments": ["I001"]
+          "segments": [
+            "I001",
+            "S001",
+            "S002",
+            "S003",
+            "S004",
+            "S005",
+            "S006",
+            "S007",
+            "S008",
+            "S009",
+            "S010",
+            "S011",
+            "S012",
+            "S013",
+            "S014",
+            "S015",
+            "S016",
+            "S017",
+            "S018"
+          ]
+        },
+        "Exo": {
+          "segments": [
+            "I002",
+            "S019",
+            "S020",
+            "S021",
+            "S022",
+            "S023",
+            "S024",
+            "S025",
+            "S026",
+            "S027",
+            "S028",
+            "S029",
+            "S030",
+            "S031",
+            "S032"
+          ]
+        },
+        "Lev": {
+          "segments": [
+            "I003",
+            "S033",
+            "S034",
+            "S035",
+            "S036",
+            "S037",
+            "S038",
+            "S039",
+            "S040",
+            "S041",
+            "S042",
+            "S043"
+          ]
+        },
+        "Num": {
+          "segments": [
+            "I004",
+            "S044",
+            "S045",
+            "S046",
+            "S047",
+            "S048",
+            "S049",
+            "S050",
+            "S051",
+            "S052",
+            "S053",
+            "S054",
+            "S055",
+            "S056"
+          ]
+        },
+        "Deu": {
+          "segments": [
+            "I005",
+            "S057",
+            "S058",
+            "S059",
+            "S060",
+            "S061",
+            "S062",
+            "S063",
+            "S064",
+            "S065",
+            "S066",
+            "S067",
+            "S068"
+          ]
         }
       }
     },
@@ -1904,8 +2175,36 @@
       "image": "island",
       "longDescription": "Experience the Christmas story through a 12-day devotional journey. From prophecies to fulfillment, explore the miraculous events surrounding Christ's birth and their meaning for us today.",
       "segments": {
-        "Gen": {
-          "segments": ["I001"]
+        "Isa": {
+          "segments": [
+            "I023",
+            "S191",
+            "S192",
+            "S193"
+          ]
+        },
+        "Mat": {
+          "segments": [
+            "I040",
+            "S266",
+            "S267",
+            "S268"
+          ]
+        },
+        "Luk": {
+          "segments": [
+            "I042",
+            "S285",
+            "S286",
+            "S287"
+          ]
+        },
+        "Joh": {
+          "segments": [
+            "I043",
+            "S298",
+            "S299"
+          ]
         }
       }
     },
@@ -1916,8 +2215,71 @@
       "image": "island",
       "longDescription": "Follow the journey of David from shepherd boy to king of Israel. Through victories and failures, discover how this 'man after God's own heart' teaches us about leadership, worship, and walking with God.",
       "segments": {
-        "Gen": {
-          "segments": ["I001"]
+        "1Sa": {
+          "segments": [
+            "I009",
+            "S086",
+            "S087",
+            "S088",
+            "S089",
+            "S090",
+            "S091",
+            "S092",
+            "S093",
+            "S094",
+            "S095",
+            "S096"
+          ]
+        },
+        "2Sa": {
+          "segments": [
+            "I010",
+            "S097",
+            "S098",
+            "S099",
+            "S100",
+            "S101",
+            "S102",
+            "S103",
+            "S104"
+          ]
+        },
+        "1Ki": {
+          "segments": [
+            "I011",
+            "S105",
+            "S106",
+            "S107",
+            "S108",
+            "S109",
+            "S110",
+            "S111",
+            "S112",
+            "S113",
+            "S114",
+            "S115"
+          ]
+        },
+        "Psa": {
+          "segments": [
+            "I019",
+            "S164",
+            "S165",
+            "S166",
+            "S167",
+            "S168",
+            "S169",
+            "S170",
+            "S171",
+            "S172",
+            "S173",
+            "S174",
+            "S175",
+            "S176",
+            "S177",
+            "S178",
+            "S179"
+          ]
         }
       }
     },
@@ -1928,8 +2290,60 @@
       "image": "island",
       "longDescription": "Prepare your heart for Christmas with this Advent reading plan. Journey through prophecies of the Messiah to their fulfillment in Jesus, experiencing the hope, peace, joy, and love of the season.",
       "segments": {
-        "Gen": {
-          "segments": ["I001"]
+        "Isa": {
+          "segments": [
+            "I023",
+            "S191",
+            "S192",
+            "S193",
+            "S194",
+            "S195",
+            "S196",
+            "S197",
+            "S198",
+            "S199",
+            "S200"
+          ]
+        },
+        "Mic": {
+          "segments": [
+            "I033",
+            "S256"
+          ]
+        },
+        "Mat": {
+          "segments": [
+            "I040",
+            "S266",
+            "S267",
+            "S268",
+            "S269",
+            "S270",
+            "S271",
+            "S272",
+            "S273",
+            "S274",
+            "S275",
+            "S276"
+          ]
+        },
+        "Luk": {
+          "segments": [
+            "I042",
+            "S285",
+            "S286",
+            "S287",
+            "S288",
+            "S289",
+            "S290",
+            "S291",
+            "S292",
+            "S293",
+            "S294",
+            "S295",
+            "S296",
+            "S297"
+          ]
         }
       }
     },
@@ -1940,8 +2354,138 @@
       "image": "island",
       "longDescription": "Walk through the season of Lent with purposeful reflection. From Jesus' ministry to His passion, death, and resurrection, deepen your understanding of Christ's sacrifice and its meaning for our lives.",
       "segments": {
-        "Gen": {
-          "segments": ["I001"]
+        "Mat": {
+          "segments": [
+            "I040",
+            "S266",
+            "S267",
+            "S268",
+            "S269",
+            "S270",
+            "S271",
+            "S272",
+            "S273",
+            "S274",
+            "S275",
+            "S276"
+          ]
+        },
+        "Mar": {
+          "segments": [
+            "I041",
+            "S277",
+            "S278",
+            "S279",
+            "S280",
+            "S281",
+            "S282",
+            "S283",
+            "S284"
+          ]
+        },
+        "Luk": {
+          "segments": [
+            "I042",
+            "S285",
+            "S286",
+            "S287",
+            "S288",
+            "S289",
+            "S290",
+            "S291",
+            "S292",
+            "S293",
+            "S294",
+            "S295",
+            "S296",
+            "S297"
+          ]
+        },
+        "Joh": {
+          "segments": [
+            "I043",
+            "S298",
+            "S299",
+            "S300",
+            "S301",
+            "S302",
+            "S303",
+            "S304",
+            "S305",
+            "S306",
+            "S307"
+          ]
+        }
+      }
+    },
+    {
+      "id": "theGospels",
+      "title": "The Gospels",
+      "description": "48 Stories - 7 Weeks",
+      "image": "island",
+      "longDescription": "Experience the life and ministry of Jesus through the four Gospel accounts. From His birth to His resurrection, discover the different perspectives and unique insights each Gospel writer brings to the story of Christ.",
+      "segments": {
+        "Mat": {
+          "segments": [
+            "I040",
+            "S266",
+            "S267",
+            "S268",
+            "S269",
+            "S270",
+            "S271",
+            "S272",
+            "S273",
+            "S274",
+            "S275",
+            "S276"
+          ]
+        },
+        "Mar": {
+          "segments": [
+            "I041",
+            "S277",
+            "S278",
+            "S279",
+            "S280",
+            "S281",
+            "S282",
+            "S283",
+            "S284"
+          ]
+        },
+        "Luk": {
+          "segments": [
+            "I042",
+            "S285",
+            "S286",
+            "S287",
+            "S288",
+            "S289",
+            "S290",
+            "S291",
+            "S292",
+            "S293",
+            "S294",
+            "S295",
+            "S296",
+            "S297"
+          ]
+        },
+        "Joh": {
+          "segments": [
+            "I043",
+            "S298",
+            "S299",
+            "S300",
+            "S301",
+            "S302",
+            "S303",
+            "S304",
+            "S305",
+            "S306",
+            "S307"
+          ]
         }
       }
     }

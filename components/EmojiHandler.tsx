@@ -57,7 +57,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
 
   const handleLongPress = useCallback(() => {
     // Simple test first - show picker immediately
-    setShowPicker(true);
+          setShowPicker(true);
     setPickerPosition({ x: screenWidth / 2 - 120, y: screenHeight / 2 - 40 });
 
     // Call parent's onLongPress if provided

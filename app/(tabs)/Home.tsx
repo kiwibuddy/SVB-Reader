@@ -774,7 +774,7 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: Co
   const handleComplete = async () => {
     // Show reading mode modal for the current segment
     if (lastReadSegment) {
-      const segment = SegmentTitles[lastReadSegment as keyof typeof SegmentTitles];
+    const segment = SegmentTitles[lastReadSegment as keyof typeof SegmentTitles];
       if (segment) {
         // Call parent's onPress to handle modal display
         onPress();
@@ -978,18 +978,18 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
     calculateInsights();
   }, [completedSegments]);
 
-      const handleBookPress = () => {
+  const handleBookPress = () => {
     // Navigate to Plan or Navigation to find the book instead of direct navigation
-    router.push({
+      router.push({
       pathname: "/Navigation",
-    });
+      });
   };
 
   const handleStoryPress = () => {
     // Navigate to Navigation to find the story instead of direct navigation
-    router.push({
+      router.push({
       pathname: "/Navigation",
-    });
+      });
   };
 
   const handleEmojiPress = () => {
@@ -1260,7 +1260,7 @@ const HomeScreen = () => {
   // Group Reading Handlers
   const handleJoinGroup = async (sessionId: string) => {
     console.log('Join group:', sessionId);
-    router.push({
+      router.push({
       pathname: '/join-group' as any,
       params: { sessionId }
     });
@@ -1277,11 +1277,11 @@ const HomeScreen = () => {
     const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
     router.push({
       pathname: "/(tabs)/[segment]",
-      params: {
+        params: {
         segment: `ENG-NLT-${selectedSegmentId}`,
-        book: segment?.book[0] || ''
-      }
-    });
+          book: segment?.book[0] || ''
+        }
+      });
   };
 
   const handleGroupReading = () => {
@@ -1429,34 +1429,34 @@ const HomeScreen = () => {
 
         <View style={styles.getStartedSection}>
           <Text style={styles.sectionTitle}>Get Started</Text>
-          <View style={styles.gridContainer}>
-            <Pressable 
+<View style={styles.gridContainer}>
+    <Pressable 
               style={[styles.onboardingCard, { backgroundColor: '#7B68EE' }]}
-              onPress={() => router.push("/Plan")}
-            >
+      onPress={() => router.push("/Plan")}
+    >
               <View style={styles.onboardingCardContent}>
                 <View style={styles.onboardingIconContainer}>
                   <Ionicons name="calendar-outline" size={32} color="#FFFFFF" />
-                </View>
+        </View>
                 <Text style={styles.onboardingCardTitle}>Reading Plans</Text>
                 <Text style={styles.onboardingCardSubtitle}>{getAvailablePlansCount()} Plans</Text>
-              </View>
-            </Pressable>
+        </View>
+    </Pressable>
 
-            <Pressable 
+    <Pressable 
               style={[styles.onboardingCard, { backgroundColor: '#FF69B4' }]}
-              onPress={() => router.push("/Reading-Challenges")}
-            >
+      onPress={() => router.push("/Reading-Challenges")}
+    >
               <View style={styles.onboardingCardContent}>
                 <View style={styles.onboardingIconContainer}>
                   <Ionicons name="flag-outline" size={32} color="#FFFFFF" />
-                </View>
+        </View>
                 <Text style={styles.onboardingCardTitle}>Challenges</Text>
                 <Text style={styles.onboardingCardSubtitle}>New</Text>
-              </View>
-            </Pressable>
-          </View>
         </View>
+    </Pressable>
+  </View>
+</View>
 
       <ContinueReadingSection 
         lastReadSegment={lastReadSegment}
@@ -1474,7 +1474,7 @@ const HomeScreen = () => {
                 <View style={styles.activeReadingContent}>
                   <View style={[styles.activeReadingIcon, { backgroundColor: '#7B68EE' }]}>
                     <Ionicons name="calendar-outline" size={24} color="#FFFFFF" />
-                  </View>
+            </View>
                   <View style={styles.activeReadingInfo}>
                     <Text style={styles.activeReadingTitle}>
                       {ReadingPlansChallenges.plans.find((plan: any) => plan.id === activePlan.planId)?.title || 'Bible in 1 year'}
@@ -1483,7 +1483,7 @@ const HomeScreen = () => {
                       Next: God Creates
                     </Text>
                     <Text style={styles.activeReadingProgress}>0% complete</Text>
-                  </View>
+          </View>
                   <Pressable style={styles.continueButton} onPress={() => handleActivePlanContinue()}>
                     <Text style={styles.continueButtonText}>→ Continue</Text>
                   </Pressable>

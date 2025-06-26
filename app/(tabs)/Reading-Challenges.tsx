@@ -229,10 +229,10 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
 
 const ChallengesScreen = () => {
   const { 
-    activeChallenges, 
-    startChallenge, 
-    pauseChallenge, 
-    resumeChallenge, 
+    activeChallenges,
+    startChallenge,
+    pauseChallenge,
+    resumeChallenge,
     restartChallenge,
     updateChallengeProgress,
     updateSegmentId
@@ -413,28 +413,28 @@ const ChallengesScreen = () => {
         {isSelected && (
           <View style={styles.booksContainer}>
             {challengeBooksData.map((item) => {
-              const bookIndex = booksArray.findIndex(
-                (book) => book === item.djhBook
-              );
+                const bookIndex = booksArray.findIndex(
+                  (book) => book === item.djhBook
+                );
               // Use the challenge-specific completion status
               const completedSegmentsMap = completedSegments.reduce((acc, id) => {
                 acc[id] = true;
                 return acc;
               }, {} as Record<string, boolean>);
-              return (
-                <Accordion 
+                return (
+                  <Accordion 
                   key={completedSegments.join(',') + '-' + item.djhBook}
-                  item={item} 
-                  bookIndex={bookIndex}
+                    item={item} 
+                    bookIndex={bookIndex}
                   onSegmentComplete={(segmentId) => handleSegmentComplete(challenge.id, segmentId)}
                   onSegmentSelect={handleSegmentSelect}
-                  context="challenge"
-                  showGlobalCompletion={false}
-                  challengeId={challenge.id}
+                    context="challenge"
+                    showGlobalCompletion={false}
+                    challengeId={challenge.id}
                   completedSegments={completedSegmentsMap}
-                  style={{ backgroundColor: '#FFF' }}
-                />
-              );
+                    style={{ backgroundColor: '#FFF' }}
+                  />
+                );
             })}
           </View>
         )}
