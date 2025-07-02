@@ -27,6 +27,8 @@ import { useAppSettings } from '@/context/AppSettingsContext';
 import { getSegmentCompletionStatus, unlockAchievement } from '@/api/sqlite';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BibleData from '@/assets/data/newBibleNLT1.json';
+import ViewToggle from '@/components/navigation/ViewToggle';
+import ChronologicalView from '@/components/navigation/ChronologicalView';
 
 // Add categories for challenges
 const CHALLENGE_CATEGORIES = {
@@ -36,8 +38,8 @@ const CHALLENGE_CATEGORIES = {
 
 // Helper function to categorize challenges
 const categorizeChallenge = (challenge: any) => {
-    const seasonalTitles = ['Advent Journey', 'Lenten Reflection', '12 Days of Christmas'];
-    const topicalTitles = ["Paul's Letters", "David's Life", "The Gospels", "The Torah", "In The Beginning"];
+    const seasonalTitles = ['Advent Journey', 'Advent Journey (Chronological)', 'Lenten Reflection', 'Lenten Reflection (Chronological)', '12 Days of Christmas'];
+    const topicalTitles = ["Paul's Letters", "David's Life", "The Gospels", "The Gospels (Chronological)", "The Torah", "In The Beginning"];
     return seasonalTitles.includes(challenge.title) ? CHALLENGE_CATEGORIES.SEASONAL : CHALLENGE_CATEGORIES.TOPICAL;
   };
 
@@ -52,7 +54,13 @@ const CHALLENGE_STYLES = {
   "Advent Journey": {
     color: "#694df4"
   },
+  "Advent Journey (Chronological)": {
+    color: "#694df4"
+  },
   "Lenten Reflection": {
+    color: "#4d9ff4"
+  },
+  "Lenten Reflection (Chronological)": {
     color: "#4d9ff4"
   },
   "12 Days of Christmas": {
@@ -61,16 +69,13 @@ const CHALLENGE_STYLES = {
   "The Gospels": {
     color: "#4dcaf4"
   },
+  "The Gospels (Chronological)": {
+    color: "#4dcaf4"
+  },
   "The Torah": {
     color: "#9f4df4"
   },
   "In The Beginning": {
-    color: "#f4944d"
-  },
-  "4 Gospels and Acts": {
-    color: "#4dcaf4"
-  },
-  "DTS Outreach": {
     color: "#f4944d"
   }
 };
@@ -247,6 +252,7 @@ const ChallengesScreen = () => {
 
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
   const [challengeProgress, setChallengeProgress] = useState<Record<string, string[]>>({});
+  const [isChronologicalView, setIsChronologicalView] = useState<Record<string, boolean>>({});
   
   // Reading Mode Modal State
   const [showReadingModeModal, setShowReadingModeModal] = useState(false);
@@ -363,6 +369,19 @@ const ChallengesScreen = () => {
     const segmentCount = getChallengeSegmentCount(challenge.id);
     const challengeBooksData = isSelected ? getChallengeBooksData(challenge.id) : [];
     const completedSegments = challengeProgress[challenge.id] || [];
+    
+    // Check if this challenge supports chronological view
+    const challengeData = readingPlansData.challenges.find(c => c.id === challenge.id);
+    const supportsChronological = !!(challengeData as any)?.chronologicalOrder;
+    const chronologicalMapping = (challengeData as any)?.chronologicalMapping;
+    const isChronological = isChronologicalView[challenge.id] || false;
+
+    const handleViewToggle = (chronological: boolean) => {
+      setIsChronologicalView(prev => ({
+        ...prev,
+        [challenge.id]: chronological
+      }));
+    };
 
     return (
       <View style={styles.challengeContainer}>
@@ -412,30 +431,55 @@ const ChallengesScreen = () => {
 
         {isSelected && (
           <View style={styles.booksContainer}>
-            {challengeBooksData.map((item) => {
+            {/* View Toggle for chronological challenges */}
+            {supportsChronological && (
+              <View style={{ padding: 16, paddingBottom: 0 }}>
+                <ViewToggle
+                  isChronological={isChronological}
+                  onToggle={handleViewToggle}
+                />
+              </View>
+            )}
+            
+            {/* Render chronological view or traditional book view */}
+            {isChronological && supportsChronological && chronologicalMapping ? (
+              <ChronologicalView
+                challengeId={challenge.id}
+                chronologicalMapping={chronologicalMapping}
+                completedSegments={completedSegments.reduce((acc, id) => {
+                  acc[id] = true;
+                  return acc;
+                }, {} as Record<string, boolean>)}
+                onSegmentSelect={handleSegmentSelect}
+                onSegmentComplete={(segmentId) => handleSegmentComplete(challenge.id, segmentId)}
+                context="challenge"
+              />
+            ) : (
+              challengeBooksData.map((item) => {
                 const bookIndex = booksArray.findIndex(
                   (book) => book === item.djhBook
                 );
-              // Use the challenge-specific completion status
-              const completedSegmentsMap = completedSegments.reduce((acc, id) => {
-                acc[id] = true;
-                return acc;
-              }, {} as Record<string, boolean>);
+                // Use the challenge-specific completion status
+                const completedSegmentsMap = completedSegments.reduce((acc, id) => {
+                  acc[id] = true;
+                  return acc;
+                }, {} as Record<string, boolean>);
                 return (
                   <Accordion 
-                  key={completedSegments.join(',') + '-' + item.djhBook}
+                    key={completedSegments.join(',') + '-' + item.djhBook}
                     item={item} 
                     bookIndex={bookIndex}
-                  onSegmentComplete={(segmentId) => handleSegmentComplete(challenge.id, segmentId)}
-                  onSegmentSelect={handleSegmentSelect}
+                    onSegmentComplete={(segmentId) => handleSegmentComplete(challenge.id, segmentId)}
+                    onSegmentSelect={handleSegmentSelect}
                     context="challenge"
                     showGlobalCompletion={false}
                     challengeId={challenge.id}
-                  completedSegments={completedSegmentsMap}
+                    completedSegments={completedSegmentsMap}
                     style={{ backgroundColor: '#FFF' }}
                   />
                 );
-            })}
+              })
+            )}
           </View>
         )}
       </View>
@@ -601,7 +645,7 @@ const ChallengesScreen = () => {
         data={sections}
         renderItem={({ item }) => renderCategorySection(item.title, item.data)}
         keyExtractor={(item) => item.title}
-        contentContainerStyle={{ paddingTop: 8 }}
+        contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
       />
       
       <ReadingModeModal

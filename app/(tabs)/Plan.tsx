@@ -125,7 +125,7 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
   },
   listContainer: {
     paddingTop: 8,
-    marginBottom: 80
+    paddingBottom: 100
   },
   planContainer: {
     borderBottomWidth: 1,

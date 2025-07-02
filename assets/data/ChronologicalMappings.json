@@ -1,0 +1,1075 @@
+{
+  "gospelsChronological": {
+    "title": "The Gospels (Chronological)",
+    "description": "48 Stories - 7 Weeks",
+    "longDescription": "Experience the life and ministry of Jesus through a chronological journey across all four Gospel accounts. This harmonized reading follows the biblical timeline from Jesus' birth to His resurrection, providing a cohesive narrative of Christ's ministry.",
+    "segments": [
+      {
+        "segmentId": "S285",
+        "book": "Luk",
+        "title": "The Birth of John the Baptist",
+        "ref": "1:5-25",
+        "phase": "Birth Narratives"
+      },
+      {
+        "segmentId": "S286",
+        "book": "Luk",
+        "title": "The Birth of Jesus Foretold",
+        "ref": "1:26-38",
+        "phase": "Birth Narratives"
+      },
+      {
+        "segmentId": "S287",
+        "book": "Luk",
+        "title": "Mary Visits Elizabeth",
+        "ref": "1:39-56",
+        "phase": "Birth Narratives"
+      },
+      {
+        "segmentId": "S266",
+        "book": "Mat",
+        "title": "The Birth of Jesus",
+        "ref": "1:18-2:23",
+        "phase": "Birth Narratives"
+      },
+      {
+        "segmentId": "S298",
+        "book": "Joh",
+        "title": "The Word Became Flesh",
+        "ref": "1:1-18",
+        "phase": "Birth Narratives"
+      },
+      {
+        "segmentId": "S299",
+        "book": "Joh",
+        "title": "John the Baptist Denies Being the Messiah",
+        "ref": "1:19-34",
+        "phase": "Early Ministry"
+      },
+      {
+        "segmentId": "S267",
+        "book": "Mat",
+        "title": "John the Baptist Prepares the Way",
+        "ref": "3:1-17",
+        "phase": "Early Ministry"
+      },
+      {
+        "segmentId": "S288",
+        "book": "Luk",
+        "title": "The Birth of Jesus",
+        "ref": "2:1-20",
+        "phase": "Birth Narratives"
+      },
+      {
+        "segmentId": "S289",
+        "book": "Luk",
+        "title": "Jesus is Presented in the Temple",
+        "ref": "2:21-40",
+        "phase": "Birth Narratives"
+      },
+      {
+        "segmentId": "S290",
+        "book": "Luk",
+        "title": "Jesus in the Temple",
+        "ref": "2:41-52",
+        "phase": "Early Life"
+      },
+      {
+        "segmentId": "S291",
+        "book": "Luk",
+        "title": "John the Baptist Prepares the Way",
+        "ref": "3:1-20",
+        "phase": "Early Ministry"
+      },
+      {
+        "segmentId": "S292",
+        "book": "Luk",
+        "title": "The Baptism & Genealogy of Jesus",
+        "ref": "3:21-38",
+        "phase": "Early Ministry"
+      },
+      {
+        "segmentId": "S268",
+        "book": "Mat",
+        "title": "Jesus is Tempted",
+        "ref": "4:1-11",
+        "phase": "Early Ministry"
+      },
+      {
+        "segmentId": "S293",
+        "book": "Luk",
+        "title": "Jesus is Tempted",
+        "ref": "4:1-13",
+        "phase": "Early Ministry"
+      },
+      {
+        "segmentId": "S277",
+        "book": "Mar",
+        "title": "John the Baptist Prepares the Way",
+        "ref": "1:1-8",
+        "phase": "Early Ministry"
+      },
+      {
+        "segmentId": "S278",
+        "book": "Mar",
+        "title": "The Baptism & Temptation of Jesus",
+        "ref": "1:9-13",
+        "phase": "Early Ministry"
+      },
+      {
+        "segmentId": "S300",
+        "book": "Joh",
+        "title": "Jesus Calls His First Disciples",
+        "ref": "1:35-51",
+        "phase": "Early Ministry"
+      },
+      {
+        "segmentId": "S279",
+        "book": "Mar",
+        "title": "Jesus Announces the Good News",
+        "ref": "1:14-20",
+        "phase": "Galilean Ministry"
+      },
+      {
+        "segmentId": "S280",
+        "book": "Mar",
+        "title": "Jesus Drives Out an Impure Spirit",
+        "ref": "1:21-28",
+        "phase": "Galilean Ministry"
+      },
+      {
+        "segmentId": "S281",
+        "book": "Mar",
+        "title": "Jesus Heals Many",
+        "ref": "1:29-34",
+        "phase": "Galilean Ministry"
+      },
+      {
+        "segmentId": "S282",
+        "book": "Mar",
+        "title": "Jesus Prays in a Solitary Place",
+        "ref": "1:35-39",
+        "phase": "Galilean Ministry"
+      },
+      {
+        "segmentId": "S283",
+        "book": "Mar",
+        "title": "Jesus Heals a Man with Leprosy",
+        "ref": "1:40-45",
+        "phase": "Galilean Ministry"
+      },
+      {
+        "segmentId": "S284",
+        "book": "Mar",
+        "title": "Jesus Forgives & Heals a Paralyzed Man",
+        "ref": "2:1-12",
+        "phase": "Galilean Ministry"
+      },
+      {
+        "segmentId": "S269",
+        "book": "Mat",
+        "title": "The Beatitudes",
+        "ref": "5:1-12",
+        "phase": "Teaching Ministry"
+      },
+      {
+        "segmentId": "S270",
+        "book": "Mat",
+        "title": "Salt & Light",
+        "ref": "5:13-16",
+        "phase": "Teaching Ministry"
+      },
+      {
+        "segmentId": "S271",
+        "book": "Mat",
+        "title": "The Fulfillment of the Law",
+        "ref": "5:17-20",
+        "phase": "Teaching Ministry"
+      },
+      {
+        "segmentId": "S272",
+        "book": "Mat",
+        "title": "Murder & Anger",
+        "ref": "5:21-26",
+        "phase": "Teaching Ministry"
+      },
+      {
+        "segmentId": "S273",
+        "book": "Mat",
+        "title": "Adultery & Divorce",
+        "ref": "5:27-32",
+        "phase": "Teaching Ministry"
+      },
+      {
+        "segmentId": "S274",
+        "book": "Mat",
+        "title": "Oaths & Retaliation",
+        "ref": "5:33-42",
+        "phase": "Teaching Ministry"
+      },
+      {
+        "segmentId": "S275",
+        "book": "Mat",
+        "title": "Love Your Enemies",
+        "ref": "5:43-48",
+        "phase": "Teaching Ministry"
+      },
+      {
+        "segmentId": "S276",
+        "book": "Mat",
+        "title": "Giving to the Needy",
+        "ref": "6:1-4",
+        "phase": "Teaching Ministry"
+      },
+      {
+        "segmentId": "S294",
+        "book": "Luk",
+        "title": "Jesus Rejected at Nazareth",
+        "ref": "4:14-30",
+        "phase": "Galilean Ministry"
+      },
+      {
+        "segmentId": "S295",
+        "book": "Luk",
+        "title": "Jesus Drives Out an Impure Spirit",
+        "ref": "4:31-37",
+        "phase": "Galilean Ministry"
+      },
+      {
+        "segmentId": "S296",
+        "book": "Luk",
+        "title": "Jesus Heals Many",
+        "ref": "4:38-44",
+        "phase": "Galilean Ministry"
+      },
+      {
+        "segmentId": "S297",
+        "book": "Luk",
+        "title": "The Calling of the First Disciples",
+        "ref": "5:1-11",
+        "phase": "Galilean Ministry"
+      },
+      {
+        "segmentId": "S301",
+        "book": "Joh",
+        "title": "Jesus Changes Water to Wine",
+        "ref": "2:1-11",
+        "phase": "Galilean Ministry"
+      },
+      {
+        "segmentId": "S302",
+        "book": "Joh",
+        "title": "Jesus Clears the Temple",
+        "ref": "2:12-25",
+        "phase": "Galilean Ministry"
+      },
+      {
+        "segmentId": "S303",
+        "book": "Joh",
+        "title": "Jesus Teaches Nicodemus",
+        "ref": "3:1-21",
+        "phase": "Teaching Ministry"
+      },
+      {
+        "segmentId": "S304",
+        "book": "Joh",
+        "title": "John the Baptist's Final Testimony",
+        "ref": "3:22-36",
+        "phase": "Teaching Ministry"
+      },
+      {
+        "segmentId": "S305",
+        "book": "Joh",
+        "title": "Jesus Talks with a Samaritan Woman",
+        "ref": "4:1-26",
+        "phase": "Galilean Ministry"
+      },
+      {
+        "segmentId": "S306",
+        "book": "Joh",
+        "title": "The Disciples Rejoin Jesus",
+        "ref": "4:27-38",
+        "phase": "Galilean Ministry"
+      },
+      {
+        "segmentId": "S307",
+        "book": "Joh",
+        "title": "Many Samaritans Believe",
+        "ref": "4:39-42",
+        "phase": "Galilean Ministry"
+      }
+    ],
+    "phases": {
+      "Birth Narratives": {
+        "description": "The miraculous events surrounding Jesus' birth and early life",
+        "color": "#4CAF50"
+      },
+      "Early Life": {
+        "description": "Jesus' childhood and preparation for ministry",
+        "color": "#2196F3"
+      },
+      "Early Ministry": {
+        "description": "John the Baptist's ministry and Jesus' baptism and temptation",
+        "color": "#FF9800"
+      },
+      "Galilean Ministry": {
+        "description": "Jesus' ministry in Galilee, including miracles and calling disciples",
+        "color": "#9C27B0"
+      },
+      "Teaching Ministry": {
+        "description": "Jesus' major teachings including the Sermon on the Mount",
+        "color": "#F44336"
+      }
+    }
+  },
+  "davidsLifeChronological": {
+    "title": "David's Life (Chronological)",
+    "description": "35 Stories - 7 Weeks",
+    "longDescription": "Follow the journey of David from shepherd boy to king of Israel in chronological order. Experience his life story interwoven with the Psalms he wrote during key moments, creating a rich narrative of faith, leadership, and worship.",
+    "phases": {
+      "Background - Samuel's Ministry": {
+        "color": "#8B4513",
+        "description": "The foundation of Israel's transition from judges to kings"
+      },
+      "Background - Israel's Transition": {
+        "color": "#8B4513",
+        "description": "Israel's demand for a king and the establishment of monarchy"
+      },
+      "Background - Saul's Rise": {
+        "color": "#8B4513",
+        "description": "Saul's anointing and early reign as Israel's first king"
+      },
+      "Background - Saul's Decline": {
+        "color": "#8B4513",
+        "description": "Saul's disobedience and God's rejection of his kingship"
+      },
+      "David's Calling - Young Shepherd": {
+        "color": "#32CD32",
+        "description": "David's anointing and early service in Saul's court"
+      },
+      "David's Early Psalms - Shepherd's Heart": {
+        "color": "#4169E1",
+        "description": "Psalms reflecting David's heart as a shepherd and worshipper"
+      },
+      "David's Rise - Giant Slayer": {
+        "color": "#32CD32",
+        "description": "David's victory over Goliath and growing reputation"
+      },
+      "David's Psalms of Trust": {
+        "color": "#4169E1",
+        "description": "Psalms of faith and trust during times of testing"
+      },
+      "David's Friendship - Jonathan's Loyalty": {
+        "color": "#32CD32",
+        "description": "The covenant friendship between David and Jonathan"
+      },
+      "David's Flight - Fugitive Years Begin": {
+        "color": "#FF6347",
+        "description": "David's escape from Saul's jealousy and murderous intent"
+      },
+      "David's Psalms of Struggle": {
+        "color": "#4169E1",
+        "description": "Psalms written during times of conflict and repentance"
+      },
+      "David's Mercy - Sparing Saul": {
+        "color": "#FF6347",
+        "description": "David's opportunities to kill Saul but choosing mercy instead"
+      },
+      "David's Psalms of Persecution": {
+        "color": "#4169E1",
+        "description": "Psalms expressing David's trust during persecution"
+      },
+      "David's Trials - Final Fugitive Days": {
+        "color": "#FF6347",
+        "description": "David's final period as a fugitive from Saul"
+      },
+      "David's Grief - Mourning for Saul": {
+        "color": "#FF6347",
+        "description": "David's lament over the death of Saul and Jonathan"
+      },
+      "David's Kingdom - King of Israel": {
+        "color": "#FFD700",
+        "description": "David's rise to become king over all Israel"
+      },
+      "David's Royal Psalms": {
+        "color": "#4169E1",
+        "description": "Psalms celebrating God's kingship and David's royal calling"
+      },
+      "David's Covenant - God's Promise": {
+        "color": "#FFD700",
+        "description": "God's covenant promise to establish David's dynasty forever"
+      },
+      "David's Temple Psalms": {
+        "color": "#4169E1",
+        "description": "Psalms related to worship and the future temple"
+      },
+      "David's Conquests - Military Success": {
+        "color": "#FFD700",
+        "description": "David's military victories and expansion of Israel's borders"
+      },
+      "David's Historical Psalms": {
+        "color": "#4169E1",
+        "description": "Psalms reflecting on Israel's history and God's faithfulness"
+      },
+      "David's Fall - Sin and Consequences": {
+        "color": "#DC143C",
+        "description": "David's sin with Bathsheba and its devastating consequences"
+      },
+      "David's Crisis - Family Rebellion": {
+        "color": "#DC143C",
+        "description": "Absalom's rebellion and David's family troubles"
+      },
+      "David's Psalms of Exile": {
+        "color": "#4169E1",
+        "description": "Psalms written during David's flight from Absalom"
+      },
+      "David's Exile - Son's Betrayal": {
+        "color": "#DC143C",
+        "description": "David's heartbreak as his own son rebels against him"
+      },
+      "David's Restoration - Return to Throne": {
+        "color": "#FFD700",
+        "description": "David's return to Jerusalem and restoration as king"
+      },
+      "David's Psalms of Worship": {
+        "color": "#4169E1",
+        "description": "Psalms celebrating God's eternal kingship and sovereignty"
+      },
+      "David's Final Years - Elder King": {
+        "color": "#FFD700",
+        "description": "David's later reign and preparation for succession"
+      },
+      "David's Psalms of Deliverance": {
+        "color": "#4169E1",
+        "description": "Psalms reflecting on God's faithfulness through all trials"
+      },
+      "David's Legacy - Passing the Throne": {
+        "color": "#FFD700",
+        "description": "David's final days and Solomon's succession to the throne"
+      },
+      "David's Wisdom Psalms": {
+        "color": "#4169E1",
+        "description": "Psalms of wisdom and instruction for future generations"
+      },
+      "David's Psalms of Praise": {
+        "color": "#4169E1",
+        "description": "Psalms of celebration and thanksgiving to God"
+      },
+      "David's Love for God's Word": {
+        "color": "#4169E1",
+        "description": "The great psalm celebrating love for God's law and word"
+      },
+      "David's Songs of Ascent": {
+        "color": "#4169E1",
+        "description": "Pilgrimage psalms and songs of praise for worship"
+      },
+      "David's Prayers and Reflections": {
+        "color": "#4169E1",
+        "description": "Later psalms of prayer and spiritual reflection"
+      },
+      "David's Final Praises": {
+        "color": "#4169E1",
+        "description": "Concluding psalms of pure praise and worship"
+      }
+    },
+    "segments": [
+      {
+        "segmentId": "S086",
+        "book": "1Sa",
+        "title": "God is with Samuel",
+        "ref": "1:1-4:1a",
+        "phase": "Background - Samuel's Ministry"
+      },
+      {
+        "segmentId": "S087",
+        "book": "1Sa",
+        "title": "Israel Demands a King",
+        "ref": "4:1b-8:22",
+        "phase": "Background - Israel's Transition"
+      },
+      {
+        "segmentId": "S088",
+        "book": "1Sa",
+        "title": "Saul Becomes King",
+        "ref": "9:1-12:25",
+        "phase": "Background - Saul's Rise"
+      },
+      {
+        "segmentId": "S089",
+        "book": "1Sa",
+        "title": "Saul's Foolishness",
+        "ref": "13:1-14:52",
+        "phase": "Background - Saul's Decline"
+      },
+      {
+        "segmentId": "S090",
+        "book": "1Sa",
+        "title": "God Rejects Saul & Samuel Anoints David",
+        "ref": "15:1-16:23",
+        "phase": "David's Calling - Young Shepherd"
+      },
+      {
+        "segmentId": "S164",
+        "book": "Psa",
+        "title": "Book 1: Songs of Praise & Prayers of Faith 3",
+        "ref": "23:1-33:22",
+        "phase": "David's Early Psalms - Shepherd's Heart",
+        "note": "Includes Psalm 23 - 'The Lord is my shepherd'"
+      },
+      {
+        "segmentId": "S091",
+        "book": "1Sa",
+        "title": "Saul Decreases & David Increases 1",
+        "ref": "17:1-18:30",
+        "phase": "David's Rise - Giant Slayer"
+      },
+      {
+        "segmentId": "S165",
+        "book": "Psa",
+        "title": "Book 1: Songs of Praise & Prayers of Faith 4",
+        "ref": "34:1-41:13",
+        "phase": "David's Psalms of Trust",
+        "note": "Includes Psalm 34 - David's praise when he escaped from Abimelech"
+      },
+      {
+        "segmentId": "S092",
+        "book": "1Sa",
+        "title": "Saul Decreases & David Increases 2",
+        "ref": "19:1-20:42",
+        "phase": "David's Friendship - Jonathan's Loyalty"
+      },
+      {
+        "segmentId": "S093",
+        "book": "1Sa",
+        "title": "Saul Decreases & David Increases 3",
+        "ref": "21:1-23:29",
+        "phase": "David's Flight - Fugitive Years Begin"
+      },
+      {
+        "segmentId": "S166",
+        "book": "Psa",
+        "title": "Book 2: Songs of Conflict & Salvation 1",
+        "ref": "42:1-51:19",
+        "phase": "David's Psalms of Struggle",
+        "note": "Includes Psalm 51 - David's repentance after his sin with Bathsheba"
+      },
+      {
+        "segmentId": "S094",
+        "book": "1Sa",
+        "title": "Saul Decreases & David Increases 4",
+        "ref": "24:1-27:12",
+        "phase": "David's Mercy - Sparing Saul"
+      },
+      {
+        "segmentId": "S167",
+        "book": "Psa",
+        "title": "Book 2: Songs of Conflict & Salvation 2",
+        "ref": "52:1-64:10",
+        "phase": "David's Psalms of Persecution",
+        "note": "Psalms written during his time fleeing from Saul"
+      },
+      {
+        "segmentId": "S095",
+        "book": "1Sa",
+        "title": "Saul Decreases & David Increases 5",
+        "ref": "28:1-30:31",
+        "phase": "David's Trials - Final Fugitive Days"
+      },
+      {
+        "segmentId": "S096",
+        "book": "1Sa",
+        "title": "Saul's Death & David's Lament",
+        "ref": "31:1-2:7",
+        "phase": "David's Grief - Mourning for Saul"
+      },
+      {
+        "segmentId": "S097",
+        "book": "2Sa",
+        "title": "David Becomes King",
+        "ref": "2:8-5:25",
+        "phase": "David's Kingdom - King of Israel"
+      },
+      {
+        "segmentId": "S168",
+        "book": "Psa",
+        "title": "Book 2: Songs of Conflict & Salvation 3",
+        "ref": "65:1-72:20",
+        "phase": "David's Royal Psalms",
+        "note": "Psalms celebrating God's kingship and David's reign"
+      },
+      {
+        "segmentId": "S098",
+        "book": "2Sa",
+        "title": "God Makes a Covenant with David",
+        "ref": "6:1-7:29",
+        "phase": "David's Covenant - God's Promise"
+      },
+      {
+        "segmentId": "S169",
+        "book": "Psa",
+        "title": "Book 3: Songs of Asaph 1",
+        "ref": "73:1-77:20",
+        "phase": "David's Temple Psalms",
+        "note": "Psalms related to worship and the temple"
+      },
+      {
+        "segmentId": "S099",
+        "book": "2Sa",
+        "title": "David's Victories",
+        "ref": "8:1-10:19",
+        "phase": "David's Conquests - Military Success"
+      },
+      {
+        "segmentId": "S170",
+        "book": "Psa",
+        "title": "Book 3: Songs of Asaph 2",
+        "ref": "78:1-83:18",
+        "phase": "David's Historical Psalms",
+        "note": "Psalms reflecting on Israel's history and God's faithfulness"
+      },
+      {
+        "segmentId": "S100",
+        "book": "2Sa",
+        "title": "David's Failures",
+        "ref": "11:1-13:39",
+        "phase": "David's Fall - Sin and Consequences"
+      },
+      {
+        "segmentId": "S101",
+        "book": "2Sa",
+        "title": "Absalom's Coup 1",
+        "ref": "14:1-16:14",
+        "phase": "David's Crisis - Family Rebellion"
+      },
+      {
+        "segmentId": "S171",
+        "book": "Psa",
+        "title": "Book 3: Songs by Many Psalmists",
+        "ref": "84:1-89:52",
+        "phase": "David's Psalms of Exile",
+        "note": "Psalms during his flight from Absalom"
+      },
+      {
+        "segmentId": "S102",
+        "book": "2Sa",
+        "title": "Absalom's Coup 2",
+        "ref": "16:15-19:8a",
+        "phase": "David's Exile - Son's Betrayal"
+      },
+      {
+        "segmentId": "S103",
+        "book": "2Sa",
+        "title": "David Restored as King",
+        "ref": "19:8b-21:14",
+        "phase": "David's Restoration - Return to Throne"
+      },
+      {
+        "segmentId": "S172",
+        "book": "Psa",
+        "title": "Book 4: God our King & Refuge",
+        "ref": "90:1-100:5",
+        "phase": "David's Psalms of Worship",
+        "note": "Psalms celebrating God's eternal kingship"
+      },
+      {
+        "segmentId": "S104",
+        "book": "2Sa",
+        "title": "David's Latter Reign",
+        "ref": "21:15-24:25",
+        "phase": "David's Final Years - Elder King"
+      },
+      {
+        "segmentId": "S173",
+        "book": "Psa",
+        "title": "Book 4: God our Deliverer",
+        "ref": "101:1-106:48",
+        "phase": "David's Psalms of Deliverance",
+        "note": "Psalms reflecting on God's faithfulness through trials"
+      },
+      {
+        "segmentId": "S105",
+        "book": "1Ki",
+        "title": "Solomon Becomes King",
+        "ref": "1:1-2:46",
+        "phase": "David's Legacy - Passing the Throne"
+      },
+      {
+        "segmentId": "S174",
+        "book": "Psa",
+        "title": "Book 5: God our Deliverer",
+        "ref": "107:1-112:10",
+        "phase": "David's Wisdom Psalms",
+        "note": "Psalms of wisdom and instruction"
+      },
+      {
+        "segmentId": "S175",
+        "book": "Psa",
+        "title": "Book 5: The Egyptian Hallel",
+        "ref": "113:1-118:29",
+        "phase": "David's Psalms of Praise",
+        "note": "Psalms of celebration and thanksgiving"
+      },
+      {
+        "segmentId": "S176",
+        "book": "Psa",
+        "title": "Book 5: The Word of God",
+        "ref": "119:1-119:176",
+        "phase": "David's Love for God's Word",
+        "note": "The great psalm about loving God's law"
+      },
+      {
+        "segmentId": "S177",
+        "book": "Psa",
+        "title": "Book 5: The Great Hallel",
+        "ref": "120:1-136:26",
+        "phase": "David's Songs of Ascent",
+        "note": "Pilgrimage psalms and songs of praise"
+      },
+      {
+        "segmentId": "S178",
+        "book": "Psa",
+        "title": "Book 5: Prayers for Deliverance",
+        "ref": "137:1-145:21",
+        "phase": "David's Prayers and Reflections",
+        "note": "Later psalms of prayer and reflection"
+      },
+      {
+        "segmentId": "S179",
+        "book": "Psa",
+        "title": "Book 5: The Final Hallel",
+        "ref": "146:1-150:6",
+        "phase": "David's Final Praises",
+        "note": "Concluding psalms of pure praise"
+      }
+    ]
+  },
+  "adventJourneyChronological": {
+    "title": "Advent Journey (Chronological)",
+    "description": "16 Stories - 4 Weeks", 
+    "longDescription": "Journey through Advent with a chronological flow from ancient prophecies to their fulfillment in Jesus. This focused 4-week plan follows the biblical timeline, showing how God's promises unfold across centuries, culminating in the birth of the Messiah.",
+    "segments": [
+      {
+        "segmentId": "S191",
+        "book": "Isa",
+        "title": "The Promise of Immanuel",
+        "ref": "7:10-16",
+        "phase": "Ancient Promises"
+      },
+      {
+        "segmentId": "S192", 
+        "book": "Isa",
+        "title": "A Child is Born",
+        "ref": "9:1-7",
+        "phase": "Ancient Promises"
+      },
+      {
+        "segmentId": "S193",
+        "book": "Isa",
+        "title": "A Shoot from Jesse",
+        "ref": "11:1-10",
+        "phase": "Ancient Promises"
+      },
+      {
+        "segmentId": "S256",
+        "book": "Mic",
+        "title": "The Ruler from Bethlehem",
+        "ref": "5:1-5",
+        "phase": "Ancient Promises"
+      },
+      {
+        "segmentId": "S194",
+        "book": "Isa",
+        "title": "The Servant's Mission",
+        "ref": "42:1-9",
+        "phase": "Messianic Vision"
+      },
+      {
+        "segmentId": "S195",
+        "book": "Isa",
+        "title": "Good News to the Poor",
+        "ref": "61:1-3",
+        "phase": "Messianic Vision"
+      },
+      {
+        "segmentId": "S285",
+        "book": "Luk",
+        "title": "The Birth of John the Baptist Foretold",
+        "ref": "1:5-25",
+        "phase": "Divine Announcements"
+      },
+      {
+        "segmentId": "S286",
+        "book": "Luk", 
+        "title": "The Birth of Jesus Foretold",
+        "ref": "1:26-38",
+        "phase": "Divine Announcements"
+      },
+      {
+        "segmentId": "S287",
+        "book": "Luk",
+        "title": "Mary Visits Elizabeth",
+        "ref": "1:39-56", 
+        "phase": "Divine Announcements"
+      },
+      {
+        "segmentId": "S266",
+        "book": "Mat",
+        "title": "The Birth of Jesus",
+        "ref": "1:18-2:23",
+        "phase": "The Nativity"
+      },
+      {
+        "segmentId": "S288",
+        "book": "Luk",
+        "title": "The Birth of Jesus",
+        "ref": "2:1-20",
+        "phase": "The Nativity"
+      },
+      {
+        "segmentId": "S289",
+        "book": "Luk",
+        "title": "Jesus is Presented in the Temple", 
+        "ref": "2:21-40",
+        "phase": "The Nativity"
+      },
+      {
+        "segmentId": "S267",
+        "book": "Mat",
+        "title": "John the Baptist Prepares the Way",
+        "ref": "3:1-17",
+        "phase": "Fulfillment Begins"
+      },
+      {
+        "segmentId": "S291",
+        "book": "Luk",
+        "title": "John the Baptist Prepares the Way",
+        "ref": "3:1-20",
+        "phase": "Fulfillment Begins"
+      },
+      {
+        "segmentId": "S292",
+        "book": "Luk",
+        "title": "The Baptism & Genealogy of Jesus",
+        "ref": "3:21-38",
+        "phase": "Fulfillment Begins"
+      },
+      {
+        "segmentId": "S294",
+        "book": "Luk",
+        "title": "Jesus Rejected at Nazareth",
+        "ref": "4:14-30",
+        "phase": "Fulfillment Begins"
+      }
+    ],
+    "phases": {
+      "Ancient Promises": {
+        "description": "Prophetic promises of the coming Messiah spoken centuries before Christ",
+        "color": "#8B4513"
+      },
+      "Messianic Vision": {
+        "description": "Isaiah's detailed vision of the Messiah's character and mission",
+        "color": "#4169E1"
+      },
+      "Divine Announcements": {
+        "description": "God's angels announce the fulfillment of ancient promises",
+        "color": "#FFD700"
+      },
+      "The Nativity": {
+        "description": "The long-awaited Messiah is born in Bethlehem",
+        "color": "#228B22"
+      },
+      "Fulfillment Begins": {
+        "description": "Jesus begins His earthly ministry, fulfilling prophecy",
+        "color": "#DC143C"
+      }
+    }
+  },
+  "lentenReflectionChronological": {
+    "title": "Lenten Reflection (Chronological)",
+    "description": "21 Stories - 3 Weeks",
+    "longDescription": "Walk through the season of Lent with purposeful reflection. This focused 3-week chronological journey follows Jesus' path from His ministry to His passion, death, and resurrection, deepening your understanding of Christ's sacrifice.",
+    "segments": [
+      {
+        "segmentId": "S267",
+        "book": "Mat",
+        "title": "John the Baptist Prepares the Way",
+        "ref": "3:1-17",
+        "phase": "Preparation"
+      },
+      {
+        "segmentId": "S268",
+        "book": "Mat",
+        "title": "The Temptation of Jesus",
+        "ref": "4:1-11",
+        "phase": "Preparation"
+      },
+      {
+        "segmentId": "S269",
+        "book": "Mat",
+        "title": "Jesus Begins His Ministry",
+        "ref": "4:12-25",
+        "phase": "Early Ministry"
+      },
+      {
+        "segmentId": "S270",
+        "book": "Mat",
+        "title": "The Sermon on the Mount",
+        "ref": "5:1-7:29",
+        "phase": "Early Ministry"
+      },
+      {
+        "segmentId": "S271",
+        "book": "Mat",
+        "title": "Jesus Heals and Teaches",
+        "ref": "8:1-9:38",
+        "phase": "Early Ministry"
+      },
+      {
+        "segmentId": "S272",
+        "book": "Mat",
+        "title": "Jesus Sends Out the Twelve",
+        "ref": "10:1-42",
+        "phase": "Ministry Expansion"
+      },
+      {
+        "segmentId": "S273",
+        "book": "Mat",
+        "title": "Jesus and John the Baptist",
+        "ref": "11:1-30",
+        "phase": "Ministry Expansion"
+      },
+      {
+        "segmentId": "S274",
+        "book": "Mat",
+        "title": "Jesus Teaches in Parables",
+        "ref": "13:1-58",
+        "phase": "Ministry Expansion"
+      },
+      {
+        "segmentId": "S275",
+        "book": "Mat",
+        "title": "Jesus Feeds the Five Thousand",
+        "ref": "14:1-36",
+        "phase": "Ministry Expansion"
+      },
+      {
+        "segmentId": "S276",
+        "book": "Mat",
+        "title": "Jesus and the Pharisees",
+        "ref": "15:1-16:12",
+        "phase": "Growing Opposition"
+      },
+      {
+        "segmentId": "S299",
+        "book": "Joh",
+        "title": "Jesus the Bread of Life",
+        "ref": "6:1-71",
+        "phase": "Growing Opposition"
+      },
+      {
+        "segmentId": "S300",
+        "book": "Joh",
+        "title": "Jesus at the Festival",
+        "ref": "7:1-8:59",
+        "phase": "Growing Opposition"
+      },
+      {
+        "segmentId": "S301",
+        "book": "Joh",
+        "title": "Jesus Heals the Blind Man",
+        "ref": "9:1-10:42",
+        "phase": "Growing Opposition"
+      },
+      {
+        "segmentId": "S302",
+        "book": "Joh",
+        "title": "Jesus Raises Lazarus",
+        "ref": "11:1-57",
+        "phase": "Final Confrontation"
+      },
+      {
+        "segmentId": "S303",
+        "book": "Joh",
+        "title": "Jesus' Triumphal Entry",
+        "ref": "12:1-50",
+        "phase": "Final Confrontation"
+      },
+      {
+        "segmentId": "S304",
+        "book": "Joh",
+        "title": "Jesus Washes the Disciples' Feet",
+        "ref": "13:1-38",
+        "phase": "The Last Supper"
+      },
+      {
+        "segmentId": "S305",
+        "book": "Joh",
+        "title": "Jesus Comforts His Disciples",
+        "ref": "14:1-16:33",
+        "phase": "The Last Supper"
+      },
+      {
+        "segmentId": "S306",
+        "book": "Joh",
+        "title": "Jesus Prays for His Disciples",
+        "ref": "17:1-26",
+        "phase": "The Last Supper"
+      },
+      {
+        "segmentId": "S284",
+        "book": "Mar",
+        "title": "Jesus is Betrayed and Arrested",
+        "ref": "14:1-15:47",
+        "phase": "The Passion"
+      },
+      {
+        "segmentId": "S307",
+        "book": "Joh",
+        "title": "Jesus' Death and Burial",
+        "ref": "18:1-19:42",
+        "phase": "The Passion"
+      },
+      {
+        "segmentId": "S297",
+        "book": "Luk",
+        "title": "Jesus' Resurrection",
+        "ref": "24:1-53",
+        "phase": "Resurrection Victory"
+      }
+    ],
+    "phases": {
+      "Preparation": {
+        "description": "Jesus prepares for His earthly ministry through baptism and temptation",
+        "color": "#8B4513"
+      },
+      "Early Ministry": {
+        "description": "Jesus begins His public ministry with teaching and healing",
+        "color": "#4169E1"
+      },
+      "Ministry Expansion": {
+        "description": "Jesus expands His ministry, sending out disciples and teaching in parables",
+        "color": "#32CD32"
+      },
+      "Growing Opposition": {
+        "description": "Religious leaders increasingly oppose Jesus as His ministry grows",
+        "color": "#FF8C00"
+      },
+      "Final Confrontation": {
+        "description": "Jesus enters Jerusalem and faces His final week of earthly ministry",
+        "color": "#DC143C"
+      },
+      "The Last Supper": {
+        "description": "Jesus shares His final meal with disciples and prepares them for what's to come",
+        "color": "#800080"
+      },
+      "The Passion": {
+        "description": "Jesus suffers, dies, and is buried, fulfilling His mission of salvation",
+        "color": "#2F4F4F"
+      },
+      "Resurrection Victory": {
+        "description": "Jesus rises from the dead, defeating death and offering eternal life",
+        "color": "#FFD700"
+      }
+    }
+  }
+} 
