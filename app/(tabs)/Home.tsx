@@ -15,26 +15,13 @@ import {
 } from "react-native";
 import Card from "@/components/Card";
 import ReadingPlansChallenges from "../../assets/data/ReadingPlansChallenges.json";
-
-type ReadingPlan = {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  segments: any;
-};
-
-type Challenge = {
-  id: string;
-  title: string;
-  description: string;
-  segments: string[];
-};
+import DailyStoryMap from '../../assets/data/DailyStoryMap.json';
+import { getDayOfYear } from 'date-fns';
 import StickyHeader from "../../components/StickyHeader";
 import { useAppContext } from "@/context/GlobalContext";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
-import { getEmojis, getCurrentStreak } from "@/api/sqlite";
+import { getEmojis, getCurrentStreak, getPlanProgress, getChallengeProgress, getSegmentCompletionStatus, getBestStreak } from "@/api/sqlite";
 import { format } from 'date-fns';
 import CustomHeader from "@/components/navigation/CustomHeader";
 import { useFontSize } from '@/context/FontSizeContext';
@@ -608,7 +595,7 @@ gridItemLabel: {
 // Improved type definition with better typing
 type ContinueReadingProps = {
   lastReadSegment: string | null;
-  onPress: () => void;
+  onPress: (segmentId?: string) => void;
   styles: Record<string, any>;
   colors: ColorScheme;
 };
@@ -722,114 +709,34 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: Co
     return isCompleted ? "#2196F3" : "#4CAF50"; // Blue for continue, Green for resume
   };
   
-  if (!lastReadSegment) {
-    return (
-      <View style={localStyles.container}>
-        <View style={[localStyles.accentBorder, { backgroundColor: getAccentColor() }]} />
-        <View style={localStyles.contentWrapper}>
-          <View style={localStyles.textSection}>
-            <View style={localStyles.titleRow}>
-              <Ionicons 
-                name={getIcon() as any} 
-                size={18} 
-                color={getAccentColor()} 
-                style={localStyles.icon} 
-              />
-              <Text style={localStyles.title}>{t('UI.home.jumpRightIn')}</Text>
-            </View>
-            <Text style={localStyles.subtitle}>
-              {t('UI.home.beginReadingJourney')}
-            </Text>
-          </View>
-          <View style={localStyles.buttonContainer}>
-            <Pressable 
-              style={({ pressed }) => [
-                localStyles.button,
-                localStyles.startButton,
-                pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }
-              ]} 
-              onPress={onPress}
-            >
-              <Text style={localStyles.buttonText}>{t('UI.home.start')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      </View>
-    );
-  }
+  // --- TODAY'S READING: Daily Suggestion ---
+  const today = new Date();
+  const dayOfYear = getDayOfYear(today); // 1-based
+  const dailySegmentId = (DailyStoryMap as string[])[(dayOfYear - 1) % DailyStoryMap.length];
+  const dailySegment = SegmentTitles[dailySegmentId as keyof typeof SegmentTitles];
 
-  const isLastSegmentCompleted = completedSegments[lastReadSegment]?.isCompleted;
-  const currentIndex = segIDs.indexOf(lastReadSegment);
-  let nextSegment = segIDs[currentIndex + 1];
-  
-  // Skip any introduction segments
-  while (nextSegment && nextSegment.startsWith('I')) {
-    const skipIndex = segIDs.indexOf(nextSegment);
-    nextSegment = segIDs[skipIndex + 1];
-  }
-
-  const currentSegmentData = SegmentTitles[lastReadSegment as keyof typeof SegmentTitles];
-  const nextSegmentData = nextSegment ? SegmentTitles[nextSegment as keyof typeof SegmentTitles] : null;
-
-  const handleComplete = async () => {
-    // Show reading mode modal for the current segment
-    if (lastReadSegment) {
-    const segment = SegmentTitles[lastReadSegment as keyof typeof SegmentTitles];
-      if (segment) {
-        // Call parent's onPress to handle modal display
-        onPress();
-      }
-    }
+  const handleDailyStart = () => {
+    if (!dailySegmentId) return;
+    onPress && onPress(dailySegmentId);
   };
 
+  // New layout: title, reference, and button in a row, styled like active reading
+  if (!dailySegment) return null;
   return (
-    <View style={localStyles.container}>
-      <View style={[localStyles.accentBorder, { backgroundColor: getAccentColor() }]} />
-      <View style={localStyles.contentWrapper}>
-        <View style={localStyles.textSection}>
-          <View style={localStyles.titleRow}>
-            <Ionicons 
-              name={getIcon() as any} 
-              size={18} 
-              color={getAccentColor()} 
-              style={localStyles.icon} 
-            />
-            <Text style={localStyles.title}>
-              {isLastSegmentCompleted ? t('UI.home.continueReading') : t('UI.home.resumeReading')}
-            </Text>
-          </View>
-          <Text style={localStyles.subtitle}>
-            {isLastSegmentCompleted 
-              ? `Next: ${nextSegmentData?.title}`
-              : `Complete: ${currentSegmentData?.title}`}
+    <View style={styles.activeReadingCard}>
+      <View style={styles.activeReadingContent}>
+        <View style={[styles.activeReadingIcon, { backgroundColor: '#4CAF50' }]}> 
+          <Ionicons name="book-outline" size={24} color="#FFFFFF" />
+        </View>
+        <View style={styles.activeReadingInfo}>
+          <Text style={styles.activeReadingTitle}>Today's Reading</Text>
+          <Text style={styles.activeReadingSubtitle}>
+            {dailySegment.title}{dailySegment.ref ? ` (${dailySegment.ref})` : ''}
           </Text>
         </View>
-        <View style={localStyles.buttonContainer}>
-          {!isLastSegmentCompleted && (
-            <Pressable 
-              style={({ pressed }) => [
-                localStyles.button, 
-                localStyles.completeButton,
-                pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }
-              ]}
-              onPress={handleComplete}
-            >
-              <Text style={localStyles.buttonText}>{t('UI.home.complete')}</Text>
-            </Pressable>
-          )}
-          <Pressable 
-            style={({ pressed }) => [
-              localStyles.button, 
-              isLastSegmentCompleted ? localStyles.nextButton : localStyles.nextButton,
-              pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }
-            ]}
-            onPress={onPress}
-          >
-            <Text style={localStyles.buttonText}>
-              {isLastSegmentCompleted ? t('UI.home.next') : t('UI.home.next')}
-            </Text>
-          </Pressable>
-        </View>
+        <Pressable style={styles.continueButton} onPress={handleDailyStart}>
+          <Text style={styles.continueButtonText}>Start</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -1095,6 +1002,27 @@ const HomeScreen = () => {
   const { t } = useTranslation();
   const styles = createStyles(width >= 768, colors);
   const [currentStreak, setCurrentStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
+  const [isTodayComplete, setIsTodayComplete] = useState(false);
+  
+  // Add state for real progress data
+  const [planProgress, setPlanProgress] = useState<{
+    totalSegments: number;
+    completedSegments: number;
+    progressPercentage: number;
+    nextSegmentId: string | null;
+    nextSegmentTitle: string | null;
+  } | null>(null);
+  
+  const [challengeProgresses, setChallengeProgresses] = useState<{
+    [challengeId: string]: {
+      totalSegments: number;
+      completedSegments: number;
+      progressPercentage: number;
+      nextSegmentId: string | null;
+      nextSegmentTitle: string | null;
+    }
+  }>({});
   
   // Group Reading Context
   const { 
@@ -1115,13 +1043,109 @@ const HomeScreen = () => {
 
   // Add useEffect to fetch streak data
   useEffect(() => {
-    const loadStreak = async () => {
-      const streak = await getCurrentStreak();
-      setCurrentStreak(streak);
+    const loadStreakData = async () => {
+      const [currentStreakValue, bestStreakValue] = await Promise.all([
+        getCurrentStreak(),
+        getBestStreak()
+      ]);
+      
+      setCurrentStreak(currentStreakValue);
+      setBestStreak(bestStreakValue);
+      
+      // Simple check: if current streak > 0, assume today's reading is on track
+      // This is a basic approximation since we don't have today's completion data in context
+      setIsTodayComplete(currentStreakValue > 0);
     };
     
-    loadStreak();
+    loadStreakData();
   }, [completedSegments]); // Reload when completedSegments changes
+
+  // Add useEffect to load real progress data
+  useEffect(() => {
+    const loadProgressData = async () => {
+      // Load plan progress
+      if (activePlan) {
+        const progress = await getPlanProgress(activePlan.planId);
+        const nextSegment = await getNextSegmentForPlan(activePlan.planId);
+        setPlanProgress({
+          totalSegments: progress.totalSegments,
+          completedSegments: progress.completedSegments,
+          progressPercentage: progress.progressPercentage,
+          nextSegmentId: nextSegment?.segmentId || null,
+          nextSegmentTitle: nextSegment?.title || null
+        });
+      }
+
+      // Load challenge progresses
+      const challengeProgressData: typeof challengeProgresses = {};
+      for (const [id, challenge] of Object.entries(activeChallenges)) {
+        if (challenge && !challenge.isPaused && !challenge.isCompleted) {
+          const progress = await getChallengeProgress(challenge.challengeId);
+          const nextSegment = await getNextSegmentForChallenge(challenge.challengeId);
+          challengeProgressData[id] = {
+            totalSegments: progress.totalSegments,
+            completedSegments: progress.completedSegments,
+            progressPercentage: progress.progressPercentage,
+            nextSegmentId: nextSegment?.segmentId || null,
+            nextSegmentTitle: nextSegment?.title || null
+          };
+        }
+      }
+      setChallengeProgresses(challengeProgressData);
+    };
+
+    loadProgressData();
+  }, [activePlan, activeChallenges, completedSegments]);
+
+  // Function to get next uncompleted segment for a plan
+  const getNextSegmentForPlan = async (planId: string): Promise<{ segmentId: string; title: string } | null> => {
+    const plan = ReadingPlansChallenges.plans.find((p: any) => p.id === planId);
+    if (!plan?.segments) return null;
+    
+    // Get all segments from the plan
+    const allSegments = Object.values(plan.segments)
+      .flatMap((book: any) => book?.segments || [])
+      .filter((seg: string) => !seg.startsWith('I')); // Filter out introductions
+    
+    // Find the first uncompleted segment
+    for (const segmentId of allSegments) {
+      const status = await getSegmentCompletionStatus(segmentId, 'plan', planId);
+      if (!status.isCompleted) {
+        const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+        return {
+          segmentId,
+          title: segmentData?.title || 'Unknown Story'
+        };
+      }
+    }
+    
+    return null; // All segments completed
+  };
+
+  // Function to get next uncompleted segment for a challenge
+  const getNextSegmentForChallenge = async (challengeId: string): Promise<{ segmentId: string; title: string } | null> => {
+    const challenge = ReadingPlansChallenges.challenges.find((c: any) => c.id === challengeId);
+    if (!challenge?.segments) return null;
+    
+    // Get all segments from the challenge
+    const allSegments = Object.values(challenge.segments)
+      .flatMap((book: any) => book?.segments || [])
+      .filter((seg: string) => !seg.startsWith('I')); // Filter out introductions
+    
+    // Find the first uncompleted segment
+    for (const segmentId of allSegments) {
+      const status = await getSegmentCompletionStatus(segmentId, 'challenge', undefined, challengeId);
+      if (!status.isCompleted) {
+        const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+        return {
+          segmentId,
+          title: segmentData?.title || 'Unknown Story'
+        };
+      }
+    }
+    
+    return null; // All segments completed
+  };
 
   // Calculate available plans (excluding SchoolYear2, SchoolYear3, and test plans)
   const getAvailablePlansCount = () => {
@@ -1139,7 +1163,7 @@ const HomeScreen = () => {
   const getActivePlansCount = () => {
     const activePlansCount = activePlan ? 1 : 0; // Can only have one active plan
     const activeChallengesCount = Object.values(activeChallenges).filter(
-      challenge => challenge && !challenge.isPaused && !challenge.isCompleted
+      (challenge: any) => challenge && !challenge.isPaused && !challenge.isCompleted
     ).length;
     
     return activePlansCount + activeChallengesCount;
@@ -1147,22 +1171,19 @@ const HomeScreen = () => {
 
   // Calculate total completed segments
   const getCompletedStoriesCount = () => {
-    return Object.values(completedSegments).filter(segment => segment.isCompleted).length;
+    return Object.values(completedSegments).filter((segment: any) => segment.isCompleted).length;
   };
 
   const handleScroll = (event: any) => {
     // Implementation of handleScroll function
   };
 
-  const handleContinueReading = async () => {
-    let segmentToRead = lastReadSegment;
-    
-    if (!lastReadSegment) {
-      // For new users, start with the first story segment (S001) in Genesis
+  const handleContinueReading = async (segmentId?: string) => {
+    let segmentToRead = segmentId || lastReadSegment;
+    if (!segmentToRead) {
       segmentToRead = 'S001';
       await setLastReadSegment('S001');
     }
-
     const segmentData = SegmentTitles[segmentToRead as keyof typeof SegmentTitles];
     if (segmentData && segmentToRead) {
       setSelectedSegmentId(segmentToRead);
@@ -1186,74 +1207,34 @@ const HomeScreen = () => {
   };
 
   const handleActivePlanContinue = async () => {
-    if (!activePlan) return;
+    if (!activePlan || !planProgress?.nextSegmentId) return;
     
-    // Find the next uncompleted segment in the active plan
-    const plan = ReadingPlansChallenges.plans.find((p: any) => p.id === activePlan.planId);
-    if (!plan?.segments) return;
-    
-    // Get all segments from the plan
-    const allSegments = Object.values(plan.segments)
-      .flatMap((book: any) => book?.segments || [])
-      .filter((seg: string) => !seg.startsWith('I')); // Filter out introductions
-    
-    // Find the first uncompleted segment
-    let nextSegmentId = null;
-    for (const segmentId of allSegments) {
-      if (!completedSegments[segmentId]?.isCompleted) {
-        nextSegmentId = segmentId;
-        break;
-      }
-    }
-    
-    // If we found a next segment, show the reading mode modal
-    if (nextSegmentId) {
-      const segmentData = SegmentTitles[nextSegmentId as keyof typeof SegmentTitles];
-      if (segmentData) {
-        setSelectedSegmentId(nextSegmentId);
-        setSelectedSegmentTitle(segmentData.title);
-        setSelectedSegmentRef(segmentData.ref || '');
-        setShowReadingModeModal(true);
-      }
+    const segmentData = SegmentTitles[planProgress.nextSegmentId as keyof typeof SegmentTitles];
+    if (segmentData) {
+      setSelectedSegmentId(planProgress.nextSegmentId);
+      setSelectedSegmentTitle(segmentData.title);
+      setSelectedSegmentRef(segmentData.ref || '');
+      setShowReadingModeModal(true);
     } else {
-      // If no uncompleted segments, go to the plan page
+      // If no next segment, go to the plan page
       router.push("/Plan");
     }
   };
 
   const handleActiveChallengesContinue = async (challengeId: string) => {
-    if (!activeChallenges[challengeId]) return;
-    
-    // Find the next uncompleted segment in the active challenge
-    const challenge = ReadingPlansChallenges.challenges.find((c: any) => c.id === challengeId);
-    if (!challenge?.segments) return;
-    
-    // Get all segments from the challenge
-    const allSegments = Object.values(challenge.segments)
-      .flatMap((book: any) => book?.segments || [])
-      .filter((seg: string) => !seg.startsWith('I')); // Filter out introductions
-    
-    // Find the first uncompleted segment
-    let nextSegmentId = null;
-    for (const segmentId of allSegments) {
-      if (!completedSegments[segmentId]?.isCompleted) {
-        nextSegmentId = segmentId;
-        break;
-      }
+    const challengeProgress = challengeProgresses[challengeId];
+    if (!challengeProgress?.nextSegmentId) {
+      // If no next segment, go to the challenges page
+      router.push("/Reading-Challenges");
+      return;
     }
     
-    // If we found a next segment, show the reading mode modal
-    if (nextSegmentId) {
-      const segmentData = SegmentTitles[nextSegmentId as keyof typeof SegmentTitles];
-      if (segmentData) {
-        setSelectedSegmentId(nextSegmentId);
-        setSelectedSegmentTitle(segmentData.title);
-        setSelectedSegmentRef(segmentData.ref || '');
-        setShowReadingModeModal(true);
-      }
-    } else {
-      // If no uncompleted segments, go to the challenges page
-      router.push("/Reading-Challenges");
+    const segmentData = SegmentTitles[challengeProgress.nextSegmentId as keyof typeof SegmentTitles];
+    if (segmentData) {
+      setSelectedSegmentId(challengeProgress.nextSegmentId);
+      setSelectedSegmentTitle(segmentData.title);
+      setSelectedSegmentRef(segmentData.ref || '');
+      setShowReadingModeModal(true);
     }
   };
 
@@ -1267,7 +1248,7 @@ const HomeScreen = () => {
   };
 
   const handleDismissGroup = (sessionId: string) => {
-    setDismissedGroups(prev => new Set([...prev, sessionId]));
+    setDismissedGroups(prev => new Set(Array.from(prev).concat(sessionId)));
   };
 
   // Reading Mode Modal Handlers
@@ -1389,6 +1370,14 @@ const HomeScreen = () => {
     }
   };
 
+  // Helper to check if there is at least one valid active plan or challenge
+  const hasActivePlan = !!(activePlan && activePlan.planId && ReadingPlansChallenges.plans.find((plan: any) => plan.id === activePlan.planId && !activePlan.isCompleted && !activePlan.isPaused));
+  const hasActiveChallenge = Object.values(activeChallenges).some((challenge: any) => {
+    if (!challenge || challenge.isPaused || challenge.isCompleted) return false;
+    return ReadingPlansChallenges.challenges.some((c: any) => c.id === challenge.challengeId);
+  });
+  const showActiveReadingSection = hasActivePlan || hasActiveChallenge;
+
   return (
     <View style={localStyles.container}>
       <CustomHeader 
@@ -1466,46 +1455,61 @@ const HomeScreen = () => {
       />
 
         {/* Active Reading Plans */}
-        {(activePlan || Object.values(activeChallenges).some(challenge => challenge && !challenge.isPaused && !challenge.isCompleted)) && (
+        {showActiveReadingSection && (
           <View style={styles.activeReadingSection}>
             <Text style={styles.sectionTitle}>Your Active Reading</Text>
-            {activePlan && (
-              <View style={styles.activeReadingCard}>
-                <View style={styles.activeReadingContent}>
-                  <View style={[styles.activeReadingIcon, { backgroundColor: '#7B68EE' }]}>
-                    <Ionicons name="calendar-outline" size={24} color="#FFFFFF" />
-            </View>
-                  <View style={styles.activeReadingInfo}>
-                    <Text style={styles.activeReadingTitle}>
-                      {ReadingPlansChallenges.plans.find((plan: any) => plan.id === activePlan.planId)?.title || 'Bible in 1 year'}
-                    </Text>
-                    <Text style={styles.activeReadingSubtitle}>
-                      Next: God Creates
-                    </Text>
-                    <Text style={styles.activeReadingProgress}>0% complete</Text>
-          </View>
-                  <Pressable style={styles.continueButton} onPress={() => handleActivePlanContinue()}>
-                    <Text style={styles.continueButtonText}>→ Continue</Text>
-                  </Pressable>
-                </View>
-              </View>
+            {hasActivePlan && activePlan && (
+              (() => {
+                const planData = ReadingPlansChallenges.plans.find((plan: any) => plan.id === activePlan.planId);
+                if (!planData) return null;
+                return (
+                  <View style={styles.activeReadingCard}>
+                    <View style={styles.activeReadingContent}>
+                      <View style={[styles.activeReadingIcon, { backgroundColor: '#7B68EE' }]}> 
+                        <Ionicons name="calendar-outline" size={24} color="#FFFFFF" />
+                      </View>
+                      <View style={styles.activeReadingInfo}>
+                        <Text style={styles.activeReadingTitle}>{planData.title}</Text>
+                        <Text style={styles.activeReadingSubtitle}>
+                          {planProgress?.nextSegmentTitle 
+                            ? `Next: ${planProgress.nextSegmentTitle}` 
+                            : 'Plan Completed!'}
+                        </Text>
+                        <Text style={styles.activeReadingProgress}>
+                          {planProgress ? `${Math.round(planProgress.progressPercentage)}% complete` : 'Loading...'}
+                        </Text>
+                      </View>
+                      <Pressable style={styles.continueButton} onPress={() => handleActivePlanContinue()}>
+                        <Text style={styles.continueButtonText}>→ Continue</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                );
+              })()
             )}
-            {Object.entries(activeChallenges).map(([id, challenge]) => {
+            {Object.entries(activeChallenges).map(([id, challenge]: [string, any]) => {
               if (!challenge || challenge.isPaused || challenge.isCompleted) return null;
               const challengeData = ReadingPlansChallenges.challenges.find((c: any) => c.id === challenge.challengeId);
-              const progress = challengeData ? Math.round((challenge.completedSegments.length / 10) * 100) : 0;
+              if (!challengeData) return null;
+              const progressData = challengeProgresses[id];
               return (
                 <View key={id} style={styles.activeReadingCard}>
                   <View style={styles.activeReadingContent}>
-                    <View style={[styles.activeReadingIcon, { backgroundColor: '#FF69B4' }]}>
+                    <View style={[styles.activeReadingIcon, { backgroundColor: '#FF69B4' }]}> 
                       <Ionicons name="flag-outline" size={24} color="#FFFFFF" />
                     </View>
                     <View style={styles.activeReadingInfo}>
-                      <Text style={styles.activeReadingTitle}>{challengeData?.title || '12 Days of Christmas'}</Text>
-                      <Text style={styles.activeReadingSubtitle}>Next: Completed!</Text>
-                      <Text style={styles.activeReadingProgress}>NaN% complete</Text>
+                      <Text style={styles.activeReadingTitle}>{challengeData.title}</Text>
+                      <Text style={styles.activeReadingSubtitle}>
+                        {progressData?.nextSegmentTitle 
+                          ? `Next: ${progressData.nextSegmentTitle}` 
+                          : 'Challenge Completed!'}
+                      </Text>
+                      <Text style={styles.activeReadingProgress}>
+                        {progressData ? `${Math.round(progressData.progressPercentage)}% complete` : 'Loading...'}
+                      </Text>
                     </View>
-                    <Pressable style={styles.continueButton} onPress={() => handleActiveChallengesContinue(challenge.challengeId)}>
+                    <Pressable style={styles.continueButton} onPress={() => handleActiveChallengesContinue(id)}>
                       <Text style={styles.continueButtonText}>→ Continue</Text>
                     </Pressable>
                   </View>
@@ -1521,7 +1525,7 @@ const HomeScreen = () => {
             <Text style={styles.streakIcon}>🔥</Text>
             <Text style={styles.streakTitle}>Reading Streak</Text>
           </View>
-          <Text style={styles.streakBest}>Best: 15 days</Text>
+          <Text style={styles.streakBest}>Best: {bestStreak} days</Text>
           
           <View style={styles.streakMainContent}>
             <View style={styles.streakCircleContainer}>
@@ -1545,8 +1549,10 @@ const HomeScreen = () => {
           </View>
           
           <View style={styles.streakStatus}>
-            <View style={styles.streakStatusDot} />
-            <Text style={styles.streakStatusText}>Today's reading complete</Text>
+            <View style={[styles.streakStatusDot, { backgroundColor: isTodayComplete ? '#4CAF50' : '#FF9800' }]} />
+            <Text style={styles.streakStatusText}>
+              {isTodayComplete ? "Today's reading complete" : "Keep building your streak!"}
+            </Text>
           </View>
         </View>
 
@@ -1559,23 +1565,6 @@ const HomeScreen = () => {
             onDismiss={() => handleDismissGroup(group.id)}
           />
         ))}
-
-        <View style={styles.statsContainer}>
-          <View style={localStyles.statItem}>
-            <View style={[localStyles.statIcon, { backgroundColor: 'rgba(76, 175, 80, 0.15)' }]}>
-              <Ionicons name="book-outline" size={20} color="#4CAF50" />
-            </View>
-            <Text style={localStyles.statNumber}>{getCompletedStoriesCount()}</Text>
-            <Text style={localStyles.statLabel}>{t('UI.home.storiesRead')}</Text>
-          </View>
-          <View style={localStyles.statItem}>
-            <View style={[localStyles.statIcon, { backgroundColor: 'rgba(33, 150, 243, 0.15)' }]}>
-              <Ionicons name="list-outline" size={20} color="#2196F3" />
-            </View>
-            <Text style={localStyles.statNumber}>{getActivePlansCount()}</Text>
-            <Text style={localStyles.statLabel}>{t('UI.home.activePlans')}</Text>
-          </View>
-        </View>
 
         <InsightsSection styles={combinedStyles} />
         <View style={{ height: 80 }} />

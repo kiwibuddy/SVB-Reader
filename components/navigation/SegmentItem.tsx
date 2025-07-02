@@ -66,24 +66,18 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
   const { colors } = useAppSettings();
 
   useEffect(() => {
-    if (completedSegments && segment.id in completedSegments) {
-      setCompletionStatus({
-        isCompleted: !!completedSegments[segment.id],
-        color: null
-      });
-    } else {
-      const loadStatus = async () => {
-        const status = await getSegmentCompletionStatus(
-          segment.id,
-          context,
-          planId,
-          challengeId
-        );
-        setCompletionStatus(status);
-      };
-      loadStatus();
-    }
-  }, [segment.id, context, planId, challengeId, completedSegments]);
+    const loadStatus = async () => {
+      // Always use context-aware completion status for consistent display
+      const status = await getSegmentCompletionStatus(
+        segment.id,
+        context,
+        planId,
+        challengeId
+      );
+      setCompletionStatus(status);
+    };
+    loadStatus();
+  }, [segment.id, context, planId, challengeId]);
 
   const handlePress = () => {
     console.log('SegmentItem: handlePress called for segment:', segment.id);

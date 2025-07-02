@@ -47,19 +47,17 @@ export default function CheckCircle({
   const params = useLocalSearchParams();
   const { colors } = useAppSettings();
 
-  // Reset completion status when component mounts (entering segment)
+  // Load completion status when component mounts
   useEffect(() => {
     const initializeSegment = async () => {
-      // Reset completion status for this reading session
-      await resetSegmentCompletion(segmentId, context, planId, challengeId);
+      // Load current completion status for this context
+      const status = await getSegmentCompletionStatus(segmentId, context, planId, challengeId);
+      setIsCompleted(status.isCompleted);
+      setCompletionColor(status.color);
       
       // Load read count
       const count = await getSegmentReadCount(segmentId);
       setReadCount(count);
-      
-      // Set initial state as uncompleted
-      setIsCompleted(false);
-      setCompletionColor(null);
     };
     
     initializeSegment();
@@ -68,19 +66,14 @@ export default function CheckCircle({
   const handlePress = async () => {
     if (!isCompleted) {
       try {
-        // Mark as complete in database with proper context
-        await markSegmentComplete(segmentId, context, planId, challengeId);
-        
-        // Update global context based on context
+        // Only use global context function - it handles database calls internally
         if (context === 'main') {
           await globalMarkComplete(segmentId, true, selectedReaderColor, context);
           await setLastReadSegment(segmentId);
         } else if (context === 'plan' && planId) {
-          // Update plan progress in global context
           await globalMarkComplete(segmentId, true, selectedReaderColor, context, planId);
           await updateReadingPlanProgress(planId, segmentId);
         } else if (context === 'challenge' && challengeId) {
-          // Update challenge progress in global context
           await globalMarkComplete(segmentId, true, selectedReaderColor, context, undefined, challengeId);
           await updateChallengeProgress(challengeId, segmentId);
         }
@@ -102,16 +95,16 @@ export default function CheckCircle({
   const handleCelebrationComplete = () => {
     setShowCelebration(false);
     
-    // Navigate back to the source screen with the completed segment visible
+    // Navigate back to the source screen with proper tab navigation
     if (params.planId || planId) {
-      // Return to Plan screen
-      router.push('/Plan');
+      // Return to Plan screen with bottom navigation
+      router.push('/(tabs)/Plan');
     } else if (params.challengeId || challengeId) {
-      // Return to Reading-Challenges screen
-      router.push('/Reading-Challenges');
+      // Return to Reading-Challenges screen with bottom navigation
+      router.push('/(tabs)/Reading-Challenges');
     } else {
-      // Return to Navigation screen
-      router.push('/Navigation');
+      // Return to Navigation screen with bottom navigation
+      router.push('/(tabs)/Navigation');
     }
   };
 

@@ -4,7 +4,15 @@ import readingPlansData from "../assets/data/ReadingPlansChallenges.json";
 import { 
   markSegmentComplete as markSegmentCompleteDB,
   getSegmentCompletionStatus,
-  updateDailyActivity
+  updateDailyActivity,
+  startPlan as startPlanDB,
+  startChallenge as startChallengeDB,
+  pausePlan as pausePlanDB,
+  pauseChallenge as pauseChallengeDB,
+  resumePlan as resumePlanDB,
+  resumeChallenge as resumeChallengeDB,
+  getActivePlan,
+  getActiveChallenges
 } from '@/api/sqlite';
 
 // Add this interface near the top of the file, before AppContextType
@@ -225,17 +233,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Plan Management Functions
   const startPlan = async (planId: string) => {
-    const newPlan: PlanProgress = {
-      planId,
-      completedSegments: [],
-      dateStarted: new Date().toISOString(),
-      lastRead: new Date().toISOString(),
-      isCompleted: false,
-      isPaused: false
-    };
-    
-    setActivePlan(newPlan);
-    await AsyncStorage.setItem('activePlan', JSON.stringify(newPlan));
+    try {
+      // Start plan in database
+      await startPlanDB(planId);
+      
+      const newPlan: PlanProgress = {
+        planId,
+        completedSegments: [],
+        dateStarted: new Date().toISOString(),
+        lastRead: new Date().toISOString(),
+        isCompleted: false,
+        isPaused: false
+      };
+      
+      setActivePlan(newPlan);
+      await AsyncStorage.setItem('activePlan', JSON.stringify(newPlan));
+    } catch (error) {
+      console.error('Error starting plan:', error);
+    }
   };
 
   const pausePlan = async () => {
@@ -263,23 +278,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Challenge Management Functions
   const startChallenge = async (challengeId: string) => {
-    const newChallenge: ChallengeProgress = {
-      challengeId,
-      completedSegments: [],
-      dateStarted: new Date().toISOString(),
-      lastRead: new Date().toISOString(),
-      isCompleted: false,
-      isPaused: false
-    };
-    
-    setActiveChallenges(prev => ({
-      ...prev,
-      [challengeId]: newChallenge
-    }));
-    await AsyncStorage.setItem('activeChallenges', JSON.stringify({
-      ...activeChallenges,
-      [challengeId]: newChallenge
-    }));
+    try {
+      // Start challenge in database
+      await startChallengeDB(challengeId);
+      
+      const newChallenge: ChallengeProgress = {
+        challengeId,
+        completedSegments: [],
+        dateStarted: new Date().toISOString(),
+        lastRead: new Date().toISOString(),
+        isCompleted: false,
+        isPaused: false
+      };
+      
+      setActiveChallenges(prev => ({
+        ...prev,
+        [challengeId]: newChallenge
+      }));
+      await AsyncStorage.setItem('activeChallenges', JSON.stringify({
+        ...activeChallenges,
+        [challengeId]: newChallenge
+      }));
+    } catch (error) {
+      console.error('Error starting challenge:', error);
+    }
   };
 
   const pauseChallenge = async (challengeId: string) => {
