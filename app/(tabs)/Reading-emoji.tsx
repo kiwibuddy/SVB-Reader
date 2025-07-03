@@ -1346,12 +1346,12 @@ const ReadingEmoji = () => {
       {filteredReactions.length === 0 && !isLoading && (
         <View style={styles.emptyStateContainer}>
           <Text style={styles.emptyStateText}>
-            {selectedEmoji ? t("", { emoji: selectedEmoji }) : t("")}
+            {selectedEmoji ? `No ${selectedEmoji} reactions found` : "No reactions found"}
           </Text>
         </View>
       )}
 
-      {filteredReactions.length > 0 && <Text style={styles.longPressHint}>{t("")}</Text>}
+      {filteredReactions.length > 0 && <Text style={styles.longPressHint}>Long press to jump to passage</Text>}
     </>
   )
 

@@ -227,13 +227,14 @@ const Achievements = () => {
 
         // Load individual book progress for all books
         const allBooks = [...oldTestamentBooks, ...newTestamentBooks];
+        // Fetch all book progresses in parallel
+        const progressResults = await Promise.all(
+          allBooks.map(book => getBookProgress(book.bookCode))
+        );
         const progressData: Record<string, {completed: number; total: number; percentage: number}> = {};
-        
-        for (const book of allBooks) {
-          const progress = await getBookProgress(book.bookCode);
-          progressData[book.bookCode] = progress;
-        }
-        
+        allBooks.forEach((book, i) => {
+          progressData[book.bookCode] = progressResults[i];
+        });
         setBookProgress(progressData);
 
       } catch (error) {

@@ -17,7 +17,7 @@ i18next
     interpolation: {
       escapeValue: false
     },
-    debug: true // Add this temporarily to see what's happening
+    debug: false // Set to false to disable missing key warnings
   });
 
 export default i18next; 
