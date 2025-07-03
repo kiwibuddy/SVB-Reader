@@ -9,16 +9,33 @@ import {
   Platform,
   Image,
   Pressable,
+  ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAppContext } from '@/context/GlobalContext';
 import { useAppSettings } from '@/context/AppSettingsContext';
-import { getCurrentStreak, getEmojis } from '@/api/sqlite';
+import { 
+  getCurrentStreak, 
+  getBestStreak,
+  getEmojis,
+  getEmojiStats,
+  getCompletedSegmentsCount,
+  getTotalSegmentsCount,
+  getSourceStats,
+  getOldTestamentProgress,
+  getNewTestamentProgress,
+  getLongestSession,
+  getCompletedBooks,
+  checkEmojiCollection,
+  getReadingStreak,
+  getBookProgress
+} from '@/api/sqlite';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 import { imageMap } from '@/components/navigation/NavBook';
 
-// Types
+// Enhanced Types
 interface AchievementStats {
   totalStories: number;
   completedStories: number;
@@ -28,6 +45,10 @@ interface AchievementStats {
   oldTestament: { completed: number; total: number };
   newTestament: { completed: number; total: number };
   emojiCount: { total: number; heart: number; prayer: number; question: number; thumbsUp: number };
+  sourceReading: { red: number; green: number; blue: number; black: number };
+  longestSession: number;
+  booksCompleted: string[];
+  emojiCollection: { complete: boolean; used: string[] };
 }
 
 interface Achievement {
@@ -38,7 +59,9 @@ interface Achievement {
   color: string;
   progress: number;
   total: number;
-  category: 'milestones' | 'streaks' | 'testament' | 'engagement';
+  category: 'milestones' | 'streaks' | 'testament' | 'engagement' | 'books' | 'sessions';
+  achieved: boolean;
+  achievedDate?: string;
 }
 
 interface BookCompletion {
@@ -52,6 +75,12 @@ const Achievements = () => {
   const isLargeScreen = width >= 768;
   const { colors } = useAppSettings();
   const { completedSegments } = useAppContext();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [bookProgress, setBookProgress] = useState<Record<string, {completed: number; total: number; percentage: number}>>({});
+  
+  // Enhanced stats state with all database-driven properties
   const [stats, setStats] = useState<AchievementStats>({
     totalStories: 0,
     completedStories: 0,
@@ -60,7 +89,11 @@ const Achievements = () => {
     bestStreak: 0,
     oldTestament: { completed: 0, total: 219 },
     newTestament: { completed: 0, total: 146 },
-    emojiCount: { total: 0, heart: 0, prayer: 0, question: 0, thumbsUp: 0 }
+    emojiCount: { total: 0, heart: 0, prayer: 0, question: 0, thumbsUp: 0 },
+    sourceReading: { red: 0, green: 0, blue: 0, black: 0 },
+    longestSession: 0,
+    booksCompleted: [],
+    emojiCollection: { complete: false, used: [] }
   });
 
   const styles = createStyles(isLargeScreen, colors);
@@ -138,77 +171,104 @@ const Achievements = () => {
     { bookCode: 'Rev', bookName: 'Revelation', isCompleted: false },
   ];
 
+  // Comprehensive database-driven stats loading
   useEffect(() => {
     const loadStats = async () => {
+      setIsLoading(true);
+      setError(null);
+      
       try {
-        // Calculate completion statistics
-        const totalSegments = Object.keys(SegmentTitles).length;
-        const completedCount = Object.values(completedSegments).filter(
-          segment => segment.isCompleted
-        ).length;
-        const completionPercentage = Math.round((completedCount / totalSegments) * 100);
+        // Load all statistics in parallel for better performance
+        const [
+          completedCount,
+          totalCount,
+          streakData,
+          emojiData,
+          sourceData,
+          otProgress,
+          ntProgress,
+          longestSession,
+          booksCompleted,
+          emojiCollection
+        ] = await Promise.all([
+          getCompletedSegmentsCount(),
+          getTotalSegmentsCount(),
+          getReadingStreak(),
+          getEmojiStats(),
+          getSourceStats(),
+          getOldTestamentProgress(),
+          getNewTestamentProgress(),
+          getLongestSession(),
+          getCompletedBooks(),
+          checkEmojiCollection()
+        ]);
 
-        // Get current streak
-        const currentStreak = await getCurrentStreak();
-
-        // Calculate Old Testament vs New Testament completion
-        const oldTestamentBookCodes = oldTestamentBooks.map(book => book.bookCode);
-        const newTestamentBookCodes = newTestamentBooks.map(book => book.bookCode);
-
-        let otCompleted = 0;
-        let ntCompleted = 0;
-
-        Object.entries(SegmentTitles).forEach(([segmentId, segment]) => {
-          if (completedSegments[segmentId]?.isCompleted) {
-            const bookCode = segment.book[0];
-            if (oldTestamentBookCodes.includes(bookCode)) {
-              otCompleted++;
-            } else if (newTestamentBookCodes.includes(bookCode)) {
-              ntCompleted++;
-            }
-          }
-        });
-
-        // Get emoji statistics
-        const emojiData = await getEmojis();
-        const emojiStats = {
-          total: emojiData.length,
-          heart: emojiData.filter(e => e.emoji === '❤️').length,
-          prayer: emojiData.filter(e => e.emoji === '🙏').length,
-          question: emojiData.filter(e => e.emoji === '🤔').length,
-          thumbsUp: emojiData.filter(e => e.emoji === '👍').length
-        };
+        const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
         setStats({
-          totalStories: totalSegments,
+          totalStories: totalCount,
           completedStories: completedCount,
           completionPercentage,
-          currentStreak,
-          bestStreak: Math.max(currentStreak, 15), // Placeholder for best streak
-          oldTestament: { completed: otCompleted, total: 219 },
-          newTestament: { completed: ntCompleted, total: 146 },
-          emojiCount: emojiStats
+          currentStreak: streakData.current || 0,
+          bestStreak: streakData.longest || 0,
+          oldTestament: otProgress,
+          newTestament: ntProgress,
+          emojiCount: emojiData,
+          sourceReading: {
+            red: sourceData.god || 0,
+            green: sourceData.mainCharacter || 0,
+            blue: sourceData.otherVoices || 0,
+            black: sourceData.narrator || 0
+          },
+          longestSession,
+          booksCompleted: Array.isArray(booksCompleted) ? booksCompleted : [],
+          emojiCollection
         });
+
+        // Load individual book progress for all books
+        const allBooks = [...oldTestamentBooks, ...newTestamentBooks];
+        const progressData: Record<string, {completed: number; total: number; percentage: number}> = {};
+        
+        for (const book of allBooks) {
+          const progress = await getBookProgress(book.bookCode);
+          progressData[book.bookCode] = progress;
+        }
+        
+        setBookProgress(progressData);
+
       } catch (error) {
         console.error('Error loading achievement stats:', error);
+        setError('Failed to load achievements. Please check your connection and try again.');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     loadStats();
-  }, [completedSegments]);
+  }, [completedSegments, refreshTrigger]);
 
   // Check if a book is completed based on segments (excluding intro segments)
   const isBookCompleted = (bookCode: string): boolean => {
-    const bookSegments = Object.entries(SegmentTitles).filter(
-      ([segmentId, segment]) => segment.book[0] === bookCode && !segmentId.startsWith('I')
-    );
-    return bookSegments.length > 0 && bookSegments.every(
-      ([segmentId, _]) => completedSegments[segmentId]?.isCompleted
-    );
+    return stats.booksCompleted.includes(bookCode);
   };
 
-  // Achievement definitions
-  const achievements: Achievement[] = [
+  // Calculate total stories and completed stories for each testament
+  const getTestamentStoryProgress = (books: BookCompletion[]) => {
+    let completed = 0;
+    let total = 0;
+    books.forEach(book => {
+      const progress = bookProgress[book.bookCode] || { completed: 0, total: 0, percentage: 0 };
+      completed += progress.completed;
+      total += progress.total;
+    });
+    return { completed, total, percentage: total > 0 ? Math.round((completed / total) * 100) : 0 };
+  };
+
+  const otStoryProgress = getTestamentStoryProgress(oldTestamentBooks);
+  const ntStoryProgress = getTestamentStoryProgress(newTestamentBooks);
+
+  // Database-driven achievement definitions
+  const generateAchievements = (): Achievement[] => [
     // Reading Milestones
     {
       id: 'first_steps',
@@ -218,7 +278,8 @@ const Achievements = () => {
       color: '#4CAF50',
       progress: Math.min(stats.completedStories, 1),
       total: 1,
-      category: 'milestones'
+      category: 'milestones',
+      achieved: stats.completedStories >= 1
     },
     {
       id: 'bible_explorer',
@@ -228,7 +289,8 @@ const Achievements = () => {
       color: '#2196F3',
       progress: Math.min(stats.completedStories, 10),
       total: 10,
-      category: 'milestones'
+      category: 'milestones',
+      achieved: stats.completedStories >= 10
     },
     {
       id: 'scripture_enthusiast',
@@ -238,7 +300,8 @@ const Achievements = () => {
       color: '#9C27B0',
       progress: Math.min(stats.completedStories, 25),
       total: 25,
-      category: 'milestones'
+      category: 'milestones',
+      achieved: stats.completedStories >= 25
     },
     {
       id: 'bible_scholar',
@@ -248,7 +311,8 @@ const Achievements = () => {
       color: '#FF9800',
       progress: Math.min(stats.completedStories, 50),
       total: 50,
-      category: 'milestones'
+      category: 'milestones',
+      achieved: stats.completedStories >= 50
     },
     {
       id: 'word_warrior',
@@ -258,7 +322,19 @@ const Achievements = () => {
       color: '#F44336',
       progress: Math.min(stats.completedStories, 100),
       total: 100,
-      category: 'milestones'
+      category: 'milestones',
+      achieved: stats.completedStories >= 100
+    },
+    {
+      id: 'bible_master',
+      title: 'Bible Master',
+      description: 'Read 200 Bible stories',
+      icon: 'ribbon-outline',
+      color: '#9C27B0',
+      progress: Math.min(stats.completedStories, 200),
+      total: 200,
+      category: 'milestones',
+      achieved: stats.completedStories >= 200
     },
     {
       id: 'complete_collection',
@@ -268,61 +344,114 @@ const Achievements = () => {
       color: '#FFD700',
       progress: Math.min(stats.completedStories, 365),
       total: 365,
-      category: 'milestones'
+      category: 'milestones',
+      achieved: stats.completedStories >= 365
     },
+
     // Reading Streaks
+    {
+      id: 'getting_started',
+      title: 'Getting Started',
+      description: 'Maintain a 3-day reading streak',
+      icon: 'flame-outline',
+      color: '#FF5722',
+      progress: Math.min(stats.bestStreak, 3),
+      total: 3,
+      category: 'streaks',
+      achieved: stats.bestStreak >= 3
+    },
     {
       id: 'consistent_reader',
       title: 'Consistent Reader',
       description: 'Maintain a 7-day reading streak',
       icon: 'flame-outline',
       color: '#FF5722',
-      progress: Math.min(stats.currentStreak, 7),
+      progress: Math.min(stats.bestStreak, 7),
       total: 7,
-      category: 'streaks'
+      category: 'streaks',
+      achieved: stats.bestStreak >= 7
+    },
+    {
+      id: 'dedicated_disciple',
+      title: 'Dedicated Disciple',
+      description: 'Maintain a 14-day reading streak',
+      icon: 'flame',
+      color: '#FF5722',
+      progress: Math.min(stats.bestStreak, 14),
+      total: 14,
+      category: 'streaks',
+      achieved: stats.bestStreak >= 14
     },
     {
       id: 'scripture_habit',
       title: 'Scripture Habit',
       description: 'Maintain a 30-day reading streak',
-      icon: 'flame-outline',
+      icon: 'flame',
       color: '#FF5722',
-      progress: Math.min(stats.currentStreak, 30),
+      progress: Math.min(stats.bestStreak, 30),
       total: 30,
-      category: 'streaks'
+      category: 'streaks',
+      achieved: stats.bestStreak >= 30
+    },
+    {
+      id: 'bible_devotee',
+      title: 'Bible Devotee',
+      description: 'Maintain a 60-day reading streak',
+      icon: 'flame',
+      color: '#E91E63',
+      progress: Math.min(stats.bestStreak, 60),
+      total: 60,
+      category: 'streaks',
+      achieved: stats.bestStreak >= 60
     },
     {
       id: 'faithful_follower',
       title: 'Faithful Follower',
       description: 'Maintain a 100-day reading streak',
-      icon: 'flame-outline',
-      color: '#FF5722',
-      progress: Math.min(stats.currentStreak, 100),
+      icon: 'flame',
+      color: '#E91E63',
+      progress: Math.min(stats.bestStreak, 100),
       total: 100,
-      category: 'streaks'
+      category: 'streaks',
+      achieved: stats.bestStreak >= 100
     },
+    {
+      id: 'scripture_champion',
+      title: 'Scripture Champion',
+      description: 'Maintain a 365-day reading streak',
+      icon: 'flame',
+      color: '#FFD700',
+      progress: Math.min(stats.bestStreak, 365),
+      total: 365,
+      category: 'streaks',
+      achieved: stats.bestStreak >= 365
+    },
+
     // Testament Progress
     {
       id: 'old_testament',
-      title: 'Old Testament',
+      title: 'Old Testament Master',
       description: 'Complete the Old Testament',
-      icon: 'bookmark-outline',
+      icon: 'library-outline',
       color: '#8D6E63',
-      progress: stats.oldTestament.completed,
-      total: stats.oldTestament.total,
-      category: 'testament'
+      progress: otStoryProgress.completed,
+      total: otStoryProgress.total,
+      category: 'testament',
+      achieved: otStoryProgress.completed >= otStoryProgress.total
     },
     {
       id: 'new_testament',
-      title: 'New Testament',
+      title: 'New Testament Master',
       description: 'Complete the New Testament',
-      icon: 'bookmark-outline',
+      icon: 'star-outline',
       color: '#607D8B',
-      progress: stats.newTestament.completed,
-      total: stats.newTestament.total,
-      category: 'testament'
+      progress: ntStoryProgress.completed,
+      total: ntStoryProgress.total,
+      category: 'testament',
+      achieved: ntStoryProgress.completed >= ntStoryProgress.total
     },
-    // Engagement
+
+    // Engagement Achievements
     {
       id: 'first_reaction',
       title: 'First Reaction',
@@ -331,7 +460,8 @@ const Achievements = () => {
       color: '#FFC107',
       progress: Math.min(stats.emojiCount.total, 1),
       total: 1,
-      category: 'engagement'
+      category: 'engagement',
+      achieved: stats.emojiCount.total >= 1
     },
     {
       id: 'heart_collector',
@@ -341,7 +471,8 @@ const Achievements = () => {
       color: '#E91E63',
       progress: Math.min(stats.emojiCount.heart, 10),
       total: 10,
-      category: 'engagement'
+      category: 'engagement',
+      achieved: stats.emojiCount.heart >= 10
     },
     {
       id: 'prayer_warrior',
@@ -351,7 +482,8 @@ const Achievements = () => {
       color: '#9C27B0',
       progress: Math.min(stats.emojiCount.prayer, 10),
       total: 10,
-      category: 'engagement'
+      category: 'engagement',
+      achieved: stats.emojiCount.prayer >= 10
     },
     {
       id: 'encourager',
@@ -361,7 +493,8 @@ const Achievements = () => {
       color: '#4CAF50',
       progress: Math.min(stats.emojiCount.thumbsUp, 10),
       total: 10,
-      category: 'engagement'
+      category: 'engagement',
+      achieved: stats.emojiCount.thumbsUp >= 10
     },
     {
       id: 'deep_thinker',
@@ -371,7 +504,8 @@ const Achievements = () => {
       color: '#607D8B',
       progress: Math.min(stats.emojiCount.question, 10),
       total: 10,
-      category: 'engagement'
+      category: 'engagement',
+      achieved: stats.emojiCount.question >= 10
     },
     {
       id: 'emoji_enthusiast',
@@ -381,7 +515,8 @@ const Achievements = () => {
       color: '#FF9800',
       progress: Math.min(stats.emojiCount.total, 50),
       total: 50,
-      category: 'engagement'
+      category: 'engagement',
+      achieved: stats.emojiCount.total >= 50
     },
     {
       id: 'emoji_master',
@@ -391,7 +526,8 @@ const Achievements = () => {
       color: '#9C27B0',
       progress: Math.min(stats.emojiCount.total, 100),
       total: 100,
-      category: 'engagement'
+      category: 'engagement',
+      achieved: stats.emojiCount.total >= 100
     },
     {
       id: 'emoji_champion',
@@ -401,9 +537,80 @@ const Achievements = () => {
       color: '#E91E63',
       progress: Math.min(stats.emojiCount.total, 200),
       total: 200,
-      category: 'engagement'
+      category: 'engagement',
+      achieved: stats.emojiCount.total >= 200
+    },
+    {
+      id: 'emoji_collection_master',
+      title: 'Collection Master',
+      description: 'Use all emoji types multiple times',
+      icon: 'apps-outline',
+      color: '#9C27B0',
+      progress: stats.emojiCollection.complete ? 1 : 0,
+      total: 1,
+      category: 'engagement',
+      achieved: stats.emojiCollection.complete
+    },
+
+    // Reading Sessions
+    {
+      id: 'marathon_reader',
+      title: 'Marathon Reader',
+      description: 'Read 5 stories in one session',
+      icon: 'timer-outline',
+      color: '#FF9800',
+      progress: Math.min(stats.longestSession, 5),
+      total: 5,
+      category: 'sessions',
+      achieved: stats.longestSession >= 5
+    },
+    {
+      id: 'super_session',
+      title: 'Super Session',
+      description: 'Read 10 stories in one session',
+      icon: 'flash-outline',
+      color: '#9C27B0',
+      progress: Math.min(stats.longestSession, 10),
+      total: 10,
+      category: 'sessions',
+      achieved: stats.longestSession >= 10
     }
   ];
+
+  const achievements = generateAchievements();
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.secondary }]}>
+          Loading your achievements...
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <SafeAreaView style={[styles.container, styles.centerContent]}>
+        <Ionicons
+          name="alert-circle-outline"
+          size={48}
+          color='#F44336'
+          style={{ marginBottom: 16 }}
+        />
+        <Text style={[styles.errorText, { color: colors.text }]}>{error}</Text>
+        <TouchableOpacity
+          style={[styles.retryButton, { backgroundColor: colors.primary }]}
+          onPress={() => setRefreshTrigger(prev => prev + 1)}
+        >
+          <Text style={styles.retryButtonText}>Try Again</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
 
   const ProgressBar = ({ progress, total, color }: { progress: number; total: number; color: string }) => (
     <View style={styles.progressBarContainer}>
@@ -439,58 +646,139 @@ const Achievements = () => {
   );
 
   const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
-    const isCompleted = achievement.progress >= achievement.total;
-    
+    const isCompleted = achievement.achieved;
+    let progress = achievement.progress;
+    let total = achievement.total;
+    let percent = Math.round((progress / total) * 100);
+    let showStoryProgress = false;
+
+    // If this is a testament progress card, use story progress
+    if (achievement.id === 'old_testament') {
+      progress = otStoryProgress.completed;
+      total = otStoryProgress.total;
+      percent = otStoryProgress.percentage;
+      showStoryProgress = true;
+    } else if (achievement.id === 'new_testament') {
+      progress = ntStoryProgress.completed;
+      total = ntStoryProgress.total;
+      percent = ntStoryProgress.percentage;
+      showStoryProgress = true;
+    }
+
     return (
       <View style={[styles.achievementCard, isCompleted && styles.completedCard]}>
         <View style={styles.achievementHeader}>
-          <View style={[styles.achievementIcon, { backgroundColor: achievement.color + '20' }]}>
+          <View style={[styles.achievementIcon, { backgroundColor: achievement.color + '20' }]}> 
             <Ionicons 
               name={achievement.icon} 
               size={24} 
-              color={achievement.color} 
+              color={isCompleted ? achievement.color : colors.secondary} 
             />
           </View>
           <View style={styles.achievementInfo}>
-            <Text style={styles.achievementTitle}>
+            <Text style={[styles.achievementTitle, isCompleted && { color: colors.text }]}> 
               {achievement.title}
             </Text>
-            <Text style={styles.achievementProgress}>
-              {achievement.progress} of {achievement.total}
+            <Text style={[styles.achievementProgress, { color: isCompleted ? achievement.color : colors.secondary }]}> 
+              {showStoryProgress ? `${progress} of ${total}` : `${achievement.progress} of ${achievement.total}`}
             </Text>
           </View>
+          {isCompleted && (
+            <View style={styles.completedBadge}>
+              <Ionicons name="checkmark-circle" size={20} color={achievement.color} />
+            </View>
+          )}
         </View>
-        <Text style={styles.achievementDescription}>{achievement.description}</Text>
-        <ProgressBar 
-          progress={achievement.progress} 
-          total={achievement.total} 
-          color={achievement.color} 
-        />
+        <Text style={[styles.achievementDescription, { color: isCompleted ? colors.secondary : colors.secondary }]}> 
+          {achievement.description}
+        </Text>
+        <View style={styles.progressBarContainer}>
+          <View style={[styles.progressBar, { backgroundColor: achievement.color + '20' }]}> 
+            <View 
+              style={[styles.progressFill, { backgroundColor: achievement.color, width: `${showStoryProgress ? percent : Math.min((achievement.progress / achievement.total) * 100, 100)}%` }]} 
+            />
+          </View>
+        </View>
       </View>
     );
   };
 
-    const BookIcon = ({ book }: { book: BookCompletion }) => {
+  const BookCard = ({ book }: { book: BookCompletion }) => {
     const isCompleted = isBookCompleted(book.bookCode);
     const imageSource = imageMap[book.bookCode];
+    const progressData = bookProgress[book.bookCode] || { completed: 0, total: 0, percentage: 0 };
     
-    return (
-      <View style={styles.bookIconContainer}>
-        <View style={[styles.bookIconWrapper, isCompleted && styles.completedBookIcon]}>
-          {imageSource ? (
-            <Image 
-              source={imageSource} 
-              style={[styles.bookIcon, !isCompleted && styles.uncompletedBookIcon]} 
-              resizeMode="contain"
-            />
-          ) : (
-            <View style={[styles.bookIcon, styles.fallbackIcon, !isCompleted && styles.uncompletedBookIcon]}>
-              <Text style={[styles.fallbackIconText, !isCompleted && styles.uncompletedBookText]}>{book.bookCode}</Text>
+    // Debug logging
+    console.log(`Book: ${book.bookCode}, Image exists: ${!!imageSource}, Progress: ${progressData.percentage}%, Completed segments: ${progressData.completed}/${progressData.total}`);
+    
+    // Use real progress data
+    const progress = progressData.percentage;
+    const progressColor = progress === 100 ? '#4CAF50' : progress > 0 ? '#FF9800' : colors.secondary;
+    
+    // Determine status text
+    const getStatusText = () => {
+      if (progress === 100) return 'Completed';
+      if (progress > 0) return `${progressData.completed}/${progressData.total} stories`;
+      return 'Not Started';
+    };
+    
+          return (
+        <View style={[styles.bookCard, progress === 100 && styles.completedBookCard]}>
+          <View style={styles.bookHeader}>
+            <View style={[styles.bookImageContainer, progress === 100 && styles.completedImageContainer]}>
+              {imageSource ? (
+                <Image 
+                  source={imageSource} 
+                  style={[
+                    styles.bookImage,
+                    progress === 0 && styles.uncompletedImage
+                  ]} 
+                  resizeMode="contain"
+                  onError={(error) => console.log('Image load error:', error)}
+                />
+              ) : (
+                <View style={[styles.bookImage, styles.fallbackBookImage]}>
+                  <Text style={styles.fallbackBookText}>
+                    {book.bookCode.substring(0, 3)}
+                  </Text>
+                </View>
+              )}
+              {progress === 100 && (
+                <View style={styles.completedBadgeBook}>
+                  <Ionicons name="checkmark-circle" size={18} color="white" />
+                </View>
+              )}
             </View>
-          )}
-        </View>
-        <Text style={[styles.bookName, !isCompleted && styles.uncompletedBookName]}>{book.bookName}</Text>
+          
+          <View style={styles.bookInfo}>
+            <Text style={[styles.bookTitle, progress === 100 && styles.completedBookTitle]}>
+              {book.bookName}
+            </Text>
+            <Text style={[styles.bookStatus, { color: progressColor }]}>
+              {getStatusText()}
+            </Text>
           </View>
+        </View>
+        
+        <View style={styles.bookProgressSection}>
+          <View style={styles.bookProgressBarContainer}>
+            <View style={[styles.progressBarBackground, { backgroundColor: progressColor + '20' }]}>
+              <View 
+                style={[
+                  styles.progressBarFill, 
+                  { 
+                    backgroundColor: progressColor,
+                    width: `${progress}%`
+                  }
+                ]} 
+              />
+            </View>
+          </View>
+          <Text style={[styles.progressPercentage, { color: progressColor }]}>
+            {progress}%
+          </Text>
+        </View>
+      </View>
     );
   };
 
@@ -505,16 +793,41 @@ const Achievements = () => {
               </View>
   );
 
-  const renderBooksSection = (title: string, books: BookCompletion[]) => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <View style={styles.booksGrid}>
-        {books.map((book) => (
-          <BookIcon key={book.bookCode} book={book} />
-        ))}
-            </View>
+  const renderBooksSection = (title: string, books: BookCompletion[], testament: 'OT' | 'NT') => {
+    // Calculate book completion
+    let completedBooks = 0;
+    books.forEach(book => {
+      const progress = bookProgress[book.bookCode] || { completed: 0, total: 0, percentage: 0 };
+      if (progress.percentage === 100) completedBooks++;
+    });
+    const totalBooks = books.length;
+    const progressPercentage = totalBooks > 0 ? Math.round((completedBooks / totalBooks) * 100) : 0;
+    
+    return (
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>{title}</Text>
+          <View style={styles.progressIndicator}>
+            <Text style={[styles.progressText, { color: colors.secondary }]}> 
+              {completedBooks}/{totalBooks} books complete
+            </Text>
           </View>
-  );
+        </View>
+        <View style={styles.progressBarSection}>
+          <ProgressBar 
+            progress={completedBooks} 
+            total={totalBooks} 
+            color={testament === 'OT' ? '#8D6E63' : '#607D8B'} 
+          />
+        </View>
+        <View style={styles.booksGrid}>
+          {books.map((book) => (
+            <BookCard key={book.bookCode} book={book} />
+          ))}
+        </View>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -570,6 +883,12 @@ const Achievements = () => {
           achievements.filter(a => a.category === 'testament')
         )}
 
+        {/* Reading Sessions */}
+        {achievements.filter(a => a.category === 'sessions').length > 0 && renderSection(
+          'Reading Sessions',
+          achievements.filter(a => a.category === 'sessions')
+        )}
+
         {/* Engagement */}
         {renderSection(
           'Engagement',
@@ -577,10 +896,10 @@ const Achievements = () => {
         )}
 
         {/* Old Testament Books */}
-        {renderBooksSection('Old Testament Books', oldTestamentBooks)}
+        {renderBooksSection('Old Testament Books', oldTestamentBooks, 'OT')}
 
         {/* New Testament Books */}
-        {renderBooksSection('New Testament Books', newTestamentBooks)}
+        {renderBooksSection('New Testament Books', newTestamentBooks, 'NT')}
     </ScrollView>
     </SafeAreaView>
   );
@@ -678,6 +997,24 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     paddingHorizontal: 16,
     letterSpacing: -0.3,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  progressIndicator: {
+    alignItems: 'flex-end',
+  },
+  progressText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  progressBarSection: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
   achievementGrid: {
     paddingHorizontal: 16,
     flexDirection: 'row',
@@ -700,6 +1037,17 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   completedCard: {
     borderWidth: 2,
     borderColor: 'rgba(76, 175, 80, 0.3)',
+  },
+  completedBadge: {
+    marginLeft: 8,
+  },
+  completedBadgeSmall: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 1,
   },
   achievementHeader: {
     flexDirection: 'row',
@@ -751,65 +1099,154 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 16,
-    gap: 16,
+    gap: 12,
   },
-  bookIconContainer: {
+  
+  // Enhanced Book Card Styles
+  bookCard: {
     width: '47%',
-    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 16,
-    flexDirection: 'row',
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
   },
-  bookIconWrapper: {
+  completedBookCard: {
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+    backgroundColor: colors.card,
+    shadowColor: '#4CAF50',
+    shadowOpacity: 0.2,
+  },
+  bookHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  bookImageContainer: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
-    backgroundColor: colors.card,
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: colors.background,
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  completedBookIcon: {
-    backgroundColor: '#4CAF50',
-    shadowColor: '#4CAF50',
-    shadowOpacity: 0.3,
+  completedImageContainer: {
+    backgroundColor: '#4CAF5015',
+    borderColor: '#4CAF50',
+    borderWidth: 2,
   },
-  bookIcon: {
+  bookImage: {
     width: 32,
     height: 32,
   },
-  uncompletedBookIcon: {
-    opacity: 0.3,
+  uncompletedImage: {
+    opacity: 0.4,
   },
-  fallbackIcon: {
+  fallbackBookImage: {
+    width: 32,
+    height: 32,
     backgroundColor: colors.secondary,
-    borderRadius: 16,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  fallbackIconText: {
+  fallbackBookText: {
     color: colors.background,
-    fontSize: 8,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: '700',
+    textAlign: 'center',
   },
-  uncompletedBookText: {
-    opacity: 0.3,
+  completedBadgeBook: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: '#4CAF50',
+    borderRadius: 12,
+    padding: 2,
+    borderWidth: 2,
+    borderColor: colors.card,
   },
-  bookName: {
-    fontSize: 14,
-    color: colors.text,
-    fontWeight: '500',
+  bookInfo: {
     flex: 1,
   },
-  uncompletedBookName: {
-    color: colors.secondary,
-    opacity: 0.5,
+  bookTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  completedBookTitle: {
+    color: colors.text,
+  },
+  bookStatus: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  bookProgressSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  bookProgressBarContainer: {
+    flex: 1,
+    marginRight: 8,
+  },
+  progressBarBackground: {
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  progressPercentage: {
+    fontSize: 12,
+    fontWeight: '600',
+    minWidth: 35,
+    textAlign: 'right',
+  },
+  
+  // Loading and error states
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  loadingText: {
+    fontSize: 16,
+    textAlign: 'center',
+    fontWeight: '500',
+    marginTop: 16,
+  },
+  errorText: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 16,
+    fontWeight: '600',
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 16,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
 

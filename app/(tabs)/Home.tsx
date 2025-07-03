@@ -22,7 +22,7 @@ import { useAppContext } from "@/context/GlobalContext";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { getEmojis, getCurrentStreak, getPlanProgress, getChallengeProgress, getSegmentCompletionStatus, getBestStreak } from "@/api/sqlite";
-import { format } from 'date-fns';
+import { format, isToday, parseISO } from 'date-fns';
 import CustomHeader from "@/components/navigation/CustomHeader";
 import { useFontSize } from '@/context/FontSizeContext';
 import { useAppSettings } from '@/context/AppSettingsContext';
@@ -722,6 +722,22 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: Co
 
   // New layout: title, reference, and button in a row, styled like active reading
   if (!dailySegment) return null;
+  const dailyBookName = dailySegment.book && dailySegment.book[0] ? (SegmentTitles[dailySegmentId]?.book[0] || '') : '';
+  const bookNameMapping: { [key: string]: string } = {
+    'Gen': 'Genesis', 'Exo': 'Exodus', 'Lev': 'Leviticus', 'Num': 'Numbers', 'Deu': 'Deuteronomy',
+    'Jos': 'Joshua', 'Jdg': 'Judges', 'Rut': 'Ruth', '1Sa': '1 Samuel', '2Sa': '2 Samuel',
+    '1Ki': '1 Kings', '2Ki': '2 Kings', '1Ch': '1 Chronicles', '2Ch': '2 Chronicles', 'Ezr': 'Ezra',
+    'Neh': 'Nehemiah', 'Est': 'Esther', 'Job': 'Job', 'Psa': 'Psalms', 'Pro': 'Proverbs',
+    'Ecc': 'Ecclesiastes', 'SoS': 'Song of Solomon', 'Isa': 'Isaiah', 'Jer': 'Jeremiah', 'Lam': 'Lamentations',
+    'Eze': 'Ezekiel', 'Dan': 'Daniel', 'Hos': 'Hosea', 'Joe': 'Joel', 'Amo': 'Amos', 'Oba': 'Obadiah',
+    'Jon': 'Jonah', 'Mic': 'Micah', 'Nah': 'Nahum', 'Hab': 'Habakkuk', 'Zep': 'Zephaniah', 'Hag': 'Haggai',
+    'Zec': 'Zechariah', 'Mal': 'Malachi', 'Mat': 'Matthew', 'Mar': 'Mark', 'Luk': 'Luke', 'Joh': 'John',
+    'Act': 'Acts', 'Rom': 'Romans', '1Co': '1 Corinthians', '2Co': '2 Corinthians', 'Gal': 'Galatians',
+    'Eph': 'Ephesians', 'Php': 'Philippians', 'Col': 'Colossians', '1Th': '1 Thessalonians', '2Th': '2 Thessalonians',
+    '1Ti': '1 Timothy', '2Ti': '2 Timothy', 'Tit': 'Titus', 'Phm': 'Philemon', 'Heb': 'Hebrews', 'Jam': 'James',
+    '1Pe': '1 Peter', '2Pe': '2 Peter', '1Jn': '1 John', '2Jn': '2 John', '3Jn': '3 John', 'Jud': 'Jude', 'Rev': 'Revelation'
+  };
+  const dailyBookFullName = bookNameMapping[dailyBookName] || dailyBookName;
   return (
     <View style={styles.activeReadingCard}>
       <View style={styles.activeReadingContent}>
@@ -731,7 +747,11 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: Co
         <View style={styles.activeReadingInfo}>
           <Text style={styles.activeReadingTitle}>Today's Reading</Text>
           <Text style={styles.activeReadingSubtitle}>
-            {dailySegment.title}{dailySegment.ref ? ` (${dailySegment.ref})` : ''}
+            {dailySegment.title}
+          </Text>
+          <Text style={styles.activeReadingSubtitle}>
+            {dailyBookFullName}
+            {dailySegment.ref ? ` (${dailySegment.ref})` : ''}
           </Text>
         </View>
         <Pressable style={styles.continueButton} onPress={handleDailyStart}>
@@ -1052,9 +1072,16 @@ const HomeScreen = () => {
       setCurrentStreak(currentStreakValue);
       setBestStreak(bestStreakValue);
       
-      // Simple check: if current streak > 0, assume today's reading is on track
-      // This is a basic approximation since we don't have today's completion data in context
-      setIsTodayComplete(currentStreakValue > 0);
+      // Find the most recent completed segment date
+      let latestDate: string | null = null;
+      Object.values(completedSegments).forEach((seg: any) => {
+        if (seg.isCompleted && seg.completionDate) {
+          if (!latestDate || seg.completionDate > latestDate) {
+            latestDate = seg.completionDate;
+          }
+        }
+      });
+      setIsTodayComplete(latestDate ? isToday(parseISO(latestDate)) : false);
     };
     
     loadStreakData();
@@ -1441,7 +1468,7 @@ const HomeScreen = () => {
                   <Ionicons name="flag-outline" size={32} color="#FFFFFF" />
         </View>
                 <Text style={styles.onboardingCardTitle}>Challenges</Text>
-                <Text style={styles.onboardingCardSubtitle}>New</Text>
+                <Text style={styles.onboardingCardSubtitle}>{getAvailableChallengesCount()} Challenges</Text>
         </View>
     </Pressable>
   </View>

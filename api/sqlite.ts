@@ -1094,6 +1094,37 @@ export async function getCompletedBooks(): Promise<string[]> {
   }
 }
 
+export async function getBookProgress(bookId: string): Promise<{completed: number; total: number; percentage: number}> {
+  try {
+    const segmentTitles = require('../assets/data/SegmentTitles.json');
+    
+    // Get all segments for this book (excluding intro segments for progress calculation)
+    const bookSegments = Object.keys(segmentTitles).filter(segmentId => {
+      const segment = segmentTitles[segmentId];
+      return segment.book && segment.book.includes(bookId) && !segmentId.startsWith('I');
+    });
+    
+    if (bookSegments.length === 0) {
+      return { completed: 0, total: 0, percentage: 0 };
+    }
+    
+    // Count completed segments for this book
+    const completedCount = await db.getFirstAsync<{ count: number }>(`
+      SELECT COUNT(*) as count FROM completedSegments 
+      WHERE segmentID IN (${bookSegments.map(() => '?').join(',')}) AND isCompleted = 1
+    `, bookSegments);
+
+    const completed = completedCount?.count || 0;
+    const total = bookSegments.length;
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+    
+    return { completed, total, percentage };
+  } catch (error) {
+    console.error(`Error getting book progress for ${bookId}:`, error);
+    return { completed: 0, total: 0, percentage: 0 };
+  }
+}
+
 export async function checkEmojiCollection(): Promise<{complete: boolean, used: string[]}> {
   try {
     const emojis = ['❤️', '👍', '🤔', '🙏'];
@@ -1134,7 +1165,7 @@ export async function getOldTestamentProgress(): Promise<{completed: number; tot
 
 export async function getNewTestamentProgress(): Promise<{completed: number; total: number}> {
   try {
-    const ntBooks = ['Mat', 'Mar', 'Luk', 'Joh', 'Act', 'Rom', '1Co', '2Co', 'Gal', 'Eph', 'Php', 'Col', '1Th', '2Th', '1Ti', '2Ti', 'Tit', 'Phm', 'Heb', 'Jas', '1Pe', '2Pe', '1Jo', '2Jo', '3Jo', 'Jud', 'Rev'];
+    const ntBooks = ['Mat', 'Mar', 'Luk', 'Joh', 'Act', 'Rom', '1Co', '2Co', 'Gal', 'Eph', 'Php', 'Col', '1Th', '2Th', '1Ti', '2Ti', 'Tit', 'Phm', 'Heb', 'Jam', '1Pe', '2Pe', '1Jn', '2Jn', '3Jn', 'Jud', 'Rev'];
     
     const completed = await db.getFirstAsync<{ count: number }>(`
       SELECT COUNT(*) as count FROM book_completion 
