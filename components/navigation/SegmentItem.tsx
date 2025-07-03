@@ -80,15 +80,12 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
   }, [segment.id, context, planId, challengeId]);
 
   const handlePress = () => {
-    console.log('SegmentItem: handlePress called for segment:', segment.id);
     if (onPress) {
-      console.log('SegmentItem: Calling onPress handler with segment:', segment.id);
       onPress(segment.id);
     } else {
-      console.log('SegmentItem: No onPress handler, using fallback navigation');
       // Fallback to direct navigation if no onPress provided
       router.push({
-        pathname: "/(tabs)/[segment]" as const,
+        pathname: "/[segment]" as const,
         params: {
           segment: `${language}-${version}-${segment.id}`,
           ...(context === 'plan' && planId ? { planId } : {}),

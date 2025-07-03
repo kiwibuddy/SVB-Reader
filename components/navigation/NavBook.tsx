@@ -14,75 +14,76 @@ import { Ionicons } from '@expo/vector-icons';
 import Books from "@/assets/data/BookChapterList.json";
 import { markSegmentComplete, getSegmentCompletionStatus } from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
+import '@/utils/suppressLogs';
 
-// Image mapping OLD - ALL ICONS NOT SHOWING
+// Image mapping - Lazy loaded to reduce console noise
 export const imageMap: { [key: string]: any } = {
-  'Gen': require('@/assets/images/BibleIcons/genesis-free-bible-icon.png'),
-  'Exo': require('@/assets/images/BibleIcons/exodus-free-bible-icon.png'),
-  'Lev': require('@/assets/images/BibleIcons/leviticus-free-bible-icon.png'),
-  'Num': require('@/assets/images/BibleIcons/numbers-free-bible-icon.png'),
-  'Deu': require('@/assets/images/BibleIcons/deuteronomy-free-bible-icon.png'),
-  'Jos': require('@/assets/images/BibleIcons/joshua-free-bible-icon.png'),
-  'Jdg': require('@/assets/images/BibleIcons/judges-free-bible-icon.png'),
-  'Rut': require('@/assets/images/BibleIcons/ruth-free-bible-icon.png'),
-  '1Sa': require('@/assets/images/BibleIcons/samuel-free-bible-icon.png'),
-  '2Sa': require('@/assets/images/BibleIcons/samuel-free-bible-icon.png'),
-  '1Ki': require('@/assets/images/BibleIcons/kings-free-bible-icon.png'),
-  '2Ki': require('@/assets/images/BibleIcons/kings-free-bible-icon.png'),
-  '1Ch': require('@/assets/images/BibleIcons/chronicles-free-bible-icon.png'),
-  '2Ch': require('@/assets/images/BibleIcons/chronicles-free-bible-icon.png'),
-  Ezr: require('@/assets/images/BibleIcons/ezra-free-bible-icon.png'),
-  Neh: require('@/assets/images/BibleIcons/nehemiah-free-bible-icon.png'),
-  Est: require('@/assets/images/BibleIcons/esther-free-bible-icon.png'),
-  Job: require('@/assets/images/BibleIcons/job-free-bible-icon.png'),
-  Psa: require('@/assets/images/BibleIcons/psalms-free-bible-icon.png'),
-  Pro: require('@/assets/images/BibleIcons/proverbs-free-bible-icon.png'),
-  Ecc: require('@/assets/images/BibleIcons/ecclesiastes-free-bible-icon.png'),
-  SoS: require('@/assets/images/BibleIcons/song-of-solomon-free-bible-icon.png'),
-  Isa: require('@/assets/images/BibleIcons/isaiah-free-bible-icon.png'),
-  Jer: require('@/assets/images/BibleIcons/jeremiah-free-bible-icon.png'),
-  Lam: require('@/assets/images/BibleIcons/lamentations-free-bible-icon.png'),
-  Eze: require('@/assets/images/BibleIcons/ezekiel-free-bible-icon.png'),
-  Dan: require('@/assets/images/BibleIcons/daniel-free-bible-icon.png'),
-  Hos: require('@/assets/images/BibleIcons/hosea-free-bible-icon.png'),
-  Joe: require('@/assets/images/BibleIcons/joel-free-bible-icon.png'),
-  Amo: require('@/assets/images/BibleIcons/amos-free-bible-icon.png'),
-  Oba: require('@/assets/images/BibleIcons/obadiah-free-bible-icon.png'),
-  Jon: require('@/assets/images/BibleIcons/Jonah-free-bible-icon.png'),
-  Mic: require('@/assets/images/BibleIcons/micah-free-bible-icon.png'),
-  Nah: require('@/assets/images/BibleIcons/nahum-free-bible-icon.png'),
-  Hab: require('@/assets/images/BibleIcons/habakkuk-free-bible-icon.png'),
-  Zep: require('@/assets/images/BibleIcons/zephaniah-free-bible-icon.png'),
-  Hag: require('@/assets/images/BibleIcons/haggai-free-bible-icon.png'),
-  Zec: require('@/assets/images/BibleIcons/zechariah-free-bible-icon.png'),
-  Mal: require('@/assets/images/BibleIcons/malachi-free-bible-icon.png'),
-  Mat: require('@/assets/images/BibleIcons/matthew-free-bible-icon.png'),
-  Mar: require('@/assets/images/BibleIcons/mark-free-bible-icon.png'),
-  Luk: require('@/assets/images/BibleIcons/luke-free-bible-icon.png'),
-  Joh: require('@/assets/images/BibleIcons/john-free-bible-icon.png'),
-  Act: require('@/assets/images/BibleIcons/acts-free-bible-icon.png'),
-  Rom: require('@/assets/images/BibleIcons/romans-free-bible-icon.png'),
-  [`1Co`]: require('@/assets/images/BibleIcons/1-corinthians-free-bible-icon.png'),
-  [`2Co`]: require('@/assets/images/BibleIcons/2-corinthians-free-bible-icon.png'),
-  Gal: require('@/assets/images/BibleIcons/galatians-free-bible-icon.png'),
-  Eph: require('@/assets/images/BibleIcons/ephesians-free-bible-icon.png'),
-  Php: require('@/assets/images/BibleIcons/philippians-free-bible-icon.png'),
-  Col: require('@/assets/images/BibleIcons/colossians-free-bible-icon.png'),
-  [`1Th`]: require('@/assets/images/BibleIcons/1-thessalonians-free-bible-icon.png'),
-  [`2Th`]: require('@/assets/images/BibleIcons/2-thessalonians-free-bible-icon.png'),
-  [`1Ti`]: require('@/assets/images/BibleIcons/1-timothy-free-bible-icon.png'),
-  [`2Ti`]: require('@/assets/images/BibleIcons/2-timothy-free-bible-icon.png'),
-  Tit: require('@/assets/images/BibleIcons/titus-free-bible-icon.png'),
-  Phm: require('@/assets/images/BibleIcons/philemon-free-bible-icon.png'),
-  Heb: require('@/assets/images/BibleIcons/hebrews-free-bible-icon.png'),
-  Jam: require('@/assets/images/BibleIcons/james-free-bible-icon.png'),
-  [`1Pe`]: require('@/assets/images/BibleIcons/1-peter-free-bible-icon.png'),
-  [`2Pe`]: require('@/assets/images/BibleIcons/2-peter-free-bible-icon.png'),
-  [`1Jn`]: require('@/assets/images/BibleIcons/1-john-free-bible-icon.png'),
-  [`2Jn`]: require('@/assets/images/BibleIcons/2-john-free-bible-icon.png'),
-  [`3Jn`]: require('@/assets/images/BibleIcons/3-john-free-bible-icon.png'),
-  Jud: require('@/assets/images/BibleIcons/jude-free-bible-icon.png'),
-  Rev: require('@/assets/images/BibleIcons/revelation-free-bible-icon.png')
+  'Gen': () => require('@/assets/images/BibleIcons/genesis-free-bible-icon.png'),
+  'Exo': () => require('@/assets/images/BibleIcons/exodus-free-bible-icon.png'),
+  'Lev': () => require('@/assets/images/BibleIcons/leviticus-free-bible-icon.png'),
+  'Num': () => require('@/assets/images/BibleIcons/numbers-free-bible-icon.png'),
+  'Deu': () => require('@/assets/images/BibleIcons/deuteronomy-free-bible-icon.png'),
+  'Jos': () => require('@/assets/images/BibleIcons/joshua-free-bible-icon.png'),
+  'Jdg': () => require('@/assets/images/BibleIcons/judges-free-bible-icon.png'),
+  'Rut': () => require('@/assets/images/BibleIcons/ruth-free-bible-icon.png'),
+  '1Sa': () => require('@/assets/images/BibleIcons/samuel-free-bible-icon.png'),
+  '2Sa': () => require('@/assets/images/BibleIcons/samuel-free-bible-icon.png'),
+  '1Ki': () => require('@/assets/images/BibleIcons/kings-free-bible-icon.png'),
+  '2Ki': () => require('@/assets/images/BibleIcons/kings-free-bible-icon.png'),
+  '1Ch': () => require('@/assets/images/BibleIcons/chronicles-free-bible-icon.png'),
+  '2Ch': () => require('@/assets/images/BibleIcons/chronicles-free-bible-icon.png'),
+  'Ezr': () => require('@/assets/images/BibleIcons/ezra-free-bible-icon.png'),
+  'Neh': () => require('@/assets/images/BibleIcons/nehemiah-free-bible-icon.png'),
+  'Est': () => require('@/assets/images/BibleIcons/esther-free-bible-icon.png'),
+  'Job': () => require('@/assets/images/BibleIcons/job-free-bible-icon.png'),
+  'Psa': () => require('@/assets/images/BibleIcons/psalms-free-bible-icon.png'),
+  'Pro': () => require('@/assets/images/BibleIcons/proverbs-free-bible-icon.png'),
+  'Ecc': () => require('@/assets/images/BibleIcons/ecclesiastes-free-bible-icon.png'),
+  'SoS': () => require('@/assets/images/BibleIcons/song-of-solomon-free-bible-icon.png'),
+  'Isa': () => require('@/assets/images/BibleIcons/isaiah-free-bible-icon.png'),
+  'Jer': () => require('@/assets/images/BibleIcons/jeremiah-free-bible-icon.png'),
+  'Lam': () => require('@/assets/images/BibleIcons/lamentations-free-bible-icon.png'),
+  'Eze': () => require('@/assets/images/BibleIcons/ezekiel-free-bible-icon.png'),
+  'Dan': () => require('@/assets/images/BibleIcons/daniel-free-bible-icon.png'),
+  'Hos': () => require('@/assets/images/BibleIcons/hosea-free-bible-icon.png'),
+  'Joe': () => require('@/assets/images/BibleIcons/joel-free-bible-icon.png'),
+  'Amo': () => require('@/assets/images/BibleIcons/amos-free-bible-icon.png'),
+  'Oba': () => require('@/assets/images/BibleIcons/obadiah-free-bible-icon.png'),
+  'Jon': () => require('@/assets/images/BibleIcons/Jonah-free-bible-icon.png'),
+  'Mic': () => require('@/assets/images/BibleIcons/micah-free-bible-icon.png'),
+  'Nah': () => require('@/assets/images/BibleIcons/nahum-free-bible-icon.png'),
+  'Hab': () => require('@/assets/images/BibleIcons/habakkuk-free-bible-icon.png'),
+  'Zep': () => require('@/assets/images/BibleIcons/zephaniah-free-bible-icon.png'),
+  'Hag': () => require('@/assets/images/BibleIcons/haggai-free-bible-icon.png'),
+  'Zec': () => require('@/assets/images/BibleIcons/zechariah-free-bible-icon.png'),
+  'Mal': () => require('@/assets/images/BibleIcons/malachi-free-bible-icon.png'),
+  'Mat': () => require('@/assets/images/BibleIcons/matthew-free-bible-icon.png'),
+  'Mar': () => require('@/assets/images/BibleIcons/mark-free-bible-icon.png'),
+  'Luk': () => require('@/assets/images/BibleIcons/luke-free-bible-icon.png'),
+  'Joh': () => require('@/assets/images/BibleIcons/john-free-bible-icon.png'),
+  'Act': () => require('@/assets/images/BibleIcons/acts-free-bible-icon.png'),
+  'Rom': () => require('@/assets/images/BibleIcons/romans-free-bible-icon.png'),
+  '1Co': () => require('@/assets/images/BibleIcons/1-corinthians-free-bible-icon.png'),
+  '2Co': () => require('@/assets/images/BibleIcons/2-corinthians-free-bible-icon.png'),
+  'Gal': () => require('@/assets/images/BibleIcons/galatians-free-bible-icon.png'),
+  'Eph': () => require('@/assets/images/BibleIcons/ephesians-free-bible-icon.png'),
+  'Php': () => require('@/assets/images/BibleIcons/philippians-free-bible-icon.png'),
+  'Col': () => require('@/assets/images/BibleIcons/colossians-free-bible-icon.png'),
+  '1Th': () => require('@/assets/images/BibleIcons/1-thessalonians-free-bible-icon.png'),
+  '2Th': () => require('@/assets/images/BibleIcons/2-thessalonians-free-bible-icon.png'),
+  '1Ti': () => require('@/assets/images/BibleIcons/1-timothy-free-bible-icon.png'),
+  '2Ti': () => require('@/assets/images/BibleIcons/2-timothy-free-bible-icon.png'),
+  'Tit': () => require('@/assets/images/BibleIcons/titus-free-bible-icon.png'),
+  'Phm': () => require('@/assets/images/BibleIcons/philemon-free-bible-icon.png'),
+  'Heb': () => require('@/assets/images/BibleIcons/hebrews-free-bible-icon.png'),
+  'Jam': () => require('@/assets/images/BibleIcons/james-free-bible-icon.png'),
+  '1Pe': () => require('@/assets/images/BibleIcons/1-peter-free-bible-icon.png'),
+  '2Pe': () => require('@/assets/images/BibleIcons/2-peter-free-bible-icon.png'),
+  '1Jn': () => require('@/assets/images/BibleIcons/1-john-free-bible-icon.png'),
+  '2Jn': () => require('@/assets/images/BibleIcons/2-john-free-bible-icon.png'),
+  '3Jn': () => require('@/assets/images/BibleIcons/3-john-free-bible-icon.png'),
+  'Jud': () => require('@/assets/images/BibleIcons/jude-free-bible-icon.png'),
+  'Rev': () => require('@/assets/images/BibleIcons/revelation-free-bible-icon.png')
 };
 
 // Located in: src/components/navigation/NavBook.js (or similar)
@@ -328,11 +329,7 @@ const Accordion: React.FC<AccordionProps> = ({
 
   useEffect(() => {
     // Log all imageMap keys
-    console.log('Available imageMap keys:', Object.keys(imageMap));
-    // Log the current book code
-    console.log('Current djhBook:', item.djhBook);
-    // Check if the key exists
-    console.log('Image exists for book:', !!imageMap[item.djhBook]);
+
   }, [item.djhBook]);
 
   const actualSegments = item.segments.filter(seg => String(seg).startsWith('S') || String(seg).startsWith('I'));
@@ -348,9 +345,9 @@ const Accordion: React.FC<AccordionProps> = ({
     setIsExpanded(!isExpandedState);
   };
 
-  // Add this for debugging
-  const imageSource = imageMap[item.djhBook];
-  console.log('Book:', item.djhBook, 'Image source:', imageSource);
+  // Get image source - lazy loaded to reduce console noise
+  const imageSource = imageMap[item.djhBook] ? imageMap[item.djhBook]() : null;
+  
 
   // Custom render function for segments with highlighting
   const renderSegment = (segment: SegmentKey, index: number) => {

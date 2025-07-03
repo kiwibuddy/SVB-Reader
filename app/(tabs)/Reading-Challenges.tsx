@@ -552,7 +552,7 @@ const ChallengesScreen = () => {
     await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
     const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
     router.push({
-      pathname: "/(tabs)/[segment]",
+              pathname: "/[segment]",
       params: {
         segment: `ENG-NLT-${selectedSegmentId}`,
         book: segment?.book[0] || '',

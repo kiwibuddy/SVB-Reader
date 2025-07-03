@@ -28,10 +28,10 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   const [existingEmoji, setExistingEmoji] = useState<string | null>(null);
   const bubbleRef = useRef<View>(null);
 
-  const blockId = `${blockIndex}-${block.source.sourceName}`;
+  const blockId = `${blockIndex}-${block.source?.sourceName || 'unknown'}`;
 
   // Color-based alignment logic
-  const color = block.source.color;
+  const color = block.source?.color || 'black';
   
   // ONLY BLACK (narrator) on left side, ALL OTHER COLORS (red, green, blue) on right side
   const isLeftSide = color === "black";

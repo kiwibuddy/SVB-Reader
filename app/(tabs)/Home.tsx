@@ -33,10 +33,10 @@ import { useGroupReading } from '@/context/GroupReadingContext';
 import NearbyGroupCard from '@/components/GroupReading/NearbyGroupCard';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BibleData from '@/assets/data/newBibleNLT1.json';
-import { SegmentType } from '@/types';
+import { SegmentType, BibleType } from '@/types';
 
 const SegmentTitles = require("@/assets/data/SegmentTitles.json") as { [key: string]: SegmentTitle };
-const Bible: { [key: string]: SegmentType } = BibleData as { [key: string]: SegmentType };
+const Bible: any = BibleData;
 
 type SegmentTitle = {
   Segment: string;
@@ -1267,7 +1267,7 @@ const HomeScreen = () => {
 
   // Group Reading Handlers
   const handleJoinGroup = async (sessionId: string) => {
-    console.log('Join group:', sessionId);
+
       router.push({
       pathname: '/join-group' as any,
       params: { sessionId }
@@ -1283,13 +1283,13 @@ const HomeScreen = () => {
     setShowReadingModeModal(false);
     await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
     const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
-    router.push({
-      pathname: "/(tabs)/[segment]",
-        params: {
-        segment: `ENG-NLT-${selectedSegmentId}`,
-          book: segment?.book[0] || ''
-        }
-      });
+      router.push({
+    pathname: "/[segment]",
+      params: {
+      segment: `ENG-NLT-${selectedSegmentId}`,
+        book: segment?.book[0] || ''
+      }
+    });
   };
 
   const handleGroupReading = () => {

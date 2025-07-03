@@ -40,10 +40,10 @@ class BluetoothSessionManagerImpl implements BluetoothSessionManager {
       
       this.bleManager.onStateChange((state: any) => {
         if (state === 'PoweredOn') {
-          console.log('BLE is ready');
+      
           this.generateDeviceId();
         } else {
-          console.log('BLE state:', state);
+      
           if (state === 'PoweredOff') {
             Alert.alert(
               'Bluetooth Required',
@@ -57,7 +57,7 @@ class BluetoothSessionManagerImpl implements BluetoothSessionManager {
       // Handle device disconnections  
       this.bleManager.onDeviceDisconnected('', (error: any, device: Device | null) => {
         if (device) {
-          console.log('Device disconnected:', device.name);
+      
           this.handleDeviceDisconnection(device.id);
         }
       });
@@ -189,7 +189,7 @@ class BluetoothSessionManagerImpl implements BluetoothSessionManager {
         try {
           await device.cancelConnection();
         } catch (error) {
-          console.log('Error disconnecting device:', error);
+      
         }
       }
       
@@ -258,7 +258,7 @@ class BluetoothSessionManagerImpl implements BluetoothSessionManager {
       try {
         await this.sendMessage(device, message);
       } catch (error) {
-        console.log('Error syncing scroll to device:', error);
+    
       }
     }
   }
@@ -278,7 +278,7 @@ class BluetoothSessionManagerImpl implements BluetoothSessionManager {
         { allowDuplicates: false },
         async (error: any, device: any) => {
           if (error) {
-            console.log('Scan error:', error);
+        
             return;
           }
 
@@ -295,7 +295,7 @@ class BluetoothSessionManagerImpl implements BluetoothSessionManager {
                 foundSessions.push(session);
               }
             } catch (error) {
-              console.log('Error parsing session data:', error);
+          
             }
           }
         }
@@ -361,7 +361,7 @@ class BluetoothSessionManagerImpl implements BluetoothSessionManager {
             await this.sendMessage(device, message);
             await device.cancelConnection();
           } catch (error) {
-            console.log('Error leaving group:', error);
+        
           }
         }
       }
@@ -393,7 +393,7 @@ class BluetoothSessionManagerImpl implements BluetoothSessionManager {
 
   handleDisconnection(): void {
     // Implement reconnection logic
-    console.log('Handling disconnection...');
+
   }
 
   getCurrentSession(): GroupSession | null {

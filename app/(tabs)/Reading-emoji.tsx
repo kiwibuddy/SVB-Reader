@@ -815,9 +815,14 @@ const ReadingEmoji = () => {
       setIsLoading(true)
       try {
         const emojiData = await getEmojis()
-        setReactions(emojiData)
+        // Filter out any invalid data
+        const validReactions = emojiData.filter(item => 
+          item && item.segmentID && item.blockID && item.emoji
+        )
+        setReactions(validReactions)
       } catch (error) {
         console.error("Error loading emojis:", error)
+        setReactions([])
       } finally {
         setIsLoading(false)
       }
@@ -837,11 +842,13 @@ const ReadingEmoji = () => {
 
     reactions.forEach(reaction => {
       // Get segment reference to determine testament and book
-      const segmentRef = getSegmentReference(reaction.segmentID)
-      const book = segmentRef.split(' ')[0] // Extract book abbreviation
-      
-      sourceNameOptions.add(reaction.blockData.source.sourceName)
-      bookOptions.add(book)
+      if (reaction && reaction.segmentID && reaction.blockData?.source?.sourceName) {
+        const segmentRef = getSegmentReference(reaction.segmentID)
+        const book = segmentRef.split(' ')[0] // Extract book abbreviation
+        
+        sourceNameOptions.add(reaction.blockData.source.sourceName)
+        bookOptions.add(book)
+      }
     })
 
     return {
@@ -859,11 +866,13 @@ const ReadingEmoji = () => {
     // Apply search query filter
     if (searchQuery.trim() !== "") {
       filteredReactions = filteredReactions.filter((reaction) => {
+        if (!reaction || !reaction.segmentID || !reaction.blockData) return false;
+        
         const reference = getSegmentReference(reaction.segmentID).toLowerCase();
         const blockTexts = reaction.blockData.children
-          .flatMap(inline => inline.children || [])
-          .map(leaf => leaf.text || "")
-          .join(" ");
+          ?.flatMap(inline => inline.children || [])
+          ?.map(leaf => leaf.text || "")
+          ?.join(" ") || "";
         const blockText = blockTexts.toLowerCase();
         const query = searchQuery.toLowerCase();
         
@@ -884,12 +893,14 @@ const ReadingEmoji = () => {
 
     if (activeFilters.sourceColor.length > 0) {
       filteredReactions = filteredReactions.filter(reaction => 
+        reaction?.blockData?.source?.color && 
         activeFilters.sourceColor.includes(reaction.blockData.source.color)
       )
     }
 
     if (activeFilters.sourceName.length > 0) {
       filteredReactions = filteredReactions.filter(reaction => 
+        reaction?.blockData?.source?.sourceName && 
         activeFilters.sourceName.includes(reaction.blockData.source.sourceName)
       )
     }
@@ -1057,7 +1068,7 @@ const ReadingEmoji = () => {
       
       // Navigate to the segment with correct pathname and params format
       router.push({
-        pathname: "/(tabs)/[segment]" as const,
+        pathname: "/[segment]" as const,
         params: {
           segment: `ENG-NLT-${selectedReaction.segmentID}`,
         }
@@ -1562,7 +1573,7 @@ const ReadingEmoji = () => {
         style={styles.content}
         data={filteredReactions}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id ? item.id.toString() : `${item.segmentID}-${item.blockID}`}
         ListHeaderComponent={renderHeader}
         contentContainerStyle={styles.contentContainer}
         refreshing={isLoading}

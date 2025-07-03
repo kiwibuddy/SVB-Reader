@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
-import { GroupSession, Role, SegmentType } from '@/types';
+import { GroupSession, Role, SegmentType, BibleType } from '@/types';
 import RoleProgressBar from '@/components/RoleProgressBar';
 import BibleData from "@/assets/data/newBibleNLT1.json";
 import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
@@ -27,7 +27,7 @@ interface BroadcastingScreenProps {
 }
 
 // Type assertion for Bible data
-const Bible: { [key: string]: SegmentType } = BibleData as { [key: string]: SegmentType };
+const Bible: any = BibleData;
 
 const ROLE_COLORS: Record<Role, string> = {
   narrator: '#8E8E93',
@@ -90,8 +90,10 @@ const BroadcastingScreen: React.FC<BroadcastingScreenProps> = ({
     
     // Count actual speech bubbles by color from memoized content
     const bubblesByColor = memoizedContent.reduce((acc, block) => {
-      const color = block.source.color;
-      acc[color] = (acc[color] || 0) + 1;
+      if (block.source) {
+        const color = block.source.color;
+        acc[color] = (acc[color] || 0) + 1;
+      }
       return acc;
     }, {} as { [color: string]: number });
     

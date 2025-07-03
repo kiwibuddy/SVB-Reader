@@ -30,7 +30,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
 }) => {
   const { colors } = useAppSettings();
   const { source, children } = block;
-  const { color, sourceName } = source;
+  const { color = 'black', sourceName = 'Unknown' } = source || {};
 
   const shouldGlow = toRead || isGlowing;
 

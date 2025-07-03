@@ -221,13 +221,19 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     marginBottom: 8,
   },
 
+  searchAndFilterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
   searchContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.card,
     borderRadius: 12,
     paddingHorizontal: 16,
-    marginBottom: 12,
     shadowColor: colors.text,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -348,6 +354,102 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   incompleteDot: {
     backgroundColor: colors.border,
   },
+  searchToggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  searchButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flex: 1,
+    marginRight: 8,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  searchButtonActive: {
+    backgroundColor: '#FF6B00',
+  },
+  searchButtonText: {
+    color: colors.secondary,
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  searchButtonTextActive: {
+    color: '#FFF',
+  },
+  filterButtonInSearch: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.card,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  filterButtonInSearchActive: {
+    backgroundColor: '#FF6B00',
+  },
+  inlineVerseButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginLeft: 8,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 107, 0, 0.1)',
+  },
+  inlineVerseText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FF6B00',
+    marginRight: 4,
+  },
+  filterButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 12,
+  },
+  filterButtonStandalone: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.card,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  filterButtonStandaloneActive: {
+    backgroundColor: '#FF6B00',
+  },
+  clearSearchButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
+  searchOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: -1,
+  },
 });
 
 // Update AccordionItem type to accept string for djhBook
@@ -394,6 +496,9 @@ const Navigation = () => {
   const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
   const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
   const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
+
+  // Add search-related state variables
+  const [targetVerse, setTargetVerse] = useState<number | null>(null);
 
   // Helper functions for filtering
   const getBookCategory = (bookKey: string) => {
@@ -525,6 +630,42 @@ const Navigation = () => {
     return filteredSegments;
   };
 
+  // Check if search query is a valid scripture reference with verse
+  const isValidScriptureReference = React.useMemo(() => {
+    if (!searchQuery || !showSearch) return false;
+    const parsedRef = parseReferenceEnhanced(searchQuery);
+    if (parsedRef?.book && parsedRef?.chapter && parsedRef?.verse) {
+      const bookKey = findBookByName(parsedRef.book);
+      if (bookKey) {
+        const segmentId = findSegmentForVerse(bookKey, parsedRef.chapter, parsedRef.verse);
+        if (segmentId) {
+          // Additional validation: check for reasonable verse numbers
+          const verse = parsedRef.verse;
+          if (verse > 150) {
+            return false; // Clearly invalid verse number
+          }
+          return true;
+        }
+      }
+    }
+    return false;
+  }, [searchQuery, showSearch]);
+
+  // Handle direct navigation to scripture reference
+  const handleDirectScriptureNavigation = () => {
+    const parsedRef = parseReferenceEnhanced(searchQuery);
+    if (parsedRef?.book && parsedRef?.chapter && parsedRef?.verse) {
+      const bookKey = findBookByName(parsedRef.book);
+      if (bookKey) {
+        const segmentId = findSegmentForVerse(bookKey, parsedRef.chapter, parsedRef.verse);
+        if (segmentId) {
+          handleSegmentSelect(segmentId);
+          setTargetVerse(parsedRef.verse);
+        }
+      }
+    }
+  };
+
   // Enhanced filtered data with verse search and advanced filters
   const filteredData = React.useMemo(() => {
     let filtered = [...data];
@@ -567,13 +708,14 @@ const Navigation = () => {
       const parsedRef = parseReferenceEnhanced(searchQuery);
       
       if (parsedRef?.book && parsedRef?.chapter) {
-        // Find the book that matches the search
+        // Handle specific scripture reference (e.g., "John 3:16")
         targetBookKey = findBookByName(parsedRef.book);
         
         if (targetBookKey) {
           // Find the specific segment that contains this verse
           if (parsedRef.verse) {
             targetSegment = findSegmentForVerse(targetBookKey, parsedRef.chapter, parsedRef.verse);
+            setTargetVerse(parsedRef.verse);
           } else {
             // If no specific verse, find segment for the chapter
             targetSegment = findSegmentForVerse(targetBookKey, parsedRef.chapter);
@@ -712,12 +854,27 @@ const Navigation = () => {
     setShowReadingModeModal(false);
     await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
     const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
-    router.push({
-      pathname: "/(tabs)/[segment]",
-      params: {
-        segment: `ENG-NLT-${selectedSegmentId}`,
-        book: segment?.book[0] || ''
+    
+    const params: any = {
+      segment: `ENG-NLT-${selectedSegmentId}`,
+      book: segment?.book[0] || ''
+    };
+    
+    // Add verse navigation if we have a target verse
+    if (targetVerse) {
+      params.verse = targetVerse.toString();
+      // Also add chapter information if we have a parsed reference
+      if (searchQuery && showSearch) {
+        const parsedRef = parseReferenceEnhanced(searchQuery);
+        if (parsedRef?.chapter) {
+          params.chapter = parsedRef.chapter.toString();
+        }
       }
+    }
+    
+    router.push({
+      pathname: "/[segment]",
+      params
     });
   };
 
@@ -737,23 +894,40 @@ const Navigation = () => {
     setShowReadingModeModal(false);
   };
 
-  const handleSearchToggle = () => {
-    setShowSearch(!showSearch);
-    if (showSearch) {
-      // Clear search when closing
-      setSearchQuery('');
-      setSelectedBook(null);
-      setHighlightedSegment(null);
+  // Update handleSearchFocus to just focus/blur the input
+  const handleSearchFocus = () => {
+    setShowSearch(true);
+  };
+
+  const handleSearchBlur = () => {
+    if (!searchQuery) {
+      setShowSearch(false);
     }
   };
 
+  const handleSearchSubmit = () => {
+    // Close search on return key
+    if (searchQuery && isValidScriptureReference) {
+      handleDirectScriptureNavigation();
+    }
+    setShowSearch(false);
+  };
+
+  // Update handleClearSearch to also close search if no query
   const handleClearSearch = () => {
     setSearchQuery('');
     setSelectedBook(null);
     setHighlightedSegment(null);
+    setTargetVerse(null);
+    setShowSearch(false);
   };
 
-  // Removed old filter button handler - now using advanced filters only
+  // Add function to handle outside tap
+  const handleOutsideTap = () => {
+    if (showSearch && !searchQuery) {
+      setShowSearch(false);
+    }
+  };
 
   const ListHeaderComponent = () => (
     <View>
@@ -765,43 +939,82 @@ const Navigation = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.welcomeSection}>
-          <View style={styles.welcomeTitleRow}>
-            <Text style={styles.welcomeTitle}>Story Finder</Text>
-            <TouchableOpacity 
-              style={[
-                styles.filterIconContainer, 
-                getActiveFilterCount() > 0 && styles.filterIconContainerActive
-              ]}
-              onPress={handleFilterIconPress}
-            >
-              <Ionicons 
-                name="options-outline" 
-                size={24} 
-                color={colors.text} 
-              />
-              {getActiveFilterCount() > 0 && (
-                <View style={styles.filterBadge}>
-                  <Text style={styles.filterBadgeText}>
-                    {getActiveFilterCount()}
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          </View>
+          <Text style={styles.welcomeTitle}>Story Finder</Text>
           <Text style={styles.welcomeText}>
             Navigate through books and chapters to find your next story
           </Text>
         </View>
         
-      <FlatList
+        {/* Search and Filter on same line */}
+        <View style={styles.searchAndFilterContainer}>
+          <View style={styles.searchContainer}>
+            <Ionicons 
+              name="search"
+              size={20} 
+              color={colors.secondary} 
+              style={styles.searchInputIcon} 
+            />
+            <TextInput
+              style={[styles.searchInput]}
+              placeholder="Search books or verses (e.g., John 3:16)..."
+              placeholderTextColor={colors.secondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onFocus={handleSearchFocus}
+              onBlur={handleSearchBlur}
+              onSubmitEditing={handleSearchSubmit}
+              returnKeyType="search"
+            />
+            {isValidScriptureReference && (
+              <TouchableOpacity 
+                style={styles.inlineVerseButton}
+                onPress={handleDirectScriptureNavigation}
+              >
+                <Text style={styles.inlineVerseText}>Go To</Text>
+                <Ionicons name="arrow-forward" size={12} color="#FF6B00" />
+              </TouchableOpacity>
+            )}
+            {(searchQuery.length > 0 || showSearch) && (
+              <TouchableOpacity 
+                onPress={handleClearSearch}
+                style={styles.clearSearchButton}
+              >
+                <Ionicons name="close-circle" size={20} color={colors.secondary} />
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          <TouchableOpacity 
+            style={[
+              styles.filterButtonStandalone, 
+              getActiveFilterCount() > 0 && styles.filterButtonStandaloneActive
+            ]}
+            onPress={handleFilterIconPress}
+          >
+            <Ionicons 
+              name="options-outline" 
+              size={24} 
+              color={getActiveFilterCount() > 0 ? '#FFF' : colors.text} 
+            />
+            {getActiveFilterCount() > 0 && (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>
+                  {getActiveFilterCount()}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <FlatList
           style={{ flex: 1 }}
-        data={filteredData}
-        ListHeaderComponent={ListHeaderComponent}
-        renderItem={({ item }) => {
-          const bookIndex = booksArray.findIndex(book => book === item.djhBook);
-          const parsedRef = parseReferenceEnhanced(searchQuery);
-          const isSelected = (showSearch && selectedBook === item.djhBook) || 
-                           (parsedRef && findBookByName(parsedRef.book) === item.djhBook);
+          data={filteredData}
+          ListHeaderComponent={ListHeaderComponent}
+          renderItem={({ item }) => {
+            const bookIndex = booksArray.findIndex(book => book === item.djhBook);
+            const parsedRef = parseReferenceEnhanced(searchQuery);
+            const isSelected = (showSearch && selectedBook === item.djhBook) || 
+                             (parsedRef && findBookByName(parsedRef.book) === item.djhBook);
             
             // Get filtered segments for this book
             const filteredSegments = getFilteredSegments(item.segments, item.djhBook);
@@ -810,35 +1023,35 @@ const Navigation = () => {
               segments: filteredSegments
             };
           
-          return (
-            <Accordion 
+            return (
+              <Accordion 
                 item={itemWithFilteredSegments} 
-              bookIndex={bookIndex}
-              context="main"
-              showGlobalCompletion={true}
-              style={{ backgroundColor: '#FFF' }}
-              isExpanded={!!(isSelected && showSearch)}
-              onBookSelect={handleBookSelect}
-              onSegmentSelect={handleSegmentSelect}
-              completedSegments={completedSegmentIds}
-              highlightedSegment={highlightedSegment}
-              searchQuery={searchQuery}
+                bookIndex={bookIndex}
+                context="main"
+                showGlobalCompletion={true}
+                style={{ backgroundColor: '#FFF' }}
+                isExpanded={!!(isSelected && showSearch)}
+                onBookSelect={handleBookSelect}
+                onSegmentSelect={handleSegmentSelect}
+                completedSegments={completedSegmentIds}
+                highlightedSegment={highlightedSegment}
+                searchQuery={searchQuery}
                 originalSegmentCount={item.segments.length}
-            />
-          );
-        }}
-        keyExtractor={(item) => String(item.djhBook)}
-      />
-      </View>
-              <ReadingModeModal
-          visible={showReadingModeModal && !!selectedSegmentId}
-          storyTitle={selectedSegmentTitle}
-          scriptureReference={selectedSegmentRef}
-          storyId={selectedSegmentId || ''}
-          onIndividual={handleIndividualReading}
-          onGroup={handleGroupReading}
-          onCancel={handleCancelModal}
+              />
+            );
+          }}
+          keyExtractor={(item) => String(item.djhBook)}
         />
+      </View>
+      <ReadingModeModal
+        visible={showReadingModeModal && !!selectedSegmentId}
+        storyTitle={selectedSegmentTitle}
+        scriptureReference={selectedSegmentRef}
+        storyId={selectedSegmentId || ''}
+        onIndividual={handleIndividualReading}
+        onGroup={handleGroupReading}
+        onCancel={handleCancelModal}
+      />
       
       {/* Premium Filter Panel */}
       <Modal

@@ -1,21 +1,4 @@
-export interface IntroContentChild {
-  text?: string;
-  type?: string;
-  id?: string;
-  link?: {
-    book: string;
-    chapter: string;
-    verse: string;
-  };
-  smallcaps?: boolean;
-  bibleText?: boolean;
-}
-
-export interface IntroBlock {
-  children: IntroContentChild[];
-  type: string;
-  id: string;
-}
+// Removed IntroContentChild and IntroBlock - using unified BibleBlock structure
 
 export interface ColorsData {
   black: number;
@@ -32,16 +15,22 @@ export interface SourcesData {
   };
 }
 
-export interface IntroType {
-  content: IntroBlock[];
-  colors: ColorsData;
-  sources: SourcesData;
+export interface IntroType extends BaseEntryType {
+  // Intro entries use the same structure as segments now
 }
+
+// Union type for all Bible entries
+export type BibleEntryType = IntroType | SegmentType;
+
+// Type for the entire Bible data structure
+export type BibleType = {
+  [key: string]: BibleEntryType;
+};
 
 // Leaf level, representing the smallest unit
 export interface BibleLeaf {
-  TaS: boolean;
-  ref: string[];
+  TaS?: boolean;  // Make TaS optional since it's not always present
+  ref?: string[]; // Make ref optional since it's not always present in intro entries
   tag?: string[]; // Optional for some Leaf elements
   text: string;
   note?: {
@@ -50,6 +39,14 @@ export interface BibleLeaf {
   };
   embeddedDoc?: boolean;
   SVitalics?: boolean;
+  // Additional properties for intro entries
+  link?: {
+    book: string;
+    chapter: string;
+    verse: string;
+  };
+  smallcaps?: boolean;
+  bibleText?: boolean;
 }
 
 // Block level, which contains Inline elements
@@ -64,7 +61,7 @@ export interface BibleInline {
 // Content level, which contains Block elements and source info
 export interface BibleBlock {
   children: BibleInline[];
-  source: {
+  source?: {  // Make source optional for intro entries
     color: string;
     sourceName: string;
     unique_sources?: string[];
@@ -73,28 +70,29 @@ export interface BibleBlock {
   };
 }
 
-// Segment level, the top level that contains Content elements
-export interface SegmentType {
+// Base type for both intro and segment entries
+export interface BaseEntryType {
   content: BibleBlock[];
   colors: ColorsData;
   sources: SourcesData;
-  readers: string[];
-  id: string;
+  id?: string;         // Optional - may not always be present
+  version?: number;    // Optional - present in the data but not always required
+}
+
+// Segment level, the top level that contains Content elements
+export interface SegmentType extends BaseEntryType {
+  readers?: string[];  // Optional - only present in S entries, not I entries
+  repeatedWords?: string[];  // Optional - only present in S entries, not I entries
 }
 
 export function isIntroType(obj: any): obj is IntroType {
     return (
         obj &&
         Array.isArray(obj.content) &&
-        obj.content.every(
-            (block: any) =>
-                block &&
-                Array.isArray(block.children) &&
-                typeof block.type === 'string' &&
-                typeof block.id === 'string'
-        ) &&
         typeof obj.colors === 'object' &&
-        typeof obj.sources === 'object'
+        typeof obj.sources === 'object' &&
+        !obj.readers &&  // Intro entries don't have readers
+        !obj.repeatedWords  // Intro entries don't have repeatedWords
     );
 }
 
@@ -102,16 +100,9 @@ export function isSegmentType(obj: any): obj is SegmentType {
     return (
         obj &&
         Array.isArray(obj.content) &&
-        obj.content.every(
-            (block: any) =>
-                block &&
-                Array.isArray(block.children) &&
-                typeof block.source === 'object' &&
-                typeof block.source.color === 'string' &&
-                typeof block.source.sourceName === 'string'
-        ) &&
         typeof obj.colors === 'object' &&
-        typeof obj.sources === 'object'
+        typeof obj.sources === 'object' &&
+        (obj.readers || obj.repeatedWords)  // Segment entries have at least one of these
     );
 }
 

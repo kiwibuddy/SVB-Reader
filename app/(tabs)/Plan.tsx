@@ -498,7 +498,7 @@ const PlanScreen = () => {
     await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
     const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
     router.push({
-      pathname: "/(tabs)/[segment]",
+      pathname: "/[segment]",
       params: {
         segment: `ENG-NLT-${selectedSegmentId}`,
         book: segment?.book[0] || '',
@@ -525,7 +525,7 @@ const PlanScreen = () => {
 
   const handlePress = (segmentId: string) => {
     router.push({
-      pathname: "/(tabs)/[segment]",
+      pathname: "/[segment]",
       params: { 
         segment: segmentId,
         planId: selectedPlanId

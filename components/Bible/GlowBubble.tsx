@@ -16,7 +16,7 @@ interface BibleBlockProps {
 
 const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: BibleBlockProps) => {
   const { source, children } = block;
-  const { color, sourceName } = source;
+  const { color = 'black', sourceName = 'Unknown' } = source || {};
   const colors = getColors(color);
   const glowAnim = new Animated.Value(0);
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Platform } from "react-native";
-import { IntroType, IntroBlock, IntroContentChild } from "@/types";
+import { IntroType } from "@/types";
 import SegmentTitle from "./SegmentTitle";
 
 // Define the props for Intro component
@@ -10,7 +10,7 @@ interface IntroProps {
     };
 }
 
-const IntroContentChildComponent: React.FC<IntroContentChild> = ({
+const IntroContentChildComponent: React.FC<any> = ({
   text,
   type,
   link,
@@ -49,7 +49,7 @@ const IntroContentChildComponent: React.FC<IntroContentChild> = ({
   );
 };
 
-const IntroBlockComponent: React.FC<IntroBlock> = ({ children, type }) => {
+const IntroBlockComponent: React.FC<any> = ({ children, type }) => {
   return (
     <View
       style={[
@@ -57,9 +57,9 @@ const IntroBlockComponent: React.FC<IntroBlock> = ({ children, type }) => {
         type === "highlight" && styles.highlightBlock
       ]}
     >
-      {children.map((child, index) => (
+      {children.map((child: any, index: number) => (
         <IntroContentChildComponent 
-          key={`${child.id}-${index}`} 
+          key={`${child.id || index}-${index}`} 
           {...child} 
         />
       ))}
@@ -81,9 +81,9 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData }) => {
         styles.contentContainer,
         isIPad && styles.contentContainerIPad
       ]}>
-        {content.map((block, index) => (
+        {content.map((block: any, index: number) => (
           <IntroBlockComponent 
-            key={`${block.id}-${index}`} 
+            key={`${(block as any).id || index}-${index}`} 
             {...block} 
           />
         ))}

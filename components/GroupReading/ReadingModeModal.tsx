@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -93,7 +94,8 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: 20,
-      paddingVertical: 16,
+      paddingTop: Platform.OS === 'ios' ? 60 : 20,
+      paddingBottom: 16,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },

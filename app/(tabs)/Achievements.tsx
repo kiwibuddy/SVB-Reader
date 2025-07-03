@@ -708,8 +708,8 @@ const Achievements = () => {
     const imageSource = imageMap[book.bookCode];
     const progressData = bookProgress[book.bookCode] || { completed: 0, total: 0, percentage: 0 };
     
-    // Debug logging
-    console.log(`Book: ${book.bookCode}, Image exists: ${!!imageSource}, Progress: ${progressData.percentage}%, Completed segments: ${progressData.completed}/${progressData.total}`);
+    
+    
     
     // Use real progress data
     const progress = progressData.percentage;
@@ -734,7 +734,7 @@ const Achievements = () => {
                     progress === 0 && styles.uncompletedImage
                   ]} 
                   resizeMode="contain"
-                  onError={(error) => console.log('Image load error:', error)}
+                  onError={() => {}}
                 />
               ) : (
                 <View style={[styles.bookImage, styles.fallbackBookImage]}>

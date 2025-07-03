@@ -255,7 +255,7 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
     // Listen for scroll sync events
     const scrollCallback = (position: number) => {
       // Handle incoming scroll sync
-      console.log('Received scroll sync:', position);
+  
     };
 
     // Listen for participant events

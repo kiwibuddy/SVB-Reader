@@ -9,7 +9,7 @@ import { useRouter, usePathname, useLocalSearchParams } from "expo-router";
 import { Animated } from 'react-native';
 import { useBottomNavAnimation } from '@/context/BottomNavContext';
 import Segment from '@/components/Bible/Segment';
-import { SegmentType, IntroType, isIntroType, isSegmentType } from "@/types";
+import { SegmentType, IntroType, BibleType, isIntroType, isSegmentType } from "@/types";
 import Intro from '@/components/Bible/Intro';
 import Questions from '@/components/Questions';
 import CheckCircle from '@/components/CheckCircle';
@@ -17,10 +17,7 @@ import StickyHeader from '@/components/StickyHeader';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { startReadingSession, updateReadingSession } from '@/api/sqlite';
 
-// Define the type for Bible
-type BibleType = { [key: string]: SegmentType | IntroType };
-
-const Bible: BibleType = BibleData as BibleType; // Type assertion to ensure correct type
+const Bible: any = BibleData; // Use any for flexible typing
 
 const segIds = Object.keys(Bible);
 
@@ -226,7 +223,7 @@ export default function BibleScreen() {
     
     updateSegmentId(cleanSegId);
     router.push({
-      pathname: "/(tabs)/[segment]",
+              pathname: "/[segment]",
       params: {
         segment: cleanSegId,
         ...(planId ? { planId } : {}),

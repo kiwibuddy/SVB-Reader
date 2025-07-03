@@ -328,7 +328,7 @@ export async function markSegmentComplete(
       await checkBookCompletion(bookId);
     }
 
-    console.log(`Marked segment ${segmentID} as complete in context ${context}`);
+
   } catch (error) {
     console.error("Error marking segment complete:", error);
     throw error;
@@ -745,14 +745,16 @@ export async function getEmoji(segmentID: string, blockID: string): Promise<stri
 export async function getEmojis() {
   try {
     const results = await db.getAllAsync(`
-      SELECT segmentID, blockID, blockData, emoji FROM emojis
+      SELECT id, segmentID, blockID, blockData, emoji, note FROM emojis
     `);
     
     return results.map((row: any) => ({
+      id: row.id,
       segmentID: row.segmentID,
       blockID: row.blockID,
       blockData: JSON.parse(row.blockData),
-      emoji: row.emoji
+      emoji: row.emoji,
+      note: row.note || ''
     }));
   } catch (error) {
     console.error("Error fetching emojis:", error);

@@ -16,7 +16,7 @@ import {
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAppSettings } from '@/context/AppSettingsContext';
-import { Role, SegmentType } from '@/types';
+import { Role, SegmentType, BibleType } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RoleProgressBar from '@/components/RoleProgressBar';
 import BibleData from "@/assets/data/newBibleNLT1.json";
@@ -40,7 +40,7 @@ interface GroupSetupScreenProps {
 }
 
 // Type assertion for Bible data
-const Bible: { [key: string]: SegmentType } = BibleData as { [key: string]: SegmentType };
+const Bible: any = BibleData;
 
 
 
@@ -129,8 +129,10 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
     
     // Count actual speech bubbles by color from memoized content
     const bubblesByColor = memoizedContent.reduce((acc, block) => {
-      const color = block.source.color;
-      acc[color] = (acc[color] || 0) + 1;
+      if (block.source) {
+        const color = block.source.color;
+        acc[color] = (acc[color] || 0) + 1;
+      }
       return acc;
     }, {} as { [color: string]: number });
     

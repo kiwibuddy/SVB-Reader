@@ -115,7 +115,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     
     // Count actual speech bubbles by color from memoized content
     const bubblesByColor = memoizedContent.reduce((acc, block) => {
-      const color = block.source.color;
+      const color = block.source?.color || 'black';
       acc[color] = (acc[color] || 0) + 1;
       return acc;
     }, {} as { [color: string]: number });
@@ -191,7 +191,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     }
 
     // For multiple readers of same color - USE MEMOIZED CONTENT (the split content)
-    const blocksOfThisColor = memoizedContent.filter(item => item.source.color === blockColor);
+    const blocksOfThisColor = memoizedContent.filter(item => item.source?.color === blockColor);
     const positionInSequence = blocksOfThisColor.findIndex(item => 
       memoizedContent.indexOf(item) === blockIndex
     );
@@ -200,11 +200,11 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   // Update renderItem to use new glow logic
   const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
-    const { sourceName } = item.source;
+    const { sourceName } = item.source || {};
     const showSourceName = index === 0 || 
-      memoizedContent[index - 1].source.sourceName !== sourceName;
+      memoizedContent[index - 1].source?.sourceName !== sourceName;
 
-    const isGlowing = shouldBlockGlow(item.source.color, index);
+    const isGlowing = shouldBlockGlow(item.source?.color || 'black', index);
 
     return (
       <BibleBlockComponent
@@ -521,15 +521,15 @@ const styles = StyleSheet.create({
 
         {/* Render blocks directly */}
         {memoizedContent.map((item, index) => {
-          const { sourceName } = item.source;
+          const { sourceName } = item.source || {};
           const showSourceName = index === 0 || 
-            memoizedContent[index - 1].source.sourceName !== sourceName;
+            memoizedContent[index - 1].source?.sourceName !== sourceName;
 
-          const isGlowing = shouldBlockGlow(item.source.color, index);
+          const isGlowing = shouldBlockGlow(item.source?.color || 'black', index);
 
           return (
             <BibleBlockComponent
-              key={`${item.source.sourceName}-${index}`}
+              key={`${item.source?.sourceName || 'unknown'}-${index}`}
               block={item}
               bIndex={index}
               hasTail={showSourceName}

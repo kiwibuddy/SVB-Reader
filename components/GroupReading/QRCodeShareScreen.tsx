@@ -202,15 +202,7 @@ const QRCodeShareScreen: React.FC<QRCodeShareScreenProps> = ({
         title: 'Join Bible Reading Group',
       });
       
-      if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-          console.log('Shared with activity type: ', result.activityType);
-        } else {
-          console.log('Shared successfully');
-        }
-      } else if (result.action === Share.dismissedAction) {
-        console.log('Share dismissed');
-      }
+      // Share action completed
     } catch (error) {
       Alert.alert('Error', 'Unable to share session information.');
       console.error('Share error:', error);

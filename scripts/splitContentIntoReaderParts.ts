@@ -15,7 +15,7 @@ export function splitContentIntoReaderParts(
   // Logic to process colors
   for (const block of content) {
     const matchingIndices = readerColors
-      .map((color, index) => (color === block.source.color ? index : -1))
+      .map((color, index) => (color === block.source?.color ? index : -1))
       .filter(index => index !== -1); // Get indices of matching colors
     if (matchingIndices.length === 1) {
       newContent.push(block); // Add matching color blocks to newContent

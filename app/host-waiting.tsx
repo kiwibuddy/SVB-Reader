@@ -20,7 +20,7 @@ export default function HostWaitingPage() {
 
   const handleStartReading = () => {
     // Navigate to group reading session
-    console.log('Starting group reading...');
+  
     router.back();
   };
 
