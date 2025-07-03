@@ -1400,6 +1400,21 @@ const ReadingEmoji = () => {
     }
   }
 
+  // Memoize the renderItem function
+  const memoizedRenderItem = useCallback(({ item: reaction, index }: { item: EmojiReaction; index: number }) => {
+    return renderItem({ item: reaction, index });
+  }, []);
+
+  // Memoize the keyExtractor function
+  const keyExtractor = useCallback((item: EmojiReaction) => {
+    return item.id ? item.id.toString() : `${item.segmentID}-${item.blockID}`;
+  }, []);
+
+  // Memoize the ListHeaderComponent
+  const memoizedRenderHeader = useCallback(() => {
+    return renderHeader();
+  }, []);
+
   // Premium Jump to Passage Modal Component
   const renderJumpToPassageModal = () => (
     <Modal
@@ -1572,15 +1587,18 @@ const ReadingEmoji = () => {
       <FlatList
         style={styles.content}
         data={filteredReactions}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id ? item.id.toString() : `${item.segmentID}-${item.blockID}`}
-        ListHeaderComponent={renderHeader}
+        renderItem={memoizedRenderItem}
+        keyExtractor={keyExtractor}
+        ListHeaderComponent={memoizedRenderHeader}
         contentContainerStyle={styles.contentContainer}
         refreshing={isLoading}
         onRefresh={() => setRefreshTrigger((prev) => prev + 1)}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
-        removeClippedSubviews={false}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        initialNumToRender={5}
       />
       
       {/* Premium Jump to Passage Modal */}

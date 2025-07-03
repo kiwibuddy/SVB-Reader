@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { 
   View, 
   Text, 
@@ -49,7 +49,7 @@ interface SegmentItemProps {
   completedSegments?: Record<string, boolean>;
 }
 
-const SegmentItem: React.FC<SegmentItemProps> = ({ 
+const SegmentItem: React.FC<SegmentItemProps> = React.memo(({ 
   segment,
   context = 'main',
   planId,
@@ -79,7 +79,7 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
     loadStatus();
   }, [segment.id, context, planId, challengeId]);
 
-  const handlePress = () => {
+  const handlePress = useCallback(() => {
     if (onPress) {
       onPress(segment.id);
     } else {
@@ -93,9 +93,9 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
         }
       });
     }
-  };
+  }, [onPress, segment.id, router, language, version, context, planId, challengeId]);
 
-  const styles = StyleSheet.create({
+  const styles = useMemo(() => StyleSheet.create({
     container: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -119,7 +119,7 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
     checkIcon: {
       marginLeft: 8,
     }
-  });
+  }), [colors]);
 
   return (
     <TouchableOpacity 
@@ -144,6 +144,6 @@ const SegmentItem: React.FC<SegmentItemProps> = ({
       />
     </TouchableOpacity>
   );
-};
+});
 
 export default SegmentItem;

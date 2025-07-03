@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar } from 'react-native';
+import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar, useWindowDimensions } from 'react-native';
 import { useAppContext } from '@/context/GlobalContext';
 import BibleData from "@/assets/data/newBibleNLT1.json"
 import readingPlansData from "@/assets/data/ReadingPlansChallenges.json";
@@ -16,13 +16,14 @@ import CheckCircle from '@/components/CheckCircle';
 import StickyHeader from '@/components/StickyHeader';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { startReadingSession, updateReadingSession } from '@/api/sqlite';
+import { isLargeScreen, isLandscape, responsivePadding, spacing } from '@/constants/sizes';
 
 const Bible: any = BibleData; // Use any for flexible typing
 
 const segIds = Object.keys(Bible);
 
 // Move styles outside component
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: any, isLargeScreen: boolean, isLandscape: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -59,17 +60,17 @@ const createStyles = (colors: any) => StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: 140, // Fixed position above bottom navigation
+    bottom: isLargeScreen ? 180 : (isLandscape ? 120 : 140), // Responsive positioning
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
+    paddingHorizontal: responsivePadding.screen,
     zIndex: 1000,
     backgroundColor: 'transparent',
   },
   roundButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: isLargeScreen ? 60 : 50,
+    height: isLargeScreen ? 60 : 50,
+    borderRadius: isLargeScreen ? 30 : 25,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: colors.primary,
@@ -91,7 +92,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   checkCircleContainer: {
     alignItems: 'center',
     paddingTop: 16,
-    paddingBottom: 100, // Keep this exact distance from bottom navigation bar
+    paddingBottom: isLargeScreen ? 120 : (isLandscape ? 80 : 100), // Responsive padding
     marginTop: 0,
   },
   centered: {
@@ -103,9 +104,9 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   navigationButton: {
     backgroundColor: 'white',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: isLargeScreen ? 52 : 44,
+    height: isLargeScreen ? 52 : 44,
+    borderRadius: isLargeScreen ? 26 : 22,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: "#000",
@@ -120,7 +121,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderColor: 'rgba(0,0,0,0.05)',
   },
   contentContainer: {
-    paddingBottom: 20, // Minimal padding to prevent over-scroll
+    paddingBottom: spacing.md, // Responsive padding
   }
 });
 
@@ -132,13 +133,15 @@ export default function BibleScreen() {
   const { planId, challengeId } = params;
   const flatListRef = useRef<ScrollView>(null);
   const { isVisible } = useBottomNavAnimation();
+  const { width, height } = useWindowDimensions();
+  const isLandscapeMode = width > height;
   
   // Scroll state
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isArrowsVisible, setIsArrowsVisible] = useState(true);
   
-  // Create styles
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  // Create styles with responsive parameters
+  const styles = useMemo(() => createStyles(colors, isLargeScreen, isLandscapeMode), [colors, isLargeScreen, isLandscapeMode]);
 
   // Parse segmentID
   const segID = useMemo(() => {
@@ -302,7 +305,7 @@ export default function BibleScreen() {
           <View style={styles.checkCircleContainer}>
             <CheckCircle 
               segmentId={segID} 
-              iconSize={60}
+              iconSize={isLargeScreen ? 80 : 60}
               context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
               planId={planId as string || undefined}
               challengeId={challengeId as string || undefined}
@@ -346,7 +349,7 @@ export default function BibleScreen() {
             style={styles.navigationButton}
             onPress={() => handleNavigation(prevSegId)}
           >
-            <Ionicons name="chevron-back" size={24} color={colors.secondary} />
+            <Ionicons name="chevron-back" size={isLargeScreen ? 28 : 24} color={colors.secondary} />
           </TouchableOpacity>
         )}
 
@@ -355,7 +358,7 @@ export default function BibleScreen() {
             style={styles.navigationButton}
             onPress={() => handleNavigation(nextSegId)}
           >
-            <Ionicons name="chevron-forward" size={24} color={colors.secondary} />
+            <Ionicons name="chevron-forward" size={isLargeScreen ? 28 : 24} color={colors.secondary} />
           </TouchableOpacity>
         )}
       </Animated.View>

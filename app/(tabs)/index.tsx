@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { 
   View, 
   Text, 
@@ -192,6 +192,14 @@ const IndexScreen = () => {
     );
   };
 
+  // Memoize the renderItem function
+  const memoizedRenderCard = useCallback(({ item, index }: { item: any; index: number }) => {
+    return renderCard({ item, index });
+  }, []);
+
+  // Memoize the keyExtractor function
+  const keyExtractor = useCallback((item: any) => item.id.toString(), []);
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -211,8 +219,8 @@ const IndexScreen = () => {
       <FlatList
         ref={flatListRef}
         data={onboardingData}
-        renderItem={renderCard}
-        keyExtractor={(item) => item.id.toString()}
+        renderItem={memoizedRenderCard}
+        keyExtractor={keyExtractor}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
@@ -220,6 +228,10 @@ const IndexScreen = () => {
         scrollEventThrottle={16}
         style={styles.carousel}
         contentContainerStyle={styles.carouselContent}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={3}
+        windowSize={5}
+        initialNumToRender={1}
       />
 
       {/* Page Indicators */}

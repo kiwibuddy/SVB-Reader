@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -714,7 +714,16 @@ const PlanScreen = () => {
     // Implementation of handleScroll function
   };
 
-  const ListHeaderComponent = () => (
+  // Memoize the renderItem function
+  const renderItem = useCallback(({ item }: { item: { title: string; data: Plan[] } }) => {
+    return renderCategorySection(item.title, item.data);
+  }, []);
+
+  // Memoize the keyExtractor function
+  const keyExtractor = useCallback((item: { title: string; data: Plan[] }) => item.title, []);
+
+  // Memoize the ListHeaderComponent
+  const ListHeaderComponent = useCallback(() => (
     <View style={styles.welcomeSection}>
       <View >
         <Text style={styles.welcomeTitle}>Reading Plans</Text>
@@ -723,7 +732,7 @@ const PlanScreen = () => {
         Welcome to the Bible Reading Plans and Challenges screen, where you can find personalized reading plans and spiritual challenges designed to deepen your understanding of Scripture and transform your faith.
       </Text>
     </View>
-  );
+  ), [styles.welcomeSection, styles.welcomeTitle, styles.welcomeText]);
 
   // Create sections data for FlatList
   const sections = useMemo(() => {
@@ -762,17 +771,17 @@ const PlanScreen = () => {
       <FlatList
         style={styles.content}
         data={sections}
-        renderItem={({ item }) => (
-          <>
-            {renderCategorySection(item.title, item.data)}
-          </>
-        )}
-        keyExtractor={(item) => item.title}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
         contentContainerStyle={styles.listContainer}
         ListHeaderComponent={ListHeaderComponent}
         onScroll={handleScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={5}
+        windowSize={10}
+        initialNumToRender={3}
       />
       
       <ReadingModeModal

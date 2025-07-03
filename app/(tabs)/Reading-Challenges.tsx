@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -630,22 +630,37 @@ const ChallengesScreen = () => {
     // Implementation of handleScroll function
   };
 
+  // Memoize the renderItem function
+  const renderItem = useCallback(({ item }: { item: { title: string; data: Challenge[] } }) => {
+    return renderCategorySection(item.title, item.data);
+  }, []);
+
+  // Memoize the keyExtractor function
+  const keyExtractor = useCallback((item: { title: string; data: Challenge[] }) => item.title, []);
+
+  // Memoize the ListHeaderComponent
+  const ListHeaderComponent = useCallback(() => (
+    <View style={styles.welcomeSection}>
+      <Text style={styles.welcomeTitle}>Reading Challenges</Text>
+      <Text style={styles.welcomeText}>
+        Welcome to Bible Reading Challenges, where you can find focused reading challenges to help you dive deep into specific themes and books of the Bible.
+      </Text>
+    </View>
+  ), [styles.welcomeSection, styles.welcomeTitle, styles.welcomeText]);
+
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
-        ListHeaderComponent={() => (
-          <View style={styles.welcomeSection}>
-            <Text style={styles.welcomeTitle}>Reading Challenges</Text>
-            <Text style={styles.welcomeText}>
-              Welcome to Bible Reading Challenges, where you can find focused reading challenges to help you dive deep into specific themes and books of the Bible.
-            </Text>
-          </View>
-        )}
+        ListHeaderComponent={ListHeaderComponent}
         style={styles.content}
         data={sections}
-        renderItem={({ item }) => renderCategorySection(item.title, item.data)}
-        keyExtractor={(item) => item.title}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={5}
+        windowSize={10}
+        initialNumToRender={3}
       />
       
       <ReadingModeModal

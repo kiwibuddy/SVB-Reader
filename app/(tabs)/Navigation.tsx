@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { View, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, useWindowDimensions, Platform, Modal, Animated } from "react-native";
 import Accordion from "@/components/navigation/NavBook";
 import BooksJson from "@/assets/data/BookChapterList.json";
@@ -458,6 +458,64 @@ export interface AccordionItem {
   bookName: string;
   segments: SegmentKey[];
 }
+
+// Memoized Accordion component
+const MemoizedAccordion = React.memo(({ 
+  item, 
+  bookIndex,
+  context,
+  showGlobalCompletion,
+  style,
+  isExpanded,
+  onBookSelect,
+  onSegmentSelect,
+  completedSegments,
+  highlightedSegment,
+  searchQuery,
+  originalSegmentCount,
+  getFilteredSegments
+}: {
+  item: any;
+  bookIndex: number;
+  context: string;
+  showGlobalCompletion: boolean;
+  style: any;
+  isExpanded: boolean;
+  onBookSelect: (bookName: string) => void;
+  onSegmentSelect: (segmentId: string) => void;
+  completedSegments: any;
+  highlightedSegment: string | null;
+  searchQuery: string | null;
+  originalSegmentCount: number;
+  getFilteredSegments: (segments: any[], bookKey: string) => any[];
+}) => {
+  // Pre-calculate filtered segments outside of render
+  const filteredSegments = useMemo(() => {
+    return getFilteredSegments(item.segments, item.djhBook);
+  }, [item.segments, item.djhBook, getFilteredSegments]);
+
+  const itemWithFilteredSegments = useMemo(() => ({
+    ...item,
+    segments: filteredSegments
+  }), [item, filteredSegments]);
+
+  return (
+    <Accordion 
+      item={itemWithFilteredSegments} 
+      bookIndex={bookIndex}
+      context="main"
+      showGlobalCompletion={true}
+      style={{ backgroundColor: '#FFF' }}
+      isExpanded={isExpanded}
+      onBookSelect={onBookSelect}
+      onSegmentSelect={onSegmentSelect}
+      completedSegments={completedSegments}
+      highlightedSegment={highlightedSegment}
+      searchQuery={searchQuery}
+      originalSegmentCount={originalSegmentCount}
+    />
+  );
+});
 
 const Navigation = () => {
   const { completedSegments, language, version, updateSegmentId } = useAppContext();
@@ -935,6 +993,35 @@ const Navigation = () => {
     </View>
   );
 
+  // Memoize the renderItem function
+  const renderItem = useCallback(({ item }: { item: any }) => {
+    const bookIndex = booksArray.findIndex(book => book === item.djhBook);
+    const parsedRef = parseReferenceEnhanced(searchQuery);
+    const isSelected = (showSearch && selectedBook === item.djhBook) || 
+                     (parsedRef && findBookByName(parsedRef.book) === item.djhBook);
+    
+    return (
+      <MemoizedAccordion
+        item={item}
+        bookIndex={bookIndex}
+        context="main"
+        showGlobalCompletion={true}
+        style={{ backgroundColor: '#FFF' }}
+        isExpanded={!!(isSelected && showSearch)}
+        onBookSelect={handleBookSelect}
+        onSegmentSelect={handleSegmentSelect}
+        completedSegments={completedSegmentIds}
+        highlightedSegment={highlightedSegment}
+        searchQuery={searchQuery}
+        originalSegmentCount={item.segments.length}
+        getFilteredSegments={getFilteredSegments}
+      />
+    );
+  }, [booksArray, searchQuery, showSearch, selectedBook, handleBookSelect, handleSegmentSelect, completedSegmentIds, highlightedSegment, getFilteredSegments]);
+
+  // Memoize the keyExtractor function
+  const keyExtractor = useCallback((item: any) => String(item.djhBook), []);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -1010,37 +1097,17 @@ const Navigation = () => {
           style={{ flex: 1 }}
           data={filteredData}
           ListHeaderComponent={ListHeaderComponent}
-          renderItem={({ item }) => {
-            const bookIndex = booksArray.findIndex(book => book === item.djhBook);
-            const parsedRef = parseReferenceEnhanced(searchQuery);
-            const isSelected = (showSearch && selectedBook === item.djhBook) || 
-                             (parsedRef && findBookByName(parsedRef.book) === item.djhBook);
-            
-            // Get filtered segments for this book
-            const filteredSegments = getFilteredSegments(item.segments, item.djhBook);
-            const itemWithFilteredSegments = {
-              ...item,
-              segments: filteredSegments
-            };
-          
-            return (
-              <Accordion 
-                item={itemWithFilteredSegments} 
-                bookIndex={bookIndex}
-                context="main"
-                showGlobalCompletion={true}
-                style={{ backgroundColor: '#FFF' }}
-                isExpanded={!!(isSelected && showSearch)}
-                onBookSelect={handleBookSelect}
-                onSegmentSelect={handleSegmentSelect}
-                completedSegments={completedSegmentIds}
-                highlightedSegment={highlightedSegment}
-                searchQuery={searchQuery}
-                originalSegmentCount={item.segments.length}
-              />
-            );
-          }}
-          keyExtractor={(item) => String(item.djhBook)}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={10}
+          initialNumToRender={5}
+          getItemLayout={(data, index) => ({
+            length: 80, // Approximate height of each item
+            offset: 80 * index,
+            index,
+          })}
         />
       </View>
       <ReadingModeModal

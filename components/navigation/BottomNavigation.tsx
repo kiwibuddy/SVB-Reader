@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, Pressable, StyleSheet, Animated } from "react-native";
+import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions } from "react-native";
 import { useRouter, usePathname } from "expo-router";
 import { Ionicons } from '@expo/vector-icons'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { isLargeScreen, isLandscape, responsivePadding } from '@/constants/sizes';
 
 declare global {
   var handleBottomNavScroll: ((event: any) => void) | undefined;
@@ -17,9 +18,13 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
   const [isVisible] = React.useState(new Animated.Value(1));
   const lastScrollY = React.useRef(0);
   const { colors } = useAppSettings();
+
+  // Hide navigation on large screens or in landscape mode
+  const shouldHideNavigation = isLargeScreen || (isLandscape && height < 500);
 
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
@@ -75,11 +80,13 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     };
   }, [isHome, pathname]);
 
-  // Don't render the navigation on the index screen - move after hooks
-  if (pathname === "/" || pathname === "/index") {
+  // Don't render the navigation on the index screen or large screens
+  if (pathname === "/" || pathname === "/index" || shouldHideNavigation) {
     return null;
   }
 
+  const iconSize = isLargeScreen ? 28 : 24;
+  
   const styles = StyleSheet.create({
     container: {
       borderTopWidth: 1,
@@ -93,20 +100,22 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
       flexDirection: 'row',
       justifyContent: 'space-evenly',
       alignItems: 'center',
-      paddingVertical: 12,
-      paddingHorizontal: 8,
+      paddingVertical: isLargeScreen ? 16 : 12,
+      paddingHorizontal: 0,
     },
     navItem: {
       alignItems: 'center',
       justifyContent: 'center',
-      minHeight: 44,
-      paddingHorizontal: 8,
+      minHeight: isLargeScreen ? 56 : 44,
+      paddingHorizontal: isLargeScreen ? 12 : 8,
+      flex: 1,
     },
     navText: {
       color: colors.text,
-      fontSize: 12,
+      fontSize: isLargeScreen ? 14 : 12,
       marginTop: 4,
       fontWeight: '500',
+      textAlign: 'center',
     },
     activeText: {
       color: '#FF5733',
@@ -117,7 +126,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   const containerStyle = [
     styles.container,
     {
-      paddingBottom: Math.max(insets.bottom, 8),
+      paddingBottom: Math.max(insets.bottom, isLargeScreen ? 12 : 8),
       backgroundColor: colors.background,
       borderTopColor: colors.border,
       shadowColor: colors.text,
@@ -143,7 +152,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
         >
           <Ionicons 
             name={pathname === "/Home" ? "home" : "home-outline"} 
-            size={24} 
+            size={iconSize} 
             color={pathname === "/Home" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Home" && styles.activeText]}>
@@ -157,7 +166,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
         >
           <Ionicons 
             name={pathname === "/Reading-emoji" ? "happy" : "happy-outline"} 
-            size={24} 
+            size={iconSize} 
             color={pathname === "/Reading-emoji" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Reading-emoji" && styles.activeText]}>
@@ -171,7 +180,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
         >
           <Ionicons 
             name={pathname === "/Achievements" ? "trophy" : "trophy-outline"} 
-            size={24} 
+            size={iconSize} 
             color={pathname === "/Achievements" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Achievements" && styles.activeText]}>
@@ -185,7 +194,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
         >
           <Ionicons 
             name="book-outline" 
-            size={24} 
+            size={iconSize} 
             color={pathname === "/Navigation" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Navigation" && styles.activeText]}>

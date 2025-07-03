@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -303,7 +303,7 @@ export interface SegmentItemProps {
   onPress?: (segmentId: string) => void;
 }
 
-const Accordion: React.FC<AccordionProps> = ({ 
+const Accordion: React.FC<AccordionProps> = React.memo(({ 
   item, 
   bookIndex, 
   onSegmentComplete,
@@ -332,25 +332,32 @@ const Accordion: React.FC<AccordionProps> = ({
 
   }, [item.djhBook]);
 
-  const actualSegments = item.segments.filter(seg => String(seg).startsWith('S') || String(seg).startsWith('I'));
-  const totalSegments = actualSegments.length;
-  const completedCount = actualSegments.reduce((count: number, segmentId) => {
-    return completedSegments[String(segmentId)] ? count + 1 : count;
-  }, 0);
+  const actualSegments = useMemo(() => {
+    return item.segments.filter(seg => String(seg).startsWith('S') || String(seg).startsWith('I'));
+  }, [item.segments]);
 
-  const handleHeaderPress = () => {
+  const totalSegments = actualSegments.length;
+  const completedCount = useMemo(() => {
+    return actualSegments.reduce((count: number, segmentId) => {
+      return completedSegments[String(segmentId)] ? count + 1 : count;
+    }, 0);
+  }, [actualSegments, completedSegments]);
+
+  const handleHeaderPress = useCallback(() => {
     if (onBookSelect) {
       onBookSelect(item.bookName);
     }
     setIsExpanded(!isExpandedState);
-  };
+  }, [onBookSelect, item.bookName, isExpandedState]);
 
   // Get image source - lazy loaded to reduce console noise
-  const imageSource = imageMap[item.djhBook] ? imageMap[item.djhBook]() : null;
+  const imageSource = useMemo(() => {
+    return imageMap[item.djhBook] ? imageMap[item.djhBook]() : null;
+  }, [item.djhBook]);
   
 
   // Custom render function for segments with highlighting
-  const renderSegment = (segment: SegmentKey, index: number) => {
+  const renderSegment = useCallback((segment: SegmentKey, index: number) => {
     const isHighlighted = highlightedSegment === String(segment);
     const segmentData = SegmentTitles[String(segment)];
     return (
@@ -369,7 +376,7 @@ const Accordion: React.FC<AccordionProps> = ({
         onPress={onSegmentSelect}
       />
     );
-  };
+  }, [highlightedSegment, context, planId, challengeId, completedSegments, onSegmentSelect]);
 
   const styles = StyleSheet.create({
     accordion: {
@@ -497,6 +504,6 @@ const Accordion: React.FC<AccordionProps> = ({
       )}
     </View>
   );
-};
+});
 
 export default Accordion;
