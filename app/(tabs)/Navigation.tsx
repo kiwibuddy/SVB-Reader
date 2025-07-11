@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { View, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, useWindowDimensions, Platform, Modal, Animated } from "react-native";
+import { View, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, useWindowDimensions, Platform, Modal, Animated, Keyboard, TouchableWithoutFeedback } from "react-native";
 import Accordion from "@/components/navigation/NavBook";
 import BooksJson from "@/assets/data/BookChapterList.json";
 import SegmentTitlesJson from "@/assets/data/SegmentTitles.json";
@@ -156,19 +156,22 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     padding: 16,
   },
   welcomeSection: {
-    marginBottom: 24,
+    marginBottom: 16,
   },
   welcomeTitleRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 8,
+    marginBottom: 16,
+  },
+  welcomeTitleContainer: {
+    flex: 1,
   },
   welcomeTitle: {
     fontSize: 24,
     fontWeight: "600",
     color: colors.text,
-    flex: 1,
+    marginBottom: 8,
   },
   welcomeText: {
     fontSize: 16,
@@ -682,8 +685,24 @@ const Navigation = () => {
       });
     }
 
-    // Note: Other filters (testament, reading time, book category) are book-level filters
-    // They don't filter individual segments within a book
+    // If searching for a chapter/verse, further filter segments
+    if (searchQuery && showSearch) {
+      const parsedRef = parseReferenceEnhanced(searchQuery);
+      if (parsedRef?.chapter) {
+        if (parsedRef.verse) {
+          // Only the segment containing this verse
+          const segId = findSegmentForVerse(bookKey, parsedRef.chapter, parsedRef.verse);
+          filteredSegments = segId ? [segId] : [];
+        } else {
+          // Only segments that contain the chapter
+          filteredSegments = filteredSegments.filter(segmentId => {
+            const seg = SegmentTitles[segmentId];
+            if (!seg || !seg.ref) return false;
+            return seg.ref.startsWith(parsedRef.chapter + ':') || seg.ref.includes('-' + parsedRef.chapter + ':');
+          });
+        }
+      }
+    }
 
     return filteredSegments;
   };
@@ -761,39 +780,74 @@ const Navigation = () => {
       });
     }
 
-    // Apply search filter with enhanced verse detection
+    // --- LIVE SEARCH FILTERING IMPROVEMENT ---
     if (searchQuery && showSearch) {
       const parsedRef = parseReferenceEnhanced(searchQuery);
-      
-      if (parsedRef?.book && parsedRef?.chapter) {
-        // Handle specific scripture reference (e.g., "John 3:16")
-        targetBookKey = findBookByName(parsedRef.book);
-        
-        if (targetBookKey) {
-          // Find the specific segment that contains this verse
-          if (parsedRef.verse) {
-            targetSegment = findSegmentForVerse(targetBookKey, parsedRef.chapter, parsedRef.verse);
-            setTargetVerse(parsedRef.verse);
-          } else {
-            // If no specific verse, find segment for the chapter
-            targetSegment = findSegmentForVerse(targetBookKey, parsedRef.chapter);
-          }
-          
-          // Filter to show only the matching book
-          filtered = filtered.filter(item => item.djhBook === targetBookKey);
-          setSelectedBook(targetBookKey);
-        }
-      } else {
-        // Fallback to book name search
-        filtered = filtered.filter(item => {
-          const bookName = Books[item.djhBook].bookName.toLowerCase();
-          return bookName.includes(searchQuery.toLowerCase());
-        });
-      }
-    }
+      const searchLower = searchQuery.trim().toLowerCase();
+      let bookMatches: string[] = [];
 
-    // Update highlighted segment
-    setHighlightedSegment(targetSegment);
+      // Find all book keys that start with the query (for 'John' matches John, 1 John, etc.)
+      bookMatches = Object.entries(Books)
+        .filter(([bookKey, bookData]) => {
+          const bookName = bookData.bookName.toLowerCase();
+          const shortName = bookKey.toLowerCase();
+          // Match if the book name or abbreviation starts with the query
+          return bookName.startsWith(searchLower) || shortName.startsWith(searchLower);
+        })
+        .map(([bookKey]) => bookKey);
+
+      // If a book and chapter are parsed, further filter
+      if (parsedRef?.book && parsedRef?.chapter) {
+        // Find all book keys that match the parsed book
+        const parsedBookLower = parsedRef.book.trim().toLowerCase();
+        bookMatches = Object.entries(Books)
+          .filter(([bookKey, bookData]) => {
+            const bookName = bookData.bookName.toLowerCase();
+            const shortName = bookKey.toLowerCase();
+            return bookName.startsWith(parsedBookLower) || shortName.startsWith(parsedBookLower);
+          })
+          .map(([bookKey]) => bookKey);
+      }
+
+      // Only show books that match
+      filtered = filtered.filter(item => bookMatches.includes(item.djhBook));
+
+      // If a chapter or verse is present, filter segments
+      if (parsedRef?.chapter) {
+        filtered = filtered.map(item => {
+          let filteredSegments = item.segments;
+          // If verse is present, find the segment containing that verse
+          if (parsedRef.verse) {
+            const segId = findSegmentForVerse(item.djhBook, parsedRef.chapter, parsedRef.verse);
+            filteredSegments = segId ? [segId] : [];
+            if (segId) targetSegment = segId;
+          } else {
+            // Only segments that contain the chapter
+            filteredSegments = item.segments.filter(segmentId => {
+              const seg = SegmentTitles[segmentId];
+              if (!seg || !seg.ref) return false;
+              // Match chapter in ref (e.g., '3:1-4:5' or '3:1-20')
+              return seg.ref.startsWith(parsedRef.chapter + ':') || seg.ref.includes('-' + parsedRef.chapter + ':');
+            });
+          }
+          return { ...item, segments: filteredSegments };
+        }).filter(item => item.segments.length > 0);
+      }
+
+      // If no chapter/verse, but a book match, show all segments for those books
+      if (!parsedRef?.chapter && bookMatches.length > 0) {
+        filtered = filtered.map(item => ({ ...item }));
+      }
+
+      // If a verse is present, highlight the segment
+      if (parsedRef?.verse && targetSegment) {
+        setHighlightedSegment(targetSegment);
+      } else {
+        setHighlightedSegment(null);
+      }
+
+      // If nothing matches, filtered will be empty
+    }
 
     // Apply sort order (always ascending by biblical order)
     return filtered.sort((a, b) => {
@@ -973,6 +1027,7 @@ const Navigation = () => {
 
   // Update handleClearSearch to also close search if no query
   const handleClearSearch = () => {
+    Keyboard.dismiss();
     setSearchQuery('');
     setSelectedBook(null);
     setHighlightedSegment(null);
@@ -1024,92 +1079,98 @@ const Navigation = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>Story Finder</Text>
-          <Text style={styles.welcomeText}>
-            Navigate through books and chapters to find your next story
-          </Text>
-        </View>
-        
-        {/* Search and Filter on same line */}
-        <View style={styles.searchAndFilterContainer}>
-          <View style={styles.searchContainer}>
-            <Ionicons 
-              name="search"
-              size={20} 
-              color={colors.secondary} 
-              style={styles.searchInputIcon} 
-            />
-            <TextInput
-              style={[styles.searchInput]}
-              placeholder="Search books or verses (e.g., John 3:16)..."
-              placeholderTextColor={colors.secondary}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onFocus={handleSearchFocus}
-              onBlur={handleSearchBlur}
-              onSubmitEditing={handleSearchSubmit}
-              returnKeyType="search"
-            />
-            {isValidScriptureReference && (
-              <TouchableOpacity 
-                style={styles.inlineVerseButton}
-                onPress={handleDirectScriptureNavigation}
-              >
-                <Text style={styles.inlineVerseText}>Go To</Text>
-                <Ionicons name="arrow-forward" size={12} color="#FF6B00" />
-              </TouchableOpacity>
-            )}
-            {(searchQuery.length > 0 || showSearch) && (
-              <TouchableOpacity 
-                onPress={handleClearSearch}
-                style={styles.clearSearchButton}
-              >
-                <Ionicons name="close-circle" size={20} color={colors.secondary} />
-              </TouchableOpacity>
-            )}
-          </View>
-          
-          <TouchableOpacity 
-            style={[
-              styles.filterButtonStandalone, 
-              getActiveFilterCount() > 0 && styles.filterButtonStandaloneActive
-            ]}
-            onPress={handleFilterIconPress}
-          >
-            <Ionicons 
-              name="options-outline" 
-              size={24} 
-              color={getActiveFilterCount() > 0 ? '#FFF' : colors.text} 
-            />
-            {getActiveFilterCount() > 0 && (
-              <View style={styles.filterBadge}>
-                <Text style={styles.filterBadgeText}>
-                  {getActiveFilterCount()}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.content}>
+          <View style={styles.welcomeSection}>
+            <View style={styles.welcomeTitleRow}>
+              <View style={styles.welcomeTitleContainer}>
+                <Text style={styles.welcomeTitle}>Story Finder</Text>
+                <Text style={styles.welcomeText}>
+                  Navigate through books and chapters to find your next story
                 </Text>
               </View>
-            )}
-          </TouchableOpacity>
-        </View>
+            </View>
+          </View>
+          
+          {/* Search and Filter on same line */}
+          <View style={styles.searchAndFilterContainer}>
+            <View style={styles.searchContainer}>
+              <Ionicons 
+                name="search"
+                size={20} 
+                color={colors.secondary} 
+                style={styles.searchInputIcon} 
+              />
+              <TextInput
+                style={[styles.searchInput]}
+                placeholder="Search books or verses (e.g., John 3:16)..."
+                placeholderTextColor={colors.secondary}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onFocus={handleSearchFocus}
+                onBlur={handleSearchBlur}
+                onSubmitEditing={handleSearchSubmit}
+                returnKeyType="search"
+              />
+              {isValidScriptureReference && (
+                <TouchableOpacity 
+                  style={styles.inlineVerseButton}
+                  onPress={handleDirectScriptureNavigation}
+                >
+                  <Text style={styles.inlineVerseText}>Go To</Text>
+                  <Ionicons name="arrow-forward" size={12} color="#FF6B00" />
+                </TouchableOpacity>
+              )}
+              {(searchQuery.length > 0 || showSearch) && (
+                <TouchableOpacity 
+                  onPress={handleClearSearch}
+                  style={styles.clearSearchButton}
+                >
+                  <Ionicons name="close-circle" size={20} color={colors.secondary} />
+                </TouchableOpacity>
+              )}
+            </View>
+            
+            <TouchableOpacity 
+              style={[
+                styles.filterButtonStandalone, 
+                getActiveFilterCount() > 0 && styles.filterButtonStandaloneActive
+              ]}
+              onPress={handleFilterIconPress}
+            >
+              <Ionicons 
+                name="options-outline" 
+                size={24} 
+                color={getActiveFilterCount() > 0 ? '#FFF' : colors.text} 
+              />
+              {getActiveFilterCount() > 0 && (
+                <View style={styles.filterBadge}>
+                  <Text style={styles.filterBadgeText}>
+                    {getActiveFilterCount()}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
 
-        <FlatList
-          style={{ flex: 1 }}
-          data={filteredData}
-          ListHeaderComponent={ListHeaderComponent}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          removeClippedSubviews={true}
-          maxToRenderPerBatch={10}
-          windowSize={10}
-          initialNumToRender={5}
-          getItemLayout={(data, index) => ({
-            length: 80, // Approximate height of each item
-            offset: 80 * index,
-            index,
-          })}
-        />
-      </View>
+          <FlatList
+            style={{ flex: 1 }}
+            data={filteredData}
+            ListHeaderComponent={ListHeaderComponent}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={10}
+            windowSize={10}
+            initialNumToRender={5}
+            getItemLayout={(data, index) => ({
+              length: 80, // Approximate height of each item
+              offset: 80 * index,
+              index,
+            })}
+          />
+        </View>
+      </TouchableWithoutFeedback>
       <ReadingModeModal
         visible={showReadingModeModal && !!selectedSegmentId}
         storyTitle={selectedSegmentTitle}

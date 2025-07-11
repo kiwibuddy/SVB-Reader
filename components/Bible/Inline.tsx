@@ -23,25 +23,40 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
 
   const inlineStyle = styles[tag as keyof typeof styles] || {};
   
+  // Check if this is a table element
+  const isTableElement = tag && ['table', 'tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(tag);
+  
+  const renderedChildren = children.map((leaf, index) => {
+    if (!leaf || typeof leaf !== 'object') {
+      console.warn(`Invalid leaf at index ${index}:`, leaf);
+      return null;
+    }
+
+    return (
+      <BibleLeafComponent
+        key={`${iIndex}-${index}`}
+        leaf={leaf}
+        leafIndex={`${iIndex}-${index}`}
+        isIndented={index === 0 && !!start}
+        textColor={textColor}
+      />
+    );
+  });
+
+  // For table elements, don't wrap in Text component
+  if (isTableElement) {
+    return (
+      <View style={inlineStyle}>
+        {renderedChildren}
+      </View>
+    );
+  }
+  
+  // For regular elements, wrap in Text component
   return (
     <View style={inlineStyle}>
       <Text style={{lineHeight: 36, fontSize: 20}}>
-        {children.map((leaf, index) => {
-          if (!leaf || typeof leaf !== 'object') {
-            console.warn(`Invalid leaf at index ${index}:`, leaf);
-            return null;
-          }
-
-          return (
-            <BibleLeafComponent
-              key={`${iIndex}-${index}`}
-              leaf={leaf}
-              leafIndex={`${iIndex}-${index}`}
-              isIndented={index === 0 && !!start}
-              textColor={textColor}
-            />
-          );
-        })}
+        {renderedChildren}
       </Text>
     </View>
   );

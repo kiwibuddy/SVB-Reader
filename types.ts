@@ -32,7 +32,8 @@ export interface BibleLeaf {
   TaS?: boolean;  // Make TaS optional since it's not always present
   ref?: string[]; // Make ref optional since it's not always present in intro entries
   tag?: string[]; // Optional for some Leaf elements
-  text: string;
+  text?: string;  // Make text optional for table elements that have children instead
+  children?: BibleLeaf[]; // Optional for table elements that have nested children
   note?: {
     children: [{ text: string }];
     type: string;

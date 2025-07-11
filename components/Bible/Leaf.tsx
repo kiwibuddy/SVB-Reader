@@ -15,19 +15,42 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
     return null;
   }
 
-  const { note, text, tag, embeddedDoc, SVitalics } = leaf;
+  const { note, text, tag, embeddedDoc, SVitalics, children } = leaf;
+  
+  // Handle table elements that don't have text but have children
+  if (tag && Array.isArray(tag) && tag.some(t => ['tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(t))) {
+    // For table elements, render children if they exist
+    if (children && Array.isArray(children)) {
+      return (
+        <View style={styles.tableElement}>
+          {children.map((child, index) => (
+            <BibleLeafComponent
+              key={`${leafIndex}-child-${index}`}
+              leaf={child}
+              leafIndex={`${leafIndex}-child-${index}`}
+              isIndented={false}
+              textColor={textColor}
+            />
+          ))}
+        </View>
+      );
+    }
+    // If no children, return null for table elements without content
+    return null;
+  }
   
   if (!text || typeof text !== 'string') {
-    console.warn(`Missing or invalid text in leaf at index ${leafIndex}:`, leaf);
+    // Only warn if this is not a table element (which is expected to not have text)
+    if (!tag || !Array.isArray(tag) || !tag.some(t => ['tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(t))) {
+      console.warn(`Missing or invalid text in leaf at index ${leafIndex}:`, leaf);
+    }
     return null;
   }
 
   const textSplit = text.split(" ");
-  const isVerseRef = tag && tag.indexOf("v") !== -1;
-  const isChapterRef = tag && tag.indexOf("c") !== -1;
-  const tagStyle = styles[
-    tag as unknown as keyof typeof styles
-  ] || {}
+  const isVerseRef = tag && Array.isArray(tag) && tag.some(t => t.indexOf("v") !== -1);
+  const isChapterRef = tag && Array.isArray(tag) && tag.some(t => t.indexOf("c") !== -1);
+  const tagStyle = tag && Array.isArray(tag) ? tag.reduce((acc, t) => ({ ...acc, ...styles[t as keyof typeof styles] }), {}) : {};
   const embeddedDocStyle = !!embeddedDoc || {};
   const SVitalicsStyle = !!SVitalics || {};
 
@@ -163,4 +186,8 @@ const styles = StyleSheet.create({
   //   fontFamily: "sans-serif",
   //   fontWeight: "bold",
   // },
+  tableElement: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
 });
