@@ -7,7 +7,7 @@ import { useAppSettings } from '@/context/AppSettingsContext';
 import { isLargeScreen, isLandscape, responsivePadding } from '@/constants/sizes';
 
 declare global {
-  var handleBottomNavScroll: ((event: any) => void) | undefined;
+  const handleBottomNavScroll: ((event: any) => void) | undefined;
 }
 
 interface BottomNavigationProps {
