@@ -74,12 +74,6 @@
     "experiments": {
       "typedRoutes": true
     },
-    "fonts": [
-      {
-        "asset": "assets/fonts/Mistrully.ttf",
-        "family": "Mistrully"
-      }
-    ],
     "extra": {
       "router": {
         "origin": false
@@ -90,7 +84,6 @@
       "watchman": false
     },
     "owner": "kiwibuddy",
-    "privacy": "public",
     "runtimeVersion": {
       "policy": "appVersion"
     },

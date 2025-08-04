@@ -1,0 +1,289 @@
+import { SQLiteDatabase } from "expo-sqlite";
+import * as SQLite from "expo-sqlite";
+import { BibleBlock } from "@/types";
+
+interface CompletionData {
+  isCompleted: boolean;
+  color: string | null;
+}
+
+interface PlanProgress {
+  totalSegments: number;
+  completedSegments: number;
+  progressPercentage: number;
+  isCompleted: boolean;
+  completedSegmentIds: string[];
+}
+
+interface ChallengeProgress {
+  totalSegments: number;
+  completedSegments: number;
+  progressPercentage: number;
+  isCompleted: boolean;
+  completedSegmentIds: string[];
+}
+
+export class DatabaseManager {
+  private static instance: DatabaseManager;
+  private db: SQLiteDatabase | null = null;
+  private isInitialized: boolean = false;
+  private initializationPromise: Promise<void> | null = null;
+
+  private constructor() {}
+
+  static getInstance(): DatabaseManager {
+    if (!DatabaseManager.instance) {
+      DatabaseManager.instance = new DatabaseManager();
+    }
+    return DatabaseManager.instance;
+  }
+
+  async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      return;
+    }
+
+    if (this.initializationPromise) {
+      return this.initializationPromise;
+    }
+
+    this.initializationPromise = this.performInitialization();
+    return this.initializationPromise;
+  }
+
+  private async performInitialization(): Promise<void> {
+    try {
+      this.db = await SQLite.openDatabaseAsync("sourceview");
+      
+      await this.db.execAsync(`
+        PRAGMA journal_mode = 'wal';
+        
+        -- Core segments table
+        CREATE TABLE IF NOT EXISTS segments (
+          segmentID TEXT PRIMARY KEY NOT NULL,
+          bookId TEXT NOT NULL,
+          title TEXT NOT NULL,
+          reference TEXT
+        );
+        
+        -- Emojis table (preserved)
+        CREATE TABLE IF NOT EXISTS emojis (
+          id INTEGER PRIMARY KEY NOT NULL,
+          segmentID TEXT NOT NULL,
+          blockID TEXT NOT NULL,
+          blockData TEXT NOT NULL,
+          emoji TEXT NOT NULL,
+          note TEXT NOT NULL,
+          UNIQUE(segmentID, blockID)
+        );
+
+        -- Legacy segment completion table (for general/main context and read count tracking)
+        CREATE TABLE IF NOT EXISTS segment_completion (
+          id INTEGER PRIMARY KEY NOT NULL,
+          segmentID TEXT NOT NULL,
+          completionType TEXT NOT NULL,
+          planID TEXT,
+          challengeID TEXT,
+          completionDate TEXT NOT NULL,
+          readerColor TEXT,
+          isCurrentlyCompleted BOOLEAN DEFAULT 1
+        );
+
+        -- Reading plan specific progress tracking
+        CREATE TABLE IF NOT EXISTS reading_plan_progress (
+          id INTEGER PRIMARY KEY NOT NULL,
+          planID TEXT NOT NULL,
+          segmentID TEXT NOT NULL,
+          completionDate TEXT,
+          isCompleted BOOLEAN DEFAULT 0,
+          readCount INTEGER DEFAULT 0,
+          lastReadDate TEXT,
+          UNIQUE(planID, segmentID)
+        );
+
+        -- Reading challenge specific progress tracking
+        CREATE TABLE IF NOT EXISTS reading_challenge_progress (
+          id INTEGER PRIMARY KEY NOT NULL,
+          challengeID TEXT NOT NULL,
+          segmentID TEXT NOT NULL,
+          completionDate TEXT,
+          isCompleted BOOLEAN DEFAULT 0,
+          readCount INTEGER DEFAULT 0,
+          lastReadDate TEXT,
+          UNIQUE(challengeID, segmentID)
+        );
+
+        -- Overall plan/challenge status tracking
+        CREATE TABLE IF NOT EXISTS plan_challenge_status (
+          id INTEGER PRIMARY KEY NOT NULL,
+          itemID TEXT NOT NULL,
+          itemType TEXT NOT NULL, -- 'plan' or 'challenge'
+          isActive BOOLEAN DEFAULT 1,
+          isPaused BOOLEAN DEFAULT 0,
+          isCompleted BOOLEAN DEFAULT 0,
+          startDate TEXT,
+          completionDate TEXT,
+          totalSegments INTEGER,
+          completedSegments INTEGER DEFAULT 0,
+          progressPercentage REAL DEFAULT 0,
+          UNIQUE(itemID, itemType)
+        );
+
+        -- Total read counts per segment (cross-context)
+        CREATE TABLE IF NOT EXISTS segment_read_count (
+          segmentID TEXT PRIMARY KEY NOT NULL,
+          totalReads INTEGER NOT NULL DEFAULT 0,
+          lastReadDate TEXT NOT NULL
+        );
+
+        -- Achievements table (preserved)
+        CREATE TABLE IF NOT EXISTS achievements (
+          id INTEGER PRIMARY KEY NOT NULL,
+          achievementID TEXT NOT NULL,
+          title TEXT NOT NULL,
+          description TEXT NOT NULL,
+          unlockDate TEXT NOT NULL,
+          progress INTEGER,
+          maxProgress INTEGER,
+          isCompleted BOOLEAN,
+          achievementDate TEXT
+        );
+
+        -- Daily activity table (preserved)
+        CREATE TABLE IF NOT EXISTS daily_activity (
+          id INTEGER PRIMARY KEY NOT NULL,
+          date TEXT NOT NULL,
+          segmentCount INTEGER NOT NULL,
+          lastUpdated TEXT NOT NULL
+        );
+
+        -- Streak data table (preserved)
+        CREATE TABLE IF NOT EXISTS streak_data (
+          id INTEGER PRIMARY KEY NOT NULL,
+          currentStreak INTEGER NOT NULL,
+          longestStreak INTEGER NOT NULL,
+          lastReadDate TEXT NOT NULL,
+          lastUpdated TEXT NOT NULL
+        );
+
+        -- Completed segments table (for main context backward compatibility)
+        CREATE TABLE IF NOT EXISTS completedSegments (
+          id INTEGER PRIMARY KEY NOT NULL,
+          segmentID TEXT NOT NULL,
+          isCompleted BOOLEAN NOT NULL DEFAULT 0,
+          completionDate TEXT,
+          UNIQUE(segmentID)
+        );
+
+        -- Source readings table (preserved)
+        CREATE TABLE IF NOT EXISTS sourceReadings (
+          id INTEGER PRIMARY KEY NOT NULL,
+          segmentID TEXT NOT NULL,
+          blockID TEXT NOT NULL,
+          color TEXT NOT NULL,
+          readDate TEXT NOT NULL,
+          UNIQUE(segmentID, blockID, color)
+        );
+
+        -- Reading sessions table (preserved)
+        CREATE TABLE IF NOT EXISTS reading_sessions (
+          id INTEGER PRIMARY KEY NOT NULL,
+          startTime TEXT NOT NULL,
+          endTime TEXT NOT NULL,
+          segmentCount INTEGER NOT NULL,
+          sessionDate TEXT NOT NULL
+        );
+
+        -- Book completion tracking (preserved)
+        CREATE TABLE IF NOT EXISTS book_completion (
+          id INTEGER PRIMARY KEY NOT NULL,
+          bookId TEXT NOT NULL,
+          isCompleted BOOLEAN NOT NULL DEFAULT 0,
+          completionDate TEXT,
+          UNIQUE(bookId)
+        );
+      `);
+      
+      // Populate the segments table with data from SegmentTitles.json
+      await this.populateSegmentsTable();
+
+      // Initialize streak_data if empty
+      const streakData = await this.db.getFirstAsync(
+        'SELECT * FROM streak_data LIMIT 1'
+      );
+      
+      if (!streakData) {
+        await this.db.runAsync(`
+          INSERT INTO streak_data (currentStreak, longestStreak, lastReadDate, lastUpdated)
+          VALUES (0, 0, date('now', 'localtime'), datetime('now', 'localtime'))
+        `);
+      }
+
+      this.isInitialized = true;
+    } catch (error) {
+      console.error("Error initializing database:", error);
+      throw error;
+    }
+  }
+
+  private async populateSegmentsTable(): Promise<void> {
+    if (!this.db) {
+      throw new Error("Database not initialized");
+    }
+
+    try {
+      // Check if table is already populated
+      const count = await this.db.getFirstAsync<{count: number}>(`
+        SELECT COUNT(*) as count FROM segments
+      `);
+      
+      if (count?.count === 0) {
+        // Import segment data
+        const segmentTitles = require('../assets/data/SegmentTitles.json');
+        
+        // Begin transaction for faster inserts
+        await this.db.execAsync('BEGIN TRANSACTION');
+        
+        for (const [segmentId, data] of Object.entries(segmentTitles)) {
+          const segment = data as any;
+          await this.db.runAsync(`
+            INSERT INTO segments (segmentID, bookId, title, reference)
+            VALUES (?, ?, ?, ?)
+          `, segmentId, segment.book[0], segment.title, segment.ref || null);
+        }
+        
+        await this.db.execAsync('COMMIT');
+      }
+    } catch (error) {
+      console.error("Error populating segments table:", error);
+      if (this.db) {
+        await this.db.execAsync('ROLLBACK');
+      }
+      throw error;
+    }
+  }
+
+  getDatabase(): SQLiteDatabase {
+    if (!this.db || !this.isInitialized) {
+      throw new Error("Database not initialized. Call initialize() first.");
+    }
+    return this.db;
+  }
+
+  isReady(): boolean {
+    return this.isInitialized && this.db !== null;
+  }
+
+  async close(): Promise<void> {
+    if (this.db) {
+      // SQLite databases are automatically closed when the app terminates
+      // This is mainly for cleanup purposes
+      this.db = null;
+      this.isInitialized = false;
+      this.initializationPromise = null;
+    }
+  }
+}
+
+// Export singleton instance
+export const databaseManager = DatabaseManager.getInstance(); 
