@@ -815,10 +815,20 @@ const ReadingEmoji = () => {
       setIsLoading(true)
       try {
         const emojiData = await getEmojis()
+        console.log('🔍 [ReadingEmoji] Raw emoji data from database:', emojiData)
+        
         // Filter out any invalid data
         const validReactions = emojiData.filter(item => 
           item && item.segmentID && item.blockID && item.emoji
         )
+        console.log('🔍 [ReadingEmoji] Valid reactions after filtering:', validReactions)
+        console.log('🔍 [ReadingEmoji] Reaction counts by emoji:', {
+          '❤️': validReactions.filter(r => r.emoji === '❤️').length,
+          '👍': validReactions.filter(r => r.emoji === '👍').length,
+          '🤔': validReactions.filter(r => r.emoji === '🤔').length,
+          '🙏': validReactions.filter(r => r.emoji === '🙏').length,
+        })
+        
         setReactions(validReactions)
       } catch (error) {
         console.error("Error loading emojis:", error)

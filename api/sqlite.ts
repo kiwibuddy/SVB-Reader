@@ -451,10 +451,9 @@ export async function addEmoji(
         blockID,
         blockData,
         emoji,
-        note,
-        timestamp
-      ) VALUES (?, ?, ?, ?, ?, datetime('now'))
-    `, segmentID, blockID, JSON.stringify(blockData), emoji, null);
+        note
+      ) VALUES (?, ?, ?, ?, ?)
+    `, segmentID, blockID, JSON.stringify(blockData), emoji, '');
   } catch (error) {
     console.error("Error adding emoji:", error);
   }

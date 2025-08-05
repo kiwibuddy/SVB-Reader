@@ -265,7 +265,25 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   // Emoji handling is now done directly in the Block component
   const handleLongPress = (block: BibleBlock, index: number) => {
-    // This is now handled by the Block component itself
+    console.log('🔍 [Segment] handleLongPress triggered:', { 
+      blockIndex: index, 
+      sourceName: block.source?.sourceName,
+      color: block.source?.color 
+    });
+    
+    // The actual emoji picker logic is handled by EmojiHandler component
+    // This function is called by the Block component when long press is detected
+    // We can add any segment-level logic here if needed
+    
+    // For debugging: Add haptic feedback to confirm the long press was detected
+    if (Platform.OS === 'ios') {
+      try {
+        const Haptics = require('expo-haptics');
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {
+        console.log('Haptics not available');
+      }
+    }
   };
 
   const colorRenderCount = new Map<string, number>(); // Track render counts
@@ -465,6 +483,14 @@ const styles = StyleSheet.create({
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         automaticallyAdjustKeyboardInsets={true}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        // Add gesture handling to prevent conflicts with long press
+        onScrollBeginDrag={() => {
+          console.log('🔍 [Segment] ScrollView drag started');
+        }}
+        // Disable scroll when long press is detected
+        scrollEnabled={true}
       >
         <SegmentTitle segmentId={segID} />
         <View style={{

@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, TouchableOpacity } from "react-native";
 import BibleInlineComponent from "./Inline";
 import { BibleBlock } from "@/types";
 import SourceNameComponent from "./SourceName";
@@ -86,9 +86,20 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
     // Render without EmojiHandler for Reading-emoji page
     return (
       <View style={styles.outerContainer}>
-        <Pressable
-          onLongPress={() => onLongPress?.(block, bIndex)}
-          delayLongPress={500}
+        <TouchableOpacity
+          onLongPress={() => {
+            console.log('🔍 [BibleBlock] onLongPress triggered (disableEmojiHandler mode):', { 
+              bIndex, 
+              sourceName: block.source?.sourceName,
+              color: block.source?.color 
+            });
+            onLongPress?.(block, bIndex);
+          }}
+          onPress={() => {
+            console.log('🔍 [BibleBlock] Press detected (not long press)');
+          }}
+          delayLongPress={1000}
+          activeOpacity={0.8}
         >
           {hasTail && (
             <SourceNameComponent
@@ -127,7 +138,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
               })}
             </View>
           </View>
-        </Pressable>
+        </TouchableOpacity>
       </View>
     );
   }
