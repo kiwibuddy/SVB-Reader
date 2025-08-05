@@ -7,6 +7,10 @@
       "developmentClient": true,
       "distribution": "internal"
     },
+    "development-public": {
+      "developmentClient": true,
+      "distribution": "store"
+    },
     "preview": {
       "distribution": "internal"
     },
