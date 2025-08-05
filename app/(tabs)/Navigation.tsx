@@ -276,6 +276,10 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
+  filterPanelHeaderButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   filterPanelTitle: {
     fontSize: 20,
     fontWeight: '700',
@@ -289,8 +293,11 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   },
   clearAllText: {
     fontSize: 14,
-    color: '#007AFF',
+    color: colors.text,
     fontWeight: '500',
+  },
+  closeFilterButton: {
+    padding: 4,
   },
   filterSection: {
     marginBottom: 24,
@@ -1204,9 +1211,18 @@ const Navigation = () => {
         <View style={styles.filterPanelContent}>
           <View style={styles.filterPanelHeader}>
             <Text style={styles.filterPanelTitle}>Find Your Story</Text>
-            <TouchableOpacity style={styles.clearAllButton} onPress={clearAllFilters}>
-              <Text style={styles.clearAllText}>Clear All</Text>
-            </TouchableOpacity>
+            <View style={styles.filterPanelHeaderButtons}>
+              <TouchableOpacity style={styles.clearAllButton} onPress={clearAllFilters}>
+                <Text style={styles.clearAllText}>Clear All</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.closeFilterButton} 
+                onPress={toggleFilterPanel}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="close" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>

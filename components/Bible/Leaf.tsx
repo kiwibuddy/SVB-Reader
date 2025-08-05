@@ -41,7 +41,8 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
   
   if (!text || typeof text !== 'string') {
     // Only warn if this is not a table element (which is expected to not have text)
-    if (!tag || !Array.isArray(tag) || !tag.some(t => ['tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(t))) {
+    const isTableElement = tag && Array.isArray(tag) && tag.some(t => ['tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(t));
+    if (!isTableElement) {
       console.warn(`Missing or invalid text in leaf at index ${leafIndex}:`, leaf);
     }
     return null;

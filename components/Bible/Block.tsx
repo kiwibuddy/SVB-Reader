@@ -1,5 +1,7 @@
 import React, { memo } from "react";
 import { View, Text, StyleSheet, Pressable, TouchableOpacity } from "react-native";
+import { LongPressGestureHandler, State, Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 import BibleInlineComponent from "./Inline";
 import { BibleBlock } from "@/types";
 import SourceNameComponent from "./SourceName";
@@ -15,7 +17,7 @@ interface BibleBlockProps {
   toRead?: boolean;
   isGlowing?: boolean;
   hasTail: boolean;
-  onLongPress?: (block: BibleBlock, index: number) => void;
+  onLongPress?: (block: BibleBlock, index: number, touchPosition?: { x: number; y: number }) => void;
   disableEmojiHandler?: boolean;
 }
 
@@ -86,59 +88,85 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
     // Render without EmojiHandler for Reading-emoji page
     return (
       <View style={styles.outerContainer}>
-        <TouchableOpacity
-          onLongPress={() => {
-            console.log('🔍 [BibleBlock] onLongPress triggered (disableEmojiHandler mode):', { 
-              bIndex, 
-              sourceName: block.source?.sourceName,
-              color: block.source?.color 
-            });
-            onLongPress?.(block, bIndex);
-          }}
-          onPress={() => {
-            console.log('🔍 [BibleBlock] Press detected (not long press)');
-          }}
-          delayLongPress={1000}
-          activeOpacity={0.8}
-        >
-          {hasTail && (
-            <SourceNameComponent
-              sourceName={sourceName}
-              align={color !== "black" ? "left" : "right"}
-            />
-          )}
-          <View
-            style={[
-              styles.container,
-              { backgroundColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')] }
-            ]}
+        <GestureDetector gesture={Gesture.Race(
+          Gesture.Tap()
+            .numberOfTaps(2)
+            .onStart((event) => {
+              'worklet';
+              console.log('🔍 [BibleBlock] Double tap detected (disableEmojiHandler mode):', { 
+                bIndex, 
+                sourceName: block.source?.sourceName,
+                color: block.source?.color,
+                absoluteY: event.absoluteY
+              });
+              if (onLongPress) {
+                // Pass touch position to onLongPress callback
+                const touchPosition = { x: event.absoluteX, y: event.absoluteY };
+                runOnJS(onLongPress)(block, bIndex, touchPosition);
+              }
+            }),
+          Gesture.LongPress()
+            .minDuration(500)
+            .onStart((event) => {
+              'worklet';
+              console.log('🔍 [BibleBlock] Long press detected (disableEmojiHandler mode):', { 
+                bIndex, 
+                sourceName: block.source?.sourceName,
+                color: block.source?.color,
+                absoluteY: event.absoluteY
+              });
+              if (onLongPress) {
+                // Pass touch position to onLongPress callback
+                const touchPosition = { x: event.absoluteX, y: event.absoluteY };
+                runOnJS(onLongPress)(block, bIndex, touchPosition);
+              }
+            })
+        )}>
+          <TouchableOpacity
+            onPress={() => {
+              console.log('🔍 [BibleBlock] Press detected (not long press)');
+            }}
+            activeOpacity={0.8}
           >
             {hasTail && (
-              <View
-                style={[
-                  styles.tail,
-                  {
-                    borderBottomColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')],
-                  },
-                  tailAlignment,
-                ]}
+              <SourceNameComponent
+                sourceName={sourceName}
+                align={color !== "black" ? "left" : "right"}
               />
             )}
-            <View>
-              {children.map((item: any, index: number) => {
-                if (item.type === "break") return null;
-                return (
-                  <BibleInlineComponent
-                    key={`${bIndex}-${index}`}
-                    iIndex={`${bIndex}-${index}`}
-                    inline={item}
-                    textColor={colors.text}
-                  />
-                );
-              })}
+            <View
+              style={[
+                styles.container,
+                { backgroundColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')] }
+              ]}
+            >
+              {hasTail && (
+                <View
+                  style={[
+                    styles.tail,
+                    {
+                      borderBottomColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')],
+                    },
+                    tailAlignment,
+                  ]}
+                />
+              )}
+              <View>
+                {children.map((item: any, index: number) => {
+                  if (item.type === "break") return null;
+                  return (
+                    <BibleInlineComponent
+                      key={`${bIndex}-${index}`}
+                      iIndex={`${bIndex}-${index}`}
+                      inline={item}
+                      textColor={colors.text}
+                    />
+                  );
+                })}
+              </View>
             </View>
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        </GestureDetector>
       </View>
     );
   }
@@ -197,7 +225,8 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
     prevProps.toRead === nextProps.toRead &&
     prevProps.isGlowing === nextProps.isGlowing &&
     prevProps.hasTail === nextProps.hasTail &&
-    prevProps.block === nextProps.block
+    prevProps.block === nextProps.block &&
+    prevProps.onLongPress === nextProps.onLongPress
   );
 });
 

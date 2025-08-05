@@ -264,7 +264,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const isCompleted = getIsCompleted();
 
   // Emoji handling is now done directly in the Block component
-  const handleLongPress = (block: BibleBlock, index: number) => {
+  const handleLongPress = useCallback((block: BibleBlock, index: number) => {
     console.log('🔍 [Segment] handleLongPress triggered:', { 
       blockIndex: index, 
       sourceName: block.source?.sourceName,
@@ -284,7 +284,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
         console.log('Haptics not available');
       }
     }
-  };
+  }, []);
 
   const colorRenderCount = new Map<string, number>(); // Track render counts
 

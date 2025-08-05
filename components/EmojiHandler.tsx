@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { View, Pressable, Text, StyleSheet, Modal, Platform, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { LongPressGestureHandler, State, Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 import { BibleBlock } from '@/types';
 import { useAppContext } from '@/context/GlobalContext';
 import { addEmoji, deleteEmoji, getEmoji } from '@/api/sqlite';
@@ -12,6 +14,16 @@ interface EmojiHandlerProps {
   hasTail: boolean;
   onLongPress?: (block: BibleBlock, index: number) => void;
 }
+
+// CRITICAL: Constants for positioning - DO NOT CHANGE without thorough testing
+const POSITIONING_CONSTANTS = {
+  PICKER_OFFSET_Y: 40, // Offset from touch point to picker center
+  MIN_Y: 50, // Minimum distance from top of screen
+  MAX_Y_OFFSET: 150, // Distance from bottom of screen
+  DEFAULT_PICKER_WIDTH: 240, // Fallback picker width
+  MIN_SCREEN_WIDTH: 320, // Minimum expected screen width
+  MIN_SCREEN_HEIGHT: 400, // Minimum expected screen height
+} as const;
 
 const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   block,
@@ -26,33 +38,85 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   const [pickerPosition, setPickerPosition] = useState({ x: 0, y: 0 });
   const [existingEmoji, setExistingEmoji] = useState<string | null>(null);
   
-  // Double tap handling
-  const lastTapRef = useRef(0);
-  const doubleTapDelay = 300; // milliseconds
+  // Emoji picker dimensions with validation
+  const [pickerWidth, setPickerWidth] = useState<number>(POSITIONING_CONSTANTS.DEFAULT_PICKER_WIDTH);
   
-  // Emoji picker dimensions
-  const [pickerWidth, setPickerWidth] = useState(240); // Default width
+  // CRITICAL: Track if component is mounted to prevent state updates after unmount
+  const isMountedRef = useRef(true);
+  
+  // CRITICAL: Track gesture state to prevent multiple simultaneous gestures
+  const gestureInProgressRef = useRef(false);
 
   const blockId = `${blockIndex}-${block.source?.sourceName || 'unknown'}`;
 
-  // Debug: Log screen dimensions
+  // CRITICAL: Validate screen dimensions on mount and changes
   useEffect(() => {
-    console.log('🔍 [EmojiHandler] Screen dimensions:', { screenWidth, screenHeight });
+    if (screenWidth < POSITIONING_CONSTANTS.MIN_SCREEN_WIDTH || screenHeight < POSITIONING_CONSTANTS.MIN_SCREEN_HEIGHT) {
+      console.warn('🔍 [EmojiHandler] WARNING: Screen dimensions below minimum:', { screenWidth, screenHeight });
+    }
+    
+    console.log('🔍 [EmojiHandler] Screen dimensions updated:', { screenWidth, screenHeight });
+  }, [screenWidth, screenHeight]);
+
+  // CRITICAL: Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      console.log('🔍 [EmojiHandler] Component unmounted');
+    };
   }, []);
 
-  // Calculate centered position based on measured picker width
-  const getCenteredPosition = useCallback((pageY: number) => {
-    const centerX = (screenWidth - pickerWidth) / 2;
-    const adjustedY = Math.max(100, Math.min(pageY - 40, screenHeight - 200));
-    console.log('🔍 [EmojiHandler] Centering calculation:', { 
-      screenWidth, 
-      pickerWidth, 
-      centerX, 
-      pageY, 
-      adjustedY 
+  // CRITICAL: Enhanced position calculation with comprehensive validation
+  const getCenteredPosition = useCallback((absoluteY: number) => {
+    'worklet';
+    
+    // CRITICAL: Validate input parameters
+    if (typeof absoluteY !== 'number' || isNaN(absoluteY)) {
+      console.error('🔍 [EmojiHandler] ERROR: Invalid absoluteY:', absoluteY);
+      // Fallback to center of screen
+      const fallbackY = screenHeight / 2;
+      const centerX = (screenWidth - POSITIONING_CONSTANTS.DEFAULT_PICKER_WIDTH) / 2;
+      return { x: centerX, y: fallbackY };
+    }
+    
+    // CRITICAL: Validate screen dimensions
+    if (screenWidth <= 0 || screenHeight <= 0) {
+      console.error('🔍 [EmojiHandler] ERROR: Invalid screen dimensions:', { screenWidth, screenHeight });
+      return { x: 0, y: 0 };
+    }
+    
+    // CRITICAL: Validate picker width
+    const validPickerWidth = pickerWidth > 0 ? pickerWidth : POSITIONING_CONSTANTS.DEFAULT_PICKER_WIDTH;
+    
+    // Center horizontally based on screen width and picker width
+    const centerX = Math.max(0, (screenWidth - validPickerWidth) / 2);
+    
+    // Position vertically based on touch position, with bounds checking
+    let adjustedY = absoluteY - POSITIONING_CONSTANTS.PICKER_OFFSET_Y;
+    
+    // CRITICAL: Ensure picker doesn't go off the top of the screen
+    const minY = POSITIONING_CONSTANTS.MIN_Y;
+    if (adjustedY < minY) {
+      adjustedY = minY;
+    }
+    
+    // CRITICAL: Ensure picker doesn't go off the bottom of the screen
+    const maxY = screenHeight - POSITIONING_CONSTANTS.MAX_Y_OFFSET;
+    if (adjustedY > maxY) {
+      adjustedY = maxY;
+    }
+    
+    // CRITICAL: Final validation of calculated position
+    const finalPosition = { x: centerX, y: adjustedY };
+    
+    console.log('🔍 [EmojiHandler] Position calculation:', { 
+      input: { absoluteY, screenWidth, screenHeight, pickerWidth: validPickerWidth },
+      calculated: finalPosition,
+      bounds: { minY, maxY, centerX }
     });
-    return { x: centerX, y: adjustedY };
-  }, [pickerWidth]);
+    
+    return finalPosition;
+  }, [screenWidth, pickerWidth, screenHeight]);
   
   // Color-based alignment logic
   const color = block.source?.color || 'black';
@@ -66,152 +130,192 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   // When hasTail=false: consecutive bubbles need emoji positioned higher (smaller top value)
   const emojiTopOffset = hasTail ? 35 : -15;
 
-  // Load existing emoji when component mounts
+  // CRITICAL: Load existing emoji when component mounts
   useEffect(() => {
+    if (!isMountedRef.current) return;
+    
     const loadEmoji = async () => {
       try {
+        if (!segmentId || !blockId) {
+          console.warn('🔍 [EmojiHandler] Missing segmentId or blockId:', { segmentId, blockId });
+          return;
+        }
+        
         const emoji = await getEmoji(segmentId, blockId);
-        setExistingEmoji(emoji);
+        if (isMountedRef.current) {
+          setExistingEmoji(emoji);
+        }
       } catch (error) {
-        console.error('Error loading emoji:', error);
+        console.error('🔍 [EmojiHandler] Error loading emoji:', error);
       }
     };
     loadEmoji();
-  }, [segmentId, blockId, emojiActions]);
+  }, [segmentId, blockId]);
 
-  // Debug: Log when showPicker state changes
+  // CRITICAL: Update emoji when emojiActions changes (for external updates)
+  useEffect(() => {
+    if (!isMountedRef.current) return;
+    
+    if (emojiActions > 0) { // Only update if there have been emoji actions
+      const loadEmoji = async () => {
+        try {
+          if (!segmentId || !blockId) return;
+          
+          const emoji = await getEmoji(segmentId, blockId);
+          if (isMountedRef.current) {
+            setExistingEmoji(emoji);
+          }
+        } catch (error) {
+          console.error('🔍 [EmojiHandler] Error loading emoji from actions:', error);
+        }
+      };
+      loadEmoji();
+    }
+  }, [emojiActions, segmentId, blockId]);
+
+  // CRITICAL: Debug logging for showPicker state changes
   useEffect(() => {
     console.log('🔍 [EmojiHandler] showPicker state changed:', showPicker);
   }, [showPicker]);
 
-  // Update position when picker width changes
+  // CRITICAL: Update position when picker width changes with validation
   useEffect(() => {
-    if (showPicker && pickerWidth > 0) {
-      console.log('🔍 [EmojiHandler] Updating position due to width change:', { pickerWidth, currentPosition: pickerPosition });
-      const centerX = (screenWidth - pickerWidth) / 2;
-      const adjustedY = Math.max(100, Math.min(pickerPosition.y, screenHeight - 200));
-      console.log('🔍 [EmojiHandler] New centered position:', { centerX, adjustedY });
-      setPickerPosition({ x: centerX, y: adjustedY });
-    }
-  }, [pickerWidth, showPicker]);
-
-  const handleLongPress = useCallback((event: any) => {
-    console.log('🔍 [EmojiHandler] handleLongPress triggered:', { 
-      blockIndex, 
-      sourceName: block.source?.sourceName,
-      color: block.source?.color,
-      segmentId,
-      blockId 
-    });
+    if (!isMountedRef.current || !showPicker || pickerWidth <= 0) return;
     
-    // Get tap position for better emoji picker positioning
-    const { pageY } = event.nativeEvent;
-    const position = getCenteredPosition(pageY);
-    
-    console.log('🔍 [EmojiHandler] Setting showPicker to true');
-    setShowPicker(true);
-    setPickerPosition(position);
-
-    // Call parent's onLongPress if provided
-    if (onLongPress) {
-      console.log('🔍 [EmojiHandler] Calling parent onLongPress');
-      onLongPress(block, blockIndex);
-    }
-  }, [block, blockIndex, onLongPress, segmentId, blockId, setShowPicker, setPickerPosition, getCenteredPosition]);
-
-  const handleDoubleTap = useCallback(() => {
-    console.log('🔍 [EmojiHandler] Double tap detected!');
-    
-    const position = getCenteredPosition(screenHeight / 2);
-    setShowPicker(true);
-    setPickerPosition(position);
-  }, [setShowPicker, setPickerPosition, getCenteredPosition]);
-
-  const handlePress = useCallback((event: any) => {
-    console.log('🔍 [EmojiHandler] Press detected (not long press)');
-    
-    const now = Date.now();
-    const timeDiff = now - lastTapRef.current;
-    
-    if (timeDiff < doubleTapDelay) {
-      // Double tap detected - get tap position
-      const { pageY } = event.nativeEvent;
-      const position = getCenteredPosition(pageY);
+    try {
+      const centerX = Math.max(0, (screenWidth - pickerWidth) / 2);
+      const adjustedY = Math.max(POSITIONING_CONSTANTS.MIN_Y, 
+        Math.min(pickerPosition.y, screenHeight - POSITIONING_CONSTANTS.MAX_Y_OFFSET));
       
-      console.log('🔍 [EmojiHandler] Double tap detected!');
-      setShowPicker(true);
-      setPickerPosition(position);
-      lastTapRef.current = 0; // Reset to prevent triple tap
-    } else {
-      // Single tap - store timestamp for potential double tap
-      lastTapRef.current = now;
+      const newPosition = { x: centerX, y: adjustedY };
+      setPickerPosition(newPosition);
+      
+      console.log('🔍 [EmojiHandler] Position updated from picker width change:', newPosition);
+    } catch (error) {
+      console.error('🔍 [EmojiHandler] Error updating position from picker width:', error);
     }
-  }, [handleDoubleTap, doubleTapDelay, getCenteredPosition]);
+  }, [pickerWidth, showPicker, screenWidth, screenHeight, pickerPosition.y]);
 
+  // CRITICAL: Enhanced emoji selection with validation
   const handleEmojiSelect = useCallback(async (emoji: string) => {
+    if (!isMountedRef.current) return;
+    
     try {
+      if (!segmentId || !blockId || !emoji) {
+        console.error('🔍 [EmojiHandler] Missing required data for emoji selection:', { segmentId, blockId, emoji });
+        return;
+      }
+      
       await addEmoji(segmentId, blockId, block, emoji);
-      setExistingEmoji(emoji);
-      setShowPicker(false);
       
-      // Update context to trigger re-renders
-      updateEmojiActions(emojiActions + 1);
+      if (isMountedRef.current) {
+        setExistingEmoji(emoji);
+        setShowPicker(false);
+        
+        // Update context to trigger re-renders
+        updateEmojiActions(emojiActions + 1);
+      }
     } catch (error) {
-      console.error('Error adding emoji:', error);
+      console.error('🔍 [EmojiHandler] Error adding emoji:', error);
     }
-  }, [segmentId, blockId, block, updateEmojiActions]);
+  }, [segmentId, blockId, block, updateEmojiActions, emojiActions]);
 
+  // CRITICAL: Enhanced emoji deletion with validation
   const handleEmojiDelete = useCallback(async () => {
+    if (!isMountedRef.current) return;
+    
     try {
-      await deleteEmoji(segmentId, blockId);
-      setExistingEmoji(null);
+      if (!segmentId || !blockId) {
+        console.error('🔍 [EmojiHandler] Missing required data for emoji deletion:', { segmentId, blockId });
+        return;
+      }
       
-      // Update context to trigger re-renders
-      updateEmojiActions(emojiActions + 1);
+      await deleteEmoji(segmentId, blockId);
+      
+      if (isMountedRef.current) {
+        setExistingEmoji(null);
+        
+        // Update context to trigger re-renders
+        updateEmojiActions(emojiActions + 1);
+      }
     } catch (error) {
-      console.error('Error deleting emoji:', error);
+      console.error('🔍 [EmojiHandler] Error deleting emoji:', error);
     }
-  }, [segmentId, blockId, updateEmojiActions]);
+  }, [segmentId, blockId, updateEmojiActions, emojiActions]);
 
+  // CRITICAL: Enhanced picker close with validation
   const handlePickerClose = useCallback(() => {
+    if (!isMountedRef.current) return;
+    
+    console.log('🔍 [EmojiHandler] Closing picker');
     setShowPicker(false);
+    gestureInProgressRef.current = false;
   }, []);
+
+  // CRITICAL: Enhanced gesture handler with comprehensive validation
+  const handleGestureTrigger = useCallback((event: any, gestureType: 'doubleTap' | 'longPress') => {
+    'worklet';
+    
+    // CRITICAL: Validate event object
+    if (!event || typeof event.absoluteY !== 'number' || isNaN(event.absoluteY)) {
+      console.error('🔍 [EmojiHandler] ERROR: Invalid gesture event:', event);
+      return;
+    }
+    
+    // CRITICAL: Prevent multiple simultaneous gestures
+    if (gestureInProgressRef.current) {
+      console.log('🔍 [EmojiHandler] Gesture already in progress, ignoring:', gestureType);
+      return;
+    }
+    
+    console.log('🔍 [EmojiHandler] Gesture detected:', { gestureType, absoluteY: event.absoluteY });
+    
+    // CRITICAL: Calculate position with validation
+    const position = getCenteredPosition(event.absoluteY);
+    
+    // CRITICAL: Set gesture in progress flag
+    gestureInProgressRef.current = true;
+    
+    // CRITICAL: Update state with validation
+    runOnJS(setShowPicker)(true);
+    runOnJS(setPickerPosition)(position);
+    
+    // CRITICAL: Call parent's onLongPress if provided
+    if (onLongPress) {
+      console.log('🔍 [EmojiHandler] Calling parent onLongPress from:', gestureType);
+      runOnJS(onLongPress)(block, blockIndex);
+    }
+  }, [getCenteredPosition, onLongPress, block, blockIndex]);
+
+  // CRITICAL: Create double tap gesture with enhanced error handling
+  const doubleTapGesture = Gesture.Tap()
+    .numberOfTaps(2)
+    .onStart((event) => {
+      handleGestureTrigger(event, 'doubleTap');
+    });
+
+  // CRITICAL: Create long press gesture with enhanced error handling
+  const longPressGesture = Gesture.LongPress()
+    .minDuration(500)
+    .onStart((event) => {
+      handleGestureTrigger(event, 'longPress');
+    });
+
+  // CRITICAL: Combine gestures
+  const gesture = Gesture.Race(doubleTapGesture, longPressGesture);
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        onLongPress={handleLongPress}
-        onPress={handlePress}
-        delayLongPress={1000}
-        activeOpacity={0.8}
-        style={styles.pressableArea}
-      >
-        {children}
-      </TouchableOpacity>
+      <GestureDetector gesture={gesture}>
+        <TouchableOpacity
+          onPress={() => console.log('🔍 [EmojiHandler] TouchableOpacity onPress triggered - TOUCH EVENTS WORKING')}
+          activeOpacity={0.8}
+        >
+          {children}
+        </TouchableOpacity>
+      </GestureDetector>
       
-      {/* DEBUG: Test button to manually trigger emoji picker */}
-      {__DEV__ && (
-        <Pressable
-          onPress={() => {
-            console.log('🔍 [EmojiHandler] Test button pressed');
-            const position = getCenteredPosition(screenHeight / 2);
-            setShowPicker(true);
-            setPickerPosition(position);
-          }}
-          style={{
-            position: 'absolute',
-            top: 5,
-            right: 5,
-            width: 20,
-            height: 20,
-            backgroundColor: 'red',
-            borderRadius: 10,
-            zIndex: 1000,
-          }}
-        />
-      )}
-      
-      {/* Emoji positioned using the working version's logic */}
+      {/* CRITICAL: Emoji positioned using the working version's logic */}
       {existingEmoji && (
         <View style={[styles.reactionContainer, { top: emojiTopOffset }, emojiAlignment]}>
           <Pressable onPress={handleEmojiDelete}>
@@ -220,7 +324,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         </View>
       )}
 
-      {/* Modal for emoji picker */}
+      {/* CRITICAL: Modal for emoji picker with enhanced validation */}
       <Modal
         visible={showPicker}
         transparent={true}
@@ -236,7 +340,9 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
           position={pickerPosition}
           onLayout={(width, height) => {
             console.log('🔍 [EmojiHandler] Picker layout measured:', { width, height });
-            setPickerWidth(width);
+            if (isMountedRef.current && width > 0) {
+              setPickerWidth(width);
+            }
           }}
         />
       </Modal>
@@ -247,11 +353,6 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-  },
-  pressableArea: {
-    // Ensure the pressable area covers the entire bubble
-    flex: 1,
-    width: '100%',
   },
   // Using the working version's styling for emoji positioning
   reactionContainer: {

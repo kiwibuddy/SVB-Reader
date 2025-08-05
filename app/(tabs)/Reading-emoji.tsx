@@ -641,6 +641,13 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       fontWeight: '700',
       color: colors.text,
     },
+    filterPanelHeaderButtons: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    closeFilterButton: {
+      marginLeft: 10,
+    },
     clearAllButton: {
       paddingHorizontal: 12,
       paddingVertical: 6,
@@ -649,7 +656,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
     },
     clearAllText: {
       fontSize: 14,
-      color: '#007AFF',
+      color: colors.text,
       fontWeight: '500',
     },
     filterSection: {
@@ -711,6 +718,9 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       fontSize: 16,
       fontWeight: '600',
     },
+    clearFiltersButton: {
+      padding: 4,
+    },
   })
 
 // Add this helper function near the top with other utility functions
@@ -742,7 +752,6 @@ const ReadingEmoji = () => {
   const [isExpanded, setIsExpanded] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [searchQuery, setSearchQuery] = useState("")
-  const [showSearch, setShowSearch] = useState(false)
   const [showFilterPanel, setShowFilterPanel] = useState(false)
   const [activeFilters, setActiveFilters] = useState<{
     testament: string[]
@@ -760,6 +769,7 @@ const ReadingEmoji = () => {
   // Jump to passage modal state
   const [showJumpModal, setShowJumpModal] = useState(false)
   const [selectedReaction, setSelectedReaction] = useState<EmojiReaction | null>(null)
+  const [modalPosition, setModalPosition] = useState<{ x: number; y: number } | null>(null);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current
@@ -817,16 +827,21 @@ const ReadingEmoji = () => {
         const emojiData = await getEmojis()
         console.log('🔍 [ReadingEmoji] Raw emoji data from database:', emojiData)
         
-        // Filter out any invalid data
-        const validReactions = emojiData.filter(item => 
-          item && item.segmentID && item.blockID && item.emoji
-        )
+        // Filter out any invalid data with proper type checking
+        const validReactions = emojiData.filter((item: any): item is EmojiReaction => 
+          item && 
+          typeof item === 'object' &&
+          typeof item.segmentID === 'string' && 
+          typeof item.blockID === 'string' && 
+          typeof item.emoji === 'string' &&
+          item.blockData
+        ) as EmojiReaction[];
         console.log('🔍 [ReadingEmoji] Valid reactions after filtering:', validReactions)
         console.log('🔍 [ReadingEmoji] Reaction counts by emoji:', {
-          '❤️': validReactions.filter(r => r.emoji === '❤️').length,
-          '👍': validReactions.filter(r => r.emoji === '👍').length,
-          '🤔': validReactions.filter(r => r.emoji === '🤔').length,
-          '🙏': validReactions.filter(r => r.emoji === '🙏').length,
+          '❤️': validReactions.filter((r: EmojiReaction) => r.emoji === '❤️').length,
+          '👍': validReactions.filter((r: EmojiReaction) => r.emoji === '👍').length,
+          '🤔': validReactions.filter((r: EmojiReaction) => r.emoji === '🤔').length,
+          '🙏': validReactions.filter((r: EmojiReaction) => r.emoji === '🙏').length,
         })
         
         setReactions(validReactions)
@@ -1001,7 +1016,73 @@ const ReadingEmoji = () => {
   const filteredReactions = getFilteredReactions()
 
   const getEmojiCount = (emojiType: string) => {
-    return reactions.filter((r) => r.emoji === emojiType).length
+    // Use filteredReactions to respect current filters, but exclude emoji type filter
+    // so we can show counts for all emoji types even when one is selected
+    let reactionsToCount = reactions;
+    
+    // Apply all filters except emoji type filter
+    if (searchQuery.trim() !== "") {
+      reactionsToCount = reactionsToCount.filter((reaction) => {
+        if (!reaction || !reaction.segmentID || !reaction.blockData) return false;
+        
+        const reference = getSegmentReference(reaction.segmentID).toLowerCase();
+        const blockTexts = reaction.blockData.children
+          ?.flatMap(inline => inline.children || [])
+          ?.map(leaf => leaf.text || "")
+          ?.join(" ") || "";
+        const blockText = blockTexts.toLowerCase();
+        const query = searchQuery.toLowerCase();
+        
+        return reference.includes(query) || blockText.includes(query);
+      });
+    }
+
+    // Apply active filters (except emoji type)
+    if (activeFilters.testament.length > 0) {
+      reactionsToCount = reactionsToCount.filter(reaction => {
+        const segmentRef = getSegmentReference(reaction.segmentID)
+        const book = segmentRef.split(' ')[0]
+        const oldTestamentBooks = ['Gen', 'Exo', 'Lev', 'Num', 'Deu', 'Jos', 'Jdg', 'Rut', '1Sa', '2Sa', '1Ki', '2Ki', '1Ch', '2Ch', 'Ezr', 'Neh', 'Est', 'Job', 'Psa', 'Pro', 'Ecc', 'SoS', 'Isa', 'Jer', 'Lam', 'Eze', 'Dan', 'Hos', 'Joe', 'Amo', 'Oba', 'Jon', 'Mic', 'Nah', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal']
+        const testament = oldTestamentBooks.includes(book) ? 'Old Testament' : 'New Testament'
+        return activeFilters.testament.includes(testament)
+      })
+    }
+
+    if (activeFilters.sourceColor.length > 0) {
+      reactionsToCount = reactionsToCount.filter(reaction => 
+        reaction?.blockData?.source?.color && 
+        activeFilters.sourceColor.includes(reaction.blockData.source.color)
+      )
+    }
+
+    if (activeFilters.sourceName.length > 0) {
+      reactionsToCount = reactionsToCount.filter(reaction => 
+        reaction?.blockData?.source?.sourceName && 
+        activeFilters.sourceName.includes(reaction.blockData.source.sourceName)
+      )
+    }
+
+    if (activeFilters.book.length > 0) {
+      reactionsToCount = reactionsToCount.filter(reaction => {
+        const segmentRef = getSegmentReference(reaction.segmentID)
+        const book = segmentRef.split(' ')[0]
+        return activeFilters.book.includes(book)
+      })
+    }
+    
+    // Count the specific emoji type from the filtered reactions
+    const count = reactionsToCount.filter((r) => r.emoji === emojiType).length;
+    
+    // Debug logging
+    console.log(`🔍 [ReadingEmoji] getEmojiCount for ${emojiType}:`, {
+      totalReactions: reactions.length,
+      filteredReactions: reactionsToCount.length,
+      emojiCount: count,
+      searchQuery: searchQuery.trim(),
+      activeFilters
+    });
+    
+    return count;
   }
 
   const getEmojiIcon = (emoji: string) => {
@@ -1019,7 +1100,7 @@ const ReadingEmoji = () => {
     return emojiType?.backgroundColor || "#FF6B47"
   }
 
-  const handleLongPress = useCallback((reaction: EmojiReaction) => {
+  const handleLongPress = useCallback((reaction: EmojiReaction, touchPosition?: { x: number; y: number }) => {
     // Reset modal animations first
     modalScaleAnim.setValue(0);
     modalOpacityAnim.setValue(0);
@@ -1036,6 +1117,13 @@ const ReadingEmoji = () => {
     
     setSelectedReaction(reaction);
     setShowJumpModal(true);
+    
+    // If touch position is provided, use it for dynamic positioning
+    if (touchPosition) {
+      console.log('🔍 [Reading-emoji] Using dynamic positioning:', touchPosition);
+      // Store touch position for modal positioning
+      setModalPosition(touchPosition);
+    }
     
     // Animate modal entrance
     Animated.parallel([
@@ -1137,6 +1225,7 @@ const ReadingEmoji = () => {
     ]).start(() => {
       setShowJumpModal(false);
       setSelectedReaction(null);
+      setModalPosition(null); // Reset modal position
       // Ensure animations are fully reset
       modalScaleAnim.setValue(0);
       modalOpacityAnim.setValue(0);
@@ -1245,39 +1334,10 @@ const ReadingEmoji = () => {
       <View style={styles.welcomeSection}>
         <View style={styles.welcomeTitleRow}>
           <View style={styles.welcomeTitleContainer}>
-        <Text style={styles.welcomeTitle}>{t("UI.emojiPage.title")}</Text>
-        <Text style={styles.welcomeText}>{t("UI.emojiPage.subtitle")}</Text>
+            <Text style={styles.welcomeTitle}>{t("UI.emojiPage.title")}</Text>
+            <Text style={styles.welcomeText}>{t("UI.emojiPage.subtitle")}</Text>
           </View>
-          <TouchableOpacity
-            style={styles.searchButton}
-            onPress={() => setShowSearch(!showSearch)}
-          >
-            <Ionicons name="search" size={24} color={colors.text} />
-          </TouchableOpacity>
         </View>
-        
-        {showSearch && (
-          <View style={styles.searchContainer}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search reactions by verse or content..."
-              placeholderTextColor={colors.secondary}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              autoCapitalize="none"
-              autoCorrect={false}
-              clearButtonMode="while-editing"
-            />
-            {searchQuery.trim() !== '' && (
-              <TouchableOpacity
-                style={styles.clearSearchButton}
-                onPress={() => setSearchQuery('')}
-              >
-                <Ionicons name="close" size={16} color={colors.secondary} />
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
       </View>
 
       <View style={styles.gridContainer}>
@@ -1332,6 +1392,15 @@ const ReadingEmoji = () => {
               <View style={styles.activeFilterBadge}>
                 <Text style={styles.activeFilterText}>{getActiveFilterCount()}</Text>
               </View>
+            )}
+            {getActiveFilterCount() > 0 && (
+              <TouchableOpacity
+                style={styles.clearFiltersButton}
+                onPress={clearAllFilters}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="close" size={16} color="#007AFF" />
+              </TouchableOpacity>
             )}
           </View>
           <TouchableOpacity 
@@ -1389,9 +1458,9 @@ const ReadingEmoji = () => {
               toRead={false} 
               hasTail={true} 
               disableEmojiHandler={true}
-              onLongPress={(block, blockIndex) => {
+              onLongPress={(block, blockIndex, touchPosition) => {
                 // Use our custom jump modal instead of EmojiHandler
-                handleLongPress(reaction);
+                handleLongPress(reaction, touchPosition);
               }}
             />
             <Text 
@@ -1423,7 +1492,40 @@ const ReadingEmoji = () => {
   // Memoize the ListHeaderComponent
   const memoizedRenderHeader = useCallback(() => {
     return renderHeader();
-  }, []);
+  }, [reactions, activeFilters, selectedEmoji, refreshTrigger]);
+
+  // Calculate dynamic modal position based on touch coordinates
+  const getModalPosition = useCallback(() => {
+    if (!modalPosition) {
+      // Default center position if no touch position
+      return { 
+        position: 'absolute' as const,
+        top: 300, 
+        left: screenWidth / 2 - 150
+      };
+    }
+    
+    const { x, y } = modalPosition;
+    const modalWidth = 300; // Approximate modal width
+    const modalHeight = 200; // Approximate modal height
+    
+    // Calculate position with bounds checking
+    let left = x - modalWidth / 2;
+    let top = y - modalHeight / 2;
+    
+    // Ensure modal doesn't go off screen
+    const maxLeft = screenWidth - modalWidth - 20;
+    const maxTop = 600 - modalHeight - 20; // Approximate screen height
+    
+    left = Math.max(20, Math.min(left, maxLeft));
+    top = Math.max(20, Math.min(top, maxTop));
+    
+    return { 
+      position: 'absolute' as const,
+      top, 
+      left
+    };
+  }, [modalPosition, screenWidth]);
 
   // Premium Jump to Passage Modal Component
   const renderJumpToPassageModal = () => (
@@ -1437,6 +1539,7 @@ const ReadingEmoji = () => {
         <Animated.View
           style={[
             styles.modalContainer,
+            getModalPosition(),
             {
               transform: [{ scale: modalScaleAnim }],
               opacity: modalOpacityAnim,
@@ -1479,9 +1582,18 @@ const ReadingEmoji = () => {
       <View style={styles.filterPanelContent}>
         <View style={styles.filterPanelHeader}>
           <Text style={styles.filterPanelTitle}>Filter Reactions</Text>
-          <TouchableOpacity style={styles.clearAllButton} onPress={clearAllFilters}>
-            <Text style={styles.clearAllText}>Clear All</Text>
-          </TouchableOpacity>
+          <View style={styles.filterPanelHeaderButtons}>
+            <TouchableOpacity style={styles.clearAllButton} onPress={clearAllFilters}>
+              <Text style={styles.clearAllText}>Clear All</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.closeFilterButton} 
+              onPress={toggleFilterPanel}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="close" size={24} color={colors.text} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
