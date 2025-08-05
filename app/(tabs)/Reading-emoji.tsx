@@ -825,24 +825,29 @@ const ReadingEmoji = () => {
       setIsLoading(true)
       try {
         const emojiData = await getEmojis()
-        console.log('🔍 [ReadingEmoji] Raw emoji data from database:', emojiData)
         
-        // Filter out any invalid data with proper type checking
-        const validReactions = emojiData.filter((item: any): item is EmojiReaction => 
-          item && 
-          typeof item === 'object' &&
-          typeof item.segmentID === 'string' && 
-          typeof item.blockID === 'string' && 
-          typeof item.emoji === 'string' &&
-          item.blockData
-        ) as EmojiReaction[];
-        console.log('🔍 [ReadingEmoji] Valid reactions after filtering:', validReactions)
-        console.log('🔍 [ReadingEmoji] Reaction counts by emoji:', {
-          '❤️': validReactions.filter((r: EmojiReaction) => r.emoji === '❤️').length,
-          '👍': validReactions.filter((r: EmojiReaction) => r.emoji === '👍').length,
-          '🤔': validReactions.filter((r: EmojiReaction) => r.emoji === '🤔').length,
-          '🙏': validReactions.filter((r: EmojiReaction) => r.emoji === '🙏').length,
-        })
+        // Filter out any invalid data with proper type checking and parse blockData
+        const validReactions = emojiData.filter((item: any): item is EmojiReaction => {
+          if (!item || 
+              typeof item !== 'object' ||
+              typeof item.segmentID !== 'string' || 
+              typeof item.blockID !== 'string' || 
+              typeof item.emoji !== 'string' ||
+              !item.blockData) {
+            return false;
+          }
+          
+          // Parse blockData if it's a string
+          if (typeof item.blockData === 'string') {
+            try {
+              item.blockData = JSON.parse(item.blockData);
+            } catch (error) {
+              return false;
+            }
+          }
+          
+          return true;
+        }) as EmojiReaction[];
         
         setReactions(validReactions)
       } catch (error) {
@@ -860,29 +865,118 @@ const ReadingEmoji = () => {
     return [...reactions].sort((a, b) => b.id - a.id)
   }
 
-  // Get dynamic filter options based on saved reactions
+  // Get dynamic filter options based on saved reactions with cascading logic
   const getFilterOptions = useMemo(() => {
-    const sourceNameOptions = new Set<string>()
+    // Start with all reactions and apply cascading filters
+    let filteredReactions = reactions;
+    
+    // Apply testament filter first (affects book options)
+    if (activeFilters.testament.length > 0) {
+      filteredReactions = filteredReactions.filter(reaction => {
+        const segmentRef = getSegmentReference(reaction.segmentID)
+        const book = segmentRef.split(' ')[0]
+        const oldTestamentBooks = ['Gen', 'Exo', 'Lev', 'Num', 'Deu', 'Jos', 'Jdg', 'Rut', '1Sa', '2Sa', '1Ki', '2Ki', '1Ch', '2Ch', 'Ezr', 'Neh', 'Est', 'Job', 'Psa', 'Pro', 'Ecc', 'SoS', 'Isa', 'Jer', 'Lam', 'Eze', 'Dan', 'Hos', 'Joe', 'Amo', 'Oba', 'Jon', 'Mic', 'Nah', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal']
+        const testament = oldTestamentBooks.includes(book) ? 'Old Testament' : 'New Testament'
+        return activeFilters.testament.includes(testament)
+      })
+    }
+    
+    // Apply book filter (affects speaker options)
+    if (activeFilters.book.length > 0) {
+      filteredReactions = filteredReactions.filter(reaction => {
+        const segmentRef = getSegmentReference(reaction.segmentID)
+        const book = segmentRef.split(' ')[0]
+        const bookFullName = Books[book]?.bookName || book
+        return activeFilters.book.includes(bookFullName)
+      })
+    }
+    
+    // Apply speaker type filter (affects speaker name options)
+    if (activeFilters.sourceColor.length > 0) {
+      filteredReactions = filteredReactions.filter(reaction => 
+        reaction?.blockData?.source?.color && 
+        activeFilters.sourceColor.includes(reaction.blockData.source.color)
+      )
+    }
+    
+    // Apply speaker name filter (final filter)
+    if (activeFilters.sourceName.length > 0) {
+      filteredReactions = filteredReactions.filter(reaction => 
+        reaction?.blockData?.source?.sourceName && 
+        activeFilters.sourceName.includes(reaction.blockData.source.sourceName)
+      )
+    }
+    
+    // Generate options from the filtered reactions
+    const testamentOptions = new Set<string>()
     const bookOptions = new Set<string>()
-
-    reactions.forEach(reaction => {
-      // Get segment reference to determine testament and book
+    const sourceColorOptions = new Set<string>()
+    const sourceNameOptions = new Set<string>()
+    
+    filteredReactions.forEach(reaction => {
       if (reaction && reaction.segmentID && reaction.blockData?.source?.sourceName) {
         const segmentRef = getSegmentReference(reaction.segmentID)
         const book = segmentRef.split(' ')[0] // Extract book abbreviation
         
+        // Add testament option
+        const oldTestamentBooks = ['Gen', 'Exo', 'Lev', 'Num', 'Deu', 'Jos', 'Jdg', 'Rut', '1Sa', '2Sa', '1Ki', '2Ki', '1Ch', '2Ch', 'Ezr', 'Neh', 'Est', 'Job', 'Psa', 'Pro', 'Ecc', 'SoS', 'Isa', 'Jer', 'Lam', 'Eze', 'Dan', 'Hos', 'Joe', 'Amo', 'Oba', 'Jon', 'Mic', 'Nah', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal']
+        const testament = oldTestamentBooks.includes(book) ? 'Old Testament' : 'New Testament'
+        testamentOptions.add(testament)
+        
+        // Add book option (convert abbreviation to full name)
+        if (Books[book]?.bookName) {
+          bookOptions.add(Books[book].bookName)
+        } else {
+          bookOptions.add(book) // Fallback to abbreviation if full name not found
+        }
+        
+        // Add speaker type option
+        if (reaction.blockData.source.color) {
+          sourceColorOptions.add(reaction.blockData.source.color)
+        }
+        
+        // Add speaker name option
         sourceNameOptions.add(reaction.blockData.source.sourceName)
-        bookOptions.add(book)
       }
     })
+    
+    // For cascading logic, we need to show options based on what's available after applying previous filters
+    // But we also need to show all possible options for the first filter in each category
+    
+    // Testament: Always show both options
+    const testamentOptionsFinal = ['Old Testament', 'New Testament']
+    
+    // Book: Show books from filtered reactions, or all books if no testament filter
+    const bookOptionsFinal = activeFilters.testament.length > 0 
+      ? Array.from(bookOptions).sort()
+      : Array.from(new Set(reactions.map(reaction => {
+          const segmentRef = getSegmentReference(reaction.segmentID)
+          const book = segmentRef.split(' ')[0]
+          return Books[book]?.bookName || book
+        }).filter(Boolean))).sort()
+    
+    // Speaker Type: Show types from filtered reactions, or all types if no previous filters
+    const sourceColorOptionsFinal = (activeFilters.testament.length > 0 || activeFilters.book.length > 0)
+      ? Array.from(sourceColorOptions).sort()
+      : getAllSpeakerTypes().map(type => type.color)
+    
+    // Speaker Name: Show names from filtered reactions, or all names if no previous filters
+    const sourceNameOptionsFinal = (activeFilters.testament.length > 0 || activeFilters.book.length > 0 || activeFilters.sourceColor.length > 0)
+      ? Array.from(sourceNameOptions).sort()
+      : Array.from(new Set(reactions
+          .filter(reaction => reaction?.blockData?.source?.sourceName)
+          .map(reaction => reaction.blockData.source!.sourceName)
+        )).sort()
+    
 
+    
     return {
-      testament: ['Old Testament', 'New Testament'], // Always show both
-      sourceColor: getAllSpeakerTypes().map(type => type.color), // Always show all 4 types
-      sourceName: Array.from(sourceNameOptions).sort(), // Alphabetical
-      book: Array.from(bookOptions).sort() // Alphabetical
+      testament: testamentOptionsFinal,
+      book: bookOptionsFinal,
+      sourceColor: sourceColorOptionsFinal,
+      sourceName: sourceNameOptionsFinal
     }
-  }, [reactions])
+  }, [reactions, activeFilters.testament, activeFilters.book, activeFilters.sourceColor, activeFilters.sourceName])
 
   // Enhanced filter function
   const getFilteredReactions = () => {
@@ -934,7 +1028,8 @@ const ReadingEmoji = () => {
       filteredReactions = filteredReactions.filter(reaction => {
         const segmentRef = getSegmentReference(reaction.segmentID)
         const book = segmentRef.split(' ')[0]
-        return activeFilters.book.includes(book)
+        const bookFullName = Books[book]?.bookName || book
+        return activeFilters.book.includes(bookFullName)
       })
     }
     
@@ -1066,21 +1161,13 @@ const ReadingEmoji = () => {
       reactionsToCount = reactionsToCount.filter(reaction => {
         const segmentRef = getSegmentReference(reaction.segmentID)
         const book = segmentRef.split(' ')[0]
-        return activeFilters.book.includes(book)
+        const bookFullName = Books[book]?.bookName || book
+        return activeFilters.book.includes(bookFullName)
       })
     }
     
     // Count the specific emoji type from the filtered reactions
     const count = reactionsToCount.filter((r) => r.emoji === emojiType).length;
-    
-    // Debug logging
-    console.log(`🔍 [ReadingEmoji] getEmojiCount for ${emojiType}:`, {
-      totalReactions: reactions.length,
-      filteredReactions: reactionsToCount.length,
-      emojiCount: count,
-      searchQuery: searchQuery.trim(),
-      activeFilters
-    });
     
     return count;
   }
@@ -1120,7 +1207,6 @@ const ReadingEmoji = () => {
     
     // If touch position is provided, use it for dynamic positioning
     if (touchPosition) {
-      console.log('🔍 [Reading-emoji] Using dynamic positioning:', touchPosition);
       // Store touch position for modal positioning
       setModalPosition(touchPosition);
     }
@@ -1619,7 +1705,31 @@ const ReadingEmoji = () => {
             ))}
           </View>
 
-          {/* Source Color Filter */}
+          {/* Book Filter */}
+          {getFilterOptions.book.length > 0 && (
+            <View style={styles.filterSection}>
+              <Text style={styles.filterSectionTitle}>Book</Text>
+              {getFilterOptions.book.map(book => (
+                <TouchableOpacity
+                  key={book}
+                  style={styles.filterOption}
+                  onPress={() => toggleFilter('book', book)}
+                >
+                  <View style={[
+                    styles.filterCheckbox,
+                    activeFilters.book.includes(book) && styles.filterCheckboxActive
+                  ]}>
+                    {activeFilters.book.includes(book) && (
+                      <Ionicons name="checkmark" size={14} color="white" />
+                    )}
+                  </View>
+                  <Text style={styles.filterOptionText}>{book}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {/* Speaker Type Filter */}
           <View style={styles.filterSection}>
             <Text style={styles.filterSectionTitle}>Speaker Type</Text>
             {getAllSpeakerTypes().map(({ color, display }) => (
@@ -1644,11 +1754,11 @@ const ReadingEmoji = () => {
             ))}
           </View>
 
-          {/* Source Name Filter */}
-          {getFilterOptions.sourceName.length > 0 && (
-            <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Speaker</Text>
-              {getFilterOptions.sourceName.map(sourceName => (
+          {/* Speaker Filter */}
+          <View style={styles.filterSection}>
+            <Text style={styles.filterSectionTitle}>Speaker</Text>
+            {getFilterOptions.sourceName.length > 0 ? (
+              getFilterOptions.sourceName.map(sourceName => (
                 <TouchableOpacity
                   key={sourceName}
                   style={styles.filterOption}
@@ -1664,33 +1774,13 @@ const ReadingEmoji = () => {
                   </View>
                   <Text style={styles.filterOptionText}>{sourceName}</Text>
                 </TouchableOpacity>
-              ))}
-            </View>
-          )}
-
-          {/* Book Filter */}
-          {getFilterOptions.book.length > 0 && (
-            <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Book</Text>
-              {getFilterOptions.book.map(book => (
-                <TouchableOpacity
-                  key={book}
-                  style={styles.filterOption}
-                  onPress={() => toggleFilter('book', book)}
-                >
-                  <View style={[
-                    styles.filterCheckbox,
-                    activeFilters.book.includes(book) && styles.filterCheckboxActive
-                  ]}>
-                    {activeFilters.book.includes(book) && (
-                      <Ionicons name="checkmark" size={14} color="white" />
-                    )}
-                  </View>
-                  <Text style={styles.filterOptionText}>{book}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+              ))
+            ) : (
+              <Text style={[styles.filterOptionText, { color: colors.secondary, fontStyle: 'italic' }]}>
+                No speakers available
+              </Text>
+            )}
+          </View>
         </ScrollView>
 
         {/* Apply Button */}

@@ -27,7 +27,6 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
   position = { x: screenWidth / 2, y: screenHeight / 2 },
   onLayout
 }) => {
-  console.log('🔍 [EmojiPicker] Component rendered with position:', position);
   
   const EMOJIS = useMemo(() => [
     { emoji: "❤️", label: "love", color: "#FF6B47" },
@@ -38,12 +37,10 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
 
   const handleLayout = (event: any) => {
     const { width, height } = event.nativeEvent.layout;
-    console.log('🔍 [EmojiPicker] Layout measured:', { width, height });
     onLayout?.(width, height);
   };
 
   const handleEmojiPress = (emoji: string) => {
-    console.log('🔍 [EmojiPicker] Emoji pressed:', emoji);
     // Haptic feedback
     if (Platform.OS === 'ios') {
       try {
@@ -57,7 +54,6 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
   };
 
   const handleClose = () => {
-    console.log('🔍 [EmojiPicker] Close button pressed');
     onClose();
   };
 

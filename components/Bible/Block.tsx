@@ -93,12 +93,6 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
             .numberOfTaps(2)
             .onStart((event) => {
               'worklet';
-              console.log('🔍 [BibleBlock] Double tap detected (disableEmojiHandler mode):', { 
-                bIndex, 
-                sourceName: block.source?.sourceName,
-                color: block.source?.color,
-                absoluteY: event.absoluteY
-              });
               if (onLongPress) {
                 // Pass touch position to onLongPress callback
                 const touchPosition = { x: event.absoluteX, y: event.absoluteY };
@@ -109,12 +103,6 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
             .minDuration(500)
             .onStart((event) => {
               'worklet';
-              console.log('🔍 [BibleBlock] Long press detected (disableEmojiHandler mode):', { 
-                bIndex, 
-                sourceName: block.source?.sourceName,
-                color: block.source?.color,
-                absoluteY: event.absoluteY
-              });
               if (onLongPress) {
                 // Pass touch position to onLongPress callback
                 const touchPosition = { x: event.absoluteX, y: event.absoluteY };
@@ -123,9 +111,6 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
             })
         )}>
           <TouchableOpacity
-            onPress={() => {
-              console.log('🔍 [BibleBlock] Press detected (not long press)');
-            }}
             activeOpacity={0.8}
           >
             {hasTail && (

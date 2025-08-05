@@ -54,15 +54,12 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     if (screenWidth < POSITIONING_CONSTANTS.MIN_SCREEN_WIDTH || screenHeight < POSITIONING_CONSTANTS.MIN_SCREEN_HEIGHT) {
       console.warn('🔍 [EmojiHandler] WARNING: Screen dimensions below minimum:', { screenWidth, screenHeight });
     }
-    
-    console.log('🔍 [EmojiHandler] Screen dimensions updated:', { screenWidth, screenHeight });
   }, [screenWidth, screenHeight]);
 
   // CRITICAL: Cleanup on unmount
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
-      console.log('🔍 [EmojiHandler] Component unmounted');
     };
   }, []);
 
@@ -108,12 +105,6 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     
     // CRITICAL: Final validation of calculated position
     const finalPosition = { x: centerX, y: adjustedY };
-    
-    console.log('🔍 [EmojiHandler] Position calculation:', { 
-      input: { absoluteY, screenWidth, screenHeight, pickerWidth: validPickerWidth },
-      calculated: finalPosition,
-      bounds: { minY, maxY, centerX }
-    });
     
     return finalPosition;
   }, [screenWidth, pickerWidth, screenHeight]);
@@ -189,8 +180,6 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
       
       const newPosition = { x: centerX, y: adjustedY };
       setPickerPosition(newPosition);
-      
-      console.log('🔍 [EmojiHandler] Position updated from picker width change:', newPosition);
     } catch (error) {
       console.error('🔍 [EmojiHandler] Error updating position from picker width:', error);
     }
@@ -247,7 +236,6 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   const handlePickerClose = useCallback(() => {
     if (!isMountedRef.current) return;
     
-    console.log('🔍 [EmojiHandler] Closing picker');
     setShowPicker(false);
     gestureInProgressRef.current = false;
   }, []);
@@ -264,11 +252,8 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     
     // CRITICAL: Prevent multiple simultaneous gestures
     if (gestureInProgressRef.current) {
-      console.log('🔍 [EmojiHandler] Gesture already in progress, ignoring:', gestureType);
       return;
     }
-    
-    console.log('🔍 [EmojiHandler] Gesture detected:', { gestureType, absoluteY: event.absoluteY });
     
     // CRITICAL: Calculate position with validation
     const position = getCenteredPosition(event.absoluteY);
@@ -282,7 +267,6 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     
     // CRITICAL: Call parent's onLongPress if provided
     if (onLongPress) {
-      console.log('🔍 [EmojiHandler] Calling parent onLongPress from:', gestureType);
       runOnJS(onLongPress)(block, blockIndex);
     }
   }, [getCenteredPosition, onLongPress, block, blockIndex]);
@@ -308,7 +292,6 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     <View style={styles.container}>
       <GestureDetector gesture={gesture}>
         <TouchableOpacity
-          onPress={() => console.log('🔍 [EmojiHandler] TouchableOpacity onPress triggered - TOUCH EVENTS WORKING')}
           activeOpacity={0.8}
         >
           {children}
@@ -330,16 +313,13 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         transparent={true}
         animationType="none"
         onRequestClose={handlePickerClose}
-        onShow={() => {
-          console.log('🔍 [EmojiHandler] Modal shown, showPicker:', showPicker);
-        }}
+
       >
         <EmojiPicker
           onEmojiSelect={handleEmojiSelect}
           onClose={handlePickerClose}
           position={pickerPosition}
           onLayout={(width, height) => {
-            console.log('🔍 [EmojiHandler] Picker layout measured:', { width, height });
             if (isMountedRef.current && width > 0) {
               setPickerWidth(width);
             }
