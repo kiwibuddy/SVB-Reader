@@ -233,6 +233,25 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
   },
+  progressContainer: {
+    marginTop: 8,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: colors.border,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#4CAF50',
+    borderRadius: 2,
+  },
+  progressText: {
+    fontSize: 12,
+    color: colors.secondary,
+    marginTop: 4,
+  },
 });
 
 const ChallengesScreen = () => {
@@ -402,6 +421,21 @@ const ChallengesScreen = () => {
                 <Text style={styles.segmentCount}>
                   {segmentCount} {segmentCount === 1 ? 'story' : 'stories'}
                 </Text>
+                {isActive && (
+                  <View style={styles.progressContainer}>
+                    <View style={styles.progressBar}>
+                      <View 
+                        style={[
+                          styles.progressFill, 
+                          { width: `${(completedSegments.length / segmentCount) * 100}%` }
+                        ]} 
+                      />
+                    </View>
+                    <Text style={styles.progressText}>
+                      {completedSegments.length} of {segmentCount} completed
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
             <View style={styles.rightContent}>
@@ -415,6 +449,11 @@ const ChallengesScreen = () => {
                   <Feather name="play-circle" size={24} color="#666666" />
                 </TouchableOpacity>
               )}
+              {isActive && !isPaused && (
+                <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: '#4CAF50', justifyContent: 'center', alignItems: 'center' }}>
+                  <Feather name="play-circle" size={20} color="white" />
+                </View>
+              )}
               {isPaused && (
                 <TouchableOpacity 
                   onPress={(e) => {
@@ -422,17 +461,27 @@ const ChallengesScreen = () => {
                     resumeChallenge(challenge.id);
                   }}
                 >
-                  <Feather name="play-circle" size={24} color="#666666" />
+                  <Feather name="play-circle" size={24} color="#4CAF50" />
                 </TouchableOpacity>
               )}
               {isActive && !isPaused && (
                 <TouchableOpacity 
                   onPress={(e) => {
                     e.stopPropagation();
-                    pauseChallenge(challenge.id);
+                    Alert.alert(
+                      'Pause Reading Challenge?',
+                      `Are you sure you want to pause "${challenge.title}"?`,
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        { 
+                          text: 'Pause Challenge', 
+                          onPress: () => pauseChallenge(challenge.id)
+                        }
+                      ]
+                    );
                   }}
                 >
-                  <Feather name="pause-circle" size={24} color="#666666" />
+                  <Feather name="pause-circle" size={24} color="#FF9800" />
                 </TouchableOpacity>
               )}
               <Ionicons 
