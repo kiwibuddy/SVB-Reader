@@ -1283,12 +1283,41 @@ const HomeScreen = () => {
     setShowReadingModeModal(false);
     await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
     const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
-      router.push({
-    pathname: "/[segment]",
-      params: {
+    
+    // Determine context based on how we got here
+    let contextParams: any = {
       segment: `ENG-NLT-${selectedSegmentId}`,
-        book: segment?.book[0] || ''
+      book: segment?.book[0] || ''
+    };
+    
+    // Check if this is today's reading
+    const today = new Date();
+    const dayOfYear = getDayOfYear(today);
+    const dailySegmentId = (DailyStoryMap as string[])[(dayOfYear - 1) % DailyStoryMap.length];
+    
+    if (selectedSegmentId === dailySegmentId) {
+      contextParams.context = 'today';
+    }
+    // If we have an active plan and this segment is part of that plan, pass plan context
+    else if (activePlan && planProgress?.nextSegmentId === selectedSegmentId) {
+      contextParams.planId = activePlan.planId;
+      contextParams.context = 'plan';
+    }
+    // If we have active challenges and this segment is part of any challenge, pass challenge context
+    else if (Object.keys(activeChallenges).length > 0) {
+      for (const [challengeId] of Object.entries(activeChallenges)) {
+        const challengeProgress = challengeProgresses[challengeId];
+        if (challengeProgress?.nextSegmentId === selectedSegmentId) {
+          contextParams.challengeId = challengeId;
+          contextParams.context = 'challenge';
+          break;
+        }
       }
+    }
+    
+    router.push({
+      pathname: "/[segment]",
+      params: contextParams
     });
   };
 
@@ -1383,17 +1412,30 @@ const HomeScreen = () => {
       : ['transparent', 'rgba(0,0,0,0.7)'];
   }; */
 
-  // Handle segment selection - show ReadingModeModal instead of direct navigation
+  // Handle segment selection - show ReadingModeModal for stories, direct navigation for introductions
   const handleSegmentSelect = (segmentId: string) => {
     if (!segmentId) {
       return;
     }
     const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
     if (segmentData) {
-      setSelectedSegmentId(segmentId);
-      setSelectedSegmentTitle(segmentData.title);
-      setSelectedSegmentRef(segmentData.ref || '');
-      setShowReadingModeModal(true);
+      // Check if this is an introduction segment
+      if (segmentId.startsWith('I')) {
+        // For introduction segments, navigate directly without showing modal
+        router.push({
+          pathname: "/[segment]",
+          params: {
+            segment: `ENG-NLT-${segmentId}`,
+            book: segmentData.book[0] || ''
+          }
+        });
+      } else {
+        // For story segments, show the reading mode modal
+        setSelectedSegmentId(segmentId);
+        setSelectedSegmentTitle(segmentData.title);
+        setSelectedSegmentRef(segmentData.ref || '');
+        setShowReadingModeModal(true);
+      }
     }
   };
 

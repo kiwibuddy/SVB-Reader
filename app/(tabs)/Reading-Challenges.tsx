@@ -15,6 +15,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from '@react-navigation/native';
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
+
+
 import Accordion, { accordionColor } from "@/components/navigation/NavBook";
 import Books from "@/assets/data/BookChapterList.json";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
@@ -196,6 +198,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   },
   challengeHeader: {
     padding: 16,
+    backgroundColor: colors.card,
   },
   challengeInfo: {
     flexDirection: 'row',
@@ -251,6 +254,8 @@ const ChallengesScreen = () => {
   const styles = createStyles(isLargeScreen, colors);
 
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
+
+
   const [challengeProgress, setChallengeProgress] = useState<Record<string, string[]>>({});
   const [isChronologicalView, setIsChronologicalView] = useState<Record<string, boolean>>({});
   
@@ -388,6 +393,7 @@ const ChallengesScreen = () => {
         <TouchableOpacity 
           style={styles.challengeHeader}
           onPress={() => setSelectedChallengeId(isSelected ? null : challenge.id)}
+          activeOpacity={0.7}
         >
           <View style={styles.challengeInfo}>
             <View style={styles.leftContent}>
@@ -401,21 +407,30 @@ const ChallengesScreen = () => {
             <View style={styles.rightContent}>
               {!isActive && (
                 <TouchableOpacity 
-                  onPress={() => startChallenge(challenge.id)}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    startChallenge(challenge.id);
+                  }}
                 >
                   <Feather name="play-circle" size={24} color="#666666" />
                 </TouchableOpacity>
               )}
               {isPaused && (
                 <TouchableOpacity 
-                  onPress={() => resumeChallenge(challenge.id)}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    resumeChallenge(challenge.id);
+                  }}
                 >
                   <Feather name="play-circle" size={24} color="#666666" />
                 </TouchableOpacity>
               )}
               {isActive && !isPaused && (
                 <TouchableOpacity 
-                  onPress={() => pauseChallenge(challenge.id)}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    pauseChallenge(challenge.id);
+                  }}
                 >
                   <Feather name="pause-circle" size={24} color="#666666" />
                 </TouchableOpacity>
@@ -466,7 +481,7 @@ const ChallengesScreen = () => {
                 }, {} as Record<string, boolean>);
                 return (
                   <Accordion 
-                    key={completedSegments.join(',') + '-' + item.djhBook}
+                    key={item.djhBook}
                     item={item} 
                     bookIndex={bookIndex}
                     onSegmentComplete={(segmentId) => handleSegmentComplete(challenge.id, segmentId)}
@@ -486,7 +501,7 @@ const ChallengesScreen = () => {
     );
   };
 
-  const renderCategorySection = (title: string, challenges: Challenge[]) => (
+  const renderCategorySection = useCallback((title: string, challenges: Challenge[]) => (
     <View style={styles.categorySection}>
       <Text style={styles.categoryTitle}>{title}</Text>
       {challenges.map((challenge) => (
@@ -495,7 +510,7 @@ const ChallengesScreen = () => {
         </View>
       ))}
     </View>
-  );
+  ), [selectedChallengeId]); // Add selectedChallengeId to dependencies
 
   const handleSegmentComplete = async (challengeId: string, segmentId: string) => {
     try {
@@ -532,31 +547,47 @@ const ChallengesScreen = () => {
     }
   };
 
-  // Handle segment selection - show ReadingModeModal instead of direct navigation
+  // Handle segment selection - show ReadingModeModal for stories, direct navigation for introductions
   const handleSegmentSelect = (segmentId: string) => {
     if (!segmentId) {
       return;
     }
     const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
     if (segmentData) {
-      setSelectedSegmentId(segmentId);
-      setSelectedSegmentTitle(segmentData.title);
-      setSelectedSegmentRef((segmentData as any).ref || '');
-      setShowReadingModeModal(true);
+      // Check if this is an introduction segment
+      if (segmentId.startsWith('I')) {
+        // For introduction segments, navigate directly without showing modal
+        router.push({
+          pathname: "/[segment]",
+          params: {
+            segment: `ENG-NLT-${segmentId}`,
+            book: segmentData.book[0] || '',
+            challengeId: selectedChallengeId || '',
+            context: 'challenge'
+          }
+        });
+      } else {
+        // For story segments, show the reading mode modal
+        setSelectedSegmentId(segmentId);
+        setSelectedSegmentTitle(segmentData.title);
+        setSelectedSegmentRef((segmentData as any).ref || '');
+        setShowReadingModeModal(true);
+      }
     }
   };
 
   // Reading Mode Modal Handlers
-  const handleIndividualReading = async () => {
+    const handleIndividualReading = async () => {
     setShowReadingModeModal(false);
     await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
     const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
     router.push({
-              pathname: "/[segment]",
+      pathname: "/[segment]",
       params: {
         segment: `ENG-NLT-${selectedSegmentId}`,
         book: segment?.book[0] || '',
-        ...(selectedChallengeId ? { challengeId: selectedChallengeId } : {})
+        challengeId: selectedChallengeId || '',
+        context: 'challenge'
       }
     });
   };
@@ -633,7 +664,7 @@ const ChallengesScreen = () => {
   // Memoize the renderItem function
   const renderItem = useCallback(({ item }: { item: { title: string; data: Challenge[] } }) => {
     return renderCategorySection(item.title, item.data);
-  }, []);
+  }, [selectedChallengeId]); // Add selectedChallengeId to dependencies
 
   // Memoize the keyExtractor function
   const keyExtractor = useCallback((item: { title: string; data: Challenge[] }) => item.title, []);

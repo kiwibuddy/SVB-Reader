@@ -13,6 +13,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from '@react-navigation/native';
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
+
+
 import Accordion, { AccordionItem, accordionColor } from "@/components/navigation/NavBook";
 import Books from "@/assets/data/BookChapterList.json";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
@@ -142,6 +144,7 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
   },
   planHeader: {
     padding: 16,
+    backgroundColor: colors.card,
   },
   planInfo: {
     flexDirection: 'row',
@@ -258,6 +261,8 @@ const PlanScreen = () => {
 
   // Initialize selectedPlan with the active plan if it exists, otherwise use first plan
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+
+
   const [planProgress, setPlanProgress] = useState<Record<string, string[]>>({});
   
   // Reading Mode Modal State
@@ -485,10 +490,25 @@ const PlanScreen = () => {
     }
     const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
     if (segmentData) {
-      setSelectedSegmentId(segmentId);
-      setSelectedSegmentTitle(segmentData.title);
-      setSelectedSegmentRef((segmentData as any).ref || '');
-      setShowReadingModeModal(true);
+      // Check if this is an introduction segment
+      if (segmentId.startsWith('I')) {
+        // For introduction segments, navigate directly without showing modal
+        router.push({
+          pathname: "/[segment]",
+          params: {
+            segment: `ENG-NLT-${segmentId}`,
+            book: segmentData.book[0] || '',
+            planId: selectedPlanId || '',
+            context: 'plan'
+          }
+        });
+      } else {
+        // For story segments, show the reading mode modal
+        setSelectedSegmentId(segmentId);
+        setSelectedSegmentTitle(segmentData.title);
+        setSelectedSegmentRef((segmentData as any).ref || '');
+        setShowReadingModeModal(true);
+      }
     }
   };
 
@@ -502,7 +522,8 @@ const PlanScreen = () => {
       params: {
         segment: `ENG-NLT-${selectedSegmentId}`,
         book: segment?.book[0] || '',
-        ...(selectedPlanId ? { planId: selectedPlanId } : {})
+        planId: selectedPlanId || '',
+        context: 'plan'
       }
     });
   };
@@ -527,8 +548,9 @@ const PlanScreen = () => {
     router.push({
       pathname: "/[segment]",
       params: { 
-        segment: segmentId,
-        planId: selectedPlanId
+        segment: `ENG-NLT-${segmentId}`,
+        planId: selectedPlanId || '',
+        context: 'plan'
       }
     });
   };
@@ -560,6 +582,7 @@ const PlanScreen = () => {
 
   const renderPlanItem = ({ item: plan }: { item: Plan }) => {
     const isSelected = selectedPlanId === plan.id;
+
     const isActive = activePlan?.planId === plan.id;
     const isPaused = activePlan && isActive && activePlan.isPaused;
     const isCompleted = activePlan && isActive && activePlan.isCompleted;
@@ -582,6 +605,7 @@ const PlanScreen = () => {
         <TouchableOpacity 
           style={styles.planHeader}
           onPress={() => setSelectedPlanId(isSelected ? null : plan.id)}
+          activeOpacity={0.7}
         >
           <View style={styles.planInfo}>
             <View style={styles.leftContent}>
@@ -597,21 +621,30 @@ const PlanScreen = () => {
             <View style={styles.rightContent}>
               {!isActive && (
                 <TouchableOpacity 
-                  onPress={() => startPlan(plan.id)}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    startPlan(plan.id);
+                  }}
                 >
                   <Feather name="play-circle" size={24} color="#666666" />
                 </TouchableOpacity>
               )}
               {isPaused && (
                 <TouchableOpacity 
-                  onPress={() => resumePlan()}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    resumePlan();
+                  }}
                 >
                   <Feather name="play-circle" size={24} color="#666666" />
                 </TouchableOpacity>
               )}
               {isActive && !isPaused && !isCompleted && (
                 <TouchableOpacity 
-                  onPress={() => pausePlan()}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    pausePlan();
+                  }}
                 >
                   <Feather name="pause-circle" size={24} color="#666666" />
                 </TouchableOpacity>
@@ -656,7 +689,7 @@ const PlanScreen = () => {
                   }, {} as Record<string, boolean>);
                   return (
                     <Accordion 
-                      key={completedSegments.join(',') + '-' + item.djhBook}
+                      key={item.djhBook}
                       item={item} 
                       bookIndex={bookIndex}
                       onSegmentComplete={(segmentId) => handleSegmentComplete(plan.id, segmentId)}
@@ -717,7 +750,7 @@ const PlanScreen = () => {
   // Memoize the renderItem function
   const renderItem = useCallback(({ item }: { item: { title: string; data: Plan[] } }) => {
     return renderCategorySection(item.title, item.data);
-  }, []);
+  }, [selectedPlanId]); // Add selectedPlanId to dependencies
 
   // Memoize the keyExtractor function
   const keyExtractor = useCallback((item: { title: string; data: Plan[] }) => item.title, []);
@@ -755,7 +788,7 @@ const PlanScreen = () => {
     return result;
   }, [organizedPlans]);
 
-  const renderCategorySection = (title: string, plans: Plan[]) => (
+  const renderCategorySection = useCallback((title: string, plans: Plan[]) => (
     <View style={styles.categorySection}>
       <Text style={styles.categoryTitle}>{title}</Text>
       {plans.map((plan) => (
@@ -764,7 +797,7 @@ const PlanScreen = () => {
         </View>
       ))}
     </View>
-  );
+  ), [selectedPlanId]); // Add selectedPlanId to dependencies
 
   return (
     <SafeAreaView style={styles.container}>

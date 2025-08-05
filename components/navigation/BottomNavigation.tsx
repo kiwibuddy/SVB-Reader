@@ -4,10 +4,10 @@ import { useRouter, usePathname } from "expo-router";
 import { Ionicons } from '@expo/vector-icons'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppSettings } from '@/context/AppSettingsContext';
-import { isLargeScreen, isLandscape, responsivePadding } from '@/constants/sizes';
+import { isLargeScreen, isLandscape } from '@/constants/sizes';
 
 declare global {
-  const handleBottomNavScroll: ((event: any) => void) | undefined;
+  let handleBottomNavScroll: ((event: any) => void) | undefined;
 }
 
 interface BottomNavigationProps {
@@ -18,7 +18,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
+  const { height } = useWindowDimensions();
   const [isVisible] = React.useState(new Animated.Value(1));
   const lastScrollY = React.useRef(0);
   const { colors } = useAppSettings();
@@ -26,7 +26,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   // Hide navigation on large screens or in landscape mode
   const shouldHideNavigation = isLargeScreen || (isLandscape && height < 500);
 
-  const handleScroll = (event: any) => {
+  const handleScroll = React.useCallback((event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
     
     // iOS-style navigation bar behavior
@@ -57,7 +57,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     }
     
     lastScrollY.current = currentOffset;
-  };
+  }, [isVisible]);
 
   // Pass this handleScroll function to each ScrollView in your app
   React.useEffect(() => {
@@ -78,7 +78,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
         delete global.handleBottomNavScroll;
       }
     };
-  }, [isHome, pathname]);
+  }, [isHome, pathname, handleScroll, isVisible]);
 
   // Don't render the navigation on the index screen or large screens
   if (pathname === "/" || pathname === "/index" || shouldHideNavigation) {

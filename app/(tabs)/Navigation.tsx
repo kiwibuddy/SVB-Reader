@@ -947,17 +947,30 @@ const Navigation = () => {
     }
   };
 
-  // Handle segment selection - show ReadingModeModal instead of direct navigation
+  // Handle segment selection - show ReadingModeModal for stories, direct navigation for introductions
   const handleSegmentSelect = (segmentId: string) => {
     if (!segmentId) {
       return;
     }
     const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
     if (segmentData) {
-      setSelectedSegmentId(segmentId);
-      setSelectedSegmentTitle(segmentData.title);
-      setSelectedSegmentRef(segmentData.ref || '');
-      setShowReadingModeModal(true);
+      // Check if this is an introduction segment
+      if (segmentId.startsWith('I')) {
+        // For introduction segments, navigate directly without showing modal
+        router.push({
+          pathname: "/[segment]",
+          params: {
+            segment: `ENG-NLT-${segmentId}`,
+            book: segmentData.book[0] || ''
+          }
+        });
+      } else {
+        // For story segments, show the reading mode modal
+        setSelectedSegmentId(segmentId);
+        setSelectedSegmentTitle(segmentData.title);
+        setSelectedSegmentRef(segmentData.ref || '');
+        setShowReadingModeModal(true);
+      }
     }
   };
 

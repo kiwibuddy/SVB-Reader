@@ -80,12 +80,12 @@ const CelebrationPopup: React.FC<CelebrationPopupProps> = ({
   
   const randomIndex = React.useMemo(
     () => Math.floor(Math.random() * celebrationList.length), 
-    [visible, celebrationList]
+    [celebrationList.length]
   );
   
   const colorIndex = React.useMemo(
     () => Math.floor(Math.random() * COLORS.length), 
-    [visible]
+    []
   );
   
   React.useEffect(() => {

@@ -1,6 +1,10 @@
 import { databaseManager } from './database-manager';
 import { BibleBlock } from "@/types";
 
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
+
 interface CompletionData {
   isCompleted: boolean;
   color: string | null;
@@ -22,18 +26,59 @@ interface ChallengeProgress {
   completedSegmentIds: string[];
 }
 
+interface CountResult {
+  count: number;
+  currentStreak?: number;
+  longestStreak?: number;
+}
+
+interface EmojiStats {
+  total: number;
+  heart: number;
+  prayer: number;
+  question: number;
+  thumbsUp: number;
+}
+
+interface BookProgress {
+  completed: number;
+  total: number;
+  percentage: number;
+}
+
+interface TestamentProgress {
+  completed: number;
+  total: number;
+}
+
+interface EmojiCollection {
+  complete: boolean;
+  used: string[];
+}
+
+// ============================================================================
+// DATABASE INITIALIZATION
+// ============================================================================
+
 // Initialize database when this module is imported
 databaseManager.initialize().catch(error => {
   console.error("Failed to initialize database:", error);
 });
 
-// **MAIN COMPLETION TRACKING FUNCTION**
+// ============================================================================
+// MAIN COMPLETION TRACKING FUNCTIONS
+// ============================================================================
+
 export async function markSegmentComplete(
   segmentID: string,
-  context: 'main' | 'plan' | 'challenge' = 'main',
+  context: 'main' | 'plan' | 'challenge' | 'today' = 'main',
   planID?: string | null,
   challengeID?: string | null
 ): Promise<void> {
+  // Introduction segments should never be marked as complete
+  if (segmentID.startsWith('I')) {
+    return;
+  }
   try {
     const db = databaseManager.getDatabase();
     const currentDate = new Date().toISOString();
@@ -77,10 +122,10 @@ export async function markSegmentComplete(
       // Update plan-specific progress
       await db.runAsync(`
         INSERT OR REPLACE INTO reading_plan_progress (
-        planID,
+          planID,
           segmentID,
           completionDate,
-        isCompleted,
+          isCompleted,
           readCount,
           lastReadDate
         ) VALUES (
@@ -95,37 +140,37 @@ export async function markSegmentComplete(
       
     } else if (context === 'challenge' && challengeID) {
       // Update challenge-specific progress
-    await db.runAsync(`
+      await db.runAsync(`
         INSERT OR REPLACE INTO reading_challenge_progress (
           challengeID,
-        segmentID,
+          segmentID,
           completionDate,
           isCompleted,
           readCount,
-        lastReadDate
-      ) VALUES (
+          lastReadDate
+        ) VALUES (
           ?, ?, ?, 1,
           COALESCE((SELECT readCount FROM reading_challenge_progress WHERE challengeID = ? AND segmentID = ?), 0) + 1,
           ?
-      )
+        )
       `, challengeID, segmentID, currentDate, challengeID, segmentID, currentDate);
       
       // Update overall challenge status
       await updateChallengeStatus(challengeID);
+    } else if (context === 'today') {
+      // For today's reading, mark as complete in main context (today's reading is tracked by date)
+      await db.runAsync(`
+        INSERT OR REPLACE INTO completedSegments (
+          segmentID,
+          isCompleted,
+          completionDate
+        ) VALUES (?, 1, ?)
+      `, segmentID, currentDate);
     }
 
     // Update daily activity and streak
     await updateDailyActivity(segmentID);
-
-    // Check book completion
-    const segmentTitles = require('../assets/data/SegmentTitles.json');
-    const segment = segmentTitles[segmentID];
-    
-    if (segment && segment.book && segment.book.length > 0) {
-      const bookId = segment.book[0];
-      await checkBookCompletion(bookId);
-    }
-
+    await updateStreak();
 
   } catch (error) {
     console.error("Error marking segment complete:", error);
@@ -133,21 +178,22 @@ export async function markSegmentComplete(
   }
 }
 
-// **CONTEXT-SPECIFIC COMPLETION STATUS RETRIEVAL**
 export const getSegmentCompletionStatus = async (
   segmentId: string,
-  context: 'main' | 'plan' | 'challenge' = 'main',
+  context: 'main' | 'plan' | 'challenge' | 'today' = 'main',
   planId?: string,
   challengeId?: string
 ): Promise<CompletionData> => {
+  // Introduction segments should never be tracked for completion
+  if (segmentId.startsWith('I')) {
+    return {
+      isCompleted: false,
+      color: null
+    };
+  }
   try {
-    if (!segmentId) {
-      console.warn('No segmentId provided to getSegmentCompletionStatus');
-      return { isCompleted: false, color: null };
-    }
-
     const db = databaseManager.getDatabase();
-    let result: { isCompleted: number } | null = null;
+    let result: any;
 
     if (context === 'main') {
       result = await db.getFirstAsync<{ isCompleted: number }>(
@@ -164,499 +210,131 @@ export const getSegmentCompletionStatus = async (
         'SELECT isCompleted FROM reading_challenge_progress WHERE challengeID = ? AND segmentID = ?',
         [challengeId, segmentId]
       );
+    } else if (context === 'today') {
+      // For today's reading, check if it was completed today
+      const today = new Date().toISOString().split('T')[0];
+                  result = await db.getFirstAsync<{ isCurrentlyCompleted: number }>(
+              'SELECT isCurrentlyCompleted FROM segment_completion WHERE segmentID = ? AND completionDate LIKE ? AND completionType = "main"',
+              [segmentId, `${today}%`]
+            );
     }
-    
-    return {
-      isCompleted: !!result?.isCompleted,
-      color: null // We'll handle color separately if needed
-    };
+
+    // Handle different result types based on context
+    if (context === 'today') {
+      return {
+        isCompleted: result?.isCurrentlyCompleted === 1,
+        color: null
+      };
+    } else {
+      return {
+        isCompleted: result?.isCompleted === 1,
+        color: null
+      };
+    }
   } catch (error) {
-    console.error('Error getting segment completion status:', error);
+    console.error("Error getting segment completion status:", error);
     return { isCompleted: false, color: null };
   }
 };
 
-// **PLAN PROGRESS FUNCTIONS**
+// ============================================================================
+// PROGRESS FUNCTIONS
+// ============================================================================
+
 export async function getPlanProgress(planID: string): Promise<PlanProgress> {
   try {
     const db = databaseManager.getDatabase();
-    // Get plan data to determine total segments
-    const readingPlansData = require('../assets/data/ReadingPlansChallenges.json');
-    const plan = readingPlansData.plans.find((p: any) => p.id === planID);
     
-    if (!plan) {
-      return { totalSegments: 0, completedSegments: 0, progressPercentage: 0, isCompleted: false, completedSegmentIds: [] };
-    }
-
-    // Calculate total segments in plan
-    const totalSegments = Object.values(plan.segments).reduce((total: number, book: any) => {
-      return total + (book?.segments?.length || 0);
-    }, 0);
-
-    // Get completed segments for this plan
-    const completedResult = await db.getAllAsync<{ segmentID: string }>(
-      'SELECT segmentID FROM reading_plan_progress WHERE planID = ? AND isCompleted = 1',
+    // Get total segments for this plan (excluding introduction segments)
+    const totalResult = await db.getFirstAsync<{ count: number }>(
+      'SELECT COUNT(*) as count FROM segments WHERE planID = ? AND segmentID NOT LIKE "I%"',
       [planID]
     );
-
-    const completedSegments = completedResult.length;
+    
+    // Get completed segments for this plan (excluding introduction segments)
+    const completedResult = await db.getAllAsync<{ segmentID: string }>(
+      'SELECT segmentID FROM reading_plan_progress WHERE planID = ? AND isCompleted = 1 AND segmentID NOT LIKE "I%"',
+      [planID]
+    );
+    
+    const totalSegments = totalResult?.count || 0;
+    const completedSegments = completedResult?.length || 0;
     const progressPercentage = totalSegments > 0 ? (completedSegments / totalSegments) * 100 : 0;
     const isCompleted = completedSegments >= totalSegments && totalSegments > 0;
-    const completedSegmentIds = completedResult.map((row: { segmentID: string }) => row.segmentID);
-
+    
     return {
       totalSegments,
       completedSegments,
       progressPercentage,
       isCompleted,
-      completedSegmentIds
+      completedSegmentIds: completedResult?.map(r => r.segmentID) || []
     };
   } catch (error) {
-    console.error('Error getting plan progress:', error);
-    return { totalSegments: 0, completedSegments: 0, progressPercentage: 0, isCompleted: false, completedSegmentIds: [] };
+    console.error("Error getting plan progress:", error);
+    return {
+      totalSegments: 0,
+      completedSegments: 0,
+      progressPercentage: 0,
+      isCompleted: false,
+      completedSegmentIds: []
+    };
   }
 }
 
 export async function getChallengeProgress(challengeID: string): Promise<ChallengeProgress> {
   try {
     const db = databaseManager.getDatabase();
-    // Get challenge data to determine total segments
-    const readingPlansData = require('../assets/data/ReadingPlansChallenges.json');
-    const challenge = readingPlansData.challenges.find((c: any) => c.id === challengeID);
     
-    if (!challenge) {
-      return { totalSegments: 0, completedSegments: 0, progressPercentage: 0, isCompleted: false, completedSegmentIds: [] };
-    }
-
-    // Calculate total segments in challenge
-    const totalSegments = Object.values(challenge.segments).reduce((total: number, book: any) => {
-      return total + (book?.segments?.length || 0);
-    }, 0);
-
-    // Get completed segments for this challenge
-    const completedResult = await db.getAllAsync<{ segmentID: string }>(
-      'SELECT segmentID FROM reading_challenge_progress WHERE challengeID = ? AND isCompleted = 1',
+    // Get total segments for this challenge (excluding introduction segments)
+    const totalResult = await db.getFirstAsync<{ count: number }>(
+      'SELECT COUNT(*) as count FROM segments WHERE challengeID = ? AND segmentID NOT LIKE "I%"',
       [challengeID]
     );
-
-    const completedSegments = completedResult.length;
+    
+    // Get completed segments for this challenge (excluding introduction segments)
+    const completedResult = await db.getAllAsync<{ segmentID: string }>(
+      'SELECT segmentID FROM reading_challenge_progress WHERE challengeID = ? AND isCompleted = 1 AND segmentID NOT LIKE "I%"',
+      [challengeID]
+    );
+    
+    const totalSegments = totalResult?.count || 0;
+    const completedSegments = completedResult?.length || 0;
     const progressPercentage = totalSegments > 0 ? (completedSegments / totalSegments) * 100 : 0;
     const isCompleted = completedSegments >= totalSegments && totalSegments > 0;
-    const completedSegmentIds = completedResult.map((row: { segmentID: string }) => row.segmentID);
-
+    
     return {
       totalSegments,
       completedSegments,
       progressPercentage,
       isCompleted,
-      completedSegmentIds
+      completedSegmentIds: completedResult?.map(r => r.segmentID) || []
     };
   } catch (error) {
-    console.error('Error getting challenge progress:', error);
-    return { totalSegments: 0, completedSegments: 0, progressPercentage: 0, isCompleted: false, completedSegmentIds: [] };
+    console.error("Error getting challenge progress:", error);
+    return {
+      totalSegments: 0,
+      completedSegments: 0,
+      progressPercentage: 0,
+      isCompleted: false,
+      completedSegmentIds: []
+    };
   }
 }
 
-// **PLAN/CHALLENGE STATUS UPDATE FUNCTIONS**
-async function updatePlanStatus(planID: string): Promise<void> {
-  try {
-    const db = databaseManager.getDatabase();
-    const progress = await getPlanProgress(planID);
-    
-    await db.runAsync(`
-      INSERT OR REPLACE INTO plan_challenge_status (
-        itemID,
-        itemType,
-        totalSegments,
-        completedSegments,
-        progressPercentage,
-        isCompleted
-      ) VALUES (?, 'plan', ?, ?, ?, ?)
-    `, planID, progress.totalSegments, progress.completedSegments, progress.progressPercentage, progress.isCompleted ? 1 : 0);
-  } catch (error) {
-    console.error('Error updating plan status:', error);
-  }
-}
+// ============================================================================
+// ESSENTIAL FUNCTIONS
+// ============================================================================
 
-async function updateChallengeStatus(challengeID: string): Promise<void> {
+export async function getBestStreak(): Promise<number> {
   try {
     const db = databaseManager.getDatabase();
-    const progress = await getChallengeProgress(challengeID);
-    
-    await db.runAsync(`
-      INSERT OR REPLACE INTO plan_challenge_status (
-        itemID,
-        itemType,
-        totalSegments,
-        completedSegments,
-        progressPercentage,
-        isCompleted
-      ) VALUES (?, 'challenge', ?, ?, ?, ?)
-    `, challengeID, progress.totalSegments, progress.completedSegments, progress.progressPercentage, progress.isCompleted ? 1 : 0);
-  } catch (error) {
-    console.error('Error updating challenge status:', error);
-  }
-}
-
-// **RESET COMPLETION FUNCTIONS**
-export async function resetSegmentCompletion(
-  segmentID: string,
-  context: 'main' | 'plan' | 'challenge' = 'main',
-  planID?: string | null,
-  challengeID?: string | null
-): Promise<void> {
-  try {
-    const db = databaseManager.getDatabase();
-    if (context === 'main') {
-      await db.runAsync(`
-        UPDATE completedSegments SET isCompleted = 0 WHERE segmentID = ?
-      `, [segmentID]);
-    } else if (context === 'plan' && planID) {
-      await db.runAsync(`
-        UPDATE reading_plan_progress SET isCompleted = 0 WHERE planID = ? AND segmentID = ?
-      `, [planID, segmentID]);
-    } else if (context === 'challenge' && challengeID) {
-      await db.runAsync(`
-        UPDATE reading_challenge_progress SET isCompleted = 0 WHERE challengeID = ? AND segmentID = ?
-      `, [challengeID, segmentID]);
-    }
-  } catch (error) {
-    console.error("Error resetting segment completion:", error);
-    throw error;
-  }
-}
-
-// **PLAN/CHALLENGE MANAGEMENT FUNCTIONS**
-export async function startPlan(planID: string): Promise<void> {
-  try {
-    const db = databaseManager.getDatabase();
-    await db.runAsync(`
-      INSERT OR REPLACE INTO plan_challenge_status (
-        itemID,
-        itemType,
-        isActive,
-        isPaused,
-        isCompleted,
-        startDate,
-        totalSegments,
-        completedSegments,
-        progressPercentage
-      ) VALUES (?, 'plan', 1, 0, 0, ?, 0, 0, 0)
-    `, planID, new Date().toISOString());
-    
-    // Update with actual progress
-    await updatePlanStatus(planID);
-  } catch (error) {
-    console.error('Error starting plan:', error);
-    throw error;
-  }
-}
-
-export async function startChallenge(challengeID: string): Promise<void> {
-  try {
-    const db = databaseManager.getDatabase();
-    await db.runAsync(`
-      INSERT OR REPLACE INTO plan_challenge_status (
-        itemID,
-        itemType,
-        isActive,
-        isPaused,
-        isCompleted,
-        startDate,
-        totalSegments,
-        completedSegments,
-        progressPercentage
-      ) VALUES (?, 'challenge', 1, 0, 0, ?, 0, 0, 0)
-    `, challengeID, new Date().toISOString());
-    
-    // Update with actual progress
-    await updateChallengeStatus(challengeID);
-  } catch (error) {
-    console.error('Error starting challenge:', error);
-    throw error;
-  }
-}
-
-export async function pausePlan(planID: string): Promise<void> {
-  try {
-    const db = databaseManager.getDatabase();
-    await db.runAsync(`
-      UPDATE plan_challenge_status SET isPaused = 1 WHERE itemID = ? AND itemType = 'plan'
-    `, [planID]);
-  } catch (error) {
-    console.error('Error pausing plan:', error);
-    throw error;
-  }
-}
-
-export async function pauseChallenge(challengeID: string): Promise<void> {
-  try {
-    const db = databaseManager.getDatabase();
-    await db.runAsync(`
-      UPDATE plan_challenge_status SET isPaused = 1 WHERE itemID = ? AND itemType = 'challenge'
-    `, [challengeID]);
-  } catch (error) {
-    console.error('Error pausing challenge:', error);
-    throw error;
-  }
-}
-
-export async function resumePlan(planID: string): Promise<void> {
-  try {
-    const db = databaseManager.getDatabase();
-    await db.runAsync(`
-      UPDATE plan_challenge_status SET isPaused = 0 WHERE itemID = ? AND itemType = 'plan'
-    `, [planID]);
-  } catch (error) {
-    console.error('Error resuming plan:', error);
-    throw error;
-  }
-}
-
-export async function resumeChallenge(challengeID: string): Promise<void> {
-  try {
-    const db = databaseManager.getDatabase();
-    await db.runAsync(`
-      UPDATE plan_challenge_status SET isPaused = 0 WHERE itemID = ? AND itemType = 'challenge'
-    `, [challengeID]);
-  } catch (error) {
-    console.error('Error resuming challenge:', error);
-    throw error;
-  }
-}
-
-export async function getActivePlan(): Promise<any | null> {
-  try {
-    const db = databaseManager.getDatabase();
-    const result = await db.getFirstAsync<any>(
-      'SELECT * FROM plan_challenge_status WHERE itemType = "plan" AND isActive = 1 LIMIT 1'
+    const result = await db.getFirstAsync<{ longestStreak: number }>(
+      'SELECT longestStreak FROM streak_data LIMIT 1'
     );
-    return result;
+    return result?.longestStreak || 0;
   } catch (error) {
-    console.error('Error getting active plan:', error);
-    return null;
-  }
-}
-
-export async function getActiveChallenges(): Promise<any[]> {
-  try {
-    const db = databaseManager.getDatabase();
-    const results = await db.getAllAsync<any>(
-      'SELECT * FROM plan_challenge_status WHERE itemType = "challenge" AND isActive = 1'
-    );
-    return results;
-  } catch (error) {
-    console.error('Error getting active challenges:', error);
-    return [];
-  }
-}
-
-// Achievement functions (preserved from original)
-export async function unlockAchievement(
-  achievementID: string,
-  title: string,
-  description: string,
-  progress?: number,
-  maxProgress?: number
-) {
-  try {
-    const db = databaseManager.getDatabase();
-    await db.runAsync(
-      `INSERT INTO achievements 
-       (achievementID, title, description, unlockDate, progress, maxProgress, isCompleted)
-       VALUES (?, ?, ?, datetime('now'), ?, ?, ?)`,
-      achievementID,
-      title,
-      description,
-      progress || 0,
-      maxProgress || 0,
-      progress === maxProgress
-    );
-  } catch (error) {
-    console.error("Error unlocking achievement:", error);
-  }
-}
-
-export async function updateAchievementProgress(
-  achievementID: string,
-  progress: number
-) {
-  try {
-    const db = databaseManager.getDatabase();
-    await db.runAsync(
-      `UPDATE achievements 
-       SET progress = ?, 
-           isCompleted = (progress >= maxProgress)
-       WHERE achievementID = ?`,
-      progress,
-      achievementID
-    );
-  } catch (error) {
-    console.error("Error updating achievement progress:", error);
-  }
-}
-
-export async function getAchievements() {
-  try {
-    const db = databaseManager.getDatabase();
-    const results = await db.getAllAsync(`
-      SELECT * FROM achievements ORDER BY unlockDate DESC
-    `);
-    return results;
-  } catch (error) {
-    console.error("Error fetching achievements:", error);
-    return [];
-  }
-}
-
-// Emoji functions (preserved from original)
-export async function addEmoji(
-  segmentID: string,
-  blockID: string,
-  blockData: BibleBlock,
-  emoji: string
-) {
-  try {
-    const db = databaseManager.getDatabase();
-    await db.runAsync(
-      `INSERT OR REPLACE INTO emojis (segmentID, blockID, blockData, emoji, note) 
-       VALUES (?, ?, ?, ?, ?)`,
-      segmentID,
-        blockID,
-        JSON.stringify(blockData),
-        emoji,
-      ""
-    );
-  } catch (error) {
-    console.error("Error adding emoji:", error);
-  }
-}
-
-export async function deleteEmoji(segmentID: string, blockID: string) {
-  try {
-    const db = databaseManager.getDatabase();
-    await db.runAsync(
-      `DELETE FROM emojis WHERE segmentID = ? AND blockID = ?`,
-      segmentID,
-      blockID
-    );
-  } catch (error) {
-    console.error("Error deleting emoji:", error);
-  }
-}
-
-export async function getEmoji(segmentID: string, blockID: string): Promise<string | null> {
-  try {
-    const db = databaseManager.getDatabase();
-    const result = await db.getFirstAsync<{ emoji: string }>(
-      `SELECT emoji FROM emojis WHERE segmentID = ? AND blockID = ?`,
-      segmentID,
-      blockID
-    );
-    return result?.emoji || null;
-  } catch (error) {
-    console.error("Error fetching emoji:", error);
-    return null;
-  }
-}
-
-export async function getEmojis() {
-  try {
-    const db = databaseManager.getDatabase();
-    const results = await db.getAllAsync(`
-      SELECT id, segmentID, blockID, blockData, emoji, note FROM emojis
-    `);
-    
-    return results.map((row: any) => ({
-      id: row.id,
-      segmentID: row.segmentID,
-      blockID: row.blockID,
-      blockData: JSON.parse(row.blockData),
-      emoji: row.emoji,
-      note: row.note || ''
-    }));
-  } catch (error) {
-    console.error("Error fetching emojis:", error);
-    return [];
-  }
-}
-
-// Read count and activity functions (preserved from original)
-export async function getSegmentReadCount(segmentID: string): Promise<number> {
-  try {
-    const db = databaseManager.getDatabase();
-    const result = await db.getFirstAsync<{ totalReads: number }>(
-      'SELECT totalReads FROM segment_read_count WHERE segmentID = ?',
-      [segmentID]
-    );
-    return result?.totalReads || 0;
-  } catch (error) {
-    console.error('Error getting segment read count:', error);
+    console.error("Error getting best streak:", error);
     return 0;
-  }
-}
-
-export async function updateDailyActivity(segmentId: string) {
-  try {
-    const db = databaseManager.getDatabase();
-    const today = new Date().toISOString().split('T')[0];
-  
-    await db.runAsync(`
-      INSERT OR REPLACE INTO daily_activity (date, segmentCount, lastUpdated)
-      VALUES (
-        ?,
-        COALESCE((SELECT segmentCount FROM daily_activity WHERE date = ?), 0) + 1,
-        datetime('now', 'localtime')
-      )
-    `, today, today);
-
-    await updateStreak();
-  } catch (error) {
-    console.error("Error updating daily activity:", error);
-  }
-}
-
-async function updateStreak() {
-  try {
-    const db = databaseManager.getDatabase();
-    const today = new Date().toISOString().split('T')[0];
-    
-    const streakData = await db.getFirstAsync<{
-      currentStreak: number;
-      longestStreak: number;
-      lastReadDate: string;
-    }>('SELECT * FROM streak_data LIMIT 1');
-
-    if (!streakData) return;
-
-    const lastReadDate = streakData.lastReadDate.split('T')[0];
-    const todayDate = new Date(today);
-    const lastDate = new Date(lastReadDate);
-    const daysDiff = Math.floor((todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
-
-    let newCurrentStreak = streakData.currentStreak;
-    let newLongestStreak = streakData.longestStreak;
-    
-    if (daysDiff === 0) {
-      return;
-    } else if (daysDiff === 1) {
-      newCurrentStreak = streakData.currentStreak + 1;
-    } else {
-      newCurrentStreak = 1;
-    }
-
-    if (newCurrentStreak > newLongestStreak) {
-      newLongestStreak = newCurrentStreak;
-    }
-
-    await db.runAsync(`
-      UPDATE streak_data
-      SET currentStreak = ?, longestStreak = ?, lastReadDate = ?, lastUpdated = datetime('now', 'localtime')
-      WHERE id = (SELECT id FROM streak_data LIMIT 1)
-    `, newCurrentStreak, newLongestStreak, today);
-
-  } catch (error) {
-    console.error("Error updating streak:", error);
   }
 }
 
@@ -671,13 +349,6 @@ export async function getCurrentStreak(): Promise<number> {
     console.error("Error getting current streak:", error);
     return 0;
   }
-}
-
-// Statistics functions (preserved from original)
-interface CountResult {
-  count: number;
-  currentStreak?: number;
-  longestStreak?: number;
 }
 
 export const getCompletedSegmentsCount = async () => {
@@ -712,126 +383,506 @@ export const getReadingStreak = async () => {
     const result = await db.getFirstAsync<CountResult>(`
       SELECT currentStreak, longestStreak FROM streak_data LIMIT 1
     `);
-  return {
-      current: result?.currentStreak || 0,
-      longest: result?.longestStreak || 0
-  };
+    return {
+      currentStreak: result?.currentStreak || 0,
+      longestStreak: result?.longestStreak || 0
+    };
   } catch (error) {
     console.error("Error getting reading streak:", error);
-    return { current: 0, longest: 0 };
+    return { currentStreak: 0, longestStreak: 0 };
   }
 };
 
-export async function getEmojiStats(): Promise<{
-  total: number;
-  heart: number;
-  prayer: number;
-  question: number;
-  thumbsUp: number;
-}> {
+export async function getEmojiStats(): Promise<EmojiStats> {
   try {
     const db = databaseManager.getDatabase();
     const results = await db.getAllAsync<{ emoji: string }>(
       'SELECT emoji FROM emojis'
     );
     
-    const stats = {
-      total: results.length,
-      heart: 0,
-      prayer: 0,
-      question: 0,
-      thumbsUp: 0
-    };
+    const total = results?.length || 0;
+    const heart = results?.filter(r => r.emoji === '❤️').length || 0;
+    const prayer = results?.filter(r => r.emoji === '🙏').length || 0;
+    const question = results?.filter(r => r.emoji === '🤔').length || 0;
+    const thumbsUp = results?.filter(r => r.emoji === '👍').length || 0;
     
-    results.forEach((row: { emoji: string }) => {
-      switch (row.emoji) {
-        case '❤️':
-          stats.heart++;
-          break;
-        case '🙏':
-          stats.prayer++;
-          break;
-        case '🤔':
-          stats.question++;
-          break;
-        case '👍':
-          stats.thumbsUp++;
-          break;
-      }
-    });
-    
-    return stats;
+    return { total, heart, prayer, question, thumbsUp };
   } catch (error) {
     console.error("Error getting emoji stats:", error);
-    return {
-      total: 0,
-      heart: 0,
-      prayer: 0,
-      question: 0,
-      thumbsUp: 0
-    };
+    return { total: 0, heart: 0, prayer: 0, question: 0, thumbsUp: 0 };
   }
 }
 
 export const getSourceStats = async () => {
   try {
+    const db = databaseManager.getDatabase();
     const results = await db.getAllAsync<{ color: string }>(`
       SELECT color FROM sourceReadings
     `);
-  
-    const stats = {
-      total: results.length,
-      narrator: 0,
-      god: 0,
-      mainCharacter: 0,
-      otherVoices: 0
-    };
     
-    results.forEach(row => {
-      switch (row.color) {
-        case 'black':
-          stats.narrator++;
-          break;
-        case 'red':
-          stats.god++;
-          break;
-        case 'green':
-          stats.mainCharacter++;
-          break;
-        case 'blue':
-          stats.otherVoices++;
-          break;
-      }
-    });
+    const total = results?.length || 0;
+    const black = results?.filter(r => r.color === 'black').length || 0;
+    const red = results?.filter(r => r.color === 'red').length || 0;
+    const green = results?.filter(r => r.color === 'green').length || 0;
+    const blue = results?.filter(r => r.color === 'blue').length || 0;
     
-    return stats;
+    return { total, black, red, green, blue };
   } catch (error) {
     console.error("Error getting source stats:", error);
-  return {
-      total: 0,
-      narrator: 0,
-      god: 0,
-      mainCharacter: 0,
-      otherVoices: 0
-  };
+    return { total: 0, black: 0, red: 0, green: 0, blue: 0 };
   }
 };
 
-export async function getBestStreak(): Promise<number> {
+// ============================================================================
+// EMOJI FUNCTIONS
+// ============================================================================
+
+export async function addEmoji(
+  segmentID: string,
+  blockID: string,
+  blockData: BibleBlock,
+  emoji: string
+) {
   try {
-    const result = await db.getFirstAsync<{ longestStreak: number }>(
-      'SELECT longestStreak FROM streak_data LIMIT 1'
-    );
-    return result?.longestStreak || 0;
+    const db = databaseManager.getDatabase();
+    await db.runAsync(`
+      INSERT OR REPLACE INTO emojis (
+        segmentID,
+        blockID,
+        blockData,
+        emoji,
+        note,
+        timestamp
+      ) VALUES (?, ?, ?, ?, ?, datetime('now'))
+    `, segmentID, blockID, JSON.stringify(blockData), emoji, null);
   } catch (error) {
-    console.error("Error getting best streak:", error);
+    console.error("Error adding emoji:", error);
+  }
+}
+
+export async function deleteEmoji(segmentID: string, blockID: string) {
+  try {
+    const db = databaseManager.getDatabase();
+    await db.runAsync(
+      'DELETE FROM emojis WHERE segmentID = ? AND blockID = ?',
+      segmentID,
+      blockID
+    );
+  } catch (error) {
+    console.error("Error deleting emoji:", error);
+  }
+}
+
+export async function getEmoji(segmentID: string, blockID: string): Promise<string | null> {
+  try {
+    const db = databaseManager.getDatabase();
+    const result = await db.getFirstAsync<{ emoji: string }>(
+      `SELECT emoji FROM emojis WHERE segmentID = ? AND blockID = ?`,
+      segmentID,
+      blockID
+    );
+    return result?.emoji || null;
+  } catch (error) {
+    console.error("Error getting emoji:", error);
+    return null;
+  }
+}
+
+export async function getEmojis() {
+  try {
+    const db = databaseManager.getDatabase();
+    const results = await db.getAllAsync(`
+      SELECT id, segmentID, blockID, blockData, emoji, note FROM emojis
+    `);
+    return results || [];
+  } catch (error) {
+    console.error("Error getting emojis:", error);
+    return [];
+  }
+}
+
+// ============================================================================
+// ACHIEVEMENT FUNCTIONS
+// ============================================================================
+
+export async function unlockAchievement(
+  achievementID: string,
+  title: string,
+  description: string,
+  progress?: number,
+  maxProgress?: number
+) {
+  try {
+    const db = databaseManager.getDatabase();
+    await db.runAsync(`
+      INSERT OR REPLACE INTO achievements (
+        achievementID,
+        title,
+        description,
+        isCompleted,
+        progress,
+        maxProgress,
+        unlockDate
+      ) VALUES (?, ?, ?, 1, ?, ?, datetime('now'))
+    `, achievementID, title, description, progress || 1, maxProgress || 1);
+  } catch (error) {
+    console.error("Error unlocking achievement:", error);
+  }
+}
+
+export async function getAchievements() {
+  try {
+    const db = databaseManager.getDatabase();
+    const results = await db.getAllAsync(`
+      SELECT * FROM achievements ORDER BY unlockDate DESC
+    `);
+    return results || [];
+  } catch (error) {
+    console.error("Error getting achievements:", error);
+    return [];
+  }
+}
+
+// ============================================================================
+// PLAN AND CHALLENGE MANAGEMENT
+// ============================================================================
+
+export async function resetSegmentCompletion(
+  segmentID: string,
+  context: 'main' | 'plan' | 'challenge' | 'today' = 'main',
+  planID?: string | null,
+  challengeID?: string | null
+): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    
+    if (context === 'main') {
+      await db.runAsync(`
+        UPDATE completedSegments SET isCompleted = 0 WHERE segmentID = ?
+      `, [segmentID]);
+    } else if (context === 'plan' && planID) {
+      await db.runAsync(`
+        UPDATE reading_plan_progress SET isCompleted = 0 WHERE planID = ? AND segmentID = ?
+      `, [planID, segmentID]);
+    } else if (context === 'challenge' && challengeID) {
+      await db.runAsync(`
+        UPDATE reading_challenge_progress SET isCompleted = 0 WHERE challengeID = ? AND segmentID = ?
+      `, [challengeID, segmentID]);
+    }
+  } catch (error) {
+    console.error("Error resetting segment completion:", error);
+  }
+}
+
+export async function startPlan(planID: string): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    await db.runAsync(`
+      INSERT OR REPLACE INTO plan_challenge_status (
+        itemID,
+        itemType,
+        isActive,
+        isCompleted,
+        progressPercentage,
+        startDate,
+        lastUpdated
+      ) VALUES (?, 'plan', 1, 0, 0, datetime('now'), datetime('now'))
+    `, planID);
+  } catch (error) {
+    console.error("Error starting plan:", error);
+  }
+}
+
+export async function startChallenge(challengeID: string): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    await db.runAsync(`
+      INSERT OR REPLACE INTO plan_challenge_status (
+        itemID,
+        itemType,
+        isActive,
+        isCompleted,
+        progressPercentage,
+        startDate,
+        lastUpdated
+      ) VALUES (?, 'challenge', 1, 0, 0, datetime('now'), datetime('now'))
+    `, challengeID);
+  } catch (error) {
+    console.error("Error starting challenge:", error);
+  }
+}
+
+export async function getActivePlan(): Promise<any | null> {
+  try {
+    const db = databaseManager.getDatabase();
+    const result = await db.getFirstAsync<any>(
+      'SELECT * FROM plan_challenge_status WHERE itemType = "plan" AND isActive = 1 LIMIT 1'
+    );
+    return result || null;
+  } catch (error) {
+    console.error("Error getting active plan:", error);
+    return null;
+  }
+}
+
+export async function getActiveChallenges(): Promise<any[]> {
+  try {
+    const db = databaseManager.getDatabase();
+    const results = await db.getAllAsync<any>(
+      'SELECT * FROM plan_challenge_status WHERE itemType = "challenge" AND isActive = 1'
+    );
+    return results || [];
+  } catch (error) {
+    console.error("Error getting active challenges:", error);
+    return [];
+  }
+}
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+async function updatePlanStatus(planID: string): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    const progress = await getPlanProgress(planID);
+    
+    await db.runAsync(`
+      INSERT OR REPLACE INTO plan_challenge_status (
+        itemID,
+        itemType,
+        isActive,
+        isCompleted,
+        progressPercentage,
+        lastUpdated
+      ) VALUES (?, 'plan', 1, ?, ?, datetime('now'))
+    `, planID, progress.isCompleted ? 1 : 0, progress.progressPercentage);
+  } catch (error) {
+    console.error("Error updating plan status:", error);
+  }
+}
+
+async function updateChallengeStatus(challengeID: string): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    const progress = await getChallengeProgress(challengeID);
+    
+    await db.runAsync(`
+      INSERT OR REPLACE INTO plan_challenge_status (
+        itemID,
+        itemType,
+        isActive,
+        isCompleted,
+        progressPercentage,
+        lastUpdated
+      ) VALUES (?, 'challenge', 1, ?, ?, datetime('now'))
+    `, challengeID, progress.isCompleted ? 1 : 0, progress.progressPercentage);
+  } catch (error) {
+    console.error("Error updating challenge status:", error);
+  }
+}
+
+export async function updateDailyActivity(segmentId: string) {
+  try {
+    const db = databaseManager.getDatabase();
+    const today = new Date().toISOString().split('T')[0];
+    
+    await db.runAsync(`
+      INSERT OR REPLACE INTO daily_activity (date, segmentCount, lastUpdated)
+      VALUES (?, 
+        COALESCE((SELECT segmentCount FROM daily_activity WHERE date = ?), 0) + 1,
+        datetime('now')
+      )
+    `, today, today);
+  } catch (error) {
+    console.error("Error updating daily activity:", error);
+  }
+}
+
+export async function getSegmentReadCount(segmentID: string): Promise<number> {
+  try {
+    const db = databaseManager.getDatabase();
+    const result = await db.getFirstAsync<{ totalReads: number }>(
+      'SELECT totalReads FROM segment_read_count WHERE segmentID = ?',
+      [segmentID]
+    );
+    return result?.totalReads || 0;
+  } catch (error) {
+    console.error("Error getting segment read count:", error);
     return 0;
   }
 }
 
-// Reading session functions (preserved from original)
+async function updateStreak() {
+  try {
+    const db = databaseManager.getDatabase();
+    const today = new Date().toISOString().split('T')[0];
+    
+    const streakData = await db.getFirstAsync<{
+      currentStreak: number;
+      longestStreak: number;
+      lastReadDate: string;
+    }>(`
+      SELECT currentStreak, longestStreak, lastReadDate FROM streak_data LIMIT 1
+    `);
+
+    let currentStreak = streakData?.currentStreak || 0;
+    let longestStreak = streakData?.longestStreak || 0;
+    const lastReadDate = streakData?.lastReadDate;
+
+    if (lastReadDate === today) {
+      // Already read today, no change to streak
+      return;
+    }
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    if (lastReadDate === yesterdayStr) {
+      // Consecutive day, increment streak
+      currentStreak++;
+    } else if (lastReadDate !== today) {
+      // Break in streak, reset to 1
+      currentStreak = 1;
+    }
+
+    // Update longest streak if current is longer
+    if (currentStreak > longestStreak) {
+      longestStreak = currentStreak;
+    }
+
+    await db.runAsync(`
+      UPDATE streak_data
+      SET currentStreak = ?,
+          longestStreak = ?,
+          lastReadDate = ?
+      WHERE id = 1
+    `, currentStreak, longestStreak, today);
+  } catch (error) {
+    console.error("Error updating streak:", error);
+  }
+}
+
+// ============================================================================
+// MISSING FUNCTIONS FOR ACHIEVEMENTS PAGE
+// ============================================================================
+
+export async function getLongestSession(): Promise<number> {
+  try {
+    const db = databaseManager.getDatabase();
+    const result = await db.getFirstAsync<{ maxSegments: number }>(
+      'SELECT MAX(segmentCount) as maxSegments FROM reading_sessions'
+    );
+    return result?.maxSegments || 0;
+  } catch (error) {
+    console.error("Error getting longest session:", error);
+    return 0;
+  }
+}
+
+export async function getCompletedBooks(): Promise<string[]> {
+  try {
+    const db = databaseManager.getDatabase();
+    const results = await db.getAllAsync<{ bookId: string }>(
+      'SELECT bookId FROM book_completion WHERE isCompleted = 1'
+    );
+    return results?.map(r => r.bookId) || [];
+  } catch (error) {
+    console.error("Error getting completed books:", error);
+    return [];
+  }
+}
+
+export async function getBookProgress(bookId: string): Promise<BookProgress> {
+  try {
+    const db = databaseManager.getDatabase();
+    
+    // Get total segments for this book
+    const totalResult = await db.getFirstAsync<{ count: number }>(
+      'SELECT COUNT(*) as count FROM segments WHERE bookID = ?',
+      [bookId]
+    );
+    
+    // Count completed segments for this book
+    const completedCount = await db.getFirstAsync<{ count: number }>(`
+      SELECT COUNT(*) as count FROM completedSegments 
+      WHERE segmentID IN (
+        SELECT segmentID FROM segments WHERE bookID = ?
+      ) AND isCompleted = 1
+    `, bookId);
+    
+    const total = totalResult?.count || 0;
+    const completed = completedCount?.count || 0;
+    const percentage = total > 0 ? (completed / total) * 100 : 0;
+    
+    return { completed, total, percentage };
+  } catch (error) {
+    console.error("Error getting book progress:", error);
+    return { completed: 0, total: 0, percentage: 0 };
+  }
+}
+
+export async function checkEmojiCollection(): Promise<EmojiCollection> {
+  try {
+    const db = databaseManager.getDatabase();
+    const emojis = ['❤️', '👍', '🤔', '🙏'];
+    const results = await db.getAllAsync<{ emoji: string }>(
+      'SELECT DISTINCT emoji FROM emojis WHERE emoji IN (?, ?, ?, ?)',
+      emojis
+    );
+    
+    const used = results?.map(r => r.emoji) || [];
+    const complete = used.length === emojis.length;
+    
+    return { complete, used };
+  } catch (error) {
+    console.error("Error checking emoji collection:", error);
+    return { complete: false, used: [] };
+  }
+}
+
+export async function getOldTestamentProgress(): Promise<TestamentProgress> {
+  try {
+    const db = databaseManager.getDatabase();
+    const otBooks = ['Gen', 'Exo', 'Lev', 'Num', 'Deu', 'Jos', 'Jdg', 'Rut', '1Sa', '2Sa', '1Ki', '2Ki', '1Ch', '2Ch', 'Ezr', 'Neh', 'Est', 'Job', 'Psa', 'Pro', 'Ecc', 'SoS', 'Isa', 'Jer', 'Lam', 'Eze', 'Dan', 'Hos', 'Joe', 'Amo', 'Oba', 'Jon', 'Mic', 'Nah', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal'];
+    
+    const completed = await db.getFirstAsync<{ count: number }>(`
+      SELECT COUNT(*) as count FROM book_completion 
+      WHERE bookId IN (${otBooks.map(() => '?').join(',')}) AND isCompleted = 1
+    `, ...otBooks);
+    
+    return { completed: completed?.count || 0, total: otBooks.length };
+  } catch (error) {
+    console.error("Error getting Old Testament progress:", error);
+    return { completed: 0, total: 39 };
+  }
+}
+
+export async function getNewTestamentProgress(): Promise<TestamentProgress> {
+  try {
+    const db = databaseManager.getDatabase();
+    const ntBooks = ['Mat', 'Mar', 'Luk', 'Joh', 'Act', 'Rom', '1Co', '2Co', 'Gal', 'Eph', 'Php', 'Col', '1Th', '2Th', '1Ti', '2Ti', 'Tit', 'Phm', 'Heb', 'Jam', '1Pe', '2Pe', '1Jn', '2Jn', '3Jn', 'Jud', 'Rev'];
+    
+    const completed = await db.getFirstAsync<{ count: number }>(`
+      SELECT COUNT(*) as count FROM book_completion 
+      WHERE bookId IN (${ntBooks.map(() => '?').join(',')}) AND isCompleted = 1
+    `, ...ntBooks);
+    
+    return { completed: completed?.count || 0, total: ntBooks.length };
+  } catch (error) {
+    console.error("Error getting New Testament progress:", error);
+    return { completed: 0, total: 27 };
+  }
+}
+
+// ============================================================================
+// READING SESSION FUNCTIONS
+// ============================================================================
+
 export async function startReadingSession() {
   try {
+    const db = databaseManager.getDatabase();
     const result = await db.runAsync(`
       INSERT INTO reading_sessions (startTime, endTime, segmentCount, sessionDate)
       VALUES (datetime('now'), datetime('now'), 0, date('now'))
@@ -845,6 +896,7 @@ export async function startReadingSession() {
 
 export async function updateReadingSession(sessionId: number, segmentCount: number) {
   try {
+    const db = databaseManager.getDatabase();
     await db.runAsync(`
       UPDATE reading_sessions
       SET endTime = datetime('now'), segmentCount = ?
@@ -855,46 +907,39 @@ export async function updateReadingSession(sessionId: number, segmentCount: numb
   }
 }
 
-export async function getLongestSession(): Promise<number> {
-  try {
-    const result = await db.getFirstAsync<{ maxSegments: number }>(
-      'SELECT MAX(segmentCount) as maxSegments FROM reading_sessions'
-    );
-    return result?.maxSegments || 0;
-  } catch (error) {
-    console.error("Error getting longest session:", error);
-    return 0;
-  }
-}
+// ============================================================================
+// BOOK COMPLETION FUNCTIONS
+// ============================================================================
 
-// Book completion functions (preserved from original)
 export async function checkBookCompletion(bookId: string): Promise<boolean> {
   try {
     const db = databaseManager.getDatabase();
-    const segmentTitles = require('../assets/data/SegmentTitles.json');
     
-    const bookSegments = Object.keys(segmentTitles).filter(segmentId => {
-      const segment = segmentTitles[segmentId];
-      return segment.book && segment.book.includes(bookId);
-    });
+    // Get all segments for this book
+    const bookSegments = await db.getAllAsync<{ segmentID: string }>(
+      'SELECT segmentID FROM segments WHERE bookID = ?',
+      [bookId]
+    );
     
     if (bookSegments.length === 0) return false;
     
     const completedCount = await db.getFirstAsync<{ count: number }>(`
       SELECT COUNT(*) as count FROM completedSegments 
       WHERE segmentID IN (${bookSegments.map(() => '?').join(',')}) AND isCompleted = 1
-    `, bookSegments);
-
+    `, ...bookSegments.map(s => s.segmentID));
+    
     const isCompleted = (completedCount?.count || 0) >= bookSegments.length;
     
+    if (isCompleted) {
       await db.runAsync(`
         INSERT OR REPLACE INTO book_completion (bookId, isCompleted, completionDate)
-      VALUES (?, ?, ?)
-    `, bookId, isCompleted ? 1 : 0, isCompleted ? new Date().toISOString() : null);
+        VALUES (?, ?, datetime('now'))
+      `, bookId, 1);
+    }
     
     return isCompleted;
   } catch (error) {
-    console.error('Error checking book completion:', error);
+    console.error("Error checking book completion:", error);
     return false;
   }
 }
@@ -906,148 +951,9 @@ export async function getBookCompletionStatus(bookId: string): Promise<boolean> 
       'SELECT isCompleted FROM book_completion WHERE bookId = ?',
       [bookId]
     );
-    return !!result?.isCompleted;
+    return result?.isCompleted === 1;
   } catch (error) {
-    console.error('Error getting book completion status:', error);
+    console.error("Error getting book completion status:", error);
     return false;
-  }
-}
-
-export async function getCompletedBooks(): Promise<string[]> {
-  try {
-    const db = databaseManager.getDatabase();
-    const results = await db.getAllAsync<{ bookId: string }>(
-      'SELECT bookId FROM book_completion WHERE isCompleted = 1'
-    );
-    return results.map((row: { bookId: string }) => row.bookId);
-  } catch (error) {
-    console.error('Error getting completed books:', error);
-    return [];
-  }
-}
-
-export async function getBookProgress(bookId: string): Promise<{completed: number; total: number; percentage: number}> {
-  try {
-    const db = databaseManager.getDatabase();
-    const segmentTitles = require('../assets/data/SegmentTitles.json');
-    
-    // Get all segments for this book (excluding intro segments for progress calculation)
-    const bookSegments = Object.keys(segmentTitles).filter(segmentId => {
-      const segment = segmentTitles[segmentId];
-      return segment.book && segment.book.includes(bookId) && !segmentId.startsWith('I');
-    });
-    
-    if (bookSegments.length === 0) {
-      return { completed: 0, total: 0, percentage: 0 };
-    }
-    
-    // Count completed segments for this book
-    const completedCount = await db.getFirstAsync<{ count: number }>(`
-      SELECT COUNT(*) as count FROM completedSegments 
-      WHERE segmentID IN (${bookSegments.map(() => '?').join(',')}) AND isCompleted = 1
-    `, bookSegments);
-
-    const completed = completedCount?.count || 0;
-    const total = bookSegments.length;
-    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-    
-    return { completed, total, percentage };
-  } catch (error) {
-    console.error(`Error getting book progress for ${bookId}:`, error);
-    return { completed: 0, total: 0, percentage: 0 };
-  }
-}
-
-export async function checkEmojiCollection(): Promise<{complete: boolean, used: string[]}> {
-  try {
-    const db = databaseManager.getDatabase();
-    const emojis = ['❤️', '👍', '🤔', '🙏'];
-    const results = await db.getAllAsync<{ emoji: string }>(
-      'SELECT DISTINCT emoji FROM emojis WHERE emoji IN (?, ?, ?, ?)',
-      emojis
-    );
-    
-    const usedEmojis = results.map((row: { emoji: string }) => row.emoji);
-    return {
-      complete: usedEmojis.length === emojis.length,
-      used: usedEmojis
-    };
-  } catch (error) {
-    console.error('Error checking emoji collection:', error);
-    return { complete: false, used: [] };
-  }
-}
-
-export async function getOldTestamentProgress(): Promise<{completed: number; total: number}> {
-  try {
-    const db = databaseManager.getDatabase();
-    const otBooks = ['Gen', 'Exo', 'Lev', 'Num', 'Deu', 'Jos', 'Jdg', 'Rut', '1Sa', '2Sa', '1Ki', '2Ki', '1Ch', '2Ch', 'Ezr', 'Neh', 'Est', 'Job', 'Psa', 'Pro', 'Ecc', 'SoS', 'Isa', 'Jer', 'Lam', 'Eze', 'Dan', 'Hos', 'Joe', 'Amo', 'Oba', 'Jon', 'Mic', 'Nah', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal'];
-    
-    const completed = await db.getFirstAsync<{ count: number }>(`
-      SELECT COUNT(*) as count FROM book_completion 
-      WHERE bookId IN (${otBooks.map(() => '?').join(',')}) AND isCompleted = 1
-    `, otBooks);
-    
-    return {
-      completed: completed?.count || 0,
-      total: otBooks.length
-    };
-  } catch (error) {
-    console.error('Error getting OT progress:', error);
-    return { completed: 0, total: 39 };
-  }
-}
-
-export async function getNewTestamentProgress(): Promise<{completed: number; total: number}> {
-  try {
-    const db = databaseManager.getDatabase();
-    const ntBooks = ['Mat', 'Mar', 'Luk', 'Joh', 'Act', 'Rom', '1Co', '2Co', 'Gal', 'Eph', 'Php', 'Col', '1Th', '2Th', '1Ti', '2Ti', 'Tit', 'Phm', 'Heb', 'Jam', '1Pe', '2Pe', '1Jn', '2Jn', '3Jn', 'Jud', 'Rev'];
-    
-    const completed = await db.getFirstAsync<{ count: number }>(`
-      SELECT COUNT(*) as count FROM book_completion 
-      WHERE bookId IN (${ntBooks.map(() => '?').join(',')}) AND isCompleted = 1
-    `, ntBooks);
-    
-    return {
-      completed: completed?.count || 0,
-      total: ntBooks.length
-    };
-  } catch (error) {
-    console.error('Error getting NT progress:', error);
-    return { completed: 0, total: 27 };
-  }
-}
-
-export async function markAchievementComplete(achievementId: string) {
-  try {
-    const db = databaseManager.getDatabase();
-    await db.runAsync(`
-      UPDATE achievements 
-      SET isCompleted = 1, achievementDate = datetime('now', 'localtime')
-      WHERE achievementID = ?
-    `, achievementId);
-  } catch (error) {
-    console.error("Error marking achievement complete:", error);
-  }
-}
-
-export async function getAchievementDates(): Promise<{[key: string]: string}> {
-  try {
-    const db = databaseManager.getDatabase();
-    const results = await db.getAllAsync<{achievementID: string; achievementDate: string}>(`
-      SELECT achievementID, achievementDate FROM achievements WHERE isCompleted = 1
-    `);
-    
-    const dates: {[key: string]: string} = {};
-    results.forEach((row: {achievementID: string; achievementDate: string}) => {
-      if (row.achievementDate) {
-        dates[row.achievementID] = row.achievementDate;
-      }
-    });
-    
-    return dates;
-  } catch (error) {
-    console.error("Error getting achievement dates:", error);
-    return {};
   }
 }

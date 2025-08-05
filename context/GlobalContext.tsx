@@ -45,7 +45,7 @@ interface ChallengeProgress {
 interface CompletionData {
   isCompleted: boolean;
   color: string | null;
-  context?: 'main' | 'plan' | 'challenge';
+  context?: 'main' | 'plan' | 'challenge' | 'today';
   planId?: string;
   challengeId?: string;
 }
@@ -65,7 +65,7 @@ interface AppContextType {
     segmentId: string, 
     isComplete: boolean, 
     color?: string | null, 
-    context?: 'main' | 'plan' | 'challenge',
+    context?: 'main' | 'plan' | 'challenge' | 'today',
     planId?: string,
     challengeId?: string
   ) => Promise<void>;
@@ -335,7 +335,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     segmentId: string,
     isCompleted: boolean,
     readerColor: string | null = null,
-    context: 'main' | 'plan' | 'challenge' = 'main',
+    context: 'main' | 'plan' | 'challenge' | 'today' = 'main',
     planId?: string,
     challengeId?: string
   ) => {

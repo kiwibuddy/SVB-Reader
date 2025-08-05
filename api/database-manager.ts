@@ -1,6 +1,6 @@
 import { SQLiteDatabase } from "expo-sqlite";
 import * as SQLite from "expo-sqlite";
-import { BibleBlock } from "@/types";
+// Removed unused import
 
 interface CompletionData {
   isCompleted: boolean;
@@ -63,7 +63,9 @@ export class DatabaseManager {
           segmentID TEXT PRIMARY KEY NOT NULL,
           bookId TEXT NOT NULL,
           title TEXT NOT NULL,
-          reference TEXT
+          reference TEXT,
+          planID TEXT,
+          challengeID TEXT
         );
         
         -- Emojis table (preserved)
@@ -126,6 +128,7 @@ export class DatabaseManager {
           totalSegments INTEGER,
           completedSegments INTEGER DEFAULT 0,
           progressPercentage REAL DEFAULT 0,
+          lastUpdated TEXT,
           UNIQUE(itemID, itemType)
         );
 
@@ -219,10 +222,57 @@ export class DatabaseManager {
         `);
       }
 
+      // Add missing columns to existing tables if they don't exist
+      await this.migrateDatabase();
+
       this.isInitialized = true;
     } catch (error) {
       console.error("Error initializing database:", error);
       throw error;
+    }
+  }
+
+  private async migrateDatabase(): Promise<void> {
+    if (!this.db) {
+      throw new Error("Database not initialized");
+    }
+
+    try {
+      // Check if planID column exists in segments table
+      const segmentsColumns = await this.db.getAllAsync(`
+        PRAGMA table_info(segments)
+      `);
+      
+      const hasPlanID = segmentsColumns.some((col: any) => col.name === 'planID');
+      const hasChallengeID = segmentsColumns.some((col: any) => col.name === 'challengeID');
+      
+      if (!hasPlanID) {
+        await this.db.runAsync(`
+          ALTER TABLE segments ADD COLUMN planID TEXT
+        `);
+      }
+      
+      if (!hasChallengeID) {
+        await this.db.runAsync(`
+          ALTER TABLE segments ADD COLUMN challengeID TEXT
+        `);
+      }
+
+      // Check if lastUpdated column exists in plan_challenge_status table
+      const statusColumns = await this.db.getAllAsync(`
+        PRAGMA table_info(plan_challenge_status)
+      `);
+      
+      const hasLastUpdated = statusColumns.some((col: any) => col.name === 'lastUpdated');
+      
+      if (!hasLastUpdated) {
+        await this.db.runAsync(`
+          ALTER TABLE plan_challenge_status ADD COLUMN lastUpdated TEXT
+        `);
+      }
+    } catch (error) {
+      console.error("Error during database migration:", error);
+      // Don't throw error for migration issues, as they might be expected
     }
   }
 

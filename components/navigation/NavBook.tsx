@@ -8,7 +8,7 @@ import {
   Platform
 } from "react-native";
 import { SegmentKey, SegmentIds } from "@/app/(tabs)/Navigation";
-import DonutChart from "../DonutChart";
+// Removed DonutChart import - no longer used
 import SegmentItem from "./SegmentItem";
 import { Ionicons } from '@expo/vector-icons';
 import Books from "@/assets/data/BookChapterList.json";
@@ -303,7 +303,7 @@ export interface SegmentItemProps {
   onPress?: (segmentId: string) => void;
 }
 
-const Accordion: React.FC<AccordionProps> = React.memo(({ 
+const Accordion: React.FC<AccordionProps> = ({ 
   item, 
   bookIndex, 
   onSegmentComplete,
@@ -333,15 +333,23 @@ const Accordion: React.FC<AccordionProps> = React.memo(({
   }, [item.djhBook]);
 
   const actualSegments = useMemo(() => {
-    return item.segments.filter(seg => String(seg).startsWith('S') || String(seg).startsWith('I'));
+    // Include both introduction and story segments, but sort introduction first
+    const introSegments = item.segments.filter(seg => String(seg).startsWith('I'));
+    const storySegments = item.segments.filter(seg => String(seg).startsWith('S'));
+    return [...introSegments, ...storySegments];
   }, [item.segments]);
 
-  const totalSegments = actualSegments.length;
+  // Count only story segments (excluding introductions) for progress tracking
+  const storySegments = useMemo(() => {
+    return item.segments.filter(seg => String(seg).startsWith('S'));
+  }, [item.segments]);
+  
+  const totalSegments = storySegments.length;
   const completedCount = useMemo(() => {
-    return actualSegments.reduce((count: number, segmentId) => {
+    return storySegments.reduce((count: number, segmentId) => {
       return completedSegments[String(segmentId)] ? count + 1 : count;
     }, 0);
-  }, [actualSegments, completedSegments]);
+  }, [storySegments, completedSegments]);
 
   const handleHeaderPress = useCallback(() => {
     if (onBookSelect) {
@@ -389,6 +397,7 @@ const Accordion: React.FC<AccordionProps> = React.memo(({
       alignItems: 'center',
       padding: 16,
       backgroundColor: colors.card,
+      zIndex: 1,
     },
     headerLeft: {
       flexDirection: 'row',
@@ -422,6 +431,7 @@ const Accordion: React.FC<AccordionProps> = React.memo(({
       borderTopWidth: 1,
       borderTopColor: colors.border,
       backgroundColor: colors.background,
+      minHeight: 50,
     },
     chevron: {
       color: colors.secondary,
@@ -466,6 +476,7 @@ const Accordion: React.FC<AccordionProps> = React.memo(({
       <TouchableOpacity 
         onPress={handleHeaderPress}
         style={styles.header}
+        activeOpacity={0.7}
       >
         <View style={styles.headerLeft}>
           {imageSource ? (
@@ -480,15 +491,23 @@ const Accordion: React.FC<AccordionProps> = React.memo(({
           <View style={styles.titleContainer}>
             <Text style={styles.title}>{item.bookName}</Text>
             <Text style={styles.subtitle}>
-              {originalSegmentCount && originalSegmentCount !== totalSegments 
-                ? `${totalSegments} of ${originalSegmentCount} stories match • ${completedCount} read`
-                : `${completedCount} of ${totalSegments} stories read`
+              {totalSegments > 0 && completedCount === totalSegments
+                ? 'Completed'
+                : `${completedCount} of ${totalSegments} ${totalSegments === 1 ? 'story' : 'stories'} read`
               }
             </Text>
           </View>
         </View>
         
         <View style={styles.rightContent}>
+          {totalSegments > 0 && completedCount === totalSegments && (
+            <Ionicons 
+              name="checkmark-circle" 
+              size={20} 
+              color="#4CAF50"
+              style={{ marginRight: 8 }}
+            />
+          )}
           <Ionicons 
             name={isExpandedState ? "chevron-up" : "chevron-down"} 
             size={24} 
@@ -499,11 +518,15 @@ const Accordion: React.FC<AccordionProps> = React.memo(({
 
       {isExpandedState && (
         <View style={styles.segmentList}>
-          {item.segments.map((segment, index) => renderSegment(segment, index))}
+          {actualSegments.length > 0 ? (
+            actualSegments.map((segment, index) => renderSegment(segment, index))
+          ) : (
+            <Text style={{ padding: 16, color: colors.secondary }}>No segments available</Text>
+          )}
         </View>
       )}
     </View>
   );
-});
+};
 
 export default Accordion;

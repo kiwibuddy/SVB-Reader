@@ -303,13 +303,13 @@ export default function BibleScreen() {
           />
           <Questions segmentId={segID} />
           <View style={styles.checkCircleContainer}>
-            <CheckCircle 
-              segmentId={segID} 
-              iconSize={isLargeScreen ? 80 : 60}
-              context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
-              planId={planId as string || undefined}
-              challengeId={challengeId as string || undefined}
-            />
+                      <CheckCircle 
+            segmentId={segID} 
+            iconSize={isLargeScreen ? 80 : 60}
+            context={planId ? 'plan' : challengeId ? 'challenge' : params.context === 'today' ? 'today' : 'main'}
+            planId={planId as string || undefined}
+            challengeId={challengeId as string || undefined}
+          />
           </View>
         </>
       )}
@@ -344,22 +344,27 @@ export default function BibleScreen() {
           })
         }
       ]}>
-        {prevSegId && (
-          <TouchableOpacity
-            style={styles.navigationButton}
-            onPress={() => handleNavigation(prevSegId)}
-          >
-            <Ionicons name="chevron-back" size={isLargeScreen ? 28 : 24} color={colors.secondary} />
-          </TouchableOpacity>
-        )}
+        {/* Don't show navigation arrows for introduction segments */}
+        {segID[0] !== "I" && (
+          <>
+            {prevSegId && (
+              <TouchableOpacity
+                style={styles.navigationButton}
+                onPress={() => handleNavigation(prevSegId)}
+              >
+                <Ionicons name="chevron-back" size={isLargeScreen ? 28 : 24} color={colors.secondary} />
+              </TouchableOpacity>
+            )}
 
-        {nextSegId && (
-          <TouchableOpacity
-            style={styles.navigationButton}
-            onPress={() => handleNavigation(nextSegId)}
-          >
-            <Ionicons name="chevron-forward" size={isLargeScreen ? 28 : 24} color={colors.secondary} />
-          </TouchableOpacity>
+            {nextSegId && (
+              <TouchableOpacity
+                style={styles.navigationButton}
+                onPress={() => handleNavigation(nextSegId)}
+              >
+                <Ionicons name="chevron-forward" size={isLargeScreen ? 28 : 24} color={colors.secondary} />
+              </TouchableOpacity>
+            )}
+          </>
         )}
       </Animated.View>
     </View>

@@ -3,7 +3,6 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppContext } from '@/context/GlobalContext';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import CelebrationPopup from '@/components/Bible/CelebrationPopup';
 import { getCheckColor } from '@/scripts/getCheckColors';
 import { 
   getSegmentReadCount, 
@@ -16,7 +15,7 @@ import { useAppSettings } from '@/context/AppSettingsContext';
 interface CheckCircleProps {
   segmentId: string;
   iconSize?: number;
-  context?: 'main' | 'plan' | 'challenge';
+  context?: 'main' | 'plan' | 'challenge' | 'today';
   planId?: string;
   challengeId?: string;
 }
@@ -39,7 +38,6 @@ export default function CheckCircle({
     updateChallengeProgress
   } = useAppContext();
   
-  const [showCelebration, setShowCelebration] = useState(false);
   const [readCount, setReadCount] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [completionColor, setCompletionColor] = useState<string | null>(null);
@@ -76,35 +74,33 @@ export default function CheckCircle({
         } else if (context === 'challenge' && challengeId) {
           await globalMarkComplete(segmentId, true, selectedReaderColor, context, undefined, challengeId);
           await updateChallengeProgress(challengeId, segmentId);
+        } else if (context === 'today') {
+          await globalMarkComplete(segmentId, true, selectedReaderColor, context);
+          await setLastReadSegment(segmentId);
         }
         
         // Update local state
         setIsCompleted(true);
-        setShowCelebration(true);
         
         // Update read count
         const newCount = await getSegmentReadCount(segmentId);
         setReadCount(newCount);
         
+        // Navigate back to the source screen immediately
+        if (params.planId || planId) {
+          // Return to Plan screen with bottom navigation
+          router.replace('/(tabs)/Plan');
+        } else if (params.challengeId || challengeId) {
+          // Return to Reading-Challenges screen with bottom navigation
+          router.replace('/(tabs)/Reading-Challenges');
+        } else {
+          // Return to Navigation screen with bottom navigation
+          router.replace('/(tabs)/Navigation');
+        }
+        
       } catch (error) {
         console.error('Error marking segment complete:', error);
       }
-    }
-  };
-
-  const handleCelebrationComplete = () => {
-    setShowCelebration(false);
-    
-    // Navigate back to the source screen with proper tab navigation
-    if (params.planId || planId) {
-      // Return to Plan screen with bottom navigation
-      router.push('/(tabs)/Plan');
-    } else if (params.challengeId || challengeId) {
-      // Return to Reading-Challenges screen with bottom navigation
-      router.push('/(tabs)/Reading-Challenges');
-    } else {
-      // Return to Navigation screen with bottom navigation
-      router.push('/(tabs)/Navigation');
     }
   };
 
@@ -122,10 +118,6 @@ export default function CheckCircle({
           Read {readCount} time{readCount !== 1 ? 's' : ''}
         </Text>
       )}
-      <CelebrationPopup 
-        visible={showCelebration} 
-        onComplete={handleCelebrationComplete}
-      />
     </View>
   );
 }

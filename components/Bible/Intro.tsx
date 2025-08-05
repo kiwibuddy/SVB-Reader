@@ -2,6 +2,10 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Platform } from "react-native";
 import { IntroType } from "@/types";
 import SegmentTitle from "./SegmentTitle";
+import { useRouter } from "expo-router";
+import { Ionicons } from '@expo/vector-icons';
+import { useAppSettings } from '@/context/AppSettingsContext';
+import Markdown from 'react-native-markdown-display';
 
 // Define the props for Intro component
 interface IntroProps {
@@ -17,6 +21,38 @@ const IntroContentChildComponent: React.FC<any> = ({
   smallcaps,
   bibleText,
 }) => {
+  // Add safety check for undefined text
+  if (!text) {
+    return null;
+  }
+  const { colors } = useAppSettings();
+  
+  // For markdown content, use the markdown renderer
+  if (type === 'markdown' || (text && typeof text === 'string' && (text.includes('**') || text.includes('#')))) {
+    return (
+      <View style={styles.childContainer}>
+        <Markdown style={{
+          body: { color: colors.text, fontSize: 16, lineHeight: 24, fontStyle: 'italic' },
+          heading1: { color: colors.text, fontSize: 24, fontWeight: 'bold', marginVertical: 8 },
+          heading2: { color: colors.text, fontSize: 20, fontWeight: 'bold', marginVertical: 6 },
+          heading3: { color: colors.text, fontSize: 18, fontWeight: 'bold', marginVertical: 4 },
+          paragraph: { color: colors.text, fontSize: 16, lineHeight: 24, marginVertical: 4, fontStyle: 'italic' },
+          list_item: { color: colors.text, fontSize: 16, lineHeight: 24, fontStyle: 'italic' },
+          bullet_list: { marginVertical: 4 },
+          ordered_list: { marginVertical: 4 },
+          table: { borderWidth: 1, borderColor: colors.border },
+          table_row: { borderBottomWidth: 1, borderBottomColor: colors.border },
+          table_cell: { padding: 8, color: colors.text, fontSize: 16, fontStyle: 'italic' },
+          strong: { fontWeight: 'bold', color: colors.text },
+          em: { fontStyle: 'italic', color: colors.text },
+          link: { color: colors.primary, textDecorationLine: 'underline' },
+        }}>
+          {text}
+        </Markdown>
+      </View>
+    );
+  }
+
   // Match text styling with the rest of the app
   const textStyle = {
     ...styles.text,
@@ -50,6 +86,11 @@ const IntroContentChildComponent: React.FC<any> = ({
 };
 
 const IntroBlockComponent: React.FC<any> = ({ children, type }) => {
+  // Add safety check for children
+  if (!children || !Array.isArray(children)) {
+    return null;
+  }
+
   return (
     <View
       style={[
@@ -57,12 +98,18 @@ const IntroBlockComponent: React.FC<any> = ({ children, type }) => {
         type === "highlight" && styles.highlightBlock
       ]}
     >
-      {children.map((child: any, index: number) => (
-        <IntroContentChildComponent 
-          key={`${child.id || index}-${index}`} 
-          {...child} 
-        />
-      ))}
+      {children.map((child: any, index: number) => {
+        // Add safety check for child
+        if (!child) {
+          return null;
+        }
+        return (
+          <IntroContentChildComponent 
+            key={`${child.id || index}-${index}`} 
+            {...child} 
+          />
+        );
+      })}
     </View>
   );
 };
@@ -71,6 +118,20 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData }) => {
   const { width: screenWidth } = useWindowDimensions();
   const isIPad = Platform.OS === 'ios' && Platform.isPad || screenWidth > 768;
   const { content, id } = segmentData;
+  const router = useRouter();
+  const { colors } = useAppSettings();
+
+  // Add safety check for content
+  if (!content || !Array.isArray(content)) {
+    return (
+      <View style={styles.container}>
+        <SegmentTitle segmentId={id} />
+        <View style={styles.contentContainer}>
+          <Text style={styles.text}>Content not available</Text>
+        </View>
+      </View>
+    );
+  }
   
   return (
     <View style={styles.container}>
@@ -81,12 +142,41 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData }) => {
         styles.contentContainer,
         isIPad && styles.contentContainerIPad
       ]}>
-        {content.map((block: any, index: number) => (
-          <IntroBlockComponent 
-            key={`${(block as any).id || index}-${index}`} 
-            {...block} 
-          />
-        ))}
+        {content.map((block: any, index: number) => {
+          // Add safety check for block
+          if (!block || !block.children) {
+            return null;
+          }
+          return (
+            <IntroBlockComponent 
+              key={`${(block as any).id || index}-${index}`} 
+              {...block} 
+            />
+          );
+        })}
+      </View>
+      
+      {/* Next Story Button */}
+      <View style={styles.nextStoryContainer}>
+        <TouchableOpacity 
+          style={[styles.nextStoryButton, { backgroundColor: colors.primary }]}
+          onPress={() => {
+            // Find the first story segment for this book
+            // Extract the book number from the introduction ID (e.g., "I001" -> "001")
+            const bookNumber = id.substring(1).padStart(3, '0');
+            const firstStoryId = `S${bookNumber}`;
+            router.push({
+              pathname: "/[segment]",
+              params: {
+                segment: `ENG-NLT-${firstStoryId}`,
+                book: ''
+              }
+            });
+          }}
+        >
+          <Ionicons name="arrow-forward" size={20} color="white" />
+          <Text style={styles.nextStoryText}>Start Reading</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -121,6 +211,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: '#333333',
+    fontStyle: 'italic',
     fontFamily: Platform.select({
       ios: 'System',
       android: 'Roboto',
@@ -184,6 +275,25 @@ const styles = StyleSheet.create({
   link: {
     color: '#007AFF',
     textDecorationLine: 'underline',
+  },
+  nextStoryContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 100, // Add extra padding to avoid bottom navigation
+  },
+  nextStoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 25,
+    gap: 8,
+  },
+  nextStoryText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

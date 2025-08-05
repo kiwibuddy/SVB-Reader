@@ -11,7 +11,7 @@ import {
 import { useAppContext } from "@/context/GlobalContext";
 import { useRouter } from "expo-router";
 import { useModal } from "@/context/NavContext";
-import DonutChart from "../DonutChart";
+// Removed DonutChart import - no longer used
 import { Ionicons } from '@expo/vector-icons';
 import CelebrationPopup from "@/components/CelebrationPopup";
 import { getCheckColor } from '@/scripts/getCheckColors';
@@ -95,6 +95,9 @@ const SegmentItem: React.FC<SegmentItemProps> = React.memo(({
     }
   }, [onPress, segment.id, router, language, version, context, planId, challengeId]);
 
+  // Check if this is an introduction segment
+  const isIntroduction = segment.id.startsWith('I');
+
   const styles = useMemo(() => StyleSheet.create({
     container: {
       flexDirection: 'row',
@@ -110,6 +113,10 @@ const SegmentItem: React.FC<SegmentItemProps> = React.memo(({
     title: {
       fontSize: 16,
       color: colors.text,
+    },
+    introTitle: {
+      fontStyle: 'italic',
+      color: colors.secondary,
     },
     reference: {
       fontSize: 12,
@@ -127,7 +134,7 @@ const SegmentItem: React.FC<SegmentItemProps> = React.memo(({
       onPress={handlePress}
     >
       <View style={styles.textContainer}>
-        <Text style={styles.title}>
+        <Text style={[styles.title, isIntroduction && styles.introTitle]}>
           {segment.title}
         </Text>
         {segment.ref && (
@@ -136,12 +143,14 @@ const SegmentItem: React.FC<SegmentItemProps> = React.memo(({
           </Text>
         )}
       </View>
-      <Ionicons 
-        name={completionStatus.isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'} 
-        size={20} 
-        color={completionStatus.isCompleted ? '#4CAF50' : '#CCCCCC'} 
-        style={styles.checkIcon} 
-      />
+      {!isIntroduction && (
+        <Ionicons 
+          name={completionStatus.isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'} 
+          size={20} 
+          color={completionStatus.isCompleted ? '#4CAF50' : '#CCCCCC'} 
+          style={styles.checkIcon} 
+        />
+      )}
     </TouchableOpacity>
   );
 });

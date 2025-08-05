@@ -8,18 +8,13 @@ import {
   useWindowDimensions,
   Platform,
   Image,
-  Pressable,
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useAppContext } from '@/context/GlobalContext';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { 
-  getCurrentStreak, 
-  getBestStreak,
-  getEmojis,
   getEmojiStats,
   getCompletedSegmentsCount,
   getTotalSegmentsCount,
@@ -32,7 +27,6 @@ import {
   getReadingStreak,
   getBookProgress
 } from '@/api/sqlite';
-import SegmentTitles from '@/assets/data/SegmentTitles.json';
 import { imageMap } from '@/components/navigation/NavBook';
 
 // Enhanced Types
@@ -209,16 +203,16 @@ const Achievements = () => {
           totalStories: totalCount,
           completedStories: completedCount,
           completionPercentage,
-          currentStreak: streakData.current || 0,
-          bestStreak: streakData.longest || 0,
+          currentStreak: streakData.currentStreak || 0,
+          bestStreak: streakData.longestStreak || 0,
           oldTestament: otProgress,
           newTestament: ntProgress,
           emojiCount: emojiData,
           sourceReading: {
-            red: sourceData.god || 0,
-            green: sourceData.mainCharacter || 0,
-            blue: sourceData.otherVoices || 0,
-            black: sourceData.narrator || 0
+            red: sourceData.red || 0,
+            green: sourceData.green || 0,
+            blue: sourceData.blue || 0,
+            black: sourceData.black || 0
           },
           longestSession,
           booksCompleted: Array.isArray(booksCompleted) ? booksCompleted : [],

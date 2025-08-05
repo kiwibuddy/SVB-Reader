@@ -83,13 +83,7 @@ export default function TabLayout() {
             href: null,
           }}
         />
-        <Tabs.Screen
-          name="[segment]"
-          options={{
-            tabBarStyle: { display: 'none' },
-            title: 'Reading',
-          }}
-        />
+
       </Tabs>
       <BottomNavigation />
     </View>
