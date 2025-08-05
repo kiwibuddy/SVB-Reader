@@ -243,8 +243,8 @@ export default function BibleScreen() {
     const currentOffset = event.nativeEvent.contentOffset.y;
     
     // Use the global bottom navigation scroll handler for coordinated animations
-    if (global?.handleBottomNavScroll) {
-      global.handleBottomNavScroll(event);
+    if ((global as any)?.handleBottomNavScroll) {
+      (global as any).handleBottomNavScroll(event);
     }
     
     // Coordinate navigation arrows with bottom navigation using iOS-style behavior
