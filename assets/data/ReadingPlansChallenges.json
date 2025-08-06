@@ -567,7 +567,8 @@
       "title": "The Gospels",
       "description": "42 Stories - 6 Weeks",
       "image": "island",
-      "longDescription": "Journey through the life of Jesus with the four Gospel accounts. Experience His birth, ministry, teachings, death, and resurrection through the eyes of Matthew, Mark, Luke, and John. Perfect for understanding the heart of the Christian faith.",
+      "longDescription": "Journey through the life of Jesus with the four Gospel accounts in their traditional book order. Experience His birth, ministry, teachings, death, and resurrection through the complementary perspectives of Matthew, Mark, Luke, and John. Each Gospel offers unique insights into Christ's character and mission, providing a comprehensive foundation for understanding the heart of the Christian faith.",
+      "chronologicalOrder": false,
       "segments": {
         "Mat": {
           "segments": [
@@ -658,7 +659,9 @@
       "title": "12 Days of Christmas",
       "description": "6 Stories - 12 Days",
       "image": "island",
-      "longDescription": "Celebrate the Christmas season with the nativity stories! Experience Jesus' birth, the shepherds, wise men, and early events of His life. Perfect for December 25th to January 6th - read each story twice during the traditional 12 days of Christmas.",
+      "longDescription": "Celebrate the Christmas season with the nativity stories in chronological order. From the angel's announcements to the early events of Jesus' life, experience the wonder and joy of God becoming man to dwell among us during the traditional twelve days of Christmas.",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "christmas12Chronological",
       "segments": {
         "Mat": {
           "segments": [
@@ -677,7 +680,9 @@
       "title": "Paul's Letters",
       "description": "35 Stories - 7 Weeks",
       "image": "island",
-      "longDescription": "Explore Paul's powerful letters that shaped early Christianity. From Romans to Philemon, discover timeless truths about faith, grace, and Christian living that still transform lives today.",
+      "longDescription": "Journey through Paul's transformative letters in the order they were written. From his earliest teachings to his final pastoral instructions, experience how the apostle's theology and ministry evolved as he planted churches and discipled believers across the Roman Empire.",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "paulsLettersChronological",
       "segments": {
         "Rom": {
           "segments": [
@@ -780,7 +785,9 @@
       "title": "In The Beginning",
       "description": "18 Stories - 3 Weeks",
       "image": "island",
-      "longDescription": "Start your Bible journey with Genesis! Discover creation, the first families, Noah's ark, and Abraham's calling. Perfect for new readers wanting to understand how God's story with humanity begins.",
+      "longDescription": "Experience the foundational events of human history in chronological order. From the creation of the universe to Abraham's call, witness how God established His covenant relationship with humanity through the great patriarchs of faith.",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "inTheBeginningChronological",
       "segments": {
         "Gen": {
           "segments": [
@@ -845,7 +852,9 @@
       "title": "New Testament Journey",
       "description": "40 Stories - 8 Weeks",
       "image": "island",
-      "longDescription": "A focused journey through key New Testament books, perfect for building a strong foundation in Christian faith. This selection covers the Gospel of Luke, the early church in Acts, and essential epistles, providing a comprehensive foundation for ministry and discipleship.",
+      "longDescription": "Experience the New Testament in historical order, from Jesus' birth and ministry through the early church's growth and apostolic letters. This chronological journey reveals how the gospel spread from Jerusalem to the ends of the earth, establishing the foundation for Christian faith and practice.",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "newTestamentJourneyChronological",
       "segments": {
         "Luk": {
           "segments": [
@@ -904,7 +913,9 @@
       "title": "Old Testament Journey",
       "description": "55 Stories - 11 Weeks",
       "image": "island",
-      "longDescription": "A comprehensive Bible reading journey through the Old Testament. This 11-week plan covers key narratives from Creation to the Prophets, providing biblical foundation and deepening your understanding of God's character and His redemptive plan through Scripture.",
+      "longDescription": "Journey through God's redemptive plan from Creation to the prophets in historical order. Experience how God established His covenant people, delivered them from bondage, gave them His law, and prepared them for the coming Messiah through judges, kings, and prophets.",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "oldTestamentJourneyChronological",
       "segments": {
         "Gen": {
           "segments": [
