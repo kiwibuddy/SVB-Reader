@@ -276,6 +276,10 @@ gridItemLabel: {
     fontSize: 12,
     fontWeight: '600',
   },
+  continueButtonIcon: {
+    marginLeft: 8,
+    padding: 4,
+  },
   streakCard: {
     backgroundColor: 'rgba(255, 193, 7, 0.1)',
     borderRadius: 12,
@@ -754,9 +758,9 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: Co
             {dailySegment.ref ? ` (${dailySegment.ref})` : ''}
           </Text>
         </View>
-        <Pressable style={[styles.continueButton, { backgroundColor: '#4CAF50' }]} onPress={handleDailyStart}>
-          <Text style={styles.continueButtonText}>Read</Text>
-        </Pressable>
+        <TouchableOpacity style={styles.continueButtonIcon} onPress={handleDailyStart}>
+          <Ionicons name="play-circle-outline" size={24} color="#666666" />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -1634,9 +1638,9 @@ const HomeScreen = () => {
         <View style={styles.welcomeSection}>
           <Text style={localStyles.welcomeTitle}>{t('UI.home.heading')}</Text>
           <Text style={localStyles.welcomeText}>{t('UI.home.subheading')}</Text>
-          <Text style={[localStyles.welcomeText, { color: '#FF6B6B', fontWeight: 'bold', marginTop: 8 }]}>
+          {/* <Text style={[localStyles.welcomeText, { color: '#FF6B6B', fontWeight: 'bold', marginTop: 8 }]}>
             MVP Version: Context-Aware Navigation & Progress Tracking Fixed - Launch Ready
-          </Text>
+          </Text> */}
         </View>
 
         <View style={styles.getStartedSection}>
@@ -1703,9 +1707,9 @@ const HomeScreen = () => {
                           {planProgress ? `${Math.round(planProgress.progressPercentage)}% complete` : 'Loading...'}
                         </Text>
                       </View>
-                      <Pressable style={[styles.continueButton, { backgroundColor: planColor }]} onPress={() => handleActivePlanContinue()}>
-                        <Text style={styles.continueButtonText}>Read</Text>
-                      </Pressable>
+                      <TouchableOpacity style={styles.continueButtonIcon} onPress={() => handleActivePlanContinue()}>
+                        <Ionicons name="play-circle-outline" size={24} color="#666666" />
+                      </TouchableOpacity>
                     </View>
                   </View>
                 );
@@ -1734,9 +1738,9 @@ const HomeScreen = () => {
                         {progressData ? `${Math.round(progressData.progressPercentage)}% complete` : 'Loading...'}
                       </Text>
                     </View>
-                    <Pressable style={[styles.continueButton, { backgroundColor: challengeColor }]} onPress={() => handleActiveChallengesContinue(id)}>
-                      <Text style={styles.continueButtonText}>Read</Text>
-                    </Pressable>
+                    <TouchableOpacity style={styles.continueButtonIcon} onPress={() => handleActiveChallengesContinue(id)}>
+                      <Ionicons name="play-circle-outline" size={24} color="#666666" />
+                    </TouchableOpacity>
                   </View>
                 </View>
               );
