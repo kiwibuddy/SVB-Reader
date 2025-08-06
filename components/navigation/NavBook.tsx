@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Image,
-  Platform
+  Platform,
+  Animated
 } from "react-native";
 import { SegmentKey, SegmentIds } from "@/app/(tabs)/Navigation";
 // Removed DonutChart import - no longer used
@@ -322,6 +323,9 @@ const Accordion: React.FC<AccordionProps> = ({
 }) => {
   const { colors } = useAppSettings();
   const [isExpandedState, setIsExpanded] = useState(isExpanded || false);
+  
+  // Animation for progress bar
+  const progressAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     setIsExpanded(isExpanded || false);
@@ -350,6 +354,16 @@ const Accordion: React.FC<AccordionProps> = ({
       return completedSegments[String(segmentId)] ? count + 1 : count;
     }, 0);
   }, [storySegments, completedSegments]);
+
+  // Animate progress bar when completion changes
+  useEffect(() => {
+    const targetProgress = totalSegments > 0 ? (completedCount / totalSegments) : 0;
+    Animated.timing(progressAnimation, {
+      toValue: targetProgress,
+      duration: 600,
+      useNativeDriver: false, // We're animating width, so can't use native driver
+    }).start();
+  }, [completedCount, totalSegments, progressAnimation]);
 
   const handleHeaderPress = useCallback(() => {
     if (onBookSelect) {
@@ -427,6 +441,21 @@ const Accordion: React.FC<AccordionProps> = ({
       color: colors.secondary,
       marginTop: 2,
     },
+    progressContainer: {
+      marginTop: 8,
+      marginBottom: 2,
+    },
+    progressTrack: {
+      height: 4,
+      backgroundColor: colors.border,
+      borderRadius: 2,
+      overflow: 'hidden',
+    },
+    progressFill: {
+      height: '100%',
+      borderRadius: 2,
+      minWidth: 2, // Ensure visibility even at 0%
+    },
     segmentList: {
       borderTopWidth: 1,
       borderTopColor: colors.border,
@@ -496,6 +525,26 @@ const Accordion: React.FC<AccordionProps> = ({
                 : `${completedCount} of ${totalSegments} ${totalSegments === 1 ? 'story' : 'stories'} read`
               }
             </Text>
+            {/* Animated Progress bar */}
+            {totalSegments > 0 && (
+              <View style={styles.progressContainer}>
+                <View style={styles.progressTrack}>
+                  <Animated.View 
+                    style={[
+                      styles.progressFill, 
+                      { 
+                        width: progressAnimation.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0%', '100%'],
+                          extrapolate: 'clamp',
+                        }),
+                        backgroundColor: '#4CAF50' // Green progress bar to match Plans page
+                      }
+                    ]} 
+                  />
+                </View>
+              </View>
+            )}
           </View>
         </View>
         

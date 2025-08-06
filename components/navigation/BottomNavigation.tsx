@@ -63,19 +63,21 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   React.useEffect(() => {
     if (isHome) return;
     
-    // Ensure navigation starts visible on segment pages
-    if (pathname.includes('segment') || pathname.startsWith('/S') || pathname.startsWith('/I')) {
+    // Ensure navigation is visible on main tab pages and segment pages
+    if (pathname.includes('segment') || pathname.startsWith('/S') || pathname.startsWith('/I') ||
+        pathname === '/Plan' || pathname === '/Reading-Challenges' || pathname === '/Navigation' ||
+        pathname === '/Home' || pathname === '/Reading-emoji' || pathname === '/Achievements') {
       isVisible.setValue(1);
     }
     
     // You can expose the handleScroll function to other components
     if (global) {
-      global.handleBottomNavScroll = handleScroll;
+      (global as any).handleBottomNavScroll = handleScroll;
     }
 
     return () => {
       if (global) {
-        delete global.handleBottomNavScroll;
+        delete (global as any).handleBottomNavScroll;
       }
     };
   }, [isHome, pathname, handleScroll, isVisible]);

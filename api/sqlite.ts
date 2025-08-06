@@ -956,3 +956,57 @@ export async function getBookCompletionStatus(bookId: string): Promise<boolean> 
     return false;
   }
 }
+
+// ============================================================================
+// PLAN AND CHALLENGE RESET FUNCTIONS
+// ============================================================================
+
+export async function resetPlanProgress(planID: string): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    
+    // Reset all segment completion for this plan (preserves read counts and achievements)
+    await db.runAsync(`
+      UPDATE reading_plan_progress 
+      SET isCompleted = 0, completionDate = NULL 
+      WHERE planID = ?
+    `, [planID]);
+    
+    // Reset plan status but keep it inactive
+    await db.runAsync(`
+      UPDATE plan_challenge_status 
+      SET isActive = 0, isPaused = 0, isCompleted = 0, completedSegments = 0, progressPercentage = 0, completionDate = NULL
+      WHERE itemID = ? AND itemType = 'plan'
+    `, [planID]);
+    
+    console.log(`Plan ${planID} progress reset successfully`);
+  } catch (error) {
+    console.error('Error resetting plan progress:', error);
+    throw error;
+  }
+}
+
+export async function resetChallengeProgress(challengeID: string): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    
+    // Reset all segment completion for this challenge (preserves read counts and achievements)
+    await db.runAsync(`
+      UPDATE reading_challenge_progress 
+      SET isCompleted = 0, completionDate = NULL 
+      WHERE challengeID = ?
+    `, [challengeID]);
+    
+    // Reset challenge status but keep it inactive
+    await db.runAsync(`
+      UPDATE plan_challenge_status 
+      SET isActive = 0, isPaused = 0, isCompleted = 0, completedSegments = 0, progressPercentage = 0, completionDate = NULL
+      WHERE itemID = ? AND itemType = 'challenge'
+    `, [challengeID]);
+    
+    console.log(`Challenge ${challengeID} progress reset successfully`);
+  } catch (error) {
+    console.error('Error resetting challenge progress:', error);
+    throw error;
+  }
+}

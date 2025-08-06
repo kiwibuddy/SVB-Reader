@@ -11,6 +11,7 @@ import {
   Pressable,
   Platform,
   Image,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from '@react-navigation/native';
@@ -26,10 +27,9 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
-import { getSegmentCompletionStatus, unlockAchievement } from '@/api/sqlite';
+import { getSegmentCompletionStatus, unlockAchievement, getChallengeProgress } from '@/api/sqlite';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BibleData from '@/assets/data/newBibleNLT1.json';
-import ViewToggle from '@/components/navigation/ViewToggle';
 import ChronologicalView from '@/components/navigation/ChronologicalView';
 
 // Add categories for challenges
@@ -41,18 +41,40 @@ const CHALLENGE_CATEGORIES = {
 // Helper function to categorize challenges
 const categorizeChallenge = (challenge: any) => {
     const seasonalTitles = ['Advent Journey', 'Advent Journey (Chronological)', 'Lenten Reflection', 'Lenten Reflection (Chronological)', '12 Days of Christmas'];
-    const topicalTitles = ["Paul's Letters", "David's Life", "The Gospels", "The Gospels (Chronological)", "The Torah", "In The Beginning"];
+    const topicalTitles = ["Paul's Letters", "The Gospels", "The Gospels (Chronological)", "In The Beginning", "David's Life", "Women of the Bible"];
     return seasonalTitles.includes(challenge.title) ? CHALLENGE_CATEGORIES.SEASONAL : CHALLENGE_CATEGORIES.TOPICAL;
   };
+
+// Seasonal challenge visibility logic
+const isSeasonalChallengeVisible = (challengeId: string): boolean => {
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1; // getMonth() returns 0-11, we want 1-12
+  const currentDay = now.getDate();
+  
+  switch (challengeId) {
+    case 'lentenReflectionChronological':
+      // Lenten season: February through April (roughly Ash Wednesday to Easter)
+      return currentMonth >= 2 && currentMonth <= 4;
+      
+    case 'christmas12':
+      // Christmas season: December and early January (12 days of Christmas)
+      return currentMonth === 12 || (currentMonth === 1 && currentDay <= 6);
+      
+    case 'adventJourneyChronological':
+      // Advent season: November and December (Advent leading to Christmas)
+      return currentMonth >= 11 && currentMonth <= 12;
+      
+    default:
+      return true; // All other challenges are always visible
+  }
+};
 
 // Add at the top of the file
 const CHALLENGE_STYLES = {
   "Paul's Letters": {
     color: "#4df469"
   },
-  "David's Life": {
-    color: "#f44d69"
-  },
+
   "Advent Journey": {
     color: "#694df4"
   },
@@ -74,11 +96,15 @@ const CHALLENGE_STYLES = {
   "The Gospels (Chronological)": {
     color: "#4dcaf4"
   },
-  "The Torah": {
-    color: "#9f4df4"
-  },
+
   "In The Beginning": {
     color: "#f4944d"
+  },
+  "David's Life": {
+    color: "#f44d69"
+  },
+  "Women of the Bible": {
+    color: "#9f4df4"
   }
 };
 
@@ -143,7 +169,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     padding: 16,
   },
   welcomeSection: {
-    marginBottom: 24,
+    marginBottom: 16,
   },
   welcomeTitle: {
     fontSize: 24,
@@ -180,7 +206,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     fontSize: 20,
     fontWeight: "600",
     marginLeft: 16,
-    marginTop: 24,
+    marginTop: 16,
     marginBottom: 16,
     color: "#FF9F0A",
   },
@@ -282,16 +308,33 @@ const ChallengesScreen = () => {
 
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
   const [lastCompletedSegment, setLastCompletedSegment] = useState<string | null>(null);
+  const [loadingStates, setLoadingStates] = useState<Record<string, 'starting' | 'pausing' | 'resuming' | 'ending' | null>>({});
+  const [refreshing, setRefreshing] = useState(false);
 
 
-  const [challengeProgress, setChallengeProgress] = useState<Record<string, string[]>>({});
-  const [isChronologicalView, setIsChronologicalView] = useState<Record<string, boolean>>({});
+  const [challengeProgress, setChallengeProgress] = useState<Record<string, {
+    totalSegments: number;
+    completedSegments: number;
+    progressPercentage: number;
+    completedSegmentIds: string[];
+  }>>({});
   
   // Reading Mode Modal State
   const [showReadingModeModal, setShowReadingModeModal] = useState(false);
   const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
   const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
   const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
+  
+  // Challenge Order Enforcement Modal State
+  const [showOrderEnforcementModal, setShowOrderEnforcementModal] = useState(false);
+  const [enforcementData, setEnforcementData] = useState<{
+    challengeId: string;
+    challengeTitle: string;
+    clickedSegmentId: string;
+    nextSegmentId: string;
+    nextSegmentTitle: string;
+    isStartChallenge: boolean;
+  } | null>(null);
 
   // Load challenge progress when component mounts
   useEffect(() => {
@@ -301,35 +344,27 @@ const ChallengesScreen = () => {
   // Refresh when returning from reading a segment
   useFocusEffect(
     React.useCallback(() => {
-      loadChallengeProgress();
+      // Add a small delay to ensure database writes are complete
+      const refreshWithDelay = async () => {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        await loadChallengeProgress();
+      };
+      refreshWithDelay();
     }, [])
   );
 
   const loadChallengeProgress = async () => {
-    const progress: Record<string, string[]> = {};
+    const progress: Record<string, {
+      totalSegments: number;
+      completedSegments: number;
+      progressPercentage: number;
+      completedSegmentIds: string[];
+    }> = {};
     
-    // Load progress for each challenge
+    // Load progress for each challenge using the same database function as Home screen
     for (const challenge of readingPlansData.challenges) {
-      const completedSegments: string[] = [];
-      
-      // Check completion status for each segment
-      for (const [bookKey, bookData] of Object.entries(challenge.segments)) {
-        if (bookData?.segments) {
-          for (const segmentId of bookData.segments) {
-            const status = await getSegmentCompletionStatus(
-              segmentId,
-              'challenge',
-              undefined,
-              challenge.id
-            );
-            if (status.isCompleted) {
-              completedSegments.push(segmentId);
-            }
-          }
-        }
-      }
-      
-      progress[challenge.id] = completedSegments;
+      const challengeProgressData = await getChallengeProgress(challenge.id);
+      progress[challenge.id] = challengeProgressData;
     }
     
     setChallengeProgress(progress);
@@ -360,6 +395,34 @@ const ChallengesScreen = () => {
       }));
   };
 
+  // Helper function to get the next uncompleted segment in a challenge
+  const getNextSegmentInChallenge = (challengeId: string, completedSegmentIds: string[]) => {
+    const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+    if (!challenge?.segments) return null;
+
+    // Get all segments in order
+    const allSegments: string[] = [];
+    Object.values(challenge.segments).forEach(bookData => {
+      if (bookData?.segments) {
+        allSegments.push(...bookData.segments);
+      }
+    });
+
+    // Filter out introduction segments and find first uncompleted
+    const storySegments = allSegments.filter(s => !s.startsWith('I'));
+    const nextSegment = storySegments.find(segmentId => !completedSegmentIds.includes(segmentId));
+    
+    if (nextSegment) {
+      const segmentData = SegmentTitles[nextSegment as keyof typeof SegmentTitles];
+      return {
+        segmentId: nextSegment,
+        title: segmentData?.title || 'Unknown Story'
+      };
+    }
+    
+    return null;
+  };
+
   // Group challenges by status and category
   const organizedChallenges = useMemo(() => {
     const active: Challenge[] = [];
@@ -370,6 +433,11 @@ const ChallengesScreen = () => {
     };
 
     readingPlansData.challenges.forEach(challenge => {
+      // Apply seasonal visibility filter
+      if (!isSeasonalChallengeVisible(challenge.id)) {
+        return; // Skip seasonal challenges that are out of season
+      }
+      
       const isActive = activeChallenges[challenge.id] && !activeChallenges[challenge.id].isPaused;
       const isCompleted = activeChallenges[challenge.id] && activeChallenges[challenge.id].isCompleted;
       
@@ -411,20 +479,16 @@ const ChallengesScreen = () => {
     const isPaused = isActive?.isPaused;
     const segmentCount = getChallengeSegmentCount(challenge.id);
     const challengeBooksData = isSelected ? getChallengeBooksData(challenge.id) : [];
-    const completedSegments = challengeProgress[challenge.id] || [];
+    const progressData = challengeProgress[challenge.id];
+    const completedSegments = progressData?.completedSegmentIds || [];
+    const completedCount = progressData?.completedSegments || 0;
+    const totalCount = progressData?.totalSegments || segmentCount;
+    const progressPercentage = progressData?.progressPercentage || 0;
     
     // Check if this challenge supports chronological view
     const challengeData = readingPlansData.challenges.find(c => c.id === challenge.id);
     const supportsChronological = !!(challengeData as any)?.chronologicalOrder;
     const chronologicalMapping = (challengeData as any)?.chronologicalMapping;
-    const isChronological = isChronologicalView[challenge.id] || false;
-
-    const handleViewToggle = (chronological: boolean) => {
-      setIsChronologicalView(prev => ({
-        ...prev,
-        [challenge.id]: chronological
-      }));
-    };
 
     return (
       <View style={styles.challengeContainer}>
@@ -446,12 +510,12 @@ const ChallengesScreen = () => {
                       <View 
                         style={[
                           styles.progressFill, 
-                          { width: `${(completedSegments.length / segmentCount) * 100}%` }
+                          { width: `${progressPercentage}%` }
                         ]} 
                       />
                     </View>
                     <Text style={styles.progressText}>
-                      {completedSegments.length} of {segmentCount} completed
+                      {completedCount} of {totalCount} completed
                     </Text>
                   </View>
                 )}
@@ -460,12 +524,22 @@ const ChallengesScreen = () => {
             <View style={styles.rightContent}>
               {!isActive && (
                 <TouchableOpacity 
-                  onPress={(e) => {
+                  onPress={async (e) => {
                     e.stopPropagation();
-                    startChallenge(challenge.id);
+                    setLoadingStates(prev => ({ ...prev, [challenge.id]: 'starting' }));
+                    try {
+                      await startChallenge(challenge.id);
+                    } finally {
+                      setLoadingStates(prev => ({ ...prev, [challenge.id]: null }));
+                    }
                   }}
+                  disabled={loadingStates[challenge.id] === 'starting'}
                 >
-                  <Feather name="play-circle" size={24} color="#666666" />
+                  <Feather 
+                    name={loadingStates[challenge.id] === 'starting' ? "clock" : "play-circle"} 
+                    size={24} 
+                    color={loadingStates[challenge.id] === 'starting' ? "#FF9800" : "#666666"} 
+                  />
                 </TouchableOpacity>
               )}
               {isActive && !isPaused && (
@@ -479,7 +553,14 @@ const ChallengesScreen = () => {
                         { text: 'Cancel', style: 'cancel' },
                         { 
                           text: 'Pause Challenge', 
-                          onPress: () => pauseChallenge(challenge.id)
+                          onPress: async () => {
+                            setLoadingStates(prev => ({ ...prev, [challenge.id]: 'pausing' }));
+                            try {
+                              await pauseChallenge(challenge.id);
+                            } finally {
+                              setLoadingStates(prev => ({ ...prev, [challenge.id]: null }));
+                            }
+                          }
                         },
                         { 
                           text: 'End Challenge', 
@@ -493,7 +574,16 @@ const ChallengesScreen = () => {
                                 { 
                                   text: 'End Challenge', 
                                   style: 'destructive',
-                                  onPress: () => endChallenge(challenge.id)
+                                  onPress: async () => {
+                                    setLoadingStates(prev => ({ ...prev, [challenge.id]: 'ending' }));
+                                    try {
+                                      await endChallenge(challenge.id);
+                                      // Immediately refresh progress data
+                                      await loadChallengeProgress();
+                                    } finally {
+                                      setLoadingStates(prev => ({ ...prev, [challenge.id]: null }));
+                                    }
+                                  }
                                 }
                               ]
                             );
@@ -508,12 +598,22 @@ const ChallengesScreen = () => {
               )}
               {isPaused && (
                 <TouchableOpacity 
-                  onPress={(e) => {
+                  onPress={async (e) => {
                     e.stopPropagation();
-                    resumeChallenge(challenge.id);
+                    setLoadingStates(prev => ({ ...prev, [challenge.id]: 'resuming' }));
+                    try {
+                      await resumeChallenge(challenge.id);
+                    } finally {
+                      setLoadingStates(prev => ({ ...prev, [challenge.id]: null }));
+                    }
                   }}
+                  disabled={loadingStates[challenge.id] === 'resuming'}
                 >
-                  <Feather name="play-circle" size={24} color="#4CAF50" />
+                  <Feather 
+                    name={loadingStates[challenge.id] === 'resuming' ? "clock" : "play-circle"} 
+                    size={24} 
+                    color={loadingStates[challenge.id] === 'resuming' ? "#FF9800" : "#4CAF50"} 
+                  />
                 </TouchableOpacity>
               )}
               <Ionicons 
@@ -532,18 +632,8 @@ const ChallengesScreen = () => {
             </Text>
             
             <View style={styles.booksContainer}>
-              {/* View Toggle for chronological challenges */}
-              {supportsChronological && (
-                <View style={{ padding: 16, paddingBottom: 0 }}>
-                  <ViewToggle
-                    isChronological={isChronological}
-                    onToggle={handleViewToggle}
-                  />
-                </View>
-              )}
-              
-              {/* Render chronological view or traditional book view */}
-              {isChronological && supportsChronological && chronologicalMapping ? (
+              {/* Always show chronological view for supported challenges */}
+              {supportsChronological && chronologicalMapping ? (
                 <ChronologicalView
                   challengeId={challenge.id}
                   chronologicalMapping={chronologicalMapping}
@@ -604,19 +694,28 @@ const ChallengesScreen = () => {
     try {
       // Update local state immediately for UI responsiveness
       setChallengeProgress(prev => {
-        const currentProgress = prev[challengeId] || [];
-        if (!currentProgress.includes(segmentId)) {
+        const currentProgress = prev[challengeId];
+        if (currentProgress && !currentProgress.completedSegmentIds.includes(segmentId)) {
+          const newCompletedCount = currentProgress.completedSegments + 1;
+          const newProgressPercentage = currentProgress.totalSegments > 0 ? 
+            (newCompletedCount / currentProgress.totalSegments) * 100 : 0;
+          
           return {
             ...prev,
-            [challengeId]: [...currentProgress, segmentId]
+            [challengeId]: {
+              ...currentProgress,
+              completedSegments: newCompletedCount,
+              progressPercentage: newProgressPercentage,
+              completedSegmentIds: [...currentProgress.completedSegmentIds, segmentId]
+            }
           };
         }
         return prev;
       });
 
       // Check for achievements (you can add challenge-specific achievements here)
-      const currentProgress = challengeProgress[challengeId] || [];
-      const completedCount = currentProgress.length + 1;
+      const currentProgress = challengeProgress[challengeId];
+      const completedCount = currentProgress ? currentProgress.completedSegments + 1 : 1;
       
       // Check if challenge is completed
       const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
@@ -652,33 +751,72 @@ const ChallengesScreen = () => {
     }
   };
 
-  // Handle segment selection - show ReadingModeModal for stories, direct navigation for introductions
+  // Handle segment selection with challenge order enforcement
   const handleSegmentSelect = (segmentId: string) => {
-    if (!segmentId) {
+    if (!segmentId || !selectedChallengeId) {
       return;
     }
+    
     const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
-    if (segmentData) {
-      // Check if this is an introduction segment
-      if (segmentId.startsWith('I')) {
-        // For introduction segments, navigate directly without showing modal
-        router.push({
-          pathname: "/[segment]",
-          params: {
-            segment: `ENG-NLT-${segmentId}`,
-            book: segmentData.book[0] || '',
-            challengeId: selectedChallengeId || '',
-            context: 'challenge'
-          }
+    if (!segmentData) return;
+    
+    // Check if this is an introduction segment - always allow
+    if (segmentId.startsWith('I')) {
+      router.push({
+        pathname: "/[segment]",
+        params: {
+          segment: `ENG-NLT-${segmentId}`,
+          book: segmentData.book[0] || '',
+          challengeId: selectedChallengeId,
+          context: 'challenge'
+        }
+      });
+      return;
+    }
+
+    // For story segments, check challenge order enforcement
+    const challenge = readingPlansData.challenges.find(c => c.id === selectedChallengeId);
+    const isActive = activeChallenges[selectedChallengeId] && !activeChallenges[selectedChallengeId].isPaused;
+    const completedSegmentIds = challengeProgress[selectedChallengeId]?.completedSegmentIds || [];
+    
+    if (!isActive) {
+      // Challenge not started - show popup to start challenge
+      const nextSegment = getNextSegmentInChallenge(selectedChallengeId, completedSegmentIds);
+      if (nextSegment) {
+        setEnforcementData({
+          challengeId: selectedChallengeId,
+          challengeTitle: challenge?.title || 'Reading Challenge',
+          clickedSegmentId: segmentId,
+          nextSegmentId: nextSegment.segmentId,
+          nextSegmentTitle: nextSegment.title,
+          isStartChallenge: true
         });
-      } else {
-        // For story segments, show the reading mode modal
-        setSelectedSegmentId(segmentId);
-        setSelectedSegmentTitle(segmentData.title);
-        setSelectedSegmentRef((segmentData as any).ref || '');
-        setShowReadingModeModal(true);
+        setShowOrderEnforcementModal(true);
+        return;
+      }
+    } else {
+      // Challenge is active - check if this is the next segment
+      const nextSegment = getNextSegmentInChallenge(selectedChallengeId, completedSegmentIds);
+      if (nextSegment && nextSegment.segmentId !== segmentId) {
+        // User clicked on a different segment - show enforcement popup
+        setEnforcementData({
+          challengeId: selectedChallengeId,
+          challengeTitle: challenge?.title || 'Reading Challenge',
+          clickedSegmentId: segmentId,
+          nextSegmentId: nextSegment.segmentId,
+          nextSegmentTitle: nextSegment.title,
+          isStartChallenge: false
+        });
+        setShowOrderEnforcementModal(true);
+        return;
       }
     }
+
+    // All checks passed - show reading mode modal
+    setSelectedSegmentId(segmentId);
+    setSelectedSegmentTitle(segmentData.title);
+    setSelectedSegmentRef((segmentData as any).ref || '');
+    setShowReadingModeModal(true);
   };
 
   // Reading Mode Modal Handlers
@@ -712,6 +850,60 @@ const ChallengesScreen = () => {
   const handleCancelModal = () => {
     setShowReadingModeModal(false);
   };
+
+  // Challenge Order Enforcement Modal Handlers
+  const handleStartChallengeAndRead = async () => {
+    if (!enforcementData) return;
+    
+    setShowOrderEnforcementModal(false);
+    
+    // Start the challenge
+    setLoadingStates(prev => ({ ...prev, [enforcementData.challengeId]: 'starting' }));
+    try {
+      await startChallenge(enforcementData.challengeId);
+      
+      // Navigate to the first story of the challenge
+      const segmentData = SegmentTitles[enforcementData.nextSegmentId as keyof typeof SegmentTitles];
+      if (segmentData) {
+        setSelectedSegmentId(enforcementData.nextSegmentId);
+        setSelectedSegmentTitle(segmentData.title);
+        setSelectedSegmentRef((segmentData as any).ref || '');
+        setShowReadingModeModal(true);
+      }
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [enforcementData.challengeId]: null }));
+    }
+  };
+
+  const handleReadNextStoryChallenge = () => {
+    if (!enforcementData) return;
+    
+    setShowOrderEnforcementModal(false);
+    
+    // Navigate to the next story in order
+    const segmentData = SegmentTitles[enforcementData.nextSegmentId as keyof typeof SegmentTitles];
+    if (segmentData) {
+      setSelectedSegmentId(enforcementData.nextSegmentId);
+      setSelectedSegmentTitle(segmentData.title);
+      setSelectedSegmentRef((segmentData as any).ref || '');
+      setShowReadingModeModal(true);
+    }
+  };
+
+  const handleCancelChallengeEnforcement = () => {
+    setShowOrderEnforcementModal(false);
+    setEnforcementData(null);
+  };
+
+  // Pull-to-refresh handler
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await loadChallengeProgress();
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   const scrollViewRef = useRef<ScrollView>(null);
   const [contentHeight, setContentHeight] = useState(0);
@@ -748,15 +940,18 @@ const ChallengesScreen = () => {
       });
     }
     
-    result.push({
-      title: 'Seasonal Challenges',
-      data: organizedChallenges.categorized[CHALLENGE_CATEGORIES.SEASONAL]
-    });
+    // Combine all non-active challenges into a single section without category titles
+    const allAvailableChallenges = [
+      ...organizedChallenges.categorized[CHALLENGE_CATEGORIES.SEASONAL],
+      ...organizedChallenges.categorized[CHALLENGE_CATEGORIES.TOPICAL]
+    ];
     
-    result.push({
-      title: 'Topical Challenges',
-      data: organizedChallenges.categorized[CHALLENGE_CATEGORIES.TOPICAL]
-    });
+    if (allAvailableChallenges.length > 0) {
+      result.push({
+        title: 'Available Challenges',
+        data: allAvailableChallenges
+      });
+    }
     
     if (organizedChallenges.completed.length > 0) {
       result.push({
@@ -801,9 +996,23 @@ const ChallengesScreen = () => {
         keyExtractor={keyExtractor}
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
         removeClippedSubviews={true}
-        maxToRenderPerBatch={5}
-        windowSize={10}
-        initialNumToRender={3}
+        maxToRenderPerBatch={3}
+        windowSize={5}
+        initialNumToRender={2}
+        updateCellsBatchingPeriod={100}
+        getItemLayout={(data, index) => ({
+          length: 140, // Estimated height per challenge item
+          offset: 140 * index,
+          index,
+        })}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#FF9F0A']} // Android
+            tintColor="#FF9F0A" // iOS
+          />
+        }
       />
       
       <ReadingModeModal
@@ -815,6 +1024,113 @@ const ChallengesScreen = () => {
         onGroup={handleGroupReading}
         onCancel={handleCancelModal}
       />
+
+      {/* Challenge Order Enforcement Modal */}
+      {showOrderEnforcementModal && enforcementData && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+        }}>
+          <View style={{
+            backgroundColor: colors.card,
+            borderRadius: 12,
+            padding: 24,
+            margin: 20,
+            maxWidth: 400,
+            width: '90%',
+          }}>
+            <Text style={{
+              fontSize: 18,
+              fontWeight: '600',
+              color: colors.text,
+              marginBottom: 12,
+              textAlign: 'center'
+            }}>
+              {enforcementData.isStartChallenge ? 'Start Reading Challenge' : 'Follow Reading Order'}
+            </Text>
+            
+            <Text style={{
+              fontSize: 16,
+              color: colors.text,
+              marginBottom: 20,
+              textAlign: 'center',
+              lineHeight: 22,
+            }}>
+              {enforcementData.isStartChallenge 
+                ? `To get the most out of "${enforcementData.challengeTitle}", stories should be read in order. Start with the first story:`
+                : `To maintain continuity in "${enforcementData.challengeTitle}", we recommend reading stories in order. Your next story is:`
+              }
+            </Text>
+
+            <View style={{
+              backgroundColor: colors.background,
+              padding: 16,
+              borderRadius: 8,
+              marginBottom: 20,
+            }}>
+              <Text style={{
+                fontSize: 16,
+                fontWeight: '600',
+                color: colors.primary,
+                textAlign: 'center',
+              }}>
+                {enforcementData.nextSegmentTitle}
+              </Text>
+            </View>
+
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              gap: 12,
+            }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  backgroundColor: colors.background,
+                }}
+                onPress={handleCancelChallengeEnforcement}
+              >
+                <Text style={{
+                  color: colors.text,
+                  textAlign: 'center',
+                  fontWeight: '500',
+                }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  backgroundColor: colors.primary,
+                }}
+                onPress={enforcementData.isStartChallenge ? handleStartChallengeAndRead : handleReadNextStoryChallenge}
+              >
+                <Text style={{
+                  color: 'white',
+                  textAlign: 'center',
+                  fontWeight: '600',
+                }}>
+                  {enforcementData.isStartChallenge ? 'Start Challenge' : 'Read Next'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };

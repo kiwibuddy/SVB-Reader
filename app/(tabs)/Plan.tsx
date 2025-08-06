@@ -9,6 +9,7 @@ import {
   FlatList,
   Image,
   useWindowDimensions,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from '@react-navigation/native';
@@ -23,7 +24,7 @@ import { StatusIndicator } from '@/components/StatusIndicator';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
-import { markSegmentComplete, getSegmentCompletionStatus, unlockAchievement } from "@/api/sqlite";
+import { markSegmentComplete, getSegmentCompletionStatus, unlockAchievement, getPlanProgress } from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BibleData from '@/assets/data/newBibleNLT1.json';
@@ -283,15 +284,33 @@ const PlanScreen = () => {
   // Initialize selectedPlan with the active plan if it exists, otherwise use first plan
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [lastCompletedSegment, setLastCompletedSegment] = useState<string | null>(null);
+  const [loadingStates, setLoadingStates] = useState<Record<string, 'starting' | 'pausing' | 'resuming' | 'ending' | null>>({});
+  const [refreshing, setRefreshing] = useState(false);
 
 
-  const [planProgress, setPlanProgress] = useState<Record<string, string[]>>({});
+  const [planProgress, setPlanProgress] = useState<Record<string, {
+    totalSegments: number;
+    completedSegments: number;
+    progressPercentage: number;
+    completedSegmentIds: string[];
+  }>>({});
   
   // Reading Mode Modal State
   const [showReadingModeModal, setShowReadingModeModal] = useState(false);
   const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
   const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
   const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
+  
+  // Plan Order Enforcement Modal State
+  const [showOrderEnforcementModal, setShowOrderEnforcementModal] = useState(false);
+  const [enforcementData, setEnforcementData] = useState<{
+    planId: string;
+    planTitle: string;
+    clickedSegmentId: string;
+    nextSegmentId: string;
+    nextSegmentTitle: string;
+    isStartPlan: boolean;
+  } | null>(null);
 
   // Load plan progress when component mounts
   useEffect(() => {
@@ -301,34 +320,27 @@ const PlanScreen = () => {
   // Refresh when returning from reading a segment
   useFocusEffect(
     React.useCallback(() => {
-      loadPlanProgress();
+      // Add a small delay to ensure database writes are complete
+      const refreshWithDelay = async () => {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        await loadPlanProgress();
+      };
+      refreshWithDelay();
     }, [])
   );
 
   const loadPlanProgress = async () => {
-    const progress: Record<string, string[]> = {};
+    const progress: Record<string, {
+      totalSegments: number;
+      completedSegments: number;
+      progressPercentage: number;
+      completedSegmentIds: string[];
+    }> = {};
     
-    // Load progress for each plan
+    // Load progress for each plan using the same database function as Home screen
     for (const plan of readingPlansData.plans) {
-      const completedSegments: string[] = [];
-      
-      // Check completion status for each segment
-      for (const [bookKey, bookData] of Object.entries(plan.segments)) {
-        if (bookData?.segments) {
-          for (const segmentId of bookData.segments) {
-            const status = await getSegmentCompletionStatus(
-              segmentId,
-              'plan',
-              plan.id
-            );
-            if (status.isCompleted) {
-              completedSegments.push(segmentId);
-            }
-          }
-        }
-      }
-      
-      progress[plan.id] = completedSegments;
+      const planProgressData = await getPlanProgress(plan.id);
+      progress[plan.id] = planProgressData;
     }
     
     setPlanProgress(progress);
@@ -338,19 +350,28 @@ const PlanScreen = () => {
     try {
       // Update local state immediately for UI responsiveness
       setPlanProgress(prev => {
-        const currentProgress = prev[planId] || [];
-        if (!currentProgress.includes(segmentId)) {
+        const currentProgress = prev[planId];
+        if (currentProgress && !currentProgress.completedSegmentIds.includes(segmentId)) {
+          const newCompletedCount = currentProgress.completedSegments + 1;
+          const newProgressPercentage = currentProgress.totalSegments > 0 ? 
+            (newCompletedCount / currentProgress.totalSegments) * 100 : 0;
+          
           return {
             ...prev,
-            [planId]: [...currentProgress, segmentId]
+            [planId]: {
+              ...currentProgress,
+              completedSegments: newCompletedCount,
+              progressPercentage: newProgressPercentage,
+              completedSegmentIds: [...currentProgress.completedSegmentIds, segmentId]
+            }
           };
         }
         return prev;
       });
 
       // Check for achievements
-      const currentProgress = planProgress[planId] || [];
-      const completedCount = currentProgress.length + 1;
+      const currentProgress = planProgress[planId];
+      const completedCount = currentProgress ? currentProgress.completedSegments + 1 : 1;
       
       // Achievement for starting a plan
       if (completedCount === 1) {
@@ -425,6 +446,34 @@ const PlanScreen = () => {
       bookName: Books[key as SegmentIds]?.bookName ?? "Unknown Book",
       segments: (plan.segments[key as SegmentIds]?.segments ?? []) as SegmentKey[],
     }));
+  };
+
+  // Helper function to get the next uncompleted segment in a plan
+  const getNextSegmentInPlan = (planId: string, completedSegmentIds: string[]) => {
+    const plan = readingPlansData.plans.find(p => p.id === planId);
+    if (!plan?.segments) return null;
+
+    // Get all segments in order
+    const allSegments: string[] = [];
+    Object.values(plan.segments).forEach(bookData => {
+      if (bookData?.segments) {
+        allSegments.push(...bookData.segments);
+      }
+    });
+
+    // Filter out introduction segments and find first uncompleted
+    const storySegments = allSegments.filter(s => !s.startsWith('I'));
+    const nextSegment = storySegments.find(segmentId => !completedSegmentIds.includes(segmentId));
+    
+    if (nextSegment) {
+      const segmentData = SegmentTitles[nextSegment as keyof typeof SegmentTitles];
+      return {
+        segmentId: nextSegment,
+        title: segmentData?.title || 'Unknown Story'
+      };
+    }
+    
+    return null;
   };
 
   const getPlanSegmentCount = (planId: string) => {
@@ -522,33 +571,72 @@ const PlanScreen = () => {
     }
   };
 
-  // Handle segment selection - show ReadingModeModal instead of direct navigation
+  // Handle segment selection with plan order enforcement
   const handleSegmentSelect = (segmentId: string) => {
-    if (!segmentId) {
+    if (!segmentId || !selectedPlanId) {
       return;
     }
+    
     const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
-    if (segmentData) {
-      // Check if this is an introduction segment
-      if (segmentId.startsWith('I')) {
-        // For introduction segments, navigate directly without showing modal
-        router.push({
-          pathname: "/[segment]",
-          params: {
-            segment: `ENG-NLT-${segmentId}`,
-            book: segmentData.book[0] || '',
-            planId: selectedPlanId || '',
-            context: 'plan'
-          }
+    if (!segmentData) return;
+    
+    // Check if this is an introduction segment - always allow
+    if (segmentId.startsWith('I')) {
+      router.push({
+        pathname: "/[segment]",
+        params: {
+          segment: `ENG-NLT-${segmentId}`,
+          book: segmentData.book[0] || '',
+          planId: selectedPlanId,
+          context: 'plan'
+        }
+      });
+      return;
+    }
+
+    // For story segments, check plan order enforcement
+    const plan = readingPlansData.plans.find(p => p.id === selectedPlanId);
+    const isActive = activePlan?.planId === selectedPlanId;
+    const completedSegmentIds = planProgress[selectedPlanId]?.completedSegmentIds || [];
+    
+    if (!isActive) {
+      // Plan not started - show popup to start plan
+      const nextSegment = getNextSegmentInPlan(selectedPlanId, completedSegmentIds);
+      if (nextSegment) {
+        setEnforcementData({
+          planId: selectedPlanId,
+          planTitle: plan?.title || 'Reading Plan',
+          clickedSegmentId: segmentId,
+          nextSegmentId: nextSegment.segmentId,
+          nextSegmentTitle: nextSegment.title,
+          isStartPlan: true
         });
-      } else {
-        // For story segments, show the reading mode modal
-        setSelectedSegmentId(segmentId);
-        setSelectedSegmentTitle(segmentData.title);
-        setSelectedSegmentRef((segmentData as any).ref || '');
-        setShowReadingModeModal(true);
+        setShowOrderEnforcementModal(true);
+        return;
+      }
+    } else {
+      // Plan is active - check if this is the next segment
+      const nextSegment = getNextSegmentInPlan(selectedPlanId, completedSegmentIds);
+      if (nextSegment && nextSegment.segmentId !== segmentId) {
+        // User clicked on a different segment - show enforcement popup
+        setEnforcementData({
+          planId: selectedPlanId,
+          planTitle: plan?.title || 'Reading Plan',
+          clickedSegmentId: segmentId,
+          nextSegmentId: nextSegment.segmentId,
+          nextSegmentTitle: nextSegment.title,
+          isStartPlan: false
+        });
+        setShowOrderEnforcementModal(true);
+        return;
       }
     }
+
+    // All checks passed - show reading mode modal
+    setSelectedSegmentId(segmentId);
+    setSelectedSegmentTitle(segmentData.title);
+    setSelectedSegmentRef((segmentData as any).ref || '');
+    setShowReadingModeModal(true);
   };
 
   // Reading Mode Modal Handlers
@@ -582,6 +670,60 @@ const PlanScreen = () => {
   const handleCancelModal = () => {
     setShowReadingModeModal(false);
   };
+
+  // Order Enforcement Modal Handlers
+  const handleStartPlanAndRead = async () => {
+    if (!enforcementData) return;
+    
+    setShowOrderEnforcementModal(false);
+    
+    // Start the plan
+    setLoadingStates(prev => ({ ...prev, [enforcementData.planId]: 'starting' }));
+    try {
+      await startPlan(enforcementData.planId);
+      
+      // Navigate to the first story of the plan
+      const segmentData = SegmentTitles[enforcementData.nextSegmentId as keyof typeof SegmentTitles];
+      if (segmentData) {
+        setSelectedSegmentId(enforcementData.nextSegmentId);
+        setSelectedSegmentTitle(segmentData.title);
+        setSelectedSegmentRef((segmentData as any).ref || '');
+        setShowReadingModeModal(true);
+      }
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [enforcementData.planId]: null }));
+    }
+  };
+
+  const handleReadNextStory = () => {
+    if (!enforcementData) return;
+    
+    setShowOrderEnforcementModal(false);
+    
+    // Navigate to the next story in order
+    const segmentData = SegmentTitles[enforcementData.nextSegmentId as keyof typeof SegmentTitles];
+    if (segmentData) {
+      setSelectedSegmentId(enforcementData.nextSegmentId);
+      setSelectedSegmentTitle(segmentData.title);
+      setSelectedSegmentRef((segmentData as any).ref || '');
+      setShowReadingModeModal(true);
+    }
+  };
+
+  const handleCancelEnforcement = () => {
+    setShowOrderEnforcementModal(false);
+    setEnforcementData(null);
+  };
+
+  // Pull-to-refresh handler
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await loadPlanProgress();
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   const handlePress = (segmentId: string) => {
     router.push({
@@ -627,11 +769,11 @@ const PlanScreen = () => {
     const isCompleted = activePlan && isActive && activePlan.isCompleted;
     const segmentCount = getPlanSegmentCount(plan.id);
     const planBooksData = isSelected ? getPlanBooksData(plan.id) : [];
-    const completedSegments = planProgress[plan.id] || [];
-    const totalSegments = Object.values(plan.segments)
-      .reduce((acc, book) => acc + (book?.segments?.length || 0), 0);
-    
-    const progress = (completedSegments.length / totalSegments) * 100;
+    const progressData = planProgress[plan.id];
+    const completedSegments = progressData?.completedSegmentIds || [];
+    const completedCount = progressData?.completedSegments || 0;
+    const totalCount = progressData?.totalSegments || segmentCount;
+    const progressPercentage = progressData?.progressPercentage || 0;
     const planStyle = PLAN_STYLES[plan.id as keyof typeof PLAN_STYLES] || {
       color: "#888888",
       icon: "book"
@@ -661,12 +803,12 @@ const PlanScreen = () => {
                       <View 
                         style={[
                           styles.progressFill, 
-                          { width: `${(completedSegments.length / segmentCount) * 100}%` }
+                          { width: `${progressPercentage}%` }
                         ]} 
                       />
                     </View>
                     <Text style={styles.progressText}>
-                      {completedSegments.length} of {segmentCount} completed
+                      {completedCount} of {totalCount} completed
                     </Text>
                   </View>
                 )}
@@ -675,7 +817,7 @@ const PlanScreen = () => {
             <View style={styles.rightContent}>
               {!isActive && (
                 <TouchableOpacity 
-                  onPress={(e) => {
+                  onPress={async (e) => {
                     e.stopPropagation();
                     if (activePlan && activePlan.planId !== plan.id) {
                       Alert.alert(
@@ -685,16 +827,33 @@ const PlanScreen = () => {
                           { text: 'Cancel', style: 'cancel' },
                           { 
                             text: 'Switch Plan', 
-                            onPress: () => startPlan(plan.id)
+                            onPress: async () => {
+                              setLoadingStates(prev => ({ ...prev, [plan.id]: 'starting' }));
+                              try {
+                                await startPlan(plan.id);
+                              } finally {
+                                setLoadingStates(prev => ({ ...prev, [plan.id]: null }));
+                              }
+                            }
                           }
                         ]
                       );
                     } else {
-                      startPlan(plan.id);
+                      setLoadingStates(prev => ({ ...prev, [plan.id]: 'starting' }));
+                      try {
+                        await startPlan(plan.id);
+                      } finally {
+                        setLoadingStates(prev => ({ ...prev, [plan.id]: null }));
+                      }
                     }
                   }}
+                  disabled={loadingStates[plan.id] === 'starting'}
                 >
-                  <Feather name="play-circle" size={24} color="#666666" />
+                  <Feather 
+                    name={loadingStates[plan.id] === 'starting' ? "clock" : "play-circle"} 
+                    size={24} 
+                    color={loadingStates[plan.id] === 'starting' ? "#FF9800" : "#666666"} 
+                  />
                 </TouchableOpacity>
               )}
               {isActive && !isPaused && !isCompleted && (
@@ -708,7 +867,14 @@ const PlanScreen = () => {
                         { text: 'Cancel', style: 'cancel' },
                         { 
                           text: 'Pause Plan', 
-                          onPress: () => pausePlan()
+                          onPress: async () => {
+                            setLoadingStates(prev => ({ ...prev, [plan.id]: 'pausing' }));
+                            try {
+                              await pausePlan();
+                            } finally {
+                              setLoadingStates(prev => ({ ...prev, [plan.id]: null }));
+                            }
+                          }
                         },
                         { 
                           text: 'End Plan', 
@@ -719,11 +885,20 @@ const PlanScreen = () => {
                               `Are you sure you want to end "${plan.title}"? This will delete all progress and cannot be undone.`,
                               [
                                 { text: 'Cancel', style: 'cancel' },
-                                { 
-                                  text: 'End Plan', 
-                                  style: 'destructive',
-                                  onPress: () => endPlan(plan.id)
-                                }
+                                                        { 
+                          text: 'End Plan', 
+                          style: 'destructive',
+                          onPress: async () => {
+                            setLoadingStates(prev => ({ ...prev, [plan.id]: 'ending' }));
+                            try {
+                              await endPlan(plan.id);
+                              // Immediately refresh progress data
+                              await loadPlanProgress();
+                            } finally {
+                              setLoadingStates(prev => ({ ...prev, [plan.id]: null }));
+                            }
+                          }
+                        }
                               ]
                             );
                           }
@@ -737,12 +912,22 @@ const PlanScreen = () => {
               )}
               {isPaused && (
                 <TouchableOpacity 
-                  onPress={(e) => {
+                  onPress={async (e) => {
                     e.stopPropagation();
-                    resumePlan();
+                    setLoadingStates(prev => ({ ...prev, [plan.id]: 'resuming' }));
+                    try {
+                      await resumePlan();
+                    } finally {
+                      setLoadingStates(prev => ({ ...prev, [plan.id]: null }));
+                    }
                   }}
+                  disabled={loadingStates[plan.id] === 'resuming'}
                 >
-                  <Feather name="play-circle" size={24} color="#4CAF50" />
+                  <Feather 
+                    name={loadingStates[plan.id] === 'resuming' ? "clock" : "play-circle"} 
+                    size={24} 
+                    color={loadingStates[plan.id] === 'resuming' ? "#FF9800" : "#4CAF50"} 
+                  />
                 </TouchableOpacity>
               )}
               <Ionicons 
@@ -924,9 +1109,23 @@ const PlanScreen = () => {
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         removeClippedSubviews={true}
-        maxToRenderPerBatch={5}
-        windowSize={10}
-        initialNumToRender={3}
+        maxToRenderPerBatch={3}
+        windowSize={5}
+        initialNumToRender={2}
+        updateCellsBatchingPeriod={100}
+        getItemLayout={(data, index) => ({
+          length: 120, // Estimated height per plan item
+          offset: 120 * index,
+          index,
+        })}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#FF9F0A']} // Android
+            tintColor="#FF9F0A" // iOS
+          />
+        }
       />
       
       <ReadingModeModal
@@ -938,6 +1137,113 @@ const PlanScreen = () => {
         onGroup={handleGroupReading}
         onCancel={handleCancelModal}
       />
+
+      {/* Order Enforcement Modal */}
+      {showOrderEnforcementModal && enforcementData && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+        }}>
+          <View style={{
+            backgroundColor: colors.card,
+            borderRadius: 12,
+            padding: 24,
+            margin: 20,
+            maxWidth: 400,
+            width: '90%',
+          }}>
+            <Text style={{
+              fontSize: 18,
+              fontWeight: '600',
+              color: colors.text,
+              marginBottom: 12,
+              textAlign: 'center'
+            }}>
+              {enforcementData.isStartPlan ? 'Start Reading Plan' : 'Follow Reading Order'}
+            </Text>
+            
+            <Text style={{
+              fontSize: 16,
+              color: colors.text,
+              marginBottom: 20,
+              textAlign: 'center',
+              lineHeight: 22,
+            }}>
+              {enforcementData.isStartPlan 
+                ? `To get the most out of "${enforcementData.planTitle}", stories should be read in order. Start with the first story:`
+                : `To maintain continuity in "${enforcementData.planTitle}", we recommend reading stories in order. Your next story is:`
+              }
+            </Text>
+
+            <View style={{
+              backgroundColor: colors.background,
+              padding: 16,
+              borderRadius: 8,
+              marginBottom: 20,
+            }}>
+              <Text style={{
+                fontSize: 16,
+                fontWeight: '600',
+                color: colors.primary,
+                textAlign: 'center',
+              }}>
+                {enforcementData.nextSegmentTitle}
+              </Text>
+            </View>
+
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              gap: 12,
+            }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  backgroundColor: colors.background,
+                }}
+                onPress={handleCancelEnforcement}
+              >
+                <Text style={{
+                  color: colors.text,
+                  textAlign: 'center',
+                  fontWeight: '500',
+                }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  backgroundColor: colors.primary,
+                }}
+                onPress={enforcementData.isStartPlan ? handleStartPlanAndRead : handleReadNextStory}
+              >
+                <Text style={{
+                  color: 'white',
+                  textAlign: 'center',
+                  fontWeight: '600',
+                }}>
+                  {enforcementData.isStartPlan ? 'Start Plan' : 'Read Next'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };

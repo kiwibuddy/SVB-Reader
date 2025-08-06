@@ -8,7 +8,9 @@ import {
   startPlan as startPlanDB,
   startChallenge as startChallengeDB,
   getActivePlan,
-  getActiveChallenges
+  getActiveChallenges,
+  resetPlanProgress,
+  resetChallengeProgress
 } from '@/api/sqlite';
 
 // Add this interface near the top of the file, before AppContextType
@@ -332,13 +334,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const endPlan = async (planId: string) => {
     try {
-      // Clear the active plan
+      // Reset plan progress in database (preserves achievements and read counts)
+      await resetPlanProgress(planId);
+      
+      // Clear the active plan from state
       setActivePlan(null);
       await AsyncStorage.removeItem('activePlan');
       
-      // Clear plan progress from database
-      // Note: You may want to add a database function to clear plan progress
-      console.log(`Plan ${planId} ended`);
+      console.log(`Plan ${planId} ended and progress reset`);
     } catch (error) {
       console.error('Error ending plan:', error);
     }
@@ -346,15 +349,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const endChallenge = async (challengeId: string) => {
     try {
-      // Remove challenge from active challenges
+      // Reset challenge progress in database (preserves achievements and read counts)
+      await resetChallengeProgress(challengeId);
+      
+      // Remove challenge from active challenges state
       const updatedChallenges = { ...activeChallenges };
       delete updatedChallenges[challengeId];
       setActiveChallenges(updatedChallenges);
       await AsyncStorage.setItem('activeChallenges', JSON.stringify(updatedChallenges));
       
-      // Clear challenge progress from database
-      // Note: You may want to add a database function to clear challenge progress
-      console.log(`Challenge ${challengeId} ended`);
+      console.log(`Challenge ${challengeId} ended and progress reset`);
     } catch (error) {
       console.error('Error ending challenge:', error);
     }

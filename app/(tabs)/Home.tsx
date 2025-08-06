@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -265,7 +266,6 @@ gridItemLabel: {
     color: colors.secondary,
   },
   continueButton: {
-    backgroundColor: '#4CAF50',
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 16,
@@ -754,8 +754,8 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: Co
             {dailySegment.ref ? ` (${dailySegment.ref})` : ''}
           </Text>
         </View>
-        <Pressable style={styles.continueButton} onPress={handleDailyStart}>
-          <Text style={styles.continueButtonText}>Start</Text>
+        <Pressable style={[styles.continueButton, { backgroundColor: '#4CAF50' }]} onPress={handleDailyStart}>
+          <Text style={styles.continueButtonText}>Read</Text>
         </Pressable>
       </View>
     </View>
@@ -774,6 +774,27 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: Co
 type CompletionData = {
   id: string;
   isCompleted: boolean;
+};
+
+// Challenge color definitions
+const CHALLENGE_STYLES = {
+  "Paul's Letters": { color: "#4df469" },
+  "David's Life": { color: "#f44d69" },
+  "Advent Journey": { color: "#694df4" },
+  "Lenten Reflection": { color: "#4d9ff4" },
+  "12 Days of Christmas": { color: "#f4b64d" },
+  "The Gospels": { color: "#4dcaf4" },
+  "The Torah": { color: "#9f4df4" },
+  "In The Beginning": { color: "#f4944d" },
+  "New Testament Journey": { color: "#FF69B4" },
+  "Old Testament Journey": { color: "#8B4513" }
+};
+
+// Plan color definitions
+const PLAN_STYLES = {
+  "Bible1Year": { color: "#7B68EE" },
+  "NT100Days": { color: "#32CD32" },
+  "SchoolYear1": { color: "#FF6347" }
 };
 
 interface SectionStyles {
@@ -903,7 +924,67 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
     };
 
     calculateInsights();
-  }, [completedSegments]);
+  }, []); // Only run once on mount to avoid infinite re-renders
+
+  // Refresh insights when returning to Home screen
+  useFocusEffect(
+    React.useCallback(() => {
+      const calculateInsights = async () => {
+        const emojiData = await getEmojis();
+        
+        // Calculate most used emoji
+        const emojiCounts = emojiData.reduce((acc: {[key: string]: number}, curr: any) => {
+          acc[curr.emoji] = (acc[curr.emoji] || 0) + 1;
+          return acc;
+        }, {});
+        const mostUsedEmoji = Object.entries(emojiCounts)
+          .sort(([,a], [,b]) => b - a)[0]?.[0] || '👍';
+
+        // Calculate segment read counts and book counts
+        const segmentCounts: {[key: string]: number} = {};
+        const bookCounts: {[key: string]: number} = {};
+
+        Object.entries(completedSegments).forEach(([segmentId, seg]) => {
+          if (seg.isCompleted) {
+            // Count segment reads using the key as the ID
+            segmentCounts[segmentId] = (segmentCounts[segmentId] || 0) + 1;
+            
+            // Count book reads
+            const book = SegmentTitles[segmentId]?.book[0] || 'Unknown';
+            bookCounts[book] = (bookCounts[book] || 0) + 1;
+          }
+        });
+
+        // Find favorite book and segment
+        const favoriteBookKey = Object.entries(bookCounts)
+          .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Gen';
+        
+        // Map short book name to full name
+        const bookNameMapping: { [key: string]: string } = {
+          'Gen': 'Genesis',
+          'Exo': 'Exodus',
+          // ... add other book mappings
+        };
+
+        const favoriteSegmentId = Object.entries(segmentCounts)
+          .sort(([,a], [,b]) => b - a)[0]?.[0];
+
+        setInsights({
+          favoriteBook: favoriteBookKey,
+          favoriteBookFullName: bookNameMapping[favoriteBookKey] || favoriteBookKey,
+          favoriteSegmentId,
+          favoriteSegment: favoriteSegmentId 
+            ? SegmentTitles[favoriteSegmentId]?.title || 'Unknown'
+            : 'Not enough data',
+          readingStreak: 12,
+          mostUsedEmoji,
+          completionRate: Math.round((Object.keys(completedSegments).length / Object.keys(SegmentTitles).length) * 100)
+        });
+      };
+
+      calculateInsights();
+    }, [])
+  );
 
   const handleBookPress = () => {
     // Navigate to Plan or Navigation to find the book instead of direct navigation
@@ -1085,9 +1166,38 @@ const HomeScreen = () => {
     };
     
     loadStreakData();
-  }, [completedSegments]); // Reload when completedSegments changes
+  }, []); // Only run once on mount to avoid infinite re-renders
+
+  // Refresh streak data when returning to Home screen
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadStreakData = async () => {
+        const [currentStreakValue, bestStreakValue] = await Promise.all([
+          getCurrentStreak(),
+          getBestStreak()
+        ]);
+        
+        setCurrentStreak(currentStreakValue);
+        setBestStreak(bestStreakValue);
+        
+        // Find the most recent completed segment date
+        let latestDate: string | null = null;
+        Object.values(completedSegments).forEach((seg: any) => {
+          if (seg.isCompleted && seg.completionDate) {
+            if (!latestDate || seg.completionDate > latestDate) {
+              latestDate = seg.completionDate;
+            }
+          }
+        });
+        setIsTodayComplete(latestDate ? isToday(parseISO(latestDate)) : false);
+      };
+      
+      loadStreakData();
+    }, [])
+  );
 
   // Add useEffect to load real progress data
+  // Initial load for progress data (runs once)
   useEffect(() => {
     const loadProgressData = async () => {
       // Load plan progress
@@ -1122,7 +1232,46 @@ const HomeScreen = () => {
     };
 
     loadProgressData();
-  }, [activePlan, activeChallenges, completedSegments]);
+  }, [activePlan, activeChallenges]); // Removed completedSegments to avoid infinite re-renders
+
+  // Refresh progress data when returning to Home screen
+  useFocusEffect(
+    React.useCallback(() => {
+      const refreshProgressData = async () => {
+        // Load plan progress
+        if (activePlan) {
+          const progress = await getPlanProgress(activePlan.planId);
+          const nextSegment = await getNextSegmentForPlan(activePlan.planId);
+          setPlanProgress({
+            totalSegments: progress.totalSegments,
+            completedSegments: progress.completedSegments,
+            progressPercentage: progress.progressPercentage,
+            nextSegmentId: nextSegment?.segmentId || null,
+            nextSegmentTitle: nextSegment?.title || null
+          });
+        }
+
+        // Load challenge progresses
+        const challengeProgressData: typeof challengeProgresses = {};
+        for (const [id, challenge] of Object.entries(activeChallenges)) {
+          if (challenge && !challenge.isPaused && !challenge.isCompleted) {
+            const progress = await getChallengeProgress(challenge.challengeId);
+            const nextSegment = await getNextSegmentForChallenge(challenge.challengeId);
+            challengeProgressData[id] = {
+              totalSegments: progress.totalSegments,
+              completedSegments: progress.completedSegments,
+              progressPercentage: progress.progressPercentage,
+              nextSegmentId: nextSegment?.segmentId || null,
+              nextSegmentTitle: nextSegment?.title || null
+            };
+          }
+        }
+        setChallengeProgresses(challengeProgressData);
+      };
+
+      refreshProgressData();
+    }, [activePlan, activeChallenges])
+  );
 
   // Function to get next uncompleted segment for a plan
   const getNextSegmentForPlan = async (planId: string): Promise<{ segmentId: string; title: string } | null> => {
@@ -1486,7 +1635,7 @@ const HomeScreen = () => {
           <Text style={localStyles.welcomeTitle}>{t('UI.home.heading')}</Text>
           <Text style={localStyles.welcomeText}>{t('UI.home.subheading')}</Text>
           <Text style={[localStyles.welcomeText, { color: '#FF6B6B', fontWeight: 'bold', marginTop: 8 }]}>
-            MVP Version: Simplified Navigation & System Defaults - Ready for Launch
+            MVP Version: Context-Aware Navigation & Progress Tracking Fixed - Launch Ready
           </Text>
         </View>
 
@@ -1536,10 +1685,11 @@ const HomeScreen = () => {
               (() => {
                 const planData = ReadingPlansChallenges.plans.find((plan: any) => plan.id === activePlan.planId);
                 if (!planData) return null;
+                const planColor = (PLAN_STYLES as any)[planData.title]?.color || '#7B68EE';
                 return (
                   <View style={styles.activeReadingCard}>
                     <View style={styles.activeReadingContent}>
-                      <View style={[styles.activeReadingIcon, { backgroundColor: '#7B68EE' }]}> 
+                      <View style={[styles.activeReadingIcon, { backgroundColor: planColor }]}> 
                         <Ionicons name="calendar-outline" size={24} color="#FFFFFF" />
                       </View>
                       <View style={styles.activeReadingInfo}>
@@ -1553,8 +1703,8 @@ const HomeScreen = () => {
                           {planProgress ? `${Math.round(planProgress.progressPercentage)}% complete` : 'Loading...'}
                         </Text>
                       </View>
-                      <Pressable style={styles.continueButton} onPress={() => handleActivePlanContinue()}>
-                        <Text style={styles.continueButtonText}>→ Continue</Text>
+                      <Pressable style={[styles.continueButton, { backgroundColor: planColor }]} onPress={() => handleActivePlanContinue()}>
+                        <Text style={styles.continueButtonText}>Read</Text>
                       </Pressable>
                     </View>
                   </View>
@@ -1566,10 +1716,11 @@ const HomeScreen = () => {
               const challengeData = ReadingPlansChallenges.challenges.find((c: any) => c.id === challenge.challengeId);
               if (!challengeData) return null;
               const progressData = challengeProgresses[id];
+              const challengeColor = '#FF69B4'; // Use consistent pink color for all challenges
               return (
                 <View key={id} style={styles.activeReadingCard}>
                   <View style={styles.activeReadingContent}>
-                    <View style={[styles.activeReadingIcon, { backgroundColor: '#FF69B4' }]}> 
+                    <View style={[styles.activeReadingIcon, { backgroundColor: challengeColor }]}> 
                       <Ionicons name="flag-outline" size={24} color="#FFFFFF" />
                     </View>
                     <View style={styles.activeReadingInfo}>
@@ -1583,8 +1734,8 @@ const HomeScreen = () => {
                         {progressData ? `${Math.round(progressData.progressPercentage)}% complete` : 'Loading...'}
                       </Text>
                     </View>
-                    <Pressable style={styles.continueButton} onPress={() => handleActiveChallengesContinue(id)}>
-                      <Text style={styles.continueButtonText}>→ Continue</Text>
+                    <Pressable style={[styles.continueButton, { backgroundColor: challengeColor }]} onPress={() => handleActiveChallengesContinue(id)}>
+                      <Text style={styles.continueButtonText}>Read</Text>
                     </Pressable>
                   </View>
                 </View>

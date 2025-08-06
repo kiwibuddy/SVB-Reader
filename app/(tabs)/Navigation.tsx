@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { View, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, useWindowDimensions, Platform, Modal, Animated, Keyboard, TouchableWithoutFeedback } from "react-native";
+import { View, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, useWindowDimensions, Platform, Modal, Animated, Keyboard, TouchableWithoutFeedback, RefreshControl } from "react-native";
 import Accordion from "@/components/navigation/NavBook";
 import BooksJson from "@/assets/data/BookChapterList.json";
 import SegmentTitlesJson from "@/assets/data/SegmentTitles.json";
@@ -556,9 +556,10 @@ const Navigation = () => {
   const oldTestamentBooks = ['Gen', 'Exo', 'Lev', 'Num', 'Deu', 'Jos', 'Jdg', 'Rut', '1Sa', '2Sa', '1Ki', '2Ki', '1Ch', '2Ch', 'Ezr', 'Neh', 'Est', 'Job', 'Psa', 'Pro', 'Ecc', 'SoS', 'Isa', 'Jer', 'Lam', 'Eze', 'Dan', 'Hos', 'Joe', 'Amo', 'Oba', 'Jon', 'Mic', 'Nah', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal'];
   const newTestamentBooks = ['Mat', 'Mar', 'Luk', 'Joh', 'Act', 'Rom', '1Co', '2Co', 'Gal', 'Eph', 'Php', 'Col', '1Th', '2Th', '1Ti', '2Ti', 'Tit', 'Phm', 'Heb', 'Jam', '1Pe', '2Pe', '1Jn', '2Jn', '3Jn', 'Jud', 'Rev'];
 
-  // Add state for completed segments
+    // Add state for completed segments
   const [completedSegmentIds, setCompletedSegmentIds] = useState<{[key: string]: boolean}>({});
-
+  const [refreshing, setRefreshing] = useState(false);
+  
   // Reading Mode Modal State
   const [showReadingModeModal, setShowReadingModeModal] = useState(false);
   const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
@@ -862,7 +863,7 @@ const Navigation = () => {
       const indexB = booksArray.indexOf(b.djhBook);
       return indexA - indexB;
     });
-  }, [searchQuery, showSearch, activeFilters, completedSegmentIds]);
+  }, [searchQuery, showSearch, activeFilters]);
 
   // Filter management functions
   const toggleFilter = (category: keyof typeof activeFilters, value: string) => {
@@ -902,12 +903,12 @@ const Navigation = () => {
     setShowFilterPanel(prev => !prev)
   }
 
-  // Fetch completion status for all visible segments when filteredData changes
+  // Fetch completion status for all segments on mount
   useEffect(() => {
     const fetchCompletion = async () => {
       const completed: {[key: string]: boolean} = {};
       await Promise.all(
-        filteredData.map(async book => {
+        data.map(async book => {
           await Promise.all(
             book.segments.map(async segmentId => {
               const status = await getSegmentCompletionStatus(String(segmentId), 'main');
@@ -921,15 +922,16 @@ const Navigation = () => {
       setCompletedSegmentIds(completed);
     };
     fetchCompletion();
-  }, [filteredData]);
+  }, []); // Only run once on mount
 
   // Refresh completion status when returning from reading segments
   useFocusEffect(
     React.useCallback(() => {
       const fetchCompletion = async () => {
         const completed: {[key: string]: boolean} = {};
+        // Use the original data array instead of filteredData to avoid circular dependency
         await Promise.all(
-          filteredData.map(async book => {
+          data.map(async book => {
             await Promise.all(
               book.segments.map(async segmentId => {
                 const status = await getSegmentCompletionStatus(String(segmentId), 'main');
@@ -943,7 +945,7 @@ const Navigation = () => {
         setCompletedSegmentIds(completed);
       };
       fetchCompletion();
-    }, [filteredData])
+    }, [])
   );
 
   // Handle book title click
@@ -1097,6 +1099,36 @@ const Navigation = () => {
   // Memoize the keyExtractor function
   const keyExtractor = useCallback((item: any) => String(item.djhBook), []);
 
+  // Pull-to-refresh handler
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      // Refresh completion status for all segments
+      const fetchCompletion = async () => {
+        const completionStatus: {[key: string]: boolean} = {};
+        
+        for (const book of data) {
+          const segments = book.segments;
+          for (const segmentId of segments) {
+            try {
+              const status = await getSegmentCompletionStatus(String(segmentId), 'main');
+              completionStatus[String(segmentId)] = status.isCompleted;
+            } catch (error) {
+              console.error(`Error fetching status for ${segmentId}:`, error);
+              completionStatus[String(segmentId)] = false;
+            }
+          }
+        }
+        
+        setCompletedSegmentIds(completionStatus);
+      };
+      
+      await fetchCompletion();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [data]);
+
   return (
     <SafeAreaView style={styles.container}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -1180,14 +1212,23 @@ const Navigation = () => {
             renderItem={renderItem}
             keyExtractor={keyExtractor}
             removeClippedSubviews={true}
-            maxToRenderPerBatch={10}
-            windowSize={10}
-            initialNumToRender={5}
+            maxToRenderPerBatch={5}
+            windowSize={8}
+            initialNumToRender={4}
+            updateCellsBatchingPeriod={100}
             getItemLayout={(data, index) => ({
               length: 80, // Approximate height of each item
               offset: 80 * index,
               index,
             })}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={['#FF9F0A']} // Android
+                tintColor="#FF9F0A" // iOS
+              />
+            }
           />
         </View>
       </TouchableWithoutFeedback>
