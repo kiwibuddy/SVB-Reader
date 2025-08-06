@@ -794,9 +794,7 @@
       "title": "Women of the Bible",
       "description": "20 Stories - 4 Weeks",
       "image": "island",
-      "longDescription": "Journey through the remarkable stories of biblical women in chronological order. From Eve's pivotal choice in Eden to Mary's faithful 'yes' in Nazareth, experience how women of faith shaped God's redemptive plan across history. This chronological journey reveals the threads of courage, wisdom, and devotion woven throughout Scripture.",
-      "chronologicalOrder": true,
-      "chronologicalMapping": "womenOfTheBibleChronological",
+      "longDescription": "Discover the powerful stories of biblical women who shaped history. From Eve to Mary, explore the faith, courage, and wisdom of women who walked with God and changed the world.",
       "segments": {
         "Gen": {
           "segments": [

@@ -63,7 +63,7 @@ const ChronologicalView: React.FC<ChronologicalViewProps> = ({
 
   const mappingData = (ChronologicalMappings as any)[chronologicalMapping];
   
-  if (!mappingData) {
+  if (!mappingData || !mappingData.segments) {
     return (
       <View style={styles.errorContainer}>
         <Text style={[styles.errorText, { color: colors.secondary }]}>
@@ -74,7 +74,8 @@ const ChronologicalView: React.FC<ChronologicalViewProps> = ({
   }
 
   // Group segments by phase
-  const segmentsByPhase = mappingData.segments.reduce((acc: any, segment: any) => {
+  const segmentsByPhase = (mappingData.segments || []).reduce((acc: any, segment: any) => {
+    if (!segment || !segment.phase) return acc;
     if (!acc[segment.phase]) {
       acc[segment.phase] = [];
     }
@@ -82,7 +83,7 @@ const ChronologicalView: React.FC<ChronologicalViewProps> = ({
     return acc;
   }, {});
 
-  const phases = Object.keys(mappingData.phases);
+  const phases = Object.keys(mappingData.phases || {});
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>

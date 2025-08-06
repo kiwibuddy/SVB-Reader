@@ -1071,5 +1071,242 @@
         "color": "#FFD700"
       }
     }
+  },
+  "womenOfTheBibleChronological": {
+    "title": "Women of the Bible (Chronological)",
+    "description": "20 Stories - 4 Weeks",
+    "longDescription": "Journey through the remarkable stories of biblical women in chronological order, revealing how women of faith shaped God's redemptive plan across history.",
+    "segments": [
+      {
+        "segmentId": "S002",
+        "book": "Gen",
+        "title": "People Sin - Eve's Choice",
+        "ref": "3:1-5:32",
+        "phase": "The Beginning",
+        "description": "Eve faces the first moral choice in human history",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S006",
+        "book": "Gen",
+        "title": "God's Covenant - Sarah's Faith",
+        "ref": "15:1-18:15",
+        "phase": "The Patriarchs",
+        "description": "Sarah learns to trust God's impossible promises",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S008",
+        "book": "Gen",
+        "title": "Abraham's Test - Sarah's Journey",
+        "ref": "20:1-23:20",
+        "phase": "The Patriarchs",
+        "description": "Sarah experiences God's faithfulness through trials",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S009",
+        "book": "Gen",
+        "title": "Isaac's Family - Rebecca's Calling",
+        "ref": "24:1-25:26",
+        "phase": "The Patriarchs",
+        "description": "Rebecca becomes the chosen mother of God's covenant people",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S011",
+        "book": "Gen",
+        "title": "Jacob's Family - Rachel & Leah's Legacy",
+        "ref": "28:10-30:43",
+        "phase": "The Patriarchs",
+        "description": "Rachel and Leah become mothers of the twelve tribes",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S019",
+        "book": "Exo",
+        "title": "Moses is Born - Miriam & Jochebed's Courage",
+        "ref": "1:8-4:31",
+        "phase": "The Exodus",
+        "description": "Courageous women preserve Moses, Israel's future deliverer",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S020",
+        "book": "Exo",
+        "title": "Moses Flees - Pharaoh's Daughter's Compassion",
+        "ref": "5:1-7:13",
+        "phase": "The Exodus",
+        "description": "An Egyptian princess shows mercy that changes history",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S078",
+        "book": "Jdg",
+        "title": "Deborah - Judge & Prophetess",
+        "ref": "3:7-5:31",
+        "phase": "The Judges",
+        "description": "Deborah leads Israel as both judge and military strategist",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S082",
+        "book": "Jdg",
+        "title": "Jephthah's Daughter - Ultimate Sacrifice",
+        "ref": "10:6-12:7",
+        "phase": "The Judges",
+        "description": "A young woman's faithfulness in the face of tragedy",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "I008",
+        "book": "Rut",
+        "title": "Introduction to Ruth",
+        "phase": "The Judges",
+        "description": "Setting the stage for Ruth's remarkable story of loyalty",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S085",
+        "book": "Rut",
+        "title": "Ruth - Loyalty Beyond Death",
+        "ref": "1:1-4:22",
+        "phase": "The Judges",
+        "description": "Ruth's devotion leads her into the lineage of Christ",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S086",
+        "book": "1Sa",
+        "title": "Samuel is Born - Hannah's Prayer",
+        "ref": "1:1-4:22",
+        "phase": "The Kingdom",
+        "description": "Hannah's faithful prayer brings forth Israel's great prophet",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "I017",
+        "book": "Est",
+        "title": "Introduction to Esther",
+        "phase": "The Exile",
+        "description": "Setting the stage for Esther's courageous stand",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S150",
+        "book": "Est",
+        "title": "Esther Becomes Queen",
+        "ref": "1:1-2:23",
+        "phase": "The Exile",
+        "description": "God positions Esther for such a time as this",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S151",
+        "book": "Est",
+        "title": "Esther's Courage - Part 1",
+        "ref": "3:1-5:14",
+        "phase": "The Exile",
+        "description": "Esther risks everything to approach the king",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S152",
+        "book": "Est",
+        "title": "Esther's Courage - Part 2",
+        "ref": "6:1-8:17",
+        "phase": "The Exile",
+        "description": "Esther's wisdom saves her people from destruction",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S153",
+        "book": "Est",
+        "title": "Esther's Victory",
+        "ref": "9:1-10:3",
+        "phase": "The Exile",
+        "description": "Esther's courage becomes Israel's deliverance",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S285",
+        "book": "Luk",
+        "title": "John's Birth Foretold - Elizabeth's Joy",
+        "ref": "1:5-25",
+        "phase": "The Messiah",
+        "description": "Elizabeth experiences God's miraculous intervention",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S286",
+        "book": "Luk",
+        "title": "Jesus Foretold - Mary's Yes",
+        "ref": "1:26-38",
+        "phase": "The Messiah",
+        "description": "Mary's faithful acceptance changes everything",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S287",
+        "book": "Luk",
+        "title": "Mary Visits Elizabeth",
+        "ref": "1:39-56",
+        "phase": "The Messiah",
+        "description": "Two women celebrate God's miraculous work",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S288",
+        "book": "Luk",
+        "title": "Jesus is Born - Mary's Wonder",
+        "ref": "2:1-20",
+        "phase": "The Messiah",
+        "description": "Mary treasures the miracle of Jesus' birth in her heart",
+        "color": "#9f4df4"
+      },
+      {
+        "segmentId": "S301",
+        "book": "Joh",
+        "title": "The Samaritan Woman - Bold Witness",
+        "ref": "4:1-42",
+        "phase": "The Ministry",
+        "description": "A Samaritan woman becomes Jesus' first evangelist",
+        "color": "#9f4df4"
+      }
+    ],
+    "phases": {
+      "The Beginning": {
+        "description": "The first woman and the beginning of human history",
+        "color": "#9f4df4"
+      },
+      "The Patriarchs": {
+        "description": "Founding mothers of God's covenant people",
+        "color": "#9f4df4"
+      },
+      "The Exodus": {
+        "description": "Women of courage during Israel's deliverance",
+        "color": "#9f4df4"
+      },
+      "The Judges": {
+        "description": "Women leaders and faithful followers in turbulent times",
+        "color": "#9f4df4"
+      },
+      "The Kingdom": {
+        "description": "Women of faith in the age of kings and prophets",
+        "color": "#9f4df4"
+      },
+      "The Exile": {
+        "description": "Queens and heroines in foreign lands",
+        "color": "#9f4df4"
+      },
+      "The Messiah": {
+        "description": "Women who welcomed and celebrated Jesus' arrival",
+        "color": "#9f4df4"
+      },
+      "The Ministry": {
+        "description": "Women who encountered and followed Jesus",
+        "color": "#9f4df4"
+      }
+    }
   }
 } 

@@ -432,6 +432,11 @@ const ChallengesScreen = () => {
       [CHALLENGE_CATEGORIES.TOPICAL]: [] as Challenge[],
     };
 
+    // Safety check to ensure readingPlansData and challenges exist
+    if (!readingPlansData || !readingPlansData.challenges) {
+      return { active, completed, categorized };
+    }
+
     readingPlansData.challenges.forEach(challenge => {
       // Apply seasonal visibility filter
       if (!isSeasonalChallengeVisible(challenge.id)) {
@@ -637,7 +642,7 @@ const ChallengesScreen = () => {
                 <ChronologicalView
                   challengeId={challenge.id}
                   chronologicalMapping={chronologicalMapping}
-                  completedSegments={completedSegments.reduce((acc, id) => {
+                  completedSegments={(completedSegments || []).reduce((acc, id) => {
                     acc[id] = true;
                     return acc;
                   }, {} as Record<string, boolean>)}
@@ -933,7 +938,12 @@ const ChallengesScreen = () => {
   const sections = useMemo(() => {
     const result = [];
     
-    if (organizedChallenges.active.length > 0) {
+    // Safety check to ensure organizedChallenges is defined
+    if (!organizedChallenges) {
+      return [];
+    }
+    
+    if (organizedChallenges.active && organizedChallenges.active.length > 0) {
       result.push({
         title: 'Active Challenges',
         data: organizedChallenges.active
@@ -941,10 +951,9 @@ const ChallengesScreen = () => {
     }
     
     // Combine all non-active challenges into a single section without category titles
-    const allAvailableChallenges = [
-      ...organizedChallenges.categorized[CHALLENGE_CATEGORIES.SEASONAL],
-      ...organizedChallenges.categorized[CHALLENGE_CATEGORIES.TOPICAL]
-    ];
+    const seasonalChallenges = organizedChallenges.categorized?.[CHALLENGE_CATEGORIES.SEASONAL] || [];
+    const topicalChallenges = organizedChallenges.categorized?.[CHALLENGE_CATEGORIES.TOPICAL] || [];
+    const allAvailableChallenges = [...seasonalChallenges, ...topicalChallenges];
     
     if (allAvailableChallenges.length > 0) {
       result.push({
@@ -953,7 +962,7 @@ const ChallengesScreen = () => {
       });
     }
     
-    if (organizedChallenges.completed.length > 0) {
+    if (organizedChallenges.completed && organizedChallenges.completed.length > 0) {
       result.push({
         title: 'Completed Challenges',
         data: organizedChallenges.completed
@@ -991,7 +1000,7 @@ const ChallengesScreen = () => {
       <FlatList
         ListHeaderComponent={ListHeaderComponent}
         style={styles.content}
-        data={sections}
+        data={sections || []}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 100 }}
