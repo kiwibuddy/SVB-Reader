@@ -853,7 +853,7 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
       const emojiData = await getEmojis();
       
       // Calculate most used emoji
-      const emojiCounts = emojiData.reduce((acc: {[key: string]: number}, curr) => {
+      const emojiCounts = emojiData.reduce((acc: {[key: string]: number}, curr: any) => {
         acc[curr.emoji] = (acc[curr.emoji] || 0) + 1;
         return acc;
       }, {});
@@ -1462,15 +1462,17 @@ const HomeScreen = () => {
           </Pressable>
         }
         rightComponent={
-          <Pressable 
-            style={({ pressed }) => [
-              styles.headerIcon,
-              pressed && { opacity: 0.8, transform: [{ scale: 0.95 }] }
-            ]}
-            onPress={() => router.push("/settings")}
-          >
-            <Ionicons name="settings-outline" size={24} color={colors.text} />
-          </Pressable>
+          // Commented out for MVP - will re-enable in v2 with full settings
+          // <Pressable 
+          //   style={({ pressed }) => [
+          //     styles.headerIcon,
+          //     pressed && { opacity: 0.8, transform: [{ scale: 0.95 }] }
+          //   ]}
+          //   onPress={() => router.push("/settings")}
+          // >
+          //   <Ionicons name="settings-outline" size={24} color={colors.text} />
+          // </Pressable>
+          null
         }
       />
       <ScrollView 
@@ -1484,7 +1486,7 @@ const HomeScreen = () => {
           <Text style={localStyles.welcomeTitle}>{t('UI.home.heading')}</Text>
           <Text style={localStyles.welcomeText}>{t('UI.home.subheading')}</Text>
           <Text style={[localStyles.welcomeText, { color: '#FF6B6B', fontWeight: 'bold', marginTop: 8 }]}>
-            Test Version: Reading Plan and Challenge UI Updates v3 - Fixed Check Marks & Bottom Navigation
+            MVP Version: Simplified Navigation & System Defaults - Ready for Launch
           </Text>
         </View>
 

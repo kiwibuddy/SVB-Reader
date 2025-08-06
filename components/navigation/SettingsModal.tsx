@@ -37,10 +37,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
   } = useAppSettings();
   const { t } = useTranslation();
 
+  // MVP: Only English supported for launch
   const languages: Array<{ label: string; value: SupportedLanguage }> = [
     { label: 'English', value: 'en' },
-    { label: 'Français', value: 'fr' },
-    { label: 'Deutsch', value: 'de' }
+    // { label: 'Français', value: 'fr' }, // Will re-add in v2
+    // { label: 'Deutsch', value: 'de' }   // Will re-add in v2
   ];
 
   const sliderValue = useMemo(() => {

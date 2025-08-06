@@ -188,7 +188,8 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
           </Text>
         </Pressable>
 
-        <Pressable 
+        {/* MVP: Removed Plans and Challenges from bottom nav - accessible via Home screen cards */}
+        {/* <Pressable 
           style={styles.navItem} 
           onPress={() => router.replace("/Plan")}
         >
@@ -214,7 +215,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
           <Text style={[styles.navText, pathname === "/Reading-Challenges" && styles.activeText]}>
             Challenges
           </Text>
-        </Pressable>
+        </Pressable> */}
 
         <Pressable 
           style={styles.navItem} 

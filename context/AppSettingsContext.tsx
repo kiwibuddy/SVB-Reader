@@ -9,7 +9,8 @@ import i18next from 'i18next';
 // Create the context
 const AppSettingsContext = createContext<AppSettingsContextType | undefined>(undefined);
 
-export type SupportedLanguage = 'en' | 'fr' | 'de';
+// MVP: Only English supported for launch
+export type SupportedLanguage = 'en'; // | 'fr' | 'de'; // Will re-add in v2
 
 export interface AppSettingsContextType {
   fontSize: FontSize;
@@ -57,7 +58,8 @@ const darkColors: ColorScheme = {
 };
 
 export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isOrientationLocked, setIsOrientationLocked] = useState(true);
+  // MVP: Default to unlocked orientation (follows system like iPhone lock screen)
+  const [isOrientationLocked, setIsOrientationLocked] = useState(false);
   const [fontSize, setFontSize] = useState<FontSize>('medium');
   const [sizes, setSizes] = useState<TextSizes>({
     title: 24,
@@ -79,13 +81,16 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   
   const colors = isDarkMode ? darkColors : lightColors;
 
-  // Load saved orientation setting
+  // Load saved orientation setting - MVP: Default to system behavior
   useEffect(() => {
     const loadSettings = async () => {
       const savedOrientation = await AsyncStorage.getItem('orientationLocked');
       if (savedOrientation !== null) {
         setIsOrientationLocked(savedOrientation === 'true');
         await updateOrientation(savedOrientation === 'true');
+      } else {
+        // MVP: Ensure unlocked orientation by default (like iPhone lock screen)
+        await updateOrientation(false);
       }
     };
     loadSettings();
