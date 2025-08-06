@@ -237,6 +237,29 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return () => clearTimeout(timer);
   }, [segmentData?.id]);
 
+  // Emoji handling is now done directly in the Block component
+  const handleLongPress = useCallback((block: BibleBlock, index: number) => {
+    console.log('🔍 [Segment] handleLongPress triggered:', { 
+      blockIndex: index, 
+      sourceName: block.source?.sourceName,
+      color: block.source?.color 
+    });
+    
+    // The actual emoji picker logic is handled by EmojiHandler component
+    // This function is called by the Block component when long press is detected
+    // We can add any segment-level logic here if needed
+    
+    // For debugging: Add haptic feedback to confirm the long press was detected
+    if (Platform.OS === 'ios') {
+      try {
+        const Haptics = require('expo-haptics');
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {
+        console.log('Haptics not available');
+      }
+    }
+  }, []);
+
   // Add null checks for segmentData AFTER all hooks
   if (!segmentData || !segmentData.id) {
     console.error('Invalid segment data:', segmentData);
@@ -262,29 +285,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   };
 
   const isCompleted = getIsCompleted();
-
-  // Emoji handling is now done directly in the Block component
-  const handleLongPress = useCallback((block: BibleBlock, index: number) => {
-    console.log('🔍 [Segment] handleLongPress triggered:', { 
-      blockIndex: index, 
-      sourceName: block.source?.sourceName,
-      color: block.source?.color 
-    });
-    
-    // The actual emoji picker logic is handled by EmojiHandler component
-    // This function is called by the Block component when long press is detected
-    // We can add any segment-level logic here if needed
-    
-    // For debugging: Add haptic feedback to confirm the long press was detected
-    if (Platform.OS === 'ios') {
-      try {
-        const Haptics = require('expo-haptics');
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      } catch (error) {
-        console.log('Haptics not available');
-      }
-    }
-  }, []);
 
   const colorRenderCount = new Map<string, number>(); // Track render counts
 

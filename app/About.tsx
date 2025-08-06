@@ -262,7 +262,7 @@ const About = () => {
             </Text>
             
             <Text style={styles.modalParagraph}>
-              SourceView Reader ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our Bible reading app.
+              SourceView Together ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our Bible reading app.
             </Text>
 
             <Text style={styles.modalSubheading}>Information We Collect</Text>
@@ -281,7 +281,7 @@ const About = () => {
 
             <Text style={styles.modalSubheading}>How We Use Your Information</Text>
             <Text style={styles.modalParagraph}>
-              We use your information solely to provide and improve the SourceView Reader experience. Your reading progress helps us remember where you left off, and your preferences ensure a comfortable reading experience.
+              We use your information solely to provide and improve the SourceView Together experience. Your reading progress helps us remember where you left off, and your preferences ensure a comfortable reading experience.
             </Text>
 
             <Text style={styles.modalSubheading}>Data Storage & Security</Text>
@@ -297,7 +297,7 @@ const About = () => {
 
             <Text style={styles.modalSubheading}>Third-Party Services</Text>
             <Text style={styles.modalParagraph}>
-              SourceView Reader does not integrate with third-party analytics, advertising, or tracking services. Your reading experience remains private and focused.
+              SourceView Together does not integrate with third-party analytics, advertising, or tracking services. Your reading experience remains private and focused.
             </Text>
 
             <Text style={styles.modalSubheading}>Children's Privacy</Text>
@@ -343,17 +343,17 @@ const About = () => {
             </Text>
             
             <Text style={styles.modalParagraph}>
-              By downloading and using SourceView Reader, you agree to these Terms of Service. If you do not agree, please do not use the app.
+              By downloading and using SourceView Together, you agree to these Terms of Service. If you do not agree, please do not use the app.
             </Text>
 
             <Text style={styles.modalSubheading}>App Description</Text>
             <Text style={styles.modalParagraph}>
-              SourceView Reader is a Bible reading application that facilitates group reading experiences through role-based reading assignments and interactive features.
+              SourceView Together is a Bible reading application that facilitates group reading experiences through role-based reading assignments and interactive features.
             </Text>
 
             <Text style={styles.modalSubheading}>Acceptable Use</Text>
             <Text style={styles.modalParagraph}>
-              You agree to use SourceView Reader only for lawful purposes and in accordance with these Terms. You agree not to:
+              You agree to use SourceView Together only for lawful purposes and in accordance with these Terms. You agree not to:
             </Text>
             <Text style={styles.modalParagraph}>
               • Use the app to harass, abuse, or harm others
@@ -370,7 +370,7 @@ const About = () => {
 
             <Text style={styles.modalSubheading}>Intellectual Property</Text>
             <Text style={styles.modalParagraph}>
-              The SourceView Reader app, including its design, features, and content, is protected by copyright and other intellectual property laws. The Bible text used in the app is from the New Living Translation (NLT) and is used with permission.
+              The SourceView Together app, including its design, features, and content, is protected by copyright and other intellectual property laws. The Bible text used in the app is from the New Living Translation (NLT) and is used with permission.
             </Text>
 
             <Text style={styles.modalSubheading}>User Content</Text>
@@ -391,7 +391,7 @@ const About = () => {
 
             <Text style={styles.modalSubheading}>Limitation of Liability</Text>
             <Text style={styles.modalParagraph}>
-              In no event shall SourceView Reader be liable for any indirect, incidental, special, or consequential damages arising from your use of the app.
+              In no event shall SourceView Together be liable for any indirect, incidental, special, or consequential damages arising from your use of the app.
             </Text>
 
             <Text style={styles.modalSubheading}>Termination</Text>
@@ -427,7 +427,7 @@ const About = () => {
       
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          <Text style={styles.heading1}>About SourceView Reader</Text>
+          <Text style={styles.heading1}>About SourceView Together</Text>
           
           <Text style={styles.subtitle}>Read Together. Grow Together.</Text>
           
@@ -436,7 +436,7 @@ const About = () => {
           </Text>
           
           <Text style={styles.paragraph}>
-            SourceView Reader transforms Bible reading from something you do alone into something you share. When friends gather around this app, the Bible becomes a living conversation. Different voices. Fresh perspectives. Real connections.
+            SourceView Together transforms Bible reading from something you do alone into something you share. When friends gather around this app, the Bible becomes a living conversation. Different voices. Fresh perspectives. Real connections.
           </Text>
 
           <Text style={styles.heading2}>Why We Created This</Text>
@@ -450,7 +450,7 @@ const About = () => {
           </Text>
           
           <Text style={styles.paragraph}>
-            After 40,000+ hours of research by people passionate about making scripture accessible, the SourceView format was born. Now, with the SourceView Reader app, we're bringing this revolutionary approach to your friend group, study circle, or family gathering.
+            After 40,000+ hours of research by people passionate about making scripture accessible, the SourceView format was born. This revolutionary approach first appeared in the printed SourceView Bible, then evolved into the SourceView Bible app, and now reaches its full potential with SourceView Together—designed specifically for group reading experiences.
           </Text>
 
           <Text style={styles.heading2}>How It Works</Text>
@@ -546,7 +546,7 @@ const About = () => {
           </Text>
           
           <Text style={styles.paragraph}>
-            The Bible was never meant to be experienced alone. Download SourceView Reader today and see what happens when ancient wisdom meets modern community.
+            The Bible was never meant to be experienced alone. Download SourceView Together today and see what happens when ancient wisdom meets modern community.
           </Text>
 
           <View style={styles.callout}>

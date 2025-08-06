@@ -21,11 +21,12 @@ const IntroContentChildComponent: React.FC<any> = ({
   smallcaps,
   bibleText,
 }) => {
+  const { colors } = useAppSettings();
+  
   // Add safety check for undefined text
   if (!text) {
     return null;
   }
-  const { colors } = useAppSettings();
   
   // For markdown content, use the markdown renderer
   if (type === 'markdown' || (text && typeof text === 'string' && (text.includes('**') || text.includes('#')))) {

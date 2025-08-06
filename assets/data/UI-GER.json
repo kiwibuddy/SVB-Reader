@@ -49,8 +49,8 @@
     },
     "about": {
       "title": "Über",
-      "description": "SourceView Bible ist eine revolutionäre Art, die Heilige Schrift zu lesen und zu verstehen.",
-      "version": "Version 1.0.0"
+      "description": "SourceView Together ist eine revolutionäre Art, die Heilige Schrift mit Freunden zu lesen und zu verstehen.",
+      "version": "Version 1.0.5"
     },
     "bibleBlock": {
       "addReaction": "Reaktion hinzufügen",

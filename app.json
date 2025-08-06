@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "SVB-Youth",
+    "name": "SourceView Together",
     "slug": "SVB-Youth",
-    "version": "1.0.1",
+    "version": "1.0.5",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -10,7 +10,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.sourceview.svbyouth",
+      "bundleIdentifier": "com.sourceview.together",
+      "buildNumber": "1",
       "infoPlist": {
         "NSBluetoothAlwaysUsageDescription": "This app uses Bluetooth to connect with nearby readers for group Bible reading sessions.",
         "NSBluetoothPeripheralUsageDescription": "This app uses Bluetooth to create and join group Bible reading sessions.",
@@ -33,7 +34,8 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
-      "package": "com.sourceview.svbyouth"
+      "package": "com.sourceview.together",
+      "versionCode": 1
     },
     "web": {
       "bundler": "metro",

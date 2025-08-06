@@ -50,8 +50,8 @@
     },
     "about": {
       "title": "About",
-      "description": "SourceView Bible is a revolutionary way to read and understand Scripture.",
-      "version": "Version 1.0.0"
+      "description": "SourceView Together is a revolutionary way to read and understand Scripture with friends.",
+      "version": "Version 1.0.5"
     },
     "bibleBlock": {
       "addReaction": "Add Reaction",
