@@ -14,6 +14,12 @@
     "preview": {
       "distribution": "internal"
     },
+    "testflight": {
+      "distribution": "store",
+      "ios": {
+        "buildConfiguration": "Release"
+      }
+    },
     "production": {
       "distribution": "store"
     }
