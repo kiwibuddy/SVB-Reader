@@ -79,6 +79,16 @@ const SegmentItem: React.FC<SegmentItemProps> = React.memo(({
     loadStatus();
   }, [segment.id, context, planId, challengeId]);
 
+  // Update completion status immediately when completedSegments prop changes
+  useEffect(() => {
+    if (completedSegments && completedSegments[segment.id]) {
+      setCompletionStatus(prev => ({
+        ...prev,
+        isCompleted: true
+      }));
+    }
+  }, [completedSegments, segment.id]);
+
   const handlePress = useCallback(() => {
     if (onPress) {
       onPress(segment.id);

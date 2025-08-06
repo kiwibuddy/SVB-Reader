@@ -164,10 +164,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     }
   }, [emojiActions, segmentId, blockId]);
 
-  // CRITICAL: Debug logging for showPicker state changes
-  useEffect(() => {
-    console.log('🔍 [EmojiHandler] showPicker state changed:', showPicker);
-  }, [showPicker]);
+  // Removed debug logging for showPicker state changes
 
   // CRITICAL: Update position when picker width changes with validation
   useEffect(() => {

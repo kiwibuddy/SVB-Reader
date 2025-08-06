@@ -122,7 +122,8 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
   sectionTitle: {
     fontSize: 20,
     fontWeight: "500",
-    marginBottom: 12,
+    marginTop: 24,
+    marginBottom: 16,
     color: "#FF9F0A",
   },
   listContainer: {
@@ -263,6 +264,7 @@ const PlanScreen = () => {
     startPlan,
     pausePlan,
     resumePlan,
+    endPlan,
     switchPlan,
     readingPlanProgress,
     updateReadingPlanProgress,
@@ -280,6 +282,7 @@ const PlanScreen = () => {
 
   // Initialize selectedPlan with the active plan if it exists, otherwise use first plan
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [lastCompletedSegment, setLastCompletedSegment] = useState<string | null>(null);
 
 
   const [planProgress, setPlanProgress] = useState<Record<string, string[]>>({});
@@ -333,18 +336,21 @@ const PlanScreen = () => {
 
   const handleSegmentComplete = async (planId: string, segmentId: string) => {
     try {
-      // The actual completion is handled by CheckCircle component
-      // This function is called by the Accordion when a segment is completed
-      // We just need to refresh the local progress state
-      
       // Update local state immediately for UI responsiveness
-      setPlanProgress(prev => ({
-        ...prev,
-        [planId]: [...(prev[planId] || []), segmentId]
-      }));
+      setPlanProgress(prev => {
+        const currentProgress = prev[planId] || [];
+        if (!currentProgress.includes(segmentId)) {
+          return {
+            ...prev,
+            [planId]: [...currentProgress, segmentId]
+          };
+        }
+        return prev;
+      });
 
       // Check for achievements
-      const completedCount = (planProgress[planId] || []).length + 1;
+      const currentProgress = planProgress[planId] || [];
+      const completedCount = currentProgress.length + 1;
       
       // Achievement for starting a plan
       if (completedCount === 1) {
@@ -378,6 +384,20 @@ const PlanScreen = () => {
           );
         }
       }
+
+      // Auto-expand the plan and center on completed segment
+      setSelectedPlanId(planId);
+      setLastCompletedSegment(segmentId);
+      
+      // Refresh progress data
+      await loadPlanProgress();
+      
+      // Scroll to the completed segment after a brief delay
+      setTimeout(() => {
+        if (scrollViewRef.current) {
+          scrollViewRef.current.scrollToEnd({ animated: true });
+        }
+      }, 500);
 
     } catch (error) {
       console.error('Error completing segment:', error);
@@ -678,9 +698,42 @@ const PlanScreen = () => {
                 </TouchableOpacity>
               )}
               {isActive && !isPaused && !isCompleted && (
-                <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: '#4CAF50', justifyContent: 'center', alignItems: 'center' }}>
-                  <Feather name="play-circle" size={20} color="white" />
-                </View>
+                <TouchableOpacity 
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    Alert.alert(
+                      'Reading Plan Options',
+                      `What would you like to do with "${plan.title}"?`,
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        { 
+                          text: 'Pause Plan', 
+                          onPress: () => pausePlan()
+                        },
+                        { 
+                          text: 'End Plan', 
+                          style: 'destructive',
+                          onPress: () => {
+                            Alert.alert(
+                              'End Reading Plan?',
+                              `Are you sure you want to end "${plan.title}"? This will delete all progress and cannot be undone.`,
+                              [
+                                { text: 'Cancel', style: 'cancel' },
+                                { 
+                                  text: 'End Plan', 
+                                  style: 'destructive',
+                                  onPress: () => endPlan(plan.id)
+                                }
+                              ]
+                            );
+                          }
+                        }
+                      ]
+                    );
+                  }}
+                >
+                  <Feather name="pause-circle" size={24} color="#FF9800" />
+                </TouchableOpacity>
               )}
               {isPaused && (
                 <TouchableOpacity 
@@ -690,26 +743,6 @@ const PlanScreen = () => {
                   }}
                 >
                   <Feather name="play-circle" size={24} color="#4CAF50" />
-                </TouchableOpacity>
-              )}
-              {isActive && !isPaused && !isCompleted && (
-                <TouchableOpacity 
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    Alert.alert(
-                      'Pause Reading Plan?',
-                      `Are you sure you want to pause "${plan.title}"?`,
-                      [
-                        { text: 'Cancel', style: 'cancel' },
-                        { 
-                          text: 'Pause Plan', 
-                          onPress: () => pausePlan()
-                        }
-                      ]
-                    );
-                  }}
-                >
-                  <Feather name="pause-circle" size={24} color="#FF9800" />
                 </TouchableOpacity>
               )}
               <Ionicons 
@@ -761,6 +794,7 @@ const PlanScreen = () => {
                       showGlobalCompletion={false}
                       planId={plan.id}
                       completedSegments={completedSegmentsMap}
+                      highlightedSegment={lastCompletedSegment}
                       style={{ 
                         backgroundColor: colors.card,
                         borderBottomWidth: 1,
@@ -781,11 +815,15 @@ const PlanScreen = () => {
   const organizedPlans = useMemo(() => {
     const active: Plan[] = [];
     const inactive: Plan[] = [];
+    const completed: Plan[] = [];
 
     filteredPlans.forEach(plan => {
       const isActive = activePlan?.planId === plan.id && !activePlan.isPaused;
+      const isCompleted = activePlan?.planId === plan.id && activePlan.isCompleted;
       
-      if (isActive) {
+      if (isCompleted) {
+        completed.push(plan);
+      } else if (isActive) {
         active.push(plan);
       } else {
         inactive.push(plan);
@@ -802,7 +840,11 @@ const PlanScreen = () => {
       });
     };
 
-    return { active, inactive: sortPlans(inactive) };
+    return { 
+      active, 
+      inactive: sortPlans(inactive),
+      completed: sortPlans(completed)
+    };
   }, [filteredPlans, activePlan]);
 
   // Add handleScroll function to match Home.tsx
@@ -845,6 +887,13 @@ const PlanScreen = () => {
       result.push({
         title: 'Available Plans',
         data: organizedPlans.inactive
+      });
+    }
+    
+    if (organizedPlans.completed.length > 0) {
+      result.push({
+        title: 'Completed Plans',
+        data: organizedPlans.completed
       });
     }
     

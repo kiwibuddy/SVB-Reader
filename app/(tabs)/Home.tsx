@@ -1483,6 +1483,9 @@ const HomeScreen = () => {
         <View style={styles.welcomeSection}>
           <Text style={localStyles.welcomeTitle}>{t('UI.home.heading')}</Text>
           <Text style={localStyles.welcomeText}>{t('UI.home.subheading')}</Text>
+          <Text style={[localStyles.welcomeText, { color: '#FF6B6B', fontWeight: 'bold', marginTop: 8 }]}>
+            Test Version: Reading Plan and Challenge UI Updates v3 - Fixed Check Marks & Bottom Navigation
+          </Text>
         </View>
 
         <View style={styles.getStartedSection}>

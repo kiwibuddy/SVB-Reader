@@ -190,6 +190,34 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
 
         <Pressable 
           style={styles.navItem} 
+          onPress={() => router.replace("/Plan")}
+        >
+          <Ionicons 
+            name="calendar-outline" 
+            size={iconSize} 
+            color={pathname === "/Plan" ? colors.primary : colors.secondary} 
+          />
+          <Text style={[styles.navText, pathname === "/Plan" && styles.activeText]}>
+            Plans
+          </Text>
+        </Pressable>
+
+        <Pressable 
+          style={styles.navItem} 
+          onPress={() => router.replace("/Reading-Challenges")}
+        >
+          <Ionicons 
+            name="trophy-outline" 
+            size={iconSize} 
+            color={pathname === "/Reading-Challenges" ? colors.primary : colors.secondary} 
+          />
+          <Text style={[styles.navText, pathname === "/Reading-Challenges" && styles.activeText]}>
+            Challenges
+          </Text>
+        </Pressable>
+
+        <Pressable 
+          style={styles.navItem} 
           onPress={() => router.replace("/Navigation")}
         >
           <Ionicons 

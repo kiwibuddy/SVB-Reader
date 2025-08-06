@@ -7,10 +7,6 @@ import {
   updateDailyActivity,
   startPlan as startPlanDB,
   startChallenge as startChallengeDB,
-  pausePlan as pausePlanDB,
-  pauseChallenge as pauseChallengeDB,
-  resumePlan as resumePlanDB,
-  resumeChallenge as resumeChallengeDB,
   getActivePlan,
   getActiveChallenges
 } from '@/api/sqlite';
@@ -81,6 +77,8 @@ interface AppContextType {
   pauseChallenge: (challengeId: string) => void;
   resumeChallenge: (challengeId: string) => void;
   restartChallenge: (challengeId: string) => void;
+  endPlan: (planId: string) => Promise<void>;
+  endChallenge: (challengeId: string) => Promise<void>;
   updateReadingPlanProgress: (planId: string, segmentId: string) => Promise<void>;
   updateChallengeProgress: (challengeId: string, segmentId: string) => Promise<void>;
   selectedReaderColor: string | null;
@@ -116,6 +114,8 @@ const defaultContext: AppContextType = {
   pauseChallenge: () => {},
   resumeChallenge: () => {},
   restartChallenge: () => {},
+  endPlan: async () => {},
+  endChallenge: async () => {},
   updateReadingPlanProgress: async () => {},
   updateChallengeProgress: async () => {},
   selectedReaderColor: null,
@@ -330,6 +330,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     await startChallenge(challengeId);
   };
 
+  const endPlan = async (planId: string) => {
+    try {
+      // Clear the active plan
+      setActivePlan(null);
+      await AsyncStorage.removeItem('activePlan');
+      
+      // Clear plan progress from database
+      // Note: You may want to add a database function to clear plan progress
+      console.log(`Plan ${planId} ended`);
+    } catch (error) {
+      console.error('Error ending plan:', error);
+    }
+  };
+
+  const endChallenge = async (challengeId: string) => {
+    try {
+      // Remove challenge from active challenges
+      const updatedChallenges = { ...activeChallenges };
+      delete updatedChallenges[challengeId];
+      setActiveChallenges(updatedChallenges);
+      await AsyncStorage.setItem('activeChallenges', JSON.stringify(updatedChallenges));
+      
+      // Clear challenge progress from database
+      // Note: You may want to add a database function to clear challenge progress
+      console.log(`Challenge ${challengeId} ended`);
+    } catch (error) {
+      console.error('Error ending challenge:', error);
+    }
+  };
+
   // Update markSegmentComplete to handle plans and challenges
   const markSegmentComplete = async (
     segmentId: string,
@@ -513,6 +543,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         pauseChallenge,
         resumeChallenge,
         restartChallenge,
+        endPlan,
+        endChallenge,
         updateReadingPlanProgress,
         updateChallengeProgress,
         selectedReaderColor,

@@ -180,7 +180,8 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     fontSize: 20,
     fontWeight: "600",
     marginLeft: 16,
-    marginBottom: 12,
+    marginTop: 24,
+    marginBottom: 16,
     color: "#FF9F0A",
   },
   challengeContainer: {
@@ -252,6 +253,12 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     color: colors.secondary,
     marginTop: 4,
   },
+  description: {
+    fontSize: 16,
+    color: colors.text,
+    marginBottom: 16,
+    lineHeight: 22,
+  },
 });
 
 const ChallengesScreen = () => {
@@ -260,6 +267,7 @@ const ChallengesScreen = () => {
     startChallenge,
     pauseChallenge,
     resumeChallenge,
+    endChallenge,
     restartChallenge,
     updateChallengeProgress,
     updateSegmentId
@@ -273,6 +281,7 @@ const ChallengesScreen = () => {
   const styles = createStyles(isLargeScreen, colors);
 
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
+  const [lastCompletedSegment, setLastCompletedSegment] = useState<string | null>(null);
 
 
   const [challengeProgress, setChallengeProgress] = useState<Record<string, string[]>>({});
@@ -354,6 +363,7 @@ const ChallengesScreen = () => {
   // Group challenges by status and category
   const organizedChallenges = useMemo(() => {
     const active: Challenge[] = [];
+    const completed: Challenge[] = [];
     const categorized = {
       [CHALLENGE_CATEGORIES.SEASONAL]: [] as Challenge[],
       [CHALLENGE_CATEGORIES.TOPICAL]: [] as Challenge[],
@@ -361,8 +371,11 @@ const ChallengesScreen = () => {
 
     readingPlansData.challenges.forEach(challenge => {
       const isActive = activeChallenges[challenge.id] && !activeChallenges[challenge.id].isPaused;
+      const isCompleted = activeChallenges[challenge.id] && activeChallenges[challenge.id].isCompleted;
       
-      if (isActive) {
+      if (isCompleted) {
+        completed.push(challenge as Challenge);
+      } else if (isActive) {
         active.push(challenge as Challenge);
       } else {
         const category = categorizeChallenge(challenge);
@@ -383,8 +396,14 @@ const ChallengesScreen = () => {
     categorized[CHALLENGE_CATEGORIES.SEASONAL] = sortChallenges(categorized[CHALLENGE_CATEGORIES.SEASONAL]);
     categorized[CHALLENGE_CATEGORIES.TOPICAL] = sortChallenges(categorized[CHALLENGE_CATEGORIES.TOPICAL]);
 
-    return { active, categorized };
+    return { active, completed, categorized };
   }, [activeChallenges]);
+
+  // Get the challenge description based on the selected challenge
+  const getChallengeDescription = (challengeId: string) => {
+    const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+    return challenge?.longDescription || "";
+  };
 
   const renderChallengeItem = ({ item: challenge }: { item: Challenge }) => {
     const isSelected = selectedChallengeId === challenge.id;
@@ -450,9 +469,42 @@ const ChallengesScreen = () => {
                 </TouchableOpacity>
               )}
               {isActive && !isPaused && (
-                <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: '#4CAF50', justifyContent: 'center', alignItems: 'center' }}>
-                  <Feather name="play-circle" size={20} color="white" />
-                </View>
+                <TouchableOpacity 
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    Alert.alert(
+                      'Reading Challenge Options',
+                      `What would you like to do with "${challenge.title}"?`,
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        { 
+                          text: 'Pause Challenge', 
+                          onPress: () => pauseChallenge(challenge.id)
+                        },
+                        { 
+                          text: 'End Challenge', 
+                          style: 'destructive',
+                          onPress: () => {
+                            Alert.alert(
+                              'End Reading Challenge?',
+                              `Are you sure you want to end "${challenge.title}"? This will delete all progress and cannot be undone.`,
+                              [
+                                { text: 'Cancel', style: 'cancel' },
+                                { 
+                                  text: 'End Challenge', 
+                                  style: 'destructive',
+                                  onPress: () => endChallenge(challenge.id)
+                                }
+                              ]
+                            );
+                          }
+                        }
+                      ]
+                    );
+                  }}
+                >
+                  <Feather name="pause-circle" size={24} color="#FF9800" />
+                </TouchableOpacity>
               )}
               {isPaused && (
                 <TouchableOpacity 
@@ -462,26 +514,6 @@ const ChallengesScreen = () => {
                   }}
                 >
                   <Feather name="play-circle" size={24} color="#4CAF50" />
-                </TouchableOpacity>
-              )}
-              {isActive && !isPaused && (
-                <TouchableOpacity 
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    Alert.alert(
-                      'Pause Reading Challenge?',
-                      `Are you sure you want to pause "${challenge.title}"?`,
-                      [
-                        { text: 'Cancel', style: 'cancel' },
-                        { 
-                          text: 'Pause Challenge', 
-                          onPress: () => pauseChallenge(challenge.id)
-                        }
-                      ]
-                    );
-                  }}
-                >
-                  <Feather name="pause-circle" size={24} color="#FF9800" />
                 </TouchableOpacity>
               )}
               <Ionicons 
@@ -494,57 +526,64 @@ const ChallengesScreen = () => {
         </TouchableOpacity>
 
         {isSelected && (
-          <View style={styles.booksContainer}>
-            {/* View Toggle for chronological challenges */}
-            {supportsChronological && (
-              <View style={{ padding: 16, paddingBottom: 0 }}>
-                <ViewToggle
-                  isChronological={isChronological}
-                  onToggle={handleViewToggle}
-                />
-              </View>
-            )}
+          <>
+            <Text style={styles.description}>
+              {getChallengeDescription(challenge.id)}
+            </Text>
             
-            {/* Render chronological view or traditional book view */}
-            {isChronological && supportsChronological && chronologicalMapping ? (
-              <ChronologicalView
-                challengeId={challenge.id}
-                chronologicalMapping={chronologicalMapping}
-                completedSegments={completedSegments.reduce((acc, id) => {
-                  acc[id] = true;
-                  return acc;
-                }, {} as Record<string, boolean>)}
-                onSegmentSelect={handleSegmentSelect}
-                onSegmentComplete={(segmentId) => handleSegmentComplete(challenge.id, segmentId)}
-                context="challenge"
-              />
-            ) : (
-              challengeBooksData.map((item) => {
-                const bookIndex = booksArray.findIndex(
-                  (book) => book === item.djhBook
-                );
-                // Use the challenge-specific completion status
-                const completedSegmentsMap = completedSegments.reduce((acc, id) => {
-                  acc[id] = true;
-                  return acc;
-                }, {} as Record<string, boolean>);
-                return (
-                  <Accordion 
-                    key={item.djhBook}
-                    item={item} 
-                    bookIndex={bookIndex}
-                    onSegmentComplete={(segmentId) => handleSegmentComplete(challenge.id, segmentId)}
-                    onSegmentSelect={handleSegmentSelect}
-                    context="challenge"
-                    showGlobalCompletion={false}
-                    challengeId={challenge.id}
-                    completedSegments={completedSegmentsMap}
-                    style={{ backgroundColor: '#FFF' }}
+            <View style={styles.booksContainer}>
+              {/* View Toggle for chronological challenges */}
+              {supportsChronological && (
+                <View style={{ padding: 16, paddingBottom: 0 }}>
+                  <ViewToggle
+                    isChronological={isChronological}
+                    onToggle={handleViewToggle}
                   />
-                );
-              })
-            )}
-          </View>
+                </View>
+              )}
+              
+              {/* Render chronological view or traditional book view */}
+              {isChronological && supportsChronological && chronologicalMapping ? (
+                <ChronologicalView
+                  challengeId={challenge.id}
+                  chronologicalMapping={chronologicalMapping}
+                  completedSegments={completedSegments.reduce((acc, id) => {
+                    acc[id] = true;
+                    return acc;
+                  }, {} as Record<string, boolean>)}
+                  onSegmentSelect={handleSegmentSelect}
+                  onSegmentComplete={(segmentId) => handleSegmentComplete(challenge.id, segmentId)}
+                  context="challenge"
+                />
+              ) : (
+                challengeBooksData.map((item) => {
+                  const bookIndex = booksArray.findIndex(
+                    (book) => book === item.djhBook
+                  );
+                  // Use the challenge-specific completion status
+                  const completedSegmentsMap = completedSegments.reduce((acc, id) => {
+                    acc[id] = true;
+                    return acc;
+                  }, {} as Record<string, boolean>);
+                  return (
+                    <Accordion 
+                      key={item.djhBook}
+                      item={item} 
+                      bookIndex={bookIndex}
+                      onSegmentComplete={(segmentId) => handleSegmentComplete(challenge.id, segmentId)}
+                      onSegmentSelect={handleSegmentSelect}
+                      context="challenge"
+                      showGlobalCompletion={false}
+                      challengeId={challenge.id}
+                      completedSegments={completedSegmentsMap}
+                      highlightedSegment={lastCompletedSegment}
+                      style={{ backgroundColor: '#FFF' }}
+                    />
+                  );
+                })
+              )}
+            </View>
+          </>
         )}
       </View>
     );
@@ -563,18 +602,21 @@ const ChallengesScreen = () => {
 
   const handleSegmentComplete = async (challengeId: string, segmentId: string) => {
     try {
-      // The actual completion is handled by CheckCircle component
-      // This function is called by the Accordion when a segment is completed
-      // We just need to refresh the local progress state
-      
       // Update local state immediately for UI responsiveness
-      setChallengeProgress(prev => ({
-        ...prev,
-        [challengeId]: [...(prev[challengeId] || []), segmentId]
-      }));
+      setChallengeProgress(prev => {
+        const currentProgress = prev[challengeId] || [];
+        if (!currentProgress.includes(segmentId)) {
+          return {
+            ...prev,
+            [challengeId]: [...currentProgress, segmentId]
+          };
+        }
+        return prev;
+      });
 
       // Check for achievements (you can add challenge-specific achievements here)
-      const completedCount = (challengeProgress[challengeId] || []).length + 1;
+      const currentProgress = challengeProgress[challengeId] || [];
+      const completedCount = currentProgress.length + 1;
       
       // Check if challenge is completed
       const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
@@ -590,6 +632,20 @@ const ChallengesScreen = () => {
           );
         }
       }
+
+      // Auto-expand the challenge and center on completed segment
+      setSelectedChallengeId(challengeId);
+      setLastCompletedSegment(segmentId);
+      
+      // Refresh progress data
+      await loadChallengeProgress();
+      
+      // Scroll to the completed segment after a brief delay
+      setTimeout(() => {
+        if (scrollViewRef.current) {
+          scrollViewRef.current.scrollToEnd({ animated: true });
+        }
+      }, 500);
 
     } catch (error) {
       console.error('Error completing segment:', error);
@@ -701,6 +757,13 @@ const ChallengesScreen = () => {
       title: 'Topical Challenges',
       data: organizedChallenges.categorized[CHALLENGE_CATEGORIES.TOPICAL]
     });
+    
+    if (organizedChallenges.completed.length > 0) {
+      result.push({
+        title: 'Completed Challenges',
+        data: organizedChallenges.completed
+      });
+    }
     
     return result;
   }, [organizedChallenges]);
