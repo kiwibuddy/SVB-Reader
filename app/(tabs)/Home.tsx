@@ -13,8 +13,10 @@ import {
   Platform,
   SafeAreaView,
   TouchableOpacity,
-  RefreshControl
+  RefreshControl,
+  Alert
 } from "react-native";
+import { BarCodeScanner } from 'expo-barcode-scanner';
 import Card from "@/components/Card";
 import ReadingPlansChallenges from "../../assets/data/ReadingPlansChallenges.json";
 import DailyStoryMap from '../../assets/data/DailyStoryMap.json';
@@ -33,7 +35,6 @@ import { type ColorScheme } from '@/context/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useGroupReading } from '@/context/GroupReadingContext';
-import { realBluetoothManager } from '@/services/RealBluetoothManager';
 import NearbyGroupCard from '@/components/GroupReading/NearbyGroupCard';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BibleData from '@/assets/data/newBibleNLT1.json';
@@ -106,6 +107,76 @@ const createStyles = (isLargeScreen: boolean, colors: ColorScheme) => StyleSheet
     color: "#FFF",
     fontSize: 14,
     fontWeight: "700",
+  },
+  qrScanButton: {
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scannerContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1000,
+  },
+  scanner: {
+    flex: 1,
+  },
+  scannerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  scannerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  scannerCloseButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  scannerTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  scannerFrame: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: 250,
+    height: 250,
+    marginLeft: -125,
+    marginTop: -125,
+  },
+  scannerFrameCorner: {
+    position: 'absolute',
+    width: 30,
+    height: 30,
+    borderColor: '#4CAF50',
+    borderWidth: 3,
+  },
+  scannerInstructions: {
+    position: 'absolute',
+    bottom: 100,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '500',
   },
   getStartedSection: {
     marginBottom: 16,
@@ -1140,7 +1211,7 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
   );
 };
 
-const HomeScreen = () => {
+const Home = () => {
   const { 
     state,
     updateLastReadSegment,
@@ -1184,41 +1255,23 @@ const HomeScreen = () => {
   
   // Group Reading Context
   const { 
-    nearbyGroups, 
     currentSession, 
     joinSession,
     setUserName,
     currentUserName,
-    isScanning,
-    startScanning,
   } = useGroupReading();
 
-  // Debug logging for Bluetooth
-  useEffect(() => {
-    console.log('🔍 Bluetooth Debug:', {
-      isScanning,
-      nearbyGroupsCount: nearbyGroups.length,
-      currentSession: !!currentSession,
-      groups: nearbyGroups.map(g => ({ id: g.id, title: g.storyTitle, host: g.hostUserName }))
-    });
-  }, [isScanning, nearbyGroups, currentSession]);
 
-  // Add test session for debugging
-  const addTestSession = async () => {
-    try {
-      await realBluetoothManager.addTestSession();
-      console.log('🔍 Test session added via real BLE manager');
-      // Trigger a scan to find the test session
-      await startScanning();
-    } catch (error) {
-      console.error('🔍 Error adding test session:', error);
-    }
-  };
   
   const [dismissedGroups, setDismissedGroups] = useState<Set<string>>(new Set());
   
   // Reading Mode Modal State
   const [showReadingModeModal, setShowReadingModeModal] = useState(false);
+  
+  // QR Code Scanner State
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [scanned, setScanned] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
 
   const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
@@ -1476,23 +1529,17 @@ const HomeScreen = () => {
 
   // Group Reading Handlers
   const handleJoinGroup = async (sessionId: string) => {
-    // Find the session data from nearbyGroups
-    const session = nearbyGroups.find(group => group.id === sessionId);
-    if (!session) {
-      console.error('Session not found:', sessionId);
-      return;
-    }
-
-    console.log('🔍 Joining session:', session);
+    // TODO: Parse session from QR code data
+    console.log('🔍 Joining session via QR code:', sessionId);
     
     router.push({
       pathname: '/join-group' as any,
       params: { 
-        sessionId: session.id,
-        storyId: session.storyId,
-        storyTitle: session.storyTitle,
-        scriptureReference: session.scriptureReference,
-        hostUserName: session.hostUserName
+        sessionId: sessionId,
+        storyId: 'S001',
+        storyTitle: 'God Creates',
+        scriptureReference: 'Genesis 1:1-2:25',
+        hostUserName: 'QR Host'
       }
     });
   };
@@ -1560,10 +1607,40 @@ const HomeScreen = () => {
     setShowReadingModeModal(false);
   };
 
-  // Filter nearby groups to show only non-dismissed ones
-  const visibleNearbyGroups = nearbyGroups.filter(group => 
-    !dismissedGroups.has(group.id) && !currentSession
-  );
+  // QR Code Scanner Functions (Temporarily disabled for development)
+  const requestCameraPermission = async () => {
+    // TODO: Re-enable when barcode scanner is properly configured
+    console.log('🔍 QR Scanner temporarily disabled for development');
+    Alert.alert(
+      'QR Scanner Coming Soon',
+      'QR code scanning will be available in the next phase of development.',
+      [{ text: 'OK' }]
+    );
+    return false;
+  };
+
+  const handleScanQRCode = async () => {
+    // TODO: Re-enable when barcode scanner is properly configured
+    console.log('🔍 QR Scanner temporarily disabled for development');
+    Alert.alert(
+      'QR Scanner Coming Soon',
+      'QR code scanning will be available in the next phase of development.',
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
+    // TODO: Re-enable when barcode scanner is properly configured
+    console.log('🔍 QR Code scanned:', data);
+  };
+
+  const handleCloseScanner = () => {
+    setShowScanner(false);
+    setScanned(false);
+  };
+
+  // TODO: Replace with QR code-based group discovery
+  const visibleNearbyGroups: any[] = [];
 
   const combinedStyles: SectionStyles = {
     ...styles,
@@ -1727,34 +1804,50 @@ const HomeScreen = () => {
 
         <View style={styles.getStartedSection}>
           <Text style={styles.sectionTitle}>Get Started</Text>
-<View style={styles.gridContainer}>
-    <Pressable 
+          <View style={styles.gridContainer}>
+            <Pressable 
               style={[styles.onboardingCard, { backgroundColor: '#7B68EE' }]}
-      onPress={() => router.push("/Plan")}
-    >
+              onPress={() => router.push("/Plan")}
+            >
               <View style={styles.onboardingCardContent}>
                 <View style={styles.onboardingIconContainer}>
                   <Ionicons name="calendar-outline" size={32} color="#FFFFFF" />
-        </View>
+                </View>
                 <Text style={styles.onboardingCardTitle}>Reading Plans</Text>
                 <Text style={styles.onboardingCardSubtitle}>{getAvailablePlansCount()} Plans</Text>
-        </View>
-    </Pressable>
+              </View>
+            </Pressable>
 
-    <Pressable 
+            <Pressable 
               style={[styles.onboardingCard, { backgroundColor: '#FF69B4' }]}
-      onPress={() => router.push("/Reading-Challenges")}
-    >
+              onPress={() => router.push("/Reading-Challenges")}
+            >
               <View style={styles.onboardingCardContent}>
                 <View style={styles.onboardingIconContainer}>
                   <Ionicons name="flag-outline" size={32} color="#FFFFFF" />
-        </View>
+                </View>
                 <Text style={styles.onboardingCardTitle}>Challenges</Text>
                 <Text style={styles.onboardingCardSubtitle}>{getAvailableChallengesCount()} Challenges</Text>
+              </View>
+            </Pressable>
+          </View>
+          
+          {/* QR Code Group Reading Card */}
+          <View style={[styles.continueReading, { backgroundColor: '#4CAF50' }]}>
+            <View style={styles.readingInfo}>
+              <Text style={[styles.readingTitle, { color: '#FFFFFF' }]}>Join Group Reading</Text>
+              <Text style={[styles.readingSubtitle, { color: 'rgba(255, 255, 255, 0.9)' }]}>
+                Scan QR code to join a story group
+              </Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.qrScanButton}
+              onPress={handleScanQRCode}
+            >
+              <Ionicons name="qr-code-outline" size={32} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
         </View>
-    </Pressable>
-  </View>
-</View>
 
       <ContinueReadingSection 
         lastReadSegment={state.lastReadSegment}
@@ -1867,57 +1960,7 @@ const HomeScreen = () => {
           </View>
         </View>
 
-        {/* Nearby Group Cards */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Nearby Reading Groups</Text>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <TouchableOpacity 
-                style={styles.refreshButton} 
-                onPress={startScanning}
-                disabled={isScanning}
-              >
-                <Ionicons 
-                  name={isScanning ? "refresh" : "refresh-outline"} 
-                  size={20} 
-                  color={isScanning ? colors.secondary : colors.primary} 
-                />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.refreshButton} 
-                onPress={addTestSession}
-              >
-                <Ionicons 
-                  name="bug-outline" 
-                  size={20} 
-                  color={colors.primary} 
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-          
-          {isScanning && (
-            <View style={styles.scanningIndicator}>
-              <Text style={styles.scanningText}>Scanning for nearby groups...</Text>
-            </View>
-          )}
-          
-          {visibleNearbyGroups.length > 0 ? (
-            visibleNearbyGroups.map((group) => (
-              <NearbyGroupCard
-                key={group.id}
-                session={group}
-                onJoin={() => handleJoinGroup(group.id)}
-                onDismiss={() => handleDismissGroup(group.id)}
-              />
-            ))
-          ) : !isScanning ? (
-            <View style={styles.noGroupsCard}>
-              <Text style={styles.noGroupsText}>No nearby reading groups found</Text>
-              <Text style={styles.noGroupsSubtext}>Start a group reading session on another device to see it here</Text>
-            </View>
-          ) : null}
-        </View>
+
 
         <InsightsSection styles={combinedStyles} />
         <View style={{ height: 80 }} />
@@ -1932,9 +1975,40 @@ const HomeScreen = () => {
         onGroup={handleGroupReading}
         onCancel={handleCancelModal}
       />
+
+      {/* QR Code Scanner Modal */}
+      {showScanner && (
+        <View style={styles.scannerContainer}>
+          <BarCodeScanner
+            onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+            style={styles.scanner}
+          />
+          <View style={styles.scannerOverlay}>
+            <View style={styles.scannerHeader}>
+              <TouchableOpacity 
+                style={styles.scannerCloseButton}
+                onPress={handleCloseScanner}
+              >
+                <Ionicons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+              <Text style={styles.scannerTitle}>Scan QR Code</Text>
+              <View style={{ width: 40 }} />
+            </View>
+            <View style={styles.scannerFrame}>
+              <View style={[styles.scannerFrameCorner, { top: 0, left: 0, borderBottomWidth: 0, borderRightWidth: 0 }]} />
+              <View style={[styles.scannerFrameCorner, { top: 0, right: 0, borderBottomWidth: 0, borderLeftWidth: 0 }]} />
+              <View style={[styles.scannerFrameCorner, { bottom: 0, left: 0, borderTopWidth: 0, borderRightWidth: 0 }]} />
+              <View style={[styles.scannerFrameCorner, { bottom: 0, right: 0, borderTopWidth: 0, borderLeftWidth: 0 }]} />
+            </View>
+            <Text style={styles.scannerInstructions}>
+              Position the QR code within the frame
+            </Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 };
 
 // Add default export
-export default HomeScreen;
+export default Home;

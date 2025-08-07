@@ -134,7 +134,7 @@ export type BooksObject = {
 import Books from "@/assets/data/BookChapterList.json";
 export type SegmentIds = keyof typeof Books;
 
-// Group Reading Bluetooth Types
+// Group Reading QR Code Types
 export type Role = 'narrator' | 'god' | 'main_character' | 'other_voices';
 
 export interface Participant {
@@ -167,31 +167,6 @@ export interface GroupSessionState {
   currentRole: Role | null;
   currentUserName: string;
   scrollPosition: number;
-  isScanning: boolean;
-  nearbyGroups: GroupSession[];
 }
 
-export interface BluetoothSessionManager {
-  // Host functions
-  startBroadcasting(storyId: string, storyTitle: string, scriptureRef: string, hostRole: Role, hostUserName: string, planId?: string, challengeId?: string): Promise<string>;
-  stopBroadcasting(): Promise<void>;
-  acceptJoiner(deviceId: string, userName: string, requestedRole: Role): Promise<boolean>;
-  syncScrollPosition(position: number): Promise<void>;
-  
-  // Joiner functions
-  discoverNearbyGroups(): Promise<GroupSession[]>;
-  requestToJoin(sessionId: string, role: Role, userName: string): Promise<boolean>;
-  leaveGroup(): Promise<void>;
-  
-  // Shared functions
-  onGroupStateChange(callback: (session: GroupSession) => void): void;
-  onScrollSync(callback: (position: number) => void): void;
-  onParticipantJoined(callback: (participant: Participant) => void): void;
-  onParticipantLeft(callback: (deviceId: string) => void): void;
-  handleDisconnection(): void;
-  
-  // State management
-  getCurrentSession(): GroupSession | null;
-  isCurrentHost(): boolean;
-  getCurrentRole(): Role | null;
-}
+
