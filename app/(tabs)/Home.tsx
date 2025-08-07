@@ -1253,6 +1253,14 @@ const HomeScreen = () => {
     }, [])
   );
 
+  // Add refresh trigger for real-time updates
+  useEffect(() => {
+    const refreshData = async () => {
+      await loadProgressData();
+    };
+    refreshData();
+  }, [refreshTrigger]);
+
   // Function to get next uncompleted segment for a plan
   const getNextSegmentForPlan = async (planId: string): Promise<{ segmentId: string; title: string } | null> => {
     const plan = ReadingPlansChallenges.plans.find((p: any) => p.id === planId);

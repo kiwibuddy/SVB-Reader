@@ -10,6 +10,8 @@ import {
   Image,
   useWindowDimensions,
   RefreshControl,
+  Animated,
+  Dimensions
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from '@react-navigation/native';
@@ -215,11 +217,13 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
     borderColor: colors.border,
   },
   actionButton: {
-    width: 40,
-    height: 40,
+    padding: 8,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  actionButtonLoading: {
+    opacity: 0.7,
   },
   statusBadge: {
     paddingHorizontal: 10,
@@ -282,28 +286,47 @@ const PlanScreen = () => {
   const { colors, isDarkMode } = useAppSettings();
   const styles = createStyles(isLargeScreen, colors, isDarkMode);
 
-  // Initialize selectedPlan with the active plan if it exists, otherwise use first plan
+  // State for plans and progress
+  const [planProgress, setPlanProgress] = useState<Record<string, any>>({});
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [lastCompletedSegment, setLastCompletedSegment] = useState<string | null>(null);
-  const [loadingStates, setLoadingStates] = useState<Record<string, 'starting' | 'pausing' | 'resuming' | 'ending' | null>>({});
-  const [refreshing, setRefreshing] = useState(false);
-
-
-  const [planProgress, setPlanProgress] = useState<Record<string, {
-    totalSegments: number;
-    completedSegments: number;
-    progressPercentage: number;
-    completedSegmentIds: string[];
-  }>>({});
-  
-  // Add state for active plan from SQLite
   const [activePlan, setActivePlan] = useState<any | null>(null);
+  const [loadingStates, setLoadingStates] = useState<Record<string, string | null>>({});
   
   // Reading Mode Modal State
   const [showReadingModeModal, setShowReadingModeModal] = useState(false);
   const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
   const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
   const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
+  
+  // Animated progress bars
+  const progressAnimations = useRef<Record<string, Animated.Value>>({}).current;
+  
+  // Initialize animation values for each plan
+  useEffect(() => {
+    readingPlansData.plans.forEach(plan => {
+      if (!progressAnimations[plan.id]) {
+        progressAnimations[plan.id] = new Animated.Value(0);
+      }
+    });
+  }, []);
+  
+  // Animate progress bars when progress changes
+  useEffect(() => {
+    Object.entries(planProgress).forEach(([planId, progress]) => {
+      const animation = progressAnimations[planId];
+      if (animation) {
+        Animated.timing(animation, {
+          toValue: progress.progressPercentage || 0,
+          duration: 600,
+          useNativeDriver: false,
+        }).start();
+      }
+    });
+  }, [planProgress]);
+
+  // Initialize selectedPlan with the active plan if it exists, otherwise use first plan
+  const [lastCompletedSegment, setLastCompletedSegment] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
 
   
@@ -369,7 +392,9 @@ const PlanScreen = () => {
   const pausePlanAction = async (planId: string) => {
     try {
       await pausePlan(planId);
-      // Refresh active plan data
+      // Immediately update local state for instant UI feedback
+      setActivePlan(null);
+      // Refresh progress data
       await loadPlanProgress();
     } catch (error) {
       console.error('Error pausing plan:', error);
@@ -379,7 +404,10 @@ const PlanScreen = () => {
   const resumePlanAction = async (planId: string) => {
     try {
       await resumePlan(planId);
-      // Refresh active plan data
+      // Immediately update local state for instant UI feedback
+      const planData = await getActivePlanFromDB();
+      setActivePlan(planData);
+      // Refresh progress data
       await loadPlanProgress();
     } catch (error) {
       console.error('Error resuming plan:', error);
@@ -389,7 +417,9 @@ const PlanScreen = () => {
   const endPlanAction = async (planId: string) => {
     try {
       await endPlan(planId);
-      // Refresh active plan data
+      // Immediately update local state for instant UI feedback
+      setActivePlan(null);
+      // Refresh progress data
       await loadPlanProgress();
     } catch (error) {
       console.error('Error ending plan:', error);
@@ -404,6 +434,9 @@ const PlanScreen = () => {
       }
       // Start new plan
       await startPlan(newPlanId);
+      // Immediately update local state for instant UI feedback
+      const planData = await getActivePlanFromDB();
+      setActivePlan(planData);
       // Refresh data
       await loadPlanProgress();
     } catch (error) {
@@ -865,10 +898,16 @@ const PlanScreen = () => {
                 {isActive && (
                   <View style={styles.progressContainer}>
                     <View style={styles.progressBar}>
-                      <View 
+                      <Animated.View 
                         style={[
                           styles.progressFill, 
-                          { width: `${progressPercentage}%` }
+                          { 
+                            width: progressAnimations[plan.id]?.interpolate({
+                              inputRange: [0, 100],
+                              outputRange: ['0%', '100%'],
+                              extrapolate: 'clamp',
+                            }) || '0%'
+                          }
                         ]} 
                       />
                     </View>
@@ -896,6 +935,10 @@ const PlanScreen = () => {
                               setLoadingStates(prev => ({ ...prev, [plan.id]: 'starting' }));
                               try {
                                 await startPlan(plan.id);
+                                // Immediately update local state for instant UI feedback
+                                const planData = await getActivePlanFromDB();
+                                setActivePlan(planData);
+                                await loadPlanProgress();
                               } finally {
                                 setLoadingStates(prev => ({ ...prev, [plan.id]: null }));
                               }
@@ -907,18 +950,37 @@ const PlanScreen = () => {
                       setLoadingStates(prev => ({ ...prev, [plan.id]: 'starting' }));
                       try {
                         await startPlan(plan.id);
+                        // Immediately update local state for instant UI feedback
+                        const planData = await getActivePlanFromDB();
+                        setActivePlan(planData);
+                        await loadPlanProgress();
                       } finally {
                         setLoadingStates(prev => ({ ...prev, [plan.id]: null }));
                       }
                     }
                   }}
                   disabled={loadingStates[plan.id] === 'starting'}
+                  style={[
+                    styles.actionButton,
+                    loadingStates[plan.id] === 'starting' && styles.actionButtonLoading
+                  ]}
                 >
-                  <Feather 
-                    name={loadingStates[plan.id] === 'starting' ? "clock" : "play-circle"} 
-                    size={24} 
-                    color={loadingStates[plan.id] === 'starting' ? "#FF9800" : "#666666"} 
-                  />
+                  <Animated.View style={{
+                    transform: [{
+                      rotate: loadingStates[plan.id] === 'starting' 
+                        ? new Animated.Value(0).interpolate({
+                            inputRange: [0, 1],
+                            outputRange: ['0deg', '360deg']
+                          })
+                        : '0deg'
+                    }]
+                  }}>
+                    <Feather 
+                      name={loadingStates[plan.id] === 'starting' ? "clock" : "play-circle"} 
+                      size={24} 
+                      color={loadingStates[plan.id] === 'starting' ? "#FF9800" : "#666666"} 
+                    />
+                  </Animated.View>
                 </TouchableOpacity>
               )}
               {isActive && !isPaused && !isCompleted && (

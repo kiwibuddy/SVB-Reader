@@ -12,6 +12,8 @@ import {
   Platform,
   Image,
   RefreshControl,
+  Animated,
+  Dimensions
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from '@react-navigation/native';
@@ -316,7 +318,6 @@ const ChallengesScreen = () => {
   const [loadingStates, setLoadingStates] = useState<Record<string, 'starting' | 'pausing' | 'resuming' | 'ending' | null>>({});
   const [refreshing, setRefreshing] = useState(false);
 
-
   const [challengeProgress, setChallengeProgress] = useState<Record<string, {
     totalSegments: number;
     completedSegments: number;
@@ -333,8 +334,6 @@ const ChallengesScreen = () => {
   const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
   const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
 
-
-  
   // Challenge Order Enforcement Modal State
   const [showOrderEnforcementModal, setShowOrderEnforcementModal] = useState(false);
   const [enforcementData, setEnforcementData] = useState<{
@@ -345,6 +344,32 @@ const ChallengesScreen = () => {
     nextSegmentTitle: string;
     isStartChallenge: boolean;
   } | null>(null);
+
+  // Animated progress bars
+  const progressAnimations = useRef<Record<string, Animated.Value>>({}).current;
+  
+  // Initialize animation values for each challenge
+  useEffect(() => {
+    readingPlansData.challenges.forEach(challenge => {
+      if (!progressAnimations[challenge.id]) {
+        progressAnimations[challenge.id] = new Animated.Value(0);
+      }
+    });
+  }, []);
+  
+  // Animate progress bars when progress changes
+  useEffect(() => {
+    Object.entries(challengeProgress).forEach(([challengeId, progress]) => {
+      const animation = progressAnimations[challengeId];
+      if (animation) {
+        Animated.timing(animation, {
+          toValue: progress.progressPercentage || 0,
+          duration: 600,
+          useNativeDriver: false,
+        }).start();
+      }
+    });
+  }, [challengeProgress]);
 
   // Load challenge progress and active challenges when component mounts
   useEffect(() => {
@@ -397,6 +422,12 @@ const ChallengesScreen = () => {
   const pauseChallengeAction = async (challengeId: string) => {
     try {
       await pauseChallenge(challengeId);
+      // Immediately update local state for instant UI feedback
+      setActiveChallenges(prev => {
+        const updated = { ...prev };
+        delete updated[challengeId];
+        return updated;
+      });
       // Refresh challenge data
       await loadChallengeProgress();
     } catch (error) {
@@ -407,6 +438,9 @@ const ChallengesScreen = () => {
   const resumeChallengeAction = async (challengeId: string) => {
     try {
       await resumeChallenge(challengeId);
+      // Immediately update local state for instant UI feedback
+      const challengesData = await getActiveChallengesFromDB();
+      setActiveChallenges(challengesData);
       // Refresh challenge data
       await loadChallengeProgress();
     } catch (error) {
@@ -417,6 +451,12 @@ const ChallengesScreen = () => {
   const endChallengeAction = async (challengeId: string) => {
     try {
       await endChallenge(challengeId);
+      // Immediately update local state for instant UI feedback
+      setActiveChallenges(prev => {
+        const updated = { ...prev };
+        delete updated[challengeId];
+        return updated;
+      });
       // Refresh challenge data
       await loadChallengeProgress();
     } catch (error) {
@@ -426,11 +466,12 @@ const ChallengesScreen = () => {
   
   const restartChallengeAction = async (challengeId: string) => {
     try {
-      // End current challenge
       await endChallenge(challengeId);
-      // Start new challenge
       await startChallenge(challengeId);
-      // Refresh data
+      // Immediately update local state for instant UI feedback
+      const challengesData = await getActiveChallengesFromDB();
+      setActiveChallenges(challengesData);
+      // Refresh challenge data
       await loadChallengeProgress();
     } catch (error) {
       console.error('Error restarting challenge:', error);
@@ -439,8 +480,7 @@ const ChallengesScreen = () => {
   
   const updateChallengeProgressAction = async (challengeId: string, segmentId: string) => {
     try {
-      // Mark segment as complete in challenge context
-      await markSegmentComplete(segmentId, 'challenge', null, challengeId);
+      await markSegmentComplete(segmentId, 'challenge', undefined, challengeId);
       // Refresh challenge data
       await loadChallengeProgress();
     } catch (error) {
@@ -590,10 +630,16 @@ const ChallengesScreen = () => {
                 {isActive && (
                   <View style={styles.progressContainer}>
                     <View style={styles.progressBar}>
-                      <View 
+                      <Animated.View 
                         style={[
                           styles.progressFill, 
-                          { width: `${progressPercentage}%` }
+                          { 
+                            width: progressAnimations[challenge.id]?.interpolate({
+                              inputRange: [0, 100],
+                              outputRange: ['0%', '100%'],
+                              extrapolate: 'clamp',
+                            }) || '0%'
+                          }
                         ]} 
                       />
                     </View>
