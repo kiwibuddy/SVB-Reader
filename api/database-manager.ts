@@ -205,6 +205,14 @@ export class DatabaseManager {
           completionDate TEXT,
           UNIQUE(bookId)
         );
+
+        -- App state table for global application state
+        CREATE TABLE IF NOT EXISTS app_state (
+          id INTEGER PRIMARY KEY NOT NULL,
+          key TEXT NOT NULL UNIQUE,
+          value TEXT,
+          lastUpdated TEXT NOT NULL
+        );
       `);
       
       // Populate the segments table with data from SegmentTitles.json
@@ -220,6 +228,23 @@ export class DatabaseManager {
           INSERT INTO streak_data (currentStreak, longestStreak, lastReadDate, lastUpdated)
           VALUES (0, 0, date('now', 'localtime'), datetime('now', 'localtime'))
         `);
+      }
+
+      // Initialize app_state with default values if empty
+      const appStateCount = await this.db.getFirstAsync(
+        'SELECT COUNT(*) as count FROM app_state'
+      ) as { count: number };
+      
+      if (appStateCount.count === 0) {
+        const currentDate = new Date().toISOString();
+        await this.db.runAsync(`
+          INSERT INTO app_state (key, value, lastUpdated) VALUES
+          ('segmentId', 'S001', ?),
+          ('readingPlan', 'chronological', ?),
+          ('lastReadSegment', null, ?),
+          ('language', 'en', ?),
+          ('version', 'nlt', ?)
+        `, currentDate, currentDate, currentDate, currentDate, currentDate);
       }
 
       // Add missing columns to existing tables if they don't exist

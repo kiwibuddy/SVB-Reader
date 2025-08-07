@@ -18,6 +18,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
 
 
+
 import Accordion, { accordionColor } from "@/components/navigation/NavBook";
 import Books from "@/assets/data/BookChapterList.json";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
@@ -27,7 +28,13 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
-import { getSegmentCompletionStatus, unlockAchievement, getChallengeProgress } from '@/api/sqlite';
+import { 
+  getSegmentCompletionStatus, 
+  unlockAchievement, 
+  getChallengeProgress,
+  getActiveChallengesFromDB,
+  startChallenge
+} from '@/api/sqlite';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BibleData from '@/assets/data/newBibleNLT1.json';
 import ChronologicalView from '@/components/navigation/ChronologicalView';
@@ -289,15 +296,9 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
 
 const ChallengesScreen = () => {
   const { 
-    activeChallenges,
-    startChallenge,
-    pauseChallenge,
-    resumeChallenge,
-    endChallenge,
-    restartChallenge,
-    updateChallengeProgress,
     updateSegmentId
   } = useAppContext();
+  // Removed activeChallenges, challenge management dependencies - now using pure SQLite data loading
 
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -319,11 +320,16 @@ const ChallengesScreen = () => {
     completedSegmentIds: string[];
   }>>({});
   
+  // Add state for active challenges from SQLite
+  const [activeChallenges, setActiveChallenges] = useState<Record<string, any>>({});
+  
   // Reading Mode Modal State
   const [showReadingModeModal, setShowReadingModeModal] = useState(false);
   const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
   const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
   const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
+
+
   
   // Challenge Order Enforcement Modal State
   const [showOrderEnforcementModal, setShowOrderEnforcementModal] = useState(false);
@@ -336,9 +342,22 @@ const ChallengesScreen = () => {
     isStartChallenge: boolean;
   } | null>(null);
 
-  // Load challenge progress when component mounts
+  // Load challenge progress and active challenges when component mounts
   useEffect(() => {
-    loadChallengeProgress();
+    const loadData = async () => {
+      await loadChallengeProgress();
+      
+      // Load active challenges from SQLite
+      try {
+        const challengesData = await getActiveChallengesFromDB();
+        setActiveChallenges(challengesData);
+      } catch (error) {
+        console.error('Error loading active challenges:', error);
+        setActiveChallenges({});
+      }
+    };
+    
+    loadData();
   }, []);
 
   // Refresh when returning from reading a segment
@@ -368,6 +387,27 @@ const ChallengesScreen = () => {
     }
     
     setChallengeProgress(progress);
+  };
+  
+  // Placeholder functions for challenge management (to be implemented in SQLite)
+  const pauseChallenge = async (challengeId: string) => {
+    console.log('Pause challenge functionality to be implemented in SQLite');
+  };
+  
+  const resumeChallenge = async (challengeId: string) => {
+    console.log('Resume challenge functionality to be implemented in SQLite');
+  };
+  
+  const endChallenge = async (challengeId: string) => {
+    console.log('End challenge functionality to be implemented in SQLite');
+  };
+  
+  const restartChallenge = async (challengeId: string) => {
+    console.log('Restart challenge functionality to be implemented in SQLite');
+  };
+  
+  const updateChallengeProgress = async (challengeId: string, segmentId: string) => {
+    console.log('Update challenge progress functionality to be implemented in SQLite');
   };
 
   // Move function definitions up
@@ -997,6 +1037,7 @@ const ChallengesScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      
       <FlatList
         ListHeaderComponent={ListHeaderComponent}
         style={styles.content}

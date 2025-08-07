@@ -16,6 +16,7 @@ import BibleData from '@/assets/data/newBibleNLT1.json';
 import TopSpeakersData from '@/assets/data/TopSpeakers.json';
 import { useFocusEffect } from '@react-navigation/native';
 
+
 export type SegmentKey = keyof typeof SegmentTitles;
 export type SegmentIds = keyof typeof Books;
 
@@ -479,7 +480,7 @@ const MemoizedAccordion = React.memo(({
   isExpanded,
   onBookSelect,
   onSegmentSelect,
-  completedSegments,
+  completedSegmentIds,
   highlightedSegment,
   searchQuery,
   originalSegmentCount,
@@ -493,7 +494,7 @@ const MemoizedAccordion = React.memo(({
   isExpanded: boolean;
   onBookSelect: (bookName: string) => void;
   onSegmentSelect: (segmentId: string) => void;
-  completedSegments: any;
+  completedSegmentIds: any;
   highlightedSegment: string | null;
   searchQuery: string | null;
   originalSegmentCount: number;
@@ -519,7 +520,7 @@ const MemoizedAccordion = React.memo(({
       isExpanded={isExpanded}
       onBookSelect={onBookSelect}
       onSegmentSelect={onSegmentSelect}
-      completedSegments={completedSegments}
+      completedSegments={completedSegmentIds}
       highlightedSegment={highlightedSegment}
       searchQuery={searchQuery}
       originalSegmentCount={originalSegmentCount}
@@ -528,7 +529,8 @@ const MemoizedAccordion = React.memo(({
 });
 
 const Navigation = () => {
-  const { completedSegments, language, version, updateSegmentId } = useAppContext();
+  const { language, version, updateSegmentId } = useAppContext();
+  // Removed completedSegments dependency - now using pure SQLite data loading
   // Removed old filter state - now using advanced filters only
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
@@ -558,6 +560,8 @@ const Navigation = () => {
 
     // Add state for completed segments
   const [completedSegmentIds, setCompletedSegmentIds] = useState<{[key: string]: boolean}>({});
+
+
   const [refreshing, setRefreshing] = useState(false);
   
   // Reading Mode Modal State
@@ -1087,7 +1091,7 @@ const Navigation = () => {
         isExpanded={!!(isSelected && showSearch)}
         onBookSelect={handleBookSelect}
         onSegmentSelect={handleSegmentSelect}
-        completedSegments={completedSegmentIds}
+        completedSegmentIds={completedSegmentIds}
         highlightedSegment={highlightedSegment}
         searchQuery={searchQuery}
         originalSegmentCount={item.segments.length}
@@ -1131,6 +1135,7 @@ const Navigation = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={styles.content}>
           <View style={styles.welcomeSection}>

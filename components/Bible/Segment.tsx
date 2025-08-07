@@ -15,6 +15,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import CheckCircle from "@/components/CheckCircle";
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { memo } from "react";
+import { getSegmentCompletionStatus } from "@/api/sqlite";
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -50,15 +51,11 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   const router = useRouter();
   const { 
-    completedSegments, 
-    markSegmentComplete,
-    activePlan,
-    activeChallenges,
-    emojiActions,
-    updateEmojiActions,
-    updateReadingPlanProgress,
-    updateChallengeProgress,
+    language, 
+    version,
+    updateSegmentId,
   } = useAppContext();
+  // Removed completedSegments, activePlan, activeChallenges dependencies - now using pure SQLite
 
   const { colors } = useAppSettings();
 
@@ -70,6 +67,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     color: string;
     position: number;
   } | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   // Use pre-calculated color data from segmentData (with safe fallback)
   const colorData = useMemo(() => {
@@ -271,20 +269,20 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const segID = id.split("-")[id.split("-").length - 1];
 
   // Determine which completion state to use
-  const getIsCompleted = () => {
-    if (context === 'main') {
-      return completedSegments[segID]?.isCompleted || false;
-    }
-    if (planId && activePlan?.planId === planId) {
-      return activePlan.completedSegments.includes(segID);
-    }
-    if (challengeId && activeChallenges[challengeId]) {
-      return activeChallenges[challengeId].completedSegments.includes(segID);
-    }
-    return false;
-  };
-
-  const isCompleted = getIsCompleted();
+  // Load completion status from SQLite
+  useEffect(() => {
+    const loadCompletionStatus = async () => {
+      try {
+        const status = await getSegmentCompletionStatus(segID, context, planId, challengeId);
+        setIsCompleted(status.isCompleted);
+      } catch (error) {
+        console.error('Error loading completion status:', error);
+        setIsCompleted(false);
+      }
+    };
+    
+    loadCompletionStatus();
+  }, [segID, context, planId, challengeId]);
 
   const colorRenderCount = new Map<string, number>(); // Track render counts
 

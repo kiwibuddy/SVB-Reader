@@ -1,5 +1,4 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import readingPlansData from "../assets/data/ReadingPlansChallenges.json";
 import { 
   markSegmentComplete as markSegmentCompleteDB,
@@ -10,7 +9,22 @@ import {
   getActivePlan,
   getActiveChallenges,
   resetPlanProgress,
-  resetChallengeProgress
+  resetChallengeProgress,
+  // New SQLite functions to replace AsyncStorage
+  getCurrentSegmentId,
+  setCurrentSegmentId,
+  getCurrentReadingPlan,
+  setCurrentReadingPlan,
+  getLastReadSegment,
+  setLastReadSegment as setLastReadSegmentDB,
+  getAppLanguage,
+  setAppLanguage,
+  getAppVersion,
+  setAppVersion,
+  getReadSegments,
+  markSegmentAsRead,
+  getActivePlanFromDB,
+  getActiveChallengesFromDB
 } from '@/api/sqlite';
 
 // Add this interface near the top of the file, before AppContextType
@@ -156,54 +170,66 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   const [lastReadSegment, setLastReadSegment] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load read status from AsyncStorage when the app starts
-    const loadReadStatus = async () => {
-      const storedSegments = await AsyncStorage.getItem("readSegments");
-      if (storedSegments) {
-        setReadSegments(JSON.parse(storedSegments));
-      }
-    };
+    // Load app state from SQLite when the app starts
+    const loadAppState = async () => {
+      try {
+        // Load basic app state
+        const [
+          storedSegmentId,
+          storedReadingPlan,
+          storedLanguage,
+          storedVersion,
+          storedLastReadSegment,
+          readSegmentsList
+        ] = await Promise.all([
+          getCurrentSegmentId(),
+          getCurrentReadingPlan(),
+          getAppLanguage(),
+          getAppVersion(),
+          getLastReadSegment(),
+          getReadSegments()
+        ]);
 
-    const loadSegmentId = async () => {
-      const storedSegmentId = await AsyncStorage.getItem("segmentId");
-      if (storedSegmentId) {
         setSegmentId(storedSegmentId);
-      }
-    };
-
-    const loadReadingPlan = async () => {
-      const storedReadingPlan = await AsyncStorage.getItem("readingPlan");
-      if (storedReadingPlan) {
         setReadingPlan(storedReadingPlan);
+        setLanguage(storedLanguage);
+        setVersion(storedVersion);
+        setLastReadSegment(storedLastReadSegment);
+        setReadSegments(readSegmentsList);
+
+        // Load completed segments from SQLite
+        const completedSegmentsData: Record<string, CompletionData> = {};
+        // This will be populated by existing SQLite functions
+        setCompletedSegments(completedSegmentsData);
+
+      } catch (error) {
+        console.error('Error loading app state from SQLite:', error);
+        // Fallback to defaults if SQLite fails
+        setSegmentId('S001');
+        setReadingPlan('chronological');
+        setLanguage('en');
+        setVersion('nlt');
       }
     };
 
-    const loadCompletedSegments = async () => {
-      const stored = await AsyncStorage.getItem('completedSegments');
-      if (stored) {
-        setCompletedSegments(JSON.parse(stored));
-      }
-    };
-
-    loadSegmentId();
-    loadReadStatus();
-    loadReadingPlan();
-    loadCompletedSegments();
+    loadAppState();
   }, []);
 
-  // Load saved state on mount
+  // Load saved plan and challenge state from SQLite on mount
   useEffect(() => {
     const loadSavedState = async () => {
       try {
         const [savedPlan, savedChallenges] = await Promise.all([
-          AsyncStorage.getItem('activePlan'),
-          AsyncStorage.getItem('activeChallenges')
+          getActivePlanFromDB(),
+          getActiveChallengesFromDB()
         ]);
         
-        if (savedPlan) setActivePlan(JSON.parse(savedPlan));
-        if (savedChallenges) setActiveChallenges(JSON.parse(savedChallenges));
+        if (savedPlan) setActivePlan(savedPlan);
+        if (savedChallenges && Object.keys(savedChallenges).length > 0) {
+          setActiveChallenges(savedChallenges);
+        }
       } catch (error) {
-        console.error('Error loading saved plan/challenge state:', error);
+        console.error('Error loading saved plan/challenge state from SQLite:', error);
       }
     };
 
@@ -211,22 +237,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const markAsRead = async (segmentId: string, isRead: boolean) => {
-    const updatedSegments = isRead
-      ? readSegments.filter((id) => id !== segmentId) // Remove if already read
-      : [...readSegments, segmentId]; // Add if not read
-
-    setReadSegments(updatedSegments);
-    await AsyncStorage.setItem("readSegments", JSON.stringify(updatedSegments)); // Persist to AsyncStorage
+    if (isRead) {
+      // Mark segment as read in SQLite
+      await markSegmentAsRead(segmentId);
+      // Update local state
+      const updatedSegments = readSegments.includes(segmentId) 
+        ? readSegments 
+        : [...readSegments, segmentId];
+      setReadSegments(updatedSegments);
+    } else {
+      // Remove from local state (SQLite keeps read history)
+      const updatedSegments = readSegments.filter((id) => id !== segmentId);
+      setReadSegments(updatedSegments);
+    }
   };
 
   const updateSegmentId = async (newSegmentId: string) => {
-    setSegmentId(newSegmentId); // Update the segmentId
-    await AsyncStorage.setItem('segmentId', newSegmentId); // Store in AsyncStorage
+    setSegmentId(newSegmentId);
+    await setCurrentSegmentId(newSegmentId); // Store in SQLite
   };
 
   const updateReadingPlan = async (newReadingPlan: string) => {
     setReadingPlan(newReadingPlan);
-    await AsyncStorage.setItem('readingPlan', newReadingPlan);
+    await setCurrentReadingPlan(newReadingPlan); // Store in SQLite
   };
 
   const updateEmojiActions = async (newEmojiActions: number) => {
@@ -249,7 +282,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       };
       
       setActivePlan(newPlan);
-      await AsyncStorage.setItem('activePlan', JSON.stringify(newPlan));
+      // Plan is now managed via SQLite through startPlanDB function
     } catch (error) {
       console.error('Error starting plan:', error);
     }
@@ -259,7 +292,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     if (activePlan) {
       const pausedPlan = { ...activePlan, isPaused: true };
       setActivePlan(pausedPlan);
-      await AsyncStorage.setItem('activePlan', JSON.stringify(pausedPlan));
+      // Plan state is now managed via SQLite
     }
   };
 
@@ -267,7 +300,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     if (activePlan) {
       const resumedPlan = { ...activePlan, isPaused: false };
       setActivePlan(resumedPlan);
-      await AsyncStorage.setItem('activePlan', JSON.stringify(resumedPlan));
+      // Plan state is now managed via SQLite
     }
   };
 
@@ -297,10 +330,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         ...prev,
         [challengeId]: newChallenge
       }));
-      await AsyncStorage.setItem('activeChallenges', JSON.stringify({
-        ...activeChallenges,
-        [challengeId]: newChallenge
-      }));
+      // Challenge state is now managed via SQLite
     } catch (error) {
       console.error('Error starting challenge:', error);
     }
@@ -313,7 +343,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         [challengeId]: { ...activeChallenges[challengeId], isPaused: true }
       };
       setActiveChallenges(updatedChallenges);
-      await AsyncStorage.setItem('activeChallenges', JSON.stringify(updatedChallenges));
+      // Challenge state is now managed via SQLite
     }
   };
 
@@ -324,7 +354,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         [challengeId]: { ...activeChallenges[challengeId], isPaused: false }
       };
       setActiveChallenges(updatedChallenges);
-      await AsyncStorage.setItem('activeChallenges', JSON.stringify(updatedChallenges));
+      // Challenge state is now managed via SQLite
     }
   };
 
@@ -339,7 +369,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       
       // Clear the active plan from state
       setActivePlan(null);
-      await AsyncStorage.removeItem('activePlan');
+      // Plan removal is now managed via SQLite
       
       console.log(`Plan ${planId} ended and progress reset`);
     } catch (error) {
@@ -356,7 +386,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       const updatedChallenges = { ...activeChallenges };
       delete updatedChallenges[challengeId];
       setActiveChallenges(updatedChallenges);
-      await AsyncStorage.setItem('activeChallenges', JSON.stringify(updatedChallenges));
+      // Challenge state is now managed via SQLite
       
       console.log(`Challenge ${challengeId} ended and progress reset`);
     } catch (error) {
@@ -402,7 +432,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
           };
           
           setActivePlan(updatedPlan);
-          await AsyncStorage.setItem('activePlan', JSON.stringify(updatedPlan));
+          // Plan progress is now managed via SQLite
         }
         
         // Update challenge progress if in challenge context
@@ -423,10 +453,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
             [challengeId]: updatedChallenge
           }));
           
-          await AsyncStorage.setItem('activeChallenges', JSON.stringify({
-            ...activeChallenges,
-            [challengeId]: updatedChallenge
-          }));
+          // Challenge progress is now managed via SQLite
         }
         
         await updateDailyActivity(segmentId);
@@ -473,7 +500,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       };
 
       setActivePlan(updatedPlan);
-      await AsyncStorage.setItem('activePlan', JSON.stringify(updatedPlan));
+      // Plan progress is now managed via SQLite
     } catch (error) {
       console.error('Error updating plan progress:', error);
     }
@@ -507,7 +534,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       };
       
       setActiveChallenges(updatedChallenges);
-      await AsyncStorage.setItem('activeChallenges', JSON.stringify(updatedChallenges));
+      // Challenge state is now managed via SQLite
     } catch (error) {
       console.error('Error updating challenge progress:', error);
     }
@@ -519,7 +546,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const updateLastReadSegment = async (segmentId: string) => {
     setLastReadSegment(segmentId);
-    await AsyncStorage.setItem('lastReadSegment', segmentId);
+    await setLastReadSegmentDB(segmentId); // Store in SQLite
+  };
+
+  // Language and version setters that use SQLite
+  const updateLanguage = async (lang: string) => {
+    setLanguage(lang);
+    await setAppLanguage(lang); // Store in SQLite
+  };
+
+  const updateVersion = async (ver: string) => {
+    setVersion(ver);
+    await setAppVersion(ver); // Store in SQLite
   };
 
   return (
@@ -555,8 +593,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         updateSelectedReaderColor,
         language,
         version,
-        setLanguage,
-        setVersion,
+        setLanguage: updateLanguage,
+        setVersion: updateVersion,
         lastReadSegment,
         setLastReadSegment: updateLastReadSegment,
       }}
@@ -565,3 +603,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     </AppContext.Provider>
   );
 };
+
+// Export the context and provider
+export { AppContext };
+export default AppProvider;

@@ -27,6 +27,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
 import { BlurView } from "expo-blur"
 
+
 const SegmentTitles = require("@/assets/data/SegmentTitles.json")
 const Books = require("@/assets/data/BookChapterList.json")
 
@@ -770,6 +771,8 @@ const ReadingEmoji = () => {
   const [showJumpModal, setShowJumpModal] = useState(false)
   const [selectedReaction, setSelectedReaction] = useState<EmojiReaction | null>(null)
   const [modalPosition, setModalPosition] = useState<{ x: number; y: number } | null>(null);
+
+
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current
@@ -1796,6 +1799,7 @@ const ReadingEmoji = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      
       <FlatList
         style={styles.content}
         data={filteredReactions}

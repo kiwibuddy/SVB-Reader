@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from '@react-navigation/native';
+
 import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
 
 
@@ -24,7 +25,14 @@ import { StatusIndicator } from '@/components/StatusIndicator';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
-import { markSegmentComplete, getSegmentCompletionStatus, unlockAchievement, getPlanProgress } from "@/api/sqlite";
+import { 
+  markSegmentComplete, 
+  getSegmentCompletionStatus, 
+  unlockAchievement, 
+  getPlanProgress,
+  getActivePlanFromDB,
+  startPlan
+} from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BibleData from '@/assets/data/newBibleNLT1.json';
@@ -259,19 +267,9 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
 
 const PlanScreen = () => {
   const { 
-    readingPlan, 
-    updateReadingPlan, 
-    activePlan,
-    startPlan,
-    pausePlan,
-    resumePlan,
-    endPlan,
-    switchPlan,
-    readingPlanProgress,
-    updateReadingPlanProgress,
-    updateEmojiActions,
     updateSegmentId
   } = useAppContext();
+  // Removed activePlan, plan management dependencies - now using pure SQLite data loading
 
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -295,11 +293,16 @@ const PlanScreen = () => {
     completedSegmentIds: string[];
   }>>({});
   
+  // Add state for active plan from SQLite
+  const [activePlan, setActivePlan] = useState<any | null>(null);
+  
   // Reading Mode Modal State
   const [showReadingModeModal, setShowReadingModeModal] = useState(false);
   const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
   const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
   const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
+
+
   
   // Plan Order Enforcement Modal State
   const [showOrderEnforcementModal, setShowOrderEnforcementModal] = useState(false);
@@ -312,9 +315,22 @@ const PlanScreen = () => {
     isStartPlan: boolean;
   } | null>(null);
 
-  // Load plan progress when component mounts
+  // Load plan progress and active plan when component mounts
   useEffect(() => {
-    loadPlanProgress();
+    const loadData = async () => {
+      await loadPlanProgress();
+      
+      // Load active plan from SQLite
+      try {
+        const planData = await getActivePlanFromDB();
+        setActivePlan(planData);
+      } catch (error) {
+        console.error('Error loading active plan:', error);
+        setActivePlan(null);
+      }
+    };
+    
+    loadData();
   }, []);
 
   // Refresh when returning from reading a segment
@@ -344,6 +360,23 @@ const PlanScreen = () => {
     }
     
     setPlanProgress(progress);
+  };
+  
+  // Placeholder functions for plan management (to be implemented in SQLite)
+  const pausePlan = async (planId: string) => {
+    console.log('Pause plan functionality to be implemented in SQLite');
+  };
+  
+  const resumePlan = async (planId: string) => {
+    console.log('Resume plan functionality to be implemented in SQLite');
+  };
+  
+  const endPlan = async (planId: string) => {
+    console.log('End plan functionality to be implemented in SQLite');
+  };
+  
+  const switchPlan = async (newPlanId: string) => {
+    console.log('Switch plan functionality to be implemented in SQLite');
   };
 
   const handleSegmentComplete = async (planId: string, segmentId: string) => {
@@ -521,7 +554,7 @@ const PlanScreen = () => {
     }
   }, [params.scrollToPlan, params.timestamp, planBooksData]);
 
-  const currentProgress = readingPlanProgress[selectedPlanId || ''];
+        const currentProgress = planProgress[selectedPlanId || ''];
 
   const handlePlanSelection = async (planId: string) => {
     if (activePlan && activePlan.planId !== planId) {
@@ -870,7 +903,7 @@ const PlanScreen = () => {
                           onPress: async () => {
                             setLoadingStates(prev => ({ ...prev, [plan.id]: 'pausing' }));
                             try {
-                              await pausePlan();
+                              await pausePlan(plan.id);
                             } finally {
                               setLoadingStates(prev => ({ ...prev, [plan.id]: null }));
                             }
@@ -916,7 +949,7 @@ const PlanScreen = () => {
                     e.stopPropagation();
                     setLoadingStates(prev => ({ ...prev, [plan.id]: 'resuming' }));
                     try {
-                      await resumePlan();
+                      await resumePlan(plan.id);
                     } finally {
                       setLoadingStates(prev => ({ ...prev, [plan.id]: null }));
                     }
@@ -1098,6 +1131,7 @@ const PlanScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      
       <FlatList
         style={styles.content}
         data={sections}

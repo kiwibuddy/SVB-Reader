@@ -18,6 +18,7 @@ import { useAppSettings } from '@/context/AppSettingsContext';
 import { startReadingSession, updateReadingSession } from '@/api/sqlite';
 import { isLargeScreen, isLandscape, responsivePadding, spacing } from '@/constants/sizes';
 
+
 const Bible: any = BibleData; // Use any for flexible typing
 
 const segIds = Object.keys(Bible);
@@ -135,6 +136,8 @@ export default function BibleScreen() {
   const { isVisible } = useBottomNavAnimation();
   const { width, height } = useWindowDimensions();
   const isLandscapeMode = width > height;
+
+
   
   // Scroll state
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -318,6 +321,7 @@ export default function BibleScreen() {
 
   return (
     <View style={styles.container}>
+
       <ScrollView 
         ref={flatListRef} 
         style={styles.screenContainer}

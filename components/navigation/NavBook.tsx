@@ -263,7 +263,7 @@ export interface AccordionProps {
   isExpanded?: boolean;
   onBookSelect?: (bookName: string) => void;
   onSegmentSelect?: (segmentId: string) => void;
-  completedSegments?: {[key: string]: boolean};
+  completedSegments?: {[key: string]: boolean}; // Legacy prop name for backward compatibility
   highlightedSegment?: string | null; // New prop
   searchQuery?: string | null; // New prop
   originalSegmentCount?: number; // New prop for showing filtered count

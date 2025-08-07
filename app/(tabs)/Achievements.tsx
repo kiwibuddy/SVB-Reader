@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -10,9 +11,10 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAppContext } from '@/context/GlobalContext';
+// Removed useAppContext import - now using pure SQLite data loading
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { 
   getEmojiStats,
@@ -28,6 +30,7 @@ import {
   getBookProgress
 } from '@/api/sqlite';
 import { imageMap } from '@/components/navigation/NavBook';
+
 
 // Enhanced Types
 interface AchievementStats {
@@ -68,11 +71,13 @@ const Achievements = () => {
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const { colors } = useAppSettings();
-  const { completedSegments } = useAppContext();
+  // Removed completedSegments dependency - now using pure SQLite data loading
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [bookProgress, setBookProgress] = useState<Record<string, {completed: number; total: number; percentage: number}>>({});
+
+
   
   // Enhanced stats state with all database-driven properties
   const [stats, setStats] = useState<AchievementStats>({
@@ -240,7 +245,19 @@ const Achievements = () => {
     };
 
     loadStats();
-  }, [completedSegments, refreshTrigger]);
+  }, [refreshTrigger]); // Removed completedSegments dependency - now pure SQLite
+
+  // Auto-refresh when returning to Achievements screen
+  useFocusEffect(
+    React.useCallback(() => {
+      const refreshStats = async () => {
+        // Add a small delay to ensure database writes are complete
+        await new Promise(resolve => setTimeout(resolve, 100));
+        setRefreshTrigger(prev => prev + 1);
+      };
+      refreshStats();
+    }, [])
+  );
 
   // Check if a book is completed based on segments (excluding intro segments)
   const isBookCompleted = (bookCode: string): boolean => {
@@ -830,6 +847,14 @@ const Achievements = () => {
         style={styles.content}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={() => setRefreshTrigger(prev => prev + 1)}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
       >
         <View style={styles.welcomeSection}>
           <Text style={styles.welcomeTitle}>Achievements</Text>

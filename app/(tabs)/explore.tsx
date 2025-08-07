@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { StyleSheet, Image, Platform } from 'react-native';
 
 import { Collapsible } from '@/components/Collapsible';
@@ -6,8 +7,66 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import QuickTestButton from '@/components/QuickTestButton';
+
+// DATABASE TESTING - Console commands (only in development)
+import { runAllTests, runTest1, runTest2, runTest3, runTest4, quickInspection } from '@/scripts/run-database-tests';
 
 export default function TabTwoScreen() {
+  // 🧪 DATABASE TESTING FUNCTIONS - Console Commands (Development Only)
+  useEffect(() => {
+    if (__DEV__) {
+      // Make testing functions globally available in development
+      (global as any).testDB_Explore = {
+        runAllTests,
+        runTest1,
+        runTest2,
+        runTest3,
+        runTest4,
+        quickInspection,
+        // Quick commands for Explore
+        test1: () => {
+          console.log('🧪 [Explore] Running Test 1: Clean Install...');
+          return runTest1();
+        },
+        test2: () => {
+          console.log('🧪 [Explore] Running Test 2: Migration...');
+          return runTest2();
+        },
+        test3: () => {
+          console.log('🧪 [Explore] Running Test 3: Settings...');
+          return runTest3();
+        },
+        test4: () => {
+          console.log('🧪 [Explore] Running Test 4: Reset Recovery...');
+          return runTest4();
+        },
+        all: () => {
+          console.log('🧪 [Explore] Running All Tests...');
+          return runAllTests();
+        },
+        inspect: () => {
+          console.log('🔍 [Explore] Inspecting Database...');
+          return quickInspection();
+        }
+      };
+
+      console.log(`
+🧪 [Explore] DATABASE TESTING COMMANDS READY!
+============================================
+
+Run these commands from explore.tsx:
+
+testDB_Explore.test1()  // Clean install test
+testDB_Explore.test2()  // Migration test  
+testDB_Explore.test3()  // Settings test
+testDB_Explore.test4()  // Reset recovery test
+testDB_Explore.all()    // Run all tests
+testDB_Explore.inspect() // Quick inspection
+      `);
+    }
+  }, []);
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
@@ -19,6 +78,7 @@ export default function TabTwoScreen() {
           style={styles.headerImage}
         />
       }>
+      {__DEV__ && <QuickTestButton />}
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Explore</ThemedText>
       </ThemedView>

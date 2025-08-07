@@ -1010,3 +1010,222 @@ export async function resetChallengeProgress(challengeID: string): Promise<void>
     throw error;
   }
 }
+
+// ============================================================================
+// APP STATE MANAGEMENT FUNCTIONS
+// ============================================================================
+
+/**
+ * Get a value from app_state table
+ */
+export async function getAppState(key: string): Promise<string | null> {
+  try {
+    const db = databaseManager.getDatabase();
+    const result = await db.getFirstAsync<{ value: string }>(
+      'SELECT value FROM app_state WHERE key = ?',
+      [key]
+    );
+    return result?.value || null;
+  } catch (error) {
+    console.error(`Error getting app state for key ${key}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Set a value in app_state table
+ */
+export async function setAppState(key: string, value: string | null): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    const currentDate = new Date().toISOString();
+    await db.runAsync(`
+      INSERT OR REPLACE INTO app_state (key, value, lastUpdated)
+      VALUES (?, ?, ?)
+    `, key, value, currentDate);
+  } catch (error) {
+    console.error(`Error setting app state for key ${key}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Get current segment ID
+ */
+export async function getCurrentSegmentId(): Promise<string> {
+  const segmentId = await getAppState('segmentId');
+  return segmentId || 'S001';
+}
+
+/**
+ * Set current segment ID
+ */
+export async function setCurrentSegmentId(segmentId: string): Promise<void> {
+  await setAppState('segmentId', segmentId);
+}
+
+/**
+ * Get current reading plan
+ */
+export async function getCurrentReadingPlan(): Promise<string> {
+  const readingPlan = await getAppState('readingPlan');
+  return readingPlan || 'chronological';
+}
+
+/**
+ * Set current reading plan
+ */
+export async function setCurrentReadingPlan(readingPlan: string): Promise<void> {
+  await setAppState('readingPlan', readingPlan);
+}
+
+/**
+ * Get last read segment
+ */
+export async function getLastReadSegment(): Promise<string | null> {
+  return await getAppState('lastReadSegment');
+}
+
+/**
+ * Set last read segment
+ */
+export async function setLastReadSegment(segmentId: string): Promise<void> {
+  await setAppState('lastReadSegment', segmentId);
+}
+
+/**
+ * Get app language
+ */
+export async function getAppLanguage(): Promise<string> {
+  const language = await getAppState('language');
+  return language || 'en';
+}
+
+/**
+ * Set app language
+ */
+export async function setAppLanguage(language: string): Promise<void> {
+  await setAppState('language', language);
+}
+
+/**
+ * Get app version
+ */
+export async function getAppVersion(): Promise<string> {
+  const version = await getAppState('version');
+  return version || 'nlt';
+}
+
+/**
+ * Set app version
+ */
+export async function setAppVersion(version: string): Promise<void> {
+  await setAppState('version', version);
+}
+
+/**
+ * Get read segments list (migrated from AsyncStorage)
+ */
+export async function getReadSegments(): Promise<string[]> {
+  try {
+    const db = databaseManager.getDatabase();
+    const results = await db.getAllAsync<{ segmentID: string }>(
+      'SELECT segmentID FROM segment_read_count WHERE totalReads > 0'
+    );
+    return results.map(r => r.segmentID);
+  } catch (error) {
+    console.error('Error getting read segments:', error);
+    return [];
+  }
+}
+
+/**
+ * Mark segment as read (replaces AsyncStorage readSegments)
+ */
+export async function markSegmentAsRead(segmentId: string): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    const currentDate = new Date().toISOString();
+    await db.runAsync(`
+      INSERT OR REPLACE INTO segment_read_count (segmentID, totalReads, lastReadDate)
+      VALUES (?, COALESCE((SELECT totalReads FROM segment_read_count WHERE segmentID = ?), 0) + 1, ?)
+    `, segmentId, segmentId, currentDate);
+  } catch (error) {
+    console.error('Error marking segment as read:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get active plan from SQLite (replaces AsyncStorage activePlan)
+ */
+export async function getActivePlanFromDB(): Promise<any | null> {
+  try {
+    const db = databaseManager.getDatabase();
+    const result = await db.getFirstAsync<{
+      itemID: string;
+      isActive: number;
+      isPaused: number;
+      isCompleted: number;
+      startDate: string;
+      completionDate: string | null;
+      progressPercentage: number;
+    }>(
+      'SELECT * FROM plan_challenge_status WHERE itemType = "plan" AND isActive = 1 LIMIT 1'
+    );
+    
+    if (!result) return null;
+    
+    return {
+      planId: result.itemID,
+      dateStarted: result.startDate,
+      isCompleted: result.isCompleted === 1,
+      isPaused: result.isPaused === 1,
+      progressPercentage: result.progressPercentage || 0,
+      completedSegments: [], // Will be populated by other functions
+      lastRead: result.completionDate || result.startDate
+    };
+  } catch (error) {
+    console.error('Error getting active plan:', error);
+    return null;
+  }
+}
+
+/**
+ * Get active challenges from SQLite (replaces AsyncStorage activeChallenges)
+ */
+export async function getActiveChallengesFromDB(): Promise<Record<string, any>> {
+  try {
+    const db = databaseManager.getDatabase();
+    const results = await db.getAllAsync<{
+      itemID: string;
+      isActive: number;
+      isPaused: number;
+      isCompleted: number;
+      startDate: string;
+      completionDate: string | null;
+      progressPercentage: number;
+    }>(
+      'SELECT * FROM plan_challenge_status WHERE itemType = "challenge" AND isActive = 1'
+    );
+    
+    const challenges: Record<string, any> = {};
+    
+    for (const result of results) {
+      challenges[result.itemID] = {
+        challengeId: result.itemID,
+        dateStarted: result.startDate,
+        isCompleted: result.isCompleted === 1,
+        isPaused: result.isPaused === 1,
+        progressPercentage: result.progressPercentage || 0,
+        completedSegments: [], // Will be populated by other functions
+        lastRead: result.completionDate || result.startDate
+      };
+    }
+    
+    return challenges;
+  } catch (error) {
+    console.error('Error getting active challenges:', error);
+    return {};
+  }
+}

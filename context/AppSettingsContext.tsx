@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { type FontSize, type TextSizes } from './FontSizeContext';
 import { Appearance, ColorSchemeName } from 'react-native';
 import { type ColorScheme } from './types';
 import i18next from 'i18next';
+import { settingsHelpers } from '@/services/settings-manager';
 
 // Create the context
 const AppSettingsContext = createContext<AppSettingsContextType | undefined>(undefined);
@@ -71,10 +71,6 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   });
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const systemColorScheme = Appearance.getColorScheme();
-    const getSavedMode = async () => {
-      const savedMode = await AsyncStorage.getItem('darkMode');
-      return savedMode !== null ? savedMode === 'true' : systemColorScheme === 'dark';
-    };
     return systemColorScheme === 'dark';
   });
   const [language, setLanguage] = useState<SupportedLanguage>('en');
@@ -84,14 +80,9 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   // Load saved orientation setting - MVP: Default to system behavior
   useEffect(() => {
     const loadSettings = async () => {
-      const savedOrientation = await AsyncStorage.getItem('orientationLocked');
-      if (savedOrientation !== null) {
-        setIsOrientationLocked(savedOrientation === 'true');
-        await updateOrientation(savedOrientation === 'true');
-      } else {
-        // MVP: Ensure unlocked orientation by default (like iPhone lock screen)
-        await updateOrientation(false);
-      }
+      const savedOrientation = await settingsHelpers.getOrientationLock();
+      setIsOrientationLocked(savedOrientation);
+      await updateOrientation(savedOrientation);
     };
     loadSettings();
   }, []);
@@ -112,15 +103,15 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const setOrientationLock = async (locked: boolean) => {
     setIsOrientationLocked(locked);
-    await AsyncStorage.setItem('orientationLocked', locked.toString());
+    await settingsHelpers.setOrientationLock(locked);
     await updateOrientation(locked);
   };
 
   // Listen for system color scheme changes
   useEffect(() => {
     const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      AsyncStorage.getItem('darkMode').then(savedMode => {
-        if (savedMode === null) {
+      settingsHelpers.getDarkMode().then(savedMode => {
+        if (savedMode === false) { // Only auto-switch if user hasn't manually set dark mode
           setIsDarkMode(colorScheme === 'dark');
         }
       });
@@ -134,23 +125,21 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   // Load saved dark mode preference on mount
   useEffect(() => {
     const loadSavedMode = async () => {
-      const savedMode = await AsyncStorage.getItem('darkMode');
-      if (savedMode !== null) {
-        setIsDarkMode(savedMode === 'true');
-      }
+      const savedMode = await settingsHelpers.getDarkMode();
+      setIsDarkMode(savedMode);
     };
     loadSavedMode();
   }, []);
 
   const setDarkMode = async (enabled: boolean) => {
     setIsDarkMode(enabled);
-    await AsyncStorage.setItem('darkMode', enabled.toString());
+    await settingsHelpers.setDarkMode(enabled);
   };
 
   // Add this effect to handle language changes
   useEffect(() => {
     const loadSavedLanguage = async () => {
-      const savedLanguage = await AsyncStorage.getItem('language');
+      const savedLanguage = await settingsHelpers.getLanguage();
       if (savedLanguage) {
         setLanguage(savedLanguage as SupportedLanguage);
         i18next.changeLanguage(savedLanguage);
@@ -161,7 +150,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const handleSetLanguage = async (newLanguage: SupportedLanguage) => {
     setLanguage(newLanguage);
-    await AsyncStorage.setItem('language', newLanguage);
+    await settingsHelpers.setLanguage(newLanguage);
     await i18next.changeLanguage(newLanguage);
   };
 

@@ -1,6 +1,6 @@
 import { Text, View, FlatList, Image, Pressable, StyleSheet, Animated, Platform } from 'react-native'
 import React, { useState, useEffect, useRef } from 'react'
-import { useAppContext } from '@/context/GlobalContext';
+// Removed unused useAppContext import - component doesn't use GlobalContext
 import QuestionsList from "@/assets/data/QuestionRefs.json";
 import UIData from "@/assets/data/UI-ENG.json";
 import { useAppSettings } from '@/context/AppSettingsContext';

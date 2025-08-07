@@ -8,7 +8,7 @@ import {
   getSegmentReadCount, 
   getSegmentCompletionStatus, 
   markSegmentComplete,
-  resetSegmentCompletion 
+  resetSegmentCompletion
 } from '@/api/sqlite';
 import { useAppSettings } from '@/context/AppSettingsContext';
 
@@ -28,15 +28,10 @@ export default function CheckCircle({
   challengeId
 }: CheckCircleProps) {
   const { 
-    completedSegments, 
-    markSegmentComplete: globalMarkComplete, 
     selectedReaderColor,
-    activePlan,
-    activeChallenges,
     setLastReadSegment,
-    updateReadingPlanProgress,
-    updateChallengeProgress
   } = useAppContext();
+  // Removed completedSegments, activePlan, activeChallenges dependencies - now using pure SQLite
   
   const [readCount, setReadCount] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -185,20 +180,9 @@ export default function CheckCircle({
   const handlePress = async () => {
     if (!isCompleted) {
       try {
-        // Only use global context function - it handles database calls internally
-        if (context === 'main') {
-          await globalMarkComplete(segmentId, true, selectedReaderColor, context);
-          await setLastReadSegment(segmentId);
-        } else if (context === 'plan' && planId) {
-          await globalMarkComplete(segmentId, true, selectedReaderColor, context, planId);
-          await updateReadingPlanProgress(planId, segmentId);
-        } else if (context === 'challenge' && challengeId) {
-          await globalMarkComplete(segmentId, true, selectedReaderColor, context, undefined, challengeId);
-          await updateChallengeProgress(challengeId, segmentId);
-        } else if (context === 'today') {
-          await globalMarkComplete(segmentId, true, selectedReaderColor, context);
-          await setLastReadSegment(segmentId);
-        }
+        // Use SQLite functions directly for completion updates
+        await markSegmentComplete(segmentId, context, planId, challengeId);
+        await setLastReadSegment(segmentId);
         
         // Update local state
         setIsCompleted(true);
