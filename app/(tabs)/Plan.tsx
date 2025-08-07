@@ -1091,7 +1091,7 @@ const PlanScreen = () => {
                     (book) => book === item.djhBook
                   );
                   // Use the plan-specific completion status
-                  const completedSegmentsMap = completedSegments.reduce((acc, id) => {
+                  const completedSegmentsMap = completedSegments.reduce((acc: Record<string, boolean>, id: string) => {
                     acc[id] = true;
                     return acc;
                   }, {} as Record<string, boolean>);

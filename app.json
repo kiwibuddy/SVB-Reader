@@ -61,7 +61,7 @@
         }
       ],
       [
-        "react-native-ble-plx",
+        "react-native-ble-manager",
         {
           "isBackgroundEnabled": true,
           "modes": [

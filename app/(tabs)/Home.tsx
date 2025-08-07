@@ -33,6 +33,7 @@ import { type ColorScheme } from '@/context/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useGroupReading } from '@/context/GroupReadingContext';
+import { realBluetoothManager } from '@/services/RealBluetoothManager';
 import NearbyGroupCard from '@/components/GroupReading/NearbyGroupCard';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BibleData from '@/assets/data/newBibleNLT1.json';
@@ -596,6 +597,52 @@ gridItemLabel: {
     fontSize: 13,
     letterSpacing: 0.2,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  refreshButton: {
+    padding: 8,
+    borderRadius: 8,
+  },
+  scanningIndicator: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  scanningText: {
+    fontSize: 14,
+    color: colors.secondary,
+    fontWeight: '500',
+  },
+  noGroupsCard: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 24,
+    marginBottom: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  noGroupsText: {
+    fontSize: 16,
+    color: colors.text,
+    fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  noGroupsSubtext: {
+    fontSize: 14,
+    color: colors.secondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
 });
 
 // Improved type definition with better typing
@@ -1142,7 +1189,31 @@ const HomeScreen = () => {
     joinSession,
     setUserName,
     currentUserName,
+    isScanning,
+    startScanning,
   } = useGroupReading();
+
+  // Debug logging for Bluetooth
+  useEffect(() => {
+    console.log('🔍 Bluetooth Debug:', {
+      isScanning,
+      nearbyGroupsCount: nearbyGroups.length,
+      currentSession: !!currentSession,
+      groups: nearbyGroups.map(g => ({ id: g.id, title: g.storyTitle, host: g.hostUserName }))
+    });
+  }, [isScanning, nearbyGroups, currentSession]);
+
+  // Add test session for debugging
+  const addTestSession = async () => {
+    try {
+      await realBluetoothManager.addTestSession();
+      console.log('🔍 Test session added via real BLE manager');
+      // Trigger a scan to find the test session
+      await startScanning();
+    } catch (error) {
+      console.error('🔍 Error adding test session:', error);
+    }
+  };
   
   const [dismissedGroups, setDismissedGroups] = useState<Set<string>>(new Set());
   
@@ -1405,10 +1476,24 @@ const HomeScreen = () => {
 
   // Group Reading Handlers
   const handleJoinGroup = async (sessionId: string) => {
+    // Find the session data from nearbyGroups
+    const session = nearbyGroups.find(group => group.id === sessionId);
+    if (!session) {
+      console.error('Session not found:', sessionId);
+      return;
+    }
 
-      router.push({
+    console.log('🔍 Joining session:', session);
+    
+    router.push({
       pathname: '/join-group' as any,
-      params: { sessionId }
+      params: { 
+        sessionId: session.id,
+        storyId: session.storyId,
+        storyTitle: session.storyTitle,
+        scriptureReference: session.scriptureReference,
+        hostUserName: session.hostUserName
+      }
     });
   };
 
@@ -1783,14 +1868,56 @@ const HomeScreen = () => {
         </View>
 
         {/* Nearby Group Cards */}
-        {visibleNearbyGroups.map((group) => (
-          <NearbyGroupCard
-            key={group.id}
-            session={group}
-            onJoin={() => handleJoinGroup(group.id)}
-            onDismiss={() => handleDismissGroup(group.id)}
-          />
-        ))}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Nearby Reading Groups</Text>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity 
+                style={styles.refreshButton} 
+                onPress={startScanning}
+                disabled={isScanning}
+              >
+                <Ionicons 
+                  name={isScanning ? "refresh" : "refresh-outline"} 
+                  size={20} 
+                  color={isScanning ? colors.secondary : colors.primary} 
+                />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.refreshButton} 
+                onPress={addTestSession}
+              >
+                <Ionicons 
+                  name="bug-outline" 
+                  size={20} 
+                  color={colors.primary} 
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          {isScanning && (
+            <View style={styles.scanningIndicator}>
+              <Text style={styles.scanningText}>Scanning for nearby groups...</Text>
+            </View>
+          )}
+          
+          {visibleNearbyGroups.length > 0 ? (
+            visibleNearbyGroups.map((group) => (
+              <NearbyGroupCard
+                key={group.id}
+                session={group}
+                onJoin={() => handleJoinGroup(group.id)}
+                onDismiss={() => handleDismissGroup(group.id)}
+              />
+            ))
+          ) : !isScanning ? (
+            <View style={styles.noGroupsCard}>
+              <Text style={styles.noGroupsText}>No nearby reading groups found</Text>
+              <Text style={styles.noGroupsSubtext}>Start a group reading session on another device to see it here</Text>
+            </View>
+          ) : null}
+        </View>
 
         <InsightsSection styles={combinedStyles} />
         <View style={{ height: 80 }} />

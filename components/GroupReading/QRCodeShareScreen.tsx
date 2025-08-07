@@ -72,6 +72,8 @@ const QRCodeShareScreen: React.FC<QRCodeShareScreenProps> = ({
     },
     content: {
       flex: 1,
+    },
+    contentContainer: {
       paddingHorizontal: 24,
       paddingTop: 24,
       alignItems: 'center',
@@ -221,7 +223,11 @@ const QRCodeShareScreen: React.FC<QRCodeShareScreenProps> = ({
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.title}>Invite Others</Text>
         <Text style={styles.subtitle}>
           Share this QR code for others to join your reading group

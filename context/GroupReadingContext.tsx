@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
-import { bluetoothSessionManager } from '@/services/BluetoothSessionManager';
+import { realBluetoothManager } from '@/services/RealBluetoothManager';
+import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
 import { GroupSession, Participant, Role, GroupSessionState } from '@/types';
 
 interface GroupReadingContextType {
@@ -18,7 +19,7 @@ interface GroupReadingContextType {
   joinSession: (sessionId: string, role: Role, userName: string) => Promise<boolean>;
   leaveSession: () => Promise<void>;
   startScanning: () => Promise<void>;
-  stopScanning: () => void;
+  stopScanning: () => Promise<void>;
   acceptJoiner: (deviceId: string, userName: string, role: Role) => Promise<boolean>;
   updateScrollPosition: (position: number) => void;
   setUserName: (name: string) => void;
@@ -120,7 +121,7 @@ const GroupReadingContext = createContext<GroupReadingContextType | undefined>(u
 export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(groupReadingReducer, initialState);
 
-  // Real Bluetooth implementations
+  // Real BLE implementations
   const startHostSession = useCallback(async (
     storyId: string,
     storyTitle: string,
@@ -131,23 +132,48 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
     challengeId?: string
   ): Promise<string> => {
     try {
+      console.log('🔵 Starting real BLE host session...');
+      
+      // Initialize BLE manager if not already done
+      await realBluetoothManager.initialize();
+      
       dispatch({ type: 'SET_USER_NAME', payload: userName });
       dispatch({ type: 'SET_HOST', payload: true });
       dispatch({ type: 'SET_ROLE', payload: role });
       
-      const sessionId = await bluetoothSessionManager.startBroadcasting(
+      // Create session object
+      const session: GroupSession = {
+        id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         storyId,
         storyTitle,
-        scriptureRef,
-        role,
-        userName,
+        scriptureReference: scriptureRef,
+        hostDeviceId: 'current_device', // Will be set by BLE manager
+        hostUserName: userName,
+        participants: [{
+          deviceId: 'current_device',
+          deviceName: 'Host Device',
+          userName: userName,
+          role,
+          isReady: true,
+          isConnected: true
+        }],
+        status: 'forming',
+        createdAt: Date.now(),
+        expiresAt: Date.now() + (30 * 60 * 1000),
         planId,
         challengeId
-      );
+      };
       
-      return sessionId;
+      // Start BLE advertising
+      await realBluetoothManager.startAdvertising(session);
+      
+      // Update state with session
+      dispatch({ type: 'SET_SESSION', payload: session });
+      
+      console.log('🔵 Real BLE host session started:', session.id);
+      return session.id;
     } catch (error) {
-      console.error('Error starting host session:', error);
+      console.error('🔴 Error starting real BLE host session:', error);
       dispatch({ type: 'SET_HOST', payload: false });
       throw error;
     }
@@ -155,85 +181,207 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const stopSession = useCallback(async (): Promise<void> => {
     try {
-      await bluetoothSessionManager.stopBroadcasting();
+      console.log('🔵 Stopping real BLE session...');
+      
+      // Stop BLE advertising
+      await realBluetoothManager.stopAdvertising();
+      
+      // Disconnect all connected devices
+      const connectedDevices = realBluetoothManager.getConnectedDevices();
+      for (const deviceId of connectedDevices) {
+        await realBluetoothManager.disconnectFromDevice(deviceId);
+      }
+      
       dispatch({ type: 'SET_SESSION', payload: null });
       dispatch({ type: 'SET_HOST', payload: false });
       dispatch({ type: 'SET_ROLE', payload: null });
+      
+      console.log('🔵 Real BLE session stopped');
     } catch (error) {
-      console.error('Error stopping session:', error);
+      console.error('🔴 Error stopping real BLE session:', error);
     }
   }, []);
 
   const joinSession = useCallback(async (sessionId: string, role: Role, userName: string): Promise<boolean> => {
     try {
-      const success = await bluetoothSessionManager.requestToJoin(sessionId, role, userName);
-      if (success) {
-        dispatch({ type: 'SET_USER_NAME', payload: userName });
-        dispatch({ type: 'SET_ROLE', payload: role });
+      console.log('🔗 Joining real BLE session:', sessionId);
+      
+      // Initialize BLE manager if not already done
+      await realBluetoothManager.initialize();
+      
+      // Find the session in nearby groups
+      const session = state.nearbyGroups.find(g => g.id === sessionId);
+      if (!session) {
+        console.error('🔴 Session not found in nearby groups:', sessionId);
+        return false;
       }
-      return success;
+      
+      // Connect to the host device
+      const connected = await realBluetoothManager.connectToDevice(session.hostDeviceId);
+      if (!connected) {
+        console.error('🔴 Failed to connect to host device');
+        return false;
+      }
+      
+      // Send join request message
+      const joinMessage = {
+        type: 'join_request' as const,
+        data: {
+          sessionId,
+          role,
+          userName,
+          deviceId: 'joiner_device'
+        },
+        timestamp: Date.now()
+      };
+      
+      await realBluetoothManager.sendMessage(session.hostDeviceId, joinMessage);
+      
+      dispatch({ type: 'SET_USER_NAME', payload: userName });
+      dispatch({ type: 'SET_ROLE', payload: role });
+      dispatch({ type: 'SET_SESSION', payload: session });
+      
+      console.log('🔗 Successfully joined real BLE session:', sessionId);
+      return true;
     } catch (error) {
-      console.error('Error joining session:', error);
+      console.error('🔴 Error joining real BLE session:', error);
       return false;
     }
-  }, []);
+  }, [state.nearbyGroups]);
 
   const leaveSession = useCallback(async (): Promise<void> => {
     try {
-      await bluetoothSessionManager.leaveGroup();
+      console.log('🔌 Leaving real BLE session...');
+      
+      if (state.currentSession) {
+        // Disconnect from host device
+        await realBluetoothManager.disconnectFromDevice(state.currentSession.hostDeviceId);
+      }
+      
       dispatch({ type: 'SET_SESSION', payload: null });
       dispatch({ type: 'SET_HOST', payload: false });
       dispatch({ type: 'SET_ROLE', payload: null });
+      
+      console.log('🔌 Successfully left real BLE session');
     } catch (error) {
-      console.error('Error leaving session:', error);
+      console.error('🔴 Error leaving real BLE session:', error);
     }
-  }, []);
+  }, [state.currentSession]);
 
   const startScanning = useCallback(async (): Promise<void> => {
     try {
+      console.log('🔍 Context: Starting real BLE scan...');
+      
+      // Initialize BLE manager if not already done
+      await realBluetoothManager.initialize();
+      
       dispatch({ type: 'SET_SCANNING', payload: true });
-      const nearbyGroups = await bluetoothSessionManager.discoverNearbyGroups();
+      
+      // Start BLE scanning
+      const nearbyGroups = await realBluetoothManager.startScanning();
+      console.log('🔍 Context: Found groups:', nearbyGroups.length);
       dispatch({ type: 'SET_NEARBY_GROUPS', payload: nearbyGroups });
+      
+      // Set up device found callback
+      realBluetoothManager.onDeviceFound((device) => {
+        console.log('🔍 Context: Device found during scan:', device.name || device.id);
+        // Handle device discovery and session extraction
+      });
+      
     } catch (error) {
-      console.error('Error starting scan:', error);
+      console.error('🔍 Context: Error starting real BLE scan:', error);
       dispatch({ type: 'SET_SCANNING', payload: false });
     }
   }, []);
 
-  const stopScanning = useCallback((): void => {
-    dispatch({ type: 'SET_SCANNING', payload: false });
-    dispatch({ type: 'SET_NEARBY_GROUPS', payload: [] });
-    // Note: bluetoothSessionManager.stopScanning() is called automatically in discoverNearbyGroups
+  const stopScanning = useCallback(async (): Promise<void> => {
+    try {
+      console.log('🔍 Context: Stopping real BLE scan...');
+      
+      // Stop BLE scanning
+      await realBluetoothManager.stopScanning();
+      
+      dispatch({ type: 'SET_SCANNING', payload: false });
+      dispatch({ type: 'SET_NEARBY_GROUPS', payload: [] });
+      
+      console.log('🔍 Context: Real BLE scan stopped');
+    } catch (error) {
+      console.error('🔍 Context: Error stopping real BLE scan:', error);
+    }
   }, []);
 
   const acceptJoiner = useCallback(async (deviceId: string, userName: string, role: Role): Promise<boolean> => {
     try {
-      const success = await bluetoothSessionManager.acceptJoiner(deviceId, userName, role);
-      if (success) {
-        const newParticipant: Participant = {
-          deviceId,
-          deviceName: 'Joined Device',
-          userName: userName,
-          role,
-          isReady: true,
-          isConnected: true,
-        };
-        dispatch({ type: 'ADD_PARTICIPANT', payload: newParticipant });
+      console.log('✅ Accepting joiner via real BLE:', deviceId, userName, role);
+      
+      // Check if role is already taken
+      if (state.currentSession?.participants.some(p => p.role === role)) {
+        console.error('🔴 Role already taken:', role);
+        return false;
       }
-      return success;
+      
+      // Add participant to session
+      const newParticipant: Participant = {
+        deviceId,
+        deviceName: 'Joined Device',
+        userName: userName,
+        role,
+        isReady: true,
+        isConnected: true,
+      };
+      
+      dispatch({ type: 'ADD_PARTICIPANT', payload: newParticipant });
+      
+      // Send acceptance message to joiner
+      const acceptanceMessage = {
+        type: 'participant_update' as const,
+        data: {
+          action: 'accepted',
+          participant: newParticipant,
+          sessionId: state.currentSession?.id
+        },
+        timestamp: Date.now()
+      };
+      
+      await realBluetoothManager.sendMessage(deviceId, acceptanceMessage);
+      
+      console.log('✅ Successfully accepted joiner via real BLE');
+      return true;
     } catch (error) {
-      console.error('Error accepting joiner:', error);
+      console.error('🔴 Error accepting joiner via real BLE:', error);
       return false;
     }
-  }, []);
+  }, [state.currentSession]);
 
   const updateScrollPosition = useCallback(async (position: number): Promise<void> => {
     try {
-      await bluetoothSessionManager.syncScrollPosition(position);
+      console.log('📜 Syncing scroll position via real BLE:', position);
+      
+      if (!state.currentSession) {
+        console.error('🔴 No active session for scroll sync');
+        return;
+      }
+      
+      // Send scroll sync message to all connected devices
+      const scrollMessage = {
+        type: 'scroll_sync' as const,
+        data: {
+          position,
+          sessionId: state.currentSession.id
+        },
+        timestamp: Date.now()
+      };
+      
+      const connectedDevices = realBluetoothManager.getConnectedDevices();
+      for (const deviceId of connectedDevices) {
+        await realBluetoothManager.sendMessage(deviceId, scrollMessage);
+      }
+      
+      console.log('📜 Scroll position synced via real BLE');
     } catch (error) {
-      console.error('Error syncing scroll position:', error);
+      console.error('🔴 Error syncing scroll position via real BLE:', error);
     }
-  }, []);
+  }, [state.currentSession]);
 
   const setUserName = useCallback((name: string): void => {
     dispatch({ type: 'SET_USER_NAME', payload: name });
@@ -245,38 +393,60 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [state.currentSession]);
 
-  // Set up Bluetooth session event listeners
+  // Set up Real BLE event listeners
   useEffect(() => {
-    // Listen for session state changes
-    const sessionCallback = (session: GroupSession) => {
-      dispatch({ type: 'SET_SESSION', payload: session });
+    console.log('🔵 Setting up real BLE event listeners...');
+    
+    // Listen for device connections
+    const deviceConnectedCallback = (deviceId: string) => {
+      console.log('🔗 Device connected via real BLE:', deviceId);
     };
 
-    // Listen for scroll sync events
-    const scrollCallback = (position: number) => {
-      // Handle incoming scroll sync
-  
-    };
-
-    // Listen for participant events
-    const participantJoinedCallback = (participant: Participant) => {
-      dispatch({ type: 'ADD_PARTICIPANT', payload: participant });
-    };
-
-    const participantLeftCallback = (deviceId: string) => {
+    // Listen for device disconnections
+    const deviceDisconnectedCallback = (deviceId: string) => {
+      console.log('🔌 Device disconnected via real BLE:', deviceId);
       dispatch({ type: 'REMOVE_PARTICIPANT', payload: deviceId });
     };
 
-    // Register callbacks with Bluetooth manager
-    bluetoothSessionManager.onGroupStateChange(sessionCallback);
-    bluetoothSessionManager.onScrollSync(scrollCallback);
-    bluetoothSessionManager.onParticipantJoined(participantJoinedCallback);
-    bluetoothSessionManager.onParticipantLeft(participantLeftCallback);
+    // Listen for incoming messages
+    const messageReceivedCallback = (deviceId: string, message: any) => {
+      console.log('📨 Message received via real BLE:', message.type, 'from:', deviceId);
+      
+      switch (message.type) {
+        case 'join_request':
+          // Handle join request
+          const { role, userName } = message.data;
+          acceptJoiner(deviceId, userName, role);
+          break;
+          
+        case 'scroll_sync':
+          // Handle scroll sync
+          const { position } = message.data;
+          dispatch({ type: 'UPDATE_SESSION', payload: { scrollPosition: position } });
+          break;
+          
+        case 'participant_update':
+          // Handle participant updates
+          if (message.data.action === 'accepted') {
+            dispatch({ type: 'SET_SESSION', payload: message.data.session });
+          }
+          break;
+          
+        default:
+          console.log('📨 Unknown message type:', message.type);
+      }
+    };
+
+    // Register callbacks with real BLE manager
+    realBluetoothManager.onDeviceConnected(deviceConnectedCallback);
+    realBluetoothManager.onDeviceDisconnected(deviceDisconnectedCallback);
+    realBluetoothManager.onMessageReceived(messageReceivedCallback);
 
     return () => {
-      // Cleanup would go here if the manager supported callback removal
+      console.log('🔵 Cleaning up real BLE event listeners...');
+      // Note: real BLE manager doesn't support callback removal yet
     };
-  }, []);
+  }, [acceptJoiner]);
 
   // Handle app state changes for background scanning
   useEffect(() => {
