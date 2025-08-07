@@ -21,6 +21,7 @@ import DailyStoryMap from '../../assets/data/DailyStoryMap.json';
 import { getDayOfYear } from 'date-fns';
 import StickyHeader from "../../components/StickyHeader";
 import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
+import { getCurrentSegmentId, getReadSegments, getActivePlanFromDB } from "@/api/sqlite";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { getEmojis, getCurrentStreak, getPlanProgress, getChallengeProgress, getSegmentCompletionStatus, getBestStreak } from "@/api/sqlite";
@@ -711,7 +712,7 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: Co
       return "#FF5733"; // Orange for new readers
     }
     
-    const isCompleted = completedSegments[lastReadSegment]?.isCompleted;
+    const isCompleted = state.completedSegments[lastReadSegment] || false;
     return isCompleted ? "#2196F3" : "#4CAF50"; // Blue for continue, Green for resume
   };
   
@@ -925,7 +926,7 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
           : 'Not enough data',
         readingStreak: 12,
         mostUsedEmoji,
-        completionRate: Math.round((Object.keys(completedSegments).length / Object.keys(SegmentTitles).length) * 100)
+        completionRate: Math.round((Object.keys(state.completedSegments).length / Object.keys(SegmentTitles).length) * 100)
       });
     };
 
@@ -984,7 +985,7 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
             : 'Not enough data',
           readingStreak: 12,
           mostUsedEmoji,
-          completionRate: Math.round((Object.keys(completedSegments).length / Object.keys(SegmentTitles).length) * 100)
+          completionRate: Math.round((Object.keys(state.completedSegments).length / Object.keys(SegmentTitles).length) * 100)
         });
       };
 
@@ -1193,43 +1194,33 @@ const HomeScreen = () => {
     }, [])
   );
 
-  // Add useEffect to load real progress data
-  // Initial load for progress data (runs once)
+  // Load progress data when component mounts
   useEffect(() => {
     const loadProgressData = async () => {
-      // Load plan progress
-      if (activePlan) {
-        const progress = await getPlanProgress(activePlan.planId);
-        const nextSegment = await getNextSegmentForPlan(activePlan.planId);
-        setPlanProgress({
-          totalSegments: progress.totalSegments,
-          completedSegments: progress.completedSegments,
-          progressPercentage: progress.progressPercentage,
-          nextSegmentId: nextSegment?.segmentId || null,
-          nextSegmentTitle: nextSegment?.title || null
-        });
+      try {
+        // Quick SQLite test - verify our functions are working
+        console.log('🧪 [Home] Testing SQLite functions...');
+        
+        const currentSegmentId = await getCurrentSegmentId();
+        console.log('✅ [Home] Current segment ID:', currentSegmentId);
+        
+        const readSegments = await getReadSegments();
+        console.log('✅ [Home] Read segments count:', readSegments.length);
+        
+        const activePlan = await getActivePlanFromDB();
+        console.log('✅ [Home] Active plan:', activePlan ? 'Yes' : 'No');
+        
+        console.log('🎉 [Home] SQLite functions working correctly!');
+        
+        // Continue with normal data loading
+        // Note: loadStreakData and loadProgressData are defined later in the component
+      } catch (error) {
+        console.error('❌ [Home] Error in SQLite test:', error);
       }
-
-      // Load challenge progresses
-      const challengeProgressData: typeof challengeProgresses = {};
-      for (const [id, challenge] of Object.entries(activeChallenges)) {
-        if (challenge && !challenge.isPaused && !challenge.isCompleted) {
-          const progress = await getChallengeProgress(challenge.challengeId);
-          const nextSegment = await getNextSegmentForChallenge(challenge.challengeId);
-          challengeProgressData[id] = {
-            totalSegments: progress.totalSegments,
-            completedSegments: progress.completedSegments,
-            progressPercentage: progress.progressPercentage,
-            nextSegmentId: nextSegment?.segmentId || null,
-            nextSegmentTitle: nextSegment?.title || null
-          };
-        }
-      }
-      setChallengeProgresses(challengeProgressData);
     };
-
+    
     loadProgressData();
-  }, [activePlan, activeChallenges]); // Removed completedSegments to avoid infinite re-renders
+  }, []);
 
   // Refresh progress data when returning to Home screen
   useFocusEffect(
@@ -1681,7 +1672,7 @@ const HomeScreen = () => {
 </View>
 
       <ContinueReadingSection 
-        lastReadSegment={lastReadSegment}
+        lastReadSegment={state.lastReadSegment}
         onPress={handleContinueReading}
         styles={combinedStyles}
         colors={colors}

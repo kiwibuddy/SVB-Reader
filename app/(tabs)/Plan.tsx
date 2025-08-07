@@ -20,7 +20,7 @@ import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
 import Accordion, { AccordionItem, accordionColor } from "@/components/navigation/NavBook";
 import Books from "@/assets/data/BookChapterList.json";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
-import { useAppContext } from "@/context/GlobalContext";
+import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import { StatusIndicator } from '@/components/StatusIndicator';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
@@ -268,7 +268,7 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
 const PlanScreen = () => {
   const { 
     updateSegmentId
-  } = useAppContext();
+  } = useSQLiteGlobalContext();
   // Removed activePlan, plan management dependencies - now using pure SQLite data loading
 
   const router = useRouter();

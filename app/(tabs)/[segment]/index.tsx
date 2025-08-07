@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar, useWindowDimensions } from 'react-native';
-import { useAppContext } from '@/context/GlobalContext';
+import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import BibleData from "@/assets/data/newBibleNLT1.json"
 import readingPlansData from "@/assets/data/ReadingPlansChallenges.json";
 import { FontAwesome } from '@expo/vector-icons';
@@ -128,7 +128,7 @@ const createStyles = (colors: any, isLargeScreen: boolean, isLandscape: boolean)
 
 export default function BibleScreen() {
   const { colors } = useAppSettings();
-  const { updateSegmentId, language, version } = useAppContext();
+  const { updateSegmentId, state } = useSQLiteGlobalContext();
   const router = useRouter();
   const params = useLocalSearchParams();
   const { planId, challengeId } = params;
@@ -174,7 +174,7 @@ export default function BibleScreen() {
   // Get context-aware navigation segments (MUST be before early return)
   const { prevSegId, nextSegId } = useMemo(() => {
     // Make sure language and version are defined
-    if (!language || !version) {
+    if (!state.language || !state.version) {
       return { prevSegId: null, nextSegId: null };
     }
 
@@ -187,8 +187,8 @@ export default function BibleScreen() {
       
       const currentIndex = planSegments.indexOf(segID);
       return {
-        prevSegId: currentIndex > 0 ? `${language}-${version}-${planSegments[currentIndex - 1]}` : null,
-        nextSegId: currentIndex < planSegments.length - 1 ? `${language}-${version}-${planSegments[currentIndex + 1]}` : null
+        prevSegId: currentIndex > 0 ? `${state.language}-${state.version}-${planSegments[currentIndex - 1]}` : null,
+        nextSegId: currentIndex < planSegments.length - 1 ? `${state.language}-${state.version}-${planSegments[currentIndex + 1]}` : null
       };
     } 
     else if (challengeId) {
@@ -200,19 +200,19 @@ export default function BibleScreen() {
       
       const currentIndex = challengeSegments.indexOf(segID);
       return {
-        prevSegId: currentIndex > 0 ? `${language}-${version}-${challengeSegments[currentIndex - 1]}` : null,
-        nextSegId: currentIndex < challengeSegments.length - 1 ? `${language}-${version}-${challengeSegments[currentIndex + 1]}` : null
+        prevSegId: currentIndex > 0 ? `${state.language}-${state.version}-${challengeSegments[currentIndex - 1]}` : null,
+        nextSegId: currentIndex < challengeSegments.length - 1 ? `${state.language}-${state.version}-${challengeSegments[currentIndex + 1]}` : null
       };
     }
     else {
       // Default navigation through all segments
       const currentSegmentIndex = segIds.indexOf(segID);
       return {
-        prevSegId: currentSegmentIndex > 0 ? `${language}-${version}-${segIds[currentSegmentIndex - 1]}` : null,
-        nextSegId: currentSegmentIndex < segIds.length - 1 ? `${language}-${version}-${segIds[currentSegmentIndex + 1]}` : null
+        prevSegId: currentSegmentIndex > 0 ? `${state.language}-${state.version}-${segIds[currentSegmentIndex - 1]}` : null,
+        nextSegId: currentSegmentIndex < segIds.length - 1 ? `${state.language}-${state.version}-${segIds[currentSegmentIndex + 1]}` : null
       };
     }
-  }, [segID, planId, challengeId, language, version]);
+  }, [segID, planId, challengeId, state.language, state.version]);
 
   // Show loading state if data isn't ready
   if (!segID || !segmentData) {

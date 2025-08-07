@@ -22,7 +22,7 @@ import readingPlansData from "../../assets/data/ReadingPlansChallenges.json";
 import Accordion, { accordionColor } from "@/components/navigation/NavBook";
 import Books from "@/assets/data/BookChapterList.json";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
-import { useAppContext } from "@/context/GlobalContext";
+import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import { StatusIndicator } from '@/components/StatusIndicator';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
@@ -297,7 +297,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
 const ChallengesScreen = () => {
   const { 
     updateSegmentId
-  } = useAppContext();
+  } = useSQLiteGlobalContext();
   // Removed activeChallenges, challenge management dependencies - now using pure SQLite data loading
 
   const router = useRouter();

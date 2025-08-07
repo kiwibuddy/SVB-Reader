@@ -8,7 +8,7 @@ import {
   Platform,
   TouchableOpacity
 } from "react-native";
-import { useAppContext } from "@/context/GlobalContext";
+import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import { useRouter } from "expo-router";
 import { useModal } from "@/context/NavContext";
 // Removed DonutChart import - no longer used
@@ -58,7 +58,7 @@ const SegmentItem: React.FC<SegmentItemProps> = React.memo(({
   completedSegments
 }) => {
   const router = useRouter();
-  const { language, version } = useAppContext();
+  const { state } = useSQLiteGlobalContext();
   const [completionStatus, setCompletionStatus] = useState<CompletionData>({
     isCompleted: false,
     color: null
@@ -97,13 +97,13 @@ const SegmentItem: React.FC<SegmentItemProps> = React.memo(({
       router.push({
         pathname: "/[segment]" as const,
         params: {
-          segment: `${language}-${version}-${segment.id}`,
+          segment: `${state.language}-${state.version}-${segment.id}`,
           ...(context === 'plan' && planId ? { planId } : {}),
           ...(context === 'challenge' && challengeId ? { challengeId } : {})
         }
       });
     }
-  }, [onPress, segment.id, router, language, version, context, planId, challengeId]);
+  }, [onPress, segment.id, router, state.language, state.version, context, planId, challengeId]);
 
   // Check if this is an introduction segment
   const isIntroduction = segment.id.startsWith('I');

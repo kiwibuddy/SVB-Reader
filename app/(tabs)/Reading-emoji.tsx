@@ -17,7 +17,7 @@ import {
   ScrollView,
 } from "react-native"
 import { useRouter } from "expo-router"
-import { useAppContext } from "@/context/GlobalContext"
+import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext"
 import { useAppSettings } from "@/context/AppSettingsContext"
 import { useTranslation } from "@/hooks/useTranslation"
 import { getEmojis, deleteEmoji } from "@/api/sqlite"
@@ -746,7 +746,7 @@ const ReadingEmoji = () => {
   const isLargeScreen = screenWidth > 768
   const { colors } = useAppSettings()
   const styles = useMemo(() => createStyles(isLargeScreen, colors), [isLargeScreen, colors])
-  const { updateSegmentId } = useAppContext()
+  const { updateSegmentId } = useSQLiteGlobalContext()
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null)
   const [reactions, setReactions] = useState<EmojiReaction[]>([])
   const [isLoading, setIsLoading] = useState(true)

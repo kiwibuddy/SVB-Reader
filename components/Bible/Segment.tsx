@@ -9,7 +9,7 @@ import { splitContentIntoReaderParts } from "@/scripts/splitContentIntoReaderPar
 import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
 import { getColors } from "@/scripts/getColors";
 import SegmentTitle from "./SegmentTitle";
-import { useAppContext } from "@/context/GlobalContext";
+import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import CelebrationPopup from "./CelebrationPopup";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import CheckCircle from "@/components/CheckCircle";
@@ -51,10 +51,9 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   const router = useRouter();
   const { 
-    language, 
-    version,
+    state,
     updateSegmentId,
-  } = useAppContext();
+  } = useSQLiteGlobalContext();
   // Removed completedSegments, activePlan, activeChallenges dependencies - now using pure SQLite
 
   const { colors } = useAppSettings();

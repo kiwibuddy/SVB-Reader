@@ -5,7 +5,7 @@ import SegmentDataObj from "@/assets/data/SegmentTitles.json";
 import BookChapterList from "@/assets/data/BookChapterList.json";
 import { SegmentsTitleObject, SegmentTitleData } from "@/types";
 import CheckCircle from "../CheckCircle";
-import { useAppContext } from "@/context/GlobalContext";
+import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import { useRouter } from 'expo-router'; // Import useRouter
 import { useModal } from "@/context/NavContext";
 
@@ -33,7 +33,7 @@ type BookKeys = keyof typeof BookChapterList;
 
 // New SegmentItem component
 function SegmentItem({ segment }: { segment: { id: string; title: string, ref: string } }) {
-  const { updateSegmentId } = useAppContext();
+  const { updateSegmentId } = useSQLiteGlobalContext();
   const { toggleModal } = useModal() || {toggleModal: () => {}}; // Ensure toggleModal is safely accessed
   const router = useRouter(); // Initialize the router
 

@@ -60,6 +60,7 @@ interface AppState {
   // Emoji and engagement
   emojiStats: any;
   sourceStats: any;
+  emojiActions: number; // Track emoji changes for re-renders
   
   // Testament progress
   oldTestamentProgress: any;
@@ -95,6 +96,9 @@ interface SQLiteGlobalContextType {
   startPlanAction: (planId: string) => Promise<void>;
   startChallengeAction: (challengeId: string) => Promise<void>;
   
+  // Emoji actions
+  updateEmojiActions: (newEmojiActions: number) => Promise<void>;
+  
   // Refresh actions
   refreshAllData: () => Promise<void>;
   refreshProgressData: () => Promise<void>;
@@ -123,6 +127,7 @@ const initialState: AppState = {
   totalSegmentsCount: 0,
   emojiStats: {},
   sourceStats: {},
+  emojiActions: 0,
   oldTestamentProgress: 0,
   newTestamentProgress: 0,
   longestSession: null,
@@ -206,7 +211,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
         getCompletedBooks(),
         checkEmojiCollection(),
         getReadingStreak(),
-        getBookProgress()
+        getBookProgress('all')
       ]);
 
       // Build completed segments map
@@ -384,6 +389,15 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, []);
 
+  // Emoji actions
+  const updateEmojiActions = useCallback(async (newEmojiActions: number) => {
+    setState(prev => ({
+      ...prev,
+      emojiActions: newEmojiActions,
+      lastUpdated: new Date()
+    }));
+  }, []);
+
   // Refresh functions
   const refreshAllData = useCallback(async () => {
     await loadAppState();
@@ -448,7 +462,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
         getCompletedBooks(),
         checkEmojiCollection(),
         getReadingStreak(),
-        getBookProgress()
+        getBookProgress('all')
       ]);
 
       setState(prev => ({
@@ -514,6 +528,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
     markAsRead,
     startPlanAction,
     startChallengeAction,
+    updateEmojiActions,
     refreshAllData,
     refreshProgressData,
     refreshStatistics,
@@ -554,6 +569,7 @@ export const useAppActions = () => {
     markAsRead,
     startPlanAction,
     startChallengeAction,
+    updateEmojiActions,
     refreshAllData,
     refreshProgressData,
     refreshStatistics,
@@ -571,6 +587,7 @@ export const useAppActions = () => {
     markAsRead,
     startPlanAction,
     startChallengeAction,
+    updateEmojiActions,
     refreshAllData,
     refreshProgressData,
     refreshStatistics,

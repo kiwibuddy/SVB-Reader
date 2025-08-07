@@ -3,7 +3,7 @@ import { View, Pressable, Text, StyleSheet, Modal, Platform, TouchableOpacity, u
 import { LongPressGestureHandler, State, Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 import { BibleBlock } from '@/types';
-import { useAppContext } from '@/context/GlobalContext';
+import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { addEmoji, deleteEmoji, getEmoji } from '@/api/sqlite';
 import EmojiPicker from './EmojiPicker';
 
@@ -32,7 +32,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   hasTail,
   onLongPress
 }) => {
-  const { segmentId, emojiActions, updateEmojiActions } = useAppContext();
+  const { state, updateSegmentId, updateEmojiActions } = useSQLiteGlobalContext();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const [showPicker, setShowPicker] = useState(false);
   const [pickerPosition, setPickerPosition] = useState({ x: 0, y: 0 });
@@ -127,12 +127,12 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     
     const loadEmoji = async () => {
       try {
-        if (!segmentId || !blockId) {
-          console.warn('🔍 [EmojiHandler] Missing segmentId or blockId:', { segmentId, blockId });
+        if (!state.segmentId || !blockId) {
+          console.warn('🔍 [EmojiHandler] Missing segmentId or blockId:', { segmentId: state.segmentId, blockId });
           return;
         }
         
-        const emoji = await getEmoji(segmentId, blockId);
+        const emoji = await getEmoji(state.segmentId, blockId);
         if (isMountedRef.current) {
           setExistingEmoji(emoji);
         }
@@ -141,18 +141,18 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
       }
     };
     loadEmoji();
-  }, [segmentId, blockId]);
+  }, [state.segmentId, blockId]);
 
   // CRITICAL: Update emoji when emojiActions changes (for external updates)
   useEffect(() => {
     if (!isMountedRef.current) return;
     
-    if (emojiActions > 0) { // Only update if there have been emoji actions
+    if (state.emojiActions > 0) { // Only update if there have been emoji actions
       const loadEmoji = async () => {
         try {
-          if (!segmentId || !blockId) return;
+          if (!state.segmentId || !blockId) return;
           
-          const emoji = await getEmoji(segmentId, blockId);
+          const emoji = await getEmoji(state.segmentId, blockId);
           if (isMountedRef.current) {
             setExistingEmoji(emoji);
           }
@@ -162,7 +162,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
       };
       loadEmoji();
     }
-  }, [emojiActions, segmentId, blockId]);
+  }, [state.segmentId, blockId, state.emojiActions]);
 
   // Removed debug logging for showPicker state changes
 
@@ -187,47 +187,47 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     if (!isMountedRef.current) return;
     
     try {
-      if (!segmentId || !blockId || !emoji) {
-        console.error('🔍 [EmojiHandler] Missing required data for emoji selection:', { segmentId, blockId, emoji });
+      if (!state.segmentId || !blockId || !emoji) {
+        console.error('🔍 [EmojiHandler] Missing required data for emoji selection:', { segmentId: state.segmentId, blockId, emoji });
         return;
       }
       
-      await addEmoji(segmentId, blockId, block, emoji);
+      await addEmoji(state.segmentId, blockId, block, emoji);
       
       if (isMountedRef.current) {
         setExistingEmoji(emoji);
         setShowPicker(false);
         
         // Update context to trigger re-renders
-        updateEmojiActions(emojiActions + 1);
+        updateEmojiActions(state.emojiActions + 1);
       }
     } catch (error) {
       console.error('🔍 [EmojiHandler] Error adding emoji:', error);
     }
-  }, [segmentId, blockId, block, updateEmojiActions, emojiActions]);
+  }, [state.segmentId, blockId, block, state.emojiActions, updateEmojiActions]);
 
   // CRITICAL: Enhanced emoji deletion with validation
   const handleEmojiDelete = useCallback(async () => {
     if (!isMountedRef.current) return;
     
     try {
-      if (!segmentId || !blockId) {
-        console.error('🔍 [EmojiHandler] Missing required data for emoji deletion:', { segmentId, blockId });
+      if (!state.segmentId || !blockId) {
+        console.error('🔍 [EmojiHandler] Missing required data for emoji deletion:', { segmentId: state.segmentId, blockId });
         return;
       }
       
-      await deleteEmoji(segmentId, blockId);
+      await deleteEmoji(state.segmentId, blockId);
       
       if (isMountedRef.current) {
         setExistingEmoji(null);
         
         // Update context to trigger re-renders
-        updateEmojiActions(emojiActions + 1);
+        updateEmojiActions(state.emojiActions + 1);
       }
     } catch (error) {
       console.error('🔍 [EmojiHandler] Error deleting emoji:', error);
     }
-  }, [segmentId, blockId, updateEmojiActions, emojiActions]);
+  }, [state.segmentId, blockId, state.emojiActions, updateEmojiActions]);
 
   // CRITICAL: Enhanced picker close with validation
   const handlePickerClose = useCallback(() => {

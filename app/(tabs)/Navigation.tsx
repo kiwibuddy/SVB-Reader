@@ -3,7 +3,7 @@ import { View, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, SafeArea
 import Accordion from "@/components/navigation/NavBook";
 import BooksJson from "@/assets/data/BookChapterList.json";
 import SegmentTitlesJson from "@/assets/data/SegmentTitles.json";
-import { useAppContext } from "@/context/GlobalContext";
+import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import { Ionicons } from '@expo/vector-icons';
 import { parseReference } from '@/utils/parseReference';
 import { findSegmentId } from '@/utils/referenceMapping';
@@ -529,7 +529,7 @@ const MemoizedAccordion = React.memo(({
 });
 
 const Navigation = () => {
-  const { language, version, updateSegmentId } = useAppContext();
+  const { state, updateSegmentId } = useSQLiteGlobalContext();
   // Removed completedSegments dependency - now using pure SQLite data loading
   // Removed old filter state - now using advanced filters only
   const [searchQuery, setSearchQuery] = useState('');

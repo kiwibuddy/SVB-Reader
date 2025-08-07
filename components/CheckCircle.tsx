@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, StyleSheet, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAppContext } from '@/context/GlobalContext';
+import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { getCheckColor } from '@/scripts/getCheckColors';
 import { 
@@ -28,9 +28,9 @@ export default function CheckCircle({
   challengeId
 }: CheckCircleProps) {
   const { 
-    selectedReaderColor,
-    setLastReadSegment,
-  } = useAppContext();
+    state,
+    updateLastReadSegment,
+  } = useSQLiteGlobalContext();
   // Removed completedSegments, activePlan, activeChallenges dependencies - now using pure SQLite
   
   const [readCount, setReadCount] = useState(0);
@@ -182,7 +182,7 @@ export default function CheckCircle({
       try {
         // Use SQLite functions directly for completion updates
         await markSegmentComplete(segmentId, context, planId, challengeId);
-        await setLastReadSegment(segmentId);
+        await updateLastReadSegment(segmentId);
         
         // Update local state
         setIsCompleted(true);
