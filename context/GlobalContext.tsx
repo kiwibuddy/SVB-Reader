@@ -363,34 +363,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const endPlan = async (planId: string) => {
-    try {
-      // Reset plan progress in database (preserves achievements and read counts)
-      await resetPlanProgress(planId);
-      
-      // Clear the active plan from state
+    if (activePlan) {
       setActivePlan(null);
-      // Plan removal is now managed via SQLite
-      
-      console.log(`Plan ${planId} ended and progress reset`);
-    } catch (error) {
-      console.error('Error ending plan:', error);
+      // Plan state is now managed via SQLite
     }
   };
 
   const endChallenge = async (challengeId: string) => {
-    try {
-      // Reset challenge progress in database (preserves achievements and read counts)
-      await resetChallengeProgress(challengeId);
-      
-      // Remove challenge from active challenges state
+    if (activeChallenges[challengeId]) {
       const updatedChallenges = { ...activeChallenges };
       delete updatedChallenges[challengeId];
       setActiveChallenges(updatedChallenges);
       // Challenge state is now managed via SQLite
-      
-      console.log(`Challenge ${challengeId} ended and progress reset`);
-    } catch (error) {
-      console.error('Error ending challenge:', error);
     }
   };
 

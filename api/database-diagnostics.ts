@@ -404,13 +404,13 @@ export async function logDatabaseDiagnostics(): Promise<void> {
     // Database diagnostics completed
     
     const dbInfo = await getDatabaseInfo();
-          // Database info logged
+    // Database info logged
     
     const versionCheck = await isDatabaseOutdated();
-    console.log('Version Check:', JSON.stringify(versionCheck, null, 2));
+    // Version check completed
     
     const conflictAnalysis = await analyzeDataConflicts();
-    console.log('Conflict Analysis:', JSON.stringify(conflictAnalysis, null, 2));
+    // Conflict analysis completed
     
     // Database diagnostics completed
   } catch (error) {

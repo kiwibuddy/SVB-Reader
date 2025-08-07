@@ -19,6 +19,12 @@ import {
   getChallengeProgress,
   startPlan,
   startChallenge,
+  pausePlan,
+  resumePlan,
+  endPlan,
+  pauseChallenge,
+  resumeChallenge,
+  endChallenge,
   getCurrentStreak,
   getBestStreak,
   getCompletedSegmentsCount,
@@ -95,6 +101,12 @@ interface SQLiteGlobalContextType {
   // Plan and challenge actions
   startPlanAction: (planId: string) => Promise<void>;
   startChallengeAction: (challengeId: string) => Promise<void>;
+  pausePlanAction: (planId: string) => Promise<void>;
+  resumePlanAction: (planId: string) => Promise<void>;
+  endPlanAction: (planId: string) => Promise<void>;
+  pauseChallengeAction: (challengeId: string) => Promise<void>;
+  resumeChallengeAction: (challengeId: string) => Promise<void>;
+  endChallengeAction: (challengeId: string) => Promise<void>;
   
   // Emoji actions
   updateEmojiActions: (newEmojiActions: number) => Promise<void>;
@@ -389,6 +401,122 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, []);
 
+  // Plan management actions
+  const pausePlanAction = useCallback(async (planId: string) => {
+    try {
+      await pausePlan(planId);
+      
+      // Refresh plan data
+      const [newActivePlan, newActiveChallenges] = await Promise.all([
+        getActivePlanFromDB(),
+        getActiveChallengesFromDB(),
+      ]);
+
+      setState(prev => ({
+        ...prev,
+        activePlan: newActivePlan,
+        activeChallenges: newActiveChallenges,
+        lastUpdated: new Date(),
+      }));
+    } catch (error) {
+      console.error('Error pausing plan:', error);
+    }
+  }, []);
+
+  const resumePlanAction = useCallback(async (planId: string) => {
+    try {
+      await resumePlan(planId);
+      
+      // Refresh plan data
+      const [newActivePlan, newActiveChallenges] = await Promise.all([
+        getActivePlanFromDB(),
+        getActiveChallengesFromDB(),
+      ]);
+
+      setState(prev => ({
+        ...prev,
+        activePlan: newActivePlan,
+        activeChallenges: newActiveChallenges,
+        lastUpdated: new Date(),
+      }));
+    } catch (error) {
+      console.error('Error resuming plan:', error);
+    }
+  }, []);
+
+  const endPlanAction = useCallback(async (planId: string) => {
+    try {
+      await endPlan(planId);
+      
+      // Refresh plan data
+      const [newActivePlan, newActiveChallenges] = await Promise.all([
+        getActivePlanFromDB(),
+        getActiveChallengesFromDB(),
+      ]);
+
+      setState(prev => ({
+        ...prev,
+        activePlan: newActivePlan,
+        activeChallenges: newActiveChallenges,
+        lastUpdated: new Date(),
+      }));
+    } catch (error) {
+      console.error('Error ending plan:', error);
+    }
+  }, []);
+
+  // Challenge management actions
+  const pauseChallengeAction = useCallback(async (challengeId: string) => {
+    try {
+      await pauseChallenge(challengeId);
+      
+      // Refresh challenge data
+      const newActiveChallenges = await getActiveChallengesFromDB();
+      
+      setState(prev => ({
+        ...prev,
+        activeChallenges: newActiveChallenges,
+        lastUpdated: new Date(),
+      }));
+    } catch (error) {
+      console.error('Error pausing challenge:', error);
+    }
+  }, []);
+
+  const resumeChallengeAction = useCallback(async (challengeId: string) => {
+    try {
+      await resumeChallenge(challengeId);
+      
+      // Refresh challenge data
+      const newActiveChallenges = await getActiveChallengesFromDB();
+      
+      setState(prev => ({
+        ...prev,
+        activeChallenges: newActiveChallenges,
+        lastUpdated: new Date(),
+      }));
+    } catch (error) {
+      console.error('Error resuming challenge:', error);
+    }
+  }, []);
+
+  const endChallengeAction = useCallback(async (challengeId: string) => {
+    try {
+      await endChallenge(challengeId);
+      
+      // Refresh challenge data
+      const newActiveChallenges = await getActiveChallengesFromDB();
+      
+      setState(prev => ({
+        ...prev,
+        activeChallenges: newActiveChallenges,
+        lastUpdated: new Date(),
+      }));
+    } catch (error) {
+      console.error('Error ending challenge:', error);
+    }
+  }, []);
+
   // Emoji actions
   const updateEmojiActions = useCallback(async (newEmojiActions: number) => {
     setState(prev => ({
@@ -528,6 +656,12 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
     markAsRead,
     startPlanAction,
     startChallengeAction,
+    pausePlanAction,
+    resumePlanAction,
+    endPlanAction,
+    pauseChallengeAction,
+    resumeChallengeAction,
+    endChallengeAction,
     updateEmojiActions,
     refreshAllData,
     refreshProgressData,
@@ -569,6 +703,12 @@ export const useAppActions = () => {
     markAsRead,
     startPlanAction,
     startChallengeAction,
+    pausePlanAction,
+    resumePlanAction,
+    endPlanAction,
+    pauseChallengeAction,
+    resumeChallengeAction,
+    endChallengeAction,
     updateEmojiActions,
     refreshAllData,
     refreshProgressData,
@@ -587,6 +727,12 @@ export const useAppActions = () => {
     markAsRead,
     startPlanAction,
     startChallengeAction,
+    pausePlanAction,
+    resumePlanAction,
+    endPlanAction,
+    pauseChallengeAction,
+    resumeChallengeAction,
+    endChallengeAction,
     updateEmojiActions,
     refreshAllData,
     refreshProgressData,

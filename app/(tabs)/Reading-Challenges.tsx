@@ -29,12 +29,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { 
+  markSegmentComplete, 
   getSegmentCompletionStatus, 
   unlockAchievement, 
   getChallengeProgress,
   getActiveChallengesFromDB,
-  startChallenge
-} from '@/api/sqlite';
+  startChallenge,
+  pauseChallenge,
+  resumeChallenge,
+  endChallenge
+} from "@/api/sqlite";
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BibleData from '@/assets/data/newBibleNLT1.json';
 import ChronologicalView from '@/components/navigation/ChronologicalView';
@@ -389,25 +393,59 @@ const ChallengesScreen = () => {
     setChallengeProgress(progress);
   };
   
-  // Placeholder functions for challenge management (to be implemented in SQLite)
-  const pauseChallenge = async (challengeId: string) => {
-    console.log('Pause challenge functionality to be implemented in SQLite');
+  // Challenge management functions using SQLite
+  const pauseChallengeAction = async (challengeId: string) => {
+    try {
+      await pauseChallenge(challengeId);
+      // Refresh challenge data
+      await loadChallengeProgress();
+    } catch (error) {
+      console.error('Error pausing challenge:', error);
+    }
   };
   
-  const resumeChallenge = async (challengeId: string) => {
-    console.log('Resume challenge functionality to be implemented in SQLite');
+  const resumeChallengeAction = async (challengeId: string) => {
+    try {
+      await resumeChallenge(challengeId);
+      // Refresh challenge data
+      await loadChallengeProgress();
+    } catch (error) {
+      console.error('Error resuming challenge:', error);
+    }
   };
   
-  const endChallenge = async (challengeId: string) => {
-    console.log('End challenge functionality to be implemented in SQLite');
+  const endChallengeAction = async (challengeId: string) => {
+    try {
+      await endChallenge(challengeId);
+      // Refresh challenge data
+      await loadChallengeProgress();
+    } catch (error) {
+      console.error('Error ending challenge:', error);
+    }
   };
   
-  const restartChallenge = async (challengeId: string) => {
-    console.log('Restart challenge functionality to be implemented in SQLite');
+  const restartChallengeAction = async (challengeId: string) => {
+    try {
+      // End current challenge
+      await endChallenge(challengeId);
+      // Start new challenge
+      await startChallenge(challengeId);
+      // Refresh data
+      await loadChallengeProgress();
+    } catch (error) {
+      console.error('Error restarting challenge:', error);
+    }
   };
   
-  const updateChallengeProgress = async (challengeId: string, segmentId: string) => {
-    console.log('Update challenge progress functionality to be implemented in SQLite');
+  const updateChallengeProgressAction = async (challengeId: string, segmentId: string) => {
+    try {
+      // Mark segment as complete in challenge context
+      await markSegmentComplete(segmentId, 'challenge', null, challengeId);
+      // Refresh challenge data
+      await loadChallengeProgress();
+    } catch (error) {
+      console.error('Error updating challenge progress:', error);
+    }
   };
 
   // Move function definitions up
@@ -601,7 +639,7 @@ const ChallengesScreen = () => {
                           onPress: async () => {
                             setLoadingStates(prev => ({ ...prev, [challenge.id]: 'pausing' }));
                             try {
-                              await pauseChallenge(challenge.id);
+                              await pauseChallengeAction(challenge.id);
                             } finally {
                               setLoadingStates(prev => ({ ...prev, [challenge.id]: null }));
                             }
@@ -622,7 +660,7 @@ const ChallengesScreen = () => {
                                   onPress: async () => {
                                     setLoadingStates(prev => ({ ...prev, [challenge.id]: 'ending' }));
                                     try {
-                                      await endChallenge(challenge.id);
+                                      await endChallengeAction(challenge.id);
                                       // Immediately refresh progress data
                                       await loadChallengeProgress();
                                     } finally {
@@ -647,7 +685,7 @@ const ChallengesScreen = () => {
                     e.stopPropagation();
                     setLoadingStates(prev => ({ ...prev, [challenge.id]: 'resuming' }));
                     try {
-                      await resumeChallenge(challenge.id);
+                      await resumeChallengeAction(challenge.id);
                     } finally {
                       setLoadingStates(prev => ({ ...prev, [challenge.id]: null }));
                     }
@@ -687,7 +725,7 @@ const ChallengesScreen = () => {
                     return acc;
                   }, {} as Record<string, boolean>)}
                   onSegmentSelect={handleSegmentSelect}
-                  onSegmentComplete={(segmentId) => handleSegmentComplete(challenge.id, segmentId)}
+                  onSegmentComplete={(segmentId) => updateChallengeProgressAction(challenge.id, segmentId)}
                   context="challenge"
                 />
               ) : (
@@ -705,7 +743,7 @@ const ChallengesScreen = () => {
                       key={item.djhBook}
                       item={item} 
                       bookIndex={bookIndex}
-                      onSegmentComplete={(segmentId) => handleSegmentComplete(challenge.id, segmentId)}
+                      onSegmentComplete={(segmentId) => updateChallengeProgressAction(challenge.id, segmentId)}
                       onSegmentSelect={handleSegmentSelect}
                       context="challenge"
                       showGlobalCompletion={false}

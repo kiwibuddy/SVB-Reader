@@ -592,6 +592,52 @@ export async function startPlan(planID: string): Promise<void> {
   }
 }
 
+export async function pausePlan(planID: string): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    await db.runAsync(`
+      UPDATE plan_challenge_status 
+      SET isActive = 0, lastUpdated = datetime('now')
+      WHERE itemID = ? AND itemType = 'plan'
+    `, planID);
+  } catch (error) {
+    console.error("Error pausing plan:", error);
+  }
+}
+
+export async function resumePlan(planID: string): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    await db.runAsync(`
+      UPDATE plan_challenge_status 
+      SET isActive = 1, lastUpdated = datetime('now')
+      WHERE itemID = ? AND itemType = 'plan'
+    `, planID);
+  } catch (error) {
+    console.error("Error resuming plan:", error);
+  }
+}
+
+export async function endPlan(planID: string): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    // Mark plan as completed and inactive
+    await db.runAsync(`
+      UPDATE plan_challenge_status 
+      SET isActive = 0, isCompleted = 1, lastUpdated = datetime('now')
+      WHERE itemID = ? AND itemType = 'plan'
+    `, planID);
+    
+    // Reset all plan-specific segment completions
+    await db.runAsync(`
+      DELETE FROM segment_completion 
+      WHERE planID = ? AND completionType = 'plan'
+    `, planID);
+  } catch (error) {
+    console.error("Error ending plan:", error);
+  }
+}
+
 export async function startChallenge(challengeID: string): Promise<void> {
   try {
     const db = databaseManager.getDatabase();
@@ -608,6 +654,52 @@ export async function startChallenge(challengeID: string): Promise<void> {
     `, challengeID);
   } catch (error) {
     console.error("Error starting challenge:", error);
+  }
+}
+
+export async function pauseChallenge(challengeID: string): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    await db.runAsync(`
+      UPDATE plan_challenge_status 
+      SET isActive = 0, lastUpdated = datetime('now')
+      WHERE itemID = ? AND itemType = 'challenge'
+    `, challengeID);
+  } catch (error) {
+    console.error("Error pausing challenge:", error);
+  }
+}
+
+export async function resumeChallenge(challengeID: string): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    await db.runAsync(`
+      UPDATE plan_challenge_status 
+      SET isActive = 1, lastUpdated = datetime('now')
+      WHERE itemID = ? AND itemType = 'challenge'
+    `, challengeID);
+  } catch (error) {
+    console.error("Error resuming challenge:", error);
+  }
+}
+
+export async function endChallenge(challengeID: string): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    // Mark challenge as completed and inactive
+    await db.runAsync(`
+      UPDATE plan_challenge_status 
+      SET isActive = 0, isCompleted = 1, lastUpdated = datetime('now')
+      WHERE itemID = ? AND itemType = 'challenge'
+    `, challengeID);
+    
+    // Reset all challenge-specific segment completions
+    await db.runAsync(`
+      DELETE FROM segment_completion 
+      WHERE challengeID = ? AND completionType = 'challenge'
+    `, challengeID);
+  } catch (error) {
+    console.error("Error ending challenge:", error);
   }
 }
 
@@ -965,24 +1057,21 @@ export async function resetPlanProgress(planID: string): Promise<void> {
   try {
     const db = databaseManager.getDatabase();
     
-    // Reset all segment completion for this plan (preserves read counts and achievements)
-    await db.runAsync(`
-      UPDATE reading_plan_progress 
-      SET isCompleted = 0, completionDate = NULL 
-      WHERE planID = ?
-    `, [planID]);
-    
-    // Reset plan status but keep it inactive
+    // Reset plan status
     await db.runAsync(`
       UPDATE plan_challenge_status 
-      SET isActive = 0, isPaused = 0, isCompleted = 0, completedSegments = 0, progressPercentage = 0, completionDate = NULL
+      SET isActive = 0, isCompleted = 0, progressPercentage = 0, lastUpdated = datetime('now')
       WHERE itemID = ? AND itemType = 'plan'
-    `, [planID]);
+    `, planID);
     
-    console.log(`Plan ${planID} progress reset successfully`);
+    // Reset all plan-specific segment completions
+    await db.runAsync(`
+      DELETE FROM segment_completion 
+      WHERE planID = ? AND completionType = 'plan'
+    `, planID);
+    
   } catch (error) {
-    console.error('Error resetting plan progress:', error);
-    throw error;
+    console.error("Error resetting plan progress:", error);
   }
 }
 
@@ -990,24 +1079,21 @@ export async function resetChallengeProgress(challengeID: string): Promise<void>
   try {
     const db = databaseManager.getDatabase();
     
-    // Reset all segment completion for this challenge (preserves read counts and achievements)
-    await db.runAsync(`
-      UPDATE reading_challenge_progress 
-      SET isCompleted = 0, completionDate = NULL 
-      WHERE challengeID = ?
-    `, [challengeID]);
-    
-    // Reset challenge status but keep it inactive
+    // Reset challenge status
     await db.runAsync(`
       UPDATE plan_challenge_status 
-      SET isActive = 0, isPaused = 0, isCompleted = 0, completedSegments = 0, progressPercentage = 0, completionDate = NULL
+      SET isActive = 0, isCompleted = 0, progressPercentage = 0, lastUpdated = datetime('now')
       WHERE itemID = ? AND itemType = 'challenge'
-    `, [challengeID]);
+    `, challengeID);
     
-    console.log(`Challenge ${challengeID} progress reset successfully`);
+    // Reset all challenge-specific segment completions
+    await db.runAsync(`
+      DELETE FROM segment_completion 
+      WHERE challengeID = ? AND completionType = 'challenge'
+    `, challengeID);
+    
   } catch (error) {
-    console.error('Error resetting challenge progress:', error);
-    throw error;
+    console.error("Error resetting challenge progress:", error);
   }
 }
 

@@ -31,7 +31,10 @@ import {
   unlockAchievement, 
   getPlanProgress,
   getActivePlanFromDB,
-  startPlan
+  startPlan,
+  pausePlan,
+  resumePlan,
+  endPlan
 } from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
@@ -362,21 +365,50 @@ const PlanScreen = () => {
     setPlanProgress(progress);
   };
   
-  // Placeholder functions for plan management (to be implemented in SQLite)
-  const pausePlan = async (planId: string) => {
-    console.log('Pause plan functionality to be implemented in SQLite');
+  // Plan management functions using SQLite
+  const pausePlanAction = async (planId: string) => {
+    try {
+      await pausePlan(planId);
+      // Refresh active plan data
+      await loadPlanProgress();
+    } catch (error) {
+      console.error('Error pausing plan:', error);
+    }
   };
   
-  const resumePlan = async (planId: string) => {
-    console.log('Resume plan functionality to be implemented in SQLite');
+  const resumePlanAction = async (planId: string) => {
+    try {
+      await resumePlan(planId);
+      // Refresh active plan data
+      await loadPlanProgress();
+    } catch (error) {
+      console.error('Error resuming plan:', error);
+    }
   };
   
-  const endPlan = async (planId: string) => {
-    console.log('End plan functionality to be implemented in SQLite');
+  const endPlanAction = async (planId: string) => {
+    try {
+      await endPlan(planId);
+      // Refresh active plan data
+      await loadPlanProgress();
+    } catch (error) {
+      console.error('Error ending plan:', error);
+    }
   };
   
-  const switchPlan = async (newPlanId: string) => {
-    console.log('Switch plan functionality to be implemented in SQLite');
+  const switchPlanAction = async (newPlanId: string) => {
+    try {
+      // Pause current plan if exists
+      if (activePlan && activePlan.planId !== newPlanId) {
+        await pausePlan(activePlan.planId);
+      }
+      // Start new plan
+      await startPlan(newPlanId);
+      // Refresh data
+      await loadPlanProgress();
+    } catch (error) {
+      console.error('Error switching plan:', error);
+    }
   };
 
   const handleSegmentComplete = async (planId: string, segmentId: string) => {
@@ -569,7 +601,7 @@ const PlanScreen = () => {
           {
             text: 'Switch Plan',
             onPress: async () => {
-              await switchPlan(planId);
+              await switchPlanAction(planId);
               setSelectedPlanId(planId); // Update selected plan after switching
             }
           }
@@ -903,7 +935,7 @@ const PlanScreen = () => {
                           onPress: async () => {
                             setLoadingStates(prev => ({ ...prev, [plan.id]: 'pausing' }));
                             try {
-                              await pausePlan(plan.id);
+                              await pausePlanAction(plan.id);
                             } finally {
                               setLoadingStates(prev => ({ ...prev, [plan.id]: null }));
                             }
@@ -924,7 +956,7 @@ const PlanScreen = () => {
                           onPress: async () => {
                             setLoadingStates(prev => ({ ...prev, [plan.id]: 'ending' }));
                             try {
-                              await endPlan(plan.id);
+                              await endPlanAction(plan.id);
                               // Immediately refresh progress data
                               await loadPlanProgress();
                             } finally {
@@ -949,7 +981,7 @@ const PlanScreen = () => {
                     e.stopPropagation();
                     setLoadingStates(prev => ({ ...prev, [plan.id]: 'resuming' }));
                     try {
-                      await resumePlan(plan.id);
+                      await resumePlanAction(plan.id);
                     } finally {
                       setLoadingStates(prev => ({ ...prev, [plan.id]: null }));
                     }
