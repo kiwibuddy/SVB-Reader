@@ -2,7 +2,7 @@
   "expo": {
     "name": "SourceView Together",
     "slug": "SVB-Youth",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sourceview.together",
-      "buildNumber": "5",
+      "buildNumber": "6",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes for joining group reading sessions."
@@ -53,6 +53,7 @@
           "version": "latest"
         }
       ],
+      "expo-camera",
       "expo-barcode-scanner",
       "expo-video"
     ],
