@@ -16,7 +16,7 @@ import {
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAppSettings } from '@/context/AppSettingsContext';
-import { Role, SegmentType, BibleType } from '@/types';
+import { Role, SegmentType, BibleType, GroupSession } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RoleProgressBar from '@/components/RoleProgressBar';
 import BibleData from "@/assets/data/newBibleNLT1.json";
@@ -26,6 +26,7 @@ import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
 import { splitContentIntoReaderParts } from "@/scripts/splitContentIntoReaderParts";
 import { getColors } from "@/scripts/getColors";
 import { getSegmentReadingTime } from '@/utils/readingTime';
+import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -455,7 +456,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
     }
   };
 
-  const handleStartBroadcasting = async () => {
+  const handleGenerateQRCode = async () => {
     if (!selectedReaderPosition || !userName.trim()) {
       Alert.alert('Missing Information', 'Please select a reading role and enter your name.');
       return;
@@ -466,10 +467,47 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
     try {
       await saveUserName(userName.trim());
       const role = getRole(selectedReaderPosition.color, selectedReaderPosition.position);
-      onStartBroadcasting(role, userName.trim());
+      
+      // Create a GroupSession object for QR code generation
+      const session: GroupSession = {
+        id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        storyId,
+        storyTitle,
+        scriptureReference,
+        hostUserName: userName.trim(),
+        hostDeviceId: 'host_device',
+        status: 'forming',
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 30 * 60 * 1000, // 30 minutes
+        participants: [{
+          deviceId: 'host_device',
+          deviceName: 'Host Device',
+          role: role,
+          userName: userName.trim(),
+          isReady: true,
+          isConnected: true
+        }],
+        planId,
+        challengeId
+      };
+      
+      // Generate session QR code using QRCodeDiscoveryManager
+      const qrCodeData = await qrCodeDiscoveryManager.generateSessionQRCode(session, role);
+      
+      // Navigate to QR sharing screen with session data
+      const router = useRouter();
+      router.push({
+        pathname: '/qr-share' as any,
+        params: {
+          sessionId: session.id,
+          storyTitle,
+          hostUserName: userName.trim(),
+          qrCodeData: qrCodeData
+        }
+      });
     } catch (error) {
-      console.error('Error starting broadcast:', error);
-      Alert.alert('Error', 'Failed to start group reading session. Please try again.');
+      console.error('Error generating QR code:', error);
+      Alert.alert('Error', 'Failed to generate QR code. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -576,7 +614,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
     return (
       <View style={[styles.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={{ color: colors.text, marginTop: 16 }}>Starting group session...</Text>
+        <Text style={{ color: colors.text, marginTop: 16 }}>Generating QR code...</Text>
       </View>
     );
   }
@@ -676,10 +714,10 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
                 styles.startButton,
                 (!selectedReaderPosition || !userName.trim()) && styles.disabledButton
               ]}
-              onPress={handleStartBroadcasting}
+              onPress={handleGenerateQRCode}
               disabled={!selectedReaderPosition || !userName.trim()}
             >
-              <Text style={styles.buttonText}>Start Broadcasting</Text>
+              <Text style={styles.buttonText}>Generate QR Code</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>

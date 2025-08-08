@@ -13,24 +13,29 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import QRCode from 'react-native-qrcode-svg';
+import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
 
 interface QRCodeShareScreenProps {
   sessionId: string;
   storyTitle: string;
   hostUserName: string;
+  qrCodeData?: string; // New prop for actual QR code data
   onClose: () => void;
+  onStartStory?: () => void;
 }
 
 const QRCodeShareScreen: React.FC<QRCodeShareScreenProps> = ({
   sessionId,
   storyTitle,
   hostUserName,
+  qrCodeData,
   onClose,
+  onStartStory,
 }) => {
   const { colors } = useAppSettings();
 
-  // Create the data that will be encoded in the QR code
-  const qrData = JSON.stringify({
+  // Use the provided QR code data or fall back to legacy format
+  const qrData = qrCodeData || JSON.stringify({
     type: 'bible_group_reading',
     sessionId,
     storyTitle,
@@ -179,6 +184,20 @@ const QRCodeShareScreen: React.FC<QRCodeShareScreenProps> = ({
       shadowRadius: 4,
       elevation: 3,
     },
+    startButtonLarge: {
+      backgroundColor: '#42A5F5',
+      paddingVertical: 16,
+      borderRadius: 12,
+      alignItems: 'center',
+      marginBottom: 12,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      shadowColor: '#42A5F5',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      elevation: 3,
+    },
     shareButtonText: {
       color: '#FFFFFF',
       fontSize: 16,
@@ -256,6 +275,18 @@ const QRCodeShareScreen: React.FC<QRCodeShareScreenProps> = ({
             <Text style={styles.infoLabel}>Host:</Text>
             <Text style={[styles.infoValue, { fontFamily: 'System' }]}>{hostUserName}</Text>
           </View>
+          {qrCodeData && (
+            <>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Status:</Text>
+                <Text style={[styles.infoValue, { color: '#4CAF50', fontWeight: '600' }]}>Active</Text>
+              </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Expires:</Text>
+                <Text style={[styles.infoValue, { fontSize: 12 }]}>30 minutes</Text>
+              </View>
+            </>
+          )}
         </View>
 
         <View style={styles.instructionsCard}>
@@ -266,22 +297,23 @@ const QRCodeShareScreen: React.FC<QRCodeShareScreenProps> = ({
           <Text style={styles.instructionsText}>
             Others can join by:{'\n'}
             • Scanning this QR code with their camera{'\n'}
-            • Opening SVB Youth and finding your session{'\n'}
-            • Manually entering the Session ID above
+            • Opening SourceView Together and scanning the QR code{'\n'}
+            • The QR code contains all session information automatically
           </Text>
         </View>
       </ScrollView>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.shareButtonLarge}
-          onPress={handleShare}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="share" size={20} color="#FFFFFF" />
-          <Text style={styles.shareButtonText}>Share Session Details</Text>
-        </TouchableOpacity>
-
+        {onStartStory && (
+          <TouchableOpacity
+            style={styles.startButtonLarge}
+            onPress={onStartStory}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="play" size={20} color="#FFFFFF" />
+            <Text style={styles.shareButtonText}>Start Story</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           style={styles.closeButtonLarge}
           onPress={onClose}

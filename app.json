@@ -35,7 +35,7 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [
+      "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
@@ -53,8 +53,14 @@
           "version": "latest"
         }
       ],
-      "expo-camera",
-      "expo-barcode-scanner",
+        [
+          "expo-camera",
+          {
+            "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+            "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
+          }
+        ],
+
       "expo-video"
     ],
     "experiments": {

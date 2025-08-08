@@ -77,7 +77,7 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
   onShowQR,
 }) => {
   const { colors } = useAppSettings();
-  const { currentSession, acceptJoiner } = useGroupReading();
+  const { currentSession } = useGroupReading();
   const [isStarting, setIsStarting] = useState(false);
   const [slideAnim] = useState(new Animated.Value(screenHeight));
 

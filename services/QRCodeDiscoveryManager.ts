@@ -2,66 +2,121 @@ import { GroupSession, Role, Participant } from '@/types';
 
 // QR Code Session Data Interface
 interface QRCodeSessionData {
+  type: "SVB_SESSION";
   sessionId: string;
   storyId: string;
   storyTitle: string;
   scriptureReference: string;
+  hostRole: Role; // Host's selected role
   hostUserName: string;
   timestamp: number;
   expiresAt: number;
-  // Add any other session data needed
+  planId?: string;
+  challengeId?: string;
+}
+
+// QR Code Completion Data Interface
+interface QRCodeCompletionData {
+  type: "SVB_COMPLETION";
+  sessionId: string;
+  storyId: string;
+  hostDeviceId: string;
+  timestamp: number;
+  signature: string; // Hash for validation
 }
 
 export interface QRCodeDiscoveryManager {
   // QR Code Generation
-  generateSessionQRCode(session: GroupSession): Promise<string>;
+  generateSessionQRCode(session: GroupSession, hostRole: Role): Promise<string>;
+  generateCompletionQRCode(session: GroupSession): Promise<string>;
   
   // QR Code Parsing
   parseSessionFromQRCode(qrCodeData: string): GroupSession | null;
+  parseCompletionFromQRCode(qrCodeData: string): QRCodeCompletionData | null;
   
   // Session Validation
   validateSessionData(sessionData: QRCodeSessionData): boolean;
+  validateCompletionData(completionData: QRCodeCompletionData): boolean;
+  
+  // Role Management
+  getAvailableRoles(hostRole: Role): Role[];
+  calculateRemainingRoles(hostRole: Role, takenRoles: Role[]): Role[];
   
   // Testing
   generateTestQRCode(): Promise<string>;
+  generateTestCompletionQRCode(): Promise<string>;
   simulateQRCodeScan(): Promise<GroupSession>;
 }
 
 class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
   
   // Generate QR code for a session
-  async generateSessionQRCode(session: GroupSession): Promise<string> {
+  async generateSessionQRCode(session: GroupSession, hostRole: Role): Promise<string> {
     try {
       console.log('📱 Generating QR code for session:', session.id);
+      console.log('📱 Host role:', hostRole);
       
       // Create session data for QR code
       const qrSessionData: QRCodeSessionData = {
+        type: "SVB_SESSION",
         sessionId: session.id,
         storyId: session.storyId,
         storyTitle: session.storyTitle,
         scriptureReference: session.scriptureReference,
+        hostRole: hostRole,
         hostUserName: session.hostUserName,
         timestamp: Date.now(),
-        expiresAt: Date.now() + (30 * 60 * 1000) // 30 minutes
+        expiresAt: Date.now() + (30 * 60 * 1000), // 30 minutes
+        planId: session.planId,
+        challengeId: session.challengeId
       };
       
       // Convert to JSON string
       const sessionDataString = JSON.stringify(qrSessionData);
       
-      // Create QR code data with prefix for validation
-      const qrCodeData = `SVB_SESSION:${sessionDataString}`;
-      
-      console.log('📱 QR code data generated:', qrCodeData.substring(0, 50) + '...');
+      console.log('📱 QR code data generated:', sessionDataString.substring(0, 100) + '...');
       console.log('📱 Session info:', {
         story: session.storyTitle,
         reference: session.scriptureReference,
-        host: session.hostUserName
+        host: session.hostUserName,
+        hostRole: hostRole
       });
       
-      return qrCodeData;
+      return sessionDataString;
       
     } catch (error) {
       console.error('🔴 Error generating QR code:', error);
+      throw error;
+    }
+  }
+
+  // Generate QR code for completion
+  async generateCompletionQRCode(session: GroupSession): Promise<string> {
+    try {
+      console.log('✅ Generating completion QR code for session:', session.id);
+      
+      // Create completion signature (simple hash for now)
+      const signature = this.generateCompletionSignature(session);
+      
+      // Create completion data for QR code
+      const qrCompletionData: QRCodeCompletionData = {
+        type: "SVB_COMPLETION",
+        sessionId: session.id,
+        storyId: session.storyId,
+        hostDeviceId: session.hostDeviceId,
+        timestamp: Date.now(),
+        signature: signature
+      };
+      
+      // Convert to JSON string
+      const completionDataString = JSON.stringify(qrCompletionData);
+      
+      console.log('✅ Completion QR code generated:', completionDataString.substring(0, 100) + '...');
+      
+      return completionDataString;
+      
+    } catch (error) {
+      console.error('🔴 Error generating completion QR code:', error);
       throw error;
     }
   }
@@ -71,15 +126,14 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
     try {
       console.log('📱 Parsing QR code data:', qrCodeData.substring(0, 50) + '...');
       
-      // Validate QR code format
-      if (!qrCodeData.startsWith('SVB_SESSION:')) {
-        console.error('🔴 Invalid QR code format');
+      // Parse JSON data
+      const qrSessionData: QRCodeSessionData = JSON.parse(qrCodeData);
+      
+      // Validate QR code type
+      if (qrSessionData.type !== "SVB_SESSION") {
+        console.error('🔴 Invalid QR code type:', qrSessionData.type);
         return null;
       }
-      
-      // Extract session data
-      const sessionDataString = qrCodeData.replace('SVB_SESSION:', '');
-      const qrSessionData: QRCodeSessionData = JSON.parse(sessionDataString);
       
       // Validate session data
       if (!this.validateSessionData(qrSessionData)) {
@@ -105,25 +159,62 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
           deviceId: 'qr_host_device',
           deviceName: 'QR Host Device',
           userName: qrSessionData.hostUserName,
-          role: 'reader',
+          role: qrSessionData.hostRole,
           isReady: true,
           isConnected: false // Will be updated when connected
         }],
         status: 'forming',
         createdAt: qrSessionData.timestamp,
-        expiresAt: qrSessionData.expiresAt
+        expiresAt: qrSessionData.expiresAt,
+        planId: qrSessionData.planId,
+        challengeId: qrSessionData.challengeId
       };
       
       console.log('📱 Session parsed successfully:', {
         id: session.id,
         story: session.storyTitle,
-        host: session.hostUserName
+        host: session.hostUserName,
+        hostRole: qrSessionData.hostRole
       });
       
       return session;
       
     } catch (error) {
       console.error('🔴 Error parsing QR code:', error);
+      return null;
+    }
+  }
+
+  // Parse completion data from QR code
+  parseCompletionFromQRCode(qrCodeData: string): QRCodeCompletionData | null {
+    try {
+      console.log('✅ Parsing completion QR code data:', qrCodeData.substring(0, 50) + '...');
+      
+      // Parse JSON data
+      const qrCompletionData: QRCodeCompletionData = JSON.parse(qrCodeData);
+      
+      // Validate QR code type
+      if (qrCompletionData.type !== "SVB_COMPLETION") {
+        console.error('🔴 Invalid completion QR code type:', qrCompletionData.type);
+        return null;
+      }
+      
+      // Validate completion data
+      if (!this.validateCompletionData(qrCompletionData)) {
+        console.error('🔴 Invalid completion data');
+        return null;
+      }
+      
+      console.log('✅ Completion QR code parsed successfully:', {
+        sessionId: qrCompletionData.sessionId,
+        storyId: qrCompletionData.storyId,
+        timestamp: qrCompletionData.timestamp
+      });
+      
+      return qrCompletionData;
+      
+    } catch (error) {
+      console.error('🔴 Error parsing completion QR code:', error);
       return null;
     }
   }
@@ -134,6 +225,12 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       // Check required fields
       if (!sessionData.sessionId || !sessionData.storyId || !sessionData.storyTitle) {
         console.error('🔴 Missing required session data fields');
+        return false;
+      }
+      
+      // Check host role
+      if (!sessionData.hostRole || !this.isValidRole(sessionData.hostRole)) {
+        console.error('🔴 Invalid host role:', sessionData.hostRole);
         return false;
       }
       
@@ -162,6 +259,74 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       return false;
     }
   }
+
+  // Validate completion data
+  validateCompletionData(completionData: QRCodeCompletionData): boolean {
+    try {
+      // Check required fields
+      if (!completionData.sessionId || !completionData.storyId || !completionData.hostDeviceId) {
+        console.error('🔴 Missing required completion data fields');
+        return false;
+      }
+      
+      // Check timestamp (completion should be recent)
+      if (!completionData.timestamp || completionData.timestamp > Date.now()) {
+        console.error('🔴 Invalid completion timestamp');
+        return false;
+      }
+      
+      // Check if completion is too old (within last 15 minutes)
+      const fifteenMinutesAgo = Date.now() - (15 * 60 * 1000);
+      if (completionData.timestamp < fifteenMinutesAgo) {
+        console.error('🔴 Completion QR code is too old');
+        return false;
+      }
+      
+      // Check signature
+      if (!completionData.signature || completionData.signature.length < 10) {
+        console.error('🔴 Invalid completion signature');
+        return false;
+      }
+      
+      return true;
+      
+    } catch (error) {
+      console.error('🔴 Error validating completion data:', error);
+      return false;
+    }
+  }
+
+  // Get all available roles
+  getAvailableRoles(hostRole: Role): Role[] {
+    const allRoles: Role[] = ['narrator', 'god', 'main_character', 'other_voices'];
+    return allRoles.filter(role => role !== hostRole);
+  }
+
+  // Calculate remaining roles based on host role and already taken roles
+  calculateRemainingRoles(hostRole: Role, takenRoles: Role[]): Role[] {
+    const allRoles: Role[] = ['narrator', 'god', 'main_character', 'other_voices'];
+    const unavailableRoles = [hostRole, ...takenRoles];
+    return allRoles.filter(role => !unavailableRoles.includes(role));
+  }
+
+  // Check if role is valid
+  private isValidRole(role: string): role is Role {
+    return ['narrator', 'god', 'main_character', 'other_voices'].includes(role);
+  }
+
+  // Generate completion signature
+  private generateCompletionSignature(session: GroupSession): string {
+    const nowBucket = Math.floor(Date.now() / (5 * 60 * 1000)); // 5-min time bucket
+    const data = `${session.id}_${session.storyId}_${session.hostDeviceId}_${nowBucket}`;
+    // Simple hash for now - in production, use a proper cryptographic hash
+    let hash = 0;
+    for (let i = 0; i < data.length; i++) {
+      const char = data.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36);
+  }
   
   // Generate test QR code for development
   async generateTestQRCode(): Promise<string> {
@@ -179,7 +344,7 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
           deviceId: 'test_host_device',
           deviceName: 'Test Host Device',
           userName: 'Test Host',
-          role: 'reader',
+          role: 'narrator',
           isReady: true,
           isConnected: true
         }],
@@ -188,7 +353,7 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
         expiresAt: Date.now() + (30 * 60 * 1000)
       };
       
-      const qrCodeData = await this.generateSessionQRCode(testSession);
+      const qrCodeData = await this.generateSessionQRCode(testSession, 'narrator');
       
       console.log('🧪 Test QR code generated successfully');
       console.log('🧪 QR code data:', qrCodeData);
@@ -197,6 +362,44 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       
     } catch (error) {
       console.error('🔴 Error generating test QR code:', error);
+      throw error;
+    }
+  }
+
+  // Generate test completion QR code for development
+  async generateTestCompletionQRCode(): Promise<string> {
+    try {
+      console.log('🧪 Generating test completion QR code...');
+      
+      const testSession: GroupSession = {
+        id: 'test_session_' + Date.now(),
+        storyId: 'S001',
+        storyTitle: 'God Creates',
+        scriptureReference: 'Genesis 1:1-2:25',
+        hostDeviceId: 'test_host_device',
+        hostUserName: 'Test Host',
+        participants: [{
+          deviceId: 'test_host_device',
+          deviceName: 'Test Host Device',
+          userName: 'Test Host',
+          role: 'narrator',
+          isReady: true,
+          isConnected: true
+        }],
+        status: 'reading',
+        createdAt: Date.now(),
+        expiresAt: Date.now() + (30 * 60 * 1000)
+      };
+      
+      const qrCodeData = await this.generateCompletionQRCode(testSession);
+      
+      console.log('🧪 Test completion QR code generated successfully');
+      console.log('🧪 Completion QR code data:', qrCodeData);
+      
+      return qrCodeData;
+      
+    } catch (error) {
+      console.error('🔴 Error generating test completion QR code:', error);
       throw error;
     }
   }
@@ -220,7 +423,8 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       console.log('🧪 Discovered session:', {
         id: session.id,
         story: session.storyTitle,
-        host: session.hostUserName
+        host: session.hostUserName,
+        hostRole: session.participants[0].role
       });
       
       return session;

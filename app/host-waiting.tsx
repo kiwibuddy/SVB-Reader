@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 
 export default function HostWaitingPage() {
   const { sessionId, storyTitle, scriptureReference, storyColorData } = useLocalSearchParams();
-  const { stopSession } = useGroupReading();
+  const { stopSession, startReading, currentSession } = useGroupReading();
   const router = useRouter();
 
   const parsedColorData = storyColorData ? JSON.parse(storyColorData as string) : {
@@ -19,9 +19,17 @@ export default function HostWaitingPage() {
   };
 
   const handleStartReading = () => {
-    // Navigate to group reading session
-  
-    router.back();
+    // Mark session as reading and navigate to the story screen
+    startReading();
+    const segId = currentSession?.storyId;
+    if (segId) {
+      router.push({
+        pathname: '/[segment]' as any,
+        params: { segment: segId }
+      });
+    } else {
+      router.back();
+    }
   };
 
   const handleEndSession = async () => {

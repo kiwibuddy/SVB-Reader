@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, Animated, Easing } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -11,6 +11,11 @@ import {
   resetSegmentCompletion
 } from '@/api/sqlite';
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { useGroupReading } from '@/context/GroupReadingContext';
+import QRCodeScanner from '@/components/QRCodeScanner';
+import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
+import CompletionBanner from '@/components/Bible/CompletionBanner';
+import { ANIMATION } from '@/services/animation';
 
 interface CheckCircleProps {
   segmentId: string;
@@ -40,6 +45,9 @@ export default function CheckCircle({
   const router = useRouter();
   const params = useLocalSearchParams();
   const { colors } = useAppSettings();
+  const { currentSession, isHost, generateCompletionQRCode } = useGroupReading();
+  const [showScanner, setShowScanner] = useState(false);
+  const [showCompletionBanner, setShowCompletionBanner] = useState(false);
   
   // Animation values for premium confetti celebration (more pieces for richer effect)
   const confettiAnimations = useRef<Array<{
@@ -104,34 +112,34 @@ export default function CheckCircle({
           Animated.parallel([
             Animated.timing(anim.translateX, {
               toValue: endX,
-              duration: 600, // Slightly slower for more premium feel
-              easing: Easing.out(Easing.quad), // Smooth deceleration
+              duration: ANIMATION.duration.long,
+              easing: ANIMATION.easing.out,
               useNativeDriver: true,
             }),
             Animated.timing(anim.translateY, {
               toValue: endY,
-              duration: 600,
-              easing: Easing.out(Easing.quad),
+              duration: ANIMATION.duration.long,
+              easing: ANIMATION.easing.out,
               useNativeDriver: true,
             }),
             Animated.timing(anim.rotate, {
-              toValue: 360 * (3 + Math.random() * 2), // More rotation for liveliness
-              duration: 1200, // Longer rotation
-              easing: Easing.linear,
+              toValue: 360 * (3 + Math.random() * 2),
+              duration: ANIMATION.duration.xlong,
+              easing: ANIMATION.easing.linear,
               useNativeDriver: true,
             }),
             // Scale animation for premium bounce effect
             Animated.sequence([
               Animated.timing(anim.scale, {
                 toValue: 1.2,
-                duration: 150,
-                easing: Easing.out(Easing.back(1.5)),
+                duration: ANIMATION.duration.fast,
+                easing: ANIMATION.easing.out,
                 useNativeDriver: true,
               }),
               Animated.timing(anim.scale, {
                 toValue: 1,
-                duration: 450,
-                easing: Easing.out(Easing.quad),
+                duration: ANIMATION.duration.medium,
+                easing: ANIMATION.easing.out,
                 useNativeDriver: true,
               })
             ])
@@ -140,22 +148,22 @@ export default function CheckCircle({
           Animated.parallel([
             Animated.timing(anim.translateY, {
               toValue: endY + fallDistance,
-              duration: 800,
-              easing: Easing.in(Easing.quad), // Accelerating fall
+              duration: ANIMATION.duration.longer,
+              easing: ANIMATION.easing.in,
               useNativeDriver: true,
             }),
             // Fade out during fall
             Animated.timing(anim.opacity, {
               toValue: 0,
-              duration: 800,
-              easing: Easing.out(Easing.quad),
+              duration: ANIMATION.duration.longer,
+              easing: ANIMATION.easing.out,
               useNativeDriver: true,
             }),
             // Slight scale down during fall
             Animated.timing(anim.scale, {
               toValue: 0.8,
-              duration: 800,
-              easing: Easing.out(Easing.quad),
+              duration: ANIMATION.duration.longer,
+              easing: ANIMATION.easing.out,
               useNativeDriver: true,
             })
           ])
@@ -165,7 +173,7 @@ export default function CheckCircle({
       // Stagger the confetti pieces slightly for more organic feel
       const staggeredAnimations = animations.map((animation, index) => 
         Animated.sequence([
-          Animated.delay(index * 30), // 30ms stagger between pieces
+          Animated.delay(index * 30),
           animation
         ])
       );
@@ -178,6 +186,31 @@ export default function CheckCircle({
   };
 
   const handlePress = async () => {
+    // Group-reading host flow: generate completion QR during reading
+    if (currentSession && currentSession.status === 'reading' && isHost) {
+      try {
+        const qrData = await generateCompletionQRCode();
+        router.push({
+          pathname: '/qr-share' as any,
+          params: {
+            sessionId: currentSession.id,
+            storyTitle: currentSession.storyTitle,
+            hostUserName: currentSession.hostUserName,
+            qrCodeData: qrData,
+          }
+        });
+      } catch (e) {
+        console.error('Error generating completion QR:', e);
+      }
+      return;
+    }
+
+    // Group-reading joiner flow: scan completion QR to mark complete
+    if (currentSession && currentSession.status === 'reading' && !isHost) {
+      setShowScanner(true);
+      return;
+    }
+
     if (!isCompleted) {
       try {
         // Use SQLite functions directly for completion updates
@@ -191,21 +224,28 @@ export default function CheckCircle({
         const newCount = await getSegmentReadCount(segmentId);
         setReadCount(newCount);
         
-        // Start confetti celebration animation
+        // Start banner + confetti celebration animation
+        setShowCompletionBanner(true);
         await startConfettiCelebration();
-        
+
+        // Non-blocking success toast
+        try {
+          const Toast = require('react-native-root-toast');
+          Toast.show('Story complete! Great job 🎉', {
+            duration: Toast.durations.SHORT,
+            position: Toast.positions.BOTTOM,
+          });
+        } catch {}
+
         // Add small delay to ensure database writes are complete before navigation
         await new Promise(resolve => setTimeout(resolve, 150));
-        
+
         // Navigate back to the source screen using push to maintain navigation stack
         if (params.planId || planId) {
-          // Return to Plan screen with bottom navigation
           router.push('/(tabs)/Plan');
         } else if (params.challengeId || challengeId) {
-          // Return to Reading-Challenges screen with bottom navigation
           router.push('/(tabs)/Reading-Challenges');
         } else {
-          // Return to Navigation screen with bottom navigation
           router.push('/(tabs)/Navigation');
         }
         
@@ -218,12 +258,26 @@ export default function CheckCircle({
   return (
     <View style={styles.container}>
       <Pressable onPress={handlePress} style={styles.checkButton}>
-        <Ionicons
-          name={isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'}
-          size={iconSize}
-          color={isCompleted ? getCheckColor(completionColor) : colors.secondary}
-        />
+        {currentSession && currentSession.status === 'reading' ? (
+          <Ionicons
+            name={isHost ? ('qr-code-outline' as any) : ('people-circle' as any)}
+            size={iconSize}
+            color={'#007AFF'}
+          />
+        ) : (
+          <Ionicons
+            name={isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'}
+            size={iconSize}
+            color={isCompleted ? getCheckColor(completionColor) : colors.secondary}
+          />
+        )}
       </Pressable>
+      {/* Contextual caption for group-reading */}
+      {currentSession && currentSession.status === 'reading' && (
+        <Text style={[styles.caption, { color: colors.secondary }]}>
+          {isHost ? 'Generate completion QR' : 'Scan completion QR'}
+        </Text>
+      )}
       
       {/* Confetti celebration overlay */}
       {showConfetti && (
@@ -261,6 +315,56 @@ export default function CheckCircle({
           Read {readCount} time{readCount !== 1 ? 's' : ''}
         </Text>
       )}
+
+      {/* Joiner completion scanner */}
+      {showScanner && (
+        <View style={StyleSheet.absoluteFill}>
+          <QRCodeScanner
+            title="Scan Completion QR"
+            onClose={() => setShowScanner(false)}
+            onQRCodeScanned={async (data: string) => {
+              try {
+                const completion = qrCodeDiscoveryManager.parseCompletionFromQRCode(data);
+                if (!completion) {
+                  // invalid payload
+                  setShowScanner(false);
+                  return;
+                }
+                // Validate against current session
+                if (!currentSession || completion.sessionId !== currentSession.id || completion.storyId !== currentSession.storyId) {
+                  try {
+                    const Toast = require('react-native-root-toast');
+                    Toast.show('This completion code is for a different session.', { duration: Toast.durations.SHORT, position: Toast.positions.BOTTOM });
+                  } catch {}
+                  setShowScanner(false);
+                  return;
+                }
+                // Mark complete once validated
+                await markSegmentComplete(segmentId, context, planId, challengeId);
+                await updateLastReadSegment(segmentId);
+                setIsCompleted(true);
+                const newCount = await getSegmentReadCount(segmentId);
+                setReadCount(newCount);
+                setShowScanner(false);
+                setShowCompletionBanner(true);
+                await startConfettiCelebration();
+              } catch (err) {
+                console.error('Error processing completion QR:', err);
+                try {
+                  const Toast = require('react-native-root-toast');
+                  Toast.show('Could not process code. Please try again.', { duration: Toast.durations.SHORT, position: Toast.positions.BOTTOM });
+                } catch {}
+                setShowScanner(false);
+              }
+            }}
+          />
+        </View>
+      )}
+      <CompletionBanner
+        visible={showCompletionBanner}
+        onHide={() => setShowCompletionBanner(false)}
+        backgroundColor={'#007AFF'}
+      />
     </View>
   );
 }
@@ -284,6 +388,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
     fontWeight: '500',
+  },
+  caption: {
+    fontSize: 12,
+    marginTop: 4,
+    textAlign: 'center',
   },
   confettiContainer: {
     position: 'absolute',

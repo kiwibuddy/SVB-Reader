@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"; // Ensure useEffect is imported
-import { View, Text, FlatList, ScrollView, Pressable, TouchableOpacity, StyleSheet, useWindowDimensions, Platform } from "react-native";
+import { View, Text, FlatList, ScrollView, Pressable, TouchableOpacity, StyleSheet, useWindowDimensions, Platform, Animated } from "react-native";
 import BibleBlockComponent from './BibleBlock';
 import { BibleBlock, SegmentType } from "@/types";
 import RoleProgressBar from "../RoleProgressBar";
@@ -12,10 +12,12 @@ import SegmentTitle from "./SegmentTitle";
 import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import CelebrationPopup from "./CelebrationPopup";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { useGroupReading } from '@/context/GroupReadingContext';
 import CheckCircle from "@/components/CheckCircle";
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { memo } from "react";
 import { getSegmentCompletionStatus } from "@/api/sqlite";
+import { ANIMATION } from '@/services/animation';
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -54,6 +56,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     state,
     updateSegmentId,
   } = useSQLiteGlobalContext();
+  const { currentRole, currentSession } = useGroupReading();
   // Removed completedSegments, activePlan, activeChallenges dependencies - now using pure SQLite
 
   const { colors } = useAppSettings();
@@ -66,7 +69,43 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     color: string;
     position: number;
   } | null>(null);
+  const [showCourtesyPopup, setShowCourtesyPopup] = useState(!!currentSession);
   const [isCompleted, setIsCompleted] = useState(false);
+  const courtesyAnim = useRef(new Animated.Value(0));
+  const courtesyDismissedRef = useRef(false);
+
+  // Animate courtesy popup in on show
+  useEffect(() => {
+    const shouldShow = !!currentSession && showCourtesyPopup;
+    if (shouldShow) {
+      courtesyAnim.current.setValue(0);
+      Animated.timing(courtesyAnim.current, {
+        toValue: 1,
+        duration: ANIMATION.duration.base,
+        easing: ANIMATION.easing.out,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [currentSession, showCourtesyPopup]);
+
+  // Auto-show when session becomes available the first time
+  useEffect(() => {
+    if (currentSession && !courtesyDismissedRef.current && !showCourtesyPopup) {
+      setShowCourtesyPopup(true);
+    }
+  }, [currentSession, showCourtesyPopup]);
+
+  const dismissCourtesy = useCallback(() => {
+    courtesyDismissedRef.current = true;
+    Animated.timing(courtesyAnim.current, {
+      toValue: 0,
+      duration: ANIMATION.duration.fast,
+      easing: ANIMATION.easing.in,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) setShowCourtesyPopup(false);
+    });
+  }, []);
 
   // Use pre-calculated color data from segmentData (with safe fallback)
   const colorData = useMemo(() => {
@@ -173,6 +212,40 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     }
    
     return result;
+  }, [memoizedContent]);
+
+  // Preselect reader role from GroupReadingContext when available
+  useEffect(() => {
+    if (!currentRole) return;
+    const roleToColor: Record<string, string> = {
+      narrator: 'black',
+      god: 'red',
+      main_character: 'green',
+      other_voices: 'blue',
+    };
+    const color = roleToColor[currentRole];
+    const positions = readersByColor[color] || [0];
+    setSelectedReaderPosition({ color, position: 0 });
+  }, [currentRole, readersByColor]);
+
+  const currentRoleLabel = useMemo(() => {
+    if (!currentRole) return null;
+    const roleLabels: Record<string, string> = {
+      narrator: 'Narrator',
+      god: 'God',
+      main_character: 'Main Character',
+      other_voices: 'Other Voices',
+    };
+    return roleLabels[currentRole] || null;
+  }, [currentRole]);
+
+  // Determine which role starts based on first speaking block
+  const firstSpeakerInfo = useMemo(() => {
+    const firstBlock = memoizedContent.find(b => !!b.source?.color);
+    if (!firstBlock) return null;
+    const color = firstBlock.source?.color || 'black';
+    const map: Record<string, string> = { black: 'Narrator', red: 'God', green: 'Main Character', blue: 'Other Voices' };
+    return { color, label: map[color] || 'Reader' };
   }, [memoizedContent]);
 
   // Update shouldBlockGlow to use the new state
@@ -403,6 +476,19 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontWeight: '500',
   },
+  currentRoleBadge: {
+    alignSelf: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    color: colors.text,
+    marginBottom: 12,
+    fontSize: 14,
+    fontWeight: '500',
+  },
   iconContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -501,6 +587,11 @@ const styles = StyleSheet.create({
             <Text style={styles.readerText}>
               Select your reading role:
             </Text>
+            {currentRoleLabel && (
+              <Text style={styles.currentRoleBadge}>
+                Your role: {currentRoleLabel}
+              </Text>
+            )}
             <View style={styles.iconContainer}>
               {/* Create reader role icons based on actual speech bubble distribution */}
               {(() => {
@@ -562,6 +653,45 @@ const styles = StyleSheet.create({
           );
         })}
       </ScrollView>
+      {/* Courtesy popup overlay - top-level so it fully covers content and behaves like a modal */}
+      {showCourtesyPopup && currentSession && (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={dismissCourtesy}
+          onLongPress={dismissCourtesy}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2000, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Animated.View style={{
+            backgroundColor: '#42A5F5',
+            borderRadius: 16,
+            paddingVertical: 16,
+            paddingHorizontal: 18,
+            maxWidth: 460,
+            marginHorizontal: 24,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.2,
+            shadowRadius: 10,
+            elevation: 5,
+            opacity: courtesyAnim.current,
+            transform: [{ translateY: courtesyAnim.current.interpolate({ inputRange: [0, 1], outputRange: [-12, 0] }) }],
+          }}>
+            <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '800', textAlign: 'center', marginBottom: 6 }}>
+              Get Ready
+            </Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 14, textAlign: 'center', marginBottom: 6 }}>
+              Please wait for the other 3 readers to be ready.
+            </Text>
+            {firstSpeakerInfo && (
+              <Text style={{ color: '#FFFFFF', fontSize: 13, textAlign: 'center', opacity: 0.95 }}>
+                {currentRole && selectedReaderPosition && firstSpeakerInfo.color === selectedReaderPosition.color
+                  ? 'You are the first reader.'
+                  : `${firstSpeakerInfo.label} starts first.`}
+              </Text>
+            )}
+          </Animated.View>
+        </TouchableOpacity>
+      )}
       {/* Modal removed - emoji picker is now floating and handled by Block component */}
       <View style={styles.divider} />
 

@@ -16,7 +16,7 @@ import {
   RefreshControl,
   Alert
 } from "react-native";
-import { BarCodeScanner } from 'expo-barcode-scanner';
+// import { BarCodeScanner } from 'expo-barcode-scanner';
 import Card from "@/components/Card";
 import ReadingPlansChallenges from "../../assets/data/ReadingPlansChallenges.json";
 import DailyStoryMap from '../../assets/data/DailyStoryMap.json';
@@ -38,8 +38,11 @@ import { useGroupReading } from '@/context/GroupReadingContext';
 import NearbyGroupCard from '@/components/GroupReading/NearbyGroupCard';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BibleData from '@/assets/data/newBibleNLT1.json';
+import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
+import QRCodeScanner from '@/components/QRCodeScanner';
 
 import { SegmentType, BibleType } from '@/types';
+// import { BarCodeScanner } from 'expo-barcode-scanner';
 
 const SegmentTitles = require("@/assets/data/SegmentTitles.json") as { [key: string]: SegmentTitle };
 const Bible: any = BibleData;
@@ -714,6 +717,24 @@ gridItemLabel: {
     textAlign: 'center',
     lineHeight: 20,
   },
+  scannerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  testQRButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  testQRButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
 // Improved type definition with better typing
@@ -1269,7 +1290,6 @@ const Home = () => {
   const [showReadingModeModal, setShowReadingModeModal] = useState(false);
   
   // QR Code Scanner State
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
 
@@ -1607,31 +1627,104 @@ const Home = () => {
     setShowReadingModeModal(false);
   };
 
-  // QR Code Scanner Functions (Temporarily disabled for development)
+  // QR Code Scanner Functions
   const requestCameraPermission = async () => {
-    // TODO: Re-enable when barcode scanner is properly configured
-    console.log('🔍 QR Scanner temporarily disabled for development');
-    Alert.alert(
-      'QR Scanner Coming Soon',
-      'QR code scanning will be available in the next phase of development.',
-      [{ text: 'OK' }]
-    );
-    return false;
+    try {
+      console.log('🔍 Requesting camera permission for QR scanning...');
+      // For now, just show the scanner - it will handle permissions internally
+      setShowScanner(true);
+      setScanned(false);
+      return true;
+    } catch (error) {
+      console.error('🔴 Error requesting camera permission:', error);
+      return false;
+    }
   };
 
   const handleScanQRCode = async () => {
-    // TODO: Re-enable when barcode scanner is properly configured
-    console.log('🔍 QR Scanner temporarily disabled for development');
-    Alert.alert(
-      'QR Scanner Coming Soon',
-      'QR code scanning will be available in the next phase of development.',
-      [{ text: 'OK' }]
-    );
+    try {
+      setShowScanner(true);
+      setScanned(false);
+    } catch (error) {
+      console.error('🔴 Error with QR scanner:', error);
+      Alert.alert('Error', 'QR scanner is currently unavailable');
+    }
   };
 
   const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
-    // TODO: Re-enable when barcode scanner is properly configured
-    console.log('🔍 QR Code scanned:', data);
+    try {
+      console.log('🔍 QR Code scanned:', { type, data: data.substring(0, 50) + '...' });
+      setScanned(true);
+      
+      // Parse QR code data
+      const session = qrCodeDiscoveryManager.parseSessionFromQRCode(data);
+      
+      if (session) {
+        console.log('✅ Valid session QR code detected');
+        // Navigate to role selection screen with session data
+        router.push({
+          pathname: '/role-selection' as any,
+          params: {
+            qrCodeData: data,
+            sessionId: session.id,
+            storyId: session.storyId,
+            storyTitle: session.storyTitle,
+            scriptureReference: session.scriptureReference,
+            hostUserName: session.hostUserName,
+            hostRole: session.participants[0].role
+          }
+        });
+      } else {
+        // Check if it's a completion QR code
+        const completionData = qrCodeDiscoveryManager.parseCompletionFromQRCode(data);
+        
+        if (completionData) {
+          console.log('✅ Valid completion QR code detected');
+          // Handle completion QR code
+          Alert.alert(
+            'Story Completion',
+            'This QR code is for marking a story as complete in group reading mode.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { 
+                text: 'Mark Complete', 
+                onPress: () => handleCompletionQRCode(completionData)
+              }
+            ]
+          );
+        } else {
+          console.log('🔴 Invalid QR code format');
+          Alert.alert(
+            'Invalid QR Code',
+            'This QR code is not recognized. Please scan a valid SourceView Together group reading QR code.',
+            [{ text: 'OK' }]
+          );
+        }
+      }
+      
+      setShowScanner(false);
+    } catch (error) {
+      console.error('🔴 Error processing scanned QR code:', error);
+      Alert.alert('Error', 'Failed to process QR code');
+      setShowScanner(false);
+    }
+  };
+
+  const handleCompletionQRCode = async (completionData: any) => {
+    try {
+      console.log('✅ Processing completion QR code:', completionData);
+      
+      // TODO: Implement completion tracking
+      // This will be implemented in Phase 5
+      Alert.alert(
+        'Completion Tracking',
+        'Story completion tracking will be available in the next phase.',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.error('🔴 Error processing completion QR code:', error);
+      Alert.alert('Error', 'Failed to process completion QR code');
+    }
   };
 
   const handleCloseScanner = () => {
@@ -1833,7 +1926,7 @@ const Home = () => {
           </View>
           
           {/* QR Code Group Reading Card */}
-          <View style={[styles.continueReading, { backgroundColor: '#4CAF50' }]}>
+          <View style={[styles.continueReading, { backgroundColor: '#42A5F5' }]}>
             <View style={styles.readingInfo}>
               <Text style={[styles.readingTitle, { color: '#FFFFFF' }]}>Join Group Reading</Text>
               <Text style={[styles.readingSubtitle, { color: 'rgba(255, 255, 255, 0.9)' }]}>
@@ -1976,34 +2069,16 @@ const Home = () => {
         onCancel={handleCancelModal}
       />
 
-      {/* QR Code Scanner Modal */}
+      {/* QR Code Scanner Modal - migrated to expo-camera via `components/QRCodeScanner.tsx` */}
       {showScanner && (
         <View style={styles.scannerContainer}>
-          <BarCodeScanner
-            onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-            style={styles.scanner}
+          <QRCodeScanner
+            title="Scan QR Code"
+            onClose={handleCloseScanner}
+            onQRCodeScanned={(data: string) => {
+              handleBarCodeScanned({ type: 'qr', data });
+            }}
           />
-          <View style={styles.scannerOverlay}>
-            <View style={styles.scannerHeader}>
-              <TouchableOpacity 
-                style={styles.scannerCloseButton}
-                onPress={handleCloseScanner}
-              >
-                <Ionicons name="close" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-              <Text style={styles.scannerTitle}>Scan QR Code</Text>
-              <View style={{ width: 40 }} />
-            </View>
-            <View style={styles.scannerFrame}>
-              <View style={[styles.scannerFrameCorner, { top: 0, left: 0, borderBottomWidth: 0, borderRightWidth: 0 }]} />
-              <View style={[styles.scannerFrameCorner, { top: 0, right: 0, borderBottomWidth: 0, borderLeftWidth: 0 }]} />
-              <View style={[styles.scannerFrameCorner, { bottom: 0, left: 0, borderTopWidth: 0, borderRightWidth: 0 }]} />
-              <View style={[styles.scannerFrameCorner, { bottom: 0, right: 0, borderTopWidth: 0, borderLeftWidth: 0 }]} />
-            </View>
-            <Text style={styles.scannerInstructions}>
-              Position the QR code within the frame
-            </Text>
-          </View>
         </View>
       )}
     </View>

@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ANIMATION } from '@/services/animation';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -44,12 +45,14 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       Animated.parallel([
         Animated.timing(backdropOpacity, {
           toValue: 1,
-          duration: 300,
+          duration: ANIMATION.duration.base,
+          easing: ANIMATION.easing.out,
           useNativeDriver: true,
         }),
         Animated.timing(slideAnim, {
           toValue: 0,
-          duration: 300,
+          duration: ANIMATION.duration.base,
+          easing: ANIMATION.easing.out,
           useNativeDriver: true,
         }),
       ]).start();
@@ -58,12 +61,14 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       Animated.parallel([
         Animated.timing(backdropOpacity, {
           toValue: 0,
-          duration: 250,
+          duration: ANIMATION.duration.fast,
+          easing: ANIMATION.easing.in,
           useNativeDriver: true,
         }),
         Animated.timing(slideAnim, {
           toValue: screenHeight,
-          duration: 250,
+          duration: ANIMATION.duration.fast,
+          easing: ANIMATION.easing.in,
           useNativeDriver: true,
         }),
       ]).start();

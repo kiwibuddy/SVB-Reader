@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { ANIMATION } from '@/services/animation';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 // Get screen dimensions for responsive sizing
@@ -93,13 +94,15 @@ const CelebrationPopup: React.FC<CelebrationPopupProps> = ({
       Animated.sequence([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 300,
+          duration: ANIMATION.duration.base,
+          easing: ANIMATION.easing.out,
           useNativeDriver: true,
         }),
-        Animated.delay(1400), // 1.4s delay + 0.3s fade in + 0.3s fade out = 2s total
+        Animated.delay(1400),
         Animated.timing(fadeAnim, {
           toValue: 0,
-          duration: 300,
+          duration: ANIMATION.duration.base,
+          easing: ANIMATION.easing.in,
           useNativeDriver: true,
         })
       ]).start(() => {
