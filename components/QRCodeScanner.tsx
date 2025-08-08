@@ -14,11 +14,14 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
 import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 
 interface QRCodeScannerProps {
   onQRCodeScanned: (data: string) => void;
   onClose: () => void;
   title?: string;
+  // default full-screen; 'inline' renders with transparent bg for embedding in cards
+  variant?: 'full' | 'inline';
 }
 
 const { width, height } = Dimensions.get('window');
@@ -27,7 +30,8 @@ const SCANNER_SIZE = Math.min(width, height) * 0.7;
 export default function QRCodeScanner({ 
   onQRCodeScanned, 
   onClose, 
-  title = "Scan QR Code" 
+  title = "Scan QR Code",
+  variant = 'full'
 }: QRCodeScannerProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -43,6 +47,7 @@ export default function QRCodeScanner({
     setIsProcessing(true);
     setScanned(true);
     handledOnceRef.current = true;
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
     
     try {
       console.log('🔍 QR Code scanned:', scanResult.data.substring(0, 50) + '...');
@@ -112,7 +117,7 @@ export default function QRCodeScanner({
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#007AFF',
+      backgroundColor: variant === 'inline' ? 'transparent' : '#007AFF',
     },
     camera: {
       position: 'absolute',
@@ -123,13 +128,14 @@ export default function QRCodeScanner({
     },
     overlay: {
       flex: 1,
+      backgroundColor: variant === 'inline' ? 'transparent' : undefined,
     },
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       paddingHorizontal: 20,
-      paddingTop: insets.top + 8,
+      paddingTop: (variant === 'inline' ? 8 : insets.top + 8),
       paddingBottom: 20,
     },
     closeButton: {

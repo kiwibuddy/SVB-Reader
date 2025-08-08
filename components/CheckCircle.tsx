@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Animated, Modal, ActivityIndicator } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -8,12 +9,15 @@ import {
   getSegmentReadCount, 
   getSegmentCompletionStatus, 
   markSegmentComplete,
-  resetSegmentCompletion
+  resetSegmentCompletion,
+  recordGroupCompletion,
+  getGroupJoinerCompletionCount
 } from '@/api/sqlite';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { useGroupReading } from '@/context/GroupReadingContext';
 import QRCodeScanner from '@/components/QRCodeScanner';
 import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
+import QRCode from 'react-native-qrcode-svg';
 import CompletionBanner from '@/components/Bible/CompletionBanner';
 import { ANIMATION } from '@/services/animation';
 
@@ -23,6 +27,15 @@ interface CheckCircleProps {
   context?: 'main' | 'plan' | 'challenge' | 'today';
   planId?: string;
   challengeId?: string;
+  // mode controls behavior/icon rendering
+  // auto: current behavior (switches based on group session)
+  // normal: always behave like normal individual completion
+  // group: always show group action (host generate / joiner scan)
+  mode?: 'auto' | 'normal' | 'group';
+  showCaption?: boolean;
+  // When true, forces the control to visually start as uncompleted on mount
+  // (useful to avoid stale UI when arriving fresh to a story screen)
+  resetVisualStateOnMount?: boolean;
 }
 
 export default function CheckCircle({ 
@@ -30,7 +43,10 @@ export default function CheckCircle({
   iconSize = 24, 
   context = 'main',
   planId,
-  challengeId
+  challengeId,
+  mode = 'auto',
+  showCaption = true,
+  resetVisualStateOnMount = false
 }: CheckCircleProps) {
   const { 
     state,
@@ -45,9 +61,13 @@ export default function CheckCircle({
   const router = useRouter();
   const params = useLocalSearchParams();
   const { colors } = useAppSettings();
-  const { currentSession, isHost, generateCompletionQRCode } = useGroupReading();
+  const { currentSession, isHost, currentRole, generateCompletionQRCode } = useGroupReading();
   const [showScanner, setShowScanner] = useState(false);
   const [showCompletionBanner, setShowCompletionBanner] = useState(false);
+  const [showHostQRModal, setShowHostQRModal] = useState(false);
+  const [hostQRData, setHostQRData] = useState<string | null>(null);
+  const [joinerScans, setJoinerScans] = useState<number>(0);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   // Animation values for premium confetti celebration (more pieces for richer effect)
   const confettiAnimations = useRef<Array<{
@@ -74,7 +94,7 @@ export default function CheckCircle({
     const initializeSegment = async () => {
       // Load current completion status for this context
       const status = await getSegmentCompletionStatus(segmentId, context, planId, challengeId);
-      setIsCompleted(status.isCompleted);
+      setIsCompleted(resetVisualStateOnMount ? false : status.isCompleted);
       setCompletionColor(status.color);
       
       // Load read count
@@ -83,7 +103,7 @@ export default function CheckCircle({
     };
     
     initializeSegment();
-  }, [segmentId, context, planId, challengeId]);
+  }, [segmentId, context, planId, challengeId, resetVisualStateOnMount]);
 
   const startConfettiCelebration = (): Promise<void> => {
     return new Promise((resolve) => {
@@ -185,28 +205,46 @@ export default function CheckCircle({
     });
   };
 
+  const inGroupContext = !!currentSession;
+
   const handlePress = async () => {
+    const forceGroup = mode === 'group';
+    const forceNormal = mode === 'normal';
+
     // Group-reading host flow: generate completion QR during reading
-    if (currentSession && currentSession.status === 'reading' && isHost) {
+    if ((forceGroup || (!forceNormal && inGroupContext)) && isHost) {
+      // Show loading overlay while session becomes ready and QR data is generated
+      let generated = false;
+      setHostQRData(null);
+      setShowHostQRModal(false);
+      setIsGenerating(true);
       try {
-        const qrData = await generateCompletionQRCode();
-        router.push({
-          pathname: '/qr-share' as any,
-          params: {
-            sessionId: currentSession.id,
-            storyTitle: currentSession.storyTitle,
-            hostUserName: currentSession.hostUserName,
-            qrCodeData: qrData,
+        // Retry briefly in case currentSession has not propagated yet
+        for (let attempt = 0; attempt < 8 && !generated; attempt++) {
+          if (!currentSession) {
+            await new Promise(r => setTimeout(r, 200));
+            continue;
           }
-        });
+          const qrData = await generateCompletionQRCode();
+          setHostQRData(qrData);
+          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+          const count = await getGroupJoinerCompletionCount(currentSession.id, currentSession.storyId);
+          setJoinerScans(count);
+          generated = true;
+        }
+        if (generated) {
+          setShowHostQRModal(true);
+        }
       } catch (e) {
         console.error('Error generating completion QR:', e);
+      } finally {
+        setIsGenerating(false);
       }
       return;
     }
 
     // Group-reading joiner flow: scan completion QR to mark complete
-    if (currentSession && currentSession.status === 'reading' && !isHost) {
+    if ((forceGroup || (!forceNormal && inGroupContext)) && !isHost) {
       setShowScanner(true);
       return;
     }
@@ -245,6 +283,8 @@ export default function CheckCircle({
           router.push('/(tabs)/Plan');
         } else if (params.challengeId || challengeId) {
           router.push('/(tabs)/Reading-Challenges');
+        } else if (params.context === 'today' || context === 'today') {
+          router.push('/(tabs)/Navigation');
         } else {
           router.push('/(tabs)/Navigation');
         }
@@ -255,12 +295,33 @@ export default function CheckCircle({
     }
   };
 
+  // Poll for joiner scan count while host modal is visible
+  useEffect(() => {
+    let interval: any;
+    const poll = async () => {
+      try {
+        if (currentSession) {
+          const count = await getGroupJoinerCompletionCount(currentSession.id, currentSession.storyId);
+          setJoinerScans(count);
+        }
+      } catch {}
+    };
+    if (showHostQRModal) {
+      poll();
+      interval = setInterval(poll, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [showHostQRModal, currentSession?.id, currentSession?.storyId]);
+
   return (
     <View style={styles.container}>
       <Pressable onPress={handlePress} style={styles.checkButton}>
-        {currentSession && currentSession.status === 'reading' ? (
+        {((mode === 'group') || (mode === 'auto' && inGroupContext)) ? (
           <Ionicons
-            name={isHost ? ('qr-code-outline' as any) : ('people-circle' as any)}
+            // host generates code, joiner scans code
+            name={isHost ? ('qr-code-outline' as any) : ('scan-outline' as any)}
             size={iconSize}
             color={'#007AFF'}
           />
@@ -273,7 +334,7 @@ export default function CheckCircle({
         )}
       </Pressable>
       {/* Contextual caption for group-reading */}
-      {currentSession && currentSession.status === 'reading' && (
+      {showCaption && ((mode === 'group') || (mode === 'auto' && inGroupContext)) && (
         <Text style={[styles.caption, { color: colors.secondary }]}>
           {isHost ? 'Generate completion QR' : 'Scan completion QR'}
         </Text>
@@ -318,11 +379,17 @@ export default function CheckCircle({
 
       {/* Joiner completion scanner */}
       {showScanner && (
-        <View style={StyleSheet.absoluteFill}>
-          <QRCodeScanner
-            title="Scan Completion QR"
-            onClose={() => setShowScanner(false)}
-            onQRCodeScanned={async (data: string) => {
+        <Modal visible transparent animationType="fade" onRequestClose={() => setShowScanner(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.joinerCard}>
+              <Text style={[styles.hostCardTitle, { color: '#1E1E1E' }]}>Scan Completion QR</Text>
+              <Text style={[styles.hostSubtitle, { color: '#334155' }]}>Point your camera at the host’s code to record your completion.</Text>
+              <View style={{ width: 220, height: 220, borderRadius: 12, overflow: 'hidden', backgroundColor: '#00000010' }}>
+                <QRCodeScanner
+                  title=""
+                  variant="inline"
+                  onClose={() => setShowScanner(false)}
+                  onQRCodeScanned={async (data: string) => {
               try {
                 const completion = qrCodeDiscoveryManager.parseCompletionFromQRCode(data);
                 if (!completion) {
@@ -341,6 +408,7 @@ export default function CheckCircle({
                 }
                 // Mark complete once validated
                 await markSegmentComplete(segmentId, context, planId, challengeId);
+                await recordGroupCompletion(segmentId, currentSession.id, currentSession.storyId, currentRole || 'other_voices', false);
                 await updateLastReadSegment(segmentId);
                 setIsCompleted(true);
                 const newCount = await getSegmentReadCount(segmentId);
@@ -348,6 +416,17 @@ export default function CheckCircle({
                 setShowScanner(false);
                 setShowCompletionBanner(true);
                 await startConfettiCelebration();
+
+                // Context-aware navigation after joiner completion
+                if (params.planId || planId) {
+                  router.push('/(tabs)/Plan');
+                } else if (params.challengeId || challengeId) {
+                  router.push('/(tabs)/Reading-Challenges');
+                } else if (params.context === 'today' || context === 'today') {
+                  router.push('/(tabs)/Navigation');
+                } else {
+                  router.push('/(tabs)/Navigation');
+                }
               } catch (err) {
                 console.error('Error processing completion QR:', err);
                 try {
@@ -356,15 +435,76 @@ export default function CheckCircle({
                 } catch {}
                 setShowScanner(false);
               }
-            }}
-          />
-        </View>
+                  }}
+                />
+              </View>
+              <Pressable style={[styles.primaryCircle, { backgroundColor: '#007AFF', marginTop: 12 }]} onPress={() => setShowScanner(false)}>
+                <Ionicons name="close" size={24} color="#FFFFFF" />
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {/* Host completion QR blue card */}
+      {showHostQRModal && hostQRData && (
+        <Modal visible transparent animationType="fade" onRequestClose={() => setShowHostQRModal(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.hostCard}>
+              <Text style={styles.hostCardTitle}>Completion QR</Text>
+              {currentSession && (
+                <Text style={styles.hostSubtitle}>{joinerScans} of 4 scanned</Text>
+              )}
+              <View style={styles.qrWrapper}>
+                <QRCode value={hostQRData} size={180} color="#FFFFFF" backgroundColor="#42A5F5" />
+              </View>
+              <Text style={styles.hostSubtitle}>Ask everyone to scan to record their completion.</Text>
+              <Pressable
+                style={styles.primaryCircle}
+                onPress={async () => {
+                  try {
+                    if (!currentSession) return;
+                    await markSegmentComplete(segmentId, context, planId, challengeId);
+                    await recordGroupCompletion(segmentId, currentSession.id, currentSession.storyId, currentRole || 'narrator', true);
+                    await updateLastReadSegment(segmentId);
+                    setIsCompleted(true);
+                    setShowHostQRModal(false);
+                    setShowCompletionBanner(true);
+                    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+                    await startConfettiCelebration();
+
+                    // Navigate back to the proper list after host confirms completion
+                    if (params.planId || planId) {
+                      router.push('/(tabs)/Plan');
+                    } else if (params.challengeId || challengeId) {
+                      router.push('/(tabs)/Reading-Challenges');
+                    } else if (params.context === 'today' || context === 'today') {
+                      router.push('/(tabs)/Navigation');
+                    } else {
+                      router.push('/(tabs)/Navigation');
+                    }
+                  } catch (err) {
+                    console.error('Host confirm error:', err);
+                    setShowHostQRModal(false);
+                  }
+                }}
+              >
+                <Ionicons name="checkmark" size={28} color="#FFFFFF" />
+              </Pressable>
+              <Pressable style={styles.dismissTextButton} onPress={() => setShowHostQRModal(false)}>
+                <Text style={styles.dismissText}>Close</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
       )}
       <CompletionBanner
         visible={showCompletionBanner}
         onHide={() => setShowCompletionBanner(false)}
         backgroundColor={'#007AFF'}
       />
+
+      {/* Loading overlay for story completion QR generator removed per request */}
     </View>
   );
 }
@@ -376,7 +516,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   checkButton: {
-    padding: 16, // Increased padding for much larger touch target
+    padding: 24, // Larger tap target for accessibility
     minWidth: 44, // iOS Human Interface Guidelines minimum touch target
     minHeight: 44, // iOS Human Interface Guidelines minimum touch target
     alignItems: 'center',
@@ -393,6 +533,80 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     textAlign: 'center',
+  },
+  modalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  hostCard: {
+    backgroundColor: '#42A5F5',
+    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+    width: 360,
+    maxWidth: '90%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    elevation: 6,
+  },
+  joinerCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+    width: 360,
+    maxWidth: '90%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    elevation: 6,
+  },
+  hostCardTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  hostSubtitle: {
+    color: '#E8F2FF',
+    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 12,
+  },
+  qrWrapper: {
+    backgroundColor: '#42A5F5',
+    borderRadius: 12,
+    padding: 10,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  primaryCircle: {
+    marginTop: 12,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#007AFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dismissTextButton: {
+    marginTop: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  dismissText: {
+    color: '#E8F2FF',
+    fontSize: 13,
+    textDecorationLine: 'underline',
   },
   confettiContainer: {
     position: 'absolute',

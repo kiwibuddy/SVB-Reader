@@ -19,6 +19,7 @@ interface QRCodeShareScreenProps {
   sessionId: string;
   storyTitle: string;
   hostUserName: string;
+  hostRole?: string;
   qrCodeData?: string; // New prop for actual QR code data
   onClose: () => void;
   onStartStory?: () => void;
@@ -28,6 +29,7 @@ const QRCodeShareScreen: React.FC<QRCodeShareScreenProps> = ({
   sessionId,
   storyTitle,
   hostUserName,
+  hostRole,
   qrCodeData,
   onClose,
   onStartStory,
@@ -275,6 +277,12 @@ const QRCodeShareScreen: React.FC<QRCodeShareScreenProps> = ({
             <Text style={styles.infoLabel}>Host:</Text>
             <Text style={[styles.infoValue, { fontFamily: 'System' }]}>{hostUserName}</Text>
           </View>
+          {hostRole && (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Your role:</Text>
+              <Text style={[styles.infoValue, { fontFamily: 'System' }]}>{hostRole === 'narrator' ? 'Narrator' : hostRole === 'god' ? 'God' : hostRole === 'main_character' ? 'Main Character' : 'Other Voices'}</Text>
+            </View>
+          )}
           {qrCodeData && (
             <>
               <View style={styles.infoRow}>

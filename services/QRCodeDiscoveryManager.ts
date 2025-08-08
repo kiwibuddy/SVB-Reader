@@ -282,8 +282,8 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
         return false;
       }
       
-      // Check signature
-      if (!completionData.signature || completionData.signature.length < 10) {
+      // Check signature presence (length can vary depending on device/time bucket)
+      if (!completionData.signature || completionData.signature.length < 6) {
         console.error('🔴 Invalid completion signature');
         return false;
       }
@@ -317,15 +317,19 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
   // Generate completion signature
   private generateCompletionSignature(session: GroupSession): string {
     const nowBucket = Math.floor(Date.now() / (5 * 60 * 1000)); // 5-min time bucket
-    const data = `${session.id}_${session.storyId}_${session.hostDeviceId}_${nowBucket}`;
-    // Simple hash for now - in production, use a proper cryptographic hash
-    let hash = 0;
-    for (let i = 0; i < data.length; i++) {
-      const char = data.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return Math.abs(hash).toString(36);
+    const seed1 = `${session.id}|${session.storyId}|${session.hostDeviceId}|${nowBucket}`;
+    const seed2 = `${session.storyTitle}|${session.scriptureReference}|${nowBucket}`;
+    // Lightweight, deterministic hash -> concatenate two base36 strings for >= 12 chars
+    const hashFn = (s: string) => {
+      let h = 0;
+      for (let i = 0; i < s.length; i++) {
+        h = ((h << 5) - h) + s.charCodeAt(i);
+        h |= 0;
+      }
+      return Math.abs(h).toString(36);
+    };
+    const sig = `${hashFn(seed1)}${hashFn(seed2)}`;
+    return sig.length < 12 ? (sig + '000000000000').slice(0, 12) : sig;
   }
   
   // Generate test QR code for development

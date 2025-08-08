@@ -30,6 +30,7 @@ import {
   getBookProgress
 } from '@/api/sqlite';
 import { imageMap } from '@/components/navigation/NavBook';
+import { databaseManager } from '@/api/database-manager';
 
 
 // Enhanced Types
@@ -94,6 +95,7 @@ const Achievements = () => {
     booksCompleted: [],
     emojiCollection: { complete: false, used: [] }
   });
+  const [groupCompletions, setGroupCompletions] = useState(0);
 
   const styles = createStyles(isLargeScreen, colors);
 
@@ -202,6 +204,12 @@ const Achievements = () => {
           checkEmojiCollection()
         ]);
 
+        try {
+          const db = databaseManager.getDatabase();
+          const row = await db.getFirstAsync<{ count: number }>('SELECT COUNT(*) as count FROM group_segment_completion');
+          setGroupCompletions(row?.count || 0);
+        } catch {}
+
         const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
         setStats({
@@ -281,6 +289,28 @@ const Achievements = () => {
 
   // Database-driven achievement definitions
   const generateAchievements = (): Achievement[] => [
+    {
+      id: 'group_reader_1',
+      title: 'Group Reader',
+      description: 'Complete 1 story in group mode',
+      icon: 'people-circle-outline',
+      color: '#42A5F5',
+      progress: Math.min(groupCompletions, 1),
+      total: 1,
+      category: 'engagement',
+      achieved: groupCompletions >= 1
+    },
+    {
+      id: 'group_reader_10',
+      title: 'Group Enthusiast',
+      description: 'Complete 10 stories in group mode',
+      icon: 'people-outline',
+      color: '#42A5F5',
+      progress: Math.min(groupCompletions, 10),
+      total: 10,
+      category: 'engagement',
+      achieved: groupCompletions >= 10
+    },
     // Reading Milestones
     {
       id: 'first_steps',

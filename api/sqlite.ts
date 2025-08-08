@@ -178,6 +178,46 @@ export async function markSegmentComplete(
   }
 }
 
+// Record a group-mode completion for analytics/achievements
+export async function recordGroupCompletion(
+  segmentID: string,
+  sessionId: string,
+  storyId: string,
+  userRole: string,
+  isHost: boolean
+): Promise<void> {
+  try {
+    const db = databaseManager.getDatabase();
+    const currentDate = new Date().toISOString();
+    await db.runAsync(
+      `INSERT INTO group_segment_completion (segmentID, sessionId, storyId, userRole, isHost, completedAt)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      segmentID, sessionId, storyId, userRole, isHost ? 1 : 0, currentDate
+    );
+  } catch (error) {
+    console.error('Error recording group completion:', error);
+  }
+}
+
+// Count how many joiners (non-host) have recorded a completion for a given session/story
+export async function getGroupJoinerCompletionCount(
+  sessionId: string,
+  storyId: string
+): Promise<number> {
+  try {
+    const db = databaseManager.getDatabase();
+    const result = await db.getFirstAsync<{ count: number }>(
+      `SELECT COUNT(*) as count FROM group_segment_completion WHERE sessionId = ? AND storyId = ? AND isHost = 0`,
+      sessionId,
+      storyId
+    );
+    return result?.count || 0;
+  } catch (error) {
+    console.error('Error counting group joiner completions:', error);
+    return 0;
+  }
+}
+
 export const getSegmentCompletionStatus = async (
   segmentId: string,
   context: 'main' | 'plan' | 'challenge' | 'today' = 'main',

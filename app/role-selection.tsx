@@ -79,7 +79,7 @@ export default function RoleSelectionScreen() {
         // Navigate to the story with the selected role
         router.push({
           pathname: '/[segment]',
-          params: { segment: storyId as string }
+          params: { segment: storyId as string, showCourtesy: '1' }
         });
       } else {
         Alert.alert('Error', 'Failed to join session. Please try again.');

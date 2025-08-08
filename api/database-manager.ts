@@ -213,6 +213,18 @@ export class DatabaseManager {
           value TEXT,
           lastUpdated TEXT NOT NULL
         );
+
+        -- Group completion tracking (new)
+        CREATE TABLE IF NOT EXISTS group_segment_completion (
+          id INTEGER PRIMARY KEY NOT NULL,
+          segmentID TEXT NOT NULL,
+          sessionId TEXT,
+          storyId TEXT,
+          userRole TEXT,
+          isHost BOOLEAN DEFAULT 0,
+          completedAt TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_group_completion_segment ON group_segment_completion(segmentID);
       `);
       
       // Populate the segments table with data from SegmentTitles.json

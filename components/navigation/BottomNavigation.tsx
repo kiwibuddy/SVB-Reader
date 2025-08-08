@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions } from "react-native";
+import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions, Platform } from "react-native";
 import { useRouter, usePathname } from "expo-router";
 import { Ionicons } from '@expo/vector-icons'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,8 +23,10 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   const lastScrollY = React.useRef(0);
   const { colors } = useAppSettings();
 
-  // Hide navigation on large screens or in landscape mode
-  const shouldHideNavigation = isLargeScreen || (isLandscape && height < 500);
+  // iPad-specific override: always show bottom navigation on iPad even if "large screen"
+  const isIPad = Platform.OS === 'ios' && (Platform as any).isPad === true;
+  // Hide navigation on large screens or in landscape mode (except iPad)
+  const shouldHideNavigation = (!isIPad) && (isLargeScreen || (isLandscape && height < 500));
 
   const handleScroll = React.useCallback((event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;

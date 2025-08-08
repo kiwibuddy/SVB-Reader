@@ -13,6 +13,7 @@ import { SegmentType, IntroType, BibleType, isIntroType, isSegmentType } from "@
 import Intro from '@/components/Bible/Intro';
 import Questions from '@/components/Questions';
 import CheckCircle from '@/components/CheckCircle';
+import { useGroupReading } from '@/context/GroupReadingContext';
 import StickyHeader from '@/components/StickyHeader';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { startReadingSession, updateReadingSession } from '@/api/sqlite';
@@ -127,6 +128,8 @@ const createStyles = (colors: any, isLargeScreen: boolean, isLandscape: boolean)
 });
 
 export default function BibleScreen() {
+  const { currentSession } = useGroupReading();
+  const inGroupReading = !!currentSession && currentSession.status === 'reading';
   const { colors } = useAppSettings();
   const { updateSegmentId, state } = useSQLiteGlobalContext();
   const router = useRouter();
@@ -164,6 +167,11 @@ export default function BibleScreen() {
       updateSegmentId(segID);
     }
   }, [segID, updateSegmentId]);
+
+  // Always start scrolled to the top when a story loads or segID changes
+  useEffect(() => {
+    flatListRef.current?.scrollTo({ y: 0, animated: false });
+  }, [segID]);
 
   // Initialize navigation arrows as visible when entering segment
   useEffect(() => {
@@ -305,14 +313,29 @@ export default function BibleScreen() {
             challengeId={challengeId as string}
           />
           <Questions segmentId={segID} />
-          <View style={styles.checkCircleContainer}>
-                      <CheckCircle 
-            segmentId={segID} 
-            iconSize={isLargeScreen ? 80 : 60}
-            context={planId ? 'plan' : challengeId ? 'challenge' : params.context === 'today' ? 'today' : 'main'}
-            planId={planId as string || undefined}
-            challengeId={challengeId as string || undefined}
-          />
+          <View style={[styles.checkCircleContainer, { flexDirection: 'row', gap: 24, justifyContent: 'center', alignItems: 'flex-end' }]}> 
+            {/* Always render the normal completion button */}
+            <CheckCircle 
+              segmentId={segID} 
+              iconSize={isLargeScreen ? 80 : 60}
+              context={planId ? 'plan' : challengeId ? 'challenge' : params.context === 'today' ? 'today' : 'main'}
+              planId={planId as string || undefined}
+              challengeId={challengeId as string || undefined}
+              mode="normal"
+              showCaption={false}
+            />
+            {/* Render the group action button whenever a group session exists */}
+            {!!currentSession && (
+              <CheckCircle 
+                segmentId={segID} 
+                iconSize={isLargeScreen ? 80 : 60}
+                context={planId ? 'plan' : challengeId ? 'challenge' : params.context === 'today' ? 'today' : 'main'}
+                planId={planId as string || undefined}
+                challengeId={challengeId as string || undefined}
+                mode="group"
+                showCaption={false}
+              />
+            )}
           </View>
         </>
       )}

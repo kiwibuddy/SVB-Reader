@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"; // Ensure useEffect is imported
 import { View, Text, FlatList, ScrollView, Pressable, TouchableOpacity, StyleSheet, useWindowDimensions, Platform, Animated } from "react-native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BibleBlockComponent from './BibleBlock';
 import { BibleBlock, SegmentType } from "@/types";
 import RoleProgressBar from "../RoleProgressBar";
@@ -50,6 +51,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 }) => {
   const { width: screenWidth } = useWindowDimensions();
   const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenWidth > 768);
+  const insets = useSafeAreaInsets();
 
   const router = useRouter();
   const { 
@@ -61,7 +63,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   const { colors } = useAppSettings();
 
-  const { scrollReset } = useLocalSearchParams();
+  const { scrollReset, showCourtesy } = useLocalSearchParams();
 
   // All hooks must be called before any early returns
   const [showCelebration, setShowCelebration] = useState(false);
@@ -74,37 +76,40 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const courtesyAnim = useRef(new Animated.Value(0));
   const courtesyDismissedRef = useRef(false);
 
-  // Animate courtesy popup in on show
+  // Courtesy popup slide-in animation from top
   useEffect(() => {
     const shouldShow = !!currentSession && showCourtesyPopup;
     if (shouldShow) {
       courtesyAnim.current.setValue(0);
       Animated.timing(courtesyAnim.current, {
         toValue: 1,
-        duration: ANIMATION.duration.base,
-        easing: ANIMATION.easing.out,
+        duration: 280,
         useNativeDriver: true,
       }).start();
     }
   }, [currentSession, showCourtesyPopup]);
 
-  // Auto-show when session becomes available the first time
+  // Reset selection in individual mode and auto-show when session becomes available
   useEffect(() => {
+    if (!currentSession) {
+      // ensure individual mode starts with no pre-selected role
+      setSelectedReaderPosition(null);
+    }
+    const force = showCourtesy === '1';
+    // Only show courtesy if not dismissed during this visit
+    if (force && !courtesyDismissedRef.current) {
+      setShowCourtesyPopup(true);
+      return;
+    }
     if (currentSession && !courtesyDismissedRef.current && !showCourtesyPopup) {
       setShowCourtesyPopup(true);
     }
-  }, [currentSession, showCourtesyPopup]);
+  }, [currentSession, showCourtesyPopup, showCourtesy]);
 
   const dismissCourtesy = useCallback(() => {
     courtesyDismissedRef.current = true;
-    Animated.timing(courtesyAnim.current, {
-      toValue: 0,
-      duration: ANIMATION.duration.fast,
-      easing: ANIMATION.easing.in,
-      useNativeDriver: true,
-    }).start(({ finished }) => {
-      if (finished) setShowCourtesyPopup(false);
-    });
+    courtesyAnim.current.setValue(0);
+    setShowCourtesyPopup(false);
   }, []);
 
   // Use pre-calculated color data from segmentData (with safe fallback)
@@ -585,13 +590,9 @@ const styles = StyleSheet.create({
           {/* Role Selection Section - Full Width */}
           <View style={styles.readerSection}>
             <Text style={styles.readerText}>
-              Select your reading role:
+              {currentSession ? 'Your reading role' : 'Select your reading role:'}
             </Text>
-            {currentRoleLabel && (
-              <Text style={styles.currentRoleBadge}>
-                Your role: {currentRoleLabel}
-              </Text>
-            )}
+            {/* Remove separate badge; title above communicates selection */}
             <View style={styles.iconContainer}>
               {/* Create reader role icons based on actual speech bubble distribution */}
               {(() => {
@@ -659,7 +660,7 @@ const styles = StyleSheet.create({
           activeOpacity={1}
           onPress={dismissCourtesy}
           onLongPress={dismissCourtesy}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2000, alignItems: 'center', justifyContent: 'center' }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2000, alignItems: 'center', justifyContent: 'flex-start', paddingTop: Math.max(insets.top + 100, (isIPad ? 140 : 100)) }}
         >
           <Animated.View style={{
             backgroundColor: '#42A5F5',
@@ -674,7 +675,7 @@ const styles = StyleSheet.create({
             shadowRadius: 10,
             elevation: 5,
             opacity: courtesyAnim.current,
-            transform: [{ translateY: courtesyAnim.current.interpolate({ inputRange: [0, 1], outputRange: [-12, 0] }) }],
+            transform: [{ translateY: courtesyAnim.current.interpolate({ inputRange: [0,1], outputRange: [-12, 0] }) }]
           }}>
             <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '800', textAlign: 'center', marginBottom: 6 }}>
               Get Ready

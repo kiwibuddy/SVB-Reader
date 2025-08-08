@@ -27,6 +27,7 @@ import { splitContentIntoReaderParts } from "@/scripts/splitContentIntoReaderPar
 import { getColors } from "@/scripts/getColors";
 import { getSegmentReadingTime } from '@/utils/readingTime';
 import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
+import { useGroupReading } from '@/context/GroupReadingContext';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -61,6 +62,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
   challengeId,
 }) => {
   const { colors } = useAppSettings();
+  const { startHostSession, generateSessionQRCode } = useGroupReading();
   const [selectedReaderPosition, setSelectedReaderPosition] = useState<{
     color: string;
     position: number;
@@ -467,41 +469,21 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
     try {
       await saveUserName(userName.trim());
       const role = getRole(selectedReaderPosition.color, selectedReaderPosition.position);
-      
-      // Create a GroupSession object for QR code generation
-      const session: GroupSession = {
-        id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        storyId,
-        storyTitle,
-        scriptureReference,
-        hostUserName: userName.trim(),
-        hostDeviceId: 'host_device',
-        status: 'forming',
-        createdAt: Date.now(),
-        expiresAt: Date.now() + 30 * 60 * 1000, // 30 minutes
-        participants: [{
-          deviceId: 'host_device',
-          deviceName: 'Host Device',
-          role: role,
-          userName: userName.trim(),
-          isReady: true,
-          isConnected: true
-        }],
-        planId,
-        challengeId
-      };
-      
-      // Generate session QR code using QRCodeDiscoveryManager
-      const qrCodeData = await qrCodeDiscoveryManager.generateSessionQRCode(session, role);
+      // Initialize context-backed host session so role and session are globally available
+      await startHostSession(storyId, storyTitle, scriptureReference, role, userName.trim(), planId, challengeId);
+      // Generate QR using context (ensures session state alignment)
+      const qrCodeData = await generateSessionQRCode(role);
       
       // Navigate to QR sharing screen with session data
       const router = useRouter();
       router.push({
         pathname: '/qr-share' as any,
         params: {
-          sessionId: session.id,
+          sessionId: 'context',
+          storyId,
           storyTitle,
           hostUserName: userName.trim(),
+          hostRole: role,
           qrCodeData: qrCodeData
         }
       });

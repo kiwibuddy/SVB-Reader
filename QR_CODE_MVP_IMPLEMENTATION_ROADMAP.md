@@ -171,9 +171,10 @@
 - ✅ Real QR code generation with session data
 - ✅ Session information display
 - ✅ Share functionality for QR codes
-- ✅ Session management integration
- - ✅ Add "Start Story" button to let host begin reading from Share screen
- - ✅ Align CTA color across host/joiner to brand blue (#42A5F5)
+  - ✅ Session management integration
+  - ✅ Add "Start Story" button to let host begin reading from Share screen
+  - ✅ Align CTA color across host/joiner to brand blue (#42A5F5)
+  - ✅ Host role passes through and is pre-selected in story view
 
 ### **Step 3.3: Update "Group Reading Host" Screen**
 **Priority**: MEDIUM
@@ -254,58 +255,35 @@
 
 ---
 
-## **📋 PHASE 5: COMPLETION TRACKING**
+## **📋 PHASE 5: COMPLETION TRACKING (COMPLETED ✅)**
 
 ### **Step 5.1: Host Completion QR Generation**
-**Priority**: MEDIUM
-**Estimated Time**: 2-3 days
+**Status**: COMPLETED ✅
 
-**Tasks**:
-- [x] **Update CheckCircle.tsx for Host**
-  - [x] Detect if user is host in group session
-  - [x] Generate completion QR code instead of normal completion
-  - [x] Display QR share route with generated completion QR
-  - [x] Add completion validation baseline (5-min signature bucket, 15-min freshness window)
-
-**Features**:
+Implemented:
 - Host detection in group sessions
-- Completion QR code generation
-- QR code sharing interface
-- Session completion tracking
+- Completion QR generation with deterministic signature (5‑min time bucket)
+- Blue host modal with QR, 1s polling (“X of 4 scanned”), haptics, and confirm button
+- On confirm: markSegmentComplete + recordGroupCompletion + banner/confetti + context‑aware navigation
 
 ### **Step 5.2: Joiner Completion QR Scanning**
-**Priority**: MEDIUM
-**Estimated Time**: 2-3 days
+**Status**: COMPLETED ✅
 
-**Tasks**:
-- [x] **Update CheckCircle.tsx for Joiners**
-  - [x] Detect if user is joiner in group session
-  - [x] Show "Scan completion QR" instruction under control with group icon
-  - [x] Implement completion QR scanning entry point
-  - [x] Validate completion QR codes (session/story match) with error toast
-
-**Features**:
-- Joiner detection in group sessions
-- Completion QR scanning interface
-- QR code validation
-- Group completion tracking
+Implemented:
+- White rounded scanner card with title/subtitle; haptics on scan
+- Robust parse/validate with unified signature rules
+- On valid scan: markSegmentComplete + recordGroupCompletion + updateLastReadSegment + banner/confetti
+- Context‑aware return: Plan → /(tabs)/Plan, Challenge → /(tabs)/Reading-Challenges, Today/Default → /(tabs)/Navigation
 
 ### **Step 5.3: Group Completion Indicators**
-**Priority**: MEDIUM
-**Estimated Time**: 1-2 days
+**Status**: COMPLETED ✅ (MVP)
 
-**Tasks**:
-- [ ] **Update Navigation Components**
-  - [ ] Add group completion icon display
-  - [ ] Track completion method (individual vs group)
-  - [ ] Display different indicators for group completions
-  - [ ] Persist completion state
+Implemented:
+- SQLite group_segment_completion table + recordGroupCompletion()
+- List indicators in SegmentItem and ChronologicalSegmentItem
+- Persistence and visual differentiation
 
-**Features**:
-- Group completion icon (green group icon)
-- Individual vs group completion tracking
-- Visual differentiation in navigation
-- Completion state persistence
+Note: Additional indicators in other lists can be considered later (post‑MVP).
 
 ---
 
@@ -331,21 +309,22 @@
 - Edge cases
 
 ### **Step 6.2: UI/UX Polish**
-**Priority**: MEDIUM
-**Estimated Time**: 1-2 days
+**Status**: IN PROGRESS
 
-**Tasks**:
-- [ ] **Polish User Interface**
-  - [ ] Consistent styling across all screens
-  - [x] Smooth animations and transitions: add compact "Completion confirmed" banner aligned with confetti
-  - [x] Animation consistency pass: centralized durations/easing and aligned banner, confetti, and modal timings
-  - [x] Scanner UX refresh: full-screen camera, centered frame, inline tips, notch-safe header; removed bottom blue sheet
-  - [x] Share Session simplification: removed redundant "Share Session Details" button (share icon retained)
-  - [x] Host/Join CTAs aligned to app blue; courtesy popup now centered card titled “Get Ready” with appear/disappear animation
-  - [x] Group completion affordances: joiner uses group icon to scan; host uses QR icon to generate
-  - [ ] Error state handling
-  - [ ] Loading states and feedback
-  - [x] Success toast on completion and consistent return flow
+Completed:
+- Courtesy card near top with slide‑in animation; tap‑to‑dismiss persistence
+- Larger tap targets; haptics on key actions
+- Scanner UX refresh; consistent cards (host blue, joiner white) with titles/subtitles
+- Share Session cleanup; CTA color alignment
+- Group completion affordances and context‑aware separation (individual vs group)
+- Success banner + confetti + unified return flow
+
+Loading states:
+- GroupSetup spinner on initial QR generation ✅
+- In‑story completion uses immediate modal (no spinner) ✅
+
+Pending:
+- Error state copy/visuals pass (invalid/expired/wrong session)
 
 **Improvements**:
 - Consistent color scheme and styling
@@ -408,8 +387,8 @@
 - ✅ Users can join sessions by scanning QR codes
 - ✅ Role management works correctly (host selects first, joiners see remaining)
 - ✅ Users can read stories with pre-selected roles
-- [ ] Completion tracking works via QR codes
-- [ ] Group completions are visually distinct from individual completions
+- ✅ Completion tracking works via QR codes
+- ✅ Group completions are visually distinct from individual completions
 
 ### **Technical Success Metrics**:
 - ✅ No Bluetooth dependencies remain
@@ -529,13 +508,7 @@
 #### **SHORT TERM (Next 2-3 weeks):**
 
 **Phase 5: Completion Tracking**
-- **Status**: Not Started
-- **Priority**: MEDIUM
-- **Estimated Time**: 6-9 days
-- **Steps**:
-  - [ ] Step 5.1: Host Completion QR Generation (2-3 days)
-  - [ ] Step 5.2: Joiner Completion QR Scanning (2-3 days)
-  - [ ] Step 5.3: Group Completion Indicators (1-2 days)
+- **Status**: COMPLETED ✅
 
 #### **MEDIUM TERM (Next 3-4 weeks):**
 
@@ -549,14 +522,14 @@
 
 ### **📈 IMPLEMENTATION PROGRESS:**
 
-**Overall Progress**: **92% Complete** 🎯
+**Overall Progress**: **96% Complete** 🎯
 
 - **Phase 1**: 100% ✅
 - **Phase 2**: 100% ✅
 - **Phase 3**: 67% (2/3 steps complete)
 - **Phase 4**: 100% ✅
-- **Phase 5**: 0% (not started)
-- **Phase 6**: 0% (not started)
+- **Phase 5**: 100% ✅
+- **Phase 6**: 40% (polish ongoing)
 
 ### **🚀 READY FOR PRODUCTION:**
 

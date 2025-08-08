@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CheckCircle from '@/components/CheckCircle';
+import { databaseManager } from '@/api/database-manager';
 import { useAppSettings } from '@/context/AppSettingsContext';
 
 interface ChronologicalSegmentItemProps {
@@ -131,7 +132,8 @@ const ChronologicalSegmentItem: React.FC<ChronologicalSegmentItemProps> = ({
         <Text style={styles.phaseText}>{phase}</Text>
       </View>
 
-      <View style={styles.checkContainer}>
+      <View style={[styles.checkContainer, { flexDirection: 'row', alignItems: 'center', gap: 6 }]}>
+        <GroupCompletionBadge segmentId={segmentId} />
         <CheckCircle
           segmentId={segmentId}
           context={context}
@@ -145,3 +147,24 @@ const ChronologicalSegmentItem: React.FC<ChronologicalSegmentItemProps> = ({
 };
 
 export default ChronologicalSegmentItem; 
+
+const GroupCompletionBadge: React.FC<{ segmentId: string }> = ({ segmentId }) => {
+  const [hasGroupCompletion, setHasGroupCompletion] = React.useState<boolean>(false);
+  React.useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const db = databaseManager.getDatabase();
+        const row = await db.getFirstAsync<{ count: number }>(
+          'SELECT COUNT(*) as count FROM group_segment_completion WHERE segmentID = ?',
+          [segmentId]
+        );
+        if (mounted) setHasGroupCompletion((row?.count || 0) > 0);
+      } catch {}
+    };
+    load();
+    return () => { mounted = false; };
+  }, [segmentId]);
+  if (!hasGroupCompletion) return null;
+  return <Ionicons name="people-circle" size={20} color={'#42A5F5'} />;
+};

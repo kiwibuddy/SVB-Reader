@@ -8,22 +8,25 @@ export default function QRShareRoute() {
   const params = useLocalSearchParams();
   const { currentSession, startReading } = useGroupReading();
   
-  const sessionId = params.sessionId as string;
+  const sessionId = (params.sessionId as string) || currentSession?.id || '';
   const storyTitle = params.storyTitle as string;
   const hostUserName = params.hostUserName as string;
+  const hostRole = params.hostRole as string | undefined;
   const qrCodeData = params.qrCodeData as string;
 
   const handleClose = () => {
     router.back();
   };
 
-  const handleStartStory = () => {
-    startReading();
-    const segId = currentSession?.storyId || (params.storyId as string);
+  const handleStartStory = async () => {
+    try {
+      await startReading();
+    } catch {}
+    const segId = (params.storyId as string) || currentSession?.storyId;
     if (segId) {
-      router.push({ pathname: '/[segment]' as any, params: { segment: segId } });
+      router.replace({ pathname: '/[segment]' as any, params: { segment: segId, showCourtesy: '1' } });
     } else {
-      router.back();
+      router.replace('/');
     }
   };
 
@@ -32,6 +35,7 @@ export default function QRShareRoute() {
       sessionId={sessionId}
       storyTitle={storyTitle}
       hostUserName={hostUserName}
+      hostRole={hostRole as any}
       qrCodeData={qrCodeData}
       onClose={handleClose}
       onStartStory={handleStartStory}

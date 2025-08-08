@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import CelebrationPopup from "@/components/CelebrationPopup";
 import { getCheckColor } from '@/scripts/getCheckColors';
 import { markSegmentComplete, getSegmentCompletionStatus } from "@/api/sqlite";
+import { databaseManager } from '@/api/database-manager';
 import { useAppSettings } from '@/context/AppSettingsContext';
 
 interface ColorData {
@@ -154,15 +155,46 @@ const SegmentItem: React.FC<SegmentItemProps> = React.memo(({
         )}
       </View>
       {!isIntroduction && (
-        <Ionicons 
-          name={completionStatus.isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'} 
-          size={20} 
-          color={completionStatus.isCompleted ? '#4CAF50' : '#CCCCCC'} 
-          style={styles.checkIcon} 
-        />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          {/* Show group completion badge if any group completion exists for this segment */}
+          <GroupCompletionBadge segmentId={segment.id} />
+          <Ionicons 
+            name={completionStatus.isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'} 
+            size={20} 
+            color={completionStatus.isCompleted ? '#4CAF50' : '#CCCCCC'} 
+            style={styles.checkIcon} 
+          />
+        </View>
       )}
     </TouchableOpacity>
   );
 });
 
 export default SegmentItem;
+
+// Inline lightweight badge that shows if a segment has any group completions
+const GroupCompletionBadge: React.FC<{ segmentId: string }> = ({ segmentId }) => {
+  const { colors } = useAppSettings();
+  const [hasGroupCompletion, setHasGroupCompletion] = useState<boolean>(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const load = async () => {
+      try {
+        const db = databaseManager.getDatabase();
+        const row = await db.getFirstAsync<{ count: number }>(
+          'SELECT COUNT(*) as count FROM group_segment_completion WHERE segmentID = ?',
+          [segmentId]
+        );
+        if (isMounted) setHasGroupCompletion((row?.count || 0) > 0);
+      } catch {}
+    };
+    load();
+    return () => { isMounted = false; };
+  }, [segmentId]);
+
+  if (!hasGroupCompletion) return null;
+  return (
+    <Ionicons name="people-circle" size={20} color={'#42A5F5'} />
+  );
+};
