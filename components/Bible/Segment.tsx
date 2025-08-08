@@ -76,6 +76,14 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const courtesyAnim = useRef(new Animated.Value(0));
   const courtesyDismissedRef = useRef(false);
 
+  // Compute segID safely for use in hooks below
+  const segID = useMemo(() => {
+    const idValue = segmentData?.id;
+    if (!idValue) return '';
+    const parts = idValue.split('-');
+    return parts[parts.length - 1] || '';
+  }, [segmentData?.id]);
+
   // Courtesy popup slide-in animation from top
   useEffect(() => {
     const shouldShow = !!currentSession && showCourtesyPopup;
@@ -312,6 +320,24 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return () => clearTimeout(timer);
   }, [segmentData?.id]);
 
+  // Load completion status from SQLite (hook must not be conditional)
+  useEffect(() => {
+    if (!segID) {
+      setIsCompleted(false);
+      return;
+    }
+    const loadCompletionStatus = async () => {
+      try {
+        const status = await getSegmentCompletionStatus(segID, context, planId, challengeId);
+        setIsCompleted(status.isCompleted);
+      } catch (error) {
+        console.error('Error loading completion status:', error);
+        setIsCompleted(false);
+      }
+    };
+    loadCompletionStatus();
+  }, [segID, context, planId, challengeId]);
+
   // Emoji handling is now done directly in the Block component
   const handleLongPress = useCallback((block: BibleBlock, index: number) => {
     console.log('🔍 [Segment] handleLongPress triggered:', { 
@@ -335,7 +361,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     }
   }, []);
 
-  // Add null checks for segmentData AFTER all hooks
+  // Add null checks for segmentData AFTER all hooks declared above
   if (!segmentData || !segmentData.id) {
     console.error('Invalid segment data:', segmentData);
     return null; // Or return an error state component
@@ -343,23 +369,8 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   // Safe to access segmentData after null check
   const { content, readers = [], id } = segmentData;
-  const segID = id.split("-")[id.split("-").length - 1];
 
-  // Determine which completion state to use
-  // Load completion status from SQLite
-  useEffect(() => {
-    const loadCompletionStatus = async () => {
-      try {
-        const status = await getSegmentCompletionStatus(segID, context, planId, challengeId);
-        setIsCompleted(status.isCompleted);
-      } catch (error) {
-        console.error('Error loading completion status:', error);
-        setIsCompleted(false);
-      }
-    };
-    
-    loadCompletionStatus();
-  }, [segID, context, planId, challengeId]);
+  // Determine which completion state to use handled by effect above
 
   const colorRenderCount = new Map<string, number>(); // Track render counts
 

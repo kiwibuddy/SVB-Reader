@@ -458,6 +458,8 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
     }
   };
 
+  const router = useRouter();
+
   const handleGenerateQRCode = async () => {
     if (!selectedReaderPosition || !userName.trim()) {
       Alert.alert('Missing Information', 'Please select a reading role and enter your name.');
@@ -475,7 +477,6 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
       const qrCodeData = await generateSessionQRCode(role);
       
       // Navigate to QR sharing screen with session data
-      const router = useRouter();
       router.push({
         pathname: '/qr-share' as any,
         params: {

@@ -1,11 +1,13 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Platform } from "react-native";
+import { View, Text, TouchableOpacity, useWindowDimensions, Platform } from "react-native";
 import { IntroType } from "@/types";
 import SegmentTitle from "./SegmentTitle";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import Markdown from 'react-native-markdown-display';
+import { styles } from './Intro.styles';
+import { parseReference } from '@/utils/parseReference';
 
 // Define the props for Intro component
 interface IntroProps {
@@ -70,23 +72,44 @@ const IntroContentChildComponent: React.FC<any> = ({
 
   return (
     <View style={styles.childContainer}>
-      {link ? (
-        <TouchableOpacity
-          onPress={() => {
-            /* Navigate to link */
-          }}
-          style={styles.linkContainer}
-        >
-          <Text style={[textStyle, styles.link]}>{text}</Text>
-        </TouchableOpacity>
-      ) : (
-        <Text style={textStyle}>{text}</Text>
-      )}
+      <Text style={textStyle}>{text}</Text>
     </View>
   );
 };
 
-const IntroBlockComponent: React.FC<any> = ({ children, type }) => {
+const IntroList: React.FC<{ items: any[]; ordered?: boolean }> = ({ items, ordered }) => (
+  <View style={styles.listContainer}>
+    {items.map((li, index) => (
+      <View key={`li-${index}`} style={styles.listItemRow}>
+        <Text style={styles.bullet}>{ordered ? `${index + 1}.` : '•'}</Text>
+        <Text style={styles.listItemText}>
+          {li.children?.map((leaf: any, leafIndex: number) => leaf.text).join(' ')}
+        </Text>
+      </View>
+    ))}
+  </View>
+);
+
+const IntroTable: React.FC<{ rows: any[]; bookCode?: string }> = ({ rows, bookCode }) => (
+  <View style={styles.tableWrapper}>
+    {rows.map((row, rIndex) => (
+      <View key={`row-${rIndex}`} style={[styles.tableRow, rIndex === rows.length - 1 && { borderBottomWidth: 0 }]}>
+        {row.children?.map((cell: any, cIndex: number) => (
+          <View
+            key={`cell-${rIndex}-${cIndex}`}
+            style={[rIndex === 0 ? styles.tableHeaderCell : styles.tableCell, { flex: 1 }]}
+          >
+            <Text style={rIndex === 0 ? styles.tableHeaderText : styles.tableText}>
+              {cell.text}
+            </Text>
+          </View>
+        ))}
+      </View>
+    ))}
+  </View>
+);
+
+const IntroBlockComponent: React.FC<any> = ({ children, type, book }) => {
   // Add safety check for children
   if (!children || !Array.isArray(children)) {
     return null;
@@ -104,12 +127,24 @@ const IntroBlockComponent: React.FC<any> = ({ children, type }) => {
         if (!child) {
           return null;
         }
-        return (
-          <IntroContentChildComponent 
-            key={`${child.id || index}-${index}`} 
-            {...child} 
-          />
-        );
+        if (child.type === 'paragraph' || child.type === 'heading' || child.type === 'subheading' || child.type === 'title' || child.type === 'subtitle' || child.type === 'header' || child.type === 'subheader') {
+          return (
+            <IntroContentChildComponent
+              key={`${child.id || index}-${index}`}
+              {...child}
+            />
+          );
+        }
+        if (child.type === 'bulleted-list') {
+          return <IntroList key={`bl-${index}`} items={child.children || []} />;
+        }
+        if (child.type === 'numbered-list') {
+          return <IntroList key={`ol-${index}`} ordered items={child.children || []} />;
+        }
+        if (child.type === 'table') {
+          return <IntroTable key={`tbl-${index}`} rows={child.children || []} bookCode={book} />;
+        }
+        return null;
       })}
     </View>
   );
