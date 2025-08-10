@@ -12,7 +12,7 @@ export default function GroupSetupPage() {
 
   const handleStartBroadcasting = async (role: Role, userName: string) => {
     try {
-      const sessionId = await startHostSession(
+      const session = await startHostSession(
         storyId as string,
         storyTitle as string,
         scriptureReference as string,
@@ -26,7 +26,7 @@ export default function GroupSetupPage() {
       router.replace({
         pathname: '/host-waiting' as any,
         params: {
-          sessionId,
+          sessionId: session.id,
           storyTitle,
           scriptureReference,
           storyColorData: JSON.stringify({

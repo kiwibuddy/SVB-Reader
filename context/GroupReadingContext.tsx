@@ -12,7 +12,7 @@ interface GroupReadingContextType {
   availableRoles: Role[];
   
   // Actions
-  startHostSession: (storyId: string, storyTitle: string, scriptureRef: string, role: Role, userName: string, planId?: string, challengeId?: string) => Promise<string>;
+  startHostSession: (storyId: string, storyTitle: string, scriptureRef: string, role: Role, userName: string, planId?: string, challengeId?: string) => Promise<GroupSession>;
   stopSession: () => Promise<void>;
   joinSession: (sessionId: string, role: Role, userName: string) => Promise<boolean>;
   joinSessionFromQR: (qrCodeData: string, role: Role, userName: string) => Promise<boolean>;
@@ -27,6 +27,7 @@ interface GroupReadingContextType {
   
   // QR Code Generation
   generateSessionQRCode: (hostRole: Role) => Promise<string>;
+  generateSessionQRCodeWithSession: (session: GroupSession, hostRole: Role) => Promise<string>;
   generateCompletionQRCode: () => Promise<string>;
 }
 
@@ -118,7 +119,7 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
     userName: string,
     planId?: string,
     challengeId?: string
-  ): Promise<string> => {
+  ): Promise<GroupSession> => {
     try {
       console.log('🔵 Starting QR code host session...');
       console.log('🔵 Host role:', role);
@@ -159,7 +160,7 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
       
       console.log('🔵 QR code host session started:', session.id);
       console.log('🔵 Available roles for joiners:', availableRoles);
-      return session.id;
+      return session;
     } catch (error) {
       console.error('🔴 Error starting QR code host session:', error);
       dispatch({ type: 'SET_HOST', payload: false });
@@ -342,6 +343,29 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, []);
 
+  // Generate QR code for a specific session (bypasses state timing issues)
+  const generateSessionQRCodeWithSession = useCallback(async (session: GroupSession, hostRole: Role): Promise<string> => {
+    try {
+      console.log('📱 Generating session QR code with provided session...');
+      console.log(`📱 Generating QR code for session: ${session.id}`);
+      console.log(`📱 Host role: ${hostRole}`);
+      
+      const qrCodeData = await qrCodeDiscoveryManager.generateSessionQRCode(session, hostRole);
+      console.log('📱 QR code data generated:', qrCodeData.substring(0, 100) + '...');
+      console.log('📱 Session info:', {
+        host: session.hostUserName,
+        hostRole: hostRole,
+        reference: session.scriptureReference,
+        story: session.storyTitle
+      });
+      console.log('📱 Session QR code generated successfully');
+      return qrCodeData;
+    } catch (error) {
+      console.error('🔴 Error generating session QR code:', error);
+      throw error;
+    }
+  }, []);
+
   const generateCompletionQRCode = useCallback(async (): Promise<string> => {
     // Get the current session from state directly to avoid stale closure issues
     const currentSession = state.currentSession;
@@ -380,6 +404,7 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
     calculateRemainingRoles,
     updateParticipantRole,
     generateSessionQRCode,
+    generateSessionQRCodeWithSession,
     generateCompletionQRCode,
   };
 

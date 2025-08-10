@@ -62,7 +62,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
   challengeId,
 }) => {
   const { colors } = useAppSettings();
-  const { startHostSession, generateSessionQRCode } = useGroupReading();
+  const { startHostSession, generateSessionQRCodeWithSession } = useGroupReading();
   const [selectedReaderPosition, setSelectedReaderPosition] = useState<{
     color: string;
     position: number;
@@ -472,27 +472,10 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
       await saveUserName(userName.trim());
       const role = getRole(selectedReaderPosition.color, selectedReaderPosition.position);
       // Initialize context-backed host session so role and session are globally available
-      await startHostSession(storyId, storyTitle, scriptureReference, role, userName.trim(), planId, challengeId);
+      const session = await startHostSession(storyId, storyTitle, scriptureReference, role, userName.trim(), planId, challengeId);
       
-      // Generate QR using context with retry mechanism to ensure session state alignment
-      let qrCodeData = null;
-      for (let attempt = 0; attempt < 10; attempt++) {
-        try {
-          qrCodeData = await generateSessionQRCode(role);
-          if (qrCodeData && qrCodeData.length > 0) {
-            break;
-          }
-        } catch (error) {
-          console.log(`🔄 QR generation attempt ${attempt + 1}/10 failed:`, error instanceof Error ? error.message : String(error));
-          if (attempt < 9) {
-            await new Promise(r => setTimeout(r, 300));
-          }
-        }
-      }
-      
-      if (!qrCodeData) {
-        throw new Error('Failed to generate QR code after 10 attempts');
-      }
+      // Generate QR using the session directly (bypasses state timing issues)
+      const qrCodeData = await generateSessionQRCodeWithSession(session, role);
       
       // Navigate to QR sharing screen with session data
       router.push({
