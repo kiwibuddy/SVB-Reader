@@ -1,14 +1,16 @@
 import { StyleSheet, Platform } from 'react-native';
 
-export const styles = StyleSheet.create({
+// Function to create dynamic styles with theme colors
+export const createStyles = (colors: any, isTablet: boolean = false) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: colors.background,
   },
   contentContainer: {
     maxWidth: '100%',
     alignSelf: 'center',
     paddingHorizontal: 16,
+    paddingTop: 8,
   },
   contentContainerIPad: {
     maxWidth: 800,
@@ -17,69 +19,76 @@ export const styles = StyleSheet.create({
     marginVertical: 4,
   },
   highlightBlock: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.bubbles?.default || '#F5F5F5',
     borderRadius: 8,
     padding: 12,
     marginVertical: 8,
   },
   childContainer: {
-    marginVertical: 2,
+    marginVertical: 6,
   },
   text: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#333333',
-    fontStyle: 'italic',
+    fontSize: isTablet ? 18 : 16,
+    lineHeight: isTablet ? 28 : 24,
+    color: colors.text,
     fontFamily: Platform.select({
       ios: 'System',
       android: 'Roboto',
     }),
   },
   title: {
-    fontSize: 32,
+    fontSize: isTablet ? 36 : 28,
     fontWeight: '700',
-    color: '#000000',
-    marginBottom: 8,
-    marginTop: 16,
+    color: colors.primary,
+    marginBottom: isTablet ? 16 : 12,
+    marginTop: isTablet ? 24 : 20,
     textAlign: 'center',
+    lineHeight: isTablet ? 42 : 34,
   },
   subtitle: {
-    fontSize: 24,
+    fontSize: isTablet ? 28 : 22,
     fontWeight: '600',
-    color: '#333333',
-    marginBottom: 16,
+    color: colors.primary,
+    marginBottom: isTablet ? 20 : 16,
+    marginTop: isTablet ? 20 : 16,
     textAlign: 'center',
+    lineHeight: isTablet ? 34 : 28,
   },
   header: {
-    fontSize: 28,
+    fontSize: isTablet ? 28 : 24,
     fontWeight: '600',
-    color: '#000000',
-    marginTop: 24,
-    marginBottom: 8,
+    color: colors.text,
+    marginTop: isTablet ? 24 : 20,
+    marginBottom: isTablet ? 12 : 8,
+    lineHeight: isTablet ? 34 : 30,
   },
   subheader: {
-    fontSize: 22,
+    fontSize: isTablet ? 24 : 20,
     fontWeight: '600',
-    color: '#333333',
-    marginTop: 16,
-    marginBottom: 8,
+    color: colors.text,
+    marginTop: isTablet ? 20 : 16,
+    marginBottom: isTablet ? 12 : 8,
+    lineHeight: isTablet ? 30 : 26,
   },
   heading: {
-    fontSize: 20,
+    fontSize: isTablet ? 22 : 18,
     fontWeight: '600',
-    color: '#000000',
-    marginTop: 16,
-    marginBottom: 4,
+    color: colors.text,
+    marginTop: isTablet ? 20 : 16,
+    marginBottom: isTablet ? 12 : 8,
+    lineHeight: isTablet ? 28 : 24,
   },
   subheading: {
-    fontSize: 18,
+    fontSize: isTablet ? 20 : 16,
     fontWeight: '600',
-    color: '#333333',
-    marginTop: 12,
-    marginBottom: 4,
+    color: colors.text,
+    marginTop: isTablet ? 16 : 12,
+    marginBottom: isTablet ? 10 : 6,
+    lineHeight: isTablet ? 26 : 22,
   },
   paragraph: {
-    marginBottom: 8,
+    marginBottom: isTablet ? 16 : 12,
+    lineHeight: isTablet ? 28 : 24,
   },
   smallCaps: {
     textTransform: 'uppercase',
@@ -87,33 +96,44 @@ export const styles = StyleSheet.create({
   },
   bibleText: {
     fontStyle: 'italic',
-    color: '#666666',
+    color: colors.secondary,
   },
   linkContainer: {
     marginVertical: 2,
   },
   link: {
-    color: '#007AFF',
+    color: colors.primary,
     textDecorationLine: 'underline',
   },
   nextStoryContainer: {
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 32,
     paddingHorizontal: 16,
     paddingBottom: 100,
   },
-  nextStoryButton: {
-    flexDirection: 'row',
+  playButton: {
+    width: isTablet ? 80 : 70,
+    height: isTablet ? 80 : 70,
+    borderRadius: isTablet ? 40 : 35,
+    backgroundColor: '#6B7280', // Gray color like the rest of the app
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 25,
-    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+    marginBottom: 12,
   },
-  nextStoryText: {
+  playButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: isTablet ? 18 : 16,
     fontWeight: '600',
+    marginTop: 4,
+    textAlign: 'center',
   },
   // List styles
   listContainer: {
@@ -125,22 +145,22 @@ export const styles = StyleSheet.create({
     marginBottom: 6,
   },
   bullet: {
-    width: 18,
-    lineHeight: 24,
-    fontSize: 16,
-    color: '#333',
+    width: isTablet ? 22 : 18,
+    lineHeight: isTablet ? 28 : 24,
+    fontSize: isTablet ? 18 : 16,
+    color: colors.text,
     textAlign: 'center',
   },
   listItemText: {
     flex: 1,
-    lineHeight: 24,
-    fontSize: 16,
-    color: '#333',
+    lineHeight: isTablet ? 28 : 24,
+    fontSize: isTablet ? 18 : 16,
+    color: colors.text,
   },
   // Table styles
   tableWrapper: {
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: colors.border,
     borderRadius: 8,
     overflow: 'hidden',
     marginVertical: 8,
@@ -148,31 +168,41 @@ export const styles = StyleSheet.create({
   tableRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: colors.border,
   },
   tableHeaderCell: {
     paddingVertical: 10,
     paddingHorizontal: 8,
-    backgroundColor: '#F8FAFF',
+    backgroundColor: colors.bubbles?.default || '#F8FAFF',
     borderRightWidth: 1,
-    borderRightColor: '#E0E0E0',
+    borderRightColor: colors.border,
   },
   tableCell: {
     paddingVertical: 10,
     paddingHorizontal: 8,
     borderRightWidth: 1,
-    borderRightColor: '#E0E0E0',
+    borderRightColor: colors.border,
   },
   tableText: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#333',
+    fontSize: isTablet ? 16 : 14,
+    lineHeight: isTablet ? 24 : 20,
+    color: colors.text,
   },
   tableHeaderText: {
-    fontSize: 14,
+    fontSize: isTablet ? 16 : 14,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: colors.text,
   },
+});
+
+// Export static styles for backwards compatibility
+export const styles = createStyles({
+  background: '#FFFFFF',
+  text: '#000000',
+  primary: '#FF5733',
+  secondary: '#666666',
+  border: '#E5E5E5',
+  bubbles: { default: '#F5F5F5' }
 });
 
 

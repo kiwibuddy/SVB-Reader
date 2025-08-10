@@ -15,14 +15,15 @@ export default function SegmentTitle({segmentId}: {segmentId: string}) {
   const { colors } = useAppSettings();
   const { title, book, ref } = SegmentTitles[segmentId as keyof typeof SegmentTitles] as SegmentTitleType;
   const isDualBook = dualBookSegments.includes(segmentId);
+  const isIntroduction = segmentId.startsWith('I');
   
   const reference = isDualBook ? `${book[0]} & ${book[1]}` : ref;
 
   const styles = StyleSheet.create({
     container: {
-      paddingTop: 32,
+      paddingTop: isIntroduction ? 32 : 32,
       paddingHorizontal: 16,
-      paddingBottom: 8,
+      paddingBottom: isIntroduction ? 4 : 8,
       justifyContent: "center",
       alignItems: "center"
     },
@@ -30,7 +31,7 @@ export default function SegmentTitle({segmentId}: {segmentId: string}) {
       fontSize: 24,
       fontWeight: "600",
       color: colors.text,
-      marginBottom: 8
+      marginBottom: isIntroduction ? 0 : 8
     },
     subtitle: {
       fontSize: 16,
@@ -41,7 +42,9 @@ export default function SegmentTitle({segmentId}: {segmentId: string}) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.subtitle}>{ref ? reference : book[0]}</Text>
+      {!isIntroduction && (
+        <Text style={styles.subtitle}>{ref ? reference : book[0]}</Text>
+      )}
     </View>
   );
 }

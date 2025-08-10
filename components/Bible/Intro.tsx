@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, TouchableOpacity, useWindowDimensions, Platform } from "react-native";
 import { IntroType } from "@/types";
 import SegmentTitle from "./SegmentTitle";
@@ -6,8 +6,11 @@ import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import Markdown from 'react-native-markdown-display';
-import { styles } from './Intro.styles';
+import { createStyles } from './Intro.styles';
 import { parseReference } from '@/utils/parseReference';
+import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
+import BookChapterList from '@/assets/data/BookChapterList.json';
+import SegmentTitles from '@/assets/data/SegmentTitles.json';
 
 // Define the props for Intro component
 interface IntroProps {
@@ -22,16 +25,70 @@ const IntroContentChildComponent: React.FC<any> = ({
   link,
   smallcaps,
   bibleText,
+  children,
+  isTablet,
 }) => {
   const { colors } = useAppSettings();
+  const styles = createStyles(colors, isTablet);
   
-  // Add safety check for undefined text
-  if (!text) {
+  // Handle rendering children properly - some blocks have multiple text segments
+  const renderChildren = () => {
+    if (text) {
+      // If text prop is provided directly, use it (strip out any HTML video content)
+      const cleanedText = text
+        .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
+        .replace(/<video[^>]*>.*?<\/video>/gi, '')
+        .replace(/<embed[^>]*>/gi, '')
+        .replace(/<object[^>]*>.*?<\/object>/gi, '');
+      return cleanedText;
+    }
+    
+    if (children && Array.isArray(children)) {
+      // Map through all children and render each text segment
+      return children.map((child: any, index: number) => {
+        if (!child || !child.text) return null;
+        
+        // Clean the child text to remove any HTML video content
+        const cleanedChildText = child.text
+          .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
+          .replace(/<video[^>]*>.*?<\/video>/gi, '')
+          .replace(/<embed[^>]*>/gi, '')
+          .replace(/<object[^>]*>.*?<\/object>/gi, '');
+        
+        // Apply different styling based on child properties
+        const childStyle = [
+          styles.text,
+          child.bibleText && styles.bibleText,
+          child.smallcaps && styles.smallCaps,
+        ].filter(Boolean);
+        
+        return (
+          <Text key={index} style={childStyle}>
+            {cleanedChildText}
+          </Text>
+        );
+      });
+    }
+    
+    return null;
+  };
+  
+  const content = renderChildren();
+  
+  // Add safety check for content
+  if (!content) {
     return null;
   }
   
-  // For markdown content, use the markdown renderer
-  if (type === 'markdown' || (text && typeof text === 'string' && (text.includes('**') || text.includes('#')))) {
+  // For markdown content, use the markdown renderer (but strip out video content)
+  const firstChildText = text || (children && children[0] && children[0].text) || '';
+  if (type === 'markdown' || (firstChildText && typeof firstChildText === 'string' && (firstChildText.includes('**') || firstChildText.includes('#')))) {
+    // Remove video/iframe HTML content
+    const cleanText = firstChildText
+      .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
+      .replace(/<video[^>]*>.*?<\/video>/gi, '')
+      .replace(/<embed[^>]*>/gi, '')
+      .replace(/<object[^>]*>.*?<\/object>/gi, '');
     return (
       <View style={styles.childContainer}>
         <Markdown style={{
@@ -50,101 +107,150 @@ const IntroContentChildComponent: React.FC<any> = ({
           em: { fontStyle: 'italic', color: colors.text },
           link: { color: colors.primary, textDecorationLine: 'underline' },
         }}>
-          {text}
+          {cleanText}
         </Markdown>
       </View>
     );
   }
 
-  // Match text styling with the rest of the app
-  const textStyle = {
-    ...styles.text,
-    ...(type === 'title' && styles.title),
-    ...(type === 'subtitle' && styles.subtitle),
-    ...(type === 'header' && styles.header),
-    ...(type === 'subheader' && styles.subheader),
-    ...(type === 'heading' && styles.heading),
-    ...(type === 'subheading' && styles.subheading),
-    ...(type === 'paragraph' && styles.paragraph),
-    ...(smallcaps && styles.smallCaps),
-    ...(bibleText && styles.bibleText),
-  };
+  // For title types, render as a single text element with the appropriate styling
+  if (type === 'ht' || type === 'hs' || type?.startsWith('s') || type === 'heading' || type === 'subheading' || type === 'header' || type === 'subheader' || type === 'title' || type === 'subtitle') {
+    const titleStyle = {
+      ...(type === 'ht' && styles.title), // Main heading
+      ...(type === 'hs' && styles.subtitle), // Subheading  
+      ...(type?.startsWith('s') && styles.heading), // Section headings (s1, s2, etc.)
+      ...(type === 'heading' && styles.heading),
+      ...(type === 'subheading' && styles.subheading),
+      ...(type === 'header' && styles.header),
+      ...(type === 'subheader' && styles.subheader),
+      ...(type === 'title' && styles.title),
+      ...(type === 'subtitle' && styles.subtitle),
+    };
+    
+    // Clean title text to remove any HTML video content
+    const cleanTitleText = firstChildText
+      .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
+      .replace(/<video[^>]*>.*?<\/video>/gi, '')
+      .replace(/<embed[^>]*>/gi, '')
+      .replace(/<object[^>]*>.*?<\/object>/gi, '');
+    
+    return (
+      <View style={styles.childContainer}>
+        <Text style={titleStyle}>{cleanTitleText}</Text>
+      </View>
+    );
+  }
 
+  // For paragraph content, render all children with proper text styling
   return (
     <View style={styles.childContainer}>
-      <Text style={textStyle}>{text}</Text>
+      <Text style={styles.text}>
+        {content}
+      </Text>
     </View>
   );
 };
 
-const IntroList: React.FC<{ items: any[]; ordered?: boolean }> = ({ items, ordered }) => (
-  <View style={styles.listContainer}>
-    {items.map((li, index) => (
-      <View key={`li-${index}`} style={styles.listItemRow}>
-        <Text style={styles.bullet}>{ordered ? `${index + 1}.` : '•'}</Text>
-        <Text style={styles.listItemText}>
-          {li.children?.map((leaf: any, leafIndex: number) => leaf.text).join(' ')}
-        </Text>
-      </View>
-    ))}
-  </View>
-);
+const IntroList: React.FC<{ items: any[]; ordered?: boolean; isTablet?: boolean }> = ({ items, ordered, isTablet }) => {
+  const { colors } = useAppSettings();
+  const styles = createStyles(colors, isTablet);
+  
+  return (
+    <View style={styles.listContainer}>
+      {items.map((li, index) => (
+        <View key={`li-${index}`} style={styles.listItemRow}>
+          <Text style={styles.bullet}>{ordered ? `${index + 1}.` : '•'}</Text>
+          <Text style={styles.listItemText}>
+            {li.children?.map((leaf: any, leafIndex: number) => leaf.text).join(' ')}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+};
 
-const IntroTable: React.FC<{ rows: any[]; bookCode?: string }> = ({ rows, bookCode }) => (
-  <View style={styles.tableWrapper}>
-    {rows.map((row, rIndex) => (
-      <View key={`row-${rIndex}`} style={[styles.tableRow, rIndex === rows.length - 1 && { borderBottomWidth: 0 }]}>
-        {row.children?.map((cell: any, cIndex: number) => (
-          <View
-            key={`cell-${rIndex}-${cIndex}`}
-            style={[rIndex === 0 ? styles.tableHeaderCell : styles.tableCell, { flex: 1 }]}
-          >
-            <Text style={rIndex === 0 ? styles.tableHeaderText : styles.tableText}>
-              {cell.text}
-            </Text>
-          </View>
-        ))}
-      </View>
-    ))}
-  </View>
-);
+const IntroTable: React.FC<{ rows: any[]; bookCode?: string; isTablet?: boolean }> = ({ rows, bookCode, isTablet }) => {
+  const { colors } = useAppSettings();
+  const styles = createStyles(colors, isTablet);
+  
+  return (
+    <View style={styles.tableWrapper}>
+      {rows.map((row, rIndex) => (
+        <View key={`row-${rIndex}`} style={[styles.tableRow, rIndex === rows.length - 1 && { borderBottomWidth: 0 }]}>
+          {row.children?.map((cell: any, cIndex: number) => (
+            <View
+              key={`cell-${rIndex}-${cIndex}`}
+              style={[rIndex === 0 ? styles.tableHeaderCell : styles.tableCell, { flex: 1 }]}
+            >
+              <Text style={rIndex === 0 ? styles.tableHeaderText : styles.tableText}>
+                {cell.text}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+};
 
-const IntroBlockComponent: React.FC<any> = ({ children, type, book }) => {
-  // Add safety check for children
-  if (!children || !Array.isArray(children)) {
+const SourceComparison: React.FC<{ sources: any; isTablet?: boolean }> = ({ sources, isTablet }) => {
+  const { colors } = useAppSettings();
+  const styles = createStyles(colors, isTablet);
+  
+  if (!sources || Object.keys(sources).length === 0) {
     return null;
   }
 
+  // Sort sources by word count (descending)
+  const sortedSources = Object.entries(sources)
+    .map(([name, data]: [string, any]) => ({
+      name,
+      words: data.words || 0,
+      color: data.color
+    }))
+    .sort((a, b) => b.words - a.words)
+    .slice(0, 5); // Show top 5 speakers
+
+  const totalWords = sortedSources.reduce((sum, source) => sum + source.words, 0);
+
   return (
-    <View
-      style={[
-        styles.blockContainer,
-        type === "highlight" && styles.highlightBlock
-      ]}
-    >
-      {children.map((child: any, index: number) => {
-        // Add safety check for child
-        if (!child) {
-          return null;
-        }
-        if (child.type === 'paragraph' || child.type === 'heading' || child.type === 'subheading' || child.type === 'title' || child.type === 'subtitle' || child.type === 'header' || child.type === 'subheader') {
-          return (
-            <IntroContentChildComponent
-              key={`${child.id || index}-${index}`}
-              {...child}
-            />
-          );
-        }
-        if (child.type === 'bulleted-list') {
-          return <IntroList key={`bl-${index}`} items={child.children || []} />;
-        }
-        if (child.type === 'numbered-list') {
-          return <IntroList key={`ol-${index}`} ordered items={child.children || []} />;
-        }
-        if (child.type === 'table') {
-          return <IntroTable key={`tbl-${index}`} rows={child.children || []} bookCode={book} />;
-        }
-        return null;
+    <View style={{ marginVertical: 16, paddingHorizontal: 16 }}>
+      <Text style={[styles.heading, { textAlign: 'left' }]}>Speaker Analysis</Text>
+      <Text style={[styles.text, { marginBottom: 12, color: colors.secondary }]}>
+        Top speakers in this book by word count
+      </Text>
+      
+      {sortedSources.map((source, index) => {
+        const percentage = totalWords > 0 ? Math.round((source.words / totalWords) * 100) : 0;
+        const barColor = source.color === 'red' ? colors.primary : 
+                        source.color === 'green' ? '#4CAF50' :
+                        source.color === 'blue' ? '#2196F3' : colors.secondary;
+        
+        return (
+          <View key={source.name} style={{ marginBottom: 8 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <Text style={[styles.text, { flex: 1, fontSize: 14, fontWeight: '500' }]}>
+                {source.name}
+              </Text>
+              <Text style={[styles.text, { fontSize: 12, color: colors.secondary }]}>
+                {source.words} words ({percentage}%)
+              </Text>
+            </View>
+            <View style={{
+              height: 6,
+              backgroundColor: colors.border,
+              borderRadius: 3,
+              overflow: 'hidden'
+            }}>
+              <View style={{
+                height: '100%',
+                width: `${percentage}%`,
+                backgroundColor: barColor,
+                borderRadius: 3
+              }} />
+            </View>
+          </View>
+        );
       })}
     </View>
   );
@@ -153,9 +259,84 @@ const IntroBlockComponent: React.FC<any> = ({ children, type, book }) => {
 const IntroComponent: React.FC<IntroProps> = ({ segmentData }) => {
   const { width: screenWidth } = useWindowDimensions();
   const isIPad = Platform.OS === 'ios' && Platform.isPad || screenWidth > 768;
-  const { content, id } = segmentData;
+  const { content, id, sources } = segmentData;
   const router = useRouter();
   const { colors } = useAppSettings();
+  const styles = createStyles(colors, isIPad);
+
+  // Reading Mode Modal State
+  const [showReadingModeModal, setShowReadingModeModal] = useState(false);
+  const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
+  const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
+  const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
+
+  // Get the book code from the introduction ID (e.g., "I001" -> "001" -> get corresponding book)
+  const getBookFromIntroId = (introId: string): string | null => {
+    // Find the book that contains this intro segment
+    for (const [bookCode, bookData] of Object.entries(BookChapterList)) {
+      if (bookData.segments && bookData.segments.includes(introId)) {
+        return bookCode;
+      }
+    }
+    return null;
+  };
+
+  // Get the first story segment for a book
+  const getFirstStorySegment = (bookCode: string): string | null => {
+    const bookData = BookChapterList[bookCode as keyof typeof BookChapterList];
+    if (bookData && bookData.segments) {
+      // Find the first segment that starts with 'S' (story)
+      return bookData.segments.find(seg => seg.startsWith('S')) || null;
+    }
+    return null;
+  };
+
+  // Handle Start Reading button press
+  const handleStartReading = () => {
+    const bookCode = getBookFromIntroId(id);
+    if (bookCode) {
+      const firstStorySegment = getFirstStorySegment(bookCode);
+      if (firstStorySegment) {
+        const segmentData = SegmentTitles[firstStorySegment as keyof typeof SegmentTitles];
+        if (segmentData) {
+          setSelectedSegmentId(firstStorySegment);
+          setSelectedSegmentTitle(segmentData.title);
+          setSelectedSegmentRef((segmentData as any).ref || '');
+          setShowReadingModeModal(true);
+        }
+      }
+    }
+  };
+
+  // Reading Mode Modal Handlers
+  const handleIndividualReading = async () => {
+    setShowReadingModeModal(false);
+    
+    router.push({
+      pathname: "/[segment]",
+      params: {
+        segment: `ENG-NLT-${selectedSegmentId}`,
+        book: getBookFromIntroId(id) || '',
+        context: 'main'
+      }
+    });
+  };
+
+  const handleGroupReading = () => {
+    setShowReadingModeModal(false);
+    router.push({
+      pathname: '/group-setup' as any,
+      params: {
+        storyId: selectedSegmentId,
+        storyTitle: selectedSegmentTitle,
+        scriptureReference: selectedSegmentRef,
+      }
+    });
+  };
+
+  const handleCancelModal = () => {
+    setShowReadingModeModal(false);
+  };
 
   // Add safety check for content
   if (!content || !Array.isArray(content)) {
@@ -180,40 +361,58 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData }) => {
       ]}>
         {content.map((block: any, index: number) => {
           // Add safety check for block
-          if (!block || !block.children) {
+          if (!block) {
             return null;
           }
+          
+          // Handle different types of intro content blocks
+          if (block.type === 'bulleted-list') {
+            return <IntroList key={`bl-${index}`} items={block.children || []} isTablet={isIPad} />;
+          }
+          if (block.type === 'numbered-list') {
+            return <IntroList key={`ol-${index}`} ordered items={block.children || []} isTablet={isIPad} />;
+          }
+          if (block.type === 'table') {
+            return <IntroTable key={`tbl-${index}`} rows={block.children || []} isTablet={isIPad} />;
+          }
+          
+          // For all other content types (ht, hs, s1, s2, paragraph, etc.)
           return (
-            <IntroBlockComponent 
-              key={`${(block as any).id || index}-${index}`} 
-              {...block} 
+            <IntroContentChildComponent
+              key={`${(block as any).id || index}-${index}`}
+              type={block.type}
+              children={block.children}
+              text={block.children?.[0]?.text}
+              isTablet={isIPad}
             />
           );
         })}
       </View>
       
-      {/* Next Story Button */}
+      {/* Source Comparison Section */}
+      <SourceComparison sources={sources} isTablet={isIPad} />
+      
+      {/* Start Reading Button */}
       <View style={styles.nextStoryContainer}>
         <TouchableOpacity 
-          style={[styles.nextStoryButton, { backgroundColor: colors.primary }]}
-          onPress={() => {
-            // Find the first story segment for this book
-            // Extract the book number from the introduction ID (e.g., "I001" -> "001")
-            const bookNumber = id.substring(1).padStart(3, '0');
-            const firstStoryId = `S${bookNumber}`;
-            router.push({
-              pathname: "/[segment]",
-              params: {
-                segment: `ENG-NLT-${firstStoryId}`,
-                book: ''
-              }
-            });
-          }}
+          style={styles.playButton}
+          onPress={handleStartReading}
         >
-          <Ionicons name="arrow-forward" size={20} color="white" />
-          <Text style={styles.nextStoryText}>Start Reading</Text>
+          <Ionicons name="play" size={isIPad ? 32 : 28} color="white" />
         </TouchableOpacity>
+        <Text style={styles.playButtonText}>Start Reading</Text>
       </View>
+
+      {/* Reading Mode Modal */}
+      <ReadingModeModal
+        visible={showReadingModeModal && !!selectedSegmentId}
+        storyTitle={selectedSegmentTitle}
+        scriptureReference={selectedSegmentRef}
+        storyId={selectedSegmentId || ''}
+        onIndividual={handleIndividualReading}
+        onGroup={handleGroupReading}
+        onCancel={handleCancelModal}
+      />
     </View>
   );
 };
