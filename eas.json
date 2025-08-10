@@ -1,27 +1,42 @@
 {
   "cli": {
-    "version": ">= 3.13.3"
+    "version": ">= 9.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal"
     },
-    "development-public": {
-      "developmentClient": true,
-      "distribution": "store"
-    },
     "preview": {
-      "distribution": "internal"
-    },
-    "testflight": {
-      "distribution": "store",
+      "distribution": "internal",
       "ios": {
         "buildConfiguration": "Release"
       }
     },
     "production": {
-      "distribution": "store"
+      "distribution": "store",
+      "autoIncrement": true,
+      "ios": {
+        "buildConfiguration": "Release",
+        "scheme": "SourceViewTogether"
+      }
+    },
+    "production-simulator": {
+      "extends": "production",
+      "ios": {
+        "simulator": true,
+        "buildConfiguration": "Release"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "sourceviewbible@gmail.com",
+        "ascAppId": "placeholder-app-store-connect-id",
+        "appleTeamId": "placeholder-team-id"
+      }
     }
   }
 }

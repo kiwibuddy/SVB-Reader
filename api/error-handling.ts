@@ -1,5 +1,6 @@
 import { databaseManager } from './database-manager';
-import logger from '@/utils/logger';import { settingsHelpers } from '@/services/settings-manager';
+import logger from '@/utils/logger';
+import { settingsHelpers } from '@/services/settings-manager';
 
 // ============================================================================
 // ERROR HANDLING AND ROLLBACK MECHANISMS

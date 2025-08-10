@@ -1,7 +1,7 @@
 {
   "name": "sourceview-together",
   "main": "expo-router/entry",
-  "version": "1.0.5",
+  "version": "1.0.0",
   "scripts": {
     "start": "npx expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -9,7 +9,16 @@
     "ios": "npx expo start --ios",
     "web": "npx expo start --web",
     "test": "jest --watchAll",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "build:ios": "eas build --platform ios --profile production",
+    "build:ios-preview": "eas build --platform ios --profile preview",
+    "build:ios-simulator": "eas build --platform ios --profile production-simulator",
+    "submit:ios": "eas submit --platform ios --profile production",
+    "update:production": "eas update --branch production",
+    "update:preview": "eas update --branch preview",
+    "prebuild": "expo prebuild --clean",
+    "build:local": "expo run:ios --configuration Release",
+    "prepare:appstore": "node scripts/prepare-app-store-build.js"
   },
   "jest": {
     "preset": "jest-expo"

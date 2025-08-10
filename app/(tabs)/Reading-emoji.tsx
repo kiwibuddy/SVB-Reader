@@ -1,5 +1,6 @@
 "use client"
-import logger from '@/utils/logger';import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
+import logger from '@/utils/logger';
 import {
   View,
   Text,

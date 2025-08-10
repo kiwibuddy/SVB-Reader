@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import logger from '@/utils/logger';import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
+import logger from '@/utils/logger';
 import {
   View,
   Text,
