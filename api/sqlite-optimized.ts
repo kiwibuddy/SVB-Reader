@@ -86,7 +86,7 @@ class BatchProcessor {
 
     this.batchTimeout = setTimeout(() => {
       this.executeBatch();
-    }, this.batchDelay);
+    }, this.batchDelay) as any;
   }
 
   private async executeBatch(): Promise<void> {
@@ -116,7 +116,8 @@ class BatchProcessor {
       await db.runAsync('COMMIT');
     } catch (error) {
       console.error('Error executing batch operations:', error);
-      await db.runAsync('ROLLBACK');
+      const rollbackDb = databaseManager.getDatabase();
+      await rollbackDb.runAsync('ROLLBACK');
     }
   }
 }
@@ -168,14 +169,14 @@ export const getSegmentCompletionStatusOptimized = async (
       );
     } else if (context === 'today') {
       const today = new Date().toISOString().split('T')[0];
-      result = await db.getFirstAsync<{ isCurrentlyCompleted: number }>(
-        'SELECT isCurrentlyCompleted FROM segment_completion WHERE segmentID = ? AND completionDate LIKE ? AND completionType = "main"',
+      result = await db.getFirstAsync<{ isCompleted: number }>(
+        'SELECT isCompleted FROM completedSegments WHERE segmentID = ? AND completionDate LIKE ?',
         [segmentId, `${today}%`]
       );
     }
 
     const completionData = {
-      isCompleted: context === 'today' ? result?.isCurrentlyCompleted === 1 : result?.isCompleted === 1,
+      isCompleted: result?.isCompleted === 1,
       color: null,
     };
 

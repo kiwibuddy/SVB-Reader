@@ -100,9 +100,20 @@ export async function getAllSettings(): Promise<UserSettings> {
     });
     
     const settingsEntries = await Promise.all(settingsPromises);
-    const settings = Object.fromEntries(settingsEntries) as UserSettings;
+    const settings = Object.fromEntries(settingsEntries) as Record<string, any>;
     
-    return settings;
+    // Type-safe conversion to UserSettings
+    const typedSettings: UserSettings = {
+      isDarkMode: settings.isDarkMode ?? DEFAULT_SETTINGS.isDarkMode,
+      language: settings.language ?? DEFAULT_SETTINGS.language,
+      isOrientationLocked: settings.isOrientationLocked ?? DEFAULT_SETTINGS.isOrientationLocked,
+      groupUserName: settings.groupUserName ?? DEFAULT_SETTINGS.groupUserName,
+      notificationsEnabled: settings.notificationsEnabled ?? DEFAULT_SETTINGS.notificationsEnabled,
+      fontSize: settings.fontSize ?? DEFAULT_SETTINGS.fontSize,
+      autoBackup: settings.autoBackup ?? DEFAULT_SETTINGS.autoBackup
+    };
+    
+    return typedSettings;
   } catch (error) {
     console.error('Error getting all settings:', error);
     return DEFAULT_SETTINGS;
@@ -167,7 +178,7 @@ export async function importSettings(settingsJson: string): Promise<void> {
     
     for (const key of validKeys) {
       if (key in settings && settings[key] !== undefined) {
-        filteredSettings[key] = settings[key];
+        (filteredSettings as any)[key] = settings[key];
       }
     }
     
@@ -188,8 +199,8 @@ export function getSettingsKeys(): string[] {
 /**
  * Check if a key belongs to settings
  */
-export function isSettingsKey(key: string): boolean {
-  return Object.values(STORAGE_KEYS).includes(key);
+export function isSettingsKey(key: string): key is SettingsKey {
+  return key in STORAGE_KEYS;
 }
 
 // ============================================================================
@@ -240,5 +251,38 @@ export const settingsHelpers = {
   
   async setFontSize(size: 'small' | 'medium' | 'large'): Promise<void> {
     return setSetting('fontSize', size);
+  },
+
+  // General setting access
+  async setSetting<K extends SettingsKey>(key: K, value: UserSettings[K]): Promise<void> {
+    return setSetting(key, value);
+  },
+
+  // Export/Import functions for backup/restore
+  async exportSettings(): Promise<string> {
+    try {
+      const allSettings: Partial<UserSettings> = {};
+      for (const key of Object.keys(STORAGE_KEYS) as SettingsKey[]) {
+        (allSettings as any)[key] = await getSetting(key);
+      }
+      return JSON.stringify(allSettings);
+    } catch (error) {
+      console.warn('Error exporting settings:', error);
+      throw error;
+    }
+  },
+
+  async importSettings(settingsJson: string): Promise<void> {
+    try {
+      const settings = JSON.parse(settingsJson) as Partial<UserSettings>;
+      for (const [key, value] of Object.entries(settings)) {
+        if (isSettingsKey(key) && value !== undefined) {
+          await setSetting(key as SettingsKey, value as any);
+        }
+      }
+    } catch (error) {
+      console.warn('Error importing settings:', error);
+      throw error;
+    }
   }
 };

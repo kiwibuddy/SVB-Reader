@@ -1,5 +1,9 @@
 import { useEffect, useRef, useCallback } from 'react';
-import logger from '@/utils/logger';import { AppState } from 'react-native';
+import logger from '@/utils/logger';
+import { AppState } from 'react-native';
+
+// Type for React Native's setTimeout return value
+type TimeoutHandle = ReturnType<typeof setTimeout>;
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 
 interface RealTimeUpdateOptions {
@@ -44,8 +48,8 @@ export const useRealTimeUpdates = (
   } = useSQLiteGlobalContext();
 
   // Refs for managing intervals and timeouts
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<TimeoutHandle | null>(null);
+  const debounceTimeoutRef = useRef<TimeoutHandle | null>(null);
   const lastRefreshRef = useRef<Date>(new Date());
   const isRefreshingRef = useRef(false);
 

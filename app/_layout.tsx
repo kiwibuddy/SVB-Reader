@@ -13,6 +13,7 @@ import { GroupReadingProvider } from '@/context/GroupReadingContext';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { initializeDatabaseWithDiagnostics } from '@/api/database-initialization';
+import * as Updates from 'expo-updates';
 import '../config/i18n'; // Import this to initialize i18next
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -45,7 +46,29 @@ function AppContent() {
       }
     };
     
+    const checkForUpdates = async () => {
+      try {
+        if (!__DEV__) {
+          logger.info('🔄 Checking for OTA updates...');
+          const update = await Updates.checkForUpdateAsync();
+          logger.info('📱 Update check result:', update);
+          
+          if (update.isAvailable) {
+            logger.info('⬇️ Update available, fetching...');
+            await Updates.fetchUpdateAsync();
+            logger.info('🔄 Update fetched, reloading app...');
+            await Updates.reloadAsync();
+          } else {
+            logger.info('✅ No updates available');
+          }
+        }
+      } catch (error) {
+        logger.error('❌ Update check failed:', error);
+      }
+    };
+    
     initializeDatabase();
+    checkForUpdates();
   }, []);
   
   if (dbError) {

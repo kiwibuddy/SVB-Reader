@@ -2,17 +2,22 @@
   "expo": {
     "name": "SourceView Together",
     "slug": "SVB-Youth",
-    "version": "1.0.0",
+    "version": "1.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "updates": {
-      "enabled": false
+      "enabled": true,
+      "checkAutomatically": "ON_APP_LOAD",
+      "fallbackToCacheTimeout": 10000,
+      "requestHeaders": {
+        "expo-platform": "ios"
+      }
     },
     "runtimeVersion": {
-      "policy": "appVersion"
+      "policy": "fingerprint"
     },
     "description": "Experience the Bible in community with SourceView Together - a revolutionary app that transforms solo Bible reading into dynamic group experiences. Featuring role-based reading, emoji reactions, reading plans, challenges, and progress tracking for individuals and groups.",
     "keywords": ["bible", "scripture", "reading", "christian", "group", "community", "devotional", "spiritual", "faith", "religion", "study", "prayer"],

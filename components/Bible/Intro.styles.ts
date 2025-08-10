@@ -111,29 +111,25 @@ export const createStyles = (colors: any, isTablet: boolean = false) => StyleShe
     paddingHorizontal: 16,
     paddingBottom: 100,
   },
-  playButton: {
-    width: isTablet ? 80 : 70,
-    height: isTablet ? 80 : 70,
-    borderRadius: isTablet ? 40 : 35,
-    backgroundColor: '#6B7280', // Gray color like the rest of the app
-    justifyContent: 'center',
+  startReadingButton: {
+    backgroundColor: "#FF5733", // Same orange color as home page
+    paddingVertical: isTablet ? 14 : 12,
+    paddingHorizontal: isTablet ? 28 : 24,
+    borderRadius: isTablet ? 16 : 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+    flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
-    marginBottom: 12,
+    justifyContent: 'center',
+    gap: 8,
   },
-  playButtonText: {
-    color: 'white',
+  startReadingText: {
+    color: "#FFF",
     fontSize: isTablet ? 18 : 16,
-    fontWeight: '600',
-    marginTop: 4,
-    textAlign: 'center',
+    fontWeight: "700",
   },
   // List styles
   listContainer: {

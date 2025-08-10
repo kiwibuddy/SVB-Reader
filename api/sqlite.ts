@@ -270,18 +270,18 @@ export const getSegmentCompletionStatus = async (
         [challengeId, segmentId]
       );
     } else if (context === 'today') {
-      // For today's reading, check if it was completed today
+      // For today's reading, check if it was completed today in the completedSegments table
       const today = new Date().toISOString().split('T')[0];
-                  result = await db.getFirstAsync<{ isCurrentlyCompleted: number }>(
-              'SELECT isCurrentlyCompleted FROM segment_completion WHERE segmentID = ? AND completionDate LIKE ? AND completionType = "main"',
-              [segmentId, `${today}%`]
-            );
+      result = await db.getFirstAsync<{ isCompleted: number }>(
+        'SELECT isCompleted FROM completedSegments WHERE segmentID = ? AND completionDate LIKE ?',
+        [segmentId, `${today}%`]
+      );
     }
 
     // Handle different result types based on context
     if (context === 'today') {
       return {
-        isCompleted: result?.isCurrentlyCompleted === 1,
+        isCompleted: result?.isCompleted === 1,
         color: null
       };
     } else {
@@ -1398,3 +1398,132 @@ export async function getActiveChallengesFromDB(): Promise<Record<string, any>> 
     return {};
   }
 }
+
+// ============================================================================
+// DAILY PROGRESSION FUNCTIONS
+// ============================================================================
+
+// Get today's expected segment for a plan (daily progression)
+export const getTodaysSegmentForPlan = async (planId: string): Promise<{ segmentId: string; title: string } | null> => {
+  try {
+    const ReadingPlansChallenges = require('../assets/data/ReadingPlansChallenges.json');
+    const SegmentTitles = require('../assets/data/SegmentTitles.json');
+    
+    const plan = ReadingPlansChallenges.plans.find((p: any) => p.id === planId);
+    if (!plan?.segments) return null;
+    
+    // Get plan start date from database
+    const activePlan = await getActivePlanFromDB();
+    if (!activePlan || activePlan.planId !== planId) return null;
+    
+    const startDate = new Date(activePlan.dateStarted);
+    const today = new Date();
+    
+    // Calculate days since plan started (0-based)
+    const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysSinceStart < 0) return null; // Plan hasn't started yet
+    
+    // Get all segments from the plan
+    const allSegments = Object.values(plan.segments)
+      .flatMap((book: any) => book?.segments || [])
+      .filter((seg: string) => !seg.startsWith('I')); // Filter out introductions
+    
+    // Get today's segment based on daily progression
+    const todaysSegmentIndex = daysSinceStart % allSegments.length;
+    const todaysSegmentId = allSegments[todaysSegmentIndex];
+    
+    if (todaysSegmentId) {
+      const segmentData = SegmentTitles[todaysSegmentId as keyof typeof SegmentTitles];
+      return {
+        segmentId: todaysSegmentId,
+        title: segmentData?.title || 'Unknown Story'
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    logger.error('Error getting today\'s segment for plan:', error);
+    return null;
+  }
+};
+
+// Get today's expected segment for a challenge (daily progression)
+export const getTodaysSegmentForChallenge = async (challengeId: string): Promise<{ segmentId: string; title: string } | null> => {
+  try {
+    const ReadingPlansChallenges = require('../assets/data/ReadingPlansChallenges.json');
+    const SegmentTitles = require('../assets/data/SegmentTitles.json');
+    
+    const challenge = ReadingPlansChallenges.challenges.find((c: any) => c.id === challengeId);
+    if (!challenge?.segments) return null;
+    
+    // Get challenge start date from database
+    const activeChallenges = await getActiveChallengesFromDB();
+    const activeChallenge = activeChallenges[challengeId];
+    if (!activeChallenge) return null;
+    
+    const startDate = new Date(activeChallenge.dateStarted);
+    const today = new Date();
+    
+    // Calculate days since challenge started (0-based)
+    const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysSinceStart < 0) return null; // Challenge hasn't started yet
+    
+    // Get all segments from the challenge
+    const allSegments = Object.values(challenge.segments)
+      .flatMap((book: any) => book?.segments || [])
+      .filter((seg: string) => !seg.startsWith('I')); // Filter out introductions
+    
+    // Get today's segment based on daily progression
+    const todaysSegmentIndex = daysSinceStart % allSegments.length;
+    const todaysSegmentId = allSegments[todaysSegmentIndex];
+    
+    if (todaysSegmentId) {
+      const segmentData = SegmentTitles[todaysSegmentId as keyof typeof SegmentTitles];
+      return {
+        segmentId: todaysSegmentId,
+        title: segmentData?.title || 'Unknown Story'
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    logger.error('Error getting today\'s segment for challenge:', error);
+    return null;
+  }
+};
+
+// Check if today's plan segment was completed today
+export const isPlanDailyCompleted = async (planId: string, segmentId: string): Promise<boolean> => {
+  try {
+    const db = databaseManager.getDatabase();
+    const today = new Date().toISOString().split('T')[0];
+    const result = await db.getFirstAsync<{ isCompleted: number }>(
+      'SELECT isCompleted FROM reading_plan_progress WHERE planID = ? AND segmentID = ? AND completionDate LIKE ?',
+      [planId, segmentId, `${today}%`]
+    );
+    
+    return result?.isCompleted === 1;
+  } catch (error) {
+    logger.error('Error checking plan daily completion:', error);
+    return false;
+  }
+};
+
+// Check if today's challenge segment was completed today
+export const isChallengeDailyCompleted = async (challengeId: string, segmentId: string): Promise<boolean> => {
+  try {
+    const db = databaseManager.getDatabase();
+    const today = new Date().toISOString().split('T')[0];
+    const result = await db.getFirstAsync<{ isCompleted: number }>(
+      'SELECT isCompleted FROM reading_challenge_progress WHERE challengeID = ? AND segmentID = ? AND completionDate LIKE ?',
+      [challengeId, segmentId, `${today}%`]
+    );
+    
+    return result?.isCompleted === 1;
+  } catch (error) {
+    logger.error('Error checking challenge daily completion:', error);
+    return false;
+  }
+};

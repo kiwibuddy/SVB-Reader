@@ -174,7 +174,7 @@ export async function getDatabaseInfo(): Promise<DatabaseInfo> {
       version: versionInfo?.version || 0,
       schemaHash: versionInfo?.schemaHash || 'unknown',
       createdAt: versionInfo?.createdAt || 'unknown',
-      lastMigration: versionInfo?.lastMigration,
+      lastMigration: versionInfo?.lastMigration || null,
       totalTables: tables.length,
       tablesSummary
     };
@@ -240,7 +240,7 @@ export async function analyzeDataConflicts(): Promise<ConflictAnalysis> {
     return {
       hasConflicts: conflicts.length > 0,
       conflicts,
-      asyncStorageKeys: asyncKeys,
+      asyncStorageKeys: [...asyncKeys],
       sqliteTableCount: tableCount?.count || 0,
       recommendations
     };
@@ -264,14 +264,14 @@ async function checkSegmentCompletionConflicts(
       ? asyncData.completedSegments 
       : [];
     
-    const sqliteCompleted = await db.getAllAsync<{ segmentID: string }>(
+    const sqliteCompleted = await db.getAllAsync(
       'SELECT segmentID FROM completedSegments WHERE isCompleted = 1'
-    );
+    ) as { segmentID: string }[];
     
-    const sqliteCompletedIds = sqliteCompleted.map(s => s.segmentID);
+    const sqliteCompletedIds = sqliteCompleted.map((s: { segmentID: string }) => s.segmentID);
     
-    const onlyInAsync = asyncCompleted.filter(id => !sqliteCompletedIds.includes(id));
-    const onlyInSqlite = sqliteCompletedIds.filter(id => !asyncCompleted.includes(id));
+    const onlyInAsync = asyncCompleted.filter((id: string) => !sqliteCompletedIds.includes(id));
+    const onlyInSqlite = sqliteCompletedIds.filter((id: string) => !asyncCompleted.includes(id));
     
     if (onlyInAsync.length > 0 || onlyInSqlite.length > 0) {
       conflicts.push({

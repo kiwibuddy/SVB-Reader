@@ -383,7 +383,7 @@ export const testOptimizedOperations = async (): Promise<TestSuite> => {
         // Test cache set/get
         queryCache.set('test_key', { test: 'data' }, 60000);
         const cached = queryCache.get('test_key');
-        if (!cached || cached.test !== 'data') {
+        if (!cached || (cached as any).test !== 'data') {
           throw new Error('Cache get/set failed');
         }
         

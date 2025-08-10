@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import logger from '@/utils/logger';import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar, useWindowDimensions } from 'react-native';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import BibleData from "@/assets/data/newBibleNLT1.json"
@@ -182,7 +182,7 @@ export default function BibleScreen() {
     const timer1 = setTimeout(scrollToTop, 50);
     const timer2 = setTimeout(scrollToTop, 200);
     
-    logger.info(`📜 [BibleScreen] Resetting scroll position for segment ${segID}`);
+    console.log(`📜 [BibleScreen] Resetting scroll position for segment ${segID}`);
     
     return () => {
       clearTimeout(timer1);
@@ -319,7 +319,12 @@ export default function BibleScreen() {
     <View>
       <View style={styles.headerSpacer} />
       {segID[0] === "I" && isIntroType(segmentData) && (
-        <Intro segmentData={{...segmentData, id: segID}} />
+        <Intro 
+          segmentData={{...segmentData, id: segID}} 
+          context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
+          planId={planId as string}
+          challengeId={challengeId as string}
+        />
       )}
       {segID[0] === "S" && isSegmentType(segmentData) && (
         <>

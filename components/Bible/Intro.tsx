@@ -11,12 +11,16 @@ import { parseReference } from '@/utils/parseReference';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BookChapterList from '@/assets/data/BookChapterList.json';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
+import readingPlansData from '@/assets/data/ReadingPlansChallenges.json';
 
 // Define the props for Intro component
 interface IntroProps {
     segmentData: IntroType & {
         id: string;
     };
+    context?: 'main' | 'plan' | 'challenge';
+    planId?: string;
+    challengeId?: string;
 }
 
 const IntroContentChildComponent: React.FC<any> = ({
@@ -34,26 +38,14 @@ const IntroContentChildComponent: React.FC<any> = ({
   // Handle rendering children properly - some blocks have multiple text segments
   const renderChildren = () => {
     if (text) {
-      // If text prop is provided directly, use it (strip out any HTML video content)
-      const cleanedText = text
-        .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
-        .replace(/<video[^>]*>.*?<\/video>/gi, '')
-        .replace(/<embed[^>]*>/gi, '')
-        .replace(/<object[^>]*>.*?<\/object>/gi, '');
-      return cleanedText;
+      // If text prop is provided directly, use it
+      return text;
     }
     
     if (children && Array.isArray(children)) {
       // Map through all children and render each text segment
       return children.map((child: any, index: number) => {
         if (!child || !child.text) return null;
-        
-        // Clean the child text to remove any HTML video content
-        const cleanedChildText = child.text
-          .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
-          .replace(/<video[^>]*>.*?<\/video>/gi, '')
-          .replace(/<embed[^>]*>/gi, '')
-          .replace(/<object[^>]*>.*?<\/object>/gi, '');
         
         // Apply different styling based on child properties
         const childStyle = [
@@ -64,7 +56,7 @@ const IntroContentChildComponent: React.FC<any> = ({
         
         return (
           <Text key={index} style={childStyle}>
-            {cleanedChildText}
+            {child.text}
           </Text>
         );
       });
@@ -80,15 +72,9 @@ const IntroContentChildComponent: React.FC<any> = ({
     return null;
   }
   
-  // For markdown content, use the markdown renderer (but strip out video content)
+  // For markdown content, use the markdown renderer
   const firstChildText = text || (children && children[0] && children[0].text) || '';
   if (type === 'markdown' || (firstChildText && typeof firstChildText === 'string' && (firstChildText.includes('**') || firstChildText.includes('#')))) {
-    // Remove video/iframe HTML content
-    const cleanText = firstChildText
-      .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
-      .replace(/<video[^>]*>.*?<\/video>/gi, '')
-      .replace(/<embed[^>]*>/gi, '')
-      .replace(/<object[^>]*>.*?<\/object>/gi, '');
     return (
       <View style={styles.childContainer}>
         <Markdown style={{
@@ -107,7 +93,7 @@ const IntroContentChildComponent: React.FC<any> = ({
           em: { fontStyle: 'italic', color: colors.text },
           link: { color: colors.primary, textDecorationLine: 'underline' },
         }}>
-          {cleanText}
+          {firstChildText}
         </Markdown>
       </View>
     );
@@ -127,16 +113,9 @@ const IntroContentChildComponent: React.FC<any> = ({
       ...(type === 'subtitle' && styles.subtitle),
     };
     
-    // Clean title text to remove any HTML video content
-    const cleanTitleText = firstChildText
-      .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
-      .replace(/<video[^>]*>.*?<\/video>/gi, '')
-      .replace(/<embed[^>]*>/gi, '')
-      .replace(/<object[^>]*>.*?<\/object>/gi, '');
-    
     return (
       <View style={styles.childContainer}>
-        <Text style={titleStyle}>{cleanTitleText}</Text>
+        <Text style={titleStyle}>{firstChildText}</Text>
       </View>
     );
   }
@@ -214,7 +193,7 @@ const SourceComparison: React.FC<{ sources: any; isTablet?: boolean }> = ({ sour
   const totalWords = sortedSources.reduce((sum, source) => sum + source.words, 0);
 
   return (
-    <View style={{ marginVertical: 16, paddingHorizontal: 16 }}>
+    <View style={styles.childContainer}>
       <Text style={[styles.heading, { textAlign: 'left' }]}>Speaker Analysis</Text>
       <Text style={[styles.text, { marginBottom: 12, color: colors.secondary }]}>
         Top speakers in this book by word count
@@ -256,7 +235,7 @@ const SourceComparison: React.FC<{ sources: any; isTablet?: boolean }> = ({ sour
   );
 };
 
-const IntroComponent: React.FC<IntroProps> = ({ segmentData }) => {
+const IntroComponent: React.FC<IntroProps> = ({ segmentData, context = 'main', planId, challengeId }) => {
   const { width: screenWidth } = useWindowDimensions();
   const isIPad = Platform.OS === 'ios' && Platform.isPad || screenWidth > 768;
   const { content, id, sources } = segmentData;
@@ -281,11 +260,55 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData }) => {
     return null;
   };
 
-  // Get the first story segment for a book
-  const getFirstStorySegment = (bookCode: string): string | null => {
+  // Get the next segment based on context (plan, challenge, or first story)
+  const getNextSegment = (bookCode: string): string | null => {
+    // If we're in a reading plan context, get the next segment from the plan
+    if (context === 'plan' && planId) {
+      const plan = readingPlansData.plans.find(p => p.id === planId);
+      if (plan) {
+        const allPlanSegments = Object.values(plan.segments)
+          .flatMap(book => book?.segments || [])
+          .filter(seg => seg.startsWith('S')); // Only story segments
+        
+        // Find the first story segment for this book in the plan
+        const bookData = BookChapterList[bookCode as keyof typeof BookChapterList];
+        if (bookData && bookData.segments) {
+          const bookStorySegments = bookData.segments.filter(seg => seg.startsWith('S'));
+          // Return the first story segment from this book that's in the plan
+          for (const segment of bookStorySegments) {
+            if (allPlanSegments.includes(segment)) {
+              return segment;
+            }
+          }
+        }
+      }
+    }
+    
+    // If we're in a reading challenge context, get the next segment from the challenge
+    if (context === 'challenge' && challengeId) {
+      const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+      if (challenge) {
+        const allChallengeSegments = Object.values(challenge.segments)
+          .flatMap(book => book?.segments || [])
+          .filter(seg => seg.startsWith('S')); // Only story segments
+        
+        // Find the first story segment for this book in the challenge
+        const bookData = BookChapterList[bookCode as keyof typeof BookChapterList];
+        if (bookData && bookData.segments) {
+          const bookStorySegments = bookData.segments.filter(seg => seg.startsWith('S'));
+          // Return the first story segment from this book that's in the challenge
+          for (const segment of bookStorySegments) {
+            if (allChallengeSegments.includes(segment)) {
+              return segment;
+            }
+          }
+        }
+      }
+    }
+    
+    // Default: get the first story segment for this book
     const bookData = BookChapterList[bookCode as keyof typeof BookChapterList];
     if (bookData && bookData.segments) {
-      // Find the first segment that starts with 'S' (story)
       return bookData.segments.find(seg => seg.startsWith('S')) || null;
     }
     return null;
@@ -295,11 +318,11 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData }) => {
   const handleStartReading = () => {
     const bookCode = getBookFromIntroId(id);
     if (bookCode) {
-      const firstStorySegment = getFirstStorySegment(bookCode);
-      if (firstStorySegment) {
-        const segmentData = SegmentTitles[firstStorySegment as keyof typeof SegmentTitles];
+      const nextSegment = getNextSegment(bookCode);
+      if (nextSegment) {
+        const segmentData = SegmentTitles[nextSegment as keyof typeof SegmentTitles];
         if (segmentData) {
-          setSelectedSegmentId(firstStorySegment);
+          setSelectedSegmentId(nextSegment);
           setSelectedSegmentTitle(segmentData.title);
           setSelectedSegmentRef((segmentData as any).ref || '');
           setShowReadingModeModal(true);
@@ -312,13 +335,24 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData }) => {
   const handleIndividualReading = async () => {
     setShowReadingModeModal(false);
     
+    const params: any = {
+      segment: `ENG-NLT-${selectedSegmentId}`,
+      book: getBookFromIntroId(id) || '',
+      context: context,
+      freshStart: Date.now().toString()
+    };
+    
+    // Add context-specific parameters
+    if (context === 'plan' && planId) {
+      params.planId = planId;
+    }
+    if (context === 'challenge' && challengeId) {
+      params.challengeId = challengeId;
+    }
+    
     router.push({
       pathname: "/[segment]",
-      params: {
-        segment: `ENG-NLT-${selectedSegmentId}`,
-        book: getBookFromIntroId(id) || '',
-        context: 'main'
-      }
+      params
     });
   };
 
@@ -395,12 +429,12 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData }) => {
       {/* Start Reading Button */}
       <View style={styles.nextStoryContainer}>
         <TouchableOpacity 
-          style={styles.playButton}
+          style={styles.startReadingButton}
           onPress={handleStartReading}
         >
-          <Ionicons name="play" size={isIPad ? 32 : 28} color="white" />
+          <Ionicons name="play" size={isIPad ? 20 : 18} color="white" />
+          <Text style={styles.startReadingText}>Start Reading</Text>
         </TouchableOpacity>
-        <Text style={styles.playButtonText}>Start Reading</Text>
       </View>
 
       {/* Reading Mode Modal */}
