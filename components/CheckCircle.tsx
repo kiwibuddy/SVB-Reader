@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, Animated, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Animated, Modal, ActivityIndicator, InteractionManager } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
@@ -20,6 +20,7 @@ import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
 import QRCode from 'react-native-qrcode-svg';
 import CompletionBanner from '@/components/Bible/CompletionBanner';
 import { ANIMATION } from '@/services/animation';
+import { showToast, showErrorToast } from '@/utils/toastUtils';
 
 interface CheckCircleProps {
   segmentId: string;
@@ -60,6 +61,7 @@ export default function CheckCircle({
   const [showConfetti, setShowConfetti] = useState(false);
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { freshStart } = params;
   const { colors } = useAppSettings();
   const { currentSession, isHost, currentRole, generateCompletionQRCode } = useGroupReading();
   const [showScanner, setShowScanner] = useState(false);
@@ -92,18 +94,40 @@ export default function CheckCircle({
   // Load completion status when component mounts
   useEffect(() => {
     const initializeSegment = async () => {
-      // Load current completion status for this context
-      const status = await getSegmentCompletionStatus(segmentId, context, planId, challengeId);
-      setIsCompleted(resetVisualStateOnMount ? false : status.isCompleted);
-      setCompletionColor(status.color);
+      // Set visual state immediately if reset is requested
+      if (resetVisualStateOnMount) {
+        console.log(`🔄 [CheckCircle] Immediately resetting visual state for segment ${segmentId} ${freshStart ? '(Fresh Start)' : ''}`);
+        setIsCompleted(false);
+        setCompletionColor(null);
+      }
       
-      // Load read count
-      const count = await getSegmentReadCount(segmentId);
-      setReadCount(count);
+      // Load read count immediately (should always be visible)
+      try {
+        const count = await getSegmentReadCount(segmentId);
+        setReadCount(count);
+        console.log(`📊 [CheckCircle] Read count loaded: ${count} for segment ${segmentId}`);
+      } catch (error) {
+        console.error('Error loading read count:', error);
+      }
+      
+      // Defer completion status queries to avoid scheduling during insertion phase
+      InteractionManager.runAfterInteractions(async () => {
+        try {
+          // Load current completion status for this context
+          const status = await getSegmentCompletionStatus(segmentId, context, planId, challengeId);
+          // Only update visual state if reset is not requested
+          if (!resetVisualStateOnMount) {
+            setIsCompleted(status.isCompleted);
+            setCompletionColor(status.color);
+          }
+        } catch (error) {
+          console.error('Error initializing segment completion status:', error);
+        }
+      });
     };
     
     initializeSegment();
-  }, [segmentId, context, planId, challengeId, resetVisualStateOnMount]);
+  }, [segmentId, context, planId, challengeId, resetVisualStateOnMount, freshStart]);
 
   const startConfettiCelebration = (): Promise<void> => {
     return new Promise((resolve) => {
@@ -199,7 +223,11 @@ export default function CheckCircle({
       );
 
       Animated.parallel(staggeredAnimations).start(() => {
-        setShowConfetti(false);
+        // Defer state update to avoid scheduling during insertion phase
+        InteractionManager.runAfterInteractions(() => {
+          setShowConfetti(false);
+        });
+        // But resolve immediately to allow navigation to proceed
         resolve();
       });
     });
@@ -213,30 +241,51 @@ export default function CheckCircle({
 
     // Group-reading host flow: generate completion QR during reading
     if ((forceGroup || (!forceNormal && inGroupContext)) && isHost) {
+      // If modal is already showing, allow regeneration
+      if (showHostQRModal) {
+        console.log('🔄 Regenerating completion QR code...');
+      }
+      
       // Show loading overlay while session becomes ready and QR data is generated
       let generated = false;
       setHostQRData(null);
       setShowHostQRModal(false);
       setIsGenerating(true);
+      
       try {
         // Retry briefly in case currentSession has not propagated yet
-        for (let attempt = 0; attempt < 8 && !generated; attempt++) {
-          if (!currentSession) {
-            await new Promise(r => setTimeout(r, 200));
+        for (let attempt = 0; attempt < 10 && !generated; attempt++) {
+          if (!currentSession || !currentSession.id || !currentSession.storyId) {
+            console.log(`🔄 Waiting for session to be ready (attempt ${attempt + 1}/10)...`);
+            await new Promise(r => setTimeout(r, 300));
             continue;
           }
+          
+          console.log('✅ Session ready, generating completion QR code...');
           const qrData = await generateCompletionQRCode();
-          setHostQRData(qrData);
-          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
-          const count = await getGroupJoinerCompletionCount(currentSession.id, currentSession.storyId);
-          setJoinerScans(count);
-          generated = true;
+          
+          if (qrData && qrData.length > 0) {
+            setHostQRData(qrData);
+            try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+            const count = await getGroupJoinerCompletionCount(currentSession.id, currentSession.storyId);
+            setJoinerScans(count);
+            generated = true;
+            console.log('✅ Completion QR code generated successfully');
+          } else {
+            console.log('⚠️ Generated QR data is empty, retrying...');
+            await new Promise(r => setTimeout(r, 300));
+          }
         }
+        
         if (generated) {
           setShowHostQRModal(true);
+        } else {
+          console.error('🔴 Failed to generate QR code after 10 attempts');
+          await showErrorToast('Failed to generate QR code. Please try again.');
         }
       } catch (e) {
-        console.error('Error generating completion QR:', e);
+        console.error('🔴 Error generating completion QR:', e);
+        await showErrorToast('Error generating QR code. Please try again.');
       } finally {
         setIsGenerating(false);
       }
@@ -266,27 +315,46 @@ export default function CheckCircle({
         setShowCompletionBanner(true);
         await startConfettiCelebration();
 
-        // Non-blocking success toast
-        try {
-          const Toast = require('react-native-root-toast');
-          Toast.show('Story complete! Great job 🎉', {
-            duration: Toast.durations.SHORT,
-            position: Toast.positions.BOTTOM,
-          });
-        } catch {}
-
         // Add small delay to ensure database writes are complete before navigation
         await new Promise(resolve => setTimeout(resolve, 150));
 
-        // Navigate back to the source screen using push to maintain navigation stack
+        // Navigate back to the source screen with context-aware parameters
         if (params.planId || planId) {
-          router.push('/(tabs)/Plan');
+          router.push({
+            pathname: '/(tabs)/Plan',
+            params: { 
+              expandedPlan: planId || params.planId,
+              completedSegment: segmentId,
+              timestamp: Date.now().toString()
+            }
+          });
         } else if (params.challengeId || challengeId) {
-          router.push('/(tabs)/Reading-Challenges');
+          router.push({
+            pathname: '/(tabs)/Reading-Challenges',
+            params: { 
+              expandedChallenge: challengeId || params.challengeId,
+              completedSegment: segmentId,
+              timestamp: Date.now().toString()
+            }
+          });
         } else if (params.context === 'today' || context === 'today') {
-          router.push('/(tabs)/Navigation');
+          router.push({
+            pathname: '/(tabs)/Navigation',
+            params: { 
+              expandedBook: segmentId.substring(1, 4), // Extract book code from segment
+              completedSegment: segmentId,
+              timestamp: Date.now().toString()
+            }
+          });
         } else {
-          router.push('/(tabs)/Navigation');
+          router.push({
+            pathname: '/(tabs)/Navigation',
+            params: { 
+              expandedBook: segmentId.substring(1, 4),
+              completedSegment: segmentId,
+              timestamp: Date.now().toString()
+            }
+          });
         }
         
       } catch (error) {
@@ -302,7 +370,10 @@ export default function CheckCircle({
       try {
         if (currentSession) {
           const count = await getGroupJoinerCompletionCount(currentSession.id, currentSession.storyId);
-          setJoinerScans(count);
+          // Defer state update to avoid scheduling during insertion phase
+          InteractionManager.runAfterInteractions(() => {
+            setJoinerScans(count);
+          });
         }
       } catch {}
     };
@@ -391,18 +462,27 @@ export default function CheckCircle({
                   onClose={() => setShowScanner(false)}
                   onQRCodeScanned={async (data: string) => {
               try {
+                console.log('🔍 Joiner scanning QR code:', data.substring(0, 50) + '...');
+                
                 const completion = qrCodeDiscoveryManager.parseCompletionFromQRCode(data);
                 if (!completion) {
-                  // invalid payload
+                  console.error('🔴 Failed to parse completion QR code');
+                  await showErrorToast('Invalid completion code. Please try again.');
                   setShowScanner(false);
                   return;
                 }
+                
+                console.log('✅ Completion QR code parsed:', { sessionId: completion.sessionId, storyId: completion.storyId });
+                
                 // Validate against current session
                 if (!currentSession || completion.sessionId !== currentSession.id || completion.storyId !== currentSession.storyId) {
-                  try {
-                    const Toast = require('react-native-root-toast');
-                    Toast.show('This completion code is for a different session.', { duration: Toast.durations.SHORT, position: Toast.positions.BOTTOM });
-                  } catch {}
+                  console.error('🔴 Completion code session mismatch:', {
+                    expectedSessionId: currentSession?.id,
+                    actualSessionId: completion.sessionId,
+                    expectedStoryId: currentSession?.storyId,
+                    actualStoryId: completion.storyId
+                  });
+                  await showErrorToast('This completion code is for a different session.');
                   setShowScanner(false);
                   return;
                 }
@@ -419,20 +499,45 @@ export default function CheckCircle({
 
                 // Context-aware navigation after joiner completion
                 if (params.planId || planId) {
-                  router.push('/(tabs)/Plan');
+                  router.push({
+                    pathname: '/(tabs)/Plan',
+                    params: { 
+                      expandedPlan: planId || params.planId,
+                      completedSegment: segmentId,
+                      timestamp: Date.now().toString()
+                    }
+                  });
                 } else if (params.challengeId || challengeId) {
-                  router.push('/(tabs)/Reading-Challenges');
+                  router.push({
+                    pathname: '/(tabs)/Reading-Challenges',
+                    params: { 
+                      expandedChallenge: challengeId || params.challengeId,
+                      completedSegment: segmentId,
+                      timestamp: Date.now().toString()
+                    }
+                  });
                 } else if (params.context === 'today' || context === 'today') {
-                  router.push('/(tabs)/Navigation');
+                  router.push({
+                    pathname: '/(tabs)/Navigation',
+                    params: { 
+                      expandedBook: segmentId.substring(1, 4),
+                      completedSegment: segmentId,
+                      timestamp: Date.now().toString()
+                    }
+                  });
                 } else {
-                  router.push('/(tabs)/Navigation');
+                  router.push({
+                    pathname: '/(tabs)/Navigation',
+                    params: { 
+                      expandedBook: segmentId.substring(1, 4),
+                      completedSegment: segmentId,
+                      timestamp: Date.now().toString()
+                    }
+                  });
                 }
               } catch (err) {
                 console.error('Error processing completion QR:', err);
-                try {
-                  const Toast = require('react-native-root-toast');
-                  Toast.show('Could not process code. Please try again.', { duration: Toast.durations.SHORT, position: Toast.positions.BOTTOM });
-                } catch {}
+                await showErrorToast('Could not process code. Please try again.');
                 setShowScanner(false);
               }
                   }}
@@ -453,7 +558,7 @@ export default function CheckCircle({
             <View style={styles.hostCard}>
               <Text style={styles.hostCardTitle}>Completion QR</Text>
               {currentSession && (
-                <Text style={styles.hostSubtitle}>{joinerScans} of 4 scanned</Text>
+                <Text style={styles.hostSubtitle}>{joinerScans} of {currentSession.participants ? currentSession.participants.length - 1 : 0} scanned</Text>
               )}
               <View style={styles.qrWrapper}>
                 <QRCode value={hostQRData} size={180} color="#FFFFFF" backgroundColor="#42A5F5" />
@@ -468,21 +573,13 @@ export default function CheckCircle({
                     await recordGroupCompletion(segmentId, currentSession.id, currentSession.storyId, currentRole || 'narrator', true);
                     await updateLastReadSegment(segmentId);
                     setIsCompleted(true);
-                    setShowHostQRModal(false);
+                    // Don't close the modal here - let the host manually close it or generate again
                     setShowCompletionBanner(true);
                     try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
                     await startConfettiCelebration();
 
-                    // Navigate back to the proper list after host confirms completion
-                    if (params.planId || planId) {
-                      router.push('/(tabs)/Plan');
-                    } else if (params.challengeId || challengeId) {
-                      router.push('/(tabs)/Reading-Challenges');
-                    } else if (params.context === 'today' || context === 'today') {
-                      router.push('/(tabs)/Navigation');
-                    } else {
-                      router.push('/(tabs)/Navigation');
-                    }
+                    // Host confirms completion but stays in QR modal to manage scanners
+                    // Navigation will happen when the host manually closes the modal
                   } catch (err) {
                     console.error('Host confirm error:', err);
                     setShowHostQRModal(false);
@@ -491,7 +588,50 @@ export default function CheckCircle({
               >
                 <Ionicons name="checkmark" size={28} color="#FFFFFF" />
               </Pressable>
-              <Pressable style={styles.dismissTextButton} onPress={() => setShowHostQRModal(false)}>
+              <Pressable style={styles.dismissTextButton} onPress={async () => {
+                setShowHostQRModal(false);
+                
+                // Navigate back to the appropriate screen after closing
+                if (isCompleted) {
+                  if (params.planId || planId) {
+                    router.push({
+                      pathname: '/(tabs)/Plan',
+                      params: { 
+                        expandedPlan: planId || params.planId,
+                        completedSegment: segmentId,
+                        timestamp: Date.now().toString()
+                      }
+                    });
+                  } else if (params.challengeId || challengeId) {
+                    router.push({
+                      pathname: '/(tabs)/Reading-Challenges',
+                      params: { 
+                        expandedChallenge: challengeId || params.challengeId,
+                        completedSegment: segmentId,
+                        timestamp: Date.now().toString()
+                      }
+                    });
+                  } else if (params.context === 'today' || context === 'today') {
+                    router.push({
+                      pathname: '/(tabs)/Navigation',
+                      params: { 
+                        expandedBook: segmentId.substring(1, 4),
+                        completedSegment: segmentId,
+                        timestamp: Date.now().toString()
+                      }
+                    });
+                  } else {
+                    router.push({
+                      pathname: '/(tabs)/Navigation',
+                      params: { 
+                        expandedBook: segmentId.substring(1, 4),
+                        completedSegment: segmentId,
+                        timestamp: Date.now().toString()
+                      }
+                    });
+                  }
+                }
+              }}>
                 <Text style={styles.dismissText}>Close</Text>
               </Pressable>
             </View>
@@ -499,12 +639,27 @@ export default function CheckCircle({
         </Modal>
       )}
       <CompletionBanner
-        visible={showCompletionBanner}
+        visible={showCompletionBanner && !showHostQRModal}
         onHide={() => setShowCompletionBanner(false)}
         backgroundColor={'#007AFF'}
       />
 
-      {/* Loading overlay for story completion QR generator removed per request */}
+      {/* Loading overlay for QR generation */}
+      {isGenerating && (
+        <Modal visible transparent animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={[styles.hostCard, { padding: 40 }]}>
+              <ActivityIndicator size="large" color="#FFFFFF" />
+              <Text style={[styles.hostCardTitle, { marginTop: 16, marginBottom: 8 }]}>
+                Generating QR Code
+              </Text>
+              <Text style={styles.hostSubtitle}>
+                Please wait while we prepare your completion code...
+              </Text>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 }

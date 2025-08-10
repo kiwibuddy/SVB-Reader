@@ -170,7 +170,24 @@ export default function BibleScreen() {
 
   // Always start scrolled to the top when a story loads or segID changes
   useEffect(() => {
-    flatListRef.current?.scrollTo({ y: 0, animated: false });
+    // Multiple scroll reset attempts to ensure it works reliably
+    const scrollToTop = () => {
+      flatListRef.current?.scrollTo({ y: 0, animated: false });
+    };
+    
+    // Immediate scroll reset
+    scrollToTop();
+    
+    // Additional scroll reset after a brief delay to ensure content is loaded
+    const timer1 = setTimeout(scrollToTop, 50);
+    const timer2 = setTimeout(scrollToTop, 200);
+    
+    console.log(`📜 [BibleScreen] Resetting scroll position for segment ${segID}`);
+    
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
   }, [segID]);
 
   // Initialize navigation arrows as visible when entering segment
@@ -323,6 +340,7 @@ export default function BibleScreen() {
               challengeId={challengeId as string || undefined}
               mode="normal"
               showCaption={false}
+              resetVisualStateOnMount={true}
             />
             {/* Render the group action button whenever a group session exists */}
             {!!currentSession && (
@@ -334,6 +352,7 @@ export default function BibleScreen() {
                 challengeId={challengeId as string || undefined}
                 mode="group"
                 showCaption={false}
+                resetVisualStateOnMount={true}
               />
             )}
           </View>

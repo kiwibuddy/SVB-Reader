@@ -40,6 +40,7 @@ import {
 } from "@/api/sqlite";
 import { useAppSettings } from '@/context/AppSettingsContext';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
+import { useGroupReading } from '@/context/GroupReadingContext';
 import BibleData from '@/assets/data/newBibleNLT1.json';
 
 interface BookSegments {
@@ -280,10 +281,12 @@ const PlanScreen = () => {
 
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { expandedPlan, completedSegment, timestamp } = params;
   const scrollViewRef = useRef<ScrollView>(null);
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const { colors, isDarkMode } = useAppSettings();
+  const { currentSession, stopSession } = useGroupReading();
   const styles = createStyles(isLargeScreen, colors, isDarkMode);
 
   // State for plans and progress
@@ -358,6 +361,25 @@ const PlanScreen = () => {
     
     loadData();
   }, []);
+
+  // Handle navigation parameters for expanding plans after completion
+  useEffect(() => {
+    if (expandedPlan && timestamp) {
+      console.log('📍 Expanding plan after completion:', expandedPlan);
+      setSelectedPlanId(expandedPlan as string);
+      
+      if (completedSegment) {
+        setLastCompletedSegment(completedSegment as string);
+        
+        // Scroll to the completed segment after a brief delay
+        setTimeout(() => {
+          if (scrollViewRef.current) {
+            scrollViewRef.current.scrollToEnd({ animated: true });
+          }
+        }, 500);
+      }
+    }
+  }, [expandedPlan, completedSegment, timestamp]);
 
   // Refresh when returning from reading a segment
   useFocusEffect(
@@ -740,6 +762,12 @@ const PlanScreen = () => {
   // Reading Mode Modal Handlers
   const handleIndividualReading = async () => {
     setShowReadingModeModal(false);
+    
+    // Clear any existing group session when starting individual reading
+    if (currentSession) {
+      await stopSession();
+    }
+    
     await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
     const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
     router.push({
@@ -748,7 +776,8 @@ const PlanScreen = () => {
         segment: `ENG-NLT-${selectedSegmentId}`,
         book: segment?.book[0] || '',
         planId: selectedPlanId || '',
-        context: 'plan'
+        context: 'plan',
+        freshStart: Date.now().toString() // Force fresh start from reading mode modal
       }
     });
   };

@@ -42,6 +42,7 @@ import {
   endChallenge
 } from "@/api/sqlite";
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
+import { useGroupReading } from '@/context/GroupReadingContext';
 import BibleData from '@/assets/data/newBibleNLT1.json';
 import ChronologicalView from '@/components/navigation/ChronologicalView';
 
@@ -308,9 +309,11 @@ const ChallengesScreen = () => {
 
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { expandedChallenge, completedSegment, timestamp } = params;
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const { colors } = useAppSettings();
+  const { currentSession, stopSession } = useGroupReading();
   const styles = createStyles(isLargeScreen, colors);
 
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
@@ -388,6 +391,18 @@ const ChallengesScreen = () => {
     
     loadData();
   }, []);
+
+  // Handle navigation parameters for expanding challenges after completion
+  useEffect(() => {
+    if (expandedChallenge && timestamp) {
+      console.log('📍 Expanding challenge after completion:', expandedChallenge);
+      setSelectedChallengeId(expandedChallenge as string);
+      
+      if (completedSegment) {
+        setLastCompletedSegment(completedSegment as string);
+      }
+    }
+  }, [expandedChallenge, completedSegment, timestamp]);
 
   // Refresh when returning from reading a segment
   useFocusEffect(
@@ -951,6 +966,12 @@ const ChallengesScreen = () => {
   // Reading Mode Modal Handlers
     const handleIndividualReading = async () => {
     setShowReadingModeModal(false);
+    
+    // Clear any existing group session when starting individual reading
+    if (currentSession) {
+      await stopSession();
+    }
+    
     await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
     const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
     router.push({
@@ -959,7 +980,8 @@ const ChallengesScreen = () => {
         segment: `ENG-NLT-${selectedSegmentId}`,
         book: segment?.book[0] || '',
         challengeId: selectedChallengeId || '',
-        context: 'challenge'
+        context: 'challenge',
+        freshStart: Date.now().toString() // Force fresh start from reading mode modal
       }
     });
   };

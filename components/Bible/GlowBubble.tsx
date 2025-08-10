@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Animated, Platform } from "react-native";
 import { getColors } from "@/scripts/getColors";
 import { BibleBlock } from "@/types";
@@ -18,7 +18,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: Bible
   const { source, children } = block;
   const { color = 'black', sourceName = 'Unknown' } = source || {};
   const colors = getColors(color);
-  const glowAnim = new Animated.Value(0);
+  const glowAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.loop(

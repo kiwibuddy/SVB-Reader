@@ -94,7 +94,9 @@ export async function markSegmentComplete(
       ) VALUES (?, ?, ?, ?, ?)
     `, segmentID, context, planID || null, challengeID || null, currentDate);
 
-    // Update total read count
+    // Global read count is incremented on EVERY completion regardless of context
+    // This gives users accurate total read counts across all reading modes
+    console.log(`📊 [ReadCount] Incrementing global count for segment ${segmentID} (${context} completion)`);
     await db.runAsync(`
       INSERT OR REPLACE INTO segment_read_count (
         segmentID,
@@ -109,7 +111,7 @@ export async function markSegmentComplete(
 
     // Handle context-specific completion
     if (context === 'main') {
-      // Update main context completion
+      // Update main context completion (can be repeated)
       await db.runAsync(`
         INSERT OR REPLACE INTO completedSegments (
           segmentID,
@@ -119,13 +121,13 @@ export async function markSegmentComplete(
       `, segmentID, currentDate);
       
     } else if (context === 'plan' && planID) {
-      // Update plan-specific progress
+      // Update plan-specific progress (track plan-specific completion count)
       await db.runAsync(`
         INSERT OR REPLACE INTO reading_plan_progress (
-          planID,
+        planID,
           segmentID,
           completionDate,
-          isCompleted,
+        isCompleted,
           readCount,
           lastReadDate
         ) VALUES (
@@ -139,13 +141,13 @@ export async function markSegmentComplete(
       await updatePlanStatus(planID);
       
     } else if (context === 'challenge' && challengeID) {
-      // Update challenge-specific progress
+      // Update challenge-specific progress (track challenge-specific completion count)
       await db.runAsync(`
         INSERT OR REPLACE INTO reading_challenge_progress (
-          challengeID,
+        challengeID,
           segmentID,
           completionDate,
-          isCompleted,
+        isCompleted,
           readCount,
           lastReadDate
         ) VALUES (
@@ -189,11 +191,28 @@ export async function recordGroupCompletion(
   try {
     const db = databaseManager.getDatabase();
     const currentDate = new Date().toISOString();
+    
+    // Record group participation
     await db.runAsync(
       `INSERT INTO group_segment_completion (segmentID, sessionId, storyId, userRole, isHost, completedAt)
        VALUES (?, ?, ?, ?, ?, ?)`,
       segmentID, sessionId, storyId, userRole, isHost ? 1 : 0, currentDate
     );
+    
+    // Also increment global read count for group completions
+    console.log(`📊 [ReadCount] Incrementing global count for segment ${segmentID} (group completion)`);
+    await db.runAsync(`
+      INSERT OR REPLACE INTO segment_read_count (
+        segmentID,
+        totalReads,
+        lastReadDate
+      ) VALUES (
+        ?,
+        COALESCE((SELECT totalReads FROM segment_read_count WHERE segmentID = ?), 0) + 1,
+        ?
+      )
+    `, segmentID, segmentID, currentDate);
+    
   } catch (error) {
     console.error('Error recording group completion:', error);
   }

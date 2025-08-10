@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, ViewStyle, TextStyle } from 'react-native';
+import { Animated, StyleSheet, Text, ViewStyle, TextStyle, InteractionManager } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ANIMATION } from '@/services/animation';
 
@@ -30,20 +30,30 @@ const CompletionBanner: React.FC<CompletionBannerProps> = ({
 
   useEffect(() => {
     if (!visible) return;
-    // Slide-down and fade-in, wait, then fade-out + slide-up
-    Animated.sequence([
-      Animated.parallel([
-        Animated.timing(translateY, { toValue: 0, duration: ANIMATION.duration.base, easing: ANIMATION.easing.out, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 1, duration: ANIMATION.duration.base, easing: ANIMATION.easing.out, useNativeDriver: true }),
-      ]),
-      Animated.delay(durationMs),
-      Animated.parallel([
-        Animated.timing(translateY, { toValue: -20, duration: ANIMATION.duration.base, easing: ANIMATION.easing.in, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 0, duration: ANIMATION.duration.base, easing: ANIMATION.easing.in, useNativeDriver: true }),
-      ]),
-    ]).start(() => {
-      onHide?.();
+    let cancelled = false;
+    const task = InteractionManager.runAfterInteractions(() => {
+      if (cancelled || !visible) return;
+      // Slide-down and fade-in, wait, then fade-out + slide-up
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(translateY, { toValue: 0, duration: ANIMATION.duration.base, easing: ANIMATION.easing.out, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 1, duration: ANIMATION.duration.base, easing: ANIMATION.easing.out, useNativeDriver: true }),
+        ]),
+        Animated.delay(durationMs),
+        Animated.parallel([
+          Animated.timing(translateY, { toValue: -20, duration: ANIMATION.duration.base, easing: ANIMATION.easing.in, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0, duration: ANIMATION.duration.base, easing: ANIMATION.easing.in, useNativeDriver: true }),
+        ]),
+      ]).start(() => {
+        if (cancelled) return;
+        // Defer onHide to avoid scheduling state updates during insertion
+        setTimeout(() => onHide?.(), 0);
+      });
     });
+    return () => {
+      cancelled = true;
+      task?.cancel?.();
+    };
   }, [visible, durationMs, onHide, opacity, translateY]);
 
   if (!visible) return null;

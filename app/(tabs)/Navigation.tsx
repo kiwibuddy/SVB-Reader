@@ -7,7 +7,7 @@ import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import { Ionicons } from '@expo/vector-icons';
 import { parseReference } from '@/utils/parseReference';
 import { findSegmentId } from '@/utils/referenceMapping';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import SearchResults from '@/components/navigation/SearchResults';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { getSegmentCompletionStatus } from "@/api/sqlite";
@@ -15,6 +15,7 @@ import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BibleData from '@/assets/data/newBibleNLT1.json';
 import TopSpeakersData from '@/assets/data/TopSpeakers.json';
 import { useFocusEffect } from '@react-navigation/native';
+import { useGroupReading } from '@/context/GroupReadingContext';
 
 
 export type SegmentKey = keyof typeof SegmentTitles;
@@ -549,9 +550,12 @@ const Navigation = () => {
     speakers: []
   });
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const { expandedBook, completedSegment, timestamp } = params;
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const { colors } = useAppSettings();
+  const { currentSession, stopSession } = useGroupReading();
   const styles = createStyles(isLargeScreen, colors);
 
   // Define Old and New Testament books
@@ -907,6 +911,23 @@ const Navigation = () => {
     setShowFilterPanel(prev => !prev)
   }
 
+  // Handle navigation parameters for expanding books after completion
+  useEffect(() => {
+    if (expandedBook && timestamp) {
+      console.log('📍 Expanding book after completion:', expandedBook);
+      
+      // Find the book key that matches the expanded book code
+      const bookKey = Object.keys(Books).find(key => key.includes(expandedBook as string));
+      if (bookKey) {
+        setSelectedBook(bookKey);
+        
+        if (completedSegment) {
+          setHighlightedSegment(completedSegment as string);
+        }
+      }
+    }
+  }, [expandedBook, completedSegment, timestamp]);
+
   // Fetch completion status for all segments on mount
   useEffect(() => {
     const fetchCompletion = async () => {
@@ -990,12 +1011,19 @@ const Navigation = () => {
   // Reading Mode Modal Handlers
   const handleIndividualReading = async () => {
     setShowReadingModeModal(false);
+    
+    // Clear any existing group session when starting individual reading
+    if (currentSession) {
+      await stopSession();
+    }
+    
     await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
     const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
     
     const params: any = {
       segment: `ENG-NLT-${selectedSegmentId}`,
-      book: segment?.book[0] || ''
+      book: segment?.book[0] || '',
+      freshStart: Date.now().toString() // Force fresh start from reading mode modal
     };
     
     // Add verse navigation if we have a target verse

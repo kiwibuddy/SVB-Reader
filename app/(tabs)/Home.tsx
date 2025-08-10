@@ -866,8 +866,27 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: Co
     onPress && onPress(dailySegmentId);
   };
 
-  // New layout: title, reference, and button in a row, styled like active reading
-  if (!dailySegment) return null;
+  // Check if today's reading is completed
+  const [isDailyCompleted, setIsDailyCompleted] = useState(false);
+  
+  useEffect(() => {
+    const checkCompletion = async () => {
+      if (dailySegmentId) {
+        try {
+          const status = await getSegmentCompletionStatus(dailySegmentId, 'today');
+          setIsDailyCompleted(status.isCompleted);
+        } catch (error) {
+          console.error('Error checking daily completion:', error);
+          setIsDailyCompleted(false);
+        }
+      }
+    };
+    
+    checkCompletion();
+  }, [dailySegmentId]);
+
+  // Hide the entire section if today's reading is completed or segment doesn't exist
+  if (!dailySegment || isDailyCompleted) return null;
   const dailyBookName = dailySegment.book && dailySegment.book[0] ? (SegmentTitles[dailySegmentId]?.book[0] || '') : '';
   const bookNameMapping: { [key: string]: string } = {
     'Gen': 'Genesis', 'Exo': 'Exodus', 'Lev': 'Leviticus', 'Num': 'Numbers', 'Deu': 'Deuteronomy',
@@ -1251,6 +1270,11 @@ const Home = () => {
   const [isTodayComplete, setIsTodayComplete] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   
+  // State for tracking completion of daily items
+  const [isDailySegmentCompleted, setIsDailySegmentCompleted] = useState(false);
+  const [activePlanDailyCompleted, setActivePlanDailyCompleted] = useState(false);
+  const [activeChallengesDailyCompleted, setActiveChallengesDailyCompleted] = useState<Record<string, boolean>>({});
+  
   // Add state for real progress data
   const [planProgress, setPlanProgress] = useState<{
     totalSegments: number;
@@ -1280,6 +1304,7 @@ const Home = () => {
     joinSession,
     setUserName,
     currentUserName,
+    stopSession,
   } = useGroupReading();
 
 
@@ -1382,12 +1407,86 @@ const Home = () => {
     loadProgressData();
   }, []);
 
+  // Check if today's reading is completed
+  useEffect(() => {
+    const checkDailyCompletion = async () => {
+      const today = new Date();
+      const dayOfYear = getDayOfYear(today);
+      const dailySegmentId = (DailyStoryMap as string[])[(dayOfYear - 1) % DailyStoryMap.length];
+      
+      if (dailySegmentId) {
+        try {
+          const status = await getSegmentCompletionStatus(dailySegmentId, 'today');
+          setIsDailySegmentCompleted(status.isCompleted);
+        } catch (error) {
+          console.error('Error checking daily completion:', error);
+          setIsDailySegmentCompleted(false);
+        }
+      }
+    };
+    
+    checkDailyCompletion();
+  }, [refreshTrigger]); // Re-check when refreshTrigger changes
+
+  // Check if active plan's daily portion is completed
+  useEffect(() => {
+    const checkPlanDailyCompletion = async () => {
+      if (!activePlan || !planProgress?.nextSegmentId) {
+        setActivePlanDailyCompleted(false);
+        return;
+      }
+
+      try {
+        const status = await getSegmentCompletionStatus(planProgress.nextSegmentId, 'plan', activePlan.planId);
+        setActivePlanDailyCompleted(status.isCompleted);
+      } catch (error) {
+        console.error('Error checking plan daily completion:', error);
+        setActivePlanDailyCompleted(false);
+      }
+    };
+
+    checkPlanDailyCompletion();
+  }, [activePlan, planProgress, refreshTrigger]);
+
+  // Check if active challenges' daily portions are completed
+  useEffect(() => {
+    const checkChallengesDailyCompletion = async () => {
+      const completionStates: Record<string, boolean> = {};
+
+      for (const [challengeId, challenge] of Object.entries(activeChallenges)) {
+        if (!challenge || challenge.isPaused || challenge.isCompleted) {
+          completionStates[challengeId] = false;
+          continue;
+        }
+
+        const challengeProgress = challengeProgresses[challengeId];
+        if (challengeProgress?.nextSegmentId) {
+          try {
+            const status = await getSegmentCompletionStatus(challengeProgress.nextSegmentId, 'challenge', challengeId);
+            completionStates[challengeId] = status.isCompleted;
+          } catch (error) {
+            console.error(`Error checking challenge ${challengeId} daily completion:`, error);
+            completionStates[challengeId] = false;
+          }
+        } else {
+          completionStates[challengeId] = false;
+        }
+      }
+
+      setActiveChallengesDailyCompleted(completionStates);
+    };
+
+    checkChallengesDailyCompletion();
+  }, [activeChallenges, challengeProgresses, refreshTrigger]);
+
   // Refresh progress data when returning to Home screen
   useFocusEffect(
     React.useCallback(() => {
       const refreshProgressData = async () => {
         try {
           await loadProgressData();
+          // Force refresh completion checks when returning to home
+          setRefreshTrigger(prev => prev + 1);
         } catch (error) {
           console.error('Error refreshing progress data:', error);
         }
@@ -1571,6 +1670,12 @@ const Home = () => {
   // Reading Mode Modal Handlers
   const handleIndividualReading = async () => {
     setShowReadingModeModal(false);
+    
+    // Clear any existing group session when starting individual reading
+    if (currentSession) {
+      await stopSession();
+    }
+    
     await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
     const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
     
@@ -1607,7 +1712,10 @@ const Home = () => {
     
     router.push({
       pathname: "/[segment]",
-      params: contextParams
+      params: {
+        ...contextParams,
+        freshStart: Date.now().toString() // Force fresh start from reading mode modal
+      }
     });
   };
 
@@ -1833,15 +1941,50 @@ const Home = () => {
   };
 
   // Helper to check if there is at least one valid active plan or challenge
-  const hasActivePlan = !!(activePlan && activePlan.planId && ReadingPlansChallenges.plans.find((plan: any) => plan.id === activePlan.planId && !activePlan.isCompleted && !activePlan.isPaused));
+  const hasActivePlan = !!(activePlan && activePlan.planId && ReadingPlansChallenges.plans.find((plan: any) => plan.id === activePlan.planId && !activePlan.isCompleted && !activePlan.isPaused) && !activePlanDailyCompleted);
   const hasActiveChallenge = Object.values(activeChallenges).some((challenge: any) => {
     if (!challenge || challenge.isPaused || challenge.isCompleted) return false;
+    // Check if the daily portion is completed
+    if (activeChallengesDailyCompleted[challenge.challengeId]) return false;
     return ReadingPlansChallenges.challenges.some((c: any) => c.id === challenge.challengeId);
   });
   const showActiveReadingSection = hasActivePlan || hasActiveChallenge;
 
   return (
     <View style={localStyles.container}>
+      
+      {/* Version Checker for Development */}
+      <View style={{
+        position: 'absolute',
+        top: 50,
+        right: 10,
+        backgroundColor: 'rgba(0, 122, 255, 0.8)',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        zIndex: 999
+      }}>
+        <Text style={{
+          color: 'white',
+          fontSize: 10,
+          fontWeight: '600'
+        }}>
+          Version: Global Read Count v2.9
+        </Text>
+        <Text style={{
+          color: 'white',
+          fontSize: 8,
+          marginTop: 2
+        }}>
+          ✅ Global read count across all contexts
+        </Text>
+        <Text style={{
+          color: 'white',
+          fontSize: 8
+        }}>
+          ✅ Group reading resets & counts correctly
+        </Text>
+      </View>
       
       <CustomHeader 
         leftComponent={

@@ -314,36 +314,54 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   // QR Code Generation Functions
   const generateSessionQRCode = useCallback(async (hostRole: Role): Promise<string> => {
-    if (!state.currentSession) {
+    // Get the current session from state directly to avoid stale closure issues
+    const currentSession = state.currentSession;
+    
+    if (!currentSession) {
       throw new Error('No active session to generate QR code for');
     }
     
     try {
       console.log('📱 Generating session QR code...');
-      const qrCodeData = await qrCodeDiscoveryManager.generateSessionQRCode(state.currentSession, hostRole);
+      console.log(`📱 Generating QR code for session: ${currentSession.id}`);
+      console.log(`📱 Host role: ${hostRole}`);
+      
+      const qrCodeData = await qrCodeDiscoveryManager.generateSessionQRCode(currentSession, hostRole);
+      console.log('📱 QR code data generated:', qrCodeData.substring(0, 100) + '...');
+      console.log('📱 Session info:', {
+        host: currentSession.hostUserName,
+        hostRole: hostRole,
+        reference: currentSession.scriptureReference,
+        story: currentSession.storyTitle
+      });
       console.log('📱 Session QR code generated successfully');
       return qrCodeData;
     } catch (error) {
       console.error('🔴 Error generating session QR code:', error);
       throw error;
     }
-  }, [state.currentSession]);
+  }, []);
 
   const generateCompletionQRCode = useCallback(async (): Promise<string> => {
-    if (!state.currentSession) {
+    // Get the current session from state directly to avoid stale closure issues
+    const currentSession = state.currentSession;
+    
+    if (!currentSession) {
       throw new Error('No active session to generate completion QR code for');
     }
     
     try {
       console.log('✅ Generating completion QR code...');
-      const qrCodeData = await qrCodeDiscoveryManager.generateCompletionQRCode(state.currentSession);
+      console.log(`✅ Generating completion QR for session: ${currentSession.id}`);
+      
+      const qrCodeData = await qrCodeDiscoveryManager.generateCompletionQRCode(currentSession);
       console.log('✅ Completion QR code generated successfully');
       return qrCodeData;
     } catch (error) {
       console.error('🔴 Error generating completion QR code:', error);
       throw error;
     }
-  }, [state.currentSession]);
+  }, []);
 
   const contextValue: GroupReadingContextType = {
     currentSession: state.currentSession,

@@ -150,21 +150,37 @@ export default ChronologicalSegmentItem;
 
 const GroupCompletionBadge: React.FC<{ segmentId: string }> = ({ segmentId }) => {
   const [hasGroupCompletion, setHasGroupCompletion] = React.useState<boolean>(false);
-  React.useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      try {
-        const db = databaseManager.getDatabase();
-        const row = await db.getFirstAsync<{ count: number }>(
-          'SELECT COUNT(*) as count FROM group_segment_completion WHERE segmentID = ?',
-          [segmentId]
-        );
-        if (mounted) setHasGroupCompletion((row?.count || 0) > 0);
-      } catch {}
-    };
-    load();
-    return () => { mounted = false; };
+  
+  const loadGroupCompletion = React.useCallback(async () => {
+    try {
+      const db = databaseManager.getDatabase();
+      const row = await db.getFirstAsync<{ count: number }>(
+        'SELECT COUNT(*) as count FROM group_segment_completion WHERE segmentID = ?',
+        [segmentId]
+      );
+      setHasGroupCompletion((row?.count || 0) > 0);
+    } catch (error) {
+      console.error('Error loading group completion status:', error);
+    }
   }, [segmentId]);
+
+  React.useEffect(() => {
+    loadGroupCompletion();
+  }, [loadGroupCompletion]);
+
+  // Refresh when the component comes back into focus to catch new completions
+  React.useEffect(() => {
+    const focusListener = () => {
+      loadGroupCompletion();
+    };
+    
+    // Listen for focus events if available
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('focus', focusListener);
+      return () => window.removeEventListener('focus', focusListener);
+    }
+  }, [loadGroupCompletion]);
+
   if (!hasGroupCompletion) return null;
-  return <Ionicons name="people-circle" size={20} color={'#42A5F5'} />;
+  return <Ionicons name="people-circle" size={20} color={'#42A5F5'} style={{ marginRight: 2 }} />;
 };
