@@ -2579,14 +2579,14 @@ const Home = () => {
           fontSize: 10,
           fontWeight: '600'
         }}>
-          Version: Fixed Speaker Margins v6.10
+          Version: Bottom Modal Position v6.14
         </Text>
         <Text style={{
           color: 'white',
           fontSize: 8,
           marginTop: 2
         }}>
-          ✅ Fixed speaker analysis margins
+          ✅ Modal slides from bottom properly
         </Text>
         <Text style={{
           color: 'white',

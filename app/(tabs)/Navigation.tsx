@@ -1011,7 +1011,8 @@ const Navigation = () => {
           pathname: "/[segment]",
           params: {
             segment: `ENG-NLT-${segmentId}`,
-            book: segmentData.book[0] || ''
+            book: segmentData.book[0] || '',
+            context: 'main'
           }
         });
       } else {

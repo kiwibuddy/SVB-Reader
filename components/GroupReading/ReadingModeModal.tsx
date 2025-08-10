@@ -39,8 +39,17 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
   const [slideAnim] = React.useState(new Animated.Value(screenHeight));
   const [backdropOpacity] = React.useState(new Animated.Value(0));
 
+  // Debug log
+  console.log('🎭 ReadingModeModal render:', { 
+    visible, 
+    storyTitle, 
+    storyId,
+    modalPositionValue: slideAnim._value 
+  });
+
   useEffect(() => {
     if (visible) {
+      console.log('🎬 Starting show animation, current slideAnim:', slideAnim._value);
       // Show animation
       Animated.parallel([
         Animated.timing(backdropOpacity, {
@@ -55,7 +64,9 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
           easing: ANIMATION.easing.out,
           useNativeDriver: true,
         }),
-      ]).start();
+      ]).start((finished) => {
+        console.log('🎬 Show animation finished:', finished, 'final slideAnim:', slideAnim._value);
+      });
     } else {
       // Hide animation
       Animated.parallel([
@@ -87,12 +98,14 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
     },
     modalContainer: {
       position: 'absolute',
-      top: 0,
+      bottom: 0,
       left: 0,
       right: 0,
-      bottom: 0,
       backgroundColor: colors.background,
       zIndex: 100000,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      maxHeight: '90%',
     },
     header: {
       flexDirection: 'row',
@@ -224,12 +237,16 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
   };
 
   if (!visible) {
+    console.log('🎭 Modal not visible, returning null');
     return null;
   }
 
   if (!storyId) {
+    console.log('🎭 Modal no storyId, returning null. StoryId:', storyId);
     return null;
   }
+
+  console.log('🎭 Modal rendering JSX for:', { storyTitle, storyId });
 
   return (
     <>
@@ -243,8 +260,8 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       </Animated.View>
       
       <Animated.View 
-        style={[
-          styles.modalContainer, 
+                style={[
+          styles.modalContainer,
           { 
             transform: [{ translateY: slideAnim }] 
           }
