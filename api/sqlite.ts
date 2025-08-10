@@ -304,11 +304,24 @@ export async function getPlanProgress(planID: string): Promise<PlanProgress> {
   try {
     const db = databaseManager.getDatabase();
     
-    // Get total segments for this plan (excluding introduction segments)
-    const totalResult = await db.getFirstAsync<{ count: number }>(
-      'SELECT COUNT(*) as count FROM segments WHERE planID = ? AND segmentID NOT LIKE "I%"',
-      [planID]
-    );
+    // Get plan data from JSON to determine total segments
+    const readingPlansData = require('../assets/data/ReadingPlansChallenges.json');
+    const plan = readingPlansData.plans.find((p: any) => p.id === planID);
+    
+    if (!plan) {
+      return {
+        totalSegments: 0,
+        completedSegments: 0,
+        progressPercentage: 0,
+        isCompleted: false,
+        completedSegmentIds: []
+      };
+    }
+
+    // Calculate total segments in plan from the JSON structure
+    const totalSegments = Object.values(plan.segments).reduce((total: number, book: any) => {
+      return total + (book?.segments?.length || 0);
+    }, 0);
     
     // Get completed segments for this plan (excluding introduction segments)
     const completedResult = await db.getAllAsync<{ segmentID: string }>(
@@ -316,7 +329,6 @@ export async function getPlanProgress(planID: string): Promise<PlanProgress> {
       [planID]
     );
     
-    const totalSegments = totalResult?.count || 0;
     const completedSegments = completedResult?.length || 0;
     const progressPercentage = totalSegments > 0 ? (completedSegments / totalSegments) * 100 : 0;
     const isCompleted = completedSegments >= totalSegments && totalSegments > 0;
@@ -344,11 +356,24 @@ export async function getChallengeProgress(challengeID: string): Promise<Challen
   try {
     const db = databaseManager.getDatabase();
     
-    // Get total segments for this challenge (excluding introduction segments)
-    const totalResult = await db.getFirstAsync<{ count: number }>(
-      'SELECT COUNT(*) as count FROM segments WHERE challengeID = ? AND segmentID NOT LIKE "I%"',
-      [challengeID]
-    );
+    // Get challenge data from JSON to determine total segments
+    const readingPlansData = require('../assets/data/ReadingPlansChallenges.json');
+    const challenge = readingPlansData.challenges.find((c: any) => c.id === challengeID);
+    
+    if (!challenge) {
+      return {
+        totalSegments: 0,
+        completedSegments: 0,
+        progressPercentage: 0,
+        isCompleted: false,
+        completedSegmentIds: []
+      };
+    }
+
+    // Calculate total segments in challenge from the JSON structure
+    const totalSegments = Object.values(challenge.segments).reduce((total: number, book: any) => {
+      return total + (book?.segments?.length || 0);
+    }, 0);
     
     // Get completed segments for this challenge (excluding introduction segments)
     const completedResult = await db.getAllAsync<{ segmentID: string }>(
@@ -356,7 +381,6 @@ export async function getChallengeProgress(challengeID: string): Promise<Challen
       [challengeID]
     );
     
-    const totalSegments = totalResult?.count || 0;
     const completedSegments = completedResult?.length || 0;
     const progressPercentage = totalSegments > 0 ? (completedSegments / totalSegments) * 100 : 0;
     const isCompleted = completedSegments >= totalSegments && totalSegments > 0;

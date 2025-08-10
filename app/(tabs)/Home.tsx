@@ -35,6 +35,19 @@ import { type ColorScheme } from '@/context/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useGroupReading } from '@/context/GroupReadingContext';
+import { getFullBookName } from '@/utils/bookNameMapping';
+import { 
+  getBookInsights, 
+  getStoryInsights, 
+  getLastReactionData, 
+  getUserActivityInsights,
+  hasUserData,
+  type BookInsights,
+  type StoryInsights,
+  type LastReactionData,
+  type UserActivityInsights
+} from '@/api/insightQueries';
+import SegmentTitlesData from '../../assets/data/SegmentTitles.json';
 import NearbyGroupCard from '@/components/GroupReading/NearbyGroupCard';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BibleData from '@/assets/data/newBibleNLT1.json';
@@ -744,9 +757,10 @@ type ContinueReadingProps = {
   onPress: (segmentId?: string) => void;
   styles: Record<string, any>;
   colors: ColorScheme;
+  refreshTrigger?: number;
 };
 
-const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: ContinueReadingProps) => {
+const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors, refreshTrigger }: ContinueReadingProps) => {
   const { state, markAsRead, updateSegmentId } = useSQLiteGlobalContext();
   const router = useRouter();
   const { sizes } = useFontSize();
@@ -883,7 +897,7 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors }: Co
     };
     
     checkCompletion();
-  }, [dailySegmentId]);
+  }, [dailySegmentId, refreshTrigger]);
 
   // Hide the entire section if today's reading is completed or segment doesn't exist
   if (!dailySegment || isDailyCompleted) return null;
@@ -982,13 +996,61 @@ interface SectionStyles {
   colors: ColorScheme;
 }
 
-// 2. Reading Insights with real data
-const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
+// 2. Reading Insights Carousel with real data
+const ReadingInsightsCarousel = ({ 
+  styles, 
+  currentStreak, 
+  bestStreak, 
+  isTodayComplete 
+}: { 
+  styles: SectionStyles; 
+  currentStreak: number; 
+  bestStreak: number; 
+  isTodayComplete: boolean; 
+}) => {
   const { state } = useSQLiteGlobalContext();
   const router = useRouter();
   const { sizes } = useFontSize();
   const { colors } = styles;
   const { t } = useTranslation();
+  
+  // Helper function to get segment reference
+  const getSegmentReference = (segmentID: string) => {
+    const segment = SegmentTitlesData[segmentID as keyof typeof SegmentTitlesData] as any;
+    if (!segment) return "";
+    return `${segment.book[0]}${segment.ref ? " " + segment.ref : ""}`;
+  };
+  
+  // Helper functions for speaker styling (matching Reading-emoji page)
+  const getSpeakerBackgroundColor = (color?: string) => {
+    switch (color) {
+      case 'black': return '#2C2C2E'; // Narrator
+      case 'red': return '#FF3B30';   // God/Jesus  
+      case 'green': return '#30D158'; // Main Speaker
+      case 'blue': return '#007AFF';  // Other Speakers
+      default: return colors.card;
+    }
+  };
+  
+  const getSpeakerTextColor = (color?: string) => {
+    // All speaker backgrounds are dark enough for white text
+    return 'white';
+  };
+  
+  // Helper function to extract text from block data
+  const getBlockText = (blockData: any) => {
+    if (!blockData) return 'Block text not available';
+    
+    // Extract text from the nested structure
+    if (blockData.children) {
+      return blockData.children
+        .flatMap((inline: any) => inline.children || [])
+        .map((leaf: any) => leaf.text || "")
+        .join(" ");
+    }
+    
+    return blockData.text || 'Block text not available';
+  };
   
   const localStyles = StyleSheet.create({
     sectionTitle: {
@@ -998,30 +1060,137 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
       color: colors.text,
       letterSpacing: -0.5,
     },
-    insightTitle: {
-      fontSize: sizes.caption,
-      color: colors.secondary,
-      marginBottom: 8,
-      fontWeight: "500",
+    carouselContainer: {
+      paddingHorizontal: 16,
+      paddingBottom: 20, // Reduced padding
     },
-    insightValue: {
-      fontSize: sizes.subtitle,
-      fontWeight: '800',
+    insightCard: {
+      width: 280,
+      marginRight: 16,
+      backgroundColor: colors.card, // White background like active reading cards
+      borderRadius: 16,
+      padding: 20,
+      shadowColor: colors.text,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      elevation: 4,
+      borderWidth: 1,
+      borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
+    },
+    streakCard: {
+      backgroundColor: '#FFF4E6',
+    },
+    favoriteBookCard: {
+      backgroundColor: '#E8F5E8',
+    },
+    favoriteStoryCard: {
+      backgroundColor: '#FFF0F5',
+    },
+    emojiCard: {
+      backgroundColor: '#F0F8FF',
+    },
+    completionCard: {
+      backgroundColor: '#F5F0FF',
+    },
+    cardHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    cardIcon: {
+      fontSize: 20,
+      marginRight: 8,
+    },
+    cardTitle: {
+      fontSize: sizes.body,
+      fontWeight: '700',
       color: colors.text,
     },
-    insightIcon: {
+    cardValue: {
+      fontSize: sizes.title,
+      fontWeight: '800',
+      color: colors.text,
+      marginBottom: 8,
+    },
+    cardSubtitle: {
+      fontSize: sizes.caption,
+      color: colors.secondary,
+      fontWeight: '500',
+    },
+    streakMainContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
       marginBottom: 12,
-      width: 42,
-      height: 42,
-      borderRadius: 21,
+    },
+    streakCircleContainer: {
+      position: 'relative',
+      marginRight: 16,
+    },
+    streakCircle: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      backgroundColor: colors.card,
       justifyContent: 'center',
       alignItems: 'center',
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 3,
-      elevation: 2,
-    }
+      borderWidth: 2,
+      borderColor: '#E0E0E0',
+    },
+    streakProgress: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      borderWidth: 2,
+      borderColor: '#FF9800',
+      borderTopColor: '#FF9800',
+      borderRightColor: 'transparent',
+      borderBottomColor: 'transparent',
+      borderLeftColor: 'transparent',
+      transform: [{ rotate: '-90deg' }],
+    },
+    streakNumber: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    streakDaysText: {
+      fontSize: 10,
+      color: colors.secondary,
+      marginTop: 2,
+    },
+    streakTextContainer: {
+      flex: 1,
+    },
+    streakMessage: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: colors.text,
+      marginBottom: 4,
+    },
+    streakGoal: {
+      fontSize: 12,
+      color: '#FF9800',
+      fontWeight: '500',
+    },
+    streakStatus: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    streakStatusDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: '#4CAF50',
+      marginRight: 6,
+    },
+    streakStatusText: {
+      fontSize: 12,
+      color: colors.secondary,
+    },
   });
 
   const [insights, setInsights] = useState({
@@ -1030,62 +1199,84 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
     favoriteSegmentId: '',
     favoriteSegment: '',
     readingStreak: 0,
-    mostUsedEmoji: '',
+    lastUsedEmoji: '',
     completionRate: 0
+  });
+
+  const [enhancedInsights, setEnhancedInsights] = useState({
+    bookInsights: null as BookInsights | null,
+    storyInsights: null as StoryInsights | null,
+    lastReaction: null as LastReactionData | null,
+    activityInsights: null as UserActivityInsights | null,
+    dataAvailability: {
+      hasEmojis: false,
+      hasReadBooks: false,
+      hasReadStories: false,
+      hasActivity: false,
+    }
   });
 
   useEffect(() => {
     const calculateInsights = async () => {
-      const emojiData = await getEmojis();
-      
-      // Calculate most used emoji
-      const emojiCounts = emojiData.reduce((acc: {[key: string]: number}, curr: any) => {
-        acc[curr.emoji] = (acc[curr.emoji] || 0) + 1;
-        return acc;
-      }, {});
-      const mostUsedEmoji = Object.entries(emojiCounts)
-        .sort(([,a], [,b]) => b - a)[0]?.[0] || '👍';
+      try {
+        // Check data availability first
+        const dataCheck = await hasUserData();
+        
+        // Get basic insights
+        const emojiData = await getEmojis();
+        
+        // Get last used emoji instead of most used
+        const lastUsedEmoji = emojiData.length > 0 ? (emojiData[emojiData.length - 1] as any)?.emoji || '👍' : '👍';
 
-      // Calculate segment read counts and book counts
-      const segmentCounts: {[key: string]: number} = {};
-      const bookCounts: {[key: string]: number} = {};
+        // Calculate segment read counts and book counts
+        const segmentCounts: {[key: string]: number} = {};
+        const bookCounts: {[key: string]: number} = {};
 
-      Object.entries(state.completedSegments).forEach(([segmentId, seg]) => {
-        if (seg) {
-          // Count segment reads using the key as the ID
-          segmentCounts[segmentId] = (segmentCounts[segmentId] || 0) + 1;
-          
-          // Count book reads
-          const book = SegmentTitles[segmentId]?.book[0] || 'Unknown';
-          bookCounts[book] = (bookCounts[book] || 0) + 1;
-        }
-      });
+        Object.entries(state.completedSegments).forEach(([segmentId, seg]) => {
+          if (seg) {
+            segmentCounts[segmentId] = (segmentCounts[segmentId] || 0) + 1;
+            const book = (SegmentTitlesData as any)[segmentId]?.book[0] || 'Unknown';
+            bookCounts[book] = (bookCounts[book] || 0) + 1;
+          }
+        });
 
-      // Find favorite book and segment
-      const favoriteBookKey = Object.entries(bookCounts)
-        .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Gen';
-      
-      // Map short book name to full name (you'll need to create this mapping)
-      const bookNameMapping: { [key: string]: string } = {
-        'Gen': 'Genesis',
-        'Exo': 'Exodus',
-        // ... add other book mappings
-      };
+        const favoriteBookKey = Object.entries(bookCounts)
+          .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Gen';
+        
+        const favoriteSegmentId = Object.entries(segmentCounts)
+          .sort(([,a], [,b]) => b - a)[0]?.[0];
 
-      const favoriteSegmentId = Object.entries(segmentCounts)
-        .sort(([,a], [,b]) => b - a)[0]?.[0];
+        // Set basic insights
+        setInsights({
+          favoriteBook: favoriteBookKey,
+          favoriteBookFullName: getFullBookName(favoriteBookKey),
+          favoriteSegmentId,
+          favoriteSegment: favoriteSegmentId 
+            ? (SegmentTitlesData as any)[favoriteSegmentId]?.title || 'Unknown'
+            : 'Not enough data',
+          readingStreak: 12,
+          lastUsedEmoji,
+          completionRate: Math.round((Object.keys(state.completedSegments).length / Object.keys(SegmentTitlesData).length) * 100)
+        });
 
-      setInsights({
-        favoriteBook: favoriteBookKey,
-        favoriteBookFullName: bookNameMapping[favoriteBookKey] || favoriteBookKey,
-        favoriteSegmentId,
-        favoriteSegment: favoriteSegmentId 
-          ? SegmentTitles[favoriteSegmentId]?.title || 'Unknown'
-          : 'Not enough data',
-        readingStreak: 12,
-        mostUsedEmoji,
-        completionRate: Math.round((Object.keys(state.completedSegments).length / Object.keys(SegmentTitles).length) * 100)
-      });
+        // Get enhanced insights
+        const [bookInsights, storyInsights, lastReaction, activityInsights] = await Promise.all([
+          dataCheck.hasReadBooks ? getBookInsights(favoriteBookKey) : null,
+          favoriteSegmentId && dataCheck.hasReadStories ? getStoryInsights(favoriteSegmentId) : null,
+          dataCheck.hasEmojis ? getLastReactionData() : null,
+          dataCheck.hasActivity ? getUserActivityInsights() : null,
+        ]);
+
+        setEnhancedInsights({
+          bookInsights,
+          storyInsights,
+          lastReaction,
+          activityInsights,
+          dataAvailability: dataCheck,
+        });
+      } catch (error) {
+        console.error('Error calculating insights:', error);
+      }
     };
 
     calculateInsights();
@@ -1095,56 +1286,64 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
   useFocusEffect(
     React.useCallback(() => {
       const calculateInsights = async () => {
-        const emojiData = await getEmojis();
-        
-        // Calculate most used emoji
-        const emojiCounts = emojiData.reduce((acc: {[key: string]: number}, curr: any) => {
-          acc[curr.emoji] = (acc[curr.emoji] || 0) + 1;
-          return acc;
-        }, {});
-        const mostUsedEmoji = Object.entries(emojiCounts)
-          .sort(([,a], [,b]) => b - a)[0]?.[0] || '👍';
+        try {
+          // Check data availability first
+          const dataCheck = await hasUserData();
+          
+          // Get basic insights
+          const emojiData = await getEmojis();
+          
+          // Get last used emoji instead of most used
+          const lastUsedEmoji = emojiData.length > 0 ? (emojiData[emojiData.length - 1] as any)?.emoji || '👍' : '👍';
 
-        // Calculate segment read counts and book counts
-        const segmentCounts: {[key: string]: number} = {};
-        const bookCounts: {[key: string]: number} = {};
+          // Calculate segment read counts and book counts
+          const segmentCounts: {[key: string]: number} = {};
+          const bookCounts: {[key: string]: number} = {};
 
-        Object.entries(state.completedSegments).forEach(([segmentId, seg]) => {
-          if (seg) {
-            // Count segment reads using the key as the ID
-            segmentCounts[segmentId] = (segmentCounts[segmentId] || 0) + 1;
-            
-            // Count book reads
-            const book = SegmentTitles[segmentId]?.book[0] || 'Unknown';
-            bookCounts[book] = (bookCounts[book] || 0) + 1;
-          }
-        });
+          Object.entries(state.completedSegments).forEach(([segmentId, seg]) => {
+            if (seg) {
+              segmentCounts[segmentId] = (segmentCounts[segmentId] || 0) + 1;
+              const book = (SegmentTitlesData as any)[segmentId]?.book[0] || 'Unknown';
+              bookCounts[book] = (bookCounts[book] || 0) + 1;
+            }
+          });
 
-        // Find favorite book and segment
-        const favoriteBookKey = Object.entries(bookCounts)
-          .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Gen';
-        
-        // Map short book name to full name
-        const bookNameMapping: { [key: string]: string } = {
-          'Gen': 'Genesis',
-          'Exo': 'Exodus',
-          // ... add other book mappings
-        };
+          const favoriteBookKey = Object.entries(bookCounts)
+            .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Gen';
+          
+          const favoriteSegmentId = Object.entries(segmentCounts)
+            .sort(([,a], [,b]) => b - a)[0]?.[0];
 
-        const favoriteSegmentId = Object.entries(segmentCounts)
-          .sort(([,a], [,b]) => b - a)[0]?.[0];
-
-        setInsights({
-          favoriteBook: favoriteBookKey,
-          favoriteBookFullName: bookNameMapping[favoriteBookKey] || favoriteBookKey,
-          favoriteSegmentId,
-          favoriteSegment: favoriteSegmentId 
-            ? SegmentTitles[favoriteSegmentId]?.title || 'Unknown'
+          setInsights({
+            favoriteBook: favoriteBookKey,
+            favoriteBookFullName: getFullBookName(favoriteBookKey),
+            favoriteSegmentId,
+                      favoriteSegment: favoriteSegmentId 
+            ? (SegmentTitlesData as any)[favoriteSegmentId]?.title || 'Unknown'
             : 'Not enough data',
           readingStreak: 12,
-          mostUsedEmoji,
-          completionRate: Math.round((Object.keys(state.completedSegments).length / Object.keys(SegmentTitles).length) * 100)
-        });
+          lastUsedEmoji,
+          completionRate: Math.round((Object.keys(state.completedSegments).length / Object.keys(SegmentTitlesData).length) * 100)
+          });
+
+          // Get enhanced insights
+          const [bookInsights, storyInsights, lastReaction, activityInsights] = await Promise.all([
+            dataCheck.hasReadBooks ? getBookInsights(favoriteBookKey) : null,
+            favoriteSegmentId && dataCheck.hasReadStories ? getStoryInsights(favoriteSegmentId) : null,
+            dataCheck.hasEmojis ? getLastReactionData() : null,
+            dataCheck.hasActivity ? getUserActivityInsights() : null,
+          ]);
+
+          setEnhancedInsights({
+            bookInsights,
+            storyInsights,
+            lastReaction,
+            activityInsights,
+            dataAvailability: dataCheck,
+          });
+        } catch (error) {
+          console.error('Error refreshing insights:', error);
+        }
       };
 
       calculateInsights();
@@ -1166,10 +1365,20 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
   };
 
   const handleEmojiPress = () => {
-    router.push({
-      pathname: "/Reading-emoji",
-      params: { selectedEmoji: insights.mostUsedEmoji }
-    });
+    if (enhancedInsights.lastReaction) {
+      router.push({
+        pathname: "/[segment]",
+        params: {
+          segment: `ENG-NLT-${enhancedInsights.lastReaction.segmentId}`,
+          book: enhancedInsights.lastReaction.segmentId.substring(1, 4),
+        }
+      });
+    } else {
+      router.push({
+        pathname: "/Reading-emoji",
+        params: { selectedEmoji: insights.lastUsedEmoji }
+      });
+    }
   };
 
   // Define icon colors that work well in both light and dark modes
@@ -1193,60 +1402,404 @@ const InsightsSection = ({ styles }: { styles: SectionStyles }) => {
     return icons[index % icons.length];
   };
 
+  // Create card data array with conditional inclusion based on available data
+  const cardsData = [
+    // Always show streak card
+    {
+      id: 'streak',
+      type: 'streak',
+      icon: '🔥',
+      title: 'Reading Streak',
+      backgroundColor: colors.card,
+    },
+    // Show favorite book if user has read books
+    ...(enhancedInsights.dataAvailability.hasReadBooks ? [{
+      id: 'favorite-book',
+      type: 'favorite-book',
+      icon: '📚',
+      title: 'Favorite Book',
+      value: insights.favoriteBookFullName,
+      backgroundColor: colors.card,
+      onPress: handleBookPress,
+      insights: enhancedInsights.bookInsights,
+    }] : []),
+    // Show favorite story if user has read stories
+    ...(enhancedInsights.dataAvailability.hasReadStories && insights.favoriteSegmentId ? [{
+      id: 'favorite-story',
+      type: 'favorite-story',
+      icon: '📖',
+      title: 'Favorite Story',
+      value: insights.favoriteSegment,
+      backgroundColor: colors.card,
+      onPress: handleStoryPress,
+      insights: enhancedInsights.storyInsights,
+    }] : []),
+    // Show last reaction if user has emojis
+    ...(enhancedInsights.dataAvailability.hasEmojis ? [{
+      id: 'emoji',
+      type: 'emoji',
+      icon: '💬',
+      title: 'Reactions',
+      value: enhancedInsights.lastReaction?.emoji || insights.lastUsedEmoji,
+      backgroundColor: colors.card,
+      onPress: handleEmojiPress,
+      lastReaction: enhancedInsights.lastReaction,
+    }] : []),
+
+    // Show activity insights if user has activity data
+    ...(enhancedInsights.dataAvailability.hasActivity ? [{
+      id: 'activity',
+      type: 'activity',
+      icon: '⚡',
+      title: 'Reading Habits',
+      backgroundColor: colors.card,
+      insights: enhancedInsights.activityInsights,
+    }] : []),
+  ];
+
+  const renderCard = ({ item }: { item: any }) => {
+    // Helper function to format date
+    const formatDate = (dateString: string | null) => {
+      if (!dateString) return 'Never';
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0) return 'Today';
+      if (diffDays === 1) return 'Yesterday';
+      if (diffDays < 7) return `${diffDays} days ago`;
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+      return `${Math.floor(diffDays / 30)} months ago`;
+    };
+
+    // Helper function to render insight bullets
+    const renderInsights = (insights: any[], maxShow: number = 4) => {
+      return insights.slice(0, maxShow).map((insight, index) => (
+        <Text key={index} style={[localStyles.cardSubtitle, { 
+          fontSize: sizes.caption * 0.9, 
+          marginBottom: 2,
+          fontWeight: '500' 
+        }]}>
+          • {insight}
+        </Text>
+      ));
+    };
+
+    if (item.type === 'streak') {
+      return (
+        <View style={[localStyles.insightCard, { backgroundColor: item.backgroundColor }]}>
+          <View style={localStyles.cardHeader}>
+            <Text style={localStyles.cardIcon}>{item.icon}</Text>
+            <Text style={localStyles.cardTitle}>{item.title}</Text>
+          </View>
+
+          
+          <View style={localStyles.streakMainContent}>
+            <View style={localStyles.streakCircleContainer}>
+              <View style={localStyles.streakCircle}>
+                <Text style={localStyles.streakNumber}>{currentStreak}</Text>
+                <Text style={localStyles.streakDaysText}>days</Text>
+              </View>
+              <View style={localStyles.streakProgress} />
+            </View>
+            
+            <View style={localStyles.streakTextContainer}>
+              <Text style={localStyles.streakMessage}>
+                {currentStreak === 1 ? 'Great start! Keep it going!' : 
+                 currentStreak < 7 ? `Great start! Keep it going!` :
+                 'Amazing streak! Keep it up!'}
+              </Text>
+              <Text style={localStyles.streakGoal}>
+                {currentStreak < 7 ? `${7 - currentStreak} more days to 7!` : 'Keep building your streak!'}
+              </Text>
+            </View>
+          </View>
+          
+          <View style={localStyles.streakStatus}>
+            <View style={[localStyles.streakStatusDot, { backgroundColor: isTodayComplete ? '#4CAF50' : '#FF9800' }]} />
+            <Text style={localStyles.streakStatusText}>
+              {isTodayComplete ? "Today's reading complete" : "Keep building your streak!"}
+            </Text>
+          </View>
+        </View>
+      );
+    }
+
+    if (item.type === 'favorite-book') {
+      const bookInsights = item.insights;
+      const insights = [];
+      
+      if (bookInsights) {
+        // Show book completion count (how many times the entire book was read)
+        if (bookInsights.totalReads > 0) {
+          insights.push(`Book completed ${bookInsights.totalReads} time${bookInsights.totalReads !== 1 ? 's' : ''}`);
+        }
+        // Show how many stories read from this book
+        if (bookInsights.storiesRead > 0) {
+          insights.push(`${bookInsights.storiesRead}/${bookInsights.totalStories} stories read`);
+        }
+        // Show most read story from this book
+        if (bookInsights.favoriteStory) {
+          const storyTitle = SegmentTitlesData[bookInsights.favoriteStory as keyof typeof SegmentTitlesData] as any;
+          const shortTitle = storyTitle?.title ? 
+            (storyTitle.title.length > 25 ? storyTitle.title.substring(0, 25) + '...' : storyTitle.title) :
+            'Unknown Story';
+          insights.push(`Most read: "${shortTitle}"`);
+        }
+        if (bookInsights.lastReadDate) {
+          insights.push(`Last read ${formatDate(bookInsights.lastReadDate)}`);
+        }
+      }
+
+      return (
+        <Pressable 
+          style={({ pressed }) => [
+            localStyles.insightCard,
+            { backgroundColor: item.backgroundColor },
+            pressed && { opacity: 0.8 }
+          ]}
+          onPress={item.onPress}
+        >
+          <View style={localStyles.cardHeader}>
+            <Text style={localStyles.cardIcon}>{item.icon}</Text>
+            <Text style={[localStyles.cardTitle, { fontSize: sizes.body, fontWeight: '600' }]}>{item.title}</Text>
+          </View>
+          <Text style={[localStyles.cardValue, { fontSize: sizes.subtitle, fontWeight: '700' }]} numberOfLines={1}>
+            {item.value}
+          </Text>
+          {insights.length > 0 && (
+            <View style={{ marginTop: 8 }}>
+              {renderInsights(insights)}
+            </View>
+          )}
+        </Pressable>
+      );
+    }
+
+    if (item.type === 'favorite-story') {
+      const storyInsights = item.insights;
+      const insights = [];
+      
+      if (storyInsights) {
+        if (storyInsights.totalReads > 0) {
+          insights.push(`Read ${storyInsights.totalReads} time${storyInsights.totalReads !== 1 ? 's' : ''}`);
+        }
+        if (storyInsights.lastReadDate) {
+          insights.push(`Last read ${formatDate(storyInsights.lastReadDate)}`);
+        }
+        if (storyInsights.firstReadDate) {
+          insights.push(`First read ${formatDate(storyInsights.firstReadDate)}`);
+        }
+        if (storyInsights.groupReads > 0) {
+          insights.push(`${storyInsights.groupReads} group session${storyInsights.groupReads !== 1 ? 's' : ''}`);
+        }
+        if (storyInsights.readInPlans > 0 || storyInsights.readInChallenges > 0) {
+          const contexts = [];
+          if (storyInsights.readInPlans > 0) contexts.push(`${storyInsights.readInPlans} plan${storyInsights.readInPlans !== 1 ? 's' : ''}`);
+          if (storyInsights.readInChallenges > 0) contexts.push(`${storyInsights.readInChallenges} challenge${storyInsights.readInChallenges !== 1 ? 's' : ''}`);
+          insights.push(`Read in ${contexts.join(', ')}`);
+        }
+      }
+
+      return (
+        <Pressable 
+          style={({ pressed }) => [
+            localStyles.insightCard,
+            { backgroundColor: item.backgroundColor },
+            pressed && { opacity: 0.8 }
+          ]}
+          onPress={item.onPress}
+        >
+          <View style={localStyles.cardHeader}>
+            <Text style={localStyles.cardIcon}>{item.icon}</Text>
+            <Text style={[localStyles.cardTitle, { fontSize: sizes.body, fontWeight: '600' }]}>{item.title}</Text>
+          </View>
+          <Text style={[localStyles.cardValue, { fontSize: sizes.subtitle, fontWeight: '700' }]} numberOfLines={2}>
+            {item.value}
+          </Text>
+          {insights.length > 0 && (
+            <View style={{ marginTop: 8 }}>
+              {renderInsights(insights)}
+            </View>
+          )}
+        </Pressable>
+      );
+    }
+
+    if (item.type === 'emoji') {
+      const lastReaction = item.lastReaction;
+      
+      return (
+        <Pressable 
+          style={({ pressed }) => [
+            localStyles.insightCard,
+            { backgroundColor: item.backgroundColor },
+            pressed && { opacity: 0.8 }
+          ]}
+          onPress={item.onPress}
+        >
+          <View style={localStyles.cardHeader}>
+            <Text style={localStyles.cardIcon}>{item.icon}</Text>
+            <Text style={[localStyles.cardTitle, { fontSize: sizes.body, fontWeight: '600' }]}>{item.title}</Text>
+          </View>
+          
+          {lastReaction && (
+            <View style={{ marginTop: 8, flex: 1 }}>
+              {/* Speech bubble with proper styling */}
+              <View style={{ position: 'relative', marginBottom: 8 }}>
+                {/* BibleBlock component for proper speech bubble styling */}
+                <View style={{
+                  backgroundColor: getSpeakerBackgroundColor(lastReaction.blockData?.source?.color),
+                  borderRadius: 12,
+                  padding: 12,
+                  position: 'relative',
+                  minHeight: 60,
+                }}>
+                  {/* Speaker name */}
+                  {lastReaction.blockData?.source?.sourceName && (
+                    <Text style={{
+                      fontSize: sizes.caption * 0.85,
+                      fontWeight: '600',
+                      color: getSpeakerTextColor(lastReaction.blockData.source.color),
+                      marginBottom: 4,
+                      opacity: 0.8,
+                    }}>
+                      {lastReaction.blockData.source.sourceName.toUpperCase()}
+                    </Text>
+                  )}
+                  
+                  {/* Block text preview */}
+                  <Text style={{
+                    fontSize: sizes.caption,
+                    color: getSpeakerTextColor(lastReaction.blockData?.source?.color),
+                    lineHeight: 16,
+                  }} numberOfLines={2}>
+                    {getBlockText(lastReaction.blockData)}
+                  </Text>
+                  
+                  {/* Emoji overlay positioned like in Reading-emoji */}
+                  <Text style={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    fontSize: 20,
+                    zIndex: 1,
+                  }}>
+                    {item.value}
+                  </Text>
+                </View>
+              </View>
+              
+              {/* Reference */}
+              <Text style={[localStyles.cardSubtitle, { 
+                fontSize: sizes.caption * 0.9, 
+                fontWeight: '500',
+                textAlign: 'center',
+                marginBottom: 2,
+                color: colors.secondary,
+              }]}>
+                {getSegmentReference(lastReaction.segmentId)}
+              </Text>
+              
+              {/* Story title */}
+              <Text style={[localStyles.cardSubtitle, { 
+                fontSize: sizes.caption * 0.8,
+                textAlign: 'center',
+                fontStyle: 'italic',
+                color: colors.secondary,
+                opacity: 0.7,
+              }]}>
+                "{lastReaction.storyTitle}"
+              </Text>
+            </View>
+          )}
+        </Pressable>
+      );
+    }
+
+    if (item.type === 'activity') {
+      const activityInsights = item.insights;
+      const insights = [];
+      
+      if (activityInsights) {
+        if (activityInsights.favoriteTimeOfDay) {
+          insights.push(`Prefers ${activityInsights.favoriteTimeOfDay} reading`);
+        }
+        if (activityInsights.preferredReadingMode) {
+          insights.push(`${activityInsights.preferredReadingMode === 'mixed' ? 'Mixed' : activityInsights.preferredReadingMode} reader`);
+        }
+        if (activityInsights.longestSession > 1) {
+          insights.push(`Longest: ${activityInsights.longestSession} stories`);
+        }
+        if (activityInsights.averageSessionLength > 0) {
+          insights.push(`Avg: ${activityInsights.averageSessionLength} stories/session`);
+        }
+        if (activityInsights.mostActiveDay) {
+          insights.push(`Most active: ${activityInsights.mostActiveDay}s`);
+        }
+        if (activityInsights.readingPattern) {
+          const pattern = activityInsights.readingPattern === 'single' ? 'one story' : 
+                         activityInsights.readingPattern === 'multiple' ? 'multiple stories' : 'mixed sessions';
+          insights.push(`Usually reads ${pattern}`);
+        }
+      }
+
+      return (
+        <View style={[localStyles.insightCard, { backgroundColor: item.backgroundColor }]}>
+          <View style={localStyles.cardHeader}>
+            <Text style={localStyles.cardIcon}>{item.icon}</Text>
+            <Text style={[localStyles.cardTitle, { fontSize: sizes.body, fontWeight: '600' }]}>{item.title}</Text>
+          </View>
+          {activityInsights?.totalDaysActive && (
+            <Text style={[localStyles.cardValue, { fontSize: sizes.subtitle, fontWeight: '700' }]}>
+              {activityInsights.totalDaysActive} active day{activityInsights.totalDaysActive !== 1 ? 's' : ''}
+            </Text>
+          )}
+          {insights.length > 0 && (
+            <View style={{ marginTop: 8 }}>
+              {renderInsights(insights)}
+            </View>
+          )}
+        </View>
+      );
+    }
+
+    // Default card rendering for completion and other types
+    return (
+      <Pressable 
+        style={({ pressed }) => [
+          localStyles.insightCard,
+          { backgroundColor: item.backgroundColor },
+          pressed && { opacity: 0.8 }
+        ]}
+        onPress={item.onPress}
+      >
+        <View style={localStyles.cardHeader}>
+          <Text style={localStyles.cardIcon}>{item.icon}</Text>
+          <Text style={[localStyles.cardTitle, { fontSize: sizes.body, fontWeight: '600' }]}>{item.title}</Text>
+        </View>
+        <Text style={[localStyles.cardValue, { fontSize: sizes.subtitle, fontWeight: '700' }]}>
+          {item.value}
+        </Text>
+      </Pressable>
+    );
+  };
+
   return (
     <View style={styles.section}>
-      <Text style={localStyles.sectionTitle}>{t('UI.home.readingJourney')}</Text>
-      <View style={styles.insightCards}>
-        <Pressable 
-          style={({pressed}) => [
-            styles.insightCard,
-            pressed && styles.insightCardPressed
-          ]}
-          onPress={handleBookPress}
-        >
-          <View style={[localStyles.insightIcon, { backgroundColor: getIconColor(0) }]}>
-            <Ionicons name={getIconName(0) as any} size={22} color={getIconTextColor(0)} />
-          </View>
-          <Text style={styles.insightTitle}>{t('UI.home.favoriteBook')}</Text>
-          <Text style={styles.insightValue}>{insights.favoriteBookFullName}</Text>
-        </Pressable>
-
-        <Pressable 
-          style={({pressed}) => [
-            styles.insightCard,
-            pressed && styles.insightCardPressed
-          ]}
-          onPress={handleStoryPress}
-        >
-          <View style={[localStyles.insightIcon, { backgroundColor: getIconColor(1) }]}>
-            <Ionicons name={getIconName(1) as any} size={22} color={getIconTextColor(1)} />
-          </View>
-          <Text style={styles.insightTitle}>{t('UI.home.favoriteStory')}</Text>
-          <Text style={styles.insightValue} numberOfLines={2}>{insights.favoriteSegment}</Text>
-        </Pressable>
-
-        <Pressable 
-          style={({pressed}) => [
-            styles.insightCard,
-            pressed && styles.insightCardPressed
-          ]}
-          onPress={handleEmojiPress}
-        >
-          <View style={[localStyles.insightIcon, { backgroundColor: getIconColor(2) }]}>
-            <Ionicons name={getIconName(2) as any} size={22} color={getIconTextColor(2)} />
-          </View>
-          <Text style={styles.insightTitle}>{t('UI.home.mostUsedReaction')}</Text>
-          <Text style={styles.insightValue}>{insights.mostUsedEmoji}</Text>
-        </Pressable>
-
-        <View style={styles.insightCard}>
-          <View style={[localStyles.insightIcon, { backgroundColor: getIconColor(3) }]}>
-            <Ionicons name={getIconName(3) as any} size={22} color={getIconTextColor(3)} />
-          </View>
-          <Text style={styles.insightTitle}>{t('UI.home.completion')}</Text>
-          <Text style={styles.insightValue}>{insights.completionRate}%</Text>
-        </View>
-      </View>
+      <Text style={styles.sectionTitle}>Reading Insights</Text>
+      <FlatList
+        data={cardsData}
+        renderItem={renderCard}
+        keyExtractor={(item) => item.id}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={localStyles.carouselContainer}
+        snapToInterval={296} // Card width (280) + margin (16)
+        snapToAlignment="start"
+        decelerationRate="fast"
+      />
     </View>
   );
 };
@@ -1940,6 +2493,54 @@ const Home = () => {
     }
   };
 
+  // Helper to get full book name from code
+  const getBookFullName = (bookCode: string) => {
+    const bookNameMapping: { [key: string]: string } = {
+      'Gen': 'Genesis', 'Exo': 'Exodus', 'Lev': 'Leviticus', 'Num': 'Numbers', 'Deu': 'Deuteronomy',
+      'Jos': 'Joshua', 'Jdg': 'Judges', 'Rut': 'Ruth', '1Sa': '1 Samuel', '2Sa': '2 Samuel',
+      '1Ki': '1 Kings', '2Ki': '2 Kings', '1Ch': '1 Chronicles', '2Ch': '2 Chronicles', 'Ezr': 'Ezra',
+      'Neh': 'Nehemiah', 'Est': 'Esther', 'Job': 'Job', 'Psa': 'Psalms', 'Pro': 'Proverbs',
+      'Ecc': 'Ecclesiastes', 'SoS': 'Song of Solomon', 'Isa': 'Isaiah', 'Jer': 'Jeremiah', 'Lam': 'Lamentations',
+      'Eze': 'Ezekiel', 'Dan': 'Daniel', 'Hos': 'Hosea', 'Joe': 'Joel', 'Amo': 'Amos', 'Oba': 'Obadiah',
+      'Jon': 'Jonah', 'Mic': 'Micah', 'Nah': 'Nahum', 'Hab': 'Habakkuk', 'Zep': 'Zephaniah', 'Hag': 'Haggai',
+      'Zec': 'Zechariah', 'Mal': 'Malachi', 'Mat': 'Matthew', 'Mar': 'Mark', 'Luk': 'Luke', 'Joh': 'John',
+      'Act': 'Acts', 'Rom': 'Romans', '1Co': '1 Corinthians', '2Co': '2 Corinthians', 'Gal': 'Galatians',
+      'Eph': 'Ephesians', 'Php': 'Philippians', 'Col': 'Colossians', '1Th': '1 Thessalonians', '2Th': '2 Thessalonians',
+      '1Ti': '1 Timothy', '2Ti': '2 Timothy', 'Tit': 'Titus', 'Phm': 'Philemon', 'Heb': 'Hebrews', 'Jam': 'James',
+      '1Pe': '1 Peter', '2Pe': '2 Peter', '1Jn': '1 John', '2Jn': '2 John', '3Jn': '3 John', 'Jud': 'Jude', 'Rev': 'Revelation'
+    };
+    return bookNameMapping[bookCode] || bookCode;
+  };
+
+  // Helper to format book reference from segment
+  const formatBookReference = (segment: any) => {
+    if (!segment) return '';
+    const bookName = segment.book && segment.book[0] ? segment.book[0] : '';
+    const bookFullName = getBookFullName(bookName);
+    return `${bookFullName}${segment.ref ? ` (${segment.ref})` : ''}`;
+  };
+
+  // Helper to format today's date (e.g., "Tuesday 8th Aug")
+  const formatTodaysDate = () => {
+    const today = new Date();
+    const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+    const day = today.getDate();
+    const month = today.toLocaleDateString('en-US', { month: 'short' });
+    
+    // Add ordinal suffix
+    const getOrdinalSuffix = (num: number) => {
+      if (num >= 11 && num <= 13) return 'th';
+      switch (num % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
+    };
+    
+    return `${dayName} ${day}${getOrdinalSuffix(day)} ${month}`;
+  };
+
   // Helper to check if there is at least one valid active plan or challenge
   const hasActivePlan = !!(activePlan && activePlan.planId && ReadingPlansChallenges.plans.find((plan: any) => plan.id === activePlan.planId && !activePlan.isCompleted && !activePlan.isPaused) && !activePlanDailyCompleted);
   const hasActiveChallenge = Object.values(activeChallenges).some((challenge: any) => {
@@ -1948,7 +2549,16 @@ const Home = () => {
     if (activeChallengesDailyCompleted[challenge.challengeId]) return false;
     return ReadingPlansChallenges.challenges.some((c: any) => c.id === challenge.challengeId);
   });
-  const showActiveReadingSection = hasActivePlan || hasActiveChallenge;
+  
+  // Today's reading info
+  const today = new Date();
+  const dayOfYear = getDayOfYear(today);
+  const dailySegmentId = (DailyStoryMap as string[])[(dayOfYear - 1) % DailyStoryMap.length];
+  const dailySegment = SegmentTitles[dailySegmentId as keyof typeof SegmentTitles];
+  const hasTodaysReading = !!(dailySegment && !isDailySegmentCompleted);
+  
+  // Show the section if there's Today's Reading, active plans, or active challenges
+  const showTodaysStoriesSection = hasTodaysReading || hasActivePlan || hasActiveChallenge;
 
   return (
     <View style={localStyles.container}>
@@ -1969,20 +2579,20 @@ const Home = () => {
           fontSize: 10,
           fontWeight: '600'
         }}>
-          Version: Global Read Count v2.9
+          Version: Consistent Cards v6.3
         </Text>
         <Text style={{
           color: 'white',
           fontSize: 8,
           marginTop: 2
         }}>
-          ✅ Global read count across all contexts
+          ✅ Original start button & green calendar
         </Text>
         <Text style={{
           color: 'white',
           fontSize: 8
         }}>
-          ✅ Group reading resets & counts correctly
+          ✅ Consistent card format: Title, Story, Reference
         </Text>
       </View>
       
@@ -2085,17 +2695,31 @@ const Home = () => {
           </View>
         </View>
 
-      <ContinueReadingSection 
-        lastReadSegment={state.lastReadSegment}
-        onPress={handleContinueReading}
-        styles={combinedStyles}
-        colors={colors}
-      />
-
-        {/* Active Reading Plans */}
-        {showActiveReadingSection && (
+        {/* Today's Stories Section */}
+        {showTodaysStoriesSection && (
           <View style={styles.activeReadingSection}>
-            <Text style={styles.sectionTitle}>Your Active Reading</Text>
+            <Text style={styles.sectionTitle}>Today's Stories</Text>
+            
+            {/* Today's Reading - Always first */}
+            {hasTodaysReading && dailySegment && (
+              <View style={styles.activeReadingCard}>
+                <View style={styles.activeReadingContent}>
+                  <View style={[styles.activeReadingIcon, { backgroundColor: '#4CAF50' }]}> 
+                    <Ionicons name="calendar-outline" size={24} color="#FFFFFF" />
+                  </View>
+                  <View style={styles.activeReadingInfo}>
+                    <Text style={styles.activeReadingTitle}>{formatTodaysDate()}</Text>
+                    <Text style={styles.activeReadingSubtitle}>{dailySegment.title}</Text>
+                    <Text style={styles.activeReadingSubtitle}>
+                      {formatBookReference(dailySegment)}
+                    </Text>
+                  </View>
+                  <TouchableOpacity style={styles.continueButtonIcon} onPress={() => handleContinueReading(dailySegmentId)}>
+                    <Ionicons name="play-circle-outline" size={24} color="#666666" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
             {hasActivePlan && activePlan && (
               (() => {
                 const planData = ReadingPlansChallenges.plans.find((plan: any) => plan.id === activePlan.planId);
@@ -2110,12 +2734,14 @@ const Home = () => {
                       <View style={styles.activeReadingInfo}>
                         <Text style={styles.activeReadingTitle}>{planData.title}</Text>
                         <Text style={styles.activeReadingSubtitle}>
-                          {planProgress?.nextSegmentTitle 
-                            ? `Next: ${planProgress.nextSegmentTitle}` 
-                            : 'Plan Completed!'}
+                          {planProgress?.nextSegmentTitle || 'Plan Completed!'}
                         </Text>
-                        <Text style={styles.activeReadingProgress}>
-                          {planProgress ? `${Math.round(planProgress.progressPercentage)}% complete` : 'Loading...'}
+                        <Text style={styles.activeReadingSubtitle}>
+                          {(() => {
+                            if (!planProgress?.nextSegmentId) return '';
+                            const segment = SegmentTitles[planProgress.nextSegmentId as keyof typeof SegmentTitles];
+                            return formatBookReference(segment);
+                          })()}
                         </Text>
                       </View>
                       <TouchableOpacity style={styles.continueButtonIcon} onPress={() => handleActivePlanContinue()}>
@@ -2141,12 +2767,14 @@ const Home = () => {
                     <View style={styles.activeReadingInfo}>
                       <Text style={styles.activeReadingTitle}>{challengeData.title}</Text>
                       <Text style={styles.activeReadingSubtitle}>
-                        {progressData?.nextSegmentTitle 
-                          ? `Next: ${progressData.nextSegmentTitle}` 
-                          : 'Challenge Completed!'}
+                        {progressData?.nextSegmentTitle || 'Challenge Completed!'}
                       </Text>
-                      <Text style={styles.activeReadingProgress}>
-                        {progressData ? `${Math.round(progressData.progressPercentage)}% complete` : 'Loading...'}
+                      <Text style={styles.activeReadingSubtitle}>
+                        {(() => {
+                          if (!progressData?.nextSegmentId) return '';
+                          const segment = SegmentTitles[progressData.nextSegmentId as keyof typeof SegmentTitles];
+                          return formatBookReference(segment);
+                        })()}
                       </Text>
                     </View>
                     <TouchableOpacity style={styles.continueButtonIcon} onPress={() => handleActiveChallengesContinue(id)}>
@@ -2159,46 +2787,12 @@ const Home = () => {
           </View>
         )}
 
-        {/* Reading Streak Card */}
-        <View style={styles.streakCard}>
-          <View style={styles.streakHeader}>
-            <Text style={styles.streakIcon}>🔥</Text>
-            <Text style={styles.streakTitle}>Reading Streak</Text>
-          </View>
-          <Text style={styles.streakBest}>Best: {bestStreak} days</Text>
-          
-          <View style={styles.streakMainContent}>
-            <View style={styles.streakCircleContainer}>
-              <View style={styles.streakCircle}>
-                <Text style={styles.streakNumber}>{currentStreak}</Text>
-                <Text style={styles.streakDaysText}>days</Text>
-              </View>
-              <View style={styles.streakProgress} />
-            </View>
-            
-            <View style={styles.streakTextContainer}>
-              <Text style={styles.streakMessage}>
-                {currentStreak === 1 ? 'Great start! Keep it going!' : 
-                 currentStreak < 7 ? `Great start! Keep it going!` :
-                 'Amazing streak! Keep it up!'}
-              </Text>
-              <Text style={styles.streakGoal}>
-                {currentStreak < 7 ? `${7 - currentStreak} more days to 7!` : 'Keep building your streak!'}
-              </Text>
-            </View>
-          </View>
-          
-          <View style={styles.streakStatus}>
-            <View style={[styles.streakStatusDot, { backgroundColor: isTodayComplete ? '#4CAF50' : '#FF9800' }]} />
-            <Text style={styles.streakStatusText}>
-              {isTodayComplete ? "Today's reading complete" : "Keep building your streak!"}
-            </Text>
-          </View>
-        </View>
-
-
-
-        <InsightsSection styles={combinedStyles} />
+        <ReadingInsightsCarousel 
+          styles={combinedStyles} 
+          currentStreak={currentStreak}
+          bestStreak={bestStreak}
+          isTodayComplete={isTodayComplete}
+        />
         <View style={{ height: 80 }} />
       </ScrollView>
 
