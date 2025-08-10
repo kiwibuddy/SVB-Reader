@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import logger from '@/utils/logger';import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -245,7 +245,7 @@ const Achievements = () => {
         setBookProgress(progressData);
 
       } catch (error) {
-        console.error('Error loading achievement stats:', error);
+        logger.error('Error loading achievement stats:', error);
         setError('Failed to load achievements. Please check your connection and try again.');
       } finally {
         setIsLoading(false);

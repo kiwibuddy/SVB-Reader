@@ -1,5 +1,5 @@
 import { databaseManager } from './database-manager';
-import { settingsHelpers } from '@/services/settings-manager';
+import logger from '@/utils/logger';import { settingsHelpers } from '@/services/settings-manager';
 
 // ============================================================================
 // ERROR HANDLING AND ROLLBACK MECHANISMS
@@ -73,7 +73,7 @@ export async function startTransaction(description: string): Promise<string> {
   try {
     const db = databaseManager.getDatabase();
     await db.execAsync('BEGIN TRANSACTION');
-    console.log(`🔄 Started transaction: ${transactionId} - ${description}`);
+    logger.info(`🔄 Started transaction: ${transactionId} - ${description}`);
   } catch (error) {
     activeTransactions.delete(transactionId);
     throw new DatabaseError(
@@ -115,7 +115,7 @@ export async function commitTransaction(transactionId: string): Promise<void> {
     const db = databaseManager.getDatabase();
     await db.execAsync('COMMIT');
     activeTransactions.delete(transactionId);
-    console.log(`✅ Committed transaction: ${transactionId}`);
+    logger.info(`✅ Committed transaction: ${transactionId}`);
   } catch (error) {
     // If commit fails, attempt rollback
     await rollbackTransaction(transactionId);
@@ -136,7 +136,7 @@ export async function commitTransaction(transactionId: string): Promise<void> {
 export async function rollbackTransaction(transactionId: string): Promise<void> {
   const transaction = activeTransactions.get(transactionId);
   if (!transaction) {
-    console.warn(`Transaction not found for rollback: ${transactionId}`);
+    logger.warn(`Transaction not found for rollback: ${transactionId}`);
     return;
   }
   
@@ -146,10 +146,10 @@ export async function rollbackTransaction(transactionId: string): Promise<void> 
     // First, rollback the database transaction
     const db = databaseManager.getDatabase();
     await db.execAsync('ROLLBACK');
-    console.log(`🔄 Database transaction rolled back: ${transactionId}`);
+    logger.info(`🔄 Database transaction rolled back: ${transactionId}`);
   } catch (error) {
     errors.push(error as Error);
-    console.error(`Error rolling back database transaction ${transactionId}:`, error);
+    logger.error(`Error rolling back database transaction ${transactionId}:`, error);
   }
   
   // Execute custom rollback operations in reverse order
@@ -157,10 +157,10 @@ export async function rollbackTransaction(transactionId: string): Promise<void> 
     const operation = transaction.rollbackOperations[i];
     try {
       await operation.execute();
-      console.log(`✅ Executed rollback: ${operation.description}`);
+      logger.info(`✅ Executed rollback: ${operation.description}`);
     } catch (error) {
       errors.push(error as Error);
-      console.error(`❌ Failed rollback operation: ${operation.description}`, error);
+      logger.error(`❌ Failed rollback operation: ${operation.description}`, error);
     }
   }
   
@@ -170,7 +170,7 @@ export async function rollbackTransaction(transactionId: string): Promise<void> 
     throw new Error(`Rollback completed with ${errors.length} errors: ${errors.map(e => e.message).join(', ')}`);
   }
   
-  console.log(`🔄 Transaction rolled back successfully: ${transactionId}`);
+  logger.info(`🔄 Transaction rolled back successfully: ${transactionId}`);
 }
 
 // ============================================================================
@@ -249,7 +249,7 @@ export async function safeMigrationExecute<T>(
  */
 export async function recoverFromCorruption(): Promise<boolean> {
   try {
-    console.log('🔧 Attempting database recovery...');
+    logger.info('🔧 Attempting database recovery...');
     
     // Close current database connection
     await databaseManager.close();
@@ -261,10 +261,10 @@ export async function recoverFromCorruption(): Promise<boolean> {
     const db = databaseManager.getDatabase();
     await db.getFirstAsync('SELECT 1');
     
-    console.log('✅ Database recovery successful');
+    logger.info('✅ Database recovery successful');
     return true;
   } catch (error) {
-    console.error('❌ Database recovery failed:', error);
+    logger.error('❌ Database recovery failed:', error);
     return false;
   }
 }
@@ -280,10 +280,10 @@ export async function createSettingsBackup(): Promise<string> {
     // Store backup temporarily (you might want to use a different storage mechanism)
     await settingsHelpers.setSetting('autoBackup', true);
     
-    console.log(`📦 Settings backup created: ${backupKey}`);
+    logger.info(`📦 Settings backup created: ${backupKey}`);
     return backup;
   } catch (error) {
-    console.error('❌ Failed to create settings backup:', error);
+    logger.error('❌ Failed to create settings backup:', error);
     throw error;
   }
 }
@@ -294,9 +294,9 @@ export async function createSettingsBackup(): Promise<string> {
 export async function restoreSettingsBackup(backup: string): Promise<void> {
   try {
     await settingsHelpers.importSettings(backup);
-    console.log('✅ Settings restored from backup');
+    logger.info('✅ Settings restored from backup');
   } catch (error) {
-    console.error('❌ Failed to restore settings backup:', error);
+    logger.error('❌ Failed to restore settings backup:', error);
     throw error;
   }
 }
@@ -320,7 +320,7 @@ export function logError(error: Error, context: Partial<ErrorContext> = {}): voi
     }
   };
   
-  console.error('🚨 Error logged:', JSON.stringify(errorLog, null, 2));
+  logger.error('🚨 Error logged:', JSON.stringify(errorLog, null, 2));
   
   // In production, you might want to send this to a crash reporting service
   if (!__DEV__) {
@@ -336,7 +336,7 @@ export function handleCriticalError(error: Error, context: Partial<ErrorContext>
   logError(error, { ...context, operation: 'critical_error' });
   
   // In production, you might want to show a user-friendly error screen
-  console.error('💥 CRITICAL ERROR - App may need restart:', error.message);
+  logger.error('💥 CRITICAL ERROR - App may need restart:', error.message);
 }
 
 // ============================================================================

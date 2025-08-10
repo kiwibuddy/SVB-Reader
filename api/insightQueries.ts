@@ -1,5 +1,5 @@
 import { databaseManager } from './database-manager';
-
+import logger from '@/utils/logger';
 // ============================================================================
 // ENHANCED INSIGHT QUERIES
 // ============================================================================
@@ -138,7 +138,7 @@ export async function getBookInsights(bookCode: string): Promise<BookInsights> {
       completionPercentage: segmentIds.length > 0 ? Math.round((storiesRead / segmentIds.length) * 100) : 0,
     };
   } catch (error) {
-    console.error('Error getting book insights:', error);
+    logger.error('Error getting book insights:', error);
     return {
       totalReads: 0,
       storiesRead: 0,
@@ -210,7 +210,7 @@ export async function getStoryInsights(segmentId: string): Promise<StoryInsights
       readInChallenges: challengeReads?.count || 0,
     };
   } catch (error) {
-    console.error('Error getting story insights:', error);
+    logger.error('Error getting story insights:', error);
     return {
       totalReads: 0,
       lastReadDate: null,
@@ -259,7 +259,7 @@ export async function getLastReactionData(): Promise<LastReactionData | null> {
       date: new Date().toISOString(), // Since we don't have creation date, use current
     };
   } catch (error) {
-    console.error('Error getting last reaction:', error);
+    logger.error('Error getting last reaction:', error);
     return null;
   }
 }
@@ -402,7 +402,7 @@ export async function getUserActivityInsights(): Promise<UserActivityInsights> {
       totalDaysActive: activeDays?.count || 0,
     };
   } catch (error) {
-    console.error('Error getting user activity insights:', error);
+    logger.error('Error getting user activity insights:', error);
     return {
       favoriteTimeOfDay: null,
       preferredReadingMode: null,
@@ -457,7 +457,7 @@ export async function hasUserData(): Promise<{
       hasActivity: (activityCount?.count || 0) > 0,
     };
   } catch (error) {
-    console.error('Error checking user data:', error);
+    logger.error('Error checking user data:', error);
     return {
       hasEmojis: false,
       hasReadBooks: false,

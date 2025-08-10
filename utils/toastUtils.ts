@@ -1,6 +1,7 @@
 /**
  * Safe toast utilities to handle dynamic requires and prevent module loading errors
  */
+import logger from '@/utils/logger';
 
 let Toast: any = null;
 
@@ -12,7 +13,7 @@ const initializeToast = async () => {
     Toast = require('react-native-root-toast');
     return Toast;
   } catch (error) {
-    console.warn('Toast module not available:', error);
+    logger.warn('Toast module not available:', error);
     return null;
   }
 };
@@ -28,12 +29,12 @@ export const showToast = async (message: string, options: any = {}) => {
       
       ToastModule.show(message, { ...defaultOptions, ...options });
     } else {
-      console.log('Toast fallback:', message);
+      logger.info('Toast fallback:', message);
       // Fallback to console if toast is not available
     }
   } catch (error) {
-    console.warn('Error showing toast:', error);
-    console.log('Toast fallback:', message);
+    logger.warn('Error showing toast:', error);
+    logger.info('Toast fallback:', message);
   }
 };
 

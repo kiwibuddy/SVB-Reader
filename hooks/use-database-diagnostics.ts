@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import {
+import logger from '@/utils/logger';import {
   getDatabaseInfo,
   analyzeDataConflicts,
   isDatabaseOutdated,
@@ -55,7 +55,7 @@ export const useDatabaseDiagnostics = (): UseDatabaseDiagnosticsReturn => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(`Failed to load database info: ${errorMessage}`);
-      console.error('Database diagnostics error:', err);
+      logger.error('Database diagnostics error:', err);
     } finally {
       setLoading(false);
     }
@@ -70,7 +70,7 @@ export const useDatabaseDiagnostics = (): UseDatabaseDiagnosticsReturn => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(`Failed to check for updates: ${errorMessage}`);
-      console.error('Version check error:', err);
+      logger.error('Version check error:', err);
       return false;
     }
   }, []);
@@ -97,7 +97,7 @@ export const useDatabaseDiagnostics = (): UseDatabaseDiagnosticsReturn => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(`Migration failed: ${errorMessage}`);
-      console.error('Auto-migration error:', err);
+      logger.error('Auto-migration error:', err);
       return null;
     } finally {
       setLoading(false);
@@ -112,7 +112,7 @@ export const useDatabaseDiagnostics = (): UseDatabaseDiagnosticsReturn => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(`Failed to log diagnostics: ${errorMessage}`);
-      console.error('Diagnostics logging error:', err);
+      logger.error('Diagnostics logging error:', err);
     }
   }, []);
 

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import {
+import logger from '@/utils/logger';import {
   View,
   Text,
   StyleSheet,
@@ -50,13 +50,13 @@ export default function QRCodeScanner({
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
     
     try {
-      console.log('🔍 QR Code scanned:', scanResult.data.substring(0, 50) + '...');
+      logger.info('🔍 QR Code scanned:', scanResult.data.substring(0, 50) + '...');
       
       // Parse QR code data
       const session = qrCodeDiscoveryManager.parseSessionFromQRCode(scanResult.data);
       
       if (session) {
-        console.log('✅ Valid session QR code detected');
+        logger.info('✅ Valid session QR code detected');
         onQRCodeScanned(scanResult.data);
         return;
       }
@@ -65,13 +65,13 @@ export default function QRCodeScanner({
       const completionData = qrCodeDiscoveryManager.parseCompletionFromQRCode(scanResult.data);
       
       if (completionData) {
-        console.log('✅ Valid completion QR code detected');
+        logger.info('✅ Valid completion QR code detected');
         onQRCodeScanned(scanResult.data);
         return;
       }
       
       // Invalid QR code
-      console.log('🔴 Invalid QR code format');
+      logger.info('🔴 Invalid QR code format');
       Alert.alert(
         'Invalid QR Code',
         'This QR code is not recognized. Please scan a valid SourceView Together group reading QR code.',
@@ -92,7 +92,7 @@ export default function QRCodeScanner({
       );
       
     } catch (error) {
-      console.error('🔴 Error processing scanned QR code:', error);
+      logger.error('🔴 Error processing scanned QR code:', error);
       Alert.alert(
         'Error',
         'Failed to process QR code. Please try again.',

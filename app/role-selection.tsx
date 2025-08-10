@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
+import logger from '@/utils/logger';import {
   View,
   Text,
   StyleSheet,
@@ -47,7 +47,7 @@ export default function RoleSelectionScreen() {
         // Calculate available roles
         const roles = qrCodeDiscoveryManager.getAvailableRoles(hostRole as Role);
         setAvailableRoles(roles);
-        console.log('📱 Available roles for joining:', roles);
+        logger.info('📱 Available roles for joining:', roles);
       }
     }
   }, [qrCodeData, hostRole]);
@@ -69,13 +69,13 @@ export default function RoleSelectionScreen() {
 
     setIsLoading(true);
     try {
-      console.log('🔗 Joining session with role:', selectedRole);
-      console.log('🔗 User name:', userName);
+      logger.info('🔗 Joining session with role:', selectedRole);
+      logger.info('🔗 User name:', userName);
       
       const success = await joinSessionFromQR(qrCodeData as string, selectedRole, userName.trim());
       
       if (success) {
-        console.log('✅ Successfully joined session');
+        logger.info('✅ Successfully joined session');
         // Navigate to the story with the selected role
         router.push({
           pathname: '/[segment]',
@@ -85,7 +85,7 @@ export default function RoleSelectionScreen() {
         Alert.alert('Error', 'Failed to join session. Please try again.');
       }
     } catch (error) {
-      console.error('🔴 Error joining session:', error);
+      logger.error('🔴 Error joining session:', error);
       Alert.alert('Error', 'Failed to join session. Please try again.');
     } finally {
       setIsLoading(false);

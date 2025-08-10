@@ -1,5 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { StatusBar } from "expo-status-bar";
+import logger from '@/utils/logger';import { StatusBar } from "expo-status-bar";
 import { SQLiteGlobalProvider } from '@/context/SQLiteGlobalContext';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -32,15 +32,15 @@ function AppContent() {
         if (result.success) {
           // Database initialized successfully
           if (result.migrationPerformed) {
-            console.log('🔄 Data migration was performed');
+            logger.info('🔄 Data migration was performed');
           }
           setDbReady(true);
         } else {
-          console.error('❌ Database initialization failed:', result.error);
+          logger.error('❌ Database initialization failed:', result.error);
           setDbError(result.error || 'Unknown database error');
         }
       } catch (error) {
-        console.error('❌ Critical database error:', error);
+        logger.error('❌ Critical database error:', error);
         setDbError(error instanceof Error ? error.message : 'Critical database error');
       }
     };

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import logger from '@/utils/logger';import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar, useWindowDimensions } from 'react-native';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import BibleData from "@/assets/data/newBibleNLT1.json"
@@ -182,7 +182,7 @@ export default function BibleScreen() {
     const timer1 = setTimeout(scrollToTop, 50);
     const timer2 = setTimeout(scrollToTop, 200);
     
-    console.log(`📜 [BibleScreen] Resetting scroll position for segment ${segID}`);
+    logger.info(`📜 [BibleScreen] Resetting scroll position for segment ${segID}`);
     
     return () => {
       clearTimeout(timer1);

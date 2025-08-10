@@ -8,15 +8,28 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "description": "Experience the Bible in community with SourceView Together - a revolutionary app that transforms solo Bible reading into dynamic group experiences. Featuring role-based reading, emoji reactions, reading plans, challenges, and progress tracking for individuals and groups.",
+    "keywords": ["bible", "scripture", "reading", "christian", "group", "community", "devotional", "spiritual", "faith", "religion", "study", "prayer"],
+    "primaryColor": "#FF5733",
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sourceview.together",
       "buildNumber": "6",
       "privacyPolicy": "mailto:sourceviewbible@gmail.com?subject=Privacy%20Policy%20Request&body=Please%20send%20me%20the%20privacy%20policy%20for%20SourceView%20Together%20app.",
       "supportURL": "mailto:sourceviewbible@gmail.com?subject=SourceView%20Together%20Support&body=Please%20describe%20your%20issue%20or%20question:",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSCameraUsageDescription": "This app uses the camera to scan QR codes for joining group reading sessions."
+        "NSCameraUsageDescription": "This app uses the camera to scan QR codes for joining group reading sessions.",
+        "CFBundleDisplayName": "SourceView Together",
+        "CFBundleName": "SourceView Together"
       }
     },
     "android": {

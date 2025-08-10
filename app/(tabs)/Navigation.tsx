@@ -1,5 +1,21 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { View, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, SafeAreaView, ScrollView, useWindowDimensions, Platform, Modal, Animated, Keyboard, TouchableWithoutFeedback, RefreshControl } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  useWindowDimensions,
+  Alert,
+  Keyboard,
+  TouchableWithoutFeedback,
+  FlatList,
+  RefreshControl,
+  Modal,
+  ScrollView
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import logger from '@/utils/logger';
 import Accordion from "@/components/navigation/NavBook";
 import BooksJson from "@/assets/data/BookChapterList.json";
 import SegmentTitlesJson from "@/assets/data/SegmentTitles.json";
@@ -914,7 +930,7 @@ const Navigation = () => {
   // Handle navigation parameters for expanding books after completion
   useEffect(() => {
     if (expandedBook && timestamp) {
-      console.log('📍 Expanding book after completion:', expandedBook);
+      logger.info('📍 Expanding book after completion:', expandedBook);
       
       // Find the book key that matches the expanded book code
       const bookKey = Object.keys(Books).find(key => key.includes(expandedBook as string));
@@ -1146,7 +1162,7 @@ const Navigation = () => {
               const status = await getSegmentCompletionStatus(String(segmentId), 'main');
               completionStatus[String(segmentId)] = status.isCompleted;
             } catch (error) {
-              console.error(`Error fetching status for ${segmentId}:`, error);
+              logger.error(`Error fetching status for ${segmentId}:`, error);
               completionStatus[String(segmentId)] = false;
             }
           }

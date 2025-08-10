@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { AppState } from 'react-native';
+import logger from '@/utils/logger';import { AppState } from 'react-native';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 
 interface RealTimeUpdateOptions {
@@ -67,7 +67,7 @@ export const useRealTimeUpdates = (
         lastRefreshRef.current = new Date();
         onRefreshComplete?.();
       } catch (error) {
-        console.error('Error in debounced refresh:', error);
+        logger.error('Error in debounced refresh:', error);
         onError?.(error as Error);
       } finally {
         isRefreshingRef.current = false;
@@ -105,7 +105,7 @@ export const useRealTimeUpdates = (
       lastRefreshRef.current = now;
       onRefreshComplete?.();
     } catch (error) {
-      console.error('Error in smart refresh:', error);
+      logger.error('Error in smart refresh:', error);
       onError?.(error as Error);
     } finally {
       isRefreshingRef.current = false;
@@ -184,7 +184,7 @@ export const useRealTimeUpdates = (
       lastRefreshRef.current = new Date();
       onRefreshComplete?.();
     } catch (error) {
-      console.error('Error in force refresh:', error);
+      logger.error('Error in force refresh:', error);
       onError?.(error as Error);
     } finally {
       isRefreshingRef.current = false;
@@ -232,7 +232,7 @@ export const useProgressUpdates = (options?: RealTimeUpdateOptions) => {
     { refreshInterval: 15000, ...options }, // More frequent for progress
     {
       onDataChanged: (dataType, newData) => {
-        console.log('Progress data updated:', dataType, newData);
+        logger.info('Progress data updated:', dataType, newData);
       },
     }
   );
@@ -245,7 +245,7 @@ export const useStatisticsUpdates = (options?: RealTimeUpdateOptions) => {
     { refreshInterval: 60000, ...options }, // Less frequent for stats
     {
       onDataChanged: (dataType, newData) => {
-        console.log('Statistics updated:', dataType, newData);
+        logger.info('Statistics updated:', dataType, newData);
       },
     }
   );
@@ -258,7 +258,7 @@ export const useFullDataUpdates = (options?: RealTimeUpdateOptions) => {
     { refreshInterval: 120000, ...options }, // Less frequent for full data
     {
       onDataChanged: (dataType, newData) => {
-        console.log('Full data updated:', dataType, newData);
+        logger.info('Full data updated:', dataType, newData);
       },
     }
   );

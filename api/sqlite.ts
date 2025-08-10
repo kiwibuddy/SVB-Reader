@@ -1,5 +1,5 @@
 import { databaseManager } from './database-manager';
-import { BibleBlock } from "@/types";
+import logger from '@/utils/logger';import { BibleBlock } from "@/types";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -62,7 +62,7 @@ interface EmojiCollection {
 
 // Initialize database when this module is imported
 databaseManager.initialize().catch(error => {
-  console.error("Failed to initialize database:", error);
+  logger.error("Failed to initialize database:", error);
 });
 
 // ============================================================================
@@ -96,7 +96,7 @@ export async function markSegmentComplete(
 
     // Global read count is incremented on EVERY completion regardless of context
     // This gives users accurate total read counts across all reading modes
-    console.log(`📊 [ReadCount] Incrementing global count for segment ${segmentID} (${context} completion)`);
+    logger.info(`📊 [ReadCount] Incrementing global count for segment ${segmentID} (${context} completion)`);
     await db.runAsync(`
       INSERT OR REPLACE INTO segment_read_count (
         segmentID,
@@ -175,7 +175,7 @@ export async function markSegmentComplete(
     await updateStreak();
 
   } catch (error) {
-    console.error("Error marking segment complete:", error);
+    logger.error("Error marking segment complete:", error);
     throw error;
   }
 }
@@ -200,7 +200,7 @@ export async function recordGroupCompletion(
     );
     
     // Also increment global read count for group completions
-    console.log(`📊 [ReadCount] Incrementing global count for segment ${segmentID} (group completion)`);
+    logger.info(`📊 [ReadCount] Incrementing global count for segment ${segmentID} (group completion)`);
     await db.runAsync(`
       INSERT OR REPLACE INTO segment_read_count (
         segmentID,
@@ -214,7 +214,7 @@ export async function recordGroupCompletion(
     `, segmentID, segmentID, currentDate);
     
   } catch (error) {
-    console.error('Error recording group completion:', error);
+    logger.error('Error recording group completion:', error);
   }
 }
 
@@ -232,7 +232,7 @@ export async function getGroupJoinerCompletionCount(
     );
     return result?.count || 0;
   } catch (error) {
-    console.error('Error counting group joiner completions:', error);
+    logger.error('Error counting group joiner completions:', error);
     return 0;
   }
 }
@@ -291,7 +291,7 @@ export const getSegmentCompletionStatus = async (
       };
     }
   } catch (error) {
-    console.error("Error getting segment completion status:", error);
+    logger.error("Error getting segment completion status:", error);
     return { isCompleted: false, color: null };
   }
 };
@@ -341,7 +341,7 @@ export async function getPlanProgress(planID: string): Promise<PlanProgress> {
       completedSegmentIds: completedResult?.map(r => r.segmentID) || []
     };
   } catch (error) {
-    console.error("Error getting plan progress:", error);
+    logger.error("Error getting plan progress:", error);
     return {
       totalSegments: 0,
       completedSegments: 0,
@@ -393,7 +393,7 @@ export async function getChallengeProgress(challengeID: string): Promise<Challen
       completedSegmentIds: completedResult?.map(r => r.segmentID) || []
     };
   } catch (error) {
-    console.error("Error getting challenge progress:", error);
+    logger.error("Error getting challenge progress:", error);
     return {
       totalSegments: 0,
       completedSegments: 0,
@@ -416,7 +416,7 @@ export async function getBestStreak(): Promise<number> {
     );
     return result?.longestStreak || 0;
   } catch (error) {
-    console.error("Error getting best streak:", error);
+    logger.error("Error getting best streak:", error);
     return 0;
   }
 }
@@ -429,7 +429,7 @@ export async function getCurrentStreak(): Promise<number> {
     );
     return result?.currentStreak || 0;
   } catch (error) {
-    console.error("Error getting current streak:", error);
+    logger.error("Error getting current streak:", error);
     return 0;
   }
 }
@@ -442,7 +442,7 @@ export const getCompletedSegmentsCount = async () => {
     `);
     return result?.count || 0;
   } catch (error) {
-    console.error("Error getting completed segments count:", error);
+    logger.error("Error getting completed segments count:", error);
     return 0;
   }
 };
@@ -455,7 +455,7 @@ export const getTotalSegmentsCount = async () => {
     `);
     return result?.count || 0;
   } catch (error) {
-    console.error("Error getting total segments count:", error);
+    logger.error("Error getting total segments count:", error);
     return 0;
   }
 };
@@ -471,7 +471,7 @@ export const getReadingStreak = async () => {
       longestStreak: result?.longestStreak || 0
     };
   } catch (error) {
-    console.error("Error getting reading streak:", error);
+    logger.error("Error getting reading streak:", error);
     return { currentStreak: 0, longestStreak: 0 };
   }
 };
@@ -491,7 +491,7 @@ export async function getEmojiStats(): Promise<EmojiStats> {
     
     return { total, heart, prayer, question, thumbsUp };
   } catch (error) {
-    console.error("Error getting emoji stats:", error);
+    logger.error("Error getting emoji stats:", error);
     return { total: 0, heart: 0, prayer: 0, question: 0, thumbsUp: 0 };
   }
 }
@@ -511,7 +511,7 @@ export const getSourceStats = async () => {
     
     return { total, black, red, green, blue };
   } catch (error) {
-    console.error("Error getting source stats:", error);
+    logger.error("Error getting source stats:", error);
     return { total: 0, black: 0, red: 0, green: 0, blue: 0 };
   }
 };
@@ -538,7 +538,7 @@ export async function addEmoji(
       ) VALUES (?, ?, ?, ?, ?)
     `, segmentID, blockID, JSON.stringify(blockData), emoji, '');
   } catch (error) {
-    console.error("Error adding emoji:", error);
+    logger.error("Error adding emoji:", error);
   }
 }
 
@@ -551,7 +551,7 @@ export async function deleteEmoji(segmentID: string, blockID: string) {
       blockID
     );
   } catch (error) {
-    console.error("Error deleting emoji:", error);
+    logger.error("Error deleting emoji:", error);
   }
 }
 
@@ -565,7 +565,7 @@ export async function getEmoji(segmentID: string, blockID: string): Promise<stri
     );
     return result?.emoji || null;
   } catch (error) {
-    console.error("Error getting emoji:", error);
+    logger.error("Error getting emoji:", error);
     return null;
   }
 }
@@ -578,7 +578,7 @@ export async function getEmojis() {
     `);
     return results || [];
   } catch (error) {
-    console.error("Error getting emojis:", error);
+    logger.error("Error getting emojis:", error);
     return [];
   }
 }
@@ -608,7 +608,7 @@ export async function unlockAchievement(
       ) VALUES (?, ?, ?, 1, ?, ?, datetime('now'))
     `, achievementID, title, description, progress || 1, maxProgress || 1);
   } catch (error) {
-    console.error("Error unlocking achievement:", error);
+    logger.error("Error unlocking achievement:", error);
   }
 }
 
@@ -620,7 +620,7 @@ export async function getAchievements() {
     `);
     return results || [];
   } catch (error) {
-    console.error("Error getting achievements:", error);
+    logger.error("Error getting achievements:", error);
     return [];
   }
 }
@@ -652,7 +652,7 @@ export async function resetSegmentCompletion(
       `, [challengeID, segmentID]);
     }
   } catch (error) {
-    console.error("Error resetting segment completion:", error);
+    logger.error("Error resetting segment completion:", error);
   }
 }
 
@@ -671,7 +671,7 @@ export async function startPlan(planID: string): Promise<void> {
       ) VALUES (?, 'plan', 1, 0, 0, datetime('now'), datetime('now'))
     `, planID);
   } catch (error) {
-    console.error("Error starting plan:", error);
+    logger.error("Error starting plan:", error);
   }
 }
 
@@ -684,7 +684,7 @@ export async function pausePlan(planID: string): Promise<void> {
       WHERE itemID = ? AND itemType = 'plan'
     `, planID);
   } catch (error) {
-    console.error("Error pausing plan:", error);
+    logger.error("Error pausing plan:", error);
   }
 }
 
@@ -697,7 +697,7 @@ export async function resumePlan(planID: string): Promise<void> {
       WHERE itemID = ? AND itemType = 'plan'
     `, planID);
   } catch (error) {
-    console.error("Error resuming plan:", error);
+    logger.error("Error resuming plan:", error);
   }
 }
 
@@ -717,7 +717,7 @@ export async function endPlan(planID: string): Promise<void> {
       WHERE planID = ? AND completionType = 'plan'
     `, planID);
   } catch (error) {
-    console.error("Error ending plan:", error);
+    logger.error("Error ending plan:", error);
   }
 }
 
@@ -736,7 +736,7 @@ export async function startChallenge(challengeID: string): Promise<void> {
       ) VALUES (?, 'challenge', 1, 0, 0, datetime('now'), datetime('now'))
     `, challengeID);
   } catch (error) {
-    console.error("Error starting challenge:", error);
+    logger.error("Error starting challenge:", error);
   }
 }
 
@@ -749,7 +749,7 @@ export async function pauseChallenge(challengeID: string): Promise<void> {
       WHERE itemID = ? AND itemType = 'challenge'
     `, challengeID);
   } catch (error) {
-    console.error("Error pausing challenge:", error);
+    logger.error("Error pausing challenge:", error);
   }
 }
 
@@ -762,7 +762,7 @@ export async function resumeChallenge(challengeID: string): Promise<void> {
       WHERE itemID = ? AND itemType = 'challenge'
     `, challengeID);
   } catch (error) {
-    console.error("Error resuming challenge:", error);
+    logger.error("Error resuming challenge:", error);
   }
 }
 
@@ -782,7 +782,7 @@ export async function endChallenge(challengeID: string): Promise<void> {
       WHERE challengeID = ? AND completionType = 'challenge'
     `, challengeID);
   } catch (error) {
-    console.error("Error ending challenge:", error);
+    logger.error("Error ending challenge:", error);
   }
 }
 
@@ -794,7 +794,7 @@ export async function getActivePlan(): Promise<any | null> {
     );
     return result || null;
   } catch (error) {
-    console.error("Error getting active plan:", error);
+    logger.error("Error getting active plan:", error);
     return null;
   }
 }
@@ -807,7 +807,7 @@ export async function getActiveChallenges(): Promise<any[]> {
     );
     return results || [];
   } catch (error) {
-    console.error("Error getting active challenges:", error);
+    logger.error("Error getting active challenges:", error);
     return [];
   }
 }
@@ -832,7 +832,7 @@ async function updatePlanStatus(planID: string): Promise<void> {
       ) VALUES (?, 'plan', 1, ?, ?, datetime('now'))
     `, planID, progress.isCompleted ? 1 : 0, progress.progressPercentage);
   } catch (error) {
-    console.error("Error updating plan status:", error);
+    logger.error("Error updating plan status:", error);
   }
 }
 
@@ -852,7 +852,7 @@ async function updateChallengeStatus(challengeID: string): Promise<void> {
       ) VALUES (?, 'challenge', 1, ?, ?, datetime('now'))
     `, challengeID, progress.isCompleted ? 1 : 0, progress.progressPercentage);
   } catch (error) {
-    console.error("Error updating challenge status:", error);
+    logger.error("Error updating challenge status:", error);
   }
 }
 
@@ -869,7 +869,7 @@ export async function updateDailyActivity(segmentId: string) {
       )
     `, today, today);
   } catch (error) {
-    console.error("Error updating daily activity:", error);
+    logger.error("Error updating daily activity:", error);
   }
 }
 
@@ -882,7 +882,7 @@ export async function getSegmentReadCount(segmentID: string): Promise<number> {
     );
     return result?.totalReads || 0;
   } catch (error) {
-    console.error("Error getting segment read count:", error);
+    logger.error("Error getting segment read count:", error);
     return 0;
   }
 }
@@ -934,7 +934,7 @@ async function updateStreak() {
       WHERE id = 1
     `, currentStreak, longestStreak, today);
   } catch (error) {
-    console.error("Error updating streak:", error);
+    logger.error("Error updating streak:", error);
   }
 }
 
@@ -950,7 +950,7 @@ export async function getLongestSession(): Promise<number> {
     );
     return result?.maxSegments || 0;
   } catch (error) {
-    console.error("Error getting longest session:", error);
+    logger.error("Error getting longest session:", error);
     return 0;
   }
 }
@@ -963,7 +963,7 @@ export async function getCompletedBooks(): Promise<string[]> {
     );
     return results?.map(r => r.bookId) || [];
   } catch (error) {
-    console.error("Error getting completed books:", error);
+    logger.error("Error getting completed books:", error);
     return [];
   }
 }
@@ -992,7 +992,7 @@ export async function getBookProgress(bookId: string): Promise<BookProgress> {
     
     return { completed, total, percentage };
   } catch (error) {
-    console.error("Error getting book progress:", error);
+    logger.error("Error getting book progress:", error);
     return { completed: 0, total: 0, percentage: 0 };
   }
 }
@@ -1011,7 +1011,7 @@ export async function checkEmojiCollection(): Promise<EmojiCollection> {
     
     return { complete, used };
   } catch (error) {
-    console.error("Error checking emoji collection:", error);
+    logger.error("Error checking emoji collection:", error);
     return { complete: false, used: [] };
   }
 }
@@ -1028,7 +1028,7 @@ export async function getOldTestamentProgress(): Promise<TestamentProgress> {
     
     return { completed: completed?.count || 0, total: otBooks.length };
   } catch (error) {
-    console.error("Error getting Old Testament progress:", error);
+    logger.error("Error getting Old Testament progress:", error);
     return { completed: 0, total: 39 };
   }
 }
@@ -1045,7 +1045,7 @@ export async function getNewTestamentProgress(): Promise<TestamentProgress> {
     
     return { completed: completed?.count || 0, total: ntBooks.length };
   } catch (error) {
-    console.error("Error getting New Testament progress:", error);
+    logger.error("Error getting New Testament progress:", error);
     return { completed: 0, total: 27 };
   }
 }
@@ -1063,7 +1063,7 @@ export async function startReadingSession() {
     `);
     return result.lastInsertRowId;
   } catch (error) {
-    console.error("Error starting reading session:", error);
+    logger.error("Error starting reading session:", error);
     return null;
   }
 }
@@ -1077,7 +1077,7 @@ export async function updateReadingSession(sessionId: number, segmentCount: numb
       WHERE id = ?
     `, segmentCount, sessionId);
   } catch (error) {
-    console.error("Error updating reading session:", error);
+    logger.error("Error updating reading session:", error);
   }
 }
 
@@ -1113,7 +1113,7 @@ export async function checkBookCompletion(bookId: string): Promise<boolean> {
     
     return isCompleted;
   } catch (error) {
-    console.error("Error checking book completion:", error);
+    logger.error("Error checking book completion:", error);
     return false;
   }
 }
@@ -1127,7 +1127,7 @@ export async function getBookCompletionStatus(bookId: string): Promise<boolean> 
     );
     return result?.isCompleted === 1;
   } catch (error) {
-    console.error("Error getting book completion status:", error);
+    logger.error("Error getting book completion status:", error);
     return false;
   }
 }
@@ -1154,7 +1154,7 @@ export async function resetPlanProgress(planID: string): Promise<void> {
     `, planID);
     
   } catch (error) {
-    console.error("Error resetting plan progress:", error);
+    logger.error("Error resetting plan progress:", error);
   }
 }
 
@@ -1176,7 +1176,7 @@ export async function resetChallengeProgress(challengeID: string): Promise<void>
     `, challengeID);
     
   } catch (error) {
-    console.error("Error resetting challenge progress:", error);
+    logger.error("Error resetting challenge progress:", error);
   }
 }
 
@@ -1196,7 +1196,7 @@ export async function getAppState(key: string): Promise<string | null> {
     );
     return result?.value || null;
   } catch (error) {
-    console.error(`Error getting app state for key ${key}:`, error);
+    logger.error(`Error getting app state for key ${key}:`, error);
     return null;
   }
 }
@@ -1213,7 +1213,7 @@ export async function setAppState(key: string, value: string | null): Promise<vo
       VALUES (?, ?, ?)
     `, key, value, currentDate);
   } catch (error) {
-    console.error(`Error setting app state for key ${key}:`, error);
+    logger.error(`Error setting app state for key ${key}:`, error);
     throw error;
   }
 }
@@ -1303,7 +1303,7 @@ export async function getReadSegments(): Promise<string[]> {
     );
     return results.map(r => r.segmentID);
   } catch (error) {
-    console.error('Error getting read segments:', error);
+    logger.error('Error getting read segments:', error);
     return [];
   }
 }
@@ -1320,7 +1320,7 @@ export async function markSegmentAsRead(segmentId: string): Promise<void> {
       VALUES (?, COALESCE((SELECT totalReads FROM segment_read_count WHERE segmentID = ?), 0) + 1, ?)
     `, segmentId, segmentId, currentDate);
   } catch (error) {
-    console.error('Error marking segment as read:', error);
+    logger.error('Error marking segment as read:', error);
     throw error;
   }
 }
@@ -1355,7 +1355,7 @@ export async function getActivePlanFromDB(): Promise<any | null> {
       lastRead: result.completionDate || result.startDate
     };
   } catch (error) {
-    console.error('Error getting active plan:', error);
+    logger.error('Error getting active plan:', error);
     return null;
   }
 }
@@ -1394,7 +1394,7 @@ export async function getActiveChallengesFromDB(): Promise<Record<string, any>> 
     
     return challenges;
   } catch (error) {
-    console.error('Error getting active challenges:', error);
+    logger.error('Error getting active challenges:', error);
     return {};
   }
 }

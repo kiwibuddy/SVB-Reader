@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { 
+import logger from '@/utils/logger';import { 
   getCurrentSegmentId,
   setCurrentSegmentId,
   getCurrentReadingPlan,
@@ -170,7 +170,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
       try {
         await refreshFunction();
       } catch (error) {
-        console.error('Error in debounced refresh:', error);
+        logger.error('Error in debounced refresh:', error);
       }
     }, delay);
   }, []);
@@ -265,7 +265,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       isInitializedRef.current = true;
     } catch (error) {
-      console.error('Error loading app state:', error);
+      logger.error('Error loading app state:', error);
       setState(prev => ({ ...prev, isLoading: false }));
     }
   }, []);
@@ -288,7 +288,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
       await setCurrentSegmentId(segmentId);
       setState(prev => ({ ...prev, segmentId, lastUpdated: new Date() }));
     } catch (error) {
-      console.error('Error updating segment ID:', error);
+      logger.error('Error updating segment ID:', error);
     }
   }, []);
 
@@ -297,7 +297,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
       await setCurrentReadingPlan(readingPlan);
       setState(prev => ({ ...prev, readingPlan, lastUpdated: new Date() }));
     } catch (error) {
-      console.error('Error updating reading plan:', error);
+      logger.error('Error updating reading plan:', error);
     }
   }, []);
 
@@ -306,7 +306,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
       await setLastReadSegment(segmentId);
       setState(prev => ({ ...prev, lastReadSegment: segmentId, lastUpdated: new Date() }));
     } catch (error) {
-      console.error('Error updating last read segment:', error);
+      logger.error('Error updating last read segment:', error);
     }
   }, []);
 
@@ -315,7 +315,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
       await setAppLanguage(language);
       setState(prev => ({ ...prev, language, lastUpdated: new Date() }));
     } catch (error) {
-      console.error('Error updating language:', error);
+      logger.error('Error updating language:', error);
     }
   }, []);
 
@@ -324,7 +324,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
       await setAppVersion(version);
       setState(prev => ({ ...prev, version, lastUpdated: new Date() }));
     } catch (error) {
-      console.error('Error updating version:', error);
+      logger.error('Error updating version:', error);
     }
   }, []);
 
@@ -359,7 +359,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
         }));
       }, 2000);
     } catch (error) {
-      console.error('Error marking segment as read:', error);
+      logger.error('Error marking segment as read:', error);
     }
   }, [debouncedRefresh]);
 
@@ -380,7 +380,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
         lastUpdated: new Date(),
       }));
     } catch (error) {
-      console.error('Error starting plan:', error);
+      logger.error('Error starting plan:', error);
     }
   }, []);
 
@@ -397,7 +397,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
         lastUpdated: new Date(),
       }));
     } catch (error) {
-      console.error('Error starting challenge:', error);
+      logger.error('Error starting challenge:', error);
     }
   }, []);
 
@@ -419,7 +419,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
         lastUpdated: new Date(),
       }));
     } catch (error) {
-      console.error('Error pausing plan:', error);
+      logger.error('Error pausing plan:', error);
     }
   }, []);
 
@@ -440,7 +440,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
         lastUpdated: new Date(),
       }));
     } catch (error) {
-      console.error('Error resuming plan:', error);
+      logger.error('Error resuming plan:', error);
     }
   }, []);
 
@@ -461,7 +461,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
         lastUpdated: new Date(),
       }));
     } catch (error) {
-      console.error('Error ending plan:', error);
+      logger.error('Error ending plan:', error);
     }
   }, []);
 
@@ -479,7 +479,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
         lastUpdated: new Date(),
       }));
     } catch (error) {
-      console.error('Error pausing challenge:', error);
+      logger.error('Error pausing challenge:', error);
     }
   }, []);
 
@@ -496,7 +496,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
         lastUpdated: new Date(),
       }));
     } catch (error) {
-      console.error('Error resuming challenge:', error);
+      logger.error('Error resuming challenge:', error);
     }
   }, []);
 
@@ -513,7 +513,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
         lastUpdated: new Date(),
       }));
     } catch (error) {
-      console.error('Error ending challenge:', error);
+      logger.error('Error ending challenge:', error);
     }
   }, []);
 
@@ -561,7 +561,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
         lastUpdated: new Date(),
       }));
     } catch (error) {
-      console.error('Error refreshing progress data:', error);
+      logger.error('Error refreshing progress data:', error);
     }
   }, []);
 
@@ -609,7 +609,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
         lastUpdated: new Date(),
       }));
     } catch (error) {
-      console.error('Error refreshing statistics:', error);
+      logger.error('Error refreshing statistics:', error);
     }
   }, []);
 
@@ -623,7 +623,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
     try {
       return await getSegmentCompletionStatus(segmentId, context, planId, challengeId);
     } catch (error) {
-      console.error('Error getting segment completion:', error);
+      logger.error('Error getting segment completion:', error);
       return { isCompleted: false, color: null };
     }
   }, []);
@@ -632,7 +632,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
     try {
       return await getPlanProgress(planId);
     } catch (error) {
-      console.error('Error getting plan progress:', error);
+      logger.error('Error getting plan progress:', error);
       return null;
     }
   }, []);
@@ -641,7 +641,7 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
     try {
       return await getChallengeProgress(challengeId);
     } catch (error) {
-      console.error('Error getting challenge progress:', error);
+      logger.error('Error getting challenge progress:', error);
       return null;
     }
   }, []);

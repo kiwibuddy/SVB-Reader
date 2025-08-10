@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import logger from '@/utils/logger';import { View, Text, StyleSheet } from "react-native";
 import BibleLeafComponent from "./Leaf";
 import { BibleInline } from "@/types";
 
@@ -17,7 +17,7 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
   const { children, type, tag = 'defaultTag', pIndex, start } = inline;
 
   if (!children || !Array.isArray(children)) {
-    console.warn(`Invalid children in inline at index ${iIndex}:`, inline);
+    logger.warn(`Invalid children in inline at index ${iIndex}:`, inline);
     return null;
   }
 
@@ -28,7 +28,7 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
   
   const renderedChildren = children.map((leaf, index) => {
     if (!leaf || typeof leaf !== 'object') {
-      console.warn(`Invalid leaf at index ${index}:`, leaf);
+      logger.warn(`Invalid leaf at index ${index}:`, leaf);
       return null;
     }
 

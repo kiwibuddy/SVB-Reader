@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import * as ScreenOrientation from 'expo-screen-orientation';
+import logger from '@/utils/logger';import * as ScreenOrientation from 'expo-screen-orientation';
 import { type FontSize, type TextSizes } from './FontSizeContext';
 import { Appearance, ColorSchemeName } from 'react-native';
 import { type ColorScheme } from './types';
@@ -97,7 +97,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
         await ScreenOrientation.unlockAsync();
       }
     } catch (error) {
-      console.error('Error updating orientation:', error);
+      logger.error('Error updating orientation:', error);
     }
   };
 

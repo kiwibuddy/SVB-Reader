@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { View, Pressable, Text, StyleSheet, Modal, Platform, TouchableOpacity, useWindowDimensions } from 'react-native';
+import logger from '@/utils/logger';import { View, Pressable, Text, StyleSheet, Modal, Platform, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { LongPressGestureHandler, State, Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 import { BibleBlock } from '@/types';
@@ -52,7 +52,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   // CRITICAL: Validate screen dimensions on mount and changes
   useEffect(() => {
     if (screenWidth < POSITIONING_CONSTANTS.MIN_SCREEN_WIDTH || screenHeight < POSITIONING_CONSTANTS.MIN_SCREEN_HEIGHT) {
-      console.warn('🔍 [EmojiHandler] WARNING: Screen dimensions below minimum:', { screenWidth, screenHeight });
+      logger.warn('🔍 [EmojiHandler] WARNING: Screen dimensions below minimum:', { screenWidth, screenHeight });
     }
   }, [screenWidth, screenHeight]);
 
@@ -69,7 +69,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     
     // CRITICAL: Validate input parameters
     if (typeof absoluteY !== 'number' || isNaN(absoluteY)) {
-      console.error('🔍 [EmojiHandler] ERROR: Invalid absoluteY:', absoluteY);
+      logger.error('🔍 [EmojiHandler] ERROR: Invalid absoluteY:', absoluteY);
       // Fallback to center of screen
       const fallbackY = screenHeight / 2;
       const centerX = (screenWidth - POSITIONING_CONSTANTS.DEFAULT_PICKER_WIDTH) / 2;
@@ -78,7 +78,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     
     // CRITICAL: Validate screen dimensions
     if (screenWidth <= 0 || screenHeight <= 0) {
-      console.error('🔍 [EmojiHandler] ERROR: Invalid screen dimensions:', { screenWidth, screenHeight });
+      logger.error('🔍 [EmojiHandler] ERROR: Invalid screen dimensions:', { screenWidth, screenHeight });
       return { x: 0, y: 0 };
     }
     
@@ -128,7 +128,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     const loadEmoji = async () => {
       try {
         if (!state.segmentId || !blockId) {
-          console.warn('🔍 [EmojiHandler] Missing segmentId or blockId:', { segmentId: state.segmentId, blockId });
+          logger.warn('🔍 [EmojiHandler] Missing segmentId or blockId:', { segmentId: state.segmentId, blockId });
           return;
         }
         
@@ -137,7 +137,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
           setExistingEmoji(emoji);
         }
       } catch (error) {
-        console.error('🔍 [EmojiHandler] Error loading emoji:', error);
+        logger.error('🔍 [EmojiHandler] Error loading emoji:', error);
       }
     };
     loadEmoji();
@@ -157,7 +157,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
             setExistingEmoji(emoji);
           }
         } catch (error) {
-          console.error('🔍 [EmojiHandler] Error loading emoji from actions:', error);
+          logger.error('🔍 [EmojiHandler] Error loading emoji from actions:', error);
         }
       };
       loadEmoji();
@@ -178,7 +178,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
       const newPosition = { x: centerX, y: adjustedY };
       setPickerPosition(newPosition);
     } catch (error) {
-      console.error('🔍 [EmojiHandler] Error updating position from picker width:', error);
+      logger.error('🔍 [EmojiHandler] Error updating position from picker width:', error);
     }
   }, [pickerWidth, showPicker, screenWidth, screenHeight, pickerPosition.y]);
 
@@ -188,7 +188,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     
     try {
       if (!state.segmentId || !blockId || !emoji) {
-        console.error('🔍 [EmojiHandler] Missing required data for emoji selection:', { segmentId: state.segmentId, blockId, emoji });
+        logger.error('🔍 [EmojiHandler] Missing required data for emoji selection:', { segmentId: state.segmentId, blockId, emoji });
         return;
       }
       
@@ -202,7 +202,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         updateEmojiActions(state.emojiActions + 1);
       }
     } catch (error) {
-      console.error('🔍 [EmojiHandler] Error adding emoji:', error);
+      logger.error('🔍 [EmojiHandler] Error adding emoji:', error);
     }
   }, [state.segmentId, blockId, block, state.emojiActions, updateEmojiActions]);
 
@@ -212,7 +212,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     
     try {
       if (!state.segmentId || !blockId) {
-        console.error('🔍 [EmojiHandler] Missing required data for emoji deletion:', { segmentId: state.segmentId, blockId });
+        logger.error('🔍 [EmojiHandler] Missing required data for emoji deletion:', { segmentId: state.segmentId, blockId });
         return;
       }
       
@@ -225,7 +225,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         updateEmojiActions(state.emojiActions + 1);
       }
     } catch (error) {
-      console.error('🔍 [EmojiHandler] Error deleting emoji:', error);
+      logger.error('🔍 [EmojiHandler] Error deleting emoji:', error);
     }
   }, [state.segmentId, blockId, state.emojiActions, updateEmojiActions]);
 
@@ -243,7 +243,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     
     // CRITICAL: Validate event object
     if (!event || typeof event.absoluteY !== 'number' || isNaN(event.absoluteY)) {
-      console.error('🔍 [EmojiHandler] ERROR: Invalid gesture event:', event);
+      logger.error('🔍 [EmojiHandler] ERROR: Invalid gesture event:', event);
       return;
     }
     

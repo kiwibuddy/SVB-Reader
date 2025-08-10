@@ -1,5 +1,5 @@
 import { GroupSession, Role, Participant } from '@/types';
-
+import logger from '@/utils/logger';
 // QR Code Session Data Interface
 interface QRCodeSessionData {
   type: "SVB_SESSION";
@@ -53,8 +53,8 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
   // Generate QR code for a session
   async generateSessionQRCode(session: GroupSession, hostRole: Role): Promise<string> {
     try {
-      console.log('📱 Generating QR code for session:', session.id);
-      console.log('📱 Host role:', hostRole);
+      logger.info('📱 Generating QR code for session:', session.id);
+      logger.info('📱 Host role:', hostRole);
       
       // Create session data for QR code
       const qrSessionData: QRCodeSessionData = {
@@ -74,8 +74,8 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       // Convert to JSON string
       const sessionDataString = JSON.stringify(qrSessionData);
       
-      console.log('📱 QR code data generated:', sessionDataString.substring(0, 100) + '...');
-      console.log('📱 Session info:', {
+      logger.info('📱 QR code data generated:', sessionDataString.substring(0, 100) + '...');
+      logger.info('📱 Session info:', {
         story: session.storyTitle,
         reference: session.scriptureReference,
         host: session.hostUserName,
@@ -85,7 +85,7 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       return sessionDataString;
       
     } catch (error) {
-      console.error('🔴 Error generating QR code:', error);
+      logger.error('🔴 Error generating QR code:', error);
       throw error;
     }
   }
@@ -93,7 +93,7 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
   // Generate QR code for completion
   async generateCompletionQRCode(session: GroupSession): Promise<string> {
     try {
-      console.log('✅ Generating completion QR code for session:', session.id);
+      logger.info('✅ Generating completion QR code for session:', session.id);
       
       // Create completion signature (simple hash for now)
       const signature = this.generateCompletionSignature(session);
@@ -111,12 +111,12 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       // Convert to JSON string
       const completionDataString = JSON.stringify(qrCompletionData);
       
-      console.log('✅ Completion QR code generated:', completionDataString.substring(0, 100) + '...');
+      logger.info('✅ Completion QR code generated:', completionDataString.substring(0, 100) + '...');
       
       return completionDataString;
       
     } catch (error) {
-      console.error('🔴 Error generating completion QR code:', error);
+      logger.error('🔴 Error generating completion QR code:', error);
       throw error;
     }
   }
@@ -124,26 +124,26 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
   // Parse session data from QR code
   parseSessionFromQRCode(qrCodeData: string): GroupSession | null {
     try {
-      console.log('📱 Parsing QR code data:', qrCodeData.substring(0, 50) + '...');
+      logger.info('📱 Parsing QR code data:', qrCodeData.substring(0, 50) + '...');
       
       // Parse JSON data
       const qrSessionData: QRCodeSessionData = JSON.parse(qrCodeData);
       
       // Validate QR code type
       if (qrSessionData.type !== "SVB_SESSION") {
-        console.error('🔴 Invalid QR code type:', qrSessionData.type);
+        logger.error('🔴 Invalid QR code type:', qrSessionData.type);
         return null;
       }
       
       // Validate session data
       if (!this.validateSessionData(qrSessionData)) {
-        console.error('🔴 Invalid session data');
+        logger.error('🔴 Invalid session data');
         return null;
       }
       
       // Check if session is expired
       if (qrSessionData.expiresAt < Date.now()) {
-        console.error('🔴 Session has expired');
+        logger.error('🔴 Session has expired');
         return null;
       }
       
@@ -170,7 +170,7 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
         challengeId: qrSessionData.challengeId
       };
       
-      console.log('📱 Session parsed successfully:', {
+      logger.info('📱 Session parsed successfully:', {
         id: session.id,
         story: session.storyTitle,
         host: session.hostUserName,
@@ -180,7 +180,7 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       return session;
       
     } catch (error) {
-      console.error('🔴 Error parsing QR code:', error);
+      logger.error('🔴 Error parsing QR code:', error);
       return null;
     }
   }
@@ -188,24 +188,24 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
   // Parse completion data from QR code
   parseCompletionFromQRCode(qrCodeData: string): QRCodeCompletionData | null {
     try {
-      console.log('✅ Parsing completion QR code data:', qrCodeData.substring(0, 50) + '...');
+      logger.info('✅ Parsing completion QR code data:', qrCodeData.substring(0, 50) + '...');
       
       // Parse JSON data
       const qrCompletionData: QRCodeCompletionData = JSON.parse(qrCodeData);
       
       // Validate QR code type
       if (qrCompletionData.type !== "SVB_COMPLETION") {
-        console.error('🔴 Invalid completion QR code type:', qrCompletionData.type);
+        logger.error('🔴 Invalid completion QR code type:', qrCompletionData.type);
         return null;
       }
       
       // Validate completion data
       if (!this.validateCompletionData(qrCompletionData)) {
-        console.error('🔴 Invalid completion data');
+        logger.error('🔴 Invalid completion data');
         return null;
       }
       
-      console.log('✅ Completion QR code parsed successfully:', {
+      logger.info('✅ Completion QR code parsed successfully:', {
         sessionId: qrCompletionData.sessionId,
         storyId: qrCompletionData.storyId,
         timestamp: qrCompletionData.timestamp
@@ -214,7 +214,7 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       return qrCompletionData;
       
     } catch (error) {
-      console.error('🔴 Error parsing completion QR code:', error);
+      logger.error('🔴 Error parsing completion QR code:', error);
       return null;
     }
   }
@@ -224,38 +224,38 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
     try {
       // Check required fields
       if (!sessionData.sessionId || !sessionData.storyId || !sessionData.storyTitle) {
-        console.error('🔴 Missing required session data fields');
+        logger.error('🔴 Missing required session data fields');
         return false;
       }
       
       // Check host role
       if (!sessionData.hostRole || !this.isValidRole(sessionData.hostRole)) {
-        console.error('🔴 Invalid host role:', sessionData.hostRole);
+        logger.error('🔴 Invalid host role:', sessionData.hostRole);
         return false;
       }
       
       // Check timestamp
       if (!sessionData.timestamp || sessionData.timestamp > Date.now()) {
-        console.error('🔴 Invalid timestamp');
+        logger.error('🔴 Invalid timestamp');
         return false;
       }
       
       // Check expiration
       if (!sessionData.expiresAt || sessionData.expiresAt <= Date.now()) {
-        console.error('🔴 Session has expired');
+        logger.error('🔴 Session has expired');
         return false;
       }
       
       // Check session ID format
       if (!sessionData.sessionId.startsWith('session_')) {
-        console.error('🔴 Invalid session ID format');
+        logger.error('🔴 Invalid session ID format');
         return false;
       }
       
       return true;
       
     } catch (error) {
-      console.error('🔴 Error validating session data:', error);
+      logger.error('🔴 Error validating session data:', error);
       return false;
     }
   }
@@ -265,33 +265,33 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
     try {
       // Check required fields
       if (!completionData.sessionId || !completionData.storyId || !completionData.hostDeviceId) {
-        console.error('🔴 Missing required completion data fields');
+        logger.error('🔴 Missing required completion data fields');
         return false;
       }
       
       // Check timestamp (completion should be recent)
       if (!completionData.timestamp || completionData.timestamp > Date.now()) {
-        console.error('🔴 Invalid completion timestamp');
+        logger.error('🔴 Invalid completion timestamp');
         return false;
       }
       
       // Check if completion is too old (within last 15 minutes)
       const fifteenMinutesAgo = Date.now() - (15 * 60 * 1000);
       if (completionData.timestamp < fifteenMinutesAgo) {
-        console.error('🔴 Completion QR code is too old');
+        logger.error('🔴 Completion QR code is too old');
         return false;
       }
       
       // Check signature presence (length can vary depending on device/time bucket)
       if (!completionData.signature || completionData.signature.length < 6) {
-        console.error('🔴 Invalid completion signature');
+        logger.error('🔴 Invalid completion signature');
         return false;
       }
       
       return true;
       
     } catch (error) {
-      console.error('🔴 Error validating completion data:', error);
+      logger.error('🔴 Error validating completion data:', error);
       return false;
     }
   }
@@ -335,7 +335,7 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
   // Generate test QR code for development
   async generateTestQRCode(): Promise<string> {
     try {
-      console.log('🧪 Generating test QR code...');
+      logger.info('🧪 Generating test QR code...');
       
       const testSession: GroupSession = {
         id: 'test_session_' + Date.now(),
@@ -359,13 +359,13 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       
       const qrCodeData = await this.generateSessionQRCode(testSession, 'narrator');
       
-      console.log('🧪 Test QR code generated successfully');
-      console.log('🧪 QR code data:', qrCodeData);
+      logger.info('🧪 Test QR code generated successfully');
+      logger.info('🧪 QR code data:', qrCodeData);
       
       return qrCodeData;
       
     } catch (error) {
-      console.error('🔴 Error generating test QR code:', error);
+      logger.error('🔴 Error generating test QR code:', error);
       throw error;
     }
   }
@@ -373,7 +373,7 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
   // Generate test completion QR code for development
   async generateTestCompletionQRCode(): Promise<string> {
     try {
-      console.log('🧪 Generating test completion QR code...');
+      logger.info('🧪 Generating test completion QR code...');
       
       const testSession: GroupSession = {
         id: 'test_session_' + Date.now(),
@@ -397,13 +397,13 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       
       const qrCodeData = await this.generateCompletionQRCode(testSession);
       
-      console.log('🧪 Test completion QR code generated successfully');
-      console.log('🧪 Completion QR code data:', qrCodeData);
+      logger.info('🧪 Test completion QR code generated successfully');
+      logger.info('🧪 Completion QR code data:', qrCodeData);
       
       return qrCodeData;
       
     } catch (error) {
-      console.error('🔴 Error generating test completion QR code:', error);
+      logger.error('🔴 Error generating test completion QR code:', error);
       throw error;
     }
   }
@@ -411,7 +411,7 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
   // Simulate QR code scanning for testing
   async simulateQRCodeScan(): Promise<GroupSession> {
     try {
-      console.log('🧪 Simulating QR code scan...');
+      logger.info('🧪 Simulating QR code scan...');
       
       // Generate a test QR code
       const qrCodeData = await this.generateTestQRCode();
@@ -423,8 +423,8 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
         throw new Error('Failed to parse test QR code');
       }
       
-      console.log('🧪 QR code scan simulation successful');
-      console.log('🧪 Discovered session:', {
+      logger.info('🧪 QR code scan simulation successful');
+      logger.info('🧪 Discovered session:', {
         id: session.id,
         story: session.storyTitle,
         host: session.hostUserName,
@@ -434,7 +434,7 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       return session;
       
     } catch (error) {
-      console.error('🔴 Error simulating QR code scan:', error);
+      logger.error('🔴 Error simulating QR code scan:', error);
       throw error;
     }
   }

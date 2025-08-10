@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import readingPlansData from "../assets/data/ReadingPlansChallenges.json";
+import logger from '@/utils/logger';import readingPlansData from "../assets/data/ReadingPlansChallenges.json";
 import { 
   markSegmentComplete as markSegmentCompleteDB,
   getSegmentCompletionStatus,
@@ -203,7 +203,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         setCompletedSegments(completedSegmentsData);
 
       } catch (error) {
-        console.error('Error loading app state from SQLite:', error);
+        logger.error('Error loading app state from SQLite:', error);
         // Fallback to defaults if SQLite fails
         setSegmentId('S001');
         setReadingPlan('chronological');
@@ -229,7 +229,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
           setActiveChallenges(savedChallenges);
         }
       } catch (error) {
-        console.error('Error loading saved plan/challenge state from SQLite:', error);
+        logger.error('Error loading saved plan/challenge state from SQLite:', error);
       }
     };
 
@@ -284,7 +284,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       setActivePlan(newPlan);
       // Plan is now managed via SQLite through startPlanDB function
     } catch (error) {
-      console.error('Error starting plan:', error);
+      logger.error('Error starting plan:', error);
     }
   };
 
@@ -332,7 +332,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       }));
       // Challenge state is now managed via SQLite
     } catch (error) {
-      console.error('Error starting challenge:', error);
+      logger.error('Error starting challenge:', error);
     }
   };
 
@@ -443,7 +443,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         await updateDailyActivity(segmentId);
       }
     } catch (error) {
-      console.error('Error updating segment completion:', error);
+      logger.error('Error updating segment completion:', error);
     }
   };
 
@@ -486,7 +486,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       setActivePlan(updatedPlan);
       // Plan progress is now managed via SQLite
     } catch (error) {
-      console.error('Error updating plan progress:', error);
+      logger.error('Error updating plan progress:', error);
     }
   };
 
@@ -520,7 +520,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       setActiveChallenges(updatedChallenges);
       // Challenge state is now managed via SQLite
     } catch (error) {
-      console.error('Error updating challenge progress:', error);
+      logger.error('Error updating challenge progress:', error);
     }
   };
 

@@ -1,5 +1,5 @@
 import { BibleLeaf } from "@/types";
-import React from "react";
+import logger from '@/utils/logger';import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
 interface BibleLeafProps {
@@ -11,7 +11,7 @@ interface BibleLeafProps {
 
 const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textColor, leafIndex }) => {
   if (!leaf || typeof leaf !== 'object') {
-    console.warn(`Invalid leaf at index ${leafIndex}:`, leaf);
+    logger.warn(`Invalid leaf at index ${leafIndex}:`, leaf);
     return null;
   }
 
@@ -43,7 +43,7 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
     // Only warn if this is not a table element (which is expected to not have text)
     const isTableElement = tag && Array.isArray(tag) && tag.some(t => ['tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(t));
     if (!isTableElement) {
-      console.warn(`Missing or invalid text in leaf at index ${leafIndex}:`, leaf);
+      logger.warn(`Missing or invalid text in leaf at index ${leafIndex}:`, leaf);
     }
     return null;
   }

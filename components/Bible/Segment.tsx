@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"; // Ensure useEffect is imported
-import { View, Text, FlatList, ScrollView, Pressable, TouchableOpacity, StyleSheet, useWindowDimensions, Platform, Animated } from "react-native";
+import logger from '@/utils/logger';import { View, Text, FlatList, ScrollView, Pressable, TouchableOpacity, StyleSheet, useWindowDimensions, Platform, Animated } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BibleBlockComponent from './BibleBlock';
 import { BibleBlock, SegmentType } from "@/types";
@@ -331,7 +331,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
         const status = await getSegmentCompletionStatus(segID, context, planId, challengeId);
         setIsCompleted(status.isCompleted);
       } catch (error) {
-        console.error('Error loading completion status:', error);
+        logger.error('Error loading completion status:', error);
         setIsCompleted(false);
       }
     };
@@ -340,7 +340,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   // Emoji handling is now done directly in the Block component
   const handleLongPress = useCallback((block: BibleBlock, index: number) => {
-    console.log('🔍 [Segment] handleLongPress triggered:', { 
+    logger.info('🔍 [Segment] handleLongPress triggered:', { 
       blockIndex: index, 
       sourceName: block.source?.sourceName,
       color: block.source?.color 
@@ -356,14 +356,14 @@ const SegmentComponent: React.FC<SegmentProps> = ({
         const Haptics = require('expo-haptics');
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       } catch (error) {
-        console.log('Haptics not available');
+        logger.info('Haptics not available');
       }
     }
   }, []);
 
   // Add null checks for segmentData AFTER all hooks declared above
   if (!segmentData || !segmentData.id) {
-    console.error('Invalid segment data:', segmentData);
+    logger.error('Invalid segment data:', segmentData);
     return null; // Or return an error state component
   }
 
@@ -586,7 +586,7 @@ const styles = StyleSheet.create({
         showsVerticalScrollIndicator={false}
         // Add gesture handling to prevent conflicts with long press
         onScrollBeginDrag={() => {
-          console.log('🔍 [Segment] ScrollView drag started');
+          logger.info('🔍 [Segment] ScrollView drag started');
         }}
         // Disable scroll when long press is detected
         scrollEnabled={true}

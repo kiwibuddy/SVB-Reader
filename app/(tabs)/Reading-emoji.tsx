@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
+import logger from '@/utils/logger';import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import {
   View,
   Text,
@@ -854,7 +854,7 @@ const ReadingEmoji = () => {
         
         setReactions(validReactions)
       } catch (error) {
-        console.error("Error loading emojis:", error)
+        logger.error("Error loading emojis:", error)
         setReactions([])
       } finally {
         setIsLoading(false)
@@ -1290,7 +1290,7 @@ const ReadingEmoji = () => {
               modalScaleAnim.setValue(0);
               modalOpacityAnim.setValue(0);
             } catch (error) {
-              console.error('Error deleting emoji:', error);
+              logger.error('Error deleting emoji:', error);
             }
           },
         },
@@ -1563,7 +1563,7 @@ const ReadingEmoji = () => {
         </View>
       )
     } catch (error) {
-      console.error("Error parsing blockData:", error)
+      logger.error("Error parsing blockData:", error)
       return null
     }
   }
