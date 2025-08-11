@@ -243,15 +243,7 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData, context = 'main', p
   const { colors } = useAppSettings();
   const styles = createStyles(colors, isIPad);
 
-  // Debug logging
-  console.log('🎯 IntroComponent rendered with:', {
-    id,
-    context,
-    planId,
-    challengeId,
-    hasContent: !!content,
-    contentLength: content?.length
-  });
+  // Debug logging removed for production
 
   // Reading Mode Modal State
   const [showReadingModeModal, setShowReadingModeModal] = useState(false);
@@ -326,31 +318,27 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData, context = 'main', p
 
   // Handle Start Reading button press
   const handleStartReading = () => {
-    console.log('🚀 handleStartReading called for intro:', id);
+
     const bookCode = getBookFromIntroId(id);
-    console.log('📖 Book code found:', bookCode);
+
     
     if (bookCode) {
       const nextSegment = getNextSegment(bookCode);
-      console.log('📚 Next segment:', nextSegment, 'for context:', context);
+
       
       if (nextSegment) {
         const segmentData = SegmentTitles[nextSegment as keyof typeof SegmentTitles];
-        console.log('📝 Segment data:', segmentData);
+
         
         if (segmentData) {
-          console.log('✅ Setting modal state:', {
-            segmentId: nextSegment,
-            title: segmentData.title,
-            ref: (segmentData as any).ref || ''
-          });
+          // Setting modal state
           
           setSelectedSegmentId(nextSegment);
           setSelectedSegmentTitle(segmentData.title);
           setSelectedSegmentRef((segmentData as any).ref || '');
           setShowReadingModeModal(true);
           
-          console.log('🎯 Modal should now be visible');
+
         } else {
           console.error('❌ No segment data found for:', nextSegment);
         }

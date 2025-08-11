@@ -2563,38 +2563,7 @@ const Home = () => {
   return (
     <View style={localStyles.container}>
       
-      {/* Version Checker for Development */}
-      <View style={{
-        position: 'absolute',
-        top: 50,
-        right: 10,
-        backgroundColor: 'rgba(0, 122, 255, 0.8)',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 6,
-        zIndex: 999
-      }}>
-        <Text style={{
-          color: 'white',
-          fontSize: 10,
-          fontWeight: '600'
-        }}>
-          Version: Bottom Modal Position v6.14
-        </Text>
-        <Text style={{
-          color: 'white',
-          fontSize: 8,
-          marginTop: 2
-        }}>
-          ✅ Modal slides from bottom properly
-        </Text>
-        <Text style={{
-          color: 'white',
-          fontSize: 8
-        }}>
-          ✅ Consistent card format: Title, Story, Reference
-        </Text>
-      </View>
+
       
       <CustomHeader 
         leftComponent={

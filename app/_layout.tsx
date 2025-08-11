@@ -10,10 +10,11 @@ import { BottomNavProvider } from '@/context/BottomNavContext';
 import { FontSizeProvider } from '@/context/FontSizeContext';
 import { AppSettingsProvider, useAppSettings } from '@/context/AppSettingsContext';
 import { GroupReadingProvider } from '@/context/GroupReadingContext';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { initializeDatabaseWithDiagnostics } from '@/api/database-initialization';
 import * as Updates from 'expo-updates';
+import { SimpleLoadingScreen } from '@/components/SimpleLoadingScreen';
 import '../config/i18n'; // Import this to initialize i18next
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -25,9 +26,9 @@ function AppContent() {
   const [dbError, setDbError] = useState<string | null>(null);
   
   useEffect(() => {
-    const initializeDatabase = async () => {
+    const initializeApp = async () => {
       try {
-        // Initializing database with auto-migration
+        // Simple initialization
         const result = await initializeDatabaseWithDiagnostics();
         
         if (result.success) {
@@ -35,40 +36,43 @@ function AppContent() {
           if (result.migrationPerformed) {
             logger.info('🔄 Data migration was performed');
           }
+          
+          // Check for updates in background (non-blocking)
+          if (!__DEV__) {
+            checkForUpdates();
+          }
+          
           setDbReady(true);
         } else {
           logger.error('❌ Database initialization failed:', result.error);
           setDbError(result.error || 'Unknown database error');
         }
       } catch (error) {
-        logger.error('❌ Critical database error:', error);
-        setDbError(error instanceof Error ? error.message : 'Critical database error');
+        logger.error('❌ Critical initialization error:', error);
+        setDbError(error instanceof Error ? error.message : 'Critical initialization error');
       }
     };
-    
+
     const checkForUpdates = async () => {
       try {
-        if (!__DEV__) {
-          logger.info('🔄 Checking for OTA updates...');
-          const update = await Updates.checkForUpdateAsync();
-          logger.info('📱 Update check result:', update);
-          
-          if (update.isAvailable) {
-            logger.info('⬇️ Update available, fetching...');
-            await Updates.fetchUpdateAsync();
-            logger.info('🔄 Update fetched, reloading app...');
-            await Updates.reloadAsync();
-          } else {
-            logger.info('✅ No updates available');
-          }
+        logger.info('🔄 Checking for OTA updates...');
+        const update = await Updates.checkForUpdateAsync();
+        logger.info('📱 Update check result:', update);
+        
+        if (update.isAvailable) {
+          logger.info('⬇️ Update available, fetching...');
+          await Updates.fetchUpdateAsync();
+          logger.info('🔄 Update fetched, reloading app...');
+          await Updates.reloadAsync();
+        } else {
+          logger.info('✅ No updates available');
         }
       } catch (error) {
         logger.error('❌ Update check failed:', error);
       }
     };
     
-    initializeDatabase();
-    checkForUpdates();
+    initializeApp();
   }, []);
   
   if (dbError) {
@@ -94,19 +98,7 @@ function AppContent() {
   }
   
   if (!dbReady) {
-    return (
-      <View style={{ 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        backgroundColor: colors.background 
-      }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ color: colors.text, marginTop: 16 }}>
-          Initializing database...
-        </Text>
-      </View>
-    );
+    return <SimpleLoadingScreen />;
   }
   
   return (

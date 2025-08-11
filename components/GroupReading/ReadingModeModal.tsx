@@ -39,17 +39,11 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
   const [slideAnim] = React.useState(new Animated.Value(screenHeight));
   const [backdropOpacity] = React.useState(new Animated.Value(0));
 
-  // Debug log
-  console.log('🎭 ReadingModeModal render:', { 
-    visible, 
-    storyTitle, 
-    storyId,
-    modalPositionValue: slideAnim._value 
-  });
+
 
   useEffect(() => {
     if (visible) {
-      console.log('🎬 Starting show animation, current slideAnim:', slideAnim._value);
+
       // Show animation
       Animated.parallel([
         Animated.timing(backdropOpacity, {
@@ -65,7 +59,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
           useNativeDriver: true,
         }),
       ]).start((finished) => {
-        console.log('🎬 Show animation finished:', finished, 'final slideAnim:', slideAnim._value);
+
       });
     } else {
       // Hide animation
@@ -237,16 +231,16 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
   };
 
   if (!visible) {
-    console.log('🎭 Modal not visible, returning null');
+
     return null;
   }
 
   if (!storyId) {
-    console.log('🎭 Modal no storyId, returning null. StoryId:', storyId);
+
     return null;
   }
 
-  console.log('🎭 Modal rendering JSX for:', { storyTitle, storyId });
+
 
   return (
     <>

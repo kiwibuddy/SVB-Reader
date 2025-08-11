@@ -88,6 +88,7 @@ export default function TabLayout() {
           }}
         />
 
+
       </Tabs>
       <BottomNavigation />
     </View>
