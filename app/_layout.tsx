@@ -64,8 +64,17 @@ function AppContent() {
         console.log('🔄 OTA CHECK - Update ID:', Updates.updateId);
         console.log('🔄 OTA CHECK - Runtime:', Updates.runtimeVersion);
         console.log('🔄 OTA CHECK - Enabled:', Updates.isEnabled);
+        console.log('🔄 OTA CHECK - Channel:', Updates.channel);
+        console.log('🔄 OTA CHECK - isEmbedded:', Updates.isEmbeddedLaunch);
         
-        // Removed test alert for production build
+        // Show debug alert to check what's happening
+        setTimeout(() => {
+          Alert.alert(
+            '🔍 Debug Info',
+            `UpdateID: ${Updates.updateId || 'None'}\nRuntime: ${Updates.runtimeVersion || 'None'}\nEnabled: ${Updates.isEnabled}\nChannel: ${Updates.channel || 'None'}\nEmbedded: ${Updates.isEmbeddedLaunch}`,
+            [{ text: 'OK' }]
+          );
+        }, 3000);
         
         const update = await Updates.checkForUpdateAsync();
         logger.info('📱 Update check result:', update);
