@@ -2,23 +2,13 @@
   "expo": {
     "name": "SourceView Together",
     "slug": "SVB-Youth",
-    "version": "1.0",
+    "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "updates": {
-      "enabled": true,
-      "checkAutomatically": "ON_APP_LOAD",
-      "fallbackToCacheTimeout": 10000,
-      "requestHeaders": {
-        "expo-platform": "ios"
-      }
-    },
-    "runtimeVersion": {
-      "policy": "fingerprint"
-    },
+
     "description": "Experience the Bible in community with SourceView Together - a revolutionary app that transforms solo Bible reading into dynamic group experiences. Featuring role-based reading, emoji reactions, reading plans, challenges, and progress tracking for individuals and groups.",
     "keywords": ["bible", "scripture", "reading", "christian", "group", "community", "devotional", "spiritual", "faith", "religion", "study", "prayer"],
     "primaryColor": "#FF5733",
@@ -30,7 +20,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sourceview.together",
-      "buildNumber": "1",
+      "buildNumber": "3",
       "privacyPolicy": "mailto:sourceviewbible@gmail.com?subject=Privacy%20Policy%20Request&body=Please%20send%20me%20the%20privacy%20policy%20for%20SourceView%20Together%20app.",
       "supportURL": "mailto:sourceviewbible@gmail.com?subject=SourceView%20Together%20Support&body=Please%20describe%20your%20issue%20or%20question:",
       "config": {
@@ -106,7 +96,13 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/4b89909c-ac28-498a-9e46-5591000b8616"
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 10000,
+      "url": "https://u.expo.dev/4b89909c-ac28-498a-9e46-5591000b8616",
+      "requestHeaders": {
+        "expo-platform": "ios"
+      }
     }
   }
 }

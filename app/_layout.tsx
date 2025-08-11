@@ -38,9 +38,7 @@ function AppContent() {
           }
           
           // Check for updates in background (non-blocking)
-          if (!__DEV__) {
-            checkForUpdates();
-          }
+          checkForUpdates();
           
           setDbReady(true);
         } else {
@@ -56,12 +54,20 @@ function AppContent() {
     const checkForUpdates = async () => {
       try {
         logger.info('🔄 Checking for OTA updates...');
+        
+        // Log current update info
+        if (Updates.manifest) {
+          logger.info('📱 Current update ID:', Updates.updateId);
+          logger.info('📱 Current runtime version:', Updates.runtimeVersion);
+        }
+        
         const update = await Updates.checkForUpdateAsync();
         logger.info('📱 Update check result:', update);
         
         if (update.isAvailable) {
           logger.info('⬇️ Update available, fetching...');
-          await Updates.fetchUpdateAsync();
+          const fetchResult = await Updates.fetchUpdateAsync();
+          logger.info('📦 Fetch result:', fetchResult);
           logger.info('🔄 Update fetched, reloading app...');
           await Updates.reloadAsync();
         } else {
@@ -69,6 +75,7 @@ function AppContent() {
         }
       } catch (error) {
         logger.error('❌ Update check failed:', error);
+        logger.error('❌ Error details:', JSON.stringify(error, null, 2));
       }
     };
     

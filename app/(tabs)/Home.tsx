@@ -2591,6 +2591,40 @@ const Home = () => {
           null
         }
       />
+      
+      {/* OTA UPDATE TEST BANNER */}
+      <View style={{
+        backgroundColor: '#FF5733',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        marginHorizontal: 16,
+        marginTop: 8,
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+      }}>
+        <Text style={{
+          color: 'white',
+          fontSize: 16,
+          fontWeight: 'bold',
+          textAlign: 'center'
+        }}>
+          🚀 OTA UPDATE TEST - Build 3 - {new Date().toLocaleString()}
+        </Text>
+        <Text style={{
+          color: 'white',
+          fontSize: 12,
+          textAlign: 'center',
+          marginTop: 4,
+          opacity: 0.9
+        }}>
+          If you see this banner, OTA updates are working! ✅
+        </Text>
+      </View>
+      
       <ScrollView 
         style={styles.content}
         onScroll={handleScroll}
