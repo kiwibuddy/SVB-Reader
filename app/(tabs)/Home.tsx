@@ -2592,7 +2592,7 @@ const Home = () => {
         }
       />
       
-      {/* OTA UPDATE TEST BANNER - REMOVED TO TEST OTA UPDATE DELIVERY */}
+
       
       <ScrollView 
         style={styles.content}
