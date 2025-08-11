@@ -2612,7 +2612,7 @@ const Home = () => {
           fontWeight: 'bold',
           textAlign: 'center'
         }}>
-          🚀 OTA UPDATE TEST - Build 3 - {new Date().toLocaleString()}
+          🔥 OTA WORKING! - Build 4 - {new Date().toLocaleString()} - TEST #{Math.floor(Math.random() * 1000)}
         </Text>
         <Text style={{
           color: 'white',

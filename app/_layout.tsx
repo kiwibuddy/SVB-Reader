@@ -10,7 +10,7 @@ import { BottomNavProvider } from '@/context/BottomNavContext';
 import { FontSizeProvider } from '@/context/FontSizeContext';
 import { AppSettingsProvider, useAppSettings } from '@/context/AppSettingsContext';
 import { GroupReadingProvider } from '@/context/GroupReadingContext';
-import { View, Text } from 'react-native';
+import { View, Text, Alert } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { initializeDatabaseWithDiagnostics } from '@/api/database-initialization';
 import * as Updates from 'expo-updates';
@@ -30,7 +30,6 @@ function AppContent() {
       try {
         // Simple initialization
         const result = await initializeDatabaseWithDiagnostics();
-        
         if (result.success) {
           // Database initialized successfully
           if (result.migrationPerformed) {
@@ -56,10 +55,17 @@ function AppContent() {
         logger.info('🔄 Checking for OTA updates...');
         
         // Log current update info
-        if (Updates.manifest) {
-          logger.info('📱 Current update ID:', Updates.updateId);
-          logger.info('📱 Current runtime version:', Updates.runtimeVersion);
-        }
+        logger.info('📱 Current update ID:', Updates.updateId || 'No update ID');
+        logger.info('📱 Current runtime version:', Updates.runtimeVersion || 'No runtime version');
+        logger.info('📱 Updates enabled:', Updates.isEnabled);
+        logger.info('📱 Emergency launch:', Updates.isEmergencyLaunch);
+        
+        // Force console.log for debugging in TestFlight
+        console.log('🔄 OTA CHECK - Update ID:', Updates.updateId);
+        console.log('🔄 OTA CHECK - Runtime:', Updates.runtimeVersion);
+        console.log('🔄 OTA CHECK - Enabled:', Updates.isEnabled);
+        
+        // Removed test alert for production build
         
         const update = await Updates.checkForUpdateAsync();
         logger.info('📱 Update check result:', update);
