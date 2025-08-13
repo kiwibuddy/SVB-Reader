@@ -173,6 +173,9 @@ export async function markSegmentComplete(
     // Update daily activity and streak
     await updateDailyActivity(segmentID);
     await updateStreak();
+    
+    // Track reading session
+    await incrementSessionCount();
 
   } catch (error) {
     logger.error("Error marking segment complete:", error);
@@ -1077,17 +1080,17 @@ export async function getBookProgress(bookId: string): Promise<BookProgress> {
   try {
     const db = databaseManager.getDatabase();
     
-    // Get total segments for this book
+    // Get total segments for this book (excluding introductions)
     const totalResult = await db.getFirstAsync<{ count: number }>(
-      'SELECT COUNT(*) as count FROM segments WHERE bookID = ?',
+      'SELECT COUNT(*) as count FROM segments WHERE bookID = ? AND segmentID NOT LIKE "I%"',
       [bookId]
     );
     
-    // Count completed segments for this book
+    // Count completed segments for this book (excluding introductions)
     const completedCount = await db.getFirstAsync<{ count: number }>(`
       SELECT COUNT(*) as count FROM completedSegments 
       WHERE segmentID IN (
-        SELECT segmentID FROM segments WHERE bookID = ?
+        SELECT segmentID FROM segments WHERE bookID = ? AND segmentID NOT LIKE "I%"
       ) AND isCompleted = 1
     `, bookId);
     
@@ -1126,15 +1129,27 @@ export async function getOldTestamentProgress(): Promise<TestamentProgress> {
     const db = databaseManager.getDatabase();
     const otBooks = ['Gen', 'Exo', 'Lev', 'Num', 'Deu', 'Jos', 'Jdg', 'Rut', '1Sa', '2Sa', '1Ki', '2Ki', '1Ch', '2Ch', 'Ezr', 'Neh', 'Est', 'Job', 'Psa', 'Pro', 'Ecc', 'SoS', 'Isa', 'Jer', 'Lam', 'Eze', 'Dan', 'Hos', 'Joe', 'Amo', 'Oba', 'Jon', 'Mic', 'Nah', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal'];
     
-    const completed = await db.getFirstAsync<{ count: number }>(`
-      SELECT COUNT(*) as count FROM book_completion 
-      WHERE bookId IN (${otBooks.map(() => '?').join(',')}) AND isCompleted = 1
+    // Count total stories (excluding introductions) in Old Testament
+    const totalResult = await db.getFirstAsync<{ count: number }>(`
+      SELECT COUNT(*) as count FROM segments 
+      WHERE bookID IN (${otBooks.map(() => '?').join(',')}) 
+      AND segmentID NOT LIKE "I%"
     `, ...otBooks);
     
-    return { completed: completed?.count || 0, total: otBooks.length };
+    // Count completed stories (excluding introductions) in Old Testament
+    const completedResult = await db.getFirstAsync<{ count: number }>(`
+      SELECT COUNT(*) as count FROM completedSegments 
+      WHERE segmentID IN (
+        SELECT segmentID FROM segments 
+        WHERE bookID IN (${otBooks.map(() => '?').join(',')}) 
+        AND segmentID NOT LIKE "I%"
+      ) AND isCompleted = 1
+    `, ...otBooks, ...otBooks);
+    
+    return { completed: completedResult?.count || 0, total: totalResult?.count || 0 };
   } catch (error) {
     logger.error("Error getting Old Testament progress:", error);
-    return { completed: 0, total: 39 };
+    return { completed: 0, total: 0 };
   }
 }
 
@@ -1143,15 +1158,27 @@ export async function getNewTestamentProgress(): Promise<TestamentProgress> {
     const db = databaseManager.getDatabase();
     const ntBooks = ['Mat', 'Mar', 'Luk', 'Joh', 'Act', 'Rom', '1Co', '2Co', 'Gal', 'Eph', 'Php', 'Col', '1Th', '2Th', '1Ti', '2Ti', 'Tit', 'Phm', 'Heb', 'Jam', '1Pe', '2Pe', '1Jn', '2Jn', '3Jn', 'Jud', 'Rev'];
     
-    const completed = await db.getFirstAsync<{ count: number }>(`
-      SELECT COUNT(*) as count FROM book_completion 
-      WHERE bookId IN (${ntBooks.map(() => '?').join(',')}) AND isCompleted = 1
+    // Count total stories (excluding introductions) in New Testament
+    const totalResult = await db.getFirstAsync<{ count: number }>(`
+      SELECT COUNT(*) as count FROM segments 
+      WHERE bookID IN (${ntBooks.map(() => '?').join(',')}) 
+      AND segmentID NOT LIKE "I%"
     `, ...ntBooks);
     
-    return { completed: completed?.count || 0, total: ntBooks.length };
+    // Count completed stories (excluding introductions) in New Testament
+    const completedResult = await db.getFirstAsync<{ count: number }>(`
+      SELECT COUNT(*) as count FROM completedSegments 
+      WHERE segmentID IN (
+        SELECT segmentID FROM segments 
+        WHERE bookID IN (${ntBooks.map(() => '?').join(',')}) 
+        AND segmentID NOT LIKE "I%"
+      ) AND isCompleted = 1
+    `, ...ntBooks, ...ntBooks);
+    
+    return { completed: completedResult?.count || 0, total: totalResult?.count || 0 };
   } catch (error) {
     logger.error("Error getting New Testament progress:", error);
-    return { completed: 0, total: 27 };
+    return { completed: 0, total: 0 };
   }
 }
 
@@ -1632,3 +1659,80 @@ export const isChallengeDailyCompleted = async (challengeId: string, segmentId: 
     return false;
   }
 };
+
+// Add these helper functions for session tracking
+let currentSessionId: number | null = null;
+let currentSessionStartTime: Date | null = null;
+
+export async function getCurrentSession(): Promise<number | null> {
+  try {
+    const db = databaseManager.getDatabase();
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Check if we have an active session for today
+    const result = await db.getFirstAsync<{ id: number }>(
+      'SELECT id FROM reading_sessions WHERE sessionDate = ? ORDER BY startTime DESC LIMIT 1',
+      [today]
+    );
+    
+    return result?.id || null;
+  } catch (error) {
+    logger.error("Error getting current session:", error);
+    return null;
+  }
+}
+
+export async function ensureActiveSession(): Promise<number> {
+  try {
+    // Check if we have a current session
+    let sessionId = currentSessionId;
+    
+    if (!sessionId) {
+      sessionId = await getCurrentSession();
+    }
+    
+    // If no session exists for today, start a new one
+    if (!sessionId) {
+      sessionId = await startReadingSession();
+      if (sessionId) {
+        currentSessionId = sessionId;
+        currentSessionStartTime = new Date();
+      }
+    }
+    
+    if (!sessionId) {
+      throw new Error('Failed to create or get session');
+    }
+    
+    return sessionId;
+  } catch (error) {
+    logger.error("Error ensuring active session:", error);
+    // Fallback: start a new session
+    const newSessionId = await startReadingSession();
+    if (newSessionId) {
+      currentSessionId = newSessionId;
+      currentSessionStartTime = new Date();
+      return newSessionId;
+    }
+    throw new Error('Failed to create fallback session');
+  }
+}
+
+export async function incrementSessionCount(): Promise<void> {
+  try {
+    const sessionId = await ensureActiveSession();
+    if (sessionId) {
+      // Get current count and increment
+      const db = databaseManager.getDatabase();
+      const result = await db.getFirstAsync<{ segmentCount: number }>(
+        'SELECT segmentCount FROM reading_sessions WHERE id = ?',
+        [sessionId]
+      );
+      
+      const newCount = (result?.segmentCount || 0) + 1;
+      await updateReadingSession(sessionId, newCount);
+    }
+  } catch (error) {
+    logger.error("Error incrementing session count:", error);
+  }
+}
