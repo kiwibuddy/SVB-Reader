@@ -148,5 +148,6 @@ const styles = StyleSheet.create({
   },
   icon: {
     zIndex: 1,
+    borderRadius: 16,
   },
 });
