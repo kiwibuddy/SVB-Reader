@@ -553,6 +553,9 @@ const Navigation = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [selectedBook, setSelectedBook] = useState<string | null>(null);
   const [highlightedSegment, setHighlightedSegment] = useState<string | null>(null);
+  
+  // Add ref for FlatList to enable scrolling to specific books
+  const flatListRef = useRef<FlatList>(null);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [activeFilters, setActiveFilters] = useState<{
     testament: string[]
@@ -939,10 +942,24 @@ const Navigation = () => {
         
         if (completedSegment) {
           setHighlightedSegment(completedSegment as string);
+          
+          // Scroll to the expanded book in the FlatList
+          // This is especially important for "today's reading" completions
+          setTimeout(() => {
+            const bookIndex = filteredData.findIndex(item => item.djhBook === bookKey);
+            if (bookIndex !== -1 && flatListRef.current) {
+              logger.info('📍 Scrolling to book index:', bookIndex, 'for book:', bookKey);
+              flatListRef.current.scrollToIndex({
+                index: bookIndex,
+                animated: true,
+                viewPosition: 0.2 // Position the book near top of screen
+              });
+            }
+          }, 100);
         }
       }
     }
-  }, [expandedBook, completedSegment, timestamp]);
+  }, [expandedBook, completedSegment, timestamp, filteredData]);
 
   // Fetch completion status for all segments on mount
   useEffect(() => {
@@ -1256,6 +1273,7 @@ const Navigation = () => {
           </View>
 
           <FlatList
+            ref={flatListRef}
             style={{ flex: 1 }}
             data={filteredData}
             ListHeaderComponent={ListHeaderComponent}
@@ -1271,6 +1289,18 @@ const Navigation = () => {
               offset: 80 * index,
               index,
             })}
+            onScrollToIndexFailed={(error) => {
+              // Handle scroll to index failure gracefully
+              logger.warn('📍 ScrollToIndex failed:', error);
+              setTimeout(() => {
+                if (flatListRef.current && error.index < filteredData.length) {
+                  flatListRef.current.scrollToOffset({
+                    offset: error.averageItemLength * error.index,
+                    animated: true,
+                  });
+                }
+              }, 100);
+            }}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}

@@ -52,6 +52,12 @@ function AppContent() {
 
     const checkForUpdates = async () => {
       try {
+        // Skip update checks in development builds
+        if (__DEV__ || !Updates.isEnabled) {
+          logger.info('⏭️ Skipping OTA update check (development build or updates disabled)');
+          return;
+        }
+        
         logger.info('🔄 Checking for OTA updates...');
         
         // Log current update info
@@ -66,8 +72,6 @@ function AppContent() {
         console.log('🔄 OTA CHECK - Enabled:', Updates.isEnabled);
         console.log('🔄 OTA CHECK - Channel:', Updates.channel);
         console.log('🔄 OTA CHECK - isEmbedded:', Updates.isEmbeddedLaunch);
-        
-        // Debug alert removed for production release
         
         const update = await Updates.checkForUpdateAsync();
         logger.info('📱 Update check result:', update);

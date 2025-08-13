@@ -5,6 +5,7 @@ import { BibleBlock } from "@/types";
 import SourceNameComponent from "./SourceName";
 import BibleInlineComponent from "./Inline";
 import EmojiHandler from "@/components/EmojiHandler";
+import { useAppSettings } from "@/context/AppSettingsContext";
 
 interface BibleBlockProps {
   block: BibleBlock;
@@ -17,6 +18,7 @@ interface BibleBlockProps {
 const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: BibleBlockProps) => {
   const { source, children } = block;
   const { color = 'black', sourceName = 'Unknown' } = source || {};
+  const { isDarkMode } = useAppSettings();
   const colors = getColors(color);
   const glowAnim = useRef(new Animated.Value(0)).current;
 
@@ -24,15 +26,23 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: Bible
     Animated.loop(
       Animated.timing(glowAnim, {
         toValue: 1,
-        duration: 6000,
+        duration: 12000, // Doubled from 6000ms to 12000ms (12 seconds)
         useNativeDriver: false,
       })
     ).start();
-  }, []);
+  }, [isDarkMode]); // Re-run animation when dark mode changes
 
+  // Create adaptive glow colors based on dark mode
   const glowColor = glowAnim.interpolate({
     inputRange: [0, 0.33, 0.66, 1],
-    outputRange: [
+    outputRange: isDarkMode ? [
+      // Dark mode: very light, almost white pastel colors for maximum visibility
+      "rgba(255, 230, 230, 0.95)", // Very light pink/white
+      "rgba(230, 255, 230, 0.95)", // Very light green/white
+      "rgba(230, 240, 255, 0.95)", // Very light blue/white
+      "rgba(255, 230, 230, 0.95)", // Very light pink/white (loop back)
+    ] : [
+      // Light mode: original vibrant colors
       "rgba(255, 0, 0, 0.8)",
       "rgba(0, 255, 0, 0.8)",
       "rgba(0, 0, 255, 0.8)",
@@ -55,12 +65,12 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: Bible
           style={[
             styles.bubble,
             {
-              backgroundColor: colors.light,
+              backgroundColor: isDarkMode ? colors.dark : colors.light,
               ...(isGlowing ? {
                 shadowColor: glowColor,
                 shadowOffset: { width: 0, height: 0 },
                 shadowOpacity: 1,
-                shadowRadius: 10,
+                shadowRadius: isDarkMode ? 10 : 10, // Larger glow radius in dark mode for better visibility
               } : {
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 2 },
@@ -68,7 +78,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: Bible
                 shadowRadius: 3,
               }),
               borderWidth: 0,
-              elevation: isGlowing ? 5 : 3,
+              elevation: isGlowing ? (isDarkMode ? 8 : 5) : 3, // Higher elevation in dark mode for better glow visibility
             },
           ]}
         >
@@ -77,7 +87,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: Bible
               style={[
                 styles.tail,
                 {
-                  borderBottomColor: colors.light,
+                  borderBottomColor: isDarkMode ? colors.dark : colors.light,
                 },
                 tailAlignment
               ]}
@@ -91,7 +101,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: Bible
                   key={`${bIndex}-${index}`}
                   iIndex={`${bIndex}-${index}`}
                   inline={item}
-                  textColor={colors.dark}
+                  textColor={isDarkMode ? colors.light : colors.dark}
                 />
               );
             })}

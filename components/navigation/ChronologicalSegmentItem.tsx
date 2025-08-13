@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import CheckCircle from '@/components/CheckCircle';
 import { databaseManager } from '@/api/database-manager';
 import { useAppSettings } from '@/context/AppSettingsContext';
 
@@ -134,12 +133,10 @@ const ChronologicalSegmentItem: React.FC<ChronologicalSegmentItemProps> = ({
 
       <View style={[styles.checkContainer, { flexDirection: 'row', alignItems: 'center', gap: 6 }]}>
         <GroupCompletionBadge segmentId={segmentId} />
-        <CheckCircle
-          segmentId={segmentId}
-          context={context}
-          planId={planId}
-          challengeId={challengeId}
-          iconSize={24}
+        <Ionicons 
+          name={isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'} 
+          size={24} 
+          color={isCompleted ? '#4CAF50' : '#CCCCCC'} 
         />
       </View>
     </TouchableOpacity>

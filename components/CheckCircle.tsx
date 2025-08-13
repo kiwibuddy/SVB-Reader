@@ -41,7 +41,7 @@ interface CheckCircleProps {
 
 export default function CheckCircle({ 
   segmentId, 
-  iconSize = 24, 
+  iconSize = 32, // Increased default size for better tap experience
   context = 'main',
   planId,
   challengeId,
@@ -388,7 +388,18 @@ export default function CheckCircle({
 
   return (
     <View style={styles.container}>
-      <Pressable onPress={handlePress} style={styles.checkButton}>
+      <Pressable 
+        onPress={handlePress} 
+        style={({ pressed }) => [
+          styles.checkButton,
+          pressed && styles.checkButtonPressed
+        ]}
+        android_ripple={{ 
+          color: 'rgba(0,0,0,0.1)', 
+          radius: 32,
+          borderless: true 
+        }}
+      >
         {((mode === 'group') || (mode === 'auto' && inGroupContext)) ? (
           <Ionicons
             // host generates code, joiner scans code
@@ -671,12 +682,18 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   checkButton: {
-    padding: 24, // Larger tap target for accessibility
-    minWidth: 44, // iOS Human Interface Guidelines minimum touch target
-    minHeight: 44, // iOS Human Interface Guidelines minimum touch target
+    padding: 20, // Generous tap target that surrounds the larger icon
+    minWidth: 64, // Increased for better tap experience with larger icon
+    minHeight: 64, // Increased for better tap experience with larger icon
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 22, // Half of minHeight/minWidth for circular touch area
+    borderRadius: 32, // Half of minHeight/minWidth for circular touch area
+    // Add subtle background for visual feedback (useful for debugging tap area)
+    // backgroundColor: 'rgba(0,0,0,0.05)', // Uncomment to visualize tap area
+  },
+  checkButtonPressed: {
+    opacity: 0.6, // Visual feedback when pressed on iOS
+    transform: [{ scale: 0.95 }], // Slight scale down when pressed
   },
   readCount: {
     fontSize: 12,

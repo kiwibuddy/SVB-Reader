@@ -349,6 +349,20 @@ const ChallengesScreen = () => {
     isStartChallenge: boolean;
   } | null>(null);
 
+  // Challenge Start Confirmation Modal State
+  const [showStartConfirmationModal, setShowStartConfirmationModal] = useState(false);
+  const [startConfirmationData, setStartConfirmationData] = useState<{
+    challengeId: string;
+    challengeTitle: string;
+    firstStory: {
+      segmentId: string;
+      title: string;
+      book: string;
+      reference: string;
+      fullReference: string;
+    } | null;
+  } | null>(null);
+
   // Animated progress bars
   const progressAnimations = useRef<Record<string, Animated.Value>>({}).current;
   
@@ -557,6 +571,40 @@ const ChallengesScreen = () => {
     return null;
   };
 
+  // Helper function to get the first story segment for a challenge with reference info
+  const getFirstStoryInChallenge = (challengeId: string) => {
+    const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+    if (!challenge?.segments) return null;
+
+    // Get all segments in order
+    const allSegments: string[] = [];
+    Object.values(challenge.segments).forEach(bookData => {
+      if (bookData?.segments) {
+        allSegments.push(...bookData.segments);
+      }
+    });
+
+    // Find first story segment (not introduction)
+    const firstStorySegment = allSegments.find(s => !s.startsWith('I'));
+    
+    if (firstStorySegment) {
+      const segmentData = SegmentTitles[firstStorySegment as keyof typeof SegmentTitles];
+      if (segmentData) {
+        const bookName = segmentData.book?.[0] || '';
+        const reference = (segmentData as any).ref || '';
+        return {
+          segmentId: firstStorySegment,
+          title: segmentData.title || 'Unknown Story',
+          book: bookName,
+          reference: reference,
+          fullReference: reference ? `${bookName} ${reference}` : bookName
+        };
+      }
+    }
+    
+    return null;
+  };
+
   // Group challenges by status and category
   const organizedChallenges = useMemo(() => {
     const active: Challenge[] = [];
@@ -577,8 +625,10 @@ const ChallengesScreen = () => {
         return; // Skip seasonal challenges that are out of season
       }
       
-      const isActive = activeChallenges[challenge.id] && !activeChallenges[challenge.id].isPaused;
-      const isCompleted = activeChallenges[challenge.id] && activeChallenges[challenge.id].isCompleted;
+      const challengeData = activeChallenges[challenge.id];
+      const isStarted = !!challengeData;
+      const isCompleted = isStarted && challengeData.isCompleted;
+      const isActive = isStarted && !challengeData.isCompleted; // Include paused challenges in active
       
       if (isCompleted) {
         completed.push(challenge as Challenge);
@@ -614,8 +664,10 @@ const ChallengesScreen = () => {
 
   const renderChallengeItem = useCallback(({ item: challenge }: { item: Challenge }) => {
     const isSelected = selectedChallengeId === challenge.id;
-    const isActive = activeChallenges[challenge.id];
-    const isPaused = isActive?.isPaused;
+    const challengeData = activeChallenges[challenge.id];
+    const isStarted = !!challengeData;
+    const isActive = isStarted && !challengeData?.isCompleted; // Include paused challenges in active
+    const isPaused = isStarted && challengeData?.isPaused;
     const segmentCount = getChallengeSegmentCount(challenge.id);
     const challengeBooksData = isSelected ? getChallengeBooksData(challenge.id) : [];
     const progressData = challengeProgress[challenge.id];
@@ -625,9 +677,9 @@ const ChallengesScreen = () => {
     const progressPercentage = progressData?.progressPercentage || 0;
     
     // Check if this challenge supports chronological view
-    const challengeData = readingPlansData.challenges.find(c => c.id === challenge.id);
-    const supportsChronological = !!(challengeData as any)?.chronologicalOrder;
-    const chronologicalMapping = (challengeData as any)?.chronologicalMapping;
+    const challengeConfig = readingPlansData.challenges.find(c => c.id === challenge.id);
+    const supportsChronological = !!(challengeConfig as any)?.chronologicalOrder;
+    const chronologicalMapping = (challengeConfig as any)?.chronologicalMapping;
 
     return (
       <View style={styles.challengeContainer}>
@@ -669,18 +721,16 @@ const ChallengesScreen = () => {
             <View style={styles.rightContent}>
               {!isActive && (
                 <TouchableOpacity 
-                  onPress={async (e) => {
+                  onPress={(e) => {
                     e.stopPropagation();
-                    setLoadingStates(prev => ({ ...prev, [challenge.id]: 'starting' }));
-                    try {
-                      await startChallenge(challenge.id);
-                      // Immediately update local state for instant UI feedback
-                      const challengesData = await getActiveChallengesFromDB();
-                      setActiveChallenges(challengesData);
-                      await loadChallengeProgress();
-                    } finally {
-                      setLoadingStates(prev => ({ ...prev, [challenge.id]: null }));
-                    }
+                    // Show start confirmation modal
+                    const firstStory = getFirstStoryInChallenge(challenge.id);
+                    setStartConfirmationData({
+                      challengeId: challenge.id,
+                      challengeTitle: challenge.title,
+                      firstStory: firstStory
+                    });
+                    setShowStartConfirmationModal(true);
                   }}
                   disabled={loadingStates[challenge.id] === 'starting'}
                 >
@@ -786,7 +836,7 @@ const ChallengesScreen = () => {
                 <ChronologicalView
                   challengeId={challenge.id}
                   chronologicalMapping={chronologicalMapping}
-                  completedSegments={(completedSegments || []).reduce((acc, id) => {
+                  completedSegments={(progressData?.completedSegmentIds || []).reduce((acc, id) => {
                     acc[id] = true;
                     return acc;
                   }, {} as Record<string, boolean>)}
@@ -1051,6 +1101,38 @@ const ChallengesScreen = () => {
     setEnforcementData(null);
   };
 
+  // Challenge Start Confirmation Modal Handlers
+  const handleConfirmStartChallenge = async () => {
+    if (!startConfirmationData) return;
+    
+    setShowStartConfirmationModal(false);
+    setLoadingStates(prev => ({ ...prev, [startConfirmationData.challengeId]: 'starting' }));
+    
+    try {
+      await startChallenge(startConfirmationData.challengeId);
+      // Immediately update local state for instant UI feedback
+      const challengesData = await getActiveChallengesFromDB();
+      setActiveChallenges(challengesData);
+      await loadChallengeProgress();
+      
+      // Show reading mode modal for the first story
+      if (startConfirmationData.firstStory) {
+        setSelectedSegmentId(startConfirmationData.firstStory.segmentId);
+        setSelectedSegmentTitle(startConfirmationData.firstStory.title);
+        setSelectedSegmentRef(startConfirmationData.firstStory.reference);
+        setShowReadingModeModal(true);
+      }
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [startConfirmationData.challengeId]: null }));
+      setStartConfirmationData(null);
+    }
+  };
+
+  const handleCancelStartChallenge = () => {
+    setShowStartConfirmationModal(false);
+    setStartConfirmationData(null);
+  };
+
   // Pull-to-refresh handler
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -1186,6 +1268,122 @@ const ChallengesScreen = () => {
         onGroup={handleGroupReading}
         onCancel={handleCancelModal}
       />
+
+      {/* Challenge Start Confirmation Modal */}
+      {showStartConfirmationModal && startConfirmationData && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+        }}>
+          <View style={{
+            backgroundColor: colors.card,
+            borderRadius: 12,
+            padding: 24,
+            margin: 20,
+            maxWidth: 400,
+            width: '90%',
+          }}>
+            <Text style={{
+              fontSize: 18,
+              fontWeight: '600',
+              color: colors.text,
+              marginBottom: 12,
+              textAlign: 'center'
+            }}>
+              Start Reading Challenge
+            </Text>
+            
+            <Text style={{
+              fontSize: 16,
+              color: colors.text,
+              marginBottom: 16,
+              textAlign: 'center',
+              lineHeight: 22,
+            }}>
+              You're about to start "{startConfirmationData.challengeTitle}". 
+              {startConfirmationData.firstStory ? ` Your first story will be:` : ''}
+            </Text>
+
+            {startConfirmationData.firstStory && (
+              <View style={{
+                backgroundColor: colors.background,
+                padding: 16,
+                borderRadius: 8,
+                marginBottom: 20,
+              }}>
+                <Text style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  color: colors.primary,
+                  textAlign: 'center',
+                  marginBottom: 4,
+                }}>
+                  {startConfirmationData.firstStory.title}
+                </Text>
+                <Text style={{
+                  fontSize: 14,
+                  color: colors.secondary,
+                  textAlign: 'center',
+                  fontStyle: 'italic',
+                }}>
+                  {startConfirmationData.firstStory.fullReference}
+                </Text>
+              </View>
+            )}
+
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              gap: 12,
+            }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  backgroundColor: colors.background,
+                }}
+                onPress={handleCancelStartChallenge}
+              >
+                <Text style={{
+                  color: colors.text,
+                  textAlign: 'center',
+                  fontWeight: '500',
+                }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  backgroundColor: colors.primary,
+                }}
+                onPress={handleConfirmStartChallenge}
+              >
+                <Text style={{
+                  color: 'white',
+                  textAlign: 'center',
+                  fontWeight: '600',
+                }}>
+                  Start Challenge
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
 
       {/* Challenge Order Enforcement Modal */}
       {showOrderEnforcementModal && enforcementData && (

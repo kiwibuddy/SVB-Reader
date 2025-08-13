@@ -26,7 +26,7 @@ import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import { getCurrentSegmentId, getReadSegments, getActivePlanFromDB, getActiveChallengesFromDB } from "@/api/sqlite";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
-import { getEmojis, getCurrentStreak, getPlanProgress, getChallengeProgress, getSegmentCompletionStatus, getBestStreak } from "@/api/sqlite";
+import { getEmojis, getCurrentStreak, getPlanProgress, getChallengeProgress, getSegmentCompletionStatus, getBestStreak, hasDailyCompletionToday, getContextualStreaks } from "@/api/sqlite";
 import { format, isToday, parseISO } from 'date-fns';
 import CustomHeader from "@/components/navigation/CustomHeader";
 import { useFontSize } from '@/context/FontSizeContext';
@@ -1006,19 +1006,27 @@ interface SectionStyles {
   colors: ColorScheme;
 }
 
-// Separate component for animated streak card to follow Rules of Hooks
+// Enhanced StreakCard with contextual streak display
 const StreakCard = ({ 
   currentStreak, 
   isTodayComplete, 
   colors, 
   item, 
-  localStyles 
+  localStyles,
+  contextualStreaks 
 }: {
   currentStreak: number;
   isTodayComplete: boolean;
   colors: any;
   item: any;
   localStyles: any;
+  contextualStreaks: {
+    overall: number;
+    today: number;
+    plan: number;
+    challenge: number;
+    main: number;
+  };
 }) => {
   // Animation values for streak updates
   const streakScale = useSharedValue(1);
@@ -1063,6 +1071,91 @@ const StreakCard = ({
     opacity: statusOpacity.value,
   }));
 
+  // DonutRing component for individual streak circles
+  const DonutRing = ({ 
+    value, 
+    maxValue = 30, 
+    size = 32, 
+    strokeWidth = 3, 
+    color, 
+    backgroundColor = '#E0E0E0',
+    label,
+    labelColor 
+  }: {
+    value: number;
+    maxValue?: number;
+    size?: number;
+    strokeWidth?: number;
+    color: string;
+    backgroundColor?: string;
+    label: string;
+    labelColor: string;
+  }) => {
+    const radius = (size - strokeWidth) / 2;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDasharray = circumference;
+    const strokeDashoffset = circumference - (Math.min(value, maxValue) / maxValue) * circumference;
+    
+    return (
+      <View style={{ alignItems: 'center', marginHorizontal: 4 }}>
+        <View style={{ width: size, height: size, position: 'relative' }}>
+          {/* Background circle */}
+          <View 
+            style={{
+              width: size,
+              height: size,
+              borderRadius: size / 2,
+              borderWidth: strokeWidth,
+              borderColor: backgroundColor,
+              position: 'absolute',
+            }}
+          />
+          {/* Progress circle */}
+          <View 
+            style={{
+              width: size,
+              height: size,
+              borderRadius: size / 2,
+              borderWidth: strokeWidth,
+              borderColor: color,
+              borderTopColor: value > 0 ? color : backgroundColor,
+              borderRightColor: value > maxValue * 0.25 ? color : backgroundColor,
+              borderBottomColor: value > maxValue * 0.5 ? color : backgroundColor,
+              borderLeftColor: value > maxValue * 0.75 ? color : backgroundColor,
+              position: 'absolute',
+              transform: [{ rotate: '-90deg' }],
+            }}
+          />
+          {/* Center text */}
+          <View style={{
+            position: 'absolute',
+            width: size,
+            height: size,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            <Text style={{
+              fontSize: 10,
+              fontWeight: '700',
+              color: colors.text,
+            }}>
+              {value}
+            </Text>
+          </View>
+        </View>
+        <Text style={{
+          fontSize: 8,
+          color: labelColor,
+          marginTop: 2,
+          fontWeight: '500',
+          textAlign: 'center',
+        }}>
+          {label}
+        </Text>
+      </View>
+    );
+  };
+
   return (
     <View style={[localStyles.insightCard, { backgroundColor: item.backgroundColor }]}>
       <View style={localStyles.cardHeader}>
@@ -1074,7 +1167,7 @@ const StreakCard = ({
         <View style={localStyles.streakCircleContainer}>
           <View style={localStyles.streakCircle}>
             <Reanimated.Text style={[localStyles.streakNumber, animatedStreakStyle]}>
-              {currentStreak}
+              {contextualStreaks.overall || currentStreak}
             </Reanimated.Text>
             <Text style={localStyles.streakDaysText}>days</Text>
           </View>
@@ -1083,20 +1176,56 @@ const StreakCard = ({
         
         <View style={localStyles.streakTextContainer}>
           <Text style={localStyles.streakMessage}>
-            {currentStreak === 1 ? 'Great start! Keep it going!' : 
-             currentStreak < 7 ? `Great start! Keep it going!` :
+            {(contextualStreaks.overall || currentStreak) === 0 ? 'Start your reading journey!' :
+             (contextualStreaks.overall || currentStreak) === 1 ? 'Great start! Keep it going!' : 
+             (contextualStreaks.overall || currentStreak) < 7 ? `Keep building your streak!` :
              'Amazing streak! Keep it up!'}
           </Text>
           <Text style={localStyles.streakGoal}>
-            {currentStreak < 7 ? `${7 - currentStreak} more days to 7!` : 'Keep building your streak!'}
+            {(contextualStreaks.overall || currentStreak) < 7 ? 
+              `${7 - (contextualStreaks.overall || currentStreak)} more days to 7!` : 
+              'Keep building your streak!'}
           </Text>
+        </View>
+      </View>
+      
+      {/* Contextual Streak Breakdown */}
+      <View style={{ marginTop: 12, marginBottom: 8 }}>
+        <Text style={[localStyles.cardSubtitle, { marginBottom: 8, fontWeight: '600', fontSize: 11 }]}>
+          Reading Breakdown:
+        </Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end' }}>
+          <DonutRing 
+            value={contextualStreaks.today} 
+            color="#4CAF50" 
+            label="Today's" 
+            labelColor="#4CAF50"
+          />
+          <DonutRing 
+            value={contextualStreaks.plan} 
+            color="#7B68EE" 
+            label="Plans" 
+            labelColor="#7B68EE"
+          />
+          <DonutRing 
+            value={contextualStreaks.challenge} 
+            color="#FF69B4" 
+            label="Challenges" 
+            labelColor="#FF69B4"
+          />
+          <DonutRing 
+            value={contextualStreaks.main} 
+            color="#E6E6E6" 
+            label="General" 
+            labelColor="#888888"
+          />
         </View>
       </View>
       
       <View style={localStyles.streakStatus}>
         <Reanimated.View style={[localStyles.streakStatusDot, animatedStatusStyle]} />
         <Text style={localStyles.streakStatusText}>
-          {isTodayComplete ? "Today's reading complete" : "Keep building your streak!"}
+          {isTodayComplete ? "Today's reading complete" : "Start reading to build your streak!"}
         </Text>
       </View>
     </View>
@@ -1308,6 +1437,14 @@ const ReadingInsightsCarousel = ({
     completionRate: 0
   });
 
+  const [contextualStreaks, setContextualStreaks] = useState({
+    overall: 0,
+    today: 0,
+    plan: 0,
+    challenge: 0,
+    main: 0
+  });
+
   const [enhancedInsights, setEnhancedInsights] = useState({
     bookInsights: null as BookInsights | null,
     storyInsights: null as StoryInsights | null,
@@ -1400,6 +1537,10 @@ const ReadingInsightsCarousel = ({
           activityInsights,
           dataAvailability: dataCheck,
         });
+
+        // Load contextual streaks
+        const streaks = await getContextualStreaks();
+        setContextualStreaks(streaks);
       } catch (error) {
         console.error('Error calculating insights:', error);
       }
@@ -1488,6 +1629,10 @@ const ReadingInsightsCarousel = ({
             activityInsights,
             dataAvailability: dataCheck,
           });
+
+          // Load contextual streaks
+          const streaks = await getContextualStreaks();
+          setContextualStreaks(streaks);
         } catch (error) {
           console.error('Error refreshing insights:', error);
         }
@@ -1640,7 +1785,8 @@ const ReadingInsightsCarousel = ({
           isTodayComplete={isTodayComplete} 
           colors={colors} 
           item={item} 
-          localStyles={localStyles} 
+          localStyles={localStyles}
+          contextualStreaks={contextualStreaks}
         />
       );
     }
@@ -1962,6 +2108,13 @@ const Home = () => {
   const [bestStreak, setBestStreak] = useState(0);
   const [isTodayComplete, setIsTodayComplete] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [homeContextualStreaks, setHomeContextualStreaks] = useState({
+    overall: 0,
+    today: 0,
+    plan: 0,
+    challenge: 0,
+    main: 0
+  });
   
   // State for tracking completion of daily items
   const [isDailySegmentCompleted, setIsDailySegmentCompleted] = useState(false);
@@ -2029,6 +2182,10 @@ const Home = () => {
       setCurrentStreak(currentStreakValue);
       setBestStreak(bestStreakValue);
       
+      // Load contextual streaks
+      const contextualStreaksData = await getContextualStreaks();
+      setHomeContextualStreaks(contextualStreaksData);
+      
       // Check if today is complete based on today's completions
       const db = databaseManager.getDatabase();
       const today = new Date().toISOString().split('T')[0];
@@ -2059,6 +2216,10 @@ const Home = () => {
         
         setCurrentStreak(currentStreakValue);
         setBestStreak(bestStreakValue);
+        
+        // Load contextual streaks
+        const contextualStreaksData = await getContextualStreaks();
+        setHomeContextualStreaks(contextualStreaksData);
         
         // Check if today is complete based on today's completions
         const db = databaseManager.getDatabase();
@@ -2146,14 +2307,15 @@ const Home = () => {
   // Check if active plan's daily portion is completed
   useEffect(() => {
     const checkPlanDailyCompletion = async () => {
-      if (!activePlan || !planProgress?.nextSegmentId) {
+      if (!activePlan) {
         setActivePlanDailyCompleted(false);
         return;
       }
 
       try {
-        const status = await getSegmentCompletionStatus(planProgress.nextSegmentId, 'plan', activePlan.planId);
-        setActivePlanDailyCompleted(status.isCompleted);
+        // Check if any segment was completed today for this plan
+        const hasCompletedToday = await hasDailyCompletionToday('plan', activePlan.planId);
+        setActivePlanDailyCompleted(hasCompletedToday);
       } catch (error) {
         console.error('Error checking plan daily completion:', error);
         setActivePlanDailyCompleted(false);
@@ -2161,7 +2323,7 @@ const Home = () => {
     };
 
     checkPlanDailyCompletion();
-  }, [activePlan, planProgress, refreshTrigger]);
+  }, [activePlan, refreshTrigger]);
 
   // Check if active challenges' daily portions are completed
   useEffect(() => {
@@ -2174,16 +2336,12 @@ const Home = () => {
           continue;
         }
 
-        const challengeProgress = challengeProgresses[challengeId];
-        if (challengeProgress?.nextSegmentId) {
-          try {
-            const status = await getSegmentCompletionStatus(challengeProgress.nextSegmentId, 'challenge', challengeId);
-            completionStates[challengeId] = status.isCompleted;
-          } catch (error) {
-            console.error(`Error checking challenge ${challengeId} daily completion:`, error);
-            completionStates[challengeId] = false;
-          }
-        } else {
+        try {
+          // Check if any segment was completed today for this challenge
+          const hasCompletedToday = await hasDailyCompletionToday('challenge', undefined, challengeId);
+          completionStates[challengeId] = hasCompletedToday;
+        } catch (error) {
+          console.error(`Error checking challenge ${challengeId} daily completion:`, error);
           completionStates[challengeId] = false;
         }
       }
@@ -2192,7 +2350,7 @@ const Home = () => {
     };
 
     checkChallengesDailyCompletion();
-  }, [activeChallenges, challengeProgresses, refreshTrigger]);
+  }, [activeChallenges, refreshTrigger]);
 
   // Refresh progress data when returning to Home screen
   useFocusEffect(

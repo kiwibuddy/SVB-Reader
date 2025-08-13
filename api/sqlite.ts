@@ -296,6 +296,36 @@ export const getSegmentCompletionStatus = async (
   }
 };
 
+// Check if any segment was completed today for a specific plan or challenge (for Home screen daily tracking)
+export const hasDailyCompletionToday = async (
+  context: 'plan' | 'challenge',
+  planId?: string,
+  challengeId?: string
+): Promise<boolean> => {
+  try {
+    const db = databaseManager.getDatabase();
+    const today = new Date().toISOString().split('T')[0];
+    let result: any;
+
+    if (context === 'plan' && planId) {
+      result = await db.getFirstAsync<{ count: number }>(
+        'SELECT COUNT(*) as count FROM reading_plan_progress WHERE planID = ? AND completionDate LIKE ? AND isCompleted = 1',
+        [planId, `${today}%`]
+      );
+    } else if (context === 'challenge' && challengeId) {
+      result = await db.getFirstAsync<{ count: number }>(
+        'SELECT COUNT(*) as count FROM reading_challenge_progress WHERE challengeID = ? AND completionDate LIKE ? AND isCompleted = 1',
+        [challengeId, `${today}%`]
+      );
+    }
+
+    return (result?.count || 0) > 0;
+  } catch (error) {
+    logger.error("Error checking daily completion:", error);
+    return false;
+  }
+};
+
 // ============================================================================
 // PROGRESS FUNCTIONS
 // ============================================================================
@@ -432,6 +462,80 @@ export async function getCurrentStreak(): Promise<number> {
   } catch (error) {
     logger.error("Error getting current streak:", error);
     return 0;
+  }
+}
+
+// Get context-specific streak data for enhanced streak display
+export async function getContextualStreaks(): Promise<{
+  overall: number;
+  today: number;
+  plan: number;
+  challenge: number;
+  main: number;
+}> {
+  try {
+    const db = databaseManager.getDatabase();
+    
+    // Calculate streak for each context by checking consecutive days with completions
+    const calculateContextStreak = async (context: string): Promise<number> => {
+      let streak = 0;
+      let currentDate = new Date();
+      
+      while (true) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        
+        const result = await db.getFirstAsync<{ count: number }>(
+          'SELECT COUNT(DISTINCT segmentID) as count FROM segment_completion WHERE completionType = ? AND DATE(completionDate) = ?',
+          [context, dateStr]
+        );
+        
+        if ((result?.count || 0) > 0) {
+          streak++;
+          currentDate.setDate(currentDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+      
+      return streak;
+    };
+    
+    // Calculate overall streak (any completion on any day)
+    const calculateOverallStreak = async (): Promise<number> => {
+      let streak = 0;
+      let currentDate = new Date();
+      
+      while (true) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        
+        const result = await db.getFirstAsync<{ count: number }>(
+          'SELECT COUNT(DISTINCT segmentID) as count FROM segment_completion WHERE DATE(completionDate) = ?',
+          [dateStr]
+        );
+        
+        if ((result?.count || 0) > 0) {
+          streak++;
+          currentDate.setDate(currentDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+      
+      return streak;
+    };
+    
+    const [overall, today, plan, challenge, main] = await Promise.all([
+      calculateOverallStreak(),
+      calculateContextStreak('today'),
+      calculateContextStreak('plan'), 
+      calculateContextStreak('challenge'),
+      calculateContextStreak('main')
+    ]);
+    
+    return { overall, today, plan, challenge, main };
+  } catch (error) {
+    logger.error("Error getting contextual streaks:", error);
+    return { overall: 0, today: 0, plan: 0, challenge: 0, main: 0 };
   }
 }
 

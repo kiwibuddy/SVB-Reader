@@ -345,6 +345,20 @@ const PlanScreen = () => {
     isStartPlan: boolean;
   } | null>(null);
 
+  // Plan Start Confirmation Modal State
+  const [showStartConfirmationModal, setShowStartConfirmationModal] = useState(false);
+  const [startConfirmationData, setStartConfirmationData] = useState<{
+    planId: string;
+    planTitle: string;
+    firstStory: {
+      segmentId: string;
+      title: string;
+      book: string;
+      reference: string;
+      fullReference: string;
+    } | null;
+  } | null>(null);
+
   // Load plan progress and active plan when component mounts
   useEffect(() => {
     const loadData = async () => {
@@ -597,6 +611,40 @@ const PlanScreen = () => {
     return null;
   };
 
+  // Helper function to get the first story segment for a plan with reference info
+  const getFirstStoryInPlan = (planId: string) => {
+    const plan = readingPlansData.plans.find(p => p.id === planId);
+    if (!plan?.segments) return null;
+
+    // Get all segments in order
+    const allSegments: string[] = [];
+    Object.values(plan.segments).forEach(bookData => {
+      if (bookData?.segments) {
+        allSegments.push(...bookData.segments);
+      }
+    });
+
+    // Find first story segment (not introduction)
+    const firstStorySegment = allSegments.find(s => !s.startsWith('I'));
+    
+    if (firstStorySegment) {
+      const segmentData = SegmentTitles[firstStorySegment as keyof typeof SegmentTitles];
+      if (segmentData) {
+        const bookName = segmentData.book?.[0] || '';
+        const reference = (segmentData as any).ref || '';
+        return {
+          segmentId: firstStorySegment,
+          title: segmentData.title || 'Unknown Story',
+          book: bookName,
+          reference: reference,
+          fullReference: reference ? `${bookName} ${reference}` : bookName
+        };
+      }
+    }
+    
+    return null;
+  };
+
   const getPlanSegmentCount = (planId: string) => {
     const plan = readingPlansData.plans.find(p => p.id === planId) as Plan | undefined;
     if (!plan?.segments) return 0;
@@ -843,6 +891,43 @@ const PlanScreen = () => {
     setEnforcementData(null);
   };
 
+  // Plan Start Confirmation Modal Handlers
+  const handleConfirmStartPlan = async () => {
+    if (!startConfirmationData) return;
+    
+    setShowStartConfirmationModal(false);
+    setLoadingStates(prev => ({ ...prev, [startConfirmationData.planId]: 'starting' }));
+    
+    try {
+      // Check if we need to switch plans (pause current, start new)
+      if (activePlan && activePlan.planId !== startConfirmationData.planId) {
+        await switchPlanAction(startConfirmationData.planId);
+      } else {
+        await startPlan(startConfirmationData.planId);
+        // Immediately update local state for instant UI feedback
+        const planData = await getActivePlanFromDB();
+        setActivePlan(planData);
+        await loadPlanProgress();
+      }
+      
+      // Show reading mode modal for the first story
+      if (startConfirmationData.firstStory) {
+        setSelectedSegmentId(startConfirmationData.firstStory.segmentId);
+        setSelectedSegmentTitle(startConfirmationData.firstStory.title);
+        setSelectedSegmentRef(startConfirmationData.firstStory.reference);
+        setShowReadingModeModal(true);
+      }
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [startConfirmationData.planId]: null }));
+      setStartConfirmationData(null);
+    }
+  };
+
+  const handleCancelStartPlan = () => {
+    setShowStartConfirmationModal(false);
+    setStartConfirmationData(null);
+  };
+
   // Pull-to-refresh handler
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -892,9 +977,10 @@ const PlanScreen = () => {
   const renderPlanItem = useCallback(({ item: plan }: { item: Plan }) => {
     const isSelected = selectedPlanId === plan.id;
 
-    const isActive = activePlan?.planId === plan.id;
-    const isPaused = activePlan && isActive && activePlan.isPaused;
-    const isCompleted = activePlan && isActive && activePlan.isCompleted;
+    const isStarted = activePlan?.planId === plan.id;
+    const isActive = isStarted && !activePlan?.isCompleted; // Include paused plans in active
+    const isPaused = isStarted && activePlan?.isPaused;
+    const isCompleted = isStarted && activePlan?.isCompleted;
     const segmentCount = getPlanSegmentCount(plan.id);
     const planBooksData = isSelected ? getPlanBooksData(plan.id) : [];
     const progressData = planProgress[plan.id];
@@ -961,32 +1047,28 @@ const PlanScreen = () => {
                           { text: 'Cancel', style: 'cancel' },
                           { 
                             text: 'Switch Plan', 
-                            onPress: async () => {
-                              setLoadingStates(prev => ({ ...prev, [plan.id]: 'starting' }));
-                              try {
-                                await startPlan(plan.id);
-                                // Immediately update local state for instant UI feedback
-                                const planData = await getActivePlanFromDB();
-                                setActivePlan(planData);
-                                await loadPlanProgress();
-                              } finally {
-                                setLoadingStates(prev => ({ ...prev, [plan.id]: null }));
-                              }
+                            onPress: () => {
+                              // Show start confirmation modal for switching
+                              const firstStory = getFirstStoryInPlan(plan.id);
+                              setStartConfirmationData({
+                                planId: plan.id,
+                                planTitle: plan.title,
+                                firstStory: firstStory
+                              });
+                              setShowStartConfirmationModal(true);
                             }
                           }
                         ]
                       );
                     } else {
-                      setLoadingStates(prev => ({ ...prev, [plan.id]: 'starting' }));
-                      try {
-                        await startPlan(plan.id);
-                        // Immediately update local state for instant UI feedback
-                        const planData = await getActivePlanFromDB();
-                        setActivePlan(planData);
-                        await loadPlanProgress();
-                      } finally {
-                        setLoadingStates(prev => ({ ...prev, [plan.id]: null }));
-                      }
+                      // Show start confirmation modal
+                      const firstStory = getFirstStoryInPlan(plan.id);
+                      setStartConfirmationData({
+                        planId: plan.id,
+                        planTitle: plan.title,
+                        firstStory: firstStory
+                      });
+                      setShowStartConfirmationModal(true);
                     }
                   }}
                   disabled={loadingStates[plan.id] === 'starting'}
@@ -1148,8 +1230,9 @@ const PlanScreen = () => {
     const completed: Plan[] = [];
 
     filteredPlans.forEach(plan => {
-      const isActive = activePlan?.planId === plan.id && !activePlan.isPaused;
-      const isCompleted = activePlan?.planId === plan.id && activePlan.isCompleted;
+      const isStarted = activePlan?.planId === plan.id;
+      const isCompleted = isStarted && activePlan.isCompleted;
+      const isActive = isStarted && !activePlan.isCompleted; // Include paused plans in active
       
       if (isCompleted) {
         completed.push(plan);
@@ -1284,6 +1367,122 @@ const PlanScreen = () => {
         onGroup={handleGroupReading}
         onCancel={handleCancelModal}
       />
+
+      {/* Plan Start Confirmation Modal */}
+      {showStartConfirmationModal && startConfirmationData && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+        }}>
+          <View style={{
+            backgroundColor: colors.card,
+            borderRadius: 12,
+            padding: 24,
+            margin: 20,
+            maxWidth: 400,
+            width: '90%',
+          }}>
+            <Text style={{
+              fontSize: 18,
+              fontWeight: '600',
+              color: colors.text,
+              marginBottom: 12,
+              textAlign: 'center'
+            }}>
+              Start Reading Plan
+            </Text>
+            
+            <Text style={{
+              fontSize: 16,
+              color: colors.text,
+              marginBottom: 16,
+              textAlign: 'center',
+              lineHeight: 22,
+            }}>
+              You're about to start "{startConfirmationData.planTitle}". 
+              {startConfirmationData.firstStory ? ` Your first story will be:` : ''}
+            </Text>
+
+            {startConfirmationData.firstStory && (
+              <View style={{
+                backgroundColor: colors.background,
+                padding: 16,
+                borderRadius: 8,
+                marginBottom: 20,
+              }}>
+                <Text style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  color: colors.primary,
+                  textAlign: 'center',
+                  marginBottom: 4,
+                }}>
+                  {startConfirmationData.firstStory.title}
+                </Text>
+                <Text style={{
+                  fontSize: 14,
+                  color: colors.secondary,
+                  textAlign: 'center',
+                  fontStyle: 'italic',
+                }}>
+                  {startConfirmationData.firstStory.fullReference}
+                </Text>
+              </View>
+            )}
+
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              gap: 12,
+            }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  backgroundColor: colors.background,
+                }}
+                onPress={handleCancelStartPlan}
+              >
+                <Text style={{
+                  color: colors.text,
+                  textAlign: 'center',
+                  fontWeight: '500',
+                }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  backgroundColor: colors.primary,
+                }}
+                onPress={handleConfirmStartPlan}
+              >
+                <Text style={{
+                  color: 'white',
+                  textAlign: 'center',
+                  fontWeight: '600',
+                }}>
+                  Start Plan
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
 
       {/* Order Enforcement Modal */}
       {showOrderEnforcementModal && enforcementData && (

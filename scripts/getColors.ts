@@ -1,14 +1,14 @@
 export const getColors = (color: string) => {
   switch (color) {
     case "black":
-      return { dark: "#000000", light: "#e6e6e6" };
+      return { dark: "#2C2C2E", light: "#e6e6e6" }; // Dark gray instead of pure black
     case "red":
-      return { dark: "#d60000", light: "#fdc1c1" }; // Dark red and light red
+      return { dark: "#FF6B6B", light: "#fdc1c1" }; // Lighter red for dark mode
     case "green":
-      return { dark: "#006400", light: "#b9f8b9" }; // Dark green and light green
+      return { dark: "#5EC85E", light: "#b9f8b9" }; // Lighter green for dark mode  
     case "blue":
-      return { dark: "#00008B", light: "#8EE3FF" }; // Dark blue and light blue
+      return { dark: "#5DADE2", light: "#8EE3FF" }; // Lighter blue for dark mode
     default:
-      return { dark: "#000000", light: "#FFFFFF" }; // Fallback to black and white
+      return { dark: "#2C2C2E", light: "#FFFFFF" }; // Fallback to dark gray and white
   }
 };

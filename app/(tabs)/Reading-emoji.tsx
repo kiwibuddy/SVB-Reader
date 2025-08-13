@@ -1572,7 +1572,7 @@ const ReadingEmoji = () => {
   // Memoize the renderItem function
   const memoizedRenderItem = useCallback(({ item: reaction, index }: { item: EmojiReaction; index: number }) => {
     return renderItem({ item: reaction, index });
-  }, []);
+  }, [colors]); // Add colors dependency so it re-renders when theme changes
 
   // Memoize the keyExtractor function
   const keyExtractor = useCallback((item: EmojiReaction) => {
@@ -1582,7 +1582,7 @@ const ReadingEmoji = () => {
   // Memoize the ListHeaderComponent
   const memoizedRenderHeader = useCallback(() => {
     return renderHeader();
-  }, [reactions, activeFilters, selectedEmoji, refreshTrigger]);
+  }, [reactions, activeFilters, selectedEmoji, refreshTrigger, colors]); // Add colors dependency
 
   // Calculate dynamic modal position based on touch coordinates
   const getModalPosition = useCallback(() => {
