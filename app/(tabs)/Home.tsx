@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -47,6 +47,15 @@ import {
   type LastReactionData,
   type UserActivityInsights
 } from '@/api/insightQueries';
+import { databaseManager } from '@/api/database-manager';
+import Reanimated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  interpolate,
+  Easing,
+} from 'react-native-reanimated';
 import SegmentTitlesData from '../../assets/data/SegmentTitles.json';
 import NearbyGroupCard from '@/components/GroupReading/NearbyGroupCard';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
@@ -996,17 +1005,116 @@ interface SectionStyles {
   colors: ColorScheme;
 }
 
+// Separate component for animated streak card to follow Rules of Hooks
+const StreakCard = ({ 
+  currentStreak, 
+  isTodayComplete, 
+  colors, 
+  item, 
+  localStyles 
+}: {
+  currentStreak: number;
+  isTodayComplete: boolean;
+  colors: any;
+  item: any;
+  localStyles: any;
+}) => {
+  // Animation values for streak updates
+  const streakScale = useSharedValue(1);
+  const statusOpacity = useSharedValue(isTodayComplete ? 1 : 0.3);
+  const numberOpacity = useSharedValue(1);
+  
+  // Animate when streak changes
+  React.useEffect(() => {
+    console.log('🎯 [StreakCard] Animation trigger - currentStreak:', currentStreak);
+    if (currentStreak > 0) {
+      console.log('🎯 [StreakCard] Starting bounce animation for streak:', currentStreak);
+      // Spring bounce animation for streak number
+      streakScale.value = withSpring(1.1, { 
+        damping: 10, 
+        stiffness: 100 
+      }, () => {
+        streakScale.value = withSpring(1, { damping: 15, stiffness: 200 });
+      });
+      
+      // Number count-up effect
+      numberOpacity.value = withTiming(0, { duration: 100 }, () => {
+        numberOpacity.value = withTiming(1, { duration: 200 });
+      });
+    }
+  }, [currentStreak]);
+  
+  // Animate status dot opacity
+  React.useEffect(() => {
+    statusOpacity.value = withTiming(isTodayComplete ? 1 : 0.3, {
+      duration: 200,
+      easing: Easing.out(Easing.quad),
+    });
+  }, [isTodayComplete]);
+  
+  const animatedStreakStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: streakScale.value }],
+    opacity: numberOpacity.value,
+  }));
+  
+  const animatedStatusStyle = useAnimatedStyle(() => ({
+    backgroundColor: colors.text,
+    opacity: statusOpacity.value,
+  }));
+
+  return (
+    <View style={[localStyles.insightCard, { backgroundColor: item.backgroundColor }]}>
+      <View style={localStyles.cardHeader}>
+        <Text style={localStyles.cardIcon}>{item.icon}</Text>
+        <Text style={localStyles.cardTitle}>{item.title}</Text>
+      </View>
+
+      <View style={localStyles.streakMainContent}>
+        <View style={localStyles.streakCircleContainer}>
+          <View style={localStyles.streakCircle}>
+            <Reanimated.Text style={[localStyles.streakNumber, animatedStreakStyle]}>
+              {currentStreak}
+            </Reanimated.Text>
+            <Text style={localStyles.streakDaysText}>days</Text>
+          </View>
+          <View style={localStyles.streakProgress} />
+        </View>
+        
+        <View style={localStyles.streakTextContainer}>
+          <Text style={localStyles.streakMessage}>
+            {currentStreak === 1 ? 'Great start! Keep it going!' : 
+             currentStreak < 7 ? `Great start! Keep it going!` :
+             'Amazing streak! Keep it up!'}
+          </Text>
+          <Text style={localStyles.streakGoal}>
+            {currentStreak < 7 ? `${7 - currentStreak} more days to 7!` : 'Keep building your streak!'}
+          </Text>
+        </View>
+      </View>
+      
+      <View style={localStyles.streakStatus}>
+        <Reanimated.View style={[localStyles.streakStatusDot, animatedStatusStyle]} />
+        <Text style={localStyles.streakStatusText}>
+          {isTodayComplete ? "Today's reading complete" : "Keep building your streak!"}
+        </Text>
+      </View>
+    </View>
+  );
+};
+
 // 2. Reading Insights Carousel with real data
 const ReadingInsightsCarousel = ({ 
   styles, 
   currentStreak, 
   bestStreak, 
-  isTodayComplete 
+  isTodayComplete,
+  refreshTrigger 
 }: { 
   styles: SectionStyles; 
   currentStreak: number; 
   bestStreak: number; 
-  isTodayComplete: boolean; 
+  isTodayComplete: boolean;
+  refreshTrigger?: number; 
 }) => {
   const { state } = useSQLiteGlobalContext();
   const router = useRouter();
@@ -1228,17 +1336,33 @@ const ReadingInsightsCarousel = ({
         // Get last used emoji instead of most used
         const lastUsedEmoji = emojiData.length > 0 ? (emojiData[emojiData.length - 1] as any)?.emoji || '👍' : '👍';
 
-        // Calculate segment read counts and book counts
+        // Get comprehensive segment and book read counts from SQLite
+        const db = databaseManager.getDatabase();
+        
+        // Get all segment read counts from SQLite (across all contexts)
+        const segmentReads = await db.getAllAsync<{segmentID: string, totalReads: number}>(`
+          SELECT segmentID, totalReads FROM segment_read_count WHERE totalReads > 0
+        `);
+        
         const segmentCounts: {[key: string]: number} = {};
         const bookCounts: {[key: string]: number} = {};
-
-        Object.entries(state.completedSegments).forEach(([segmentId, seg]) => {
-          if (seg) {
-            segmentCounts[segmentId] = (segmentCounts[segmentId] || 0) + 1;
-            const book = (SegmentTitlesData as any)[segmentId]?.book[0] || 'Unknown';
-            bookCounts[book] = (bookCounts[book] || 0) + 1;
-          }
+        
+        segmentReads.forEach(({segmentID, totalReads}) => {
+          segmentCounts[segmentID] = totalReads;
+          const book = (SegmentTitlesData as any)[segmentID]?.book[0] || 'Unknown';
+          bookCounts[book] = (bookCounts[book] || 0) + totalReads;
         });
+        
+        // If no SQLite data, fall back to legacy state data
+        if (Object.keys(segmentCounts).length === 0) {
+          Object.entries(state.completedSegments).forEach(([segmentId, seg]) => {
+            if (seg) {
+              segmentCounts[segmentId] = 1;
+              const book = (SegmentTitlesData as any)[segmentId]?.book[0] || 'Unknown';
+              bookCounts[book] = (bookCounts[book] || 0) + 1;
+            }
+          });
+        }
 
         const favoriteBookKey = Object.entries(bookCounts)
           .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Gen';
@@ -1247,6 +1371,11 @@ const ReadingInsightsCarousel = ({
           .sort(([,a], [,b]) => b - a)[0]?.[0];
 
         // Set basic insights
+        // Get actual completion rate from SQLite
+        const completedCount = await db.getFirstAsync<{count: number}>(`
+          SELECT COUNT(DISTINCT segmentID) as count FROM segment_read_count WHERE totalReads > 0
+        `);
+        
         setInsights({
           favoriteBook: favoriteBookKey,
           favoriteBookFullName: getFullBookName(favoriteBookKey),
@@ -1254,9 +1383,9 @@ const ReadingInsightsCarousel = ({
           favoriteSegment: favoriteSegmentId 
             ? (SegmentTitlesData as any)[favoriteSegmentId]?.title || 'Unknown'
             : 'Not enough data',
-          readingStreak: 12,
+          readingStreak: currentStreak, // Use actual streak data
           lastUsedEmoji,
-          completionRate: Math.round((Object.keys(state.completedSegments).length / Object.keys(SegmentTitlesData).length) * 100)
+          completionRate: Math.round(((completedCount?.count || 0) / Object.keys(SegmentTitlesData).length) * 100)
         });
 
         // Get enhanced insights
@@ -1280,7 +1409,7 @@ const ReadingInsightsCarousel = ({
     };
 
     calculateInsights();
-  }, []); // Only run once on mount to avoid infinite re-renders
+  }, [refreshTrigger]); // Update when refreshTrigger changes
 
   // Refresh insights when returning to Home screen
   useFocusEffect(
@@ -1296,17 +1425,33 @@ const ReadingInsightsCarousel = ({
           // Get last used emoji instead of most used
           const lastUsedEmoji = emojiData.length > 0 ? (emojiData[emojiData.length - 1] as any)?.emoji || '👍' : '👍';
 
-          // Calculate segment read counts and book counts
+          // Get comprehensive segment and book read counts from SQLite
+          const db = databaseManager.getDatabase();
+          
+          // Get all segment read counts from SQLite (across all contexts)
+          const segmentReads = await db.getAllAsync<{segmentID: string, totalReads: number}>(`
+            SELECT segmentID, totalReads FROM segment_read_count WHERE totalReads > 0
+          `);
+          
           const segmentCounts: {[key: string]: number} = {};
           const bookCounts: {[key: string]: number} = {};
-
-          Object.entries(state.completedSegments).forEach(([segmentId, seg]) => {
-            if (seg) {
-              segmentCounts[segmentId] = (segmentCounts[segmentId] || 0) + 1;
-              const book = (SegmentTitlesData as any)[segmentId]?.book[0] || 'Unknown';
-              bookCounts[book] = (bookCounts[book] || 0) + 1;
-            }
+          
+          segmentReads.forEach(({segmentID, totalReads}) => {
+            segmentCounts[segmentID] = totalReads;
+            const book = (SegmentTitlesData as any)[segmentID]?.book[0] || 'Unknown';
+            bookCounts[book] = (bookCounts[book] || 0) + totalReads;
           });
+          
+          // If no SQLite data, fall back to legacy state data
+          if (Object.keys(segmentCounts).length === 0) {
+            Object.entries(state.completedSegments).forEach(([segmentId, seg]) => {
+              if (seg) {
+                segmentCounts[segmentId] = 1;
+                const book = (SegmentTitlesData as any)[segmentId]?.book[0] || 'Unknown';
+                bookCounts[book] = (bookCounts[book] || 0) + 1;
+              }
+            });
+          }
 
           const favoriteBookKey = Object.entries(bookCounts)
             .sort(([,a], [,b]) => b - a)[0]?.[0] || 'Gen';
@@ -1314,16 +1459,21 @@ const ReadingInsightsCarousel = ({
           const favoriteSegmentId = Object.entries(segmentCounts)
             .sort(([,a], [,b]) => b - a)[0]?.[0];
 
+          // Get actual completion rate from SQLite
+          const completedCount = await db.getFirstAsync<{count: number}>(`
+            SELECT COUNT(DISTINCT segmentID) as count FROM segment_read_count WHERE totalReads > 0
+          `);
+          
           setInsights({
             favoriteBook: favoriteBookKey,
             favoriteBookFullName: getFullBookName(favoriteBookKey),
             favoriteSegmentId,
-                      favoriteSegment: favoriteSegmentId 
-            ? (SegmentTitlesData as any)[favoriteSegmentId]?.title || 'Unknown'
-            : 'Not enough data',
-          readingStreak: 12,
-          lastUsedEmoji,
-          completionRate: Math.round((Object.keys(state.completedSegments).length / Object.keys(SegmentTitlesData).length) * 100)
+            favoriteSegment: favoriteSegmentId 
+              ? (SegmentTitlesData as any)[favoriteSegmentId]?.title || 'Unknown'
+              : 'Not enough data',
+            readingStreak: currentStreak, // Use actual streak data
+            lastUsedEmoji,
+            completionRate: Math.round(((completedCount?.count || 0) / Object.keys(SegmentTitlesData).length) * 100)
           });
 
           // Get enhanced insights
@@ -1488,41 +1638,13 @@ const ReadingInsightsCarousel = ({
 
     if (item.type === 'streak') {
       return (
-        <View style={[localStyles.insightCard, { backgroundColor: item.backgroundColor }]}>
-          <View style={localStyles.cardHeader}>
-            <Text style={localStyles.cardIcon}>{item.icon}</Text>
-            <Text style={localStyles.cardTitle}>{item.title}</Text>
-          </View>
-
-          
-          <View style={localStyles.streakMainContent}>
-            <View style={localStyles.streakCircleContainer}>
-              <View style={localStyles.streakCircle}>
-                <Text style={localStyles.streakNumber}>{currentStreak}</Text>
-                <Text style={localStyles.streakDaysText}>days</Text>
-              </View>
-              <View style={localStyles.streakProgress} />
-            </View>
-            
-            <View style={localStyles.streakTextContainer}>
-              <Text style={localStyles.streakMessage}>
-                {currentStreak === 1 ? 'Great start! Keep it going!' : 
-                 currentStreak < 7 ? `Great start! Keep it going!` :
-                 'Amazing streak! Keep it up!'}
-              </Text>
-              <Text style={localStyles.streakGoal}>
-                {currentStreak < 7 ? `${7 - currentStreak} more days to 7!` : 'Keep building your streak!'}
-              </Text>
-            </View>
-          </View>
-          
-          <View style={localStyles.streakStatus}>
-            <View style={[localStyles.streakStatusDot, { backgroundColor: isTodayComplete ? '#4CAF50' : '#FF9800' }]} />
-            <Text style={localStyles.streakStatusText}>
-              {isTodayComplete ? "Today's reading complete" : "Keep building your streak!"}
-            </Text>
-          </View>
-        </View>
+        <StreakCard 
+          currentStreak={currentStreak} 
+          isTodayComplete={isTodayComplete} 
+          colors={colors} 
+          item={item} 
+          localStyles={localStyles} 
+        />
       );
     }
 
@@ -1879,21 +2001,34 @@ const Home = () => {
   // Add useEffect to fetch streak data
   useEffect(() => {
     const loadStreakData = async () => {
+      console.log('🔄 [Home] Loading streak data...');
       const [currentStreakValue, bestStreakValue] = await Promise.all([
         getCurrentStreak(),
         getBestStreak()
       ]);
       
+      console.log('📊 [Home] Loaded streak data - current:', currentStreakValue, 'best:', bestStreakValue);
       setCurrentStreak(currentStreakValue);
       setBestStreak(bestStreakValue);
       
-      // Check if today is complete based on streak data
-      // This is a simplified approach - in a full implementation, we'd query SQLite for the latest completion
-      setIsTodayComplete(false); // Will be updated when we implement proper SQLite query
+      // Check if today is complete based on today's completions
+      const db = databaseManager.getDatabase();
+      const today = new Date().toISOString().split('T')[0];
+      const todayCompletion = await db.getFirstAsync<{count: number}>(`
+        SELECT COUNT(*) as count FROM segment_completion 
+        WHERE DATE(completionDate) = ? AND completionType = 'main'
+      `, today);
+      
+      setIsTodayComplete((todayCompletion?.count || 0) > 0);
     };
     
     loadStreakData();
-  }, []); // Only run once on mount to avoid infinite re-renders
+  }, [refreshTrigger]); // Update when refreshTrigger changes (when segments completed)
+  
+  // Debug refresh trigger changes
+  useEffect(() => {
+    console.log('🔄 [Home] Refresh trigger changed:', refreshTrigger);
+  }, [refreshTrigger]);
 
   // Refresh streak data when returning to Home screen
   useFocusEffect(
@@ -1907,12 +2042,21 @@ const Home = () => {
         setCurrentStreak(currentStreakValue);
         setBestStreak(bestStreakValue);
         
-        // Check if today is complete based on streak data
-        // This is a simplified approach - in a full implementation, we'd query SQLite for the latest completion
-        setIsTodayComplete(false); // Will be updated when we implement proper SQLite query
+        // Check if today is complete based on today's completions
+        const db = databaseManager.getDatabase();
+        const today = new Date().toISOString().split('T')[0];
+        const todayCompletion = await db.getFirstAsync<{count: number}>(`
+          SELECT COUNT(*) as count FROM segment_completion 
+          WHERE DATE(completionDate) = ? AND completionType = 'main'
+        `, today);
+        
+        setIsTodayComplete((todayCompletion?.count || 0) > 0);
       };
       
       loadStreakData();
+      // Also trigger insights refresh
+      console.log('🔄 [Home] Focus effect triggered - refreshing data');
+      setRefreshTrigger(prev => prev + 1);
     }, [])
   );
 
@@ -2270,6 +2414,12 @@ const Home = () => {
         freshStart: Date.now().toString() // Force fresh start from reading mode modal
       }
     });
+    
+    // Add listener for when user returns from reading to refresh streak
+    setTimeout(() => {
+      console.log('🔄 [Home] Triggering refresh after reading completion');
+      setRefreshTrigger(prev => prev + 1);
+    }, 2000);
   };
 
   const handleGroupReading = () => {
@@ -2764,6 +2914,7 @@ const Home = () => {
           currentStreak={currentStreak}
           bestStreak={bestStreak}
           isTodayComplete={isTodayComplete}
+          refreshTrigger={refreshTrigger}
         />
         <View style={{ height: 80 }} />
       </ScrollView>

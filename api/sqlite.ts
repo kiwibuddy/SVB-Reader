@@ -427,6 +427,7 @@ export async function getCurrentStreak(): Promise<number> {
     const result = await db.getFirstAsync<{ currentStreak: number }>(
       'SELECT currentStreak FROM streak_data LIMIT 1'
     );
+    console.log('📊 [getCurrentStreak] Raw result from DB:', result);
     return result?.currentStreak || 0;
   } catch (error) {
     logger.error("Error getting current streak:", error);

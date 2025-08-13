@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, AccessibilityInfo } from 'react-native';
-import { AnimatedSplashIcon } from './AnimatedSplashIcon';
-import { AnimatedSVGLogo } from '../AnimatedSVGLogo';
+import { AnimatedBubblesSVG } from './AnimatedBubblesSVG';
 import { ProgressIndicator, LinearProgress } from './ProgressIndicator';
 import { useAppSettings } from '@/context/AppSettingsContext';
 
@@ -114,10 +113,9 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
       <View style={styles.content}>
         {/* Animated Logo */}
         <View style={styles.logoContainer}>
-          <AnimatedSVGLogo
-            size={120}
-            enableAnimation={true}
-            showRoundedBackground={true}
+          <AnimatedBubblesSVG 
+            size={120} 
+            enableBreathing={!reduceMotion}
           />
         </View>
 

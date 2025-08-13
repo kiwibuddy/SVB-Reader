@@ -81,13 +81,13 @@ const RoleProgressBar: React.FC<RoleProgressBarProps> = ({
 
   // Individual parts behavior: Show proportional reading roles based on word counts
   // This represents how the 4 reading roles share the speaking time
-  const individualParts: Array<{ 
+  const individualParts: { 
     color: string; 
     type: string; 
     roleNumber: number;
     wordCount: number;
     proportion: number;
-  }> = [];
+  }[] = [];
   
   const maxRoles = 4;
   

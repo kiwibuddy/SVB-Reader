@@ -512,7 +512,7 @@ const JoinGroupScreen: React.FC<JoinGroupScreenProps> = ({
       });
 
     // Ensure we always show 4 icons, fill with default colors if needed
-    const iconsToShow: Array<{ color: string; available: boolean }> = [];
+    const iconsToShow: { color: string; available: boolean }[] = [];
     const maxIcons = 4;
     
     availableRoles.forEach(([color, positions]) => {

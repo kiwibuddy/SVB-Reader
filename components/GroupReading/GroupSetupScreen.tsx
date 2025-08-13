@@ -558,12 +558,12 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
   };
 
   const getAllRoleOptions = () => {
-    const options: Array<{
+    const options: {
       color: string;
       position: number;
       displayName: string;
       description: string;
-    }> = [];
+    }[] = [];
 
     Object.entries(readersByColor).forEach(([color, positions]) => {
       positions.forEach((position) => {

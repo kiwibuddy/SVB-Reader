@@ -72,13 +72,13 @@ export default function CheckCircle({
   const [isGenerating, setIsGenerating] = useState(false);
   
   // Animation values for premium confetti celebration (more pieces for richer effect)
-  const confettiAnimations = useRef<Array<{
+  const confettiAnimations = useRef<{
     translateY: Animated.Value;
     translateX: Animated.Value;
     rotate: Animated.Value;
     opacity: Animated.Value;
     scale: Animated.Value;
-  }> | null>(null);
+  }[] | null>(null);
   
   // Initialize animations only once
   if (!confettiAnimations.current) {

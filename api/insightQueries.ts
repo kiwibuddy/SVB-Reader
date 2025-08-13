@@ -279,10 +279,10 @@ export async function getUserActivityInsights(): Promise<UserActivityInsights> {
   try {
     const db = databaseManager.getDatabase();
     
-    // Get reading time preferences (analyze completion times)
+    // Get reading time preferences (analyze completion times in local timezone)
     const timeAnalysis = await db.getAllAsync<{ hour: number; count: number }>(`
       SELECT 
-        CAST(strftime('%H', completionDate) AS INTEGER) as hour,
+        CAST(strftime('%H', datetime(completionDate, 'localtime')) AS INTEGER) as hour,
         COUNT(*) as count
       FROM segment_completion 
       WHERE completionDate IS NOT NULL

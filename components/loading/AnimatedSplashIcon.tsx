@@ -9,6 +9,7 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated';
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { AnimatedBubblesSVG } from './AnimatedBubblesSVG';
 
 interface AnimatedSplashIconProps {
   size?: number;
@@ -112,25 +113,29 @@ export const AnimatedSplashIcon: React.FC<AnimatedSplashIconProps> = ({
             backgroundColor: colors.primary,
             width: size,
             height: size,
-            borderRadius: size / 2,
+            borderRadius: 16, // Apple-style rounded corners
           },
           glowStyle,
         ]}
       />
       
-      {/* Main icon */}
-      <Animated.Image
-        source={require('../../assets/images/splash-icon.png')}
+      {/* Main icon with rounded mask */}
+      <Animated.View
         style={[
-          styles.icon,
+          styles.iconMask,
           {
             width: size,
             height: size,
+            borderRadius: 16, // Apple-style rounded corners
           },
           animatedStyle,
         ]}
-        resizeMode="contain"
-      />
+      >
+        <AnimatedBubblesSVG 
+          size={size} 
+          enableBreathing={animationType !== 'gentle-pulse'}
+        />
+      </Animated.View>
     </View>
   );
 };
@@ -146,8 +151,8 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
   },
-  icon: {
+  iconMask: {
     zIndex: 1,
-    borderRadius: 16,
+    overflow: 'hidden',
   },
 });
