@@ -1586,29 +1586,30 @@ const ReadingEmoji = () => {
 
   // Calculate dynamic modal position based on touch coordinates
   const getModalPosition = useCallback(() => {
+    const modalWidth = 300; // Approximate modal width
+    const modalHeight = 200; // Approximate modal height
+    
     if (!modalPosition) {
-      // Default center position if no touch position
+      // Default center position if no touch position - properly centered
       return { 
-        position: 'absolute' as const,
-        top: 300, 
-        left: screenWidth / 2 - 150
+        justifyContent: 'center' as const,
+        alignItems: 'center' as const,
       };
     }
     
     const { x, y } = modalPosition;
-    const modalWidth = 300; // Approximate modal width
-    const modalHeight = 200; // Approximate modal height
     
     // Calculate position with bounds checking
     let left = x - modalWidth / 2;
     let top = y - modalHeight / 2;
     
-    // Ensure modal doesn't go off screen
-    const maxLeft = screenWidth - modalWidth - 20;
-    const maxTop = 600 - modalHeight - 20; // Approximate screen height
+    // Ensure modal doesn't go off screen with proper margins
+    const margin = 32; // Consistent with modalContainer marginHorizontal
+    const maxLeft = screenWidth - modalWidth - margin;
+    const maxTop = 600 - modalHeight - margin; // Conservative screen height
     
-    left = Math.max(20, Math.min(left, maxLeft));
-    top = Math.max(20, Math.min(top, maxTop));
+    left = Math.max(margin, Math.min(left, maxLeft));
+    top = Math.max(60, Math.min(top, maxTop)); // Account for status bar
     
     return { 
       position: 'absolute' as const,
@@ -1625,11 +1626,11 @@ const ReadingEmoji = () => {
       animationType="none"
       onRequestClose={handleCloseModal}
     >
-      <Pressable style={styles.modalOverlay} onPress={handleCloseModal}>
+      <Pressable style={[styles.modalOverlay, getModalPosition()]} onPress={handleCloseModal}>
         <Animated.View
           style={[
             styles.modalContainer,
-            getModalPosition(),
+            modalPosition && { position: 'relative' }, // Override position when using touch coordinates
             {
               transform: [{ scale: modalScaleAnim }],
               opacity: modalOpacityAnim,

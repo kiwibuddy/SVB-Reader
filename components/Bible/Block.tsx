@@ -30,7 +30,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
   onLongPress,
   disableEmojiHandler = false
 }) => {
-  const { colors } = useAppSettings();
+  const { colors, isDarkMode } = useAppSettings();
   const { source, children } = block;
   const { color = 'black', sourceName = 'Unknown' } = source || {};
 
@@ -122,7 +122,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
             <View
               style={[
                 styles.container,
-                { backgroundColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')] }
+                { backgroundColor: isDarkMode ? getColors(color).dark : getColors(color).light }
               ]}
             >
               {hasTail && (
@@ -130,7 +130,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
                   style={[
                     styles.tail,
                     {
-                      borderBottomColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')],
+                      borderBottomColor: isDarkMode ? getColors(color).dark : getColors(color).light,
                     },
                     tailAlignment,
                   ]}
@@ -173,7 +173,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
         <View
           style={[
             styles.container,
-            { backgroundColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')] }
+            { backgroundColor: isDarkMode ? getColors(color).dark : getColors(color).light }
           ]}
         >
           {hasTail && (
@@ -181,7 +181,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
               style={[
                 styles.tail,
                 {
-                  borderBottomColor: colors.bubbles[color === 'black' ? 'black' : (color || 'default')],
+                  borderBottomColor: isDarkMode ? getColors(color).dark : getColors(color).light,
                 },
                 tailAlignment,
               ]}

@@ -48,6 +48,7 @@ import {
   type UserActivityInsights
 } from '@/api/insightQueries';
 import { databaseManager } from '@/api/database-manager';
+import { getColors } from '@/scripts/getColors';
 import Reanimated, {
   useSharedValue,
   useAnimatedStyle,
@@ -1120,6 +1121,7 @@ const ReadingInsightsCarousel = ({
   const router = useRouter();
   const { sizes } = useFontSize();
   const { colors } = styles;
+  const { isDarkMode } = useAppSettings();
   const { t } = useTranslation();
   
   // Helper function to get segment reference
@@ -1129,20 +1131,15 @@ const ReadingInsightsCarousel = ({
     return `${segment.book[0]}${segment.ref ? " " + segment.ref : ""}`;
   };
   
-  // Helper functions for speaker styling (matching Reading-emoji page)
+  // Helper functions for speaker styling (using consistent vibrant colors)
   const getSpeakerBackgroundColor = (color?: string) => {
-    switch (color) {
-      case 'black': return '#2C2C2E'; // Narrator
-      case 'red': return '#FF3B30';   // God/Jesus  
-      case 'green': return '#30D158'; // Main Speaker
-      case 'blue': return '#007AFF';  // Other Speakers
-      default: return colors.card;
-    }
+    // Use the same vibrant colors as BibleBlockComponent from getColors script
+    return isDarkMode ? getColors(color || 'black').dark : getColors(color || 'black').light;
   };
   
   const getSpeakerTextColor = (color?: string) => {
-    // All speaker backgrounds are dark enough for white text
-    return 'white';
+    // Use context text color for consistency with theme
+    return colors.text;
   };
   
   // Helper function to extract text from block data
@@ -1768,34 +1765,55 @@ const ReadingInsightsCarousel = ({
           
           {lastReaction && (
             <View style={{ marginTop: 8, flex: 1 }}>
-              {/* Speech bubble with proper styling */}
+              {/* Speech bubble with proper styling matching BibleBlockComponent */}
               <View style={{ position: 'relative', marginBottom: 8 }}>
-                {/* BibleBlock component for proper speech bubble styling */}
+                {/* Speaker name above bubble (matching BibleBlockComponent) */}
+                {lastReaction.blockData?.source?.sourceName && (
+                  <Text style={{
+                    fontSize: sizes.caption * 0.75,
+                    fontWeight: '600',
+                    color: colors.secondary,
+                    marginBottom: 4,
+                    textAlign: lastReaction.blockData.source.color !== "black" ? "left" : "right",
+                  }}>
+                    {lastReaction.blockData.source.sourceName.toUpperCase()}
+                  </Text>
+                )}
+                
+                {/* Speech bubble container */}
                 <View style={{
                   backgroundColor: getSpeakerBackgroundColor(lastReaction.blockData?.source?.color),
-                  borderRadius: 12,
-                  padding: 12,
+                  borderRadius: 16,
+                  padding: 16,
                   position: 'relative',
                   minHeight: 60,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 4,
+                  elevation: 2,
                 }}>
-                  {/* Speaker name */}
-                  {lastReaction.blockData?.source?.sourceName && (
-                    <Text style={{
-                      fontSize: sizes.caption * 0.85,
-                      fontWeight: '600',
-                      color: getSpeakerTextColor(lastReaction.blockData.source.color),
-                      marginBottom: 4,
-                      opacity: 0.8,
-                    }}>
-                      {lastReaction.blockData.source.sourceName.toUpperCase()}
-                    </Text>
-                  )}
+                  {/* Speech bubble tail (matching BibleBlockComponent) */}
+                  <View style={{
+                    position: "absolute",
+                    top: -9,
+                    [lastReaction.blockData?.source?.color !== "black" ? "left" : "right"]: 15,
+                    width: 0,
+                    height: 0,
+                    borderLeftWidth: 10,
+                    borderRightWidth: 10,
+                    borderBottomWidth: 10,
+                    borderLeftColor: "transparent",
+                    borderRightColor: "transparent",
+                    borderBottomColor: getSpeakerBackgroundColor(lastReaction.blockData?.source?.color),
+                    zIndex: 2,
+                  }} />
                   
                   {/* Block text preview */}
                   <Text style={{
                     fontSize: sizes.caption,
-                    color: getSpeakerTextColor(lastReaction.blockData?.source?.color),
-                    lineHeight: 16,
+                    color: colors.text,
+                    lineHeight: 18,
                   }} numberOfLines={2}>
                     {getBlockText(lastReaction.blockData)}
                   </Text>
@@ -1803,8 +1821,8 @@ const ReadingInsightsCarousel = ({
                   {/* Emoji overlay positioned like in Reading-emoji */}
                   <Text style={{
                     position: 'absolute',
-                    top: 8,
-                    right: 8,
+                    top: 25,
+                    [lastReaction.blockData?.source?.color === "black" ? "left" : "right"]: 10,
                     fontSize: 20,
                     zIndex: 1,
                   }}>
