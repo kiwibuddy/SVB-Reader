@@ -467,7 +467,7 @@ const PlanScreen = () => {
     }
   };
 
-  const handleSegmentComplete = async (planId: string, segmentId: string) => {
+  const handleSegmentComplete = useCallback(async (planId: string, segmentId: string) => {
     try {
       // Update local state immediately for UI responsiveness
       setPlanProgress(prev => {
@@ -544,7 +544,7 @@ const PlanScreen = () => {
     } catch (error) {
       logger.error('Error completing segment:', error);
     }
-  };
+  }, [planProgress, activePlan, readingPlansData.plans, selectedPlanId, lastCompletedSegment]);
 
   // Function to get completion status for a segment in a plan
   const getSegmentCompletionForPlan = async (planId: string, segmentId: string) => {
@@ -693,7 +693,7 @@ const PlanScreen = () => {
   };
 
   // Handle segment selection with plan order enforcement
-  const handleSegmentSelect = (segmentId: string) => {
+  const handleSegmentSelect = useCallback((segmentId: string) => {
     if (!segmentId || !selectedPlanId) {
       return;
     }
@@ -758,7 +758,7 @@ const PlanScreen = () => {
     setSelectedSegmentTitle(segmentData.title);
     setSelectedSegmentRef((segmentData as any).ref || '');
     setShowReadingModeModal(true);
-  };
+  }, [selectedPlanId, activePlan, planProgress, readingPlansData.plans, router]);
 
   // Reading Mode Modal Handlers
   const handleIndividualReading = async () => {
@@ -889,7 +889,7 @@ const PlanScreen = () => {
     }
   };
 
-  const renderPlanItem = ({ item: plan }: { item: Plan }) => {
+  const renderPlanItem = useCallback(({ item: plan }: { item: Plan }) => {
     const isSelected = selectedPlanId === plan.id;
 
     const isActive = activePlan?.planId === plan.id;
@@ -1139,7 +1139,7 @@ const PlanScreen = () => {
         )}
       </View>
     );
-  };
+  }, [selectedPlanId, activePlan, planProgress, loadingStates, handleSegmentComplete, handleSegmentSelect, lastCompletedSegment, styles, colors, isDarkMode, progressAnimations]);
 
   // Organize plans by status
   const organizedPlans = useMemo(() => {
@@ -1175,7 +1175,7 @@ const PlanScreen = () => {
       inactive: sortPlans(inactive),
       completed: sortPlans(completed)
     };
-  }, [filteredPlans, activePlan]);
+  }, [filteredPlans, activePlan, planProgress]);
 
   // Add handleScroll function to match Home.tsx
   const handleScroll = (event: any) => {
@@ -1185,7 +1185,7 @@ const PlanScreen = () => {
   // Memoize the renderItem function
   const renderItem = useCallback(({ item }: { item: { title: string; data: Plan[] } }) => {
     return renderCategorySection(item.title, item.data);
-  }, [selectedPlanId]); // Add selectedPlanId to dependencies
+  }, [selectedPlanId, activePlan, planProgress]); // Add activePlan and planProgress to dependencies
 
   // Memoize the keyExtractor function
   const keyExtractor = useCallback((item: { title: string; data: Plan[] }) => item.title, []);
@@ -1228,7 +1228,7 @@ const PlanScreen = () => {
     }
     
     return result;
-  }, [organizedPlans]);
+  }, [organizedPlans, activePlan]);
 
   const renderCategorySection = useCallback((title: string, plans: Plan[]) => (
     <View style={styles.categorySection}>
@@ -1239,7 +1239,7 @@ const PlanScreen = () => {
         </View>
       ))}
     </View>
-  ), [selectedPlanId]); // Add selectedPlanId to dependencies
+  ), [selectedPlanId, activePlan, planProgress, loadingStates]); // Add all state dependencies
 
   return (
     <SafeAreaView style={styles.container}>
@@ -1264,6 +1264,7 @@ const PlanScreen = () => {
           offset: 120 * index,
           index,
         })}
+        key={`plans-${activePlan?.planId || 'none'}-${activePlan?.isPaused ? 'paused' : 'active'}`} // Force re-render when activePlan changes
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

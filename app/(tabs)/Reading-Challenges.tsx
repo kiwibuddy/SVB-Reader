@@ -604,7 +604,7 @@ const ChallengesScreen = () => {
     categorized[CHALLENGE_CATEGORIES.TOPICAL] = sortChallenges(categorized[CHALLENGE_CATEGORIES.TOPICAL]);
 
     return { active, completed, categorized };
-  }, [activeChallenges]);
+  }, [activeChallenges, challengeProgress]);
 
   // Get the challenge description based on the selected challenge
   const getChallengeDescription = (challengeId: string) => {
@@ -612,7 +612,7 @@ const ChallengesScreen = () => {
     return challenge?.longDescription || "";
   };
 
-  const renderChallengeItem = ({ item: challenge }: { item: Challenge }) => {
+  const renderChallengeItem = useCallback(({ item: challenge }: { item: Challenge }) => {
     const isSelected = selectedChallengeId === challenge.id;
     const isActive = activeChallenges[challenge.id];
     const isPaused = isActive?.isPaused;
@@ -674,6 +674,10 @@ const ChallengesScreen = () => {
                     setLoadingStates(prev => ({ ...prev, [challenge.id]: 'starting' }));
                     try {
                       await startChallenge(challenge.id);
+                      // Immediately update local state for instant UI feedback
+                      const challengesData = await getActiveChallengesFromDB();
+                      setActiveChallenges(challengesData);
+                      await loadChallengeProgress();
                     } finally {
                       setLoadingStates(prev => ({ ...prev, [challenge.id]: null }));
                     }
@@ -822,7 +826,7 @@ const ChallengesScreen = () => {
         )}
       </View>
     );
-  };
+  }, [selectedChallengeId, activeChallenges, challengeProgress, loadingStates, lastCompletedSegment, styles, colors, progressAnimations]);
 
   const renderCategorySection = useCallback((title: string, challenges: Challenge[]) => (
     <View style={styles.categorySection}>
@@ -833,9 +837,9 @@ const ChallengesScreen = () => {
         </View>
       ))}
     </View>
-  ), [selectedChallengeId]); // Add selectedChallengeId to dependencies
+  ), [selectedChallengeId, activeChallenges, challengeProgress, loadingStates]); // Add all state dependencies
 
-  const handleSegmentComplete = async (challengeId: string, segmentId: string) => {
+  const handleSegmentComplete = useCallback(async (challengeId: string, segmentId: string) => {
     try {
       // Update local state immediately for UI responsiveness
       setChallengeProgress(prev => {
@@ -894,10 +898,10 @@ const ChallengesScreen = () => {
     } catch (error) {
       logger.error('Error completing segment:', error);
     }
-  };
+  }, [challengeProgress, activeChallenges, readingPlansData.challenges, selectedChallengeId]);
 
   // Handle segment selection with challenge order enforcement
-  const handleSegmentSelect = (segmentId: string) => {
+  const handleSegmentSelect = useCallback((segmentId: string) => {
     if (!segmentId || !selectedChallengeId) {
       return;
     }
@@ -962,7 +966,7 @@ const ChallengesScreen = () => {
     setSelectedSegmentTitle(segmentData.title);
     setSelectedSegmentRef((segmentData as any).ref || '');
     setShowReadingModeModal(true);
-  };
+  }, [selectedChallengeId, activeChallenges, challengeProgress, readingPlansData.challenges, router]);
 
   // Reading Mode Modal Handlers
     const handleIndividualReading = async () => {
@@ -1117,7 +1121,7 @@ const ChallengesScreen = () => {
     }
     
     return result;
-  }, [organizedChallenges]);
+  }, [organizedChallenges, activeChallenges]);
 
   // Add handleScroll function to match Home.tsx
   const handleScroll = (event: any) => {
@@ -1127,7 +1131,7 @@ const ChallengesScreen = () => {
   // Memoize the renderItem function
   const renderItem = useCallback(({ item }: { item: { title: string; data: Challenge[] } }) => {
     return renderCategorySection(item.title, item.data);
-  }, [selectedChallengeId]); // Add selectedChallengeId to dependencies
+  }, [selectedChallengeId, activeChallenges, challengeProgress]); // Add all dependencies
 
   // Memoize the keyExtractor function
   const keyExtractor = useCallback((item: { title: string; data: Challenge[] }) => item.title, []);
@@ -1162,6 +1166,7 @@ const ChallengesScreen = () => {
           offset: 140 * index,
           index,
         })}
+        key={`challenges-${Object.keys(activeChallenges).join('-')}`} // Force re-render when activeChallenges changes
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
