@@ -67,14 +67,7 @@ function AppContent() {
         console.log('🔄 OTA CHECK - Channel:', Updates.channel);
         console.log('🔄 OTA CHECK - isEmbedded:', Updates.isEmbeddedLaunch);
         
-        // Show debug alert to check what's happening
-        setTimeout(() => {
-          Alert.alert(
-            '🔍 Debug Info',
-            `UpdateID: ${Updates.updateId || 'None'}\nRuntime: ${Updates.runtimeVersion || 'None'}\nEnabled: ${Updates.isEnabled}\nChannel: ${Updates.channel || 'None'}\nEmbedded: ${Updates.isEmbeddedLaunch}`,
-            [{ text: 'OK' }]
-          );
-        }, 3000);
+        // Debug alert removed for production release
         
         const update = await Updates.checkForUpdateAsync();
         logger.info('📱 Update check result:', update);

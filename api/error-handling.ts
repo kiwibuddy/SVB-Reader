@@ -316,7 +316,7 @@ export function logError(error: Error, context: Partial<ErrorContext> = {}): voi
     stack: error.stack,
     context: {
       timestamp: new Date().toISOString(),
-      appVersion: '1.0.5',
+      appVersion: '1.2.0',
       ...context
     }
   };

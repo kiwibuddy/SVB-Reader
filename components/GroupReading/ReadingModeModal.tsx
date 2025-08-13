@@ -8,6 +8,7 @@ import {
   Dimensions,
   Platform,
   Pressable,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
@@ -36,6 +37,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
   onCancel,
 }) => {
   const { colors } = useAppSettings();
+  const insets = useSafeAreaInsets();
   const [slideAnim] = React.useState(new Animated.Value(screenHeight));
   const [backdropOpacity] = React.useState(new Animated.Value(0));
 
@@ -99,14 +101,15 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       zIndex: 100000,
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
-      maxHeight: '90%',
+      maxHeight: screenHeight - insets.top - 20,
+      paddingBottom: insets.bottom,
     },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: 20,
-      paddingTop: Platform.OS === 'ios' ? 60 : 20,
+      paddingTop: Math.max(insets.top + 20, 20),
       paddingBottom: 16,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
@@ -127,6 +130,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       flex: 1,
       paddingHorizontal: 20,
       paddingTop: 24,
+      paddingBottom: 20,
     },
     storyInfo: {
       alignItems: 'center',
@@ -272,7 +276,11 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
           </TouchableOpacity>
         </View>
 
-        <View style={styles.content}>
+        <ScrollView 
+          style={styles.content} 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
           <View style={styles.storyInfo}>
             <Text style={styles.storyTitle}>{storyTitle}</Text>
             {scriptureReference && (
@@ -326,7 +334,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </ScrollView>
       </Animated.View>
     </>
   );
