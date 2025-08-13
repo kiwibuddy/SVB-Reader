@@ -50,7 +50,7 @@ export const SimpleLoadingScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#808080',
     justifyContent: 'center',
     alignItems: 'center',
   },

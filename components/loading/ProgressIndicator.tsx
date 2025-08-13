@@ -40,10 +40,10 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   }, [progress, animated]);
 
   const animatedStyle = useAnimatedStyle(() => {
-    const strokeDashoffset = circumference - (animatedProgress.value * circumference);
+    const progressValue = animatedProgress.value;
     
     return {
-      strokeDashoffset,
+      transform: [{ rotate: `${progressValue * 360 - 90}deg` }],
     };
   });
 
@@ -75,6 +75,9 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
               borderRadius: size / 2,
               borderWidth: strokeWidth,
               borderColor: colors.primary,
+              borderTopColor: 'transparent',
+              borderRightColor: 'transparent',
+              borderBottomColor: 'transparent',
             },
             animatedStyle,
           ]}

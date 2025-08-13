@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
   withSequence,
 } from 'react-native-reanimated';
-import Svg, { Path, G } from 'react-native-svg';
+import Svg, { Path, G, Rect } from 'react-native-svg';
 
 const AnimatedG = Animated.createAnimatedComponent(G);
 
@@ -117,6 +117,9 @@ export const AnimatedBubblesSVG: React.FC<AnimatedBubblesSVGProps> = ({
         viewBox="0 0 256 256"
         style={styles.svg}
       >
+        {/* Gray background */}
+        <Rect x="0" y="0" width="256" height="256" fill="#808080" />
+        
         {/* Blue bubble (smallest, animated) */}
         <AnimatedG
           animatedProps={blueBubbleProps}

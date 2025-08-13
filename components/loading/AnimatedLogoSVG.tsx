@@ -120,7 +120,7 @@ export const AnimatedLogoSVG: React.FC<AnimatedLogoSVGProps> = ({
         viewBox="0 0 256 256"
         style={styles.svg}
       >
-        {/* Background */}
+        {/* Gray background */}
         <Rect x="0" y="0" width="256" height="256" fill="#808080" />
         
         {/* Blue bubble (smallest, animated) */}

@@ -13,6 +13,7 @@
     "build:ios": "eas build --platform ios --profile production",
     "build:ios-preview": "eas build --platform ios --profile preview",
     "build:ios-simulator": "eas build --platform ios --profile production-simulator",
+    "build:dev-local": "eas build --platform ios --profile development-local",
     "submit:ios": "eas submit --platform ios --profile production",
     "update:production": "eas update --branch production",
     "update:preview": "eas update --branch preview",
