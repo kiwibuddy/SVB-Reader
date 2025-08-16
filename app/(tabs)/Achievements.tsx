@@ -1431,9 +1431,8 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   },
   achievementGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     paddingHorizontal: 16,
-    gap: 16,
+    gap: 0,
   },
   // Minimal next-achievements cards
   nextCard: {
@@ -1507,10 +1506,11 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     color: colors.secondary,
   },
   achievementCard: {
-    width: '47%',
+    width: 160,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
+    marginRight: 16,
     shadowColor: colors.text,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.1,
@@ -1520,6 +1520,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
     backgroundColor: colors.card,
     minHeight: 82,
+    flexShrink: 0,
   },
   completedCard: {
     borderWidth: 2,
