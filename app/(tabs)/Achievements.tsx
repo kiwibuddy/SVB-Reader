@@ -67,7 +67,7 @@ interface Achievement {
   color: string;
   progress: number;
   total: number;
-  category: 'milestones' | 'streaks' | 'testament' | 'engagement' | 'books' | 'sessions';
+  category: 'milestones' | 'streaks' | 'testament' | 'engagement' | 'books';
   achieved: boolean;
   achievedDate?: string;
 }
@@ -647,30 +647,6 @@ const Achievements = () => {
       total: 1,
       category: 'engagement',
       achieved: stats.emojiCollection.complete
-    },
-
-    // Reading Sessions
-    {
-      id: 'marathon_reader',
-      title: 'Marathon Reader',
-      description: 'Read 5 stories in one session',
-      icon: 'timer-outline',
-      color: '#FF9800',
-      progress: Math.min(stats.longestSession, 5),
-      total: 5,
-      category: 'sessions',
-      achieved: stats.longestSession >= 5
-    },
-    {
-      id: 'super_session',
-      title: 'Super Session',
-      description: 'Read 10 stories in one session',
-      icon: 'flash-outline',
-      color: '#9C27B0',
-      progress: Math.min(stats.longestSession, 10),
-      total: 10,
-      category: 'sessions',
-      achieved: stats.longestSession >= 10
     }
   ];
 
@@ -823,25 +799,24 @@ const Achievements = () => {
     }
 
     return (
-      <TouchableOpacity activeOpacity={0.85} onPress={() => setInfo({ title: achievement.title, description: achievement.description })}>
       <View style={[styles.achievementCard, isCompleted && styles.completedCard]}>
         <View style={styles.achievementHeader}>
           <View style={[styles.achievementIcon, { backgroundColor: achievement.color + '20' }]}> 
             <Ionicons 
               name={achievement.icon} 
-              size={24} 
+              size={20} 
               color={isCompleted ? achievement.color : colors.secondary} 
             />
           </View>
           <View style={styles.achievementInfo}>
-            <Text style={[styles.achievementTitle, isCompleted && { color: colors.text }]}> 
+            <Text style={[styles.achievementTitle, isCompleted && { color: colors.text }]} numberOfLines={1}> 
               {achievement.title}
             </Text>
-            <Text style={[styles.achievementProgress, { color: isCompleted ? achievement.color : colors.secondary }]}> 
+            <Text style={[styles.achievementProgress, { color: isCompleted ? achievement.color : colors.secondary }]} numberOfLines={1}> 
               {(() => {
                 const p = showStoryProgress ? progress : achievement.progress;
                 const t = showStoryProgress ? total : achievement.total;
-                return p && p > 0 ? `${p} of ${t} completed` : 'Not started';
+                return p && p > 0 ? `${p} of ${t}` : 'Not started';
               })()}
             </Text>
           </View>
@@ -859,7 +834,6 @@ const Achievements = () => {
           </View>
         </View>
       </View>
-      </TouchableOpacity>
     );
   };
 
@@ -1043,7 +1017,7 @@ const Achievements = () => {
             {(isFirstRun ? [] : nextAchievements()).map((a: any, idx: number) => (
               <AchievementCard key={(a.id || 'next') + '_' + idx} achievement={a} />
             ))}
-            {isFirstRun && FIRST_RUN_ACHIEVEMENTS.map((n, idx) => (
+            {isFirstRun && FIRST_RUN_ACHIEVEMENTS.slice(0, 4).map((n, idx) => (
               <AchievementCard
                 key={'first_' + idx}
                 achievement={{
@@ -1083,7 +1057,9 @@ const Achievements = () => {
                 {firstTwo.map(a => (
                   <AchievementCard key={a.id} achievement={a} />
                 ))}
-                {showMoreRewards && rest.map(a => (<AchievementCard key={a.id} achievement={a} />))}
+                {showMoreRewards && rest.map(a => (
+                  <AchievementCard key={a.id} achievement={a} />
+                ))}
               </View>
             </View>
           );
@@ -1172,20 +1148,18 @@ const Achievements = () => {
                 )}
               </View>
               <View style={styles.achievementGrid}>
-                {firstTwo.map((a:any) => (<AchievementCard key={a.id} achievement={a} />))}
-                {showMorePlans && rest.map((a:any) => (<AchievementCard key={a.id} achievement={a} />))}
+                {firstTwo.map((a:any) => (
+                  <AchievementCard key={a.id} achievement={a} />
+                ))}
+                {showMorePlans && rest.map((a:any) => (
+                  <AchievementCard key={a.id} achievement={a} />
+                ))}
               </View>
             </View>
           );
         })()}
 
         {/* Testament Progress removed for MVP */}
-
-        {/* Reading Sessions */}
-        {achievements.filter(a => a.category === 'sessions').length > 0 && renderSection(
-          'Reading Sessions',
-          achievements.filter(a => a.category === 'sessions')
-        )}
 
         {/* Engagement */}
         {(() => {
@@ -1203,8 +1177,12 @@ const Achievements = () => {
                 )}
               </View>
               <View style={styles.achievementGrid}>
-                {firstTwo.map(a => (<AchievementCard key={a.id} achievement={a} />))}
-                {showMoreEngagement && rest.map(a => (<AchievementCard key={a.id} achievement={a} />))}
+                {firstTwo.map(a => (
+                  <AchievementCard key={a.id} achievement={a} />
+                ))}
+                {showMoreEngagement && rest.map(a => (
+                  <AchievementCard key={a.id} achievement={a} />
+                ))}
               </View>
             </View>
           );
@@ -1239,9 +1217,11 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   },
   content: {
     flex: 1,
+    width: '100%',
   },
   contentContainer: {
     paddingBottom: 20,
+    width: '100%',
   },
   welcomeSection: {
     marginTop: 16,
@@ -1315,14 +1295,15 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   },
   section: {
     marginBottom: 32,
+    width: '100%',
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
     color: colors.text,
     marginBottom: 16,
-    paddingHorizontal: 16,
     letterSpacing: -0.3,
+    paddingHorizontal: 16,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -1363,9 +1344,9 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     marginBottom: 16,
   },
   achievementGrid: {
-    paddingHorizontal: 16,
     flexDirection: 'row',
     flexWrap: 'wrap',
+    paddingHorizontal: 16,
     gap: 12,
   },
   // Minimal next-achievements cards
@@ -1440,21 +1421,25 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     color: colors.secondary,
   },
   achievementCard: {
-    backgroundColor: colors.card,
+    width: '47%',
     borderRadius: 16,
-    padding: 16,
-    width: isLargeScreen ? '47%' : '47%',
+    padding: 12,
+    marginBottom: 16,
     shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 4,
     borderWidth: 1,
     borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
+    backgroundColor: colors.card,
   },
   completedCard: {
     borderWidth: 2,
-    borderColor: 'rgba(76, 175, 80, 0.3)',
+    borderColor: '#4CAF50',
+    backgroundColor: colors.card,
+    shadowColor: '#4CAF50',
+    shadowOpacity: 0.2,
   },
   completedCentered: {
     alignItems: 'center',
@@ -1476,6 +1461,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   },
   completedBadge: {
     marginLeft: 8,
+    flexShrink: 0,
   },
   completedBadgeSmall: {
     position: 'absolute',
@@ -1487,44 +1473,45 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   },
   achievementHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
+    alignItems: 'flex-start',
+    marginBottom: 12,
+    width: '100%',
   },
   achievementIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    flexShrink: 0,
   },
   achievementInfo: {
+    justifyContent: 'center',
     flex: 1,
+    minWidth: 0,
   },
   achievementTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 2,
+    marginBottom: 4,
+    lineHeight: 20,
   },
   achievementProgress: {
     fontSize: 14,
     color: colors.secondary,
     fontWeight: '500',
-  },
-  achievementDescription: {
-    fontSize: 14,
-    color: colors.secondary,
-    marginBottom: 12,
-    lineHeight: 20,
+    lineHeight: 18,
   },
   progressBarContainer: {
-    marginTop: 4,
+    marginTop: 'auto',
   },
   progressBar: {
     height: 6,
     borderRadius: 3,
     overflow: 'hidden',
+    backgroundColor: 'rgba(0,0,0,0.1)',
   },
   progressFill: {
     height: '100%',
@@ -1541,7 +1528,6 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   // Enhanced Book Card Styles
   bookCard: {
     width: '47%',
-    backgroundColor: colors.card,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -1552,6 +1538,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     elevation: 4,
     borderWidth: 1,
     borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
+    backgroundColor: colors.card,
   },
   completedBookCard: {
     borderWidth: 2,
