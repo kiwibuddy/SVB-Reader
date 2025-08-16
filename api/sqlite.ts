@@ -559,7 +559,7 @@ export const getTotalSegmentsCount = async () => {
   try {
     const db = databaseManager.getDatabase();
     const result = await db.getFirstAsync<CountResult>(`
-      SELECT COUNT(*) as count FROM segments
+      SELECT COUNT(*) as count FROM segments WHERE segmentID NOT LIKE 'I%'
     `);
     return result?.count || 0;
   } catch (error) {
@@ -1024,8 +1024,11 @@ async function updateStreak() {
     if (lastReadDate === yesterdayStr) {
       // Consecutive day, increment streak
       currentStreak++;
-    } else if (lastReadDate !== today) {
+    } else if (lastReadDate && lastReadDate !== today) {
       // Break in streak, reset to 1
+      currentStreak = 1;
+    } else if (!lastReadDate) {
+      // First time reading, start streak at 1
       currentStreak = 1;
     }
 

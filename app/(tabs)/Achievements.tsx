@@ -87,6 +87,8 @@ const Achievements = () => {
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [bookProgress, setBookProgress] = useState<Record<string, {completed: number; total: number; percentage: number}>>({});
+  const [preloadedImages, setPreloadedImages] = useState<Record<string, any>>({});
+  const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({});
 
 
   
@@ -192,6 +194,37 @@ const Achievements = () => {
     { bookCode: 'Rev', bookName: 'Revelation', isCompleted: false },
   ];
 
+  // Preload all book icons for better performance
+  const preloadBookIcons = async () => {
+    const allBookCodes = [...oldTestamentBooks, ...newTestamentBooks].map(book => book.bookCode);
+    const preloaded: Record<string, any> = {};
+    const loadingStates: Record<string, boolean> = {};
+    
+    // Set all to loading initially
+    allBookCodes.forEach(code => {
+      loadingStates[code] = true;
+    });
+    setImageLoadingStates(loadingStates);
+    
+    // Preload images in parallel
+    const preloadPromises = allBookCodes.map(async (bookCode) => {
+      try {
+        if (imageMap[bookCode]) {
+          const imageSource = imageMap[bookCode]();
+          preloaded[bookCode] = imageSource;
+          loadingStates[bookCode] = false;
+        }
+      } catch (error) {
+        logger.error(`Failed to preload image for ${bookCode}:`, error);
+        loadingStates[bookCode] = false;
+      }
+    });
+    
+    await Promise.all(preloadPromises);
+    setPreloadedImages(preloaded);
+    setImageLoadingStates(loadingStates);
+  };
+
   // Comprehensive database-driven stats loading
   useEffect(() => {
     const loadStats = async () => {
@@ -199,6 +232,9 @@ const Achievements = () => {
       setError(null);
       
       try {
+        // Preload book icons in parallel with stats loading
+        const preloadPromise = preloadBookIcons();
+        
         // Load all statistics in parallel for better performance
         const [
           completedCount,
@@ -223,6 +259,9 @@ const Achievements = () => {
           getCompletedBooks(),
           checkEmojiCollection()
         ]);
+
+        // Wait for both stats and image preloading to complete
+        await preloadPromise;
 
         // Holder for derived extras used below
         let derivedExtras: { planStreak: number; challengeStreak: number; planCompletions: number; challengeCompletions: number } = {
@@ -368,8 +407,8 @@ const Achievements = () => {
     },
     // Reading Milestones
     {
-      id: 'first_steps',
-      title: 'First Steps',
+      id: 'first_story',
+      title: 'First Story',
       description: 'Read your first Bible story',
       icon: 'book-outline',
       color: '#4CAF50',
@@ -391,7 +430,7 @@ const Achievements = () => {
     },
     {
       id: 'scripture_enthusiast',
-      title: 'Scripture Enthusiast',
+      title: 'Bible Enthusiast',
       description: 'Read 25 Bible stories',
       icon: 'library-outline',
       color: '#9C27B0',
@@ -413,7 +452,7 @@ const Achievements = () => {
     },
     {
       id: 'word_warrior',
-      title: 'Word Warrior',
+      title: 'Bible Champion',
       description: 'Read 100 Bible stories',
       icon: 'shield-outline',
       color: '#F44336',
@@ -435,7 +474,7 @@ const Achievements = () => {
     },
     {
       id: 'complete_collection',
-      title: 'Complete Collection',
+      title: 'Bible Master',
       description: 'Read all 365 Bible stories',
       icon: 'trophy-outline',
       color: '#FFD700',
@@ -470,7 +509,7 @@ const Achievements = () => {
     },
     {
       id: 'dedicated_disciple',
-      title: 'Dedicated Disciple',
+      title: 'Dedicated Reader',
       description: 'Maintain a 14-day reading streak',
       icon: 'flame',
       color: '#FF5722',
@@ -481,7 +520,7 @@ const Achievements = () => {
     },
     {
       id: 'scripture_habit',
-      title: 'Scripture Habit',
+      title: 'Bible Habit',
       description: 'Maintain a 30-day reading streak',
       icon: 'flame',
       color: '#FF5722',
@@ -503,7 +542,7 @@ const Achievements = () => {
     },
     {
       id: 'faithful_follower',
-      title: 'Faithful Follower',
+      title: 'Faithful Reader',
       description: 'Maintain a 100-day reading streak',
       icon: 'flame',
       color: '#E91E63',
@@ -514,7 +553,7 @@ const Achievements = () => {
     },
     {
       id: 'scripture_champion',
-      title: 'Scripture Champion',
+      title: 'Bible Champion',
       description: 'Maintain a 365-day reading streak',
       icon: 'flame',
       color: '#FFD700',
@@ -639,7 +678,7 @@ const Achievements = () => {
     },
     {
       id: 'emoji_collection_master',
-      title: 'Collection Master',
+      title: 'Emoji Master',
       description: 'Use all emoji types multiple times',
       icon: 'apps-outline',
       color: '#9C27B0',
@@ -714,12 +753,12 @@ const Achievements = () => {
   };
 
   // Loading state
-  if (isLoading) {
+  if (isLoading || Object.values(imageLoadingStates).some(loading => loading)) {
     return (
       <SafeAreaView style={[styles.container, styles.centerContent]}>
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={[styles.loadingText, { color: colors.secondary }]}>
-          Loading your achievements...
+          {isLoading ? 'Loading your achievements...' : 'Preparing book icons...'}
         </Text>
       </SafeAreaView>
     );
@@ -798,48 +837,66 @@ const Achievements = () => {
       showStoryProgress = true;
     }
 
+    // Determine if title is likely to be one line or two lines
+    const titleLength = achievement.title.length;
+    const isLikelyOneLine = titleLength <= 12; // Titles with 12 or fewer characters are likely one line
+
     return (
-      <View style={[styles.achievementCard, isCompleted && styles.completedCard]}>
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => setInfo({ title: achievement.title, description: achievement.description })}
+        style={[styles.achievementCard, isCompleted && styles.completedCard]}
+      >
         <View style={styles.achievementHeader}>
-          <View style={[styles.achievementIcon, { backgroundColor: achievement.color + '20' }]}> 
+          <View style={[
+            styles.achievementIcon, 
+            isCompleted ? styles.completedAchievementIcon : { backgroundColor: achievement.color + '20' }
+          ]}> 
             <Ionicons 
               name={achievement.icon} 
-              size={20} 
-              color={isCompleted ? achievement.color : colors.secondary} 
+              size={18} 
+              color={achievement.color} 
             />
+            {isCompleted && (
+              <View style={styles.completedBadge}>
+                <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
+              </View>
+            )}
           </View>
           <View style={styles.achievementInfo}>
-            <Text style={[styles.achievementTitle, isCompleted && { color: colors.text }]} numberOfLines={1}> 
+            <Text style={[styles.achievementTitle, isCompleted && { color: colors.text }]} numberOfLines={2}> 
               {achievement.title}
             </Text>
-            <Text style={[styles.achievementProgress, { color: isCompleted ? achievement.color : colors.secondary }]} numberOfLines={1}> 
-              {(() => {
+            <Text style={[
+              styles.achievementProgress, 
+              { 
+                color: isCompleted ? '#4CAF50' : colors.secondary,
+                marginBottom: isLikelyOneLine ? 16 : 8 // Add extra space for one-line titles
+              }
+            ]} numberOfLines={1}> 
+              {isCompleted ? 'Completed' : (() => {
                 const p = showStoryProgress ? progress : achievement.progress;
                 const t = showStoryProgress ? total : achievement.total;
                 return p && p > 0 ? `${p} of ${t}` : 'Not started';
               })()}
             </Text>
           </View>
-          {isCompleted && (
-            <View style={styles.completedBadge}>
-              <Ionicons name="checkmark-circle" size={20} color={achievement.color} />
-            </View>
-          )}
         </View>
         <View style={styles.progressBarContainer}>
-          <View style={[styles.progressBar, { backgroundColor: achievement.color + '20' }]}> 
+          <View style={[styles.progressBar, { backgroundColor: isCompleted ? '#4CAF5020' : achievement.color + '20' }]}> 
             <View 
-              style={[styles.progressFill, { backgroundColor: achievement.color, width: `${showStoryProgress ? percent : Math.min((achievement.progress / achievement.total) * 100, 100)}%` }]} 
+              style={[styles.progressFill, { backgroundColor: isCompleted ? '#4CAF50' : achievement.color, width: `${showStoryProgress ? percent : Math.min((achievement.progress / achievement.total) * 100, 100)}%` }]} 
             />
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
   const BookCard = ({ book }: { book: BookCompletion }) => {
     const isCompleted = isBookCompleted(book.bookCode);
-    const imageSource = imageMap[book.bookCode] ? imageMap[book.bookCode]() : null;
+    const imageSource = preloadedImages[book.bookCode];
+    const isImageLoading = imageLoadingStates[book.bookCode];
     const progressData = bookProgress[book.bookCode] || { completed: 0, total: 0, percentage: 0 };
     
     
@@ -860,7 +917,9 @@ const Achievements = () => {
         <View style={[styles.bookCard, progress === 100 && styles.completedBookCard]}>
           <View style={styles.bookHeader}>
             <View style={[styles.bookImageContainer, progress === 100 && styles.completedImageContainer]}>
-              {imageSource ? (
+              {isImageLoading ? (
+                <ActivityIndicator size="small" color={colors.secondary} />
+              ) : imageSource ? (
                 <Image 
                   source={imageSource} 
                   style={[
@@ -869,6 +928,7 @@ const Achievements = () => {
                   ]} 
                   resizeMode="contain"
                   onError={() => {}}
+                  fadeDuration={0}
                 />
               ) : (
                 <View style={[styles.bookImage, styles.fallbackBookImage]}>
@@ -885,7 +945,7 @@ const Achievements = () => {
             </View>
           
           <View style={styles.bookInfo}>
-            <Text style={[styles.bookTitle, styles.completedBookTitle]} numberOfLines={1}>
+            <Text style={[styles.bookTitle, styles.completedBookTitle]} numberOfLines={2}>
               {book.bookName}
             </Text>
             <Text style={[styles.bookStatus, { color: progressColor }]} numberOfLines={1}>
@@ -946,8 +1006,8 @@ const Achievements = () => {
       <View style={styles.section}>
         <View style={styles.sectionHeaderRow}>
           <Text style={[styles.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>{title}</Text>
-          <TouchableOpacity onPress={toggle} activeOpacity={0.7}>
-            <Text style={styles.moreLink}>{expanded ? 'Show Less' : 'More Books >'}</Text>
+          <TouchableOpacity onPress={toggle} activeOpacity={0.7} style={styles.moreIconOnly}>
+            <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color={colors.secondary} />
           </TouchableOpacity>
         </View>
         <View style={styles.progressBarSection}>
@@ -1011,8 +1071,10 @@ const Achievements = () => {
         </View>
 
         {/* Next Achievements (First Achievements on first run) */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Next Milestones</Text>
+        <View style={[styles.section, { marginTop: 4 }]}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={[styles.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>Next Milestones</Text>
+          </View>
           <View style={styles.achievementGrid}>
             {(isFirstRun ? [] : nextAchievements()).map((a: any, idx: number) => (
               <AchievementCard key={(a.id || 'next') + '_' + idx} achievement={a} />
@@ -1038,15 +1100,14 @@ const Achievements = () => {
 
         {/* Story Rewards (hide duplicates already shown above) */}
         {(() => {
-          const firstRunHide = new Set<string>(isFirstRun ? ['first_steps','group_reader_1','first_reaction','plan_first_story','challenge_first_story'] : []);
-          const list = achievements.filter(a => a.category === 'milestones' && !firstRunHide.has(a.id));
+          const list = achievements.filter(a => a.category === 'milestones');
           // Collapsible: first two visible, rest in drop list
           const firstTwo = list.slice(0, 2);
           const rest = list.slice(2);
           return (
             <View style={styles.section}>
               <View style={styles.sectionHeaderRow}>
-                <Text style={styles.sectionTitle}>Story Rewards</Text>
+                <Text style={[styles.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>Story Rewards</Text>
                 {rest.length > 0 && (
                   <TouchableOpacity onPress={() => setShowMoreRewards(!showMoreRewards)} activeOpacity={0.7} style={styles.moreIconOnly}>
                     <Ionicons name={showMoreRewards ? 'chevron-up' : 'chevron-down'} size={20} color={colors.secondary} />
@@ -1072,75 +1133,97 @@ const Achievements = () => {
               id: 'plan_first_story',
               title: 'Plan Starter',
               description: 'Complete 1 plan story',
-              icon: 'calendar-outline',
+              icon: 'calendar-outline' as keyof typeof Ionicons.glyphMap,
               color: '#7B68EE',
               progress: Math.min(stats.planCompletions, 1),
               total: 1,
-              category: 'milestones',
+              category: 'plan' as any,
               achieved: stats.planCompletions >= 1
             },
             {
               id: 'plan_week',
-              title: 'Plan Week Streak',
+              title: 'Plan Week',
               description: 'Read plans 7 days in a row',
-              icon: 'calendar-outline',
+              icon: 'calendar-outline' as keyof typeof Ionicons.glyphMap,
               color: '#7B68EE',
               progress: Math.min(stats.planStreak, 7),
               total: 7,
-              category: 'milestones',
+              category: 'plan' as any,
               achieved: stats.planStreak >= 7
             },
             {
               id: 'plan_two_weeks',
-              title: 'Plan 14‑Day Streak',
+              title: 'Plan 2 Weeks',
               description: 'Read plans 14 days in a row',
-              icon: 'calendar-outline',
+              icon: 'calendar-outline' as keyof typeof Ionicons.glyphMap,
               color: '#7B68EE',
               progress: Math.min(stats.planStreak, 14),
               total: 14,
-              category: 'milestones',
+              category: 'plan' as any,
               achieved: stats.planStreak >= 14
             },
             {
               id: 'plan_month',
-              title: 'Plan 30‑Day Streak',
+              title: 'Plan Month',
               description: 'Read plans 30 days in a row',
-              icon: 'calendar-outline',
+              icon: 'calendar-outline' as keyof typeof Ionicons.glyphMap,
               color: '#7B68EE',
               progress: Math.min(stats.planStreak, 30),
               total: 30,
-              category: 'milestones',
+              category: 'plan' as any,
               achieved: stats.planStreak >= 30
             },
             {
               id: 'challenge_first_story',
               title: 'Challenge Starter',
               description: 'Complete 1 challenge story',
-              icon: 'flag-outline',
+              icon: 'flag-outline' as keyof typeof Ionicons.glyphMap,
               color: '#FF8C00',
               progress: Math.min(stats.challengeCompletions, 1),
               total: 1,
-              category: 'milestones',
+              category: 'challenge' as any,
               achieved: stats.challengeCompletions >= 1
             },
             {
               id: 'challenge_week',
-              title: 'Challenge Week Streak',
+              title: 'Challenge Week',
               description: 'Read challenges 7 days in a row',
-              icon: 'flag-outline',
+              icon: 'flag-outline' as keyof typeof Ionicons.glyphMap,
               color: '#FF8C00',
               progress: Math.min(stats.challengeStreak, 7),
               total: 7,
-              category: 'milestones',
+              category: 'challenge' as any,
               achieved: stats.challengeStreak >= 7
             },
-          ] as any;
+            {
+              id: 'challenge_two_weeks',
+              title: 'Challenge 2 Weeks',
+              description: 'Read challenges 14 days in a row',
+              icon: 'flag-outline' as keyof typeof Ionicons.glyphMap,
+              color: '#FF8C00',
+              progress: Math.min(stats.challengeStreak, 14),
+              total: 14,
+              category: 'challenge' as any,
+              achieved: stats.challengeStreak >= 14
+            },
+            {
+              id: 'challenge_month',
+              title: 'Challenge Month',
+              description: 'Read challenges 30 days in a row',
+              icon: 'flag-outline' as keyof typeof Ionicons.glyphMap,
+              color: '#FF8C00',
+              progress: Math.min(stats.challengeStreak, 30),
+              total: 30,
+              category: 'challenge' as any,
+              achieved: stats.challengeStreak >= 30
+            },
+          ];
           const firstTwo = items.slice(0, 2);
           const rest = items.slice(2);
           return (
             <View style={styles.section}>
               <View style={styles.sectionHeaderRow}>
-                <Text style={styles.sectionTitle}>Plans & Challenges</Text>
+                <Text style={[styles.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>Plans & Challenges</Text>
                 {rest.length > 0 && (
                   <TouchableOpacity onPress={() => setShowMorePlans(!showMorePlans)} activeOpacity={0.7} style={styles.moreIconOnly}>
                     <Ionicons name={showMorePlans ? 'chevron-up' : 'chevron-down'} size={20} color={colors.secondary} />
@@ -1148,10 +1231,10 @@ const Achievements = () => {
                 )}
               </View>
               <View style={styles.achievementGrid}>
-                {firstTwo.map((a:any) => (
+                {firstTwo.map((a) => (
                   <AchievementCard key={a.id} achievement={a} />
                 ))}
-                {showMorePlans && rest.map((a:any) => (
+                {showMorePlans && rest.map((a) => (
                   <AchievementCard key={a.id} achievement={a} />
                 ))}
               </View>
@@ -1169,7 +1252,7 @@ const Achievements = () => {
           return (
             <View style={styles.section}>
               <View style={styles.sectionHeaderRow}>
-                <Text style={styles.sectionTitle}>Engagement</Text>
+                <Text style={[styles.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>Engagement</Text>
                 {rest.length > 0 && (
                   <TouchableOpacity onPress={() => setShowMoreEngagement(!showMoreEngagement)} activeOpacity={0.7} style={styles.moreIconOnly}>
                     <Ionicons name={showMoreEngagement ? 'chevron-up' : 'chevron-down'} size={20} color={colors.secondary} />
@@ -1193,6 +1276,9 @@ const Achievements = () => {
 
         {/* New Testament Books */}
         {renderBooksSection('New Testament Books', newTestamentBooks, 'NT')}
+        
+        {/* Bottom spacing for better visual balance */}
+        <View style={styles.bottomSpacing} />
     </ScrollView>
     {/* Info modal */}
     <Modal visible={!!info} transparent animationType="fade" onRequestClose={() => setInfo(null)}>
@@ -1220,11 +1306,11 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     width: '100%',
   },
   contentContainer: {
-    paddingBottom: 20,
+    paddingBottom: 24,
     width: '100%',
   },
   welcomeSection: {
-    marginTop: 16,
+    marginTop: 20,
     marginBottom: 16,
     paddingHorizontal: 16,
   },
@@ -1243,7 +1329,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     flexDirection: 'row',
     paddingHorizontal: 16,
     gap: 12,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   statCard: {
     flex: 1,
@@ -1272,7 +1358,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     backgroundColor: 'rgba(255, 255, 255, 0.25)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   statCardTitle: {
     fontSize: 16,
@@ -1294,14 +1380,14 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     textShadowRadius: 2,
   },
   section: {
-    marginBottom: 32,
+    marginBottom: 16,
     width: '100%',
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 16,
+    marginBottom: 8,
     letterSpacing: -0.3,
     paddingHorizontal: 16,
   },
@@ -1310,7 +1396,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    marginBottom: 8,
+    marginBottom: 16,
   },
   sectionHeaderRow: {
     flexDirection: 'row',
@@ -1347,7 +1433,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 16,
-    gap: 12,
+    gap: 16,
   },
   // Minimal next-achievements cards
   nextCard: {
@@ -1423,7 +1509,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   achievementCard: {
     width: '47%',
     borderRadius: 16,
-    padding: 12,
+    padding: 16,
     marginBottom: 16,
     shadowColor: colors.text,
     shadowOffset: { width: 0, height: 3 },
@@ -1433,6 +1519,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     borderWidth: 1,
     borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
     backgroundColor: colors.card,
+    minHeight: 82,
   },
   completedCard: {
     borderWidth: 2,
@@ -1460,8 +1547,14 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     justifyContent: 'center',
   },
   completedBadge: {
-    marginLeft: 8,
-    flexShrink: 0,
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 1,
+    borderWidth: 1,
+    borderColor: '#4CAF50',
   },
   completedBadgeSmall: {
     position: 'absolute',
@@ -1474,35 +1567,42 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   achievementHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 8,
     width: '100%',
   },
   achievementIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
     flexShrink: 0,
+    position: 'relative',
+  },
+  completedAchievementIcon: {
+    backgroundColor: '#4CAF5015',
+    borderColor: '#4CAF50',
+    borderWidth: 2,
+    borderRadius: 16,
   },
   achievementInfo: {
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     flex: 1,
     minWidth: 0,
   },
   achievementTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: colors.text,
     marginBottom: 4,
-    lineHeight: 20,
+    lineHeight: 18,
   },
   achievementProgress: {
-    fontSize: 14,
+    fontSize: 12,
     color: colors.secondary,
     fontWeight: '500',
-    lineHeight: 18,
+    lineHeight: 16,
   },
   progressBarContainer: {
     marginTop: 'auto',
@@ -1522,7 +1622,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 16,
-    gap: 12,
+    gap: 16,
   },
   
   // Enhanced Book Card Styles
@@ -1539,6 +1639,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     borderWidth: 1,
     borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
     backgroundColor: colors.card,
+    minHeight: 82,
   },
   completedBookCard: {
     borderWidth: 2,
@@ -1550,7 +1651,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   bookHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   bookImageContainer: {
     width: 48,
@@ -1558,7 +1659,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
     backgroundColor: colors.background,
     position: 'relative',
     borderWidth: 1,
@@ -1702,6 +1803,9 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   modalButtonText: {
     color: 'white',
     fontWeight: '700',
+  },
+  bottomSpacing: {
+    height: 32,
   },
 });
 
