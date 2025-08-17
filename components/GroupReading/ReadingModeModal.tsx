@@ -14,6 +14,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ANIMATION } from '@/services/animation';
+import { useRouter } from 'expo-router';
+import { getDayOfYear } from 'date-fns';
+import DailyStoryMap from '../../assets/data/DailyStoryMap.json';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -25,6 +28,10 @@ interface ReadingModeModalProps {
   onIndividual: () => void;
   onGroup: () => void;
   onCancel: () => void;
+  // Add context information
+  context?: 'main' | 'plan' | 'challenge' | 'today';
+  planId?: string;
+  challengeId?: string;
 }
 
 const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
@@ -35,12 +42,53 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
   onIndividual,
   onGroup,
   onCancel,
+  context = 'main',
+  planId,
+  challengeId,
 }) => {
   const { colors } = useAppSettings();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [slideAnim] = React.useState(new Animated.Value(screenHeight));
   const [backdropOpacity] = React.useState(new Animated.Value(0));
 
+  // Context-aware navigation functions
+  const handleContextAwareIndividualReading = () => {
+    // For individual reading, just call the original handler
+    // The individual reading flow handles its own navigation
+    onIndividual();
+  };
+
+  const handleContextAwareGroupReading = () => {
+    onGroup();
+    
+    // Navigate to group-setup with context information
+    const contextParams: any = {
+      storyId,
+      storyTitle,
+      scriptureReference,
+      context,
+    };
+    
+    if (context === 'plan' && planId) {
+      contextParams.planId = planId;
+      
+    } else if (context === 'challenge' && challengeId) {
+      contextParams.challengeId = challengeId;
+      
+    } else if (context === 'today') {
+      
+    } else {
+      
+    }
+    
+    
+    
+    router.push({
+      pathname: '/group-setup' as any,
+      params: contextParams
+    });
+  };
 
 
   useEffect(() => {
@@ -226,9 +274,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
     onCancel();
   };
 
-  const handleIndividualPress = () => {
-    onIndividual();
-  };
+
 
   const handleGroupPress = () => {
     onGroup();
@@ -301,7 +347,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
               </Text>
               <TouchableOpacity 
                 style={[styles.actionButton, styles.primaryButton]}
-                onPress={handleIndividualPress}
+                onPress={handleContextAwareIndividualReading}
               >
                 <Text style={styles.primaryButtonText}>Start Individual Reading</Text>
               </TouchableOpacity>
@@ -319,7 +365,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
               </Text>
               <TouchableOpacity 
                 style={[styles.actionButton, styles.secondaryButton]}
-                onPress={handleGroupPress}
+                onPress={handleContextAwareGroupReading}
               >
                 <Text style={styles.secondaryButtonText}>Start Group Reading</Text>
               </TouchableOpacity>

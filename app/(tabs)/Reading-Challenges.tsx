@@ -891,6 +891,9 @@ const ChallengesScreen = () => {
 
   const handleSegmentComplete = useCallback(async (challengeId: string, segmentId: string) => {
     try {
+      // First, mark the segment as complete in the database with challenge context
+      await markSegmentComplete(segmentId, 'challenge', undefined, challengeId);
+      
       // Update local state immediately for UI responsiveness
       setChallengeProgress(prev => {
         const currentProgress = prev[challengeId];
@@ -1049,6 +1052,7 @@ const ChallengesScreen = () => {
         storyId: selectedSegmentId,
         storyTitle: selectedSegmentTitle,
         scriptureReference: selectedSegmentRef,
+        challengeId: selectedChallengeId || '', // Pass the challenge ID for context
       }
     });
   };
@@ -1074,6 +1078,8 @@ const ChallengesScreen = () => {
         setSelectedSegmentId(enforcementData.nextSegmentId);
         setSelectedSegmentTitle(segmentData.title);
         setSelectedSegmentRef((segmentData as any).ref || '');
+        // Set the selected challenge ID so the reading mode modal has the correct context
+        setSelectedChallengeId(enforcementData.challengeId);
         setShowReadingModeModal(true);
       }
     } finally {
@@ -1092,6 +1098,10 @@ const ChallengesScreen = () => {
       setSelectedSegmentId(enforcementData.nextSegmentId);
       setSelectedSegmentTitle(segmentData.title);
       setSelectedSegmentRef((segmentData as any).ref || '');
+      // Ensure the selected challenge ID is set for context
+      if (enforcementData.challengeId) {
+        setSelectedChallengeId(enforcementData.challengeId);
+      }
       setShowReadingModeModal(true);
     }
   };
@@ -1120,6 +1130,8 @@ const ChallengesScreen = () => {
         setSelectedSegmentId(startConfirmationData.firstStory.segmentId);
         setSelectedSegmentTitle(startConfirmationData.firstStory.title);
         setSelectedSegmentRef(startConfirmationData.firstStory.reference);
+        // Set the selected challenge ID so the reading mode modal has the correct context
+        setSelectedChallengeId(startConfirmationData.challengeId);
         setShowReadingModeModal(true);
       }
     } finally {
@@ -1267,6 +1279,9 @@ const ChallengesScreen = () => {
         onIndividual={handleIndividualReading}
         onGroup={handleGroupReading}
         onCancel={handleCancelModal}
+        // Add context information for context-aware navigation
+        context="challenge"
+        challengeId={selectedChallengeId || ''}
       />
 
       {/* Challenge Start Confirmation Modal */}

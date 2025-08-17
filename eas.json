@@ -19,10 +19,20 @@
         "buildType": "apk"
       }
     },
+    "development-android": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
     "preview": {
       "distribution": "internal",
       "ios": {
         "buildConfiguration": "Release"
+      },
+      "android": {
+        "buildType": "apk"
       }
     },
     "production": {
@@ -32,6 +42,9 @@
       "ios": {
         "buildConfiguration": "Release",
         "scheme": "SourceViewTogether"
+      },
+      "android": {
+        "buildType": "app-bundle"
       }
     },
     "production-simulator": {

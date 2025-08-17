@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import logger from '@/utils/logger';
 import {
@@ -79,9 +79,58 @@ interface BookCompletion {
 }
 
 const Achievements = () => {
-  const { width } = useWindowDimensions();
-  const isLargeScreen = width >= 768;
   const { colors } = useAppSettings();
+  
+  // Guard clause to prevent rendering until colors is available
+  if (!colors || typeof colors !== 'object') {
+    return null;
+  }
+  
+  // Start with safe defaults and avoid useWindowDimensions initially
+  const [safeWidth, setSafeWidth] = useState(375);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+  const [dimensionsReady, setDimensionsReady] = useState(false);
+  
+  // Safely get window dimensions
+  const windowDimensions = useWindowDimensions();
+  
+  // Update safe width when dimensions become available
+  useEffect(() => {
+    try {
+      const { width } = windowDimensions;
+      if (width && typeof width === 'number' && width > 0 && !isNaN(width)) {
+        setSafeWidth(width);
+        setIsLargeScreen(width >= 768);
+        setDimensionsReady(true);
+      }
+    } catch (error) {
+      console.warn('Error processing window dimensions:', error);
+      // Keep default values
+    }
+  }, [windowDimensions]);
+
+  // Fixed card dimensions for consistent layout
+  
+  // Debug logging to verify width calculations
+  useEffect(() => {
+    // Only log if we have valid width and it's not the default
+    if (!safeWidth || safeWidth === 375 || typeof safeWidth !== 'number') return;
+    
+    const gridPaddingHorizontal = 32;
+    const gapBetweenCards = 16;
+    const availableWidth = safeWidth - gridPaddingHorizontal;
+    const calculatedCardWidth = Math.floor((availableWidth - gapBetweenCards) / 2);
+    const percentageWidth = Math.floor(safeWidth * 0.47);
+    
+    // Use console.log instead of any potential string rendering
+    console.log('Screen metrics:', {
+      safeWidth,
+      calculatedCardWidth,
+      percentageWidth,
+      availableWidth
+    });
+  }, [safeWidth]);
+  
   // Removed completedSegments dependency - now using pure SQLite data loading
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -114,12 +163,41 @@ const Achievements = () => {
   const [groupCompletions, setGroupCompletions] = useState(0);
   const [info, setInfo] = useState<{ title: string; description: string } | null>(null);
 
-  const styles = createStyles(isLargeScreen, colors);
+  // Only create styles when dimensions are ready
+  const styles = useMemo(() => {
+    if (!dimensionsReady || !safeWidth || safeWidth <= 0 || !colors) {
+      // Return fallback styles if dimensions aren't ready or colors is undefined
+      return createStyles(false, { 
+        background: '#FFFFFF',
+        text: '#000000',
+        primary: '#FF5733',
+        secondary: '#666666',
+        card: '#FFFFFF',
+        border: '#E5E5E5'
+      }, 375);
+    }
+    
+    try {
+      return createStyles(isLargeScreen, colors, safeWidth);
+    } catch (error) {
+      console.error('Error creating styles:', error);
+      // Return fallback styles
+      return createStyles(false, { 
+        background: '#FFFFFF',
+        text: '#000000',
+        primary: '#FF5733',
+        secondary: '#666666',
+        card: '#FFFFFF',
+        border: '#E5E5E5'
+      }, 375);
+    }
+  }, [dimensionsReady, isLargeScreen, colors, safeWidth]);
   const [showOTAll, setShowOTAll] = useState(false);
   const [showNTAll, setShowNTAll] = useState(false);
   const [showMoreRewards, setShowMoreRewards] = useState(false);
   const [showMorePlans, setShowMorePlans] = useState(false);
   const [showMoreEngagement, setShowMoreEngagement] = useState(false);
+
 
   // Bible books data
   const oldTestamentBooks: BookCompletion[] = [
@@ -718,42 +796,8 @@ const Achievements = () => {
   const featured = getFeaturedAchievement();
   const featuredMeta = featured ? featured.meta : null;
 
-  // First-run vs ongoing next achievements (always 6 tiles)
-  const FIRST_RUN_ACHIEVEMENTS: { id: string; title: string; description: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-    { id: 'first_story', title: 'First Story', description: 'Read your first Bible story', icon: 'book-outline' },
-    { id: 'first_group_story', title: 'First Group Story', description: 'Complete a story in group mode', icon: 'people-outline' },
-    { id: 'first_emoji', title: 'First Emoji', description: 'React with your first emoji', icon: 'happy-outline' },
-    { id: 'first_plan_story', title: 'First Plan Story', description: 'Complete your first plan story', icon: 'calendar-outline' },
-    { id: 'first_challenge_story', title: 'First Challenge Story', description: 'Complete your first challenge story', icon: 'flag-outline' },
-    { id: 'first_books', title: 'First Books', description: 'Finish an OT and an NT book', icon: 'library-outline' },
-  ];
-
-  const [isFirstRun, setIsFirstRun] = useState<boolean>(false);
-  useEffect(() => {
-    (async () => {
-      try {
-        const db = databaseManager.getDatabase();
-        const row = await db.getFirstAsync<{ value: string }>("SELECT value FROM app_state WHERE key = 'achievements.firstRunDone'");
-        setIsFirstRun(!(row?.value === '1'));
-      } catch {
-        setIsFirstRun(true);
-      }
-    })();
-  }, []);
-
-  const nextAchievements = () => {
-    if (isFirstRun) return FIRST_RUN_ACHIEVEMENTS.slice(0, 6);
-    // Ongoing: pick up to 6 closest-to-completion across categories
-    return achievements
-      .filter(a => !a.achieved && a.total > 0)
-      .map(a => ({ a, meta: getEffectiveProgress(a) }))
-      .sort((x, y) => y.meta.percent - x.meta.percent)
-      .slice(0, 6)
-      .map(x => x.a);
-  };
-
-  // Loading state
-  if (isLoading || Object.values(imageLoadingStates).some(loading => loading)) {
+  // Loading state - also check if dimensions are ready
+  if (isLoading || Object.values(imageLoadingStates).some(loading => loading) || !dimensionsReady) {
     return (
       <SafeAreaView style={[styles.container, styles.centerContent]}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -763,6 +807,140 @@ const Achievements = () => {
       </SafeAreaView>
     );
   }
+
+  // Render functions to ensure proper JSX return
+  const renderStatsSection = () => {
+    if (!stats || typeof stats.completedStories !== 'number') {
+      return null; // Return null instead of undefined or raw values
+    }
+
+    return (
+      <View style={styles.statsContainer}>
+        <StatCard
+          icon="book-outline"
+          title="Stories Read"
+          value={String(stats.completedStories)} // Always convert to string explicitly
+          backgroundColor="#4CAF50"
+        />
+        <StatCard
+          icon="flame-outline"
+          title="Current Streak"
+          value={String(stats.currentStreak)} // Always convert to string explicitly
+          backgroundColor="#7B68EE"
+        />
+        <StatCard
+          icon="trending-up-outline"
+          title="Complete Bible"
+          value={`${stats.completionPercentage}%`}
+          backgroundColor="#FF8C00"
+        />
+      </View>
+    );
+  };
+
+  const renderCompletedAchievements = () => {
+    const completedAchievements = achievements.filter(a => a.achieved).sort((a, b) => {
+      // Sort by achievement category priority and then by progress values
+      // This creates a more meaningful order than alphabetical
+      
+      // First, prioritize by category (milestones first, then streaks, etc.)
+      const categoryPriority = {
+        'milestones': 1,
+        'streaks': 2,
+        'testament': 3,
+        'engagement': 4,
+        'books': 5
+      };
+      
+      const aPriority = categoryPriority[a.category] || 6;
+      const bPriority = categoryPriority[b.category] || 6;
+      
+      if (aPriority !== bPriority) {
+        return aPriority - bPriority;
+      }
+      
+      // Within the same category, sort by progress values (higher progress first)
+      // This puts achievements that were "just completed" (progress = total) first
+      const aProgressRatio = a.total > 0 ? a.progress / a.total : 0;
+      const bProgressRatio = b.total > 0 ? b.progress / b.total : 0;
+      
+      if (aProgressRatio !== bProgressRatio) {
+        return bProgressRatio - aProgressRatio;
+      }
+      
+      // If progress ratios are equal, sort by total value (higher total = more significant achievement)
+      if (a.total !== b.total) {
+        return b.total - a.total;
+      }
+      
+      // Final fallback to alphabetical
+      return a.title.localeCompare(b.title);
+    });
+    
+    if (completedAchievements.length === 0) return null;
+    
+    return (
+      <View style={[styles.section, { marginTop: 4 }]}>
+        <View style={styles.sectionHeaderRow}>
+          <Text style={[styles.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>
+            Completed Achievements
+          </Text>
+        </View>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.completedAchievementsScrollContainer}
+          style={styles.completedAchievementsScroll}
+        >
+          {completedAchievements.map(a => (
+            <View key={a.id} style={styles.completedAchievementCard}>
+              <AchievementCard achievement={a} />
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
+  const renderStoryRewards = () => {
+    const list = achievements.filter(a => a.category === 'milestones' && !a.achieved);
+    
+    if (list.length === 0) return null;
+    
+    const firstTwo = list.slice(0, 2);
+    const rest = list.slice(2);
+    
+    return (
+      <View style={styles.section}>
+        <View style={styles.sectionHeaderRow}>
+          <Text style={[styles.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>
+            Story Rewards
+          </Text>
+          {rest.length > 0 && (
+            <TouchableOpacity 
+              onPress={() => setShowMoreRewards(!showMoreRewards)} 
+              activeOpacity={0.7} 
+              style={styles.moreIconOnly}
+            >
+              <Ionicons 
+                name={showMoreRewards ? 'chevron-up' : 'chevron-down'} 
+                size={20} 
+                color={colors.secondary} 
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+        <View style={styles.achievementGrid}>
+          {firstTwo.map(a => (
+            <AchievementCard key={a.id} achievement={a} />
+          ))}
+          {showMoreRewards && rest.map(a => (
+            <AchievementCard key={a.id} achievement={a} />
+          ))}
+        </View>
+      </View>
+    );
+  };
 
   // Error state
   if (error) {
@@ -815,7 +993,7 @@ const Achievements = () => {
         <Text style={styles.statCardTitle}>{title}</Text>
         <Text style={styles.statCardValue}>{value}</Text>
       </View>
-      </View>
+    </View>
   );
 
   const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
@@ -875,9 +1053,13 @@ const Achievements = () => {
               }
             ]} numberOfLines={1}> 
               {isCompleted ? 'Completed' : (() => {
-                const p = showStoryProgress ? progress : achievement.progress;
-                const t = showStoryProgress ? total : achievement.total;
-                return p && p > 0 ? `${p} of ${t}` : 'Not started';
+                if (showStoryProgress && progress > 0) {
+                  return `${progress} of ${total}`;
+                } else if (achievement.progress > 0) {
+                  return `${achievement.progress} of ${achievement.total}`;
+                } else {
+                  return 'Not started';
+                }
               })()}
             </Text>
           </View>
@@ -899,21 +1081,18 @@ const Achievements = () => {
     const isImageLoading = imageLoadingStates[book.bookCode];
     const progressData = bookProgress[book.bookCode] || { completed: 0, total: 0, percentage: 0 };
     
-    
-    
-    
     // Use real progress data
     const progress = Math.round(progressData.percentage);
     const progressColor = progress === 100 ? '#4CAF50' : progress > 0 ? '#FF9800' : colors.secondary;
     
     // Determine status text
-    const getStatusText = () => {
+    const getStatusText = (): string => {
       if (progress === 100) return 'Completed';
       if (progress > 0) return `${progressData.completed}/${progressData.total} stories`;
       return 'Not Started';
     };
     
-          return (
+    return (
         <View style={[styles.bookCard, progress === 100 && styles.completedBookCard]}>
           <View style={styles.bookHeader}>
             <View style={[styles.bookImageContainer, progress === 100 && styles.completedImageContainer]}>
@@ -984,7 +1163,7 @@ const Achievements = () => {
           <AchievementCard key={achievement.id} achievement={achievement} />
         ))}
       </View>
-              </View>
+    </View>
   );
 
   const renderBooksSection = (title: string, books: BookCompletion[], testament: 'OT' | 'NT') => {
@@ -1002,13 +1181,20 @@ const Achievements = () => {
     const expanded = testament === 'OT' ? showOTAll : showNTAll;
     const toggle = () => testament === 'OT' ? setShowOTAll(!showOTAll) : setShowNTAll(!showNTAll);
 
+    // Show first two cards (completed first, then in progress, then not started)
+    const visibleBooks = [...completed, ...inProgress, ...notStarted];
+    const firstTwo = visibleBooks.slice(0, 2);
+    const remaining = visibleBooks.slice(2);
+
     return (
       <View style={styles.section}>
         <View style={styles.sectionHeaderRow}>
           <Text style={[styles.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>{title}</Text>
-          <TouchableOpacity onPress={toggle} activeOpacity={0.7} style={styles.moreIconOnly}>
-            <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color={colors.secondary} />
-          </TouchableOpacity>
+          {remaining.length > 0 && (
+            <TouchableOpacity onPress={toggle} activeOpacity={0.7} style={styles.moreIconOnly}>
+              <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color={colors.secondary} />
+            </TouchableOpacity>
+          )}
         </View>
         <View style={styles.progressBarSection}>
           <ProgressBar 
@@ -1017,10 +1203,9 @@ const Achievements = () => {
             color={testament === 'OT' ? '#8D6E63' : '#607D8B'} 
           />
         </View>
-        <View style={styles.booksGrid}>
-          {completed.map(b => (<BookCard key={`c_${b.bookCode}`} book={b} />))}
-          {inProgress.map(b => (<BookCard key={`p_${b.bookCode}`} book={b} />))}
-          {expanded && notStarted.map(b => (<BookCard key={`n_${b.bookCode}`} book={b} />))}
+        <View style={styles.achievementGrid}> {/* Use same grid style as other sections */}
+          {firstTwo.map(b => <BookCard key={`first_${b.bookCode}`} book={b} />)}
+          {expanded && remaining.map(b => <BookCard key={`rest_${b.bookCode}`} book={b} />)}
         </View>
       </View>
     );
@@ -1049,82 +1234,13 @@ const Achievements = () => {
         </View>
 
         {/* Top Statistics */}
-        <View style={styles.statsContainer}>
-          <StatCard
-            icon="book-outline"
-            title="Stories Read"
-            value={stats.completedStories.toString()}
-            backgroundColor="#4CAF50"
-          />
-          <StatCard
-            icon="flame-outline"
-            title="Current Streak"
-            value={stats.currentStreak.toString()}
-            backgroundColor="#7B68EE"
-          />
-          <StatCard
-            icon="trending-up-outline"
-            title="Complete Bible"
-            value={`${stats.completionPercentage}%`}
-            backgroundColor="#FF8C00"
-          />
-        </View>
+        {renderStatsSection()}
 
-        {/* Next Achievements (First Achievements on first run) */}
-        <View style={[styles.section, { marginTop: 4 }]}>
-          <View style={styles.sectionHeaderRow}>
-            <Text style={[styles.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>Next Milestones</Text>
-          </View>
-          <View style={styles.achievementGrid}>
-            {(isFirstRun ? [] : nextAchievements()).map((a: any, idx: number) => (
-              <AchievementCard key={(a.id || 'next') + '_' + idx} achievement={a} />
-            ))}
-            {isFirstRun && FIRST_RUN_ACHIEVEMENTS.slice(0, 4).map((n, idx) => (
-              <AchievementCard
-                key={'first_' + idx}
-                achievement={{
-                  id: `first_${idx}`,
-                  title: n.title,
-                  description: n.description,
-                  icon: n.icon,
-                  color: colors.primary,
-                  progress: 0,
-                  total: 1,
-                  category: 'milestones',
-                  achieved: false,
-                } as any}
-              />
-            ))}
-          </View>
-        </View>
+        {/* Completed Achievements */}
+        {renderCompletedAchievements()}
 
         {/* Story Rewards (hide duplicates already shown above) */}
-        {(() => {
-          const list = achievements.filter(a => a.category === 'milestones');
-          // Collapsible: first two visible, rest in drop list
-          const firstTwo = list.slice(0, 2);
-          const rest = list.slice(2);
-          return (
-            <View style={styles.section}>
-              <View style={styles.sectionHeaderRow}>
-                <Text style={[styles.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>Story Rewards</Text>
-                {rest.length > 0 && (
-                  <TouchableOpacity onPress={() => setShowMoreRewards(!showMoreRewards)} activeOpacity={0.7} style={styles.moreIconOnly}>
-                    <Ionicons name={showMoreRewards ? 'chevron-up' : 'chevron-down'} size={20} color={colors.secondary} />
-                  </TouchableOpacity>
-                )}
-              </View>
-              <View style={styles.achievementGrid}>
-                {firstTwo.map(a => (
-                  <AchievementCard key={a.id} achievement={a} />
-                ))}
-                {showMoreRewards && rest.map(a => (
-                  <AchievementCard key={a.id} achievement={a} />
-                ))}
-              </View>
-            </View>
-          );
-        })()}
+        {renderStoryRewards()}
 
         {/* Plans & Challenges (replaces streaks) */}
         {(() => {
@@ -1218,8 +1334,11 @@ const Achievements = () => {
               achieved: stats.challengeStreak >= 30
             },
           ];
-          const firstTwo = items.slice(0, 2);
-          const rest = items.slice(2);
+          const firstTwo = items.filter(item => !item.achieved).slice(0, 2);
+          const rest = items.filter(item => !item.achieved).slice(2);
+          
+          if (firstTwo.length === 0) return null;
+          
           return (
             <View style={styles.section}>
               <View style={styles.sectionHeaderRow}>
@@ -1246,7 +1365,10 @@ const Achievements = () => {
 
         {/* Engagement */}
         {(() => {
-          const list = achievements.filter(a => a.category === 'engagement');
+          const list = achievements.filter(a => a.category === 'engagement' && !a.achieved);
+          
+          if (list.length === 0) return null;
+          
           const firstTwo = list.slice(0,2);
           const rest = list.slice(2);
           return (
@@ -1296,7 +1418,26 @@ const Achievements = () => {
   );
 };
 
-const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create({
+const createStyles = (isLargeScreen: boolean, colors: any, screenWidth: number) => {
+  // Ensure screenWidth is valid
+  let safeScreenWidth = screenWidth;
+  if (typeof screenWidth !== 'number' || screenWidth <= 0 || isNaN(screenWidth)) {
+    console.warn('Invalid screenWidth provided to createStyles:', screenWidth);
+    safeScreenWidth = 375;
+  }
+  
+  // Calculate the exact same card width used by the grid sections
+  const gridPaddingHorizontal = 32; // 16px per side for paddingHorizontal
+  const gapBetweenCards = 16; // Gap between cards in grid
+  
+  // Available width for 2 cards + 1 gap (matching achievementGrid layout)
+  const availableWidth = safeScreenWidth - gridPaddingHorizontal;
+  const widthPerCard = (availableWidth - gapBetweenCards) / 2; // Exact 50/50 split minus gap
+  
+  // Use floor to ensure integer pixels and match grid card behavior
+  const cardWidth = Math.floor(widthPerCard);
+  
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -1431,8 +1572,11 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   },
   achievementGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: 16,
-    gap: 0,
+    gap: 16,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
   },
   // Minimal next-achievements cards
   nextCard: {
@@ -1506,11 +1650,10 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     color: colors.secondary,
   },
   achievementCard: {
-    width: 160,
+    width: cardWidth, // Use calculated width for perfect match with horizontal scroll
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
-    marginRight: 16,
     shadowColor: colors.text,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.1,
@@ -1519,8 +1662,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     borderWidth: 1,
     borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
     backgroundColor: colors.card,
-    minHeight: 82,
-    flexShrink: 0,
+    minHeight: 120, // Consistent minimum height
   },
   completedCard: {
     borderWidth: 2,
@@ -1608,6 +1750,18 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   progressBarContainer: {
     marginTop: 'auto',
   },
+  completedAchievementsScroll: {
+    paddingHorizontal: 0,
+  },
+  completedAchievementsScrollContainer: {
+    paddingHorizontal: 16,
+    paddingRight: 32, // Extra padding at the end
+    gap: 16, // Use consistent gap system like grid
+  },
+  completedAchievementCard: {
+    width: cardWidth, // Use calculated width instead of fixed 180
+    marginRight: 0, // Remove margin since we're using gap
+  },
   progressBar: {
     height: 6,
     borderRadius: 3,
@@ -1624,11 +1778,13 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     flexWrap: 'wrap',
     paddingHorizontal: 16,
     gap: 16,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
   },
   
   // Enhanced Book Card Styles
   bookCard: {
-    width: '47%',
+    width: cardWidth, // Use calculated width for perfect consistency
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -1640,7 +1796,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     borderWidth: 1,
     borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
     backgroundColor: colors.card,
-    minHeight: 82,
+    minHeight: 120, // Match achievement cards
   },
   completedBookCard: {
     borderWidth: 2,
@@ -1808,6 +1964,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
   bottomSpacing: {
     height: 32,
   },
-});
+  });
+}
 
 export default Achievements;

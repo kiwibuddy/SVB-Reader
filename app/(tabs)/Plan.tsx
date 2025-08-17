@@ -483,6 +483,9 @@ const PlanScreen = () => {
 
   const handleSegmentComplete = useCallback(async (planId: string, segmentId: string) => {
     try {
+      // First, mark the segment as complete in the database with plan context
+      await markSegmentComplete(segmentId, 'plan', undefined, planId);
+      
       // Update local state immediately for UI responsiveness
       setPlanProgress(prev => {
         const currentProgress = prev[planId];
@@ -839,6 +842,7 @@ const PlanScreen = () => {
         storyId: selectedSegmentId,
         storyTitle: selectedSegmentTitle,
         scriptureReference: selectedSegmentRef,
+        planId: selectedPlanId || '', // Pass the plan ID for context
       }
     });
   };
@@ -864,6 +868,8 @@ const PlanScreen = () => {
         setSelectedSegmentId(enforcementData.nextSegmentId);
         setSelectedSegmentTitle(segmentData.title);
         setSelectedSegmentRef((segmentData as any).ref || '');
+        // Set the selected plan ID so the reading mode modal has the correct context
+        setSelectedPlanId(enforcementData.planId);
         setShowReadingModeModal(true);
       }
     } finally {
@@ -882,6 +888,10 @@ const PlanScreen = () => {
       setSelectedSegmentId(enforcementData.nextSegmentId);
       setSelectedSegmentTitle(segmentData.title);
       setSelectedSegmentRef((segmentData as any).ref || '');
+      // Ensure the selected plan ID is set for context
+      if (enforcementData.planId) {
+        setSelectedPlanId(enforcementData.planId);
+      }
       setShowReadingModeModal(true);
     }
   };
@@ -915,6 +925,8 @@ const PlanScreen = () => {
         setSelectedSegmentId(startConfirmationData.firstStory.segmentId);
         setSelectedSegmentTitle(startConfirmationData.firstStory.title);
         setSelectedSegmentRef(startConfirmationData.firstStory.reference);
+        // Set the selected plan ID so the reading mode modal has the correct context
+        setSelectedPlanId(startConfirmationData.planId);
         setShowReadingModeModal(true);
       }
     } finally {
@@ -1366,6 +1378,9 @@ const PlanScreen = () => {
         onIndividual={handleIndividualReading}
         onGroup={handleGroupReading}
         onCancel={handleCancelModal}
+        // Add context information for context-aware navigation
+        context="plan"
+        planId={selectedPlanId || ''}
       />
 
       {/* Plan Start Confirmation Modal */}

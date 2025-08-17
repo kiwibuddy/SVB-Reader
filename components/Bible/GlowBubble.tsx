@@ -101,7 +101,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: Bible
                   key={`${bIndex}-${index}`}
                   iIndex={`${bIndex}-${index}`}
                   inline={item}
-                  textColor={isDarkMode ? colors.light : colors.dark}
+                  textColor={isDarkMode ? '#F5F5F5' : '#2C2C2E'} // White for dark mode, dark gray for light mode
                 />
               );
             })}

@@ -1,6 +1,8 @@
 import { BibleLeaf } from "@/types";
-import logger from '@/utils/logger';import React from "react";
+import logger from '@/utils/logger';
+import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { useAppSettings } from '@/context/AppSettingsContext';
 
 interface BibleLeafProps {
   leaf: BibleLeaf;
@@ -10,6 +12,7 @@ interface BibleLeafProps {
 }
 
 const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textColor, leafIndex }) => {
+  const { isDarkMode } = useAppSettings();
   if (!leaf || typeof leaf !== 'object') {
     logger.warn(`Invalid leaf at index ${leafIndex}:`, leaf);
     return null;
@@ -60,7 +63,7 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
       <Text
         style={{
           ...{
-            color: textColor,
+            color: isDarkMode ? '#F5F5F5' : '#2C2C2E', // White for dark mode, dark gray for light mode
             fontSize: 12,
           },
         }}
@@ -77,7 +80,7 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
       key={leafIndex}
       style={{
         ...{
-          color: textColor,
+          color: isDarkMode ? '#F5F5F5' : '#2C2C2E', // White for dark mode, dark gray for light mode
           fontSize: 20,
           lineHeight: 36,
         },

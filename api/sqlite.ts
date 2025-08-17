@@ -824,6 +824,12 @@ export async function endPlan(planID: string): Promise<void> {
       DELETE FROM segment_completion 
       WHERE planID = ? AND completionType = 'plan'
     `, planID);
+    
+    // Reset all plan-specific progress
+    await db.runAsync(`
+      DELETE FROM reading_plan_progress 
+      WHERE planID = ?
+    `, planID);
   } catch (error) {
     logger.error("Error ending plan:", error);
   }
@@ -888,6 +894,12 @@ export async function endChallenge(challengeID: string): Promise<void> {
     await db.runAsync(`
       DELETE FROM segment_completion 
       WHERE challengeID = ? AND completionType = 'challenge'
+    `, challengeID);
+    
+    // Reset all challenge-specific progress
+    await db.runAsync(`
+      DELETE FROM reading_challenge_progress 
+      WHERE challengeID = ?
     `, challengeID);
   } catch (error) {
     logger.error("Error ending challenge:", error);

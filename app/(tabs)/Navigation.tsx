@@ -1320,6 +1320,8 @@ const Navigation = () => {
         onIndividual={handleIndividualReading}
         onGroup={handleGroupReading}
         onCancel={handleCancelModal}
+        // Add context information for context-aware navigation
+        context="main"
       />
       
       {/* Premium Filter Panel */}

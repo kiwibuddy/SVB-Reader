@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, Animated, Modal, ActivityIndicator, InteractionManager } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,7 +7,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { getCheckColor } from '@/scripts/getCheckColors';
 import { 
   getSegmentReadCount, 
-  getSegmentCompletionStatus, 
+  getSegmentCompletionStatus,
   markSegmentComplete,
   resetSegmentCompletion,
   recordGroupCompletion,
@@ -55,22 +55,102 @@ export default function CheckCircle({
   } = useSQLiteGlobalContext();
   // Removed completedSegments, activePlan, activeChallenges dependencies - now using pure SQLite
   
-  const [readCount, setReadCount] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [completionColor, setCompletionColor] = useState<string | null>(null);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const router = useRouter();
-  const params = useLocalSearchParams();
-  const { freshStart } = params;
-  const { colors } = useAppSettings();
-  const { currentSession, isHost, currentRole, generateCompletionQRCode } = useGroupReading();
-  const [showScanner, setShowScanner] = useState(false);
+  const [readCount, setReadCount] = useState(0);
   const [showCompletionBanner, setShowCompletionBanner] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [showHostQRModal, setShowHostQRModal] = useState(false);
   const [hostQRData, setHostQRData] = useState<string | null>(null);
   const [joinerScans, setJoinerScans] = useState<number>(0);
   const [isGenerating, setIsGenerating] = useState(false);
   
+  // Separate completion state for the modal - always starts as unchecked
+  const [modalCompletionState, setModalCompletionState] = useState(false);
+  
+  // Ref to track if modal should stay open
+  const modalShouldStayOpen = useRef(false);
+  
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const { freshStart } = params;
+  const { colors } = useAppSettings();
+  const { currentSession, isHost, currentRole, generateCompletionQRCode, refreshSessionFromDatabase } = useGroupReading();
+  
+  // Debug session state changes
+  useEffect(() => {
+
+  }, [currentSession]);
+
+  // Debug modal state changes
+  useEffect(() => {
+
+    
+    // If modal should stay open but was closed, reopen it
+    if (modalShouldStayOpen.current && !showHostQRModal && hostQRData) {
+      console.log('🎯 Modal was closed unexpectedly, reopening...');
+      setTimeout(() => {
+        if (modalShouldStayOpen.current && hostQRData) {
+          setShowHostQRModal(true);
+        }
+      }, 100);
+    }
+  }, [showHostQRModal, hostQRData]);
+
+  // Debug modal completion state changes
+  useEffect(() => {
+
+  }, [modalCompletionState, isCompleted]);
+  
+  // Reset modal ref when session changes
+  useEffect(() => {
+    if (!currentSession) {
+      modalShouldStayOpen.current = false;
+    }
+  }, [currentSession]);
+
+  // Prevent modal from being closed during generation
+  useEffect(() => {
+    if (isGenerating && showHostQRModal) {
+      modalShouldStayOpen.current = true;
+    }
+  }, [isGenerating, showHostQRModal]);
+
+  // Ensure modal stays open during generation
+  useEffect(() => {
+    if (isGenerating && modalShouldStayOpen.current && !showHostQRModal) {
+      console.log('🎯 Modal closed during generation, reopening...');
+      setShowHostQRModal(true);
+    }
+  }, [isGenerating, showHostQRModal]);
+
+  // Reset completion state when modal opens for new stories
+  useEffect(() => {
+    if (showHostQRModal && !isCompleted) {
+      // Ensure the modal shows the unchecked state for new stories
+      console.log('🎯 Modal opened for new story, ensuring unchecked state');
+      setModalCompletionState(false);
+    }
+  }, [showHostQRModal, isCompleted]);
+
+  // Reset modal completion state when modal opens
+  useEffect(() => {
+    if (showHostQRModal) {
+      // Always reset modal completion state to unchecked when modal opens
+      console.log('🎯 Modal opened, resetting completion state to unchecked');
+      setModalCompletionState(false);
+      console.log('🎯 Modal completion state reset to:', false);
+      
+      // Also ensure the modal shows a fresh state
+      if (hostQRData) {
+        console.log('🎯 Modal has QR data, ensuring fresh state');
+      } else {
+        console.log('🎯 Modal opening without QR data, will show loading state');
+      }
+    }
+  }, [showHostQRModal]);
+
   // Animation values for premium confetti celebration (more pieces for richer effect)
   const confettiAnimations = useRef<{
     translateY: Animated.Value;
@@ -96,7 +176,7 @@ export default function CheckCircle({
     const initializeSegment = async () => {
       // Set visual state immediately if reset is requested
       if (resetVisualStateOnMount) {
-        console.log(`🔄 [CheckCircle] Immediately resetting visual state for segment ${segmentId} ${freshStart ? '(Fresh Start)' : ''}`);
+  
         setIsCompleted(false);
         setCompletionColor(null);
       }
@@ -105,7 +185,7 @@ export default function CheckCircle({
       try {
         const count = await getSegmentReadCount(segmentId);
         setReadCount(count);
-        console.log(`📊 [CheckCircle] Read count loaded: ${count} for segment ${segmentId}`);
+
       } catch (error) {
         console.error('Error loading read count:', error);
       }
@@ -249,7 +329,10 @@ export default function CheckCircle({
       // Show loading overlay while session becomes ready and QR data is generated
       let generated = false;
       setHostQRData(null);
-      setShowHostQRModal(false);
+      // Only close modal if we're not already showing it (fresh start)
+      if (!showHostQRModal) {
+        setShowHostQRModal(false);
+      }
       setIsGenerating(true);
       
       try {
@@ -257,6 +340,21 @@ export default function CheckCircle({
         for (let attempt = 0; attempt < 10 && !generated; attempt++) {
           if (!currentSession || !currentSession.id || !currentSession.storyId) {
             console.log(`🔄 Waiting for session to be ready (attempt ${attempt + 1}/10)...`);
+            
+            // Try to restore session from storage if it's lost
+            if (attempt > 2 && !currentSession) {
+              console.log('🔄 Attempting to restore session from database...');
+              try {
+                // Use the context's refresh function to restore the session
+                await refreshSessionFromDatabase();
+                // Wait a bit for the context to update
+                await new Promise(r => setTimeout(r, 300));
+                continue;
+              } catch (restoreError) {
+                console.log('⚠️ Failed to restore session:', restoreError);
+              }
+            }
+            
             await new Promise(r => setTimeout(r, 300));
             continue;
           }
@@ -264,7 +362,14 @@ export default function CheckCircle({
           console.log('✅ Session ready, generating completion QR code...');
           const qrData = await generateCompletionQRCode();
           
+          // Double-check that the session is still valid after QR generation
+          if (!currentSession || !currentSession.id || !currentSession.storyId) {
+            console.log('⚠️ Session became invalid during QR generation, retrying...');
+            continue;
+          }
+          
           if (qrData && qrData.length > 0) {
+            console.log('🎯 Setting hostQRData:', qrData.substring(0, 50) + '...');
             setHostQRData(qrData);
             try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
             const count = await getGroupJoinerCompletionCount(currentSession.id, currentSession.storyId);
@@ -278,10 +383,26 @@ export default function CheckCircle({
         }
         
         if (generated) {
+          console.log('🎯 Setting modal to visible with QR data');
+          modalShouldStayOpen.current = true;
           setShowHostQRModal(true);
+          console.log('🎯 Modal state set to true');
+          // Add a small delay to ensure the state change propagates
+          await new Promise(resolve => setTimeout(resolve, 100));
         } else {
           console.error('🔴 Failed to generate QR code after 10 attempts');
-          await showErrorToast('Failed to generate QR code. Please try again.');
+          // Try to refresh the session one more time before showing error
+          try {
+            await refreshSessionFromDatabase();
+            if (currentSession) {
+              await showErrorToast('Session restored. Please try generating the QR code again.');
+            } else {
+              await showErrorToast('Failed to generate QR code. Please restart the group reading session.');
+            }
+          } catch (refreshError) {
+            console.error('🔴 Failed to refresh session:', refreshError);
+            await showErrorToast('Failed to generate QR code. Please restart the group reading session.');
+          }
         }
       } catch (e) {
         console.error('🔴 Error generating completion QR:', e);
@@ -391,14 +512,15 @@ export default function CheckCircle({
       <Pressable 
         onPress={handlePress} 
         style={({ pressed }) => [
-          styles.checkButton,
-          pressed && styles.checkButtonPressed
+          ((mode === 'group') || (mode === 'auto' && inGroupContext)) ? styles.qrGeneratorButton : styles.checkButton,
+          pressed && (((mode === 'group') || (mode === 'auto' && inGroupContext)) ? styles.qrGeneratorButtonPressed : styles.checkButtonPressed)
         ]}
         android_ripple={{ 
           color: 'rgba(0,0,0,0.1)', 
           radius: 32,
           borderless: true 
         }}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
         {((mode === 'group') || (mode === 'auto' && inGroupContext)) ? (
           <Ionicons
@@ -422,7 +544,7 @@ export default function CheckCircle({
         </Text>
       )}
       
-      {/* Confetti celebration overlay */}
+      {/* Confetti celebration overlay - MOVED HERE to appear above modal */}
       {showConfetti && (
         <View style={styles.confettiContainer}>
           {confettiAnimations.current!.map((anim, index) => (
@@ -465,7 +587,7 @@ export default function CheckCircle({
           <View style={styles.modalOverlay}>
             <View style={styles.joinerCard}>
               <Text style={[styles.hostCardTitle, { color: '#1E1E1E' }]}>Scan Completion QR</Text>
-              <Text style={[styles.hostSubtitle, { color: '#334155' }]}>Point your camera at the host’s code to record your completion.</Text>
+              <Text style={[styles.hostSubtitle, { color: '#334155' }]}>Point your camera at the host's code to record your completion.</Text>
               <View style={{ width: 220, height: 220, borderRadius: 12, overflow: 'hidden', backgroundColor: '#00000010' }}>
                 <QRCodeScanner
                   title=""
@@ -527,7 +649,7 @@ export default function CheckCircle({
                       timestamp: Date.now().toString()
                     }
                   });
-                } else if (params.context === 'today' || context === 'today') {
+                } else if (params.today || context === 'today') {
                   router.push({
                     pathname: '/(tabs)/Navigation',
                     params: { 
@@ -547,101 +669,236 @@ export default function CheckCircle({
                   });
                 }
               } catch (err) {
-                console.error('Error processing completion QR:', err);
-                await showErrorToast('Could not process code. Please try again.');
+                console.error('🔴 Joiner completion error:', err);
+                await showErrorToast('Failed to record completion. Please try again.');
                 setShowScanner(false);
               }
-                  }}
+            }}
                 />
               </View>
               <Pressable style={[styles.primaryCircle, { backgroundColor: '#007AFF', marginTop: 12 }]} onPress={() => setShowScanner(false)}>
-                <Ionicons name="close" size={24} color="#FFFFFF" />
+                <Ionicons name="checkmark" size={28} color="#FFFFFF" />
               </Pressable>
             </View>
           </View>
         </Modal>
       )}
 
-      {/* Host completion QR blue card */}
-      {showHostQRModal && hostQRData && (
-        <Modal visible transparent animationType="fade" onRequestClose={() => setShowHostQRModal(false)}>
+      {/* Host QR Code Modal */}
+      {showHostQRModal && (
+        <Modal 
+          visible={showHostQRModal} 
+          transparent 
+          animationType="fade" 
+          onRequestClose={() => {
+            console.log('🎯 Modal onRequestClose triggered');
+            if (modalShouldStayOpen.current) {
+              console.log('🎯 Modal should stay open, ignoring close request');
+              return;
+            }
+            console.log('🎯 Modal closing via onRequestClose');
+            setShowHostQRModal(false);
+          }}
+        >
           <View style={styles.modalOverlay}>
             <View style={styles.hostCard}>
               <Text style={styles.hostCardTitle}>Completion QR</Text>
-              {currentSession && (
-                <Text style={styles.hostSubtitle}>{joinerScans} of {currentSession.participants ? currentSession.participants.length - 1 : 0} scanned</Text>
-              )}
+              <Text style={styles.hostSubtitle}>{joinerScans} of {currentSession?.participants ? currentSession.participants.length - 1 : 0} scanned</Text>
               <View style={styles.qrWrapper}>
-                <QRCode value={hostQRData} size={180} color="#FFFFFF" backgroundColor="#42A5F5" />
+                {hostQRData ? (
+                  <QRCode value={hostQRData} size={180} color="#FFFFFF" backgroundColor="#42A5F5" />
+                ) : (
+                  <View style={[styles.qrWrapper, { justifyContent: 'center', alignItems: 'center' }]}>
+                    <ActivityIndicator size="large" color="#FFFFFF" />
+                    <Text style={{ color: '#FFFFFF', fontSize: 16, marginTop: 8 }}>Generating QR Code...</Text>
+                  </View>
+                )}
               </View>
               <Text style={styles.hostSubtitle}>Ask everyone to scan to record their completion.</Text>
               <Pressable
-                style={styles.primaryCircle}
+                style={[
+                  styles.primaryCircle,
+                  { 
+                    backgroundColor: modalCompletionState ? '#4CAF50' : '#FFFFFF',
+                    borderWidth: modalCompletionState ? 0 : 2,
+                    borderColor: modalCompletionState ? 'transparent' : '#007AFF'
+                  }
+                ]}
                 onPress={async () => {
                   try {
                     if (!currentSession) return;
-                    await markSegmentComplete(segmentId, context, planId, challengeId);
+                    
+                    
+                    
+                    // Determine the correct context for completion
+                    let completionContext: 'main' | 'plan' | 'challenge' | 'today' = 'main';
+                    let contextPlanId = planId;
+                    let contextChallengeId = challengeId;
+                    
+                    
+                    
+                    // Check if we're in a specific context from the current session or navigation
+                    if (currentSession.planId) {
+                      completionContext = 'plan';
+                      contextPlanId = currentSession.planId;
+                      console.log('📚 Using plan context from session:', contextPlanId);
+                    } else if (currentSession.challengeId) {
+                      completionContext = 'challenge';
+                      contextChallengeId = currentSession.challengeId;
+                      console.log('🏆 Using challenge context from session:', contextChallengeId);
+                    } else if (context === 'plan' && planId) {
+                      completionContext = 'plan';
+                      contextPlanId = planId;
+                      console.log('📚 Using plan context from props:', contextPlanId);
+                    } else if (context === 'challenge' && challengeId) {
+                      completionContext = 'challenge';
+                      contextChallengeId = challengeId;
+                      console.log('🏆 Using challenge context from props:', contextChallengeId);
+                    } else if (context === 'today') {
+                      completionContext = 'today';
+                      console.log('📅 Using today context');
+                    } else {
+                      console.log('📖 Using main context');
+                    }
+                    
+                    
+                    
+                    console.log('🎯 Host confirming completion for segment:', segmentId, 'in context:', completionContext);
+                    
+                    // Mark segment as complete in the appropriate context
+                    if (completionContext === 'plan' && contextPlanId) {
+                      console.log('📚 Marking segment complete in plan context:', contextPlanId);
+                      await markSegmentComplete(segmentId, 'plan', contextPlanId, contextChallengeId);
+                    } else if (completionContext === 'challenge' && contextChallengeId) {
+                      console.log('🏆 Marking segment complete in challenge context:', contextChallengeId);
+                      await markSegmentComplete(segmentId, 'challenge', contextPlanId, contextChallengeId);
+                    } else if (completionContext === 'today') {
+                      console.log('📅 Marking segment complete in today context');
+                      await markSegmentComplete(segmentId, 'today', contextPlanId, contextChallengeId);
+                    } else {
+                      console.log('📖 Marking segment complete in main context');
+                      await markSegmentComplete(segmentId, 'main', contextPlanId, contextChallengeId);
+                    }
+                    
+                    // Record group completion
+                    console.log('👥 Recording group completion');
                     await recordGroupCompletion(segmentId, currentSession.id, currentSession.storyId, currentRole || 'narrator', true);
+                    
+                    // Update last read segment
                     await updateLastReadSegment(segmentId);
+                    
+                    // Update both local state and modal state
                     setIsCompleted(true);
-                    // Don't close the modal here - let the host manually close it or generate again
+                    setModalCompletionState(true);
+                    
+                    console.log('✅ Segment marked as complete, showing celebration');
+                    
+                    // Show completion banner and confetti
                     setShowCompletionBanner(true);
                     try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
                     await startConfettiCelebration();
 
-                    // Host confirms completion but stays in QR modal to manage scanners
-                    // Navigation will happen when the host manually closes the modal
+                    // Close the QR modal after completion
+                    modalShouldStayOpen.current = false;
+                    setShowHostQRModal(false);
+                    
+                    console.log('�� Navigating back to context-aware screen');
+                    
+                    // Navigate back to the appropriate context-aware screen
+                    setTimeout(() => {
+                      // Check if session is still available for context
+                      if (!currentSession) {
+                
+                        // Fallback to props context if session is lost
+                        if (context === 'plan' && planId) {
+                          completionContext = 'plan';
+                          contextPlanId = planId;
+                        } else if (context === 'challenge' && challengeId) {
+                          completionContext = 'challenge';
+                          contextChallengeId = challengeId;
+                        } else if (context === 'today') {
+                          completionContext = 'today';
+                        } else {
+                          completionContext = 'main';
+                        }
+                
+                      }
+                      
+                      if (completionContext === 'plan' && contextPlanId) {
+                        console.log('📚 Navigating to Plan screen with expanded plan:', contextPlanId);
+                        const navigationParams = { 
+                          expandedPlan: contextPlanId,
+                          completedSegment: segmentId,
+                          timestamp: Date.now().toString()
+                        };
+                
+                        router.push({
+                          pathname: '/(tabs)/Plan',
+                          params: navigationParams
+                        });
+                      } else if (completionContext === 'challenge' && contextChallengeId) {
+                        console.log('🏆 Navigating to Reading-Challenges screen with expanded challenge:', contextChallengeId);
+                        const navigationParams = { 
+                          expandedChallenge: contextChallengeId,
+                          completedSegment: segmentId,
+                          timestamp: Date.now().toString()
+                        };
+                
+                        router.push({
+                          pathname: '/(tabs)/Reading-Challenges',
+                          params: navigationParams
+                        });
+                      } else if (completionContext === 'today') {
+                        console.log('📅 Navigating to Navigation screen for today context');
+                        const navigationParams = { 
+                          expandedBook: segmentId.substring(1, 4),
+                          completedSegment: segmentId,
+                          timestamp: Date.now().toString()
+                        };
+                
+                        router.push({
+                          pathname: '/(tabs)/Navigation',
+                          params: navigationParams
+                        });
+                      } else {
+                        console.log('📖 Navigating to Navigation screen for main context');
+                        const navigationParams = { 
+                          expandedBook: segmentId.substring(1, 4),
+                          completedSegment: segmentId,
+                          timestamp: Date.now().toString()
+                        };
+                
+                        // Default to main navigation
+                        router.push({
+                          pathname: '/(tabs)/Navigation',
+                          params: navigationParams
+                        });
+                      }
+                    }, 500); // Small delay to ensure completion banner is visible
+
                   } catch (err) {
-                    console.error('Host confirm error:', err);
+                    console.error('🔴 Host confirm error:', err);
+                    modalShouldStayOpen.current = false;
                     setShowHostQRModal(false);
                   }
                 }}
               >
-                <Ionicons name="checkmark" size={28} color="#FFFFFF" />
+                <Ionicons 
+                  name="checkmark" 
+                  size={28} 
+                  color={modalCompletionState ? "#FFFFFF" : "#007AFF"} 
+                />
               </Pressable>
-              <Pressable style={styles.dismissTextButton} onPress={async () => {
+              
+              {/* Button state indicator */}
+              <Text style={[styles.hostSubtitle, { marginTop: 8, fontSize: 12 }]}>
+                {modalCompletionState ? 'Story Completed!' : 'Tap to complete story'}
+              </Text>
+              <Pressable style={styles.dismissTextButton} onPress={() => {
+                console.log('🎯 Dismiss button pressed, closing modal');
+                modalShouldStayOpen.current = false;
                 setShowHostQRModal(false);
-                
-                // Navigate back to the appropriate screen after closing
-                if (isCompleted) {
-                  if (params.planId || planId) {
-                    router.push({
-                      pathname: '/(tabs)/Plan',
-                      params: { 
-                        expandedPlan: planId || params.planId,
-                        completedSegment: segmentId,
-                        timestamp: Date.now().toString()
-                      }
-                    });
-                  } else if (params.challengeId || challengeId) {
-                    router.push({
-                      pathname: '/(tabs)/Reading-Challenges',
-                      params: { 
-                        expandedChallenge: challengeId || params.challengeId,
-                        completedSegment: segmentId,
-                        timestamp: Date.now().toString()
-                      }
-                    });
-                  } else if (params.context === 'today' || context === 'today') {
-                    router.push({
-                      pathname: '/(tabs)/Navigation',
-                      params: { 
-                        expandedBook: segmentId.substring(1, 4),
-                        completedSegment: segmentId,
-                        timestamp: Date.now().toString()
-                      }
-                    });
-                  } else {
-                    router.push({
-                      pathname: '/(tabs)/Navigation',
-                      params: { 
-                        expandedBook: segmentId.substring(1, 4),
-                        completedSegment: segmentId,
-                        timestamp: Date.now().toString()
-                      }
-                    });
-                  }
-                }
+                // Don't trigger completion - just close the modal
               }}>
                 <Text style={styles.dismissText}>Close</Text>
               </Pressable>
@@ -655,22 +912,8 @@ export default function CheckCircle({
         backgroundColor={'#007AFF'}
       />
 
-      {/* Loading overlay for QR generation */}
-      {isGenerating && (
-        <Modal visible transparent animationType="fade">
-          <View style={styles.modalOverlay}>
-            <View style={[styles.hostCard, { padding: 40 }]}>
-              <ActivityIndicator size="large" color="#FFFFFF" />
-              <Text style={[styles.hostCardTitle, { marginTop: 16, marginBottom: 8 }]}>
-                Generating QR Code
-              </Text>
-              <Text style={styles.hostSubtitle}>
-                Please wait while we prepare your completion code...
-              </Text>
-            </View>
-          </View>
-        </Modal>
-      )}
+      {/* Loading overlay for QR generation - REMOVED */}
+      {/* Now handled within the main QR modal */}
     </View>
   );
 }
@@ -695,6 +938,20 @@ const styles = StyleSheet.create({
     opacity: 0.6, // Visual feedback when pressed on iOS
     transform: [{ scale: 0.95 }], // Slight scale down when pressed
   },
+  qrGeneratorButton: {
+    padding: 20, // Match the circle complete button padding
+    minWidth: 80, // Increased from 64 for better touch target
+    minHeight: 80, // Increased from 64 for better touch target
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 40, // Increased from 32 to match new size
+    // Add subtle background for visual feedback (useful for debugging tap area)
+    // backgroundColor: 'rgba(0,0,0,0.05)', // Uncomment to visualize tap area
+  },
+  qrGeneratorButtonPressed: {
+    opacity: 0.6, // Visual feedback when pressed on iOS
+    transform: [{ scale: 0.95 }], // Slight scale down when pressed
+  },
   readCount: {
     fontSize: 12,
     marginTop: 8,
@@ -712,6 +969,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
+    zIndex: 1000, // Ensure modal appears above other content
   },
   hostCard: {
     backgroundColor: '#42A5F5',
@@ -789,7 +1047,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     pointerEvents: 'none',
-    zIndex: 1000,
+    zIndex: 9999, // Much higher z-index to appear above modal
   },
   confettiPiece: {
     position: 'absolute',

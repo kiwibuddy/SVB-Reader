@@ -465,6 +465,8 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData, context = 'main', p
         onIndividual={handleIndividualReading}
         onGroup={handleGroupReading}
         onCancel={handleCancelModal}
+        // Add context information for context-aware navigation
+        context="main"
       />
     </View>
   );

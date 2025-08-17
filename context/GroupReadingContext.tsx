@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
-import logger from '@/utils/logger';import { AppState, AppStateStatus } from 'react-native';
+import logger from '@/utils/logger';
+import { AppState, AppStateStatus } from 'react-native';
 import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
 import { GroupSession, Participant, Role, GroupSessionState } from '@/types';
+import { databaseManager } from '@/api/database-manager';
 
 interface GroupReadingContextType {
   // State
@@ -29,6 +31,10 @@ interface GroupReadingContextType {
   generateSessionQRCode: (hostRole: Role) => Promise<string>;
   generateSessionQRCodeWithSession: (session: GroupSession, hostRole: Role) => Promise<string>;
   generateCompletionQRCode: () => Promise<string>;
+  
+  // Session Management
+  refreshSessionFromDatabase: () => Promise<void>;
+  isSessionValid: () => boolean;
 }
 
 type GroupReadingAction =
@@ -51,10 +57,84 @@ const initialState: GroupSessionState & { availableRoles: Role[] } = {
   availableRoles: [],
 };
 
+const SESSION_STORAGE_KEY = 'group_reading_session';
+
+// Session persistence functions using SQLite
+const saveSessionToDatabase = async (session: GroupSession | null): Promise<void> => {
+  try {
+    const db = databaseManager.getDatabase();
+    if (session) {
+      // Store session in a dedicated table for group reading sessions
+      await db.runAsync(`
+        INSERT OR REPLACE INTO group_reading_sessions (
+          sessionId, storyId, storyTitle, scriptureReference, 
+          hostDeviceId, hostUserName, hostRole, status, 
+          createdAt, expiresAt, planId, challengeId, sessionData
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        session.id,
+        session.storyId,
+        session.storyTitle,
+        session.scriptureReference,
+        session.hostDeviceId,
+        session.hostUserName,
+        session.participants[0]?.role || 'narrator',
+        session.status,
+        new Date(session.createdAt).toISOString(),
+        new Date(session.expiresAt).toISOString(),
+        session.planId || null,
+        session.challengeId || null,
+        JSON.stringify(session)
+      ]);
+      logger.info('💾 Session saved to database:', session.id);
+    } else {
+      // Clear all sessions
+      await db.runAsync('DELETE FROM group_reading_sessions');
+      logger.info('💾 All sessions cleared from database');
+    }
+  } catch (error) {
+    logger.error('🔴 Error saving session to database:', error);
+  }
+};
+
+const loadSessionFromDatabase = async (): Promise<GroupSession | null> => {
+  try {
+    const db = databaseManager.getDatabase();
+    const result = await db.getFirstAsync<{
+      sessionData: string;
+      expiresAt: string;
+    }>('SELECT sessionData, expiresAt FROM group_reading_sessions ORDER BY createdAt DESC LIMIT 1');
+    
+    if (result) {
+      const session = JSON.parse(result.sessionData);
+      // Check if session is still valid (not expired)
+      if (new Date(result.expiresAt) > new Date()) {
+        logger.info('💾 Session loaded from database:', session.id);
+        return session;
+      } else {
+        logger.info('⏰ Saved session expired, clearing...');
+        await db.runAsync('DELETE FROM group_reading_sessions WHERE expiresAt < ?', [new Date().toISOString()]);
+      }
+    }
+  } catch (error) {
+    logger.error('🔴 Error loading session from database:', error);
+  }
+  return null;
+};
+
 function groupReadingReducer(state: typeof initialState, action: GroupReadingAction): typeof initialState {
+  let newState: typeof initialState;
+  
   switch (action.type) {
     case 'SET_SESSION':
-      return { ...state, currentSession: action.payload };
+      newState = { ...state, currentSession: action.payload };
+      // Persist session to storage
+      if (action.payload) {
+        saveSessionToDatabase(action.payload);
+      } else {
+        saveSessionToDatabase(null);
+      }
+      return newState;
     case 'SET_HOST':
       return { ...state, isHost: action.payload };
     case 'SET_ROLE':
@@ -64,12 +144,17 @@ function groupReadingReducer(state: typeof initialState, action: GroupReadingAct
     case 'SET_AVAILABLE_ROLES':
       return { ...state, availableRoles: action.payload };
     case 'UPDATE_SESSION':
-      return {
+      newState = {
         ...state,
         currentSession: state.currentSession ? { ...state.currentSession, ...action.payload } : null,
       };
+      // Persist updated session to storage
+      if (newState.currentSession) {
+        saveSessionToDatabase(newState.currentSession);
+      }
+      return newState;
     case 'ADD_PARTICIPANT':
-      return {
+      newState = {
         ...state,
         currentSession: state.currentSession
           ? {
@@ -78,8 +163,13 @@ function groupReadingReducer(state: typeof initialState, action: GroupReadingAct
             }
           : null,
       };
+      // Persist updated session to storage
+      if (newState.currentSession) {
+        saveSessionToDatabase(newState.currentSession);
+      }
+      return newState;
     case 'REMOVE_PARTICIPANT':
-      return {
+      newState = {
         ...state,
         currentSession: state.currentSession
           ? {
@@ -88,8 +178,13 @@ function groupReadingReducer(state: typeof initialState, action: GroupReadingAct
             }
           : null,
       };
+      // Persist updated session to storage
+      if (newState.currentSession) {
+        saveSessionToDatabase(newState.currentSession);
+      }
+      return newState;
     case 'UPDATE_PARTICIPANT':
-      return {
+      newState = {
         ...state,
         currentSession: state.currentSession
           ? {
@@ -100,6 +195,11 @@ function groupReadingReducer(state: typeof initialState, action: GroupReadingAct
             }
           : null,
       };
+      // Persist updated session to storage
+      if (newState.currentSession) {
+        saveSessionToDatabase(newState.currentSession);
+      }
+      return newState;
     default:
       return state;
   }
@@ -109,6 +209,79 @@ const GroupReadingContext = createContext<GroupReadingContextType | undefined>(u
 
 export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(groupReadingReducer, initialState);
+
+  // Restore session from storage on mount
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const savedSession = await loadSessionFromDatabase();
+        if (savedSession) {
+          // Check if session is still valid (not expired)
+          if (savedSession.expiresAt > Date.now()) {
+            logger.info('🔄 Restoring saved session:', savedSession.id);
+            dispatch({ type: 'SET_SESSION', payload: savedSession });
+            // Restore other session-related state
+            const hostParticipant = savedSession.participants.find(p => p.deviceId === savedSession.hostDeviceId);
+            if (hostParticipant) {
+              dispatch({ type: 'SET_HOST', payload: true });
+              dispatch({ type: 'SET_ROLE', payload: hostParticipant.role });
+              dispatch({ type: 'SET_USER_NAME', payload: hostParticipant.userName });
+            }
+            // Set available roles
+            const availableRoles = qrCodeDiscoveryManager.getAvailableRoles(hostParticipant?.role || 'narrator');
+            dispatch({ type: 'SET_AVAILABLE_ROLES', payload: availableRoles });
+          } else {
+            logger.info('⏰ Saved session expired, clearing...');
+            await saveSessionToDatabase(null);
+          }
+        }
+      } catch (error) {
+        logger.error('🔴 Error restoring session:', error);
+      }
+    };
+
+    restoreSession();
+  }, []);
+
+  // Handle app state changes to maintain session
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active' && state.currentSession) {
+        logger.info('📱 App became active, session maintained:', state.currentSession.id);
+      } else if (nextAppState === 'background' && state.currentSession) {
+        logger.info('📱 App going to background, session saved:', state.currentSession.id);
+        // Session is automatically saved by the reducer
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription?.remove();
+  }, [state.currentSession]);
+
+  // Clean up expired sessions periodically
+  useEffect(() => {
+    const cleanupExpiredSessions = async () => {
+      try {
+        const db = databaseManager.getDatabase();
+        const now = new Date().toISOString();
+        const deletedCount = await db.runAsync(
+          'DELETE FROM group_reading_sessions WHERE expiresAt < ?',
+          [now]
+        );
+        if (deletedCount.changes > 0) {
+          logger.info(`🧹 Cleaned up ${deletedCount.changes} expired sessions`);
+        }
+      } catch (error) {
+        logger.error('🔴 Error cleaning up expired sessions:', error);
+      }
+    };
+
+    // Clean up on mount and every 5 minutes
+    cleanupExpiredSessions();
+    const interval = setInterval(cleanupExpiredSessions, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Real QR code implementations
   const startHostSession = useCallback(async (
@@ -313,6 +486,22 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
     });
   }, []);
 
+  const isSessionValid = useCallback((): boolean => {
+    if (!state.currentSession) return false;
+    
+    // Check if session has expired
+    if (state.currentSession.expiresAt < Date.now()) {
+      logger.info('⏰ Session expired, clearing...');
+      dispatch({ type: 'SET_SESSION', payload: null });
+      dispatch({ type: 'SET_HOST', payload: false });
+      dispatch({ type: 'SET_ROLE', payload: null });
+      dispatch({ type: 'SET_AVAILABLE_ROLES', payload: [] });
+      return false;
+    }
+    
+    return true;
+  }, [state.currentSession]);
+
   // QR Code Generation Functions
   const generateSessionQRCode = useCallback(async (hostRole: Role): Promise<string> => {
     // Get the current session from state directly to avoid stale closure issues
@@ -320,6 +509,11 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
     
     if (!currentSession) {
       throw new Error('No active session to generate QR code for');
+    }
+    
+    // Check if session is still valid
+    if (!isSessionValid()) {
+      throw new Error('Session has expired or is invalid');
     }
     
     try {
@@ -335,13 +529,13 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
         reference: currentSession.scriptureReference,
         story: currentSession.storyTitle
       });
-      logger.info('📱 Session QR code generated successfully');
+      logger.info('📱 QR code generated successfully');
       return qrCodeData;
     } catch (error) {
-      logger.error('🔴 Error generating session QR code:', error);
+      logger.error('🔴 Error generating QR code:', error);
       throw error;
     }
-  }, []);
+  }, [state.currentSession, isSessionValid]); // Add isSessionValid dependency
 
   // Generate QR code for a specific session (bypasses state timing issues)
   const generateSessionQRCodeWithSession = useCallback(async (session: GroupSession, hostRole: Role): Promise<string> => {
@@ -374,6 +568,11 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
       throw new Error('No active session to generate completion QR code for');
     }
     
+    // Check if session is still valid
+    if (!isSessionValid()) {
+      throw new Error('Session has expired or is invalid');
+    }
+    
     try {
       logger.info('✅ Generating completion QR code...');
       logger.info(`✅ Generating completion QR for session: ${currentSession.id}`);
@@ -384,6 +583,33 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
     } catch (error) {
       logger.error('🔴 Error generating completion QR code:', error);
       throw error;
+    }
+  }, [state.currentSession, isSessionValid]); // Add isSessionValid dependency
+
+  const refreshSessionFromDatabase = useCallback(async (): Promise<void> => {
+    try {
+      logger.info('🔄 Refreshing session from database...');
+      const session = await loadSessionFromDatabase();
+      if (session) {
+        logger.info('💾 Session refreshed from database:', session.id);
+        dispatch({ type: 'SET_SESSION', payload: session });
+        const hostParticipant = session.participants.find(p => p.deviceId === session.hostDeviceId);
+        if (hostParticipant) {
+          dispatch({ type: 'SET_HOST', payload: true });
+          dispatch({ type: 'SET_ROLE', payload: hostParticipant.role });
+          dispatch({ type: 'SET_USER_NAME', payload: hostParticipant.userName });
+        }
+        const availableRoles = qrCodeDiscoveryManager.getAvailableRoles(hostParticipant?.role || 'narrator');
+        dispatch({ type: 'SET_AVAILABLE_ROLES', payload: availableRoles });
+      } else {
+        logger.info('💾 No session found in database to refresh.');
+        dispatch({ type: 'SET_SESSION', payload: null });
+        dispatch({ type: 'SET_HOST', payload: false });
+        dispatch({ type: 'SET_ROLE', payload: null });
+        dispatch({ type: 'SET_AVAILABLE_ROLES', payload: [] });
+      }
+    } catch (error) {
+      logger.error('🔴 Error refreshing session from database:', error);
     }
   }, []);
 
@@ -406,6 +632,8 @@ export const GroupReadingProvider: React.FC<{ children: React.ReactNode }> = ({ 
     generateSessionQRCode,
     generateSessionQRCodeWithSession,
     generateCompletionQRCode,
+    refreshSessionFromDatabase,
+    isSessionValid,
   };
 
   return (

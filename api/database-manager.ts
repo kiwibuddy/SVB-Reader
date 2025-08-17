@@ -225,6 +225,26 @@ export class DatabaseManager {
           completedAt TEXT NOT NULL
         );
         CREATE INDEX IF NOT EXISTS idx_group_completion_segment ON group_segment_completion(segmentID);
+
+        -- Group reading sessions table (new)
+        CREATE TABLE IF NOT EXISTS group_reading_sessions (
+          id INTEGER PRIMARY KEY NOT NULL,
+          sessionId TEXT NOT NULL UNIQUE,
+          storyId TEXT NOT NULL,
+          storyTitle TEXT NOT NULL,
+          scriptureReference TEXT NOT NULL,
+          hostDeviceId TEXT NOT NULL,
+          hostUserName TEXT NOT NULL,
+          hostRole TEXT NOT NULL,
+          status TEXT NOT NULL,
+          createdAt TEXT NOT NULL,
+          expiresAt TEXT NOT NULL,
+          planId TEXT,
+          challengeId TEXT,
+          sessionData TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_group_sessions_id ON group_reading_sessions(sessionId);
+        CREATE INDEX IF NOT EXISTS idx_group_sessions_expires ON group_reading_sessions(expiresAt);
       `);
       
       // Populate the segments table with data from SegmentTitles.json

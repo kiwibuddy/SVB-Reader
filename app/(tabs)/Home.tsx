@@ -881,9 +881,9 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors, refr
   
   // --- TODAY'S READING: Daily Suggestion ---
   const today = new Date();
-  const dayOfYear = getDayOfYear(today); // 1-based
-  const dailySegmentId = (DailyStoryMap as string[])[(dayOfYear - 1) % DailyStoryMap.length];
-  const dailySegment = SegmentTitles[dailySegmentId as keyof typeof SegmentTitles];
+  const dayOfYear = getDayOfYear(today);
+  const dailySegmentId = (DailyStoryMap as string[])[(dayOfYear - 1) % (DailyStoryMap as string[]).length];
+  const dailySegment = dailySegmentId ? SegmentTitles[dailySegmentId as keyof typeof SegmentTitles] : null;
 
   const handleDailyStart = () => {
     if (!dailySegmentId) return;
@@ -2172,13 +2172,13 @@ const Home = () => {
   // Add useEffect to fetch streak data
   useEffect(() => {
     const loadStreakData = async () => {
-      console.log('🔄 [Home] Loading streak data...');
+      
       const [currentStreakValue, bestStreakValue] = await Promise.all([
         getCurrentStreak(),
         getBestStreak()
       ]);
       
-      console.log('📊 [Home] Loaded streak data - current:', currentStreakValue, 'best:', bestStreakValue);
+      
       setCurrentStreak(currentStreakValue);
       setBestStreak(bestStreakValue);
       
@@ -2202,7 +2202,7 @@ const Home = () => {
   
   // Debug refresh trigger changes
   useEffect(() => {
-    console.log('🔄 [Home] Refresh trigger changed:', refreshTrigger);
+    
   }, [refreshTrigger]);
 
   // Refresh streak data when returning to Home screen
@@ -2234,7 +2234,7 @@ const Home = () => {
       
       loadStreakData();
       // Also trigger insights refresh
-      console.log('🔄 [Home] Focus effect triggered - refreshing data');
+      
       setRefreshTrigger(prev => prev + 1);
     }, [])
   );
@@ -2561,9 +2561,10 @@ const Home = () => {
     // Check if this is today's reading
     const today = new Date();
     const dayOfYear = getDayOfYear(today);
-    const dailySegmentId = (DailyStoryMap as string[])[(dayOfYear - 1) % DailyStoryMap.length];
+    const dailyStoryMap = DailyStoryMap as string[];
+    const dailySegmentId = dailyStoryMap && dailyStoryMap.length > 0 ? dailyStoryMap[(dayOfYear - 1) % dailyStoryMap.length] : null;
     
-    if (selectedSegmentId === dailySegmentId) {
+    if (selectedSegmentId === dailySegmentId && dailySegmentId) {
       contextParams.context = 'today';
     }
     // If we have an active plan and this segment is part of that plan, pass plan context
@@ -2593,7 +2594,7 @@ const Home = () => {
     
     // Add listener for when user returns from reading to refresh streak
     setTimeout(() => {
-      console.log('🔄 [Home] Triggering refresh after reading completion');
+      
       setRefreshTrigger(prev => prev + 1);
     }, 2000);
   };
@@ -3103,6 +3104,49 @@ const Home = () => {
         onIndividual={handleIndividualReading}
         onGroup={handleGroupReading}
         onCancel={handleCancelModal}
+        // Add context information for context-aware navigation
+        context={(() => {
+          // Check if this is today's reading
+          const today = new Date();
+          const dayOfYear = getDayOfYear(today);
+          const dailyStoryMap = DailyStoryMap as string[];
+          const dailySegmentId = dailyStoryMap && dailyStoryMap.length > 0 ? dailyStoryMap[(dayOfYear - 1) % dailyStoryMap.length] : null;
+          
+          if (selectedSegmentId === dailySegmentId && dailySegmentId) {
+            return 'today';
+          }
+          // If we have an active plan and this segment is part of that plan, pass plan context
+          else if (activePlan && planProgress?.nextSegmentId === selectedSegmentId) {
+            return 'plan';
+          }
+          // If we have active challenges and this segment is part of any challenge, pass challenge context
+          else if (Object.keys(activeChallenges).length > 0) {
+            for (const [challengeId] of Object.entries(activeChallenges)) {
+              const challengeProgress = challengeProgresses[challengeId];
+              if (challengeProgress?.nextSegmentId === selectedSegmentId) {
+                return 'challenge';
+              }
+            }
+          }
+          return 'main';
+        })()}
+        planId={(() => {
+          if (activePlan && planProgress?.nextSegmentId === selectedSegmentId) {
+            return activePlan.planId;
+          }
+          return undefined;
+        })()}
+        challengeId={(() => {
+          if (Object.keys(activeChallenges).length > 0) {
+            for (const [challengeId] of Object.entries(activeChallenges)) {
+              const challengeProgress = challengeProgresses[challengeId];
+              if (challengeProgress?.nextSegmentId === selectedSegmentId) {
+                return challengeId;
+              }
+            }
+          }
+          return undefined;
+        })()}
       />
 
       {/* QR Code Scanner Modal - migrated to expo-camera via `components/QRCodeScanner.tsx` */}

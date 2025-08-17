@@ -1,7 +1,9 @@
 import React from "react";
-import logger from '@/utils/logger';import { View, Text, StyleSheet } from "react-native";
+import logger from '@/utils/logger';
+import { View, Text, StyleSheet } from "react-native";
 import BibleLeafComponent from "./Leaf";
 import { BibleInline } from "@/types";
+import { useAppSettings } from '@/context/AppSettingsContext';
 
 interface BibleInlineProps {
   inline: BibleInline;
@@ -53,9 +55,10 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
   }
   
   // For regular elements, wrap in Text component
+  const { isDarkMode } = useAppSettings();
   return (
     <View style={inlineStyle}>
-      <Text style={{lineHeight: 36, fontSize: 20}}>
+      <Text style={{lineHeight: 36, fontSize: 20, color: isDarkMode ? '#F5F5F5' : '#2C2C2E'}}>
         {renderedChildren}
       </Text>
     </View>
