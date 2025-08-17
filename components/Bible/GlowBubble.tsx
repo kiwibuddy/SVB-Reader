@@ -21,16 +21,39 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: Bible
   const { isDarkMode } = useAppSettings();
   const colors = getColors(color);
   const glowAnim = useRef(new Animated.Value(0)).current;
+  
+  // Track animation for cleanup
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
-    Animated.loop(
-      Animated.timing(glowAnim, {
-        toValue: 1,
-        duration: 12000, // Doubled from 6000ms to 12000ms (12 seconds)
-        useNativeDriver: false,
-      })
-    ).start();
-  }, [isDarkMode]); // Re-run animation when dark mode changes
+    // Only run animation if glowing is enabled
+    if (!isGlowing) {
+      glowAnim.setValue(0);
+      return;
+    }
+
+    // Create optimized animation configuration
+    const animationConfig = {
+      toValue: 1,
+      duration: 4000, // Reduced from 12000ms to 4000ms for better performance
+      useNativeDriver: Platform.OS === 'ios' ? false : true, // iOS keeps false, Android uses true
+    };
+
+    // Start the animation loop
+    animationRef.current = Animated.loop(
+      Animated.timing(glowAnim, animationConfig)
+    );
+    
+    animationRef.current.start();
+
+    // Cleanup function to stop animation when component unmounts or isGlowing changes
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.stop();
+        animationRef.current = null;
+      }
+    };
+  }, [isGlowing, isDarkMode]); // Only re-run when isGlowing or isDarkMode changes
 
   // Create adaptive glow colors based on dark mode
   const glowColor = glowAnim.interpolate({
