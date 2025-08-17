@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import logger from '@/utils/logger';import { View, Pressable, Text, StyleSheet, Modal, Platform, TouchableOpacity, useWindowDimensions } from 'react-native';
+import logger from '@/utils/logger';
+import { View, Pressable, Text, StyleSheet, Modal, Platform, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { LongPressGestureHandler, State, Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 import { BibleBlock } from '@/types';
@@ -25,6 +26,27 @@ const POSITIONING_CONSTANTS = {
   MIN_SCREEN_HEIGHT: 400, // Minimum expected screen height
 } as const;
 
+// Platform-specific gesture configuration
+const getPlatformGestureConfig = () => {
+  if (Platform.OS === 'ios') {
+    // iOS: Keep current optimized configuration
+    return {
+      doubleTapDelay: 200,        // iOS: Fast double tap recognition
+      longPressDuration: 500,     // iOS: Standard long press duration
+      maxDistance: 10,            // iOS: Tight gesture recognition
+      gestureTimeout: 1000,       // iOS: Standard timeout
+    };
+  } else {
+    // Android: Use more forgiving configuration for better compatibility
+    return {
+      doubleTapDelay: 300,        // Android: Slightly longer for better recognition
+      longPressDuration: 600,     // Android: Longer duration for reliability
+      maxDistance: 20,            // Android: More forgiving touch area
+      gestureTimeout: 1500,       // Android: Longer timeout for stability
+    };
+  }
+};
+
 const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   block,
   blockIndex,
@@ -46,6 +68,9 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   
   // CRITICAL: Track gesture state to prevent multiple simultaneous gestures
   const gestureInProgressRef = useRef(false);
+  
+  // Platform-specific gesture configuration
+  const gestureConfig = getPlatformGestureConfig();
 
   const blockId = `${blockIndex}-${block.source?.sourceName || 'unknown'}`;
 
@@ -268,22 +293,50 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     }
   }, [getCenteredPosition, onLongPress, block, blockIndex]);
 
-  // CRITICAL: Create double tap gesture with enhanced error handling
+  // CRITICAL: Create double tap gesture with platform-specific optimization
   const doubleTapGesture = Gesture.Tap()
     .numberOfTaps(2)
+    .maxDistance(gestureConfig.maxDistance)
     .onStart((event) => {
       handleGestureTrigger(event, 'doubleTap');
     });
 
-  // CRITICAL: Create long press gesture with enhanced error handling
+  // CRITICAL: Create long press gesture with platform-specific optimization
   const longPressGesture = Gesture.LongPress()
-    .minDuration(500)
+    .minDuration(gestureConfig.longPressDuration)
+    .maxDistance(gestureConfig.maxDistance)
     .onStart((event) => {
       handleGestureTrigger(event, 'longPress');
     });
 
-  // CRITICAL: Combine gestures
+  // CRITICAL: Combine gestures with platform-specific timeout
   const gesture = Gesture.Race(doubleTapGesture, longPressGesture);
+
+  // CRITICAL: Reset gesture state after timeout
+  useEffect(() => {
+    if (gestureInProgressRef.current) {
+      const timeout = setTimeout(() => {
+        if (isMountedRef.current) {
+          gestureInProgressRef.current = false;
+        }
+      }, gestureConfig.gestureTimeout);
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [gestureInProgressRef.current, gestureConfig.gestureTimeout]);
+
+  // CRITICAL: Platform-specific gesture fallback for Android
+  const handleAndroidFallback = useCallback(() => {
+    if (Platform.OS === 'android' && !showPicker) {
+      // Android fallback: Show emoji picker at center of screen
+      const centerPosition = {
+        x: (screenWidth - POSITIONING_CONSTANTS.DEFAULT_PICKER_WIDTH) / 2,
+        y: screenHeight / 2
+      };
+      setPickerPosition(centerPosition);
+      setShowPicker(true);
+    }
+  }, [Platform.OS, showPicker, screenWidth, screenHeight]);
 
   return (
     <View style={styles.container}>
@@ -294,6 +347,17 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
           {children}
         </TouchableOpacity>
       </GestureDetector>
+      
+      {/* Android fallback: Manual emoji trigger button */}
+      {Platform.OS === 'android' && (
+        <TouchableOpacity
+          style={styles.androidFallbackButton}
+          onPress={handleAndroidFallback}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.androidFallbackText}>😊</Text>
+        </TouchableOpacity>
+      )}
       
       {/* CRITICAL: Emoji positioned using the working version's logic */}
       {existingEmoji && (
@@ -350,6 +414,25 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
+  },
+  androidFallbackButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  androidFallbackText: {
+    fontSize: 24,
   },
 });
 
