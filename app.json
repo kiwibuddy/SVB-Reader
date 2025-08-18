@@ -103,10 +103,7 @@
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 10000,
-      "url": "https://u.expo.dev/4b89909c-ac28-498a-9e46-5591000b8616",
-      "requestHeaders": {
-        "expo-platform": "ios"
-      }
+      "url": "https://u.expo.dev/4b89909c-ac28-498a-9e46-5591000b8616"
     }
   }
 }

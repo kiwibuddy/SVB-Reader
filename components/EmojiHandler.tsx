@@ -325,19 +325,6 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     }
   }, [gestureInProgressRef.current, gestureConfig.gestureTimeout]);
 
-  // CRITICAL: Platform-specific gesture fallback for Android
-  const handleAndroidFallback = useCallback(() => {
-    if (Platform.OS === 'android' && !showPicker) {
-      // Android fallback: Show emoji picker at center of screen
-      const centerPosition = {
-        x: (screenWidth - POSITIONING_CONSTANTS.DEFAULT_PICKER_WIDTH) / 2,
-        y: screenHeight / 2
-      };
-      setPickerPosition(centerPosition);
-      setShowPicker(true);
-    }
-  }, [Platform.OS, showPicker, screenWidth, screenHeight]);
-
   return (
     <View style={styles.container}>
       <GestureDetector gesture={gesture}>
@@ -347,17 +334,6 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
           {children}
         </TouchableOpacity>
       </GestureDetector>
-      
-      {/* Android fallback: Manual emoji trigger button */}
-      {Platform.OS === 'android' && (
-        <TouchableOpacity
-          style={styles.androidFallbackButton}
-          onPress={handleAndroidFallback}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.androidFallbackText}>😊</Text>
-        </TouchableOpacity>
-      )}
       
       {/* CRITICAL: Emoji positioned using the working version's logic */}
       {existingEmoji && (
@@ -414,25 +390,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
-  },
-  androidFallbackButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-  },
-  androidFallbackText: {
-    fontSize: 24,
   },
 });
 

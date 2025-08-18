@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions, Platform } from "react-native";
-import { useRouter, usePathname } from "expo-router";
+import { useRouter, usePathname, useFocusEffect } from "expo-router";
 import { Ionicons } from '@expo/vector-icons'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppSettings } from '@/context/AppSettingsContext';
@@ -27,6 +27,49 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   const isIPad = Platform.OS === 'ios' && (Platform as any).isPad === true;
   // Hide navigation on large screens or in landscape mode (except iPad)
   const shouldHideNavigation = (!isIPad) && (isLargeScreen || (isLandscape && height < 500));
+
+  // Enhanced navigation visibility logic
+  const shouldShowNavigation = React.useMemo(() => {
+    if (isHome) return false;
+    
+    // Always show on main tab screens (regardless of parameters)
+    const isTabScreen = pathname.includes('/(tabs)/') || 
+                       pathname === '/Home' || 
+                       pathname === '/Navigation' || 
+                       pathname === '/Reading-emoji' || 
+                       pathname === '/Reading-Challenges' || 
+                       pathname === '/Plan' || 
+                       pathname === '/Achievements';
+    
+    // Show on segment pages
+    const isSegmentPage = pathname.includes('segment') || 
+                         pathname.startsWith('/S') || 
+                         pathname.startsWith('/I');
+    
+    // Show on any screen that's not the index
+    const isNotIndex = pathname !== "/" && pathname !== "/index";
+    
+    return isTabScreen || isSegmentPage || isNotIndex;
+  }, [pathname, isHome]);
+
+  // Navigation restoration on focus (ensures navigation is visible after story completion)
+  useFocusEffect(
+    React.useCallback(() => {
+      if (shouldShowNavigation && !isHome) {
+        // Force navigation to be visible when screen comes into focus
+        isVisible.setValue(1);
+        
+        // Additional safety check with delay
+        const timer = setTimeout(() => {
+          if (shouldShowNavigation) {
+            isVisible.setValue(1);
+          }
+        }, 150);
+        
+        return () => clearTimeout(timer);
+      }
+    }, [shouldShowNavigation, isHome, isVisible])
+  );
 
   const handleScroll = React.useCallback((event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
@@ -61,16 +104,29 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     lastScrollY.current = currentOffset;
   }, [isVisible]);
 
-  // Pass this handleScroll function to each ScrollView in your app
+  // Enhanced navigation visibility management
   React.useEffect(() => {
     if (isHome) return;
     
-    // Ensure navigation is visible on main tab pages and segment pages
-    if (pathname.includes('segment') || pathname.startsWith('/S') || pathname.startsWith('/I') ||
-        pathname === '/Plan' || pathname === '/Reading-Challenges' || pathname === '/Navigation' ||
-        pathname === '/Home' || pathname === '/Reading-emoji' || pathname === '/Achievements') {
+    // Always ensure navigation is visible on tab screens and after navigation
+    if (shouldShowNavigation) {
+      // Force navigation to be visible
       isVisible.setValue(1);
+      
+      // Add a small delay to ensure navigation is restored after completion
+      const timer = setTimeout(() => {
+        if (shouldShowNavigation) {
+          isVisible.setValue(1);
+        }
+      }, 100);
+      
+      return () => clearTimeout(timer);
     }
+  }, [pathname, isHome, shouldShowNavigation, isVisible]);
+
+  // Pass this handleScroll function to each ScrollView in your app
+  React.useEffect(() => {
+    if (isHome) return;
     
     // You can expose the handleScroll function to other components
     if (global) {
@@ -82,10 +138,10 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
         delete (global as any).handleBottomNavScroll;
       }
     };
-  }, [isHome, pathname, handleScroll, isVisible]);
+  }, [isHome, handleScroll]);
 
-  // Don't render the navigation on the index screen or large screens
-  if (pathname === "/" || pathname === "/index" || shouldHideNavigation) {
+  // Don't render the navigation if it should be hidden
+  if (!shouldShowNavigation || shouldHideNavigation) {
     return null;
   }
 

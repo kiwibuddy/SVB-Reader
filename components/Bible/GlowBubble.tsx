@@ -36,7 +36,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: Bible
     const animationConfig = {
       toValue: 1,
       duration: 4000, // Reduced from 12000ms to 4000ms for better performance
-      useNativeDriver: Platform.OS === 'ios' ? false : true, // iOS keeps false, Android uses true
+      useNativeDriver: false, // Fixed: Use false for both platforms to support shadow properties
     };
 
     // Start the animation loop

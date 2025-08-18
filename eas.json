@@ -47,6 +47,12 @@
         "buildType": "app-bundle"
       }
     },
+    "production-android": {
+      "extends": "production",
+      "android": {
+        "buildType": "app-bundle"
+      }
+    },
     "production-simulator": {
       "extends": "production",
       "ios": {
@@ -60,6 +66,12 @@
       "ios": {
         "appleId": "nathanieldbaldock@gmail.com",
         "appleTeamId": "J9GABH822W"
+      }
+    },
+    "production-android": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
       }
     }
   }
