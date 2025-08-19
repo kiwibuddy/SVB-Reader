@@ -16,6 +16,7 @@ import { useAppSettings } from '@/context/AppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { SupportedLanguage } from '@/context/AppSettingsContext';
 import { Animated } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -36,6 +37,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
     setLanguage 
   } = useAppSettings();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   // MVP: Only English supported for launch
   const languages: { label: string; value: SupportedLanguage }[] = [
@@ -60,18 +62,24 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
 
   const modalStyles = StyleSheet.create({
     overlay: {
-      flex: 1,
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
       backgroundColor: colors.background + 'CC',
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingHorizontal: 16,
+      zIndex: 100000,
     },
     modalContent: {
-      backgroundColor: colors.card,
-      borderRadius: 20,
-      padding: 20,
-      width: '100%',
-      marginHorizontal: 0,
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: colors.background,
+      paddingTop: Math.max(insets.top + 20, 20),
+      paddingHorizontal: 20,
+      paddingBottom: Math.max(insets.bottom + 20, 20),
     },
     title: {
       fontSize: sizes.title,
@@ -180,7 +188,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
           }
         ]}
       >
-        <Pressable style={{width: '100%'}} onPress={onClose}>
+        <Pressable style={{width: '100%', height: '100%'}} onPress={onClose}>
           <View style={modalStyles.modalContent}>
             <Text style={modalStyles.title}>Settings</Text>
             

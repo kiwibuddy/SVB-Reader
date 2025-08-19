@@ -12,7 +12,9 @@ import {
   FlatList,
   RefreshControl,
   Modal,
-  ScrollView
+  ScrollView,
+  Animated,
+  Pressable
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import logger from '@/utils/logger';
@@ -27,6 +29,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import SearchResults from '@/components/navigation/SearchResults';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { getSegmentCompletionStatus } from "@/api/sqlite";
+import { databaseManager } from "@/api/database-manager";
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BibleData from '@/assets/data/newBibleNLT1.json';
 import TopSpeakersData from '@/assets/data/TopSpeakers.json';
@@ -478,6 +481,70 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     bottom: 0,
     zIndex: -1,
   },
+
+  // Modal styles (matching Reading-emoji.tsx design)
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    backgroundColor: colors.card,
+    borderRadius: 20,
+    padding: 24,
+    marginHorizontal: 32,
+    maxWidth: 400,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    color: colors.secondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonPrimary: {
+    backgroundColor: '#007AFF',
+  },
+  modalButtonSecondary: {
+    backgroundColor: colors.border,
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+  },
+  modalButtonTextSecondary: {
+    color: colors.text,
+  },
 });
 
 // Update AccordionItem type to accept string for djhBook
@@ -595,6 +662,19 @@ const Navigation = () => {
 
   // Add search-related state variables
   const [targetVerse, setTargetVerse] = useState<number | null>(null);
+
+  // Add new state for verse navigation modal
+  const [showVerseNavigationModal, setShowVerseNavigationModal] = useState(false);
+  const [verseNavigationData, setVerseNavigationData] = useState<{
+    book: string;
+    chapter: number;
+    verse: number;
+    segmentId: string;
+  } | null>(null);
+
+  // Add animation values for the modal
+  const modalScaleAnim = useRef(new Animated.Value(0)).current;
+  const modalOpacityAnim = useRef(new Animated.Value(0)).current;
 
   // Helper functions for filtering
   const getBookCategory = (bookKey: string) => {
@@ -771,11 +851,98 @@ const Navigation = () => {
       if (bookKey) {
         const segmentId = findSegmentForVerse(bookKey, parsedRef.chapter, parsedRef.verse);
         if (segmentId) {
-          handleSegmentSelect(segmentId);
-          setTargetVerse(parsedRef.verse);
+          // Set modal data and show modal instead of direct navigation
+          setVerseNavigationData({
+            book: parsedRef.book,
+            chapter: parsedRef.chapter,
+            verse: parsedRef.verse,
+            segmentId
+          });
+          setShowVerseNavigationModal(true);
+          
+          // Animate modal entrance
+          Animated.parallel([
+            Animated.spring(modalScaleAnim, {
+              toValue: 1,
+              tension: 100,
+              friction: 8,
+              useNativeDriver: true,
+            }),
+            Animated.timing(modalOpacityAnim, {
+              toValue: 1,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+          ]).start();
         }
       }
     }
+  };
+
+  // Add new function to handle actual navigation from modal
+  const handleNavigateToVerse = () => {
+    if (!verseNavigationData) return;
+    
+    // Animate modal exit
+    Animated.parallel([
+      Animated.spring(modalScaleAnim, {
+        toValue: 0,
+        tension: 100,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.timing(modalOpacityAnim, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowVerseNavigationModal(false);
+      setVerseNavigationData(null);
+      // Reset animations
+      modalScaleAnim.setValue(0);
+      modalOpacityAnim.setValue(0);
+      
+      // Navigate directly to the segment with verse information
+      const segment = SegmentTitles[verseNavigationData.segmentId as keyof typeof SegmentTitles];
+      
+      const params: any = {
+        segment: `ENG-NLT-${verseNavigationData.segmentId}`,
+        book: segment?.book[0] || '',
+        verse: verseNavigationData.verse.toString(),
+        chapter: verseNavigationData.chapter.toString(),
+        freshStart: Date.now().toString()
+      };
+      
+      router.push({
+        pathname: "/[segment]",
+        params
+      });
+    });
+  };
+
+  // Add new function to close modal
+  const handleCloseVerseModal = () => {
+    // Animate modal exit
+    Animated.parallel([
+      Animated.spring(modalScaleAnim, {
+        toValue: 0,
+        tension: 100,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.timing(modalOpacityAnim, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowVerseNavigationModal(false);
+      setVerseNavigationData(null);
+      // Reset animations
+      modalScaleAnim.setValue(0);
+      modalOpacityAnim.setValue(0);
+    });
   };
 
   // Enhanced filtered data with verse search and advanced filters
@@ -964,14 +1131,24 @@ const Navigation = () => {
   // Fetch completion status for all segments on mount
   useEffect(() => {
     const fetchCompletion = async () => {
+      // Check if database is ready before making any calls
+      if (!databaseManager.isReady()) {
+        console.log('⏳ Database not ready, skipping completion status fetch');
+        return;
+      }
+
       const completed: {[key: string]: boolean} = {};
       await Promise.all(
         data.map(async book => {
           await Promise.all(
             book.segments.map(async segmentId => {
-              const status = await getSegmentCompletionStatus(String(segmentId), 'main');
-              if (status.isCompleted) {
-                completed[segmentId] = true;
+              try {
+                const status = await getSegmentCompletionStatus(String(segmentId), 'main');
+                if (status.isCompleted) {
+                  completed[segmentId] = true;
+                }
+              } catch (error) {
+                console.warn(`Warning: Could not get completion status for ${segmentId}:`, error);
               }
             })
           );
@@ -979,22 +1156,43 @@ const Navigation = () => {
       );
       setCompletedSegmentIds(completed);
     };
-    fetchCompletion();
+
+    // Try to fetch completion status, with retry if database isn't ready
+    const attemptFetch = async () => {
+      if (databaseManager.isReady()) {
+        await fetchCompletion();
+      } else {
+        // Wait a bit and try again
+        setTimeout(attemptFetch, 1000);
+      }
+    };
+
+    attemptFetch();
   }, []); // Only run once on mount
 
   // Refresh completion status when returning from reading segments
   useFocusEffect(
     React.useCallback(() => {
       const fetchCompletion = async () => {
+        // Check if database is ready before making any calls
+        if (!databaseManager.isReady()) {
+          console.log('⏳ Database not ready, skipping completion status refresh');
+          return;
+        }
+
         const completed: {[key: string]: boolean} = {};
         // Use the original data array instead of filteredData to avoid circular dependency
         await Promise.all(
           data.map(async book => {
             await Promise.all(
               book.segments.map(async segmentId => {
-                const status = await getSegmentCompletionStatus(String(segmentId), 'main');
-                if (status.isCompleted) {
-                  completed[segmentId] = true;
+                try {
+                  const status = await getSegmentCompletionStatus(String(segmentId), 'main');
+                  if (status.isCompleted) {
+                    completed[segmentId] = true;
+                  }
+                } catch (error) {
+                  console.warn(`Warning: Could not get completion status for ${segmentId}:`, error);
                 }
               })
             );
@@ -1002,7 +1200,18 @@ const Navigation = () => {
         );
         setCompletedSegmentIds(completed);
       };
-      fetchCompletion();
+
+      // Try to fetch completion status, with retry if database isn't ready
+      const attemptFetch = async () => {
+        if (databaseManager.isReady()) {
+          await fetchCompletion();
+        } else {
+          // Wait a bit and try again
+          setTimeout(attemptFetch, 1000);
+        }
+      };
+
+      attemptFetch();
     }, [])
   );
 
@@ -1169,6 +1378,13 @@ const Navigation = () => {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
+      // Check if database is ready before making any calls
+      if (!databaseManager.isReady()) {
+        console.log('⏳ Database not ready, skipping completion status refresh');
+        setRefreshing(false);
+        return;
+      }
+
       // Refresh completion status for all segments
       const fetchCompletion = async () => {
         const completionStatus: {[key: string]: boolean} = {};
@@ -1228,18 +1444,9 @@ const Navigation = () => {
                 onChangeText={setSearchQuery}
                 onFocus={handleSearchFocus}
                 onBlur={handleSearchBlur}
-                onSubmitEditing={handleSearchSubmit}
+                onSubmitEditing={handleDirectScriptureNavigation}
                 returnKeyType="search"
               />
-              {isValidScriptureReference && (
-                <TouchableOpacity 
-                  style={styles.inlineVerseButton}
-                  onPress={handleDirectScriptureNavigation}
-                >
-                  <Text style={styles.inlineVerseText}>Go To</Text>
-                  <Ionicons name="arrow-forward" size={12} color="#FF6B00" />
-                </TouchableOpacity>
-              )}
               {(searchQuery.length > 0 || showSearch) && (
                 <TouchableOpacity 
                   onPress={handleClearSearch}
@@ -1513,6 +1720,53 @@ const Navigation = () => {
             </Text>
           </TouchableOpacity>
         </View>
+      </Modal>
+
+      {/* Verse Navigation Modal */}
+      <Modal
+        visible={showVerseNavigationModal}
+        transparent={true}
+        animationType="none"
+        onRequestClose={handleCloseVerseModal}
+      >
+        <Pressable 
+          style={styles.modalOverlay} 
+          onPress={handleCloseVerseModal}
+        >
+          <Animated.View
+            style={[
+              styles.modalContainer,
+              {
+                transform: [{ scale: modalScaleAnim }],
+                opacity: modalOpacityAnim,
+              },
+            ]}
+          >
+            <Text style={styles.modalTitle}>Navigate to Verse</Text>
+            <Text style={styles.modalSubtitle}>
+              {verseNavigationData ? 
+                `${verseNavigationData.book} ${verseNavigationData.chapter}:${verseNavigationData.verse}` : 
+                ''
+              }
+            </Text>
+            
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonSecondary]}
+                onPress={handleCloseVerseModal}
+              >
+                <Text style={[styles.modalButtonText, styles.modalButtonTextSecondary]}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonPrimary]}
+                onPress={handleNavigateToVerse}
+              >
+                <Text style={styles.modalButtonText}>Go to {'>'}</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </Pressable>
       </Modal>
     </SafeAreaView>
   );

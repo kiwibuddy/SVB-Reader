@@ -652,10 +652,21 @@ const PlanScreen = () => {
     const plan = readingPlansData.plans.find(p => p.id === planId) as Plan | undefined;
     if (!plan?.segments) return 0;
     
-    return Object.values(plan.segments).reduce(
+    const totalSegments = Object.values(plan.segments).reduce(
+      (acc, book) => acc + (book?.segments?.length ?? 0),
+      0
+    );
+    
+    const storySegments = Object.values(plan.segments).reduce(
       (acc, book) => acc + (book?.segments?.filter(s => !s.startsWith('I')).length ?? 0),
       0
     );
+    
+    const introSegments = totalSegments - storySegments;
+    
+    console.log(`📊 [Plan] ${planId}: Total segments: ${totalSegments}, Story segments: ${storySegments}, Intro segments: ${introSegments}`);
+    
+    return storySegments;
   };
 
   // Now use the functions

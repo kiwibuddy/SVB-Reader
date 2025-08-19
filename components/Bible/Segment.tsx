@@ -25,6 +25,8 @@ interface SegmentProps {
   context?: 'main' | 'plan' | 'challenge';
   planId?: string;
   challengeId?: string;
+  targetVerse?: number;
+  targetChapter?: number;
 }
 
 const icons = [
@@ -47,7 +49,9 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   segmentData, 
   context = 'main',
   planId,
-  challengeId
+  challengeId,
+  targetVerse,
+  targetChapter
 }) => {
   const { width: screenWidth } = useWindowDimensions();
   const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenWidth > 768);
@@ -661,6 +665,8 @@ const styles = StyleSheet.create({
               hasTail={showSourceName}
               isGlowing={isGlowing}
               onLongPress={handleLongPress}
+              targetVerse={targetVerse}
+              targetChapter={targetChapter}
             />
           );
         })}

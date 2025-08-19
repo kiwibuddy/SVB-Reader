@@ -13,14 +13,56 @@ interface BibleBlockProps {
   hasTail: boolean;
   isGlowing: boolean;
   onLongPress?: (block: BibleBlock, index: number) => void;
+  targetVerse?: number;
+  targetChapter?: number;
 }
 
-const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: BibleBlockProps) => {
+const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetVerse, targetChapter }: BibleBlockProps) => {
   const { source, children } = block;
   const { color = 'black', sourceName = 'Unknown' } = source || {};
   const { isDarkMode } = useAppSettings();
   const colors = getColors(color);
   const glowAnim = useRef(new Animated.Value(0)).current;
+  const targetVerseAnim = useRef(new Animated.Value(0)).current;
+  
+  // Check if this block contains the target verse
+  const isTargetVerse = React.useMemo(() => {
+    if (!targetVerse || !targetChapter) return false;
+    
+    // Search through children to find verse references
+    for (const child of children) {
+      // Search through BibleLeaf children for verse references
+      if (child.children && Array.isArray(child.children)) {
+        for (const leaf of child.children) {
+          if (leaf.link && leaf.link.chapter && leaf.link.verse) {
+            const chapter = parseInt(leaf.link.chapter);
+            const verse = parseInt(leaf.link.verse);
+            if (chapter === targetChapter && verse === targetVerse) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }, [children, targetVerse, targetChapter]);
+  
+  // Animate target verse highlight
+  useEffect(() => {
+    if (isTargetVerse) {
+      // Start with a bright highlight
+      targetVerseAnim.setValue(1);
+      
+      // Animate to a subtle highlight
+      Animated.timing(targetVerseAnim, {
+        toValue: 0.3,
+        duration: 2000,
+        useNativeDriver: false,
+      }).start();
+    } else {
+      targetVerseAnim.setValue(0);
+    }
+  }, [isTargetVerse, targetVerseAnim]);
   
   // Track animation for cleanup
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
@@ -100,7 +142,12 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress }: Bible
                 shadowOpacity: 0.1,
                 shadowRadius: 3,
               }),
-              borderWidth: 0,
+              borderWidth: isTargetVerse ? 3 : 0,
+              borderColor: isTargetVerse ? 
+                targetVerseAnim.interpolate({
+                  inputRange: [0, 0.3, 1],
+                  outputRange: ['transparent', '#FFD700', '#FFA500'] // Orange to gold to transparent
+                }) : 'transparent',
               elevation: isGlowing ? (isDarkMode ? 8 : 5) : 3, // Higher elevation in dark mode for better glow visibility
             },
           ]}

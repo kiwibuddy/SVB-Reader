@@ -21,8 +21,75 @@ import { isLargeScreen, isLandscape, responsivePadding, spacing } from '@/consta
 
 
 const Bible: any = BibleData; // Use any for flexible typing
+console.log(`📖 [BibleScreen] Bible data loaded:`, {
+  hasBibleData: !!BibleData,
+  bibleKeys: Object.keys(BibleData || {}).slice(0, 5), // Show first 5 keys
+  totalSegments: Object.keys(BibleData || {}).length
+});
 
 const segIds = Object.keys(Bible);
+
+// Helper function to find verse location in Bible content
+const findVerseLocation = (segmentData: any, targetChapter: number, targetVerse: number) => {
+  console.log(`🔍 [findVerseLocation] Starting search for verse ${targetChapter}:${targetVerse}`);
+  console.log(`🔍 [findVerseLocation] Segment data:`, JSON.stringify(segmentData, null, 2).substring(0, 500) + '...');
+  
+  if (!segmentData) {
+    console.log('❌ [findVerseLocation] No segment data found');
+    return null;
+  }
+  
+  // Check different possible data structures
+  let content = null;
+  if (segmentData.children) {
+    content = segmentData.children;
+    console.log(`🔍 [findVerseLocation] Using segmentData.children (${content.length} items)`);
+  } else if (segmentData.content) {
+    content = segmentData.content;
+    console.log(`🔍 [findVerseLocation] Using segmentData.content (${content.length} items)`);
+  } else {
+    console.log('❌ [findVerseLocation] No children or content found in segment data');
+    console.log('❌ [findVerseLocation] Available keys:', Object.keys(segmentData));
+    return null;
+  }
+  
+  // Search through the Bible content to find the target verse
+  let currentY = 0;
+  let verseCount = 0;
+  
+  for (const block of content) {
+    console.log(`🔍 [findVerseLocation] Processing block:`, block.type, 'with children:', block.children?.length || 0);
+    
+    if (block.type === 'paragraph' && block.children) {
+      for (const child of block.children) {
+        // Check if this child has a verse reference
+        if (child.link && child.link.chapter && child.link.verse) {
+          const chapter = parseInt(child.link.chapter);
+          const verse = parseInt(child.link.verse);
+          verseCount++;
+          
+          console.log(`📍 [findVerseLocation] Found verse ${chapter}:${verse} at position ${currentY}px`);
+          
+          if (chapter === targetChapter && verse === targetVerse) {
+            console.log(`✅ [findVerseLocation] Target verse found at ${currentY}px`);
+            return { y: currentY, chapter, verse, verseCount };
+          }
+        }
+        // Increment Y position for each verse element
+        currentY += 40; // Approximate height per verse element
+      }
+    } else if (block.type === 'paragraph') {
+      // For paragraph blocks without children, add some height
+      currentY += 60;
+    } else {
+      // For other block types (headings, etc.)
+      currentY += 80;
+    }
+  }
+  
+  console.log(`❌ [findVerseLocation] Verse ${targetChapter}:${targetVerse} not found. Total verses found: ${verseCount}`);
+  return null;
+};
 
 // Move styles outside component
 const createStyles = (colors: any, isLargeScreen: boolean, isLandscape: boolean) => StyleSheet.create({
@@ -134,7 +201,7 @@ export default function BibleScreen() {
   const { updateSegmentId, state } = useSQLiteGlobalContext();
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { planId, challengeId } = params;
+  const { planId, challengeId, verse, chapter } = params;
   const flatListRef = useRef<ScrollView>(null);
   const { isVisible } = useBottomNavAnimation();
   const { width, height } = useWindowDimensions();
@@ -158,7 +225,16 @@ export default function BibleScreen() {
   // Get segment data
   const segmentData = useMemo(() => {
     if (!segID) return undefined;
-    return Bible[segID];
+    const data = Bible[segID];
+    console.log(`📚 [BibleScreen] Segment data for ${segID}:`, {
+      hasData: !!data,
+      hasContent: !!data?.content,
+      hasChildren: !!data?.children,
+      contentType: data?.content ? typeof data.content : 'none',
+      childrenType: data?.children ? typeof data.children : 'none',
+      availableKeys: data ? Object.keys(data) : []
+    });
+    return data;
   }, [segID]);
 
   // Update segment ID when it changes
@@ -188,6 +264,60 @@ export default function BibleScreen() {
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
+  }, [segID]);
+
+  // Verse navigation logic - scroll to specific verse when provided
+  useEffect(() => {
+    if (verse && chapter && flatListRef.current && segmentData) {
+      console.log(`🎯 [BibleScreen] Navigating to verse ${chapter}:${verse} in segment ${segID}`);
+      
+      // Delay to ensure content is fully loaded and rendered
+      const scrollToVerse = () => {
+        if (flatListRef.current && segmentData) {
+          try {
+            // Find the verse location in the Bible content
+            const targetVerse = findVerseLocation(segmentData, parseInt(chapter as string), parseInt(verse as string));
+            if (targetVerse) {
+              console.log(`📍 [BibleScreen] Found verse at position: ${targetVerse.y}px, scrolling...`);
+              
+              // Add a small offset to center the verse better
+              const scrollPosition = Math.max(0, targetVerse.y - 100);
+              
+              flatListRef.current.scrollTo({ 
+                y: scrollPosition, 
+                animated: true 
+              });
+              
+              console.log(`✅ [BibleScreen] Successfully scrolled to verse ${chapter}:${verse}`);
+            } else {
+              console.log(`⚠️ [BibleScreen] Verse ${chapter}:${verse} not found in segment ${segID}`);
+            }
+          } catch (error) {
+            console.error(`❌ [BibleScreen] Error scrolling to verse:`, error);
+          }
+        }
+      };
+      
+      // Try multiple times with increasing delays to ensure content is loaded
+      const timers = [
+        setTimeout(scrollToVerse, 300),   // Quick first attempt
+        setTimeout(scrollToVerse, 800),   // Second attempt
+        setTimeout(scrollToVerse, 1500),  // Third attempt
+        setTimeout(scrollToVerse, 2500)   // Final attempt
+      ];
+      
+      return () => {
+        timers.forEach(timer => clearTimeout(timer));
+      };
+    }
+  }, [verse, chapter, segID, segmentData]);
+
+  // Clear verse highlighting when navigating to a different segment
+  useEffect(() => {
+    // This effect runs when segID changes (user navigates to different segment)
+    // The verse and chapter params will be undefined in the new segment
+    // This automatically clears the highlighting in the Segment component
+    console.log(`🔄 [BibleScreen] Segment changed to ${segID}, clearing verse highlighting`);
   }, [segID]);
 
   // Initialize navigation arrows as visible when entering segment
@@ -333,6 +463,8 @@ export default function BibleScreen() {
             context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
             planId={planId as string}
             challengeId={challengeId as string}
+            targetVerse={verse ? parseInt(verse as string) : undefined}
+            targetChapter={chapter ? parseInt(chapter as string) : undefined}
           />
           <Questions segmentId={segID} />
           <View style={[styles.checkCircleContainer, { flexDirection: 'row', gap: 24, justifyContent: 'center', alignItems: 'flex-end' }]}> 

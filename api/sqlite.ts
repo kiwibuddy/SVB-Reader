@@ -351,9 +351,9 @@ export async function getPlanProgress(planID: string): Promise<PlanProgress> {
       };
     }
 
-    // Calculate total segments in plan from the JSON structure
+    // Calculate total story segments in plan from the JSON structure (excluding intro segments)
     const totalSegments = Object.values(plan.segments).reduce((total: number, book: any) => {
-      return total + (book?.segments?.length || 0);
+      return total + (book?.segments?.filter((s: string) => !s.startsWith('I')).length || 0);
     }, 0);
     
     // Get completed segments for this plan (excluding introduction segments)
@@ -403,9 +403,9 @@ export async function getChallengeProgress(challengeID: string): Promise<Challen
       };
     }
 
-    // Calculate total segments in challenge from the JSON structure
+    // Calculate total story segments in challenge from the JSON structure (excluding intro segments)
     const totalSegments = Object.values(challenge.segments).reduce((total: number, book: any) => {
-      return total + (book?.segments?.length || 0);
+      return total + (book?.segments?.filter((s: string) => !s.startsWith('I')).length || 0);
     }, 0);
     
     // Get completed segments for this challenge (excluding introduction segments)

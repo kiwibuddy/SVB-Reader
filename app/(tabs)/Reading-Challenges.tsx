@@ -523,10 +523,21 @@ const ChallengesScreen = () => {
     const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
     if (!challenge?.segments) return 0;
     
-    return Object.values(challenge.segments).reduce(
+    const totalSegments = Object.values(challenge.segments).reduce(
+      (acc, book) => acc + (book?.segments?.length ?? 0),
+      0
+    );
+    
+    const storySegments = Object.values(challenge.segments).reduce(
       (acc, book) => acc + (book?.segments?.filter((s: string) => !s.startsWith('I')).length ?? 0),
       0
     );
+    
+    const introSegments = totalSegments - storySegments;
+    
+    console.log(`📊 [Challenge] ${challengeId}: Total segments: ${totalSegments}, Story segments: ${storySegments}, Intro segments: ${introSegments}`);
+    
+    return storySegments;
   };
 
   const getChallengeBooksData = (challengeId: string) => {

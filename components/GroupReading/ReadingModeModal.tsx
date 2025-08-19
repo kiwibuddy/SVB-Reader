@@ -49,7 +49,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
   const { colors } = useAppSettings();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [slideAnim] = React.useState(new Animated.Value(screenHeight));
+  const [slideAnim] = React.useState(new Animated.Value(-screenHeight)); // Changed from screenHeight to -screenHeight for slide-down effect
   const [backdropOpacity] = React.useState(new Animated.Value(0));
 
   // Context-aware navigation functions
@@ -93,8 +93,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
 
   useEffect(() => {
     if (visible) {
-
-      // Show animation
+      // Show animation - slide down from top
       Animated.parallel([
         Animated.timing(backdropOpacity, {
           toValue: 1,
@@ -109,10 +108,10 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
           useNativeDriver: true,
         }),
       ]).start((finished) => {
-
+        // Animation completed
       });
     } else {
-      // Hide animation
+      // Hide animation - slide up to top
       Animated.parallel([
         Animated.timing(backdropOpacity, {
           toValue: 0,
@@ -121,7 +120,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
           useNativeDriver: true,
         }),
         Animated.timing(slideAnim, {
-          toValue: screenHeight,
+          toValue: -screenHeight, // Changed from screenHeight to -screenHeight for slide-down effect
           duration: ANIMATION.duration.fast,
           easing: ANIMATION.easing.in,
           useNativeDriver: true,
@@ -142,22 +141,21 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
     },
     modalContainer: {
       position: 'absolute',
-      bottom: 0,
+      top: 0, // Changed from bottom: 0 to top: 0 to open from top
       left: 0,
       right: 0,
+      bottom: 0, // Added bottom: 0 to ensure full height coverage
       backgroundColor: colors.background,
       zIndex: 100000,
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
-      maxHeight: screenHeight - insets.top - 20,
-      paddingBottom: insets.bottom,
+      // Removed borderTopLeftRadius and borderTopRightRadius since modal now covers full screen
+      // Removed maxHeight constraint to allow full screen coverage
     },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: 20,
-      paddingTop: Math.max(insets.top + 20, 20),
+      paddingTop: Math.max(insets.top + 20, 20), // Ensure proper top padding with safe area
       paddingBottom: 16,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
@@ -178,7 +176,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       flex: 1,
       paddingHorizontal: 20,
       paddingTop: 24,
-      paddingBottom: 20,
+      paddingBottom: Math.max(insets.bottom + 20, 20), // Ensure proper bottom padding with safe area
     },
     storyInfo: {
       alignItems: 'center',
@@ -256,7 +254,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       fontWeight: '600',
     },
     bottomSection: {
-      paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+      paddingBottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 34) : Math.max(insets.bottom, 20), // Enhanced safe area handling
       alignItems: 'center',
     },
     cancelButton: {
@@ -274,23 +272,17 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
     onCancel();
   };
 
-
-
   const handleGroupPress = () => {
     onGroup();
   };
 
   if (!visible) {
-
     return null;
   }
 
   if (!storyId) {
-
     return null;
   }
-
-
 
   return (
     <>
@@ -304,7 +296,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       </Animated.View>
       
       <Animated.View 
-                style={[
+        style={[
           styles.modalContainer,
           { 
             transform: [{ translateY: slideAnim }] 
