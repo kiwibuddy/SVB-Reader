@@ -535,7 +535,7 @@ const ChallengesScreen = () => {
     
     const introSegments = totalSegments - storySegments;
     
-    console.log(`📊 [Challenge] ${challengeId}: Total segments: ${totalSegments}, Story segments: ${storySegments}, Intro segments: ${introSegments}`);
+    // Segment count calculation completed
     
     return storySegments;
   };

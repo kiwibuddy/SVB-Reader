@@ -664,7 +664,7 @@ const PlanScreen = () => {
     
     const introSegments = totalSegments - storySegments;
     
-    console.log(`📊 [Plan] ${planId}: Total segments: ${totalSegments}, Story segments: ${storySegments}, Intro segments: ${introSegments}`);
+    // Segment count calculation completed
     
     return storySegments;
   };

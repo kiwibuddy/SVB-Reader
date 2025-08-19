@@ -21,21 +21,13 @@ import { isLargeScreen, isLandscape, responsivePadding, spacing } from '@/consta
 
 
 const Bible: any = BibleData; // Use any for flexible typing
-console.log(`📖 [BibleScreen] Bible data loaded:`, {
-  hasBibleData: !!BibleData,
-  bibleKeys: Object.keys(BibleData || {}).slice(0, 5), // Show first 5 keys
-  totalSegments: Object.keys(BibleData || {}).length
-});
+// Development-only logging removed for production
 
 const segIds = Object.keys(Bible);
 
 // Helper function to find verse location in Bible content
 const findVerseLocation = (segmentData: any, targetChapter: number, targetVerse: number) => {
-  console.log(`🔍 [findVerseLocation] Starting search for verse ${targetChapter}:${targetVerse}`);
-  console.log(`🔍 [findVerseLocation] Segment data:`, JSON.stringify(segmentData, null, 2).substring(0, 500) + '...');
-  
   if (!segmentData) {
-    console.log('❌ [findVerseLocation] No segment data found');
     return null;
   }
   
@@ -43,13 +35,9 @@ const findVerseLocation = (segmentData: any, targetChapter: number, targetVerse:
   let content = null;
   if (segmentData.children) {
     content = segmentData.children;
-    console.log(`🔍 [findVerseLocation] Using segmentData.children (${content.length} items)`);
   } else if (segmentData.content) {
     content = segmentData.content;
-    console.log(`🔍 [findVerseLocation] Using segmentData.content (${content.length} items)`);
   } else {
-    console.log('❌ [findVerseLocation] No children or content found in segment data');
-    console.log('❌ [findVerseLocation] Available keys:', Object.keys(segmentData));
     return null;
   }
   
@@ -58,8 +46,6 @@ const findVerseLocation = (segmentData: any, targetChapter: number, targetVerse:
   let verseCount = 0;
   
   for (const block of content) {
-    console.log(`🔍 [findVerseLocation] Processing block:`, block.type, 'with children:', block.children?.length || 0);
-    
     if (block.type === 'paragraph' && block.children) {
       for (const child of block.children) {
         // Check if this child has a verse reference
@@ -68,10 +54,7 @@ const findVerseLocation = (segmentData: any, targetChapter: number, targetVerse:
           const verse = parseInt(child.link.verse);
           verseCount++;
           
-          console.log(`📍 [findVerseLocation] Found verse ${chapter}:${verse} at position ${currentY}px`);
-          
           if (chapter === targetChapter && verse === targetVerse) {
-            console.log(`✅ [findVerseLocation] Target verse found at ${currentY}px`);
             return { y: currentY, chapter, verse, verseCount };
           }
         }
@@ -87,7 +70,6 @@ const findVerseLocation = (segmentData: any, targetChapter: number, targetVerse:
     }
   }
   
-  console.log(`❌ [findVerseLocation] Verse ${targetChapter}:${targetVerse} not found. Total verses found: ${verseCount}`);
   return null;
 };
 

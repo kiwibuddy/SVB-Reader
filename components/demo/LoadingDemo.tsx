@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import {
-  AnimatedSplashIcon,
+  StaticSplashIcon,
   ProgressIndicator,
   LinearProgress,
   LoadingScreen,
@@ -46,21 +46,21 @@ export const LoadingDemo: React.FC = () => {
           </Text>
           <View style={styles.iconRow}>
             <View style={styles.iconContainer}>
-              <AnimatedSplashIcon size={80} animationType="gentle-pulse" />
+              <StaticSplashIcon size={80} />
               <Text style={[styles.iconLabel, { color: colors.secondary }]}>
-                Gentle Pulse
+                Static Icon
               </Text>
             </View>
             <View style={styles.iconContainer}>
-              <AnimatedSplashIcon size={80} animationType="pulse" />
+              <StaticSplashIcon size={80} />
               <Text style={[styles.iconLabel, { color: colors.secondary }]}>
-                Pulse
+                Static Icon
               </Text>
             </View>
             <View style={styles.iconContainer}>
-              <AnimatedSplashIcon size={80} animationType="rotate" />
+              <StaticSplashIcon size={80} />
               <Text style={[styles.iconLabel, { color: colors.secondary }]}>
-                Rotate
+                Static Icon
               </Text>
             </View>
           </View>

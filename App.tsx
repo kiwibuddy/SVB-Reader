@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { SplashScreen } from 'expo-router';
 import { databaseManager } from './api/database-manager';
+import logger from './utils/logger';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -27,20 +28,20 @@ export default function RootLayout() {
         while (attempt < maxRetries) {
           try {
             attempt++;
-            console.log(`🔄 Database initialization attempt ${attempt}/${maxRetries}`);
+            logger.info(`🔄 Database initialization attempt ${attempt}/${maxRetries}`);
             await databaseManager.initialize();
-            console.log('✅ Database initialized successfully');
+            logger.success('✅ Database initialized successfully');
             return;
           } catch (error) {
-            console.error(`❌ Database initialization attempt ${attempt} failed:`, error);
+            logger.error(`❌ Database initialization attempt ${attempt} failed:`, error);
             if (attempt < maxRetries) {
-              console.log(`⏳ Retrying in ${Math.pow(2, attempt)} seconds...`);
+              logger.info(`⏳ Retrying in ${Math.pow(2, attempt)} seconds...`);
               await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
             }
           }
         }
         
-        console.error('❌ All database initialization attempts failed');
+        logger.error('❌ All database initialization attempts failed');
       };
       
       initializeDatabase().finally(() => {

@@ -1,7 +1,6 @@
 // Loading System Components
-export { AnimatedSplashIcon } from './AnimatedSplashIcon';
-export { AnimatedLogoSVG } from './AnimatedLogoSVG';
-export { AnimatedBubblesSVG } from './AnimatedBubblesSVG';
+export { AnimatedSplashIcon as StaticSplashIcon } from './AnimatedSplashIcon';
+export { AnimatedBubblesSVG as StaticIcon } from './AnimatedBubblesSVG';
 export { ProgressIndicator, LinearProgress } from './ProgressIndicator';
 export { LoadingScreen } from './LoadingScreen';
 export type { LoadingStage } from './LoadingScreen';
