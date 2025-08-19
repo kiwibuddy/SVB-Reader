@@ -1471,6 +1471,11 @@ const ReadingInsightsCarousel = ({
         const lastUsedEmoji = emojiData.length > 0 ? (emojiData[emojiData.length - 1] as any)?.emoji || '👍' : '👍';
 
         // Get comprehensive segment and book read counts from SQLite
+        if (!databaseManager.isReady()) {
+          console.log('⏳ Database not ready, skipping SQLite queries');
+          return;
+        }
+        
         const db = databaseManager.getDatabase();
         
         // Get all segment read counts from SQLite (across all contexts)
@@ -1564,6 +1569,11 @@ const ReadingInsightsCarousel = ({
           const lastUsedEmoji = emojiData.length > 0 ? (emojiData[emojiData.length - 1] as any)?.emoji || '👍' : '👍';
 
           // Get comprehensive segment and book read counts from SQLite
+          if (!databaseManager.isReady()) {
+            console.log('⏳ Database not ready, skipping SQLite queries');
+            return;
+          }
+          
           const db = databaseManager.getDatabase();
           
           // Get all segment read counts from SQLite (across all contexts)
@@ -2187,6 +2197,11 @@ const Home = () => {
       setHomeContextualStreaks(contextualStreaksData);
       
       // Check if today is complete based on today's completions
+      if (!databaseManager.isReady()) {
+        console.log('⏳ Database not ready, skipping today completion check');
+        return;
+      }
+      
       const db = databaseManager.getDatabase();
       const today = new Date().toISOString().split('T')[0];
       const todayCompletion = await db.getFirstAsync<{count: number}>(`
@@ -2222,6 +2237,11 @@ const Home = () => {
         setHomeContextualStreaks(contextualStreaksData);
         
         // Check if today is complete based on today's completions
+        if (!databaseManager.isReady()) {
+          console.log('⏳ Database not ready, skipping today completion check');
+          return;
+        }
+        
         const db = databaseManager.getDatabase();
         const today = new Date().toISOString().split('T')[0];
         const todayCompletion = await db.getFirstAsync<{count: number}>(`

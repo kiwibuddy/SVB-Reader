@@ -2263,6 +2263,623 @@
   "oldTestamentJourneyChronological": {
     "title": "Old Testament Journey (Chronological)",
     "description": "55 Stories - 11 Weeks",
-    "longDescription": "Journey through God's redemptive plan from Creation to the prophets in historical order. Experience how God established His covenant people, delivered them from bondage, gave them His law, and prepared them for the coming Messiah through judges, kings, and prophets."
+    "longDescription": "Journey through God's redemptive plan from Creation to the prophets in historical order. Experience how God established His covenant people, delivered them from bondage, gave them His law, and prepared them for the coming Messiah through judges, kings, and prophets.",
+    "segments": [
+      {
+        "segmentId": "I001",
+        "book": "Gen",
+        "title": "Introduction to Genesis",
+        "ref": "1:1-50:26",
+        "phase": "The Beginning"
+      },
+      {
+        "segmentId": "S001",
+        "book": "Gen",
+        "title": "God Creates",
+        "ref": "1:1-2:25",
+        "phase": "The Beginning"
+      },
+      {
+        "segmentId": "S002",
+        "book": "Gen",
+        "title": "People Sin",
+        "ref": "3:1-5:32",
+        "phase": "The Beginning"
+      },
+      {
+        "segmentId": "S003",
+        "book": "Gen",
+        "title": "The Flood",
+        "ref": "6:1-9:29",
+        "phase": "The Beginning"
+      },
+      {
+        "segmentId": "S004",
+        "book": "Gen",
+        "title": "The Tower",
+        "ref": "10:1-11:26",
+        "phase": "The Beginning"
+      },
+      {
+        "segmentId": "S006",
+        "book": "Gen",
+        "title": "God Makes a Covenant with Abraham",
+        "ref": "15:1-18:15",
+        "phase": "The Patriarchs"
+      },
+      {
+        "segmentId": "S008",
+        "book": "Gen",
+        "title": "Abraham's Faith Tested",
+        "ref": "20:1-23:20",
+        "phase": "The Patriarchs"
+      },
+      {
+        "segmentId": "I002",
+        "book": "Exo",
+        "title": "Introduction to Exodus",
+        "ref": "1:1-40:38",
+        "phase": "The Exodus"
+      },
+      {
+        "segmentId": "S019",
+        "book": "Exo",
+        "title": "Moses is Born",
+        "ref": "1:8-4:31",
+        "phase": "The Exodus"
+      },
+      {
+        "segmentId": "S023",
+        "book": "Exo",
+        "title": "Moses Flees",
+        "ref": "5:1-7:13",
+        "phase": "The Exodus"
+      },
+      {
+        "segmentId": "S025",
+        "book": "Exo",
+        "title": "The Plagues Begin",
+        "ref": "7:14-10:29",
+        "phase": "The Exodus"
+      },
+      {
+        "segmentId": "S030",
+        "book": "Exo",
+        "title": "The Passover",
+        "ref": "11:1-13:16",
+        "phase": "The Exodus"
+      },
+      {
+        "segmentId": "S032",
+        "book": "Exo",
+        "title": "The Exodus",
+        "ref": "13:17-15:21",
+        "phase": "The Exodus"
+      },
+      {
+        "segmentId": "I003",
+        "book": "Lev",
+        "title": "Introduction to Leviticus",
+        "ref": "1:1-27:34",
+        "phase": "The Law"
+      },
+      {
+        "segmentId": "S039",
+        "book": "Lev",
+        "title": "The Day of Atonement",
+        "ref": "16:1-34",
+        "phase": "The Law"
+      },
+      {
+        "segmentId": "I004",
+        "book": "Num",
+        "title": "Introduction to Numbers",
+        "ref": "1:1-36:13",
+        "phase": "The Wilderness"
+      },
+      {
+        "segmentId": "S049",
+        "book": "Num",
+        "title": "The Bronze Serpent",
+        "ref": "21:4-9",
+        "phase": "The Wilderness"
+      },
+      {
+        "segmentId": "I005",
+        "book": "Deu",
+        "title": "Introduction to Deuteronomy",
+        "ref": "1:1-34:12",
+        "phase": "The Law Renewed"
+      },
+      {
+        "segmentId": "S057",
+        "book": "Deu",
+        "title": "Moses' Final Words",
+        "ref": "1:1-4:43",
+        "phase": "The Law Renewed"
+      },
+      {
+        "segmentId": "S058",
+        "book": "Deu",
+        "title": "The Greatest Commandment",
+        "ref": "6:1-25",
+        "phase": "The Law Renewed"
+      },
+      {
+        "segmentId": "S067",
+        "book": "Deu",
+        "title": "The Covenant Renewed",
+        "ref": "29:1-30:20",
+        "phase": "The Law Renewed"
+      },
+      {
+        "segmentId": "I006",
+        "book": "Jos",
+        "title": "Introduction to Joshua",
+        "ref": "1:1-24:33",
+        "phase": "The Conquest"
+      },
+      {
+        "segmentId": "S070",
+        "book": "Jos",
+        "title": "The Fall of Jericho",
+        "ref": "6:1-27",
+        "phase": "The Conquest"
+      },
+      {
+        "segmentId": "S076",
+        "book": "Jos",
+        "title": "Joshua's Farewell",
+        "ref": "23:1-24:33",
+        "phase": "The Conquest"
+      },
+      {
+        "segmentId": "I007",
+        "book": "Jdg",
+        "title": "Introduction to Judges",
+        "ref": "1:1-21:25",
+        "phase": "The Judges"
+      },
+      {
+        "segmentId": "S077",
+        "book": "Jdg",
+        "title": "Deborah Leads Israel",
+        "ref": "4:1-5:31",
+        "phase": "The Judges"
+      },
+      {
+        "segmentId": "S079",
+        "book": "Jdg",
+        "title": "Samson's Strength",
+        "ref": "13:1-16:31",
+        "phase": "The Judges"
+      },
+      {
+        "segmentId": "I008",
+        "book": "Rut",
+        "title": "Introduction to Ruth",
+        "ref": "1:1-4:22",
+        "phase": "The Judges"
+      },
+      {
+        "segmentId": "S085",
+        "book": "Rut",
+        "title": "Ruth's Loyalty",
+        "ref": "1:1-4:22",
+        "phase": "The Judges"
+      },
+      {
+        "segmentId": "I009",
+        "book": "1Sa",
+        "title": "Introduction to 1 Samuel",
+        "ref": "1:1-31:13",
+        "phase": "The Kingdom Begins"
+      },
+      {
+        "segmentId": "S088",
+        "book": "1Sa",
+        "title": "Samuel is Born",
+        "ref": "1:1-4:1a",
+        "phase": "The Kingdom Begins"
+      },
+      {
+        "segmentId": "S089",
+        "book": "1Sa",
+        "title": "Israel Demands a King",
+        "ref": "4:1b-8:22",
+        "phase": "The Kingdom Begins"
+      },
+      {
+        "segmentId": "S091",
+        "book": "1Sa",
+        "title": "Saul Decreases & David Increases",
+        "ref": "17:1-18:30",
+        "phase": "The Kingdom Begins"
+      },
+      {
+        "segmentId": "I010",
+        "book": "2Sa",
+        "title": "Introduction to 2 Samuel",
+        "ref": "1:1-24:25",
+        "phase": "David's Reign"
+      },
+      {
+        "segmentId": "S097",
+        "book": "2Sa",
+        "title": "David Becomes King",
+        "ref": "2:8-5:25",
+        "phase": "David's Reign"
+      },
+      {
+        "segmentId": "I011",
+        "book": "1Ki",
+        "title": "Introduction to 1 Kings",
+        "ref": "1:1-22:53",
+        "phase": "The Kingdom Divides"
+      },
+      {
+        "segmentId": "S106",
+        "book": "1Ki",
+        "title": "Solomon Becomes King",
+        "ref": "1:1-2:46",
+        "phase": "The Kingdom Divides"
+      },
+      {
+        "segmentId": "S109",
+        "book": "1Ki",
+        "title": "Solomon's Wisdom",
+        "ref": "3:1-28",
+        "phase": "The Kingdom Divides"
+      },
+      {
+        "segmentId": "S110",
+        "book": "1Ki",
+        "title": "Solomon Builds the Temple",
+        "ref": "5:1-8:66",
+        "phase": "The Kingdom Divides"
+      },
+      {
+        "segmentId": "I012",
+        "book": "2Ki",
+        "title": "Introduction to 2 Kings",
+        "ref": "1:1-25:30",
+        "phase": "The Kingdom Falls"
+      },
+      {
+        "segmentId": "S121",
+        "book": "2Ki",
+        "title": "Elijah's Ministry",
+        "ref": "1:1-2:25",
+        "phase": "The Kingdom Falls"
+      },
+      {
+        "segmentId": "S124",
+        "book": "2Ki",
+        "title": "The Fall of Jerusalem",
+        "ref": "24:1-25:30",
+        "phase": "The Kingdom Falls"
+      },
+      {
+        "segmentId": "I016",
+        "book": "Neh",
+        "title": "Introduction to Nehemiah",
+        "ref": "1:1-13:31",
+        "phase": "The Return"
+      },
+      {
+        "segmentId": "S149",
+        "book": "Neh",
+        "title": "Nehemiah Rebuilds the Wall",
+        "ref": "1:1-6:19",
+        "phase": "The Return"
+      },
+      {
+        "segmentId": "S150",
+        "book": "Neh",
+        "title": "The People Renew the Covenant",
+        "ref": "8:1-10:39",
+        "phase": "The Return"
+      },
+      {
+        "segmentId": "I019",
+        "book": "Psa",
+        "title": "Introduction to Psalms",
+        "ref": "1:1-150:6",
+        "phase": "Worship & Wisdom"
+      },
+      {
+        "segmentId": "S164",
+        "book": "Psa",
+        "title": "Book 1: Songs of Praise & Prayers of Faith 1",
+        "ref": "1:1-22:31",
+        "phase": "Worship & Wisdom"
+      },
+      {
+        "segmentId": "S166",
+        "book": "Psa",
+        "title": "Book 1: Songs of Praise & Prayers of Faith 2",
+        "ref": "23:1-33:22",
+        "phase": "Worship & Wisdom"
+      },
+      {
+        "segmentId": "S172",
+        "book": "Psa",
+        "title": "Book 2: Songs of Conflict & Salvation 1",
+        "ref": "42:1-51:19",
+        "phase": "Worship & Wisdom"
+      },
+      {
+        "segmentId": "S175",
+        "book": "Psa",
+        "title": "Book 2: Songs of Conflict & Salvation 2",
+        "ref": "52:1-64:10",
+        "phase": "Worship & Wisdom"
+      },
+      {
+        "segmentId": "S177",
+        "book": "Psa",
+        "title": "Book 2: Songs of Conflict & Salvation 3",
+        "ref": "65:1-72:20",
+        "phase": "Worship & Wisdom"
+      },
+      {
+        "segmentId": "S179",
+        "book": "Psa",
+        "title": "Book 2: Songs of Conflict & Salvation 4",
+        "ref": "73:1-89:52",
+        "phase": "Worship & Wisdom"
+      },
+      {
+        "segmentId": "I020",
+        "book": "Pro",
+        "title": "Introduction to Proverbs",
+        "ref": "1:1-31:31",
+        "phase": "Worship & Wisdom"
+      },
+      {
+        "segmentId": "S180",
+        "book": "Pro",
+        "title": "The Beginning of Wisdom",
+        "ref": "1:1-9:18",
+        "phase": "Worship & Wisdom"
+      },
+      {
+        "segmentId": "I023",
+        "book": "Isa",
+        "title": "Introduction to Isaiah",
+        "ref": "1:1-66:24",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S191",
+        "book": "Isa",
+        "title": "The Promise of Immanuel",
+        "ref": "7:10-16",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S192",
+        "book": "Isa",
+        "title": "A Child is Born",
+        "ref": "9:1-7",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S193",
+        "book": "Isa",
+        "title": "A Shoot from Jesse",
+        "ref": "11:1-10",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S200",
+        "book": "Isa",
+        "title": "The Suffering Servant",
+        "ref": "52:13-53:12",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S203",
+        "book": "Isa",
+        "title": "Good News to the Poor",
+        "ref": "61:1-3",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S204",
+        "book": "Isa",
+        "title": "The New Heaven and New Earth",
+        "ref": "65:17-66:24",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "I024",
+        "book": "Jer",
+        "title": "Introduction to Jeremiah",
+        "ref": "1:1-52:34",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S206",
+        "book": "Jer",
+        "title": "Jeremiah's Call",
+        "ref": "1:1-19",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S210",
+        "book": "Jer",
+        "title": "The New Covenant",
+        "ref": "31:31-34",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S211",
+        "book": "Jer",
+        "title": "Jeremiah's Lament",
+        "ref": "31:15-22",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S219",
+        "book": "Jer",
+        "title": "Jeremiah's Persecution",
+        "ref": "37:1-38:28",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "I026",
+        "book": "Eze",
+        "title": "Introduction to Ezekiel",
+        "ref": "1:1-48:35",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S227",
+        "book": "Eze",
+        "title": "Ezekiel's Vision",
+        "ref": "1:1-3:27",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S232",
+        "book": "Eze",
+        "title": "The Valley of Dry Bones",
+        "ref": "37:1-14",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S239",
+        "book": "Eze",
+        "title": "The New Temple",
+        "ref": "40:1-48:35",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "I027",
+        "book": "Dan",
+        "title": "Introduction to Daniel",
+        "ref": "1:1-12:13",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S245",
+        "book": "Dan",
+        "title": "Daniel in Babylon",
+        "ref": "1:1-21",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S246",
+        "book": "Dan",
+        "title": "Daniel's Visions",
+        "ref": "7:1-12:13",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "I029",
+        "book": "Joe",
+        "title": "Introduction to Joel",
+        "ref": "1:1-3:21",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S251",
+        "book": "Joe",
+        "title": "The Day of the Lord",
+        "ref": "1:1-3:21",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "I032",
+        "book": "Jon",
+        "title": "Introduction to Jonah",
+        "ref": "1:1-4:11",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S255",
+        "book": "Jon",
+        "title": "Jonah's Mission",
+        "ref": "1:1-4:11",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "I035",
+        "book": "Hab",
+        "title": "Introduction to Habakkuk",
+        "ref": "1:1-3:19",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S259",
+        "book": "Hab",
+        "title": "Habakkuk's Questions",
+        "ref": "1:1-3:19",
+        "phase": "The Prophets"
+      }
+    ],
+    "phases": {
+      "The Beginning": {
+        "description": "From creation through the flood to the tower of Babel - the foundation of human history",
+        "color": "#8B4513"
+      },
+      "The Patriarchs": {
+        "description": "God's covenant with Abraham and the establishment of His chosen people",
+        "color": "#4169E1"
+      },
+      "The Exodus": {
+        "description": "Israel's deliverance from Egypt and journey toward the Promised Land",
+        "color": "#32CD32"
+      },
+      "The Law": {
+        "description": "God gives His law to establish His covenant relationship with Israel",
+        "color": "#FF8C00"
+      },
+      "The Wilderness": {
+        "description": "Israel's testing and preparation in the wilderness",
+        "color": "#DC143C"
+      },
+      "The Law Renewed": {
+        "description": "Moses renews the covenant before Israel enters the Promised Land",
+        "color": "#FFD700"
+      },
+      "The Conquest": {
+        "description": "Joshua leads Israel to conquer and settle the Promised Land",
+        "color": "#4CAF50"
+      },
+      "The Judges": {
+        "description": "God raises up judges to deliver Israel from oppression",
+        "color": "#9C27B0"
+      },
+      "The Kingdom Begins": {
+        "description": "Israel transitions from judges to monarchy under Saul and David",
+        "color": "#2196F3"
+      },
+      "David's Reign": {
+        "description": "David establishes Jerusalem and God's covenant with his dynasty",
+        "color": "#FF9800"
+      },
+      "The Kingdom Divides": {
+        "description": "Solomon's reign and the division of Israel into two kingdoms",
+        "color": "#E91E63"
+      },
+      "The Kingdom Falls": {
+        "description": "The fall of both kingdoms and the exile to Babylon",
+        "color": "#795548"
+      },
+      "The Return": {
+        "description": "God's people return from exile and rebuild Jerusalem",
+        "color": "#607D8B"
+      },
+      "Worship & Wisdom": {
+        "description": "Psalms and Proverbs - Israel's worship and wisdom literature",
+        "color": "#9E9E9E"
+      },
+      "The Prophets": {
+        "description": "God's messengers calling His people back to covenant faithfulness",
+        "color": "#FF5722"
+      }
+    }
   }
 } 

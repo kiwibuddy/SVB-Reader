@@ -158,10 +158,10 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     },
     content: {
       flexDirection: 'row',
-      justifyContent: 'space-evenly',
+      justifyContent: 'space-between',
       alignItems: 'center',
       paddingVertical: isLargeScreen ? 16 : 12,
-      paddingHorizontal: 0,
+      paddingHorizontal: 16,
     },
     navItem: {
       alignItems: 'center',
@@ -169,6 +169,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
       minHeight: isLargeScreen ? 56 : 44,
       paddingHorizontal: isLargeScreen ? 12 : 8,
       flex: 1,
+      maxWidth: isLargeScreen ? 100 : 85,
     },
     navText: {
       color: colors.text,
@@ -230,7 +231,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
             color={pathname === "/Reading-emoji" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Reading-emoji" && styles.activeText]}>
-            Emoji
+            Reactions
           </Text>
         </Pressable>
 

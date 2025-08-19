@@ -1,7 +1,7 @@
 {
   "cli": {
     "version": ">= 9.0.0",
-    "appVersionSource": "remote"
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
@@ -37,7 +37,7 @@
     },
     "production": {
       "distribution": "store",
-      "autoIncrement": true,
+      "autoIncrement": false,
       "channel": "production",
       "ios": {
         "buildConfiguration": "Release",
@@ -49,6 +49,7 @@
     },
     "production-android": {
       "extends": "production",
+      "autoIncrement": false,
       "android": {
         "buildType": "app-bundle"
       }

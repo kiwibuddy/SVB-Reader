@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -7,7 +7,6 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { AnimatedBubblesSVG } from './loading/AnimatedBubblesSVG';
 
 export const SimpleLoadingScreen: React.FC = () => {
   const scale = useSharedValue(1);
@@ -38,9 +37,10 @@ export const SimpleLoadingScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.logoContainer, animatedStyle]}>
-        <AnimatedBubblesSVG 
-          size={80} 
-          enableBreathing={true}
+        <Image 
+          source={require('@/assets/images/icon.png')}
+          style={styles.appIcon}
+          resizeMode="contain"
         />
       </Animated.View>
     </View>
@@ -57,5 +57,9 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  appIcon: {
+    width: 80,
+    height: 80,
   },
 });

@@ -76,12 +76,12 @@
       "resumeChallenge": "Resume Challenge"
     },
     "emojiPage": {
-      "title": "Emoji Reactions",
+      "title": "Reactions",
       "subtitle": "Transform your Bible reading from simple reactions to meaningful life application with guided spiritual practices for memorizing, sharing, reflecting, and praying through your favorite verses.",
       "verses": "verses",
       "recentReactions": "Most Recent Reactions",
-      "tapToCollapse": "Tap to collapse ↑",
-      "tapToSeeSteps": "Tap to see steps ↓",
+      "tapToCollapse": "Tap to collapse",
+      "tapToSeeSteps": "Tap to see steps",
       "goToSegment": "Go to Segment",
       "viewVersePrompt": "Would you like to view this verse in {reference}?",
       "cancel": "Cancel",
@@ -128,7 +128,7 @@
           }
         },
         "reflecting": {
-          "title": "Hmm needs more thought",
+          "title": "Deep Reflection",
           "count": "passages",
           "intro": "Stumbled upon a verse that's got you thinking? Let's break it down together!",
           "steps": {

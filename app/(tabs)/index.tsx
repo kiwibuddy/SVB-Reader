@@ -15,7 +15,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { Link, useRouter } from "expo-router";
 import { useTranslation } from 'react-i18next';
-import { StaticLogoSVG } from '../../components/StaticLogoSVG';
+
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -206,9 +206,10 @@ const IndexScreen = () => {
       {/* Header */}
       <Animated.View style={[styles.header, { opacity: headerOpacity }]}>
         <View style={styles.logoSection}>
-          <StaticLogoSVG 
-            size={60} 
-            borderRadius={16}
+          <Image 
+            source={require('@/assets/images/icon.png')}
+            style={styles.logo}
+            resizeMode="contain"
           />
           <Text style={styles.appTitle}>SourceView</Text>
           <Text style={styles.appSubtitle}>Together</Text>

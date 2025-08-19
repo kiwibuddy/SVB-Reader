@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, AccessibilityInfo } from 'react-native';
-import { AnimatedBubblesSVG } from './AnimatedBubblesSVG';
+import { View, Text, StyleSheet, AccessibilityInfo, Image } from 'react-native';
 import { ProgressIndicator, LinearProgress } from './ProgressIndicator';
 import { useAppSettings } from '@/context/AppSettingsContext';
 
@@ -111,11 +110,12 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
 
       {/* Main content */}
       <View style={styles.content}>
-        {/* Animated Logo */}
+        {/* App Logo */}
         <View style={styles.logoContainer}>
-          <AnimatedBubblesSVG 
-            size={120} 
-            enableBreathing={!reduceMotion}
+          <Image 
+            source={require('@/assets/images/icon.png')}
+            style={styles.appIcon}
+            resizeMode="contain"
           />
         </View>
 
@@ -208,6 +208,12 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     marginBottom: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  appIcon: {
+    width: 120,
+    height: 120,
   },
   title: {
     fontSize: 24,

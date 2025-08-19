@@ -58,14 +58,14 @@ type SegmentTitle = {
 }
 
 const EMOJI_TYPES = [
-  { emoji: "❤️", label: "love", color: "#FF6B47", icon: "heart-outline", backgroundColor: "#FF6B47" },
-  { emoji: "👍", label: "agree", color: "#4ECDC4", icon: "thumbs-up-outline", backgroundColor: "#4ECDC4" },
-  { emoji: "🤔", label: "reflecting", color: "#FFB347", icon: "bulb-outline", backgroundColor: "#FFB347" },
+  { emoji: "❤️", label: "love", color: "#FF6B47", icon: "heart", backgroundColor: "#FF6B47" },
+  { emoji: "👍", label: "agree", color: "#4ECDC4", icon: "thumbs-up", backgroundColor: "#4ECDC4" },
+  { emoji: "🤔", label: "reflecting", color: "#FFB347", icon: "help-circle", backgroundColor: "#FFB347" },
   {
     emoji: "🙏",
     label: "praying",
     color: "#7B68EE",
-    icon: "hand-right-outline",
+    icon: "help-circle",
     backgroundColor: "#7B68EE",
   },
 ]
@@ -227,7 +227,8 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 2,
     },
-    descriptionCard: {
+    // New styles for expandable content matching Reading Plans
+    emojiDetailContainer: {
       marginVertical: 16,
       borderRadius: 16,
       shadowColor: colors.text,
@@ -242,221 +243,115 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       borderColor: Platform.OS === "ios" ? "rgba(0,0,0,0.05)" : "transparent",
       overflow: "hidden",
     },
-    descriptionCardContent: {
-      padding: 20,
-      backgroundColor: colors.card,
-    },
-    descriptionHeader: {
+    emojiDetailHeader: {
       flexDirection: "row",
       alignItems: "center",
       marginBottom: 0,
       paddingHorizontal: 20,
       paddingVertical: 16,
+      backgroundColor: colors.card,
     },
-    descriptionHeaderIcon: {
+    emojiDetailIcon: {
       width: 40,
       height: 40,
       borderRadius: 20,
       alignItems: "center",
       justifyContent: "center",
       marginRight: 12,
-      backgroundColor: "rgba(255,255,255,0.2)",
     },
-    descriptionTitle: {
+    emojiDetailTitle: {
       fontSize: 20,
       fontWeight: "700",
-      color: "white",
+      color: colors.text,
       letterSpacing: -0.3,
+      flex: 1,
     },
-    emojiCountText: {
+    emojiDetailCount: {
       fontSize: 16,
       color: colors.secondary,
       marginBottom: 16,
       fontWeight: "500",
     },
-    descriptionText: {
-      fontSize: 16,
-      color: colors.secondary,
-      lineHeight: 24,
-      marginBottom: 10,
+
+    emojiDetailContent: {
+      paddingHorizontal: 20,
+      paddingBottom: 20,
+      backgroundColor: colors.card,
     },
-    reactionsContainer: {
-      paddingHorizontal: 4,
-    },
-    reactionItemContainer: {
-      marginBottom: 8,
-    },
-    speechBubbleContainer: {
-      position: "relative",
-      zIndex: 1,
-      marginBottom: 2,
-    },
-    reactionEmoji: {
-      position: "absolute",
-      // top value now dynamically set in component (35 for hasTail=true, -15 for hasTail=false)
-      fontSize: 30,
-      padding: 5,
-      zIndex: 100,
-      elevation: 3,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 2,
-    },
-    stepText: {
-      fontWeight: "700",
-      fontSize: 16,
-      marginTop: 16,
+    emojiDetailIntro: {
       color: colors.text,
-    },
-    expandIndicator: {
-      textAlign: "center",
-      color: "white",
-      fontSize: 14,
-      marginTop: 12,
-      marginBottom: 12,
-      fontWeight: "500",
+      fontSize: 16,
+      lineHeight: 24,
+      marginBottom: 20,
+      textAlign: 'center',
     },
     expandButton: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      paddingVertical: 12,
+      paddingVertical: 16,
       paddingHorizontal: 20,
       borderTopWidth: 1,
-      borderTopColor: "rgba(255,255,255,0.15)",
-      borderRadius: 12,
-      marginTop: 16,
+      backgroundColor: colors.card,
     },
-    recentHeader: {
-      marginBottom: 16,
-      marginTop: 4,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    recentHeaderText: {
-      fontSize: 20,
-      fontWeight: "700",
+    expandButtonText: {
+      fontSize: 16,
+      fontWeight: "600",
       color: colors.text,
-      letterSpacing: -0.3,
     },
-    recentHeaderIcon: {
-      marginRight: 8,
-    },
-    referenceText: {
-      fontSize: 12,
+    expandIcon: {
       color: colors.secondary,
-      textAlign: "right",
-      marginTop: 1,
-      paddingRight: 16,
-      paddingBottom: 2,
-      fontWeight: "500",
-    },
-    subtitle: {
-      fontSize: 16,
-      color: colors.secondary,
-      lineHeight: 24,
-      paddingHorizontal: 4,
-    },
-    contentContainer: {
-      paddingBottom: 16,
-    },
-    divider: {
-      height: 1,
-      backgroundColor: "rgba(255,255,255,0.15)",
-      marginVertical: 12,
-    },
-    stepContainer: {
-      backgroundColor: "rgba(255,255,255,0.1)",
-      padding: 16,
-      borderRadius: 12,
-      marginVertical: 8,
-    },
-    emptyStateContainer: {
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: 48,
-      paddingHorizontal: 32,
-      marginTop: 20,
-      opacity: 0.7,
-    },
-    emptyStateText: {
-      fontSize: 16,
-      color: colors.secondary,
-      textAlign: "center",
-      marginTop: 16,
-    },
-    emptyStateIcon: {
-      marginBottom: 16,
-    },
-    refreshHint: {
-      fontSize: 12,
-      color: colors.secondary,
-      textAlign: "center",
-      marginTop: 8,
-      fontStyle: "italic",
-    },
-    longPressHint: {
-      fontSize: 12,
-      color: colors.secondary,
-      textAlign: "center",
-      marginTop: 8,
-      marginBottom: 4,
-      paddingHorizontal: 16,
-      fontStyle: "italic",
-      opacity: 0.7,
     },
     stepsContainer: {
       marginTop: 16,
     },
+    stepRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      marginBottom: 16,
+    },
     stepNumber: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      backgroundColor: "rgba(255,255,255,0.2)",
+      width: 28,
+      height: 28,
+      borderRadius: 14,
       alignItems: "center",
       justifyContent: "center",
-      marginRight: 10,
+      marginRight: 12,
+      marginTop: 2,
     },
     stepNumberText: {
       color: "white",
       fontWeight: "700",
       fontSize: 14,
     },
-    stepRow: {
-      flexDirection: "row",
-      alignItems: "flex-start",
-      marginBottom: 4,
-    },
     stepContent: {
       flex: 1,
     },
     stepTitle: {
-      color: "white",
+      color: colors.text,
       fontWeight: "700",
       fontSize: 16,
-      marginBottom: 4,
+      marginBottom: 6,
     },
     stepDescription: {
-      color: "rgba(255,255,255,0.9)",
+      color: colors.secondary,
       fontSize: 15,
       lineHeight: 22,
     },
     conclusionContainer: {
       marginTop: 20,
-      backgroundColor: "rgba(255,255,255,0.15)",
+      backgroundColor: colors.background,
       borderRadius: 12,
       padding: 16,
     },
     conclusionTitle: {
-      color: "white",
+      color: colors.text,
       fontWeight: "700",
       fontSize: 16,
       marginBottom: 8,
     },
     conclusionText: {
-      color: colors.text,
+      color: colors.secondary,
       fontSize: 15,
       lineHeight: 22,
     },
@@ -472,24 +367,66 @@ const createStyles = (isLargeScreen: boolean, colors: any) =>
       justifyContent: "center",
       zIndex: 10,
     },
-    emojiDetailIntro: {
-      color: colors.text,
-      fontSize: 16,
-      lineHeight: 24,
-      marginBottom: 20,
+    // Add back missing styles that are still used
+    reactionsContainer: {
+      paddingHorizontal: 4,
     },
-    emojiDetailCount: {
-      color: "white",
-      fontSize: 16,
-      fontWeight: "600",
-      marginBottom: 20,
-      flexDirection: "row",
+    reactionItemContainer: {
+      marginBottom: 8,
+    },
+    speechBubbleContainer: {
+      position: "relative",
+      zIndex: 1,
+      marginBottom: 2,
+    },
+    reactionEmoji: {
+      position: "absolute",
+      fontSize: 30,
+      padding: 5,
+      zIndex: 100,
+      elevation: 3,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 2,
+    },
+    referenceText: {
+      fontSize: 12,
+      color: colors.secondary,
+      textAlign: "right",
+      marginTop: 1,
+      paddingRight: 16,
+      paddingBottom: 2,
+      fontWeight: "500",
+    },
+    contentContainer: {
+      paddingBottom: 16,
+    },
+    emptyStateContainer: {
       alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 48,
+      paddingHorizontal: 32,
+      marginTop: 20,
+      opacity: 0.7,
     },
-    emojiDetailEmoji: {
-      fontSize: 24,
-      marginRight: 8,
+    emptyStateText: {
+      fontSize: 16,
+      color: colors.secondary,
+      textAlign: "center",
+      marginTop: 16,
     },
+    longPressHint: {
+      fontSize: 12,
+      color: colors.secondary,
+      textAlign: "center",
+      marginTop: 8,
+      marginBottom: 4,
+      paddingHorizontal: 16,
+      fontStyle: "italic",
+      opacity: 0.7,
+    },
+
     // Jump to passage modal styles
     modalOverlay: {
       flex: 1,
@@ -1323,8 +1260,15 @@ const ReadingEmoji = () => {
   }, [modalScaleAnim, modalOpacityAnim]);
 
   const handleEmojiTypeSelect = (emoji: string) => {
-    setSelectedEmoji(selectedEmoji === emoji ? null : emoji)
-    setIsExpanded(false) // Reset expanded state when changing emoji
+    if (selectedEmoji === emoji) {
+      // Same emoji clicked - just close it
+      setSelectedEmoji(null)
+      setIsExpanded(false)
+    } else {
+      // Different emoji clicked - switch to it and reset expanded state
+      setSelectedEmoji(emoji)
+      setIsExpanded(false)
+    }
   }
 
   const renderEmojiDetailCard = () => {
@@ -1335,85 +1279,81 @@ const ReadingEmoji = () => {
     const count = getEmojiCount(selectedEmoji)
 
     return (
-      <Animated.View style={[styles.descriptionCard, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-        <View
-          style={[styles.descriptionHeader, { backgroundColor }]}
-        >
-          <View style={styles.descriptionHeaderIcon}>
-            <Ionicons name={getEmojiIcon(selectedEmoji) as any} size={24} color="white" />
+      <Animated.View style={[styles.emojiDetailContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+        <View style={styles.emojiDetailHeader}>
+          <View style={[styles.emojiDetailIcon, { backgroundColor }]}>
+            <Text style={{ fontSize: 24, color: "white" }}>{selectedEmoji}</Text>
           </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.descriptionTitle}>{t(`UI.emojiPage.emojiDescriptions.${emojiKey}.title`)}</Text>
-          </View>
+          <Text style={styles.emojiDetailTitle}>{t(`UI.emojiPage.emojiDescriptions.${emojiKey}.title`)}</Text>
           <TouchableOpacity style={styles.backButton} onPress={() => setSelectedEmoji(null)}>
             <Ionicons name="close" size={20} color="white" />
           </TouchableOpacity>
         </View>
 
-        <View style={styles.descriptionCardContent}>
-          <View style={styles.emojiDetailCount}>
-            <Text style={styles.emojiDetailEmoji}>{selectedEmoji}</Text>
-           <Text style={{ color: colors.text }}>
-            {count} {t(`UI.emojiPage.emojiDescriptions.${emojiKey}.count`)}
-          </Text>
-
-          </View>
-
+        <View style={styles.emojiDetailContent}>
           <Text style={styles.emojiDetailIntro}>{t(`UI.emojiPage.emojiDescriptions.${emojiKey}.intro`)}</Text>
 
-          <View
-            style={[styles.expandButton, { backgroundColor }]}
+          <TouchableOpacity
+            style={[styles.expandButton, { borderTopColor: getEmojiColor(selectedEmoji) }]}
+            onPress={() => setIsExpanded(!isExpanded)}
           >
-            <TouchableOpacity
-              onPress={() => setIsExpanded(!isExpanded)}
-              style={{ flexDirection: "row", alignItems: "center" }}
-            >
-              <Text style={styles.expandIndicator}>
-                {isExpanded
-                  ? t("UI.emojiPage.tapToCollapse").replace("ij", "")
-                  : t("UI.emojiPage.tapToSeeSteps").replace("`", "")}
-              </Text>
+            <Text style={[styles.expandButtonText, { color: getEmojiColor(selectedEmoji) }]}>
+              {isExpanded
+                ? t("UI.emojiPage.tapToCollapse")
+                : t("UI.emojiPage.tapToSeeSteps")}
+            </Text>
+            <Animated.View style={{
+              transform: [{
+                rotate: isExpanded ? '180deg' : '0deg'
+              }]
+            }}>
               <Ionicons
-                name={isExpanded ? "chevron-up" : "chevron-down"}
-                size={16}
-                color="white"
-                style={{ marginLeft: 4 }}
+                name="chevron-down"
+                size={20}
+                color={getEmojiColor(selectedEmoji)}
               />
-            </TouchableOpacity>
-          </View>
+            </Animated.View>
+          </TouchableOpacity>
 
-          {isExpanded && (
-            <View style={styles.stepsContainer}>
-              {["1", "2", "3", "4", "5"].map((step) => {
-                const stepKey = `UI.emojiPage.emojiDescriptions.${emojiKey}.steps.${step}`
-                const descKey = `UI.emojiPage.emojiDescriptions.${emojiKey}.steps.${step}_desc`
+          <Animated.View 
+            style={[
+              styles.stepsContainer,
+              {
+                opacity: isExpanded ? 1 : 0,
+                maxHeight: isExpanded ? 1000 : 0,
+                overflow: 'hidden'
+              }
+            ]}
+          >
+            {["1", "2", "3", "4", "5"].map((step) => {
+              const stepKey = `UI.emojiPage.emojiDescriptions.${emojiKey}.steps.${step}`
+              const descKey = `UI.emojiPage.emojiDescriptions.${emojiKey}.steps.${step}_desc`
 
-                if (t(stepKey) !== stepKey) {
-                  return (
-                    <View key={step} style={styles.stepRow}>
-                      <View style={[styles.stepNumber, { backgroundColor: getEmojiColor(selectedEmoji) + "40" }]}>
-                        <Text style={styles.stepNumberText}>{step}</Text>
-                      </View>
-                      <View style={styles.stepContent}>
-                        <Text style={[styles.stepTitle, { color: getEmojiColor(selectedEmoji) }]}>{t(stepKey)}</Text>
-                        <Text style={styles.descriptionText}>{t(descKey)}</Text>
-                      </View>
+              if (t(stepKey) !== stepKey) {
+                return (
+                  <View key={step} style={styles.stepRow}>
+                    <View style={[styles.stepNumber, { backgroundColor: getEmojiColor(selectedEmoji) }]}>
+                      <Text style={styles.stepNumberText}>{step}</Text>
                     </View>
-                  )
-                }
-                return null
-              })}
+                    <View style={styles.stepContent}>
+                      <Text style={[styles.stepTitle, { color: getEmojiColor(selectedEmoji) }]}>{t(stepKey)}</Text>
+                      <Text style={styles.stepDescription}>{t(descKey)}</Text>
+                    </View>
+                  </View>
+                )
+              }
+              return null
+            })}
 
-              <View style={styles.conclusionContainer}>
-                <Text style={styles.conclusionTitle}>
-                  {t(`UI.emojiPage.emojiDescriptions.${emojiKey}.steps.conclusion`)}
-                </Text>
-                <Text style={styles.conclusionText}>
-                  {t(`UI.emojiPage.emojiDescriptions.${emojiKey}.steps.conclusion_desc`)}
-                </Text>
-              </View>
+            <View style={styles.conclusionContainer}>
+              <Text style={styles.conclusionTitle}>
+                {t(`UI.emojiPage.emojiDescriptions.${emojiKey}.steps.conclusion`)}
+              </Text>
+              <Text style={styles.conclusionText}>
+                {t(`UI.emojiPage.emojiDescriptions.${emojiKey}.steps.conclusion_desc`)}
+              </Text>
             </View>
-          )}
+          </Animated.View>
         </View>
       </Animated.View>
     )
