@@ -127,11 +127,34 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       logger.info('📱 Parsing QR code data:', qrCodeData.substring(0, 50) + '...');
       
       // Parse JSON data
-      const qrSessionData: QRCodeSessionData = JSON.parse(qrCodeData);
+      const qrSessionData: any = JSON.parse(qrCodeData);
       
-      // Validate QR code type
-      if (qrSessionData.type !== "SVB_SESSION") {
+      // Handle both old and new QR code formats for backward compatibility
+      if (qrSessionData.type === "bible_group_reading") {
+        // Convert old format to new format
+        logger.info('📱 Converting legacy QR code format to new format');
+        const convertedData: QRCodeSessionData = {
+          type: "SVB_SESSION",
+          sessionId: qrSessionData.sessionId,
+          storyId: qrSessionData.storyId || 'S001',
+          storyTitle: qrSessionData.storyTitle,
+          scriptureReference: qrSessionData.scriptureReference || 'Genesis 1:1-2:25',
+          hostRole: qrSessionData.hostRole || 'narrator',
+          hostUserName: qrSessionData.hostUserName,
+          timestamp: qrSessionData.timestamp,
+          expiresAt: qrSessionData.timestamp + (30 * 60 * 1000), // 30 minutes
+          planId: qrSessionData.planId,
+          challengeId: qrSessionData.challengeId
+        };
+        qrSessionData = convertedData;
+        logger.info('📱 Legacy format converted successfully:', {
+          originalType: 'bible_group_reading',
+          newType: convertedData.type,
+          sessionId: convertedData.sessionId
+        });
+      } else if (qrSessionData.type !== "SVB_SESSION") {
         logger.error('🔴 Invalid QR code type:', qrSessionData.type);
+        logger.error('🔴 Expected: SVB_SESSION, Got:', qrSessionData.type);
         return null;
       }
       
@@ -191,7 +214,7 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       logger.info('✅ Parsing completion QR code data:', qrCodeData.substring(0, 50) + '...');
       
       // Parse JSON data
-      const qrCompletionData: QRCodeCompletionData = JSON.parse(qrCodeData);
+      const qrCompletionData: any = JSON.parse(qrCodeData);
       
       // Validate QR code type
       if (qrCompletionData.type !== "SVB_COMPLETION") {
@@ -201,7 +224,7 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       
       // Validate completion data
       if (!this.validateCompletionData(qrCompletionData)) {
-        logger.error('🔴 Invalid completion data');
+        logger.error('🔴 Invalid completion data - validation failed');
         return null;
       }
       
@@ -246,8 +269,8 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
         return false;
       }
       
-      // Check session ID format
-      if (!sessionData.sessionId.startsWith('session_')) {
+      // Check session ID format - allow both old and new formats
+      if (!sessionData.sessionId || sessionData.sessionId.length < 3) {
         logger.error('🔴 Invalid session ID format');
         return false;
       }

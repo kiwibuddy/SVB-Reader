@@ -5,7 +5,7 @@ import { runOnJS } from 'react-native-reanimated';
 import BibleInlineComponent from "./Inline";
 import { BibleBlock } from "@/types";
 import SourceNameComponent from "./SourceName";
-import { getColors, getBubbleTextColor } from "@/scripts/getColors";
+import { getColors, getBubbleTextColorSafe } from "@/scripts/getColors";
 import GlowBubble from "./GlowBubble";
 import { useAppSettings } from "@/context/AppSettingsContext";
 import { baseSizes as sizes } from "@/context/FontSizeContext";
@@ -144,7 +144,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
                       key={`${bIndex}-${index}`}
                       iIndex={`${bIndex}-${index}`}
                       inline={item}
-                      textColor={getBubbleTextColor(color, isDarkMode)}
+                      textColor={getBubbleTextColorSafe(color, isDarkMode)}
                     />
                   );
                 })}
@@ -195,7 +195,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
                   key={`${bIndex}-${index}`}
                   iIndex={`${bIndex}-${index}`}
                   inline={item}
-                  textColor={getBubbleTextColor(color, isDarkMode)}
+                  textColor={getBubbleTextColorSafe(color, isDarkMode)}
                 />
               );
             })}

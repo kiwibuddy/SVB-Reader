@@ -19,6 +19,12 @@ export const breakpoints = {
 // Screen dimensions
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
+// Add listener for dimension changes
+Dimensions.addEventListener('change', () => {
+  // Reset card width cache when dimensions change
+  resetCardWidthCache();
+});
+
 // Responsive utilities
 export const isPhone = screenWidth < breakpoints.tablet;
 export const isTablet = screenWidth >= breakpoints.tablet && screenWidth < breakpoints.desktop;
@@ -70,10 +76,23 @@ export const getGridColumns = () => {
   return gridColumns.phone;
 };
 
-// Responsive card widths
+// Responsive card widths - memoized to prevent render issues
+let cachedCardWidth: number | null = null;
+let lastScreenWidth: number = screenWidth;
+
 export const getCardWidth = () => {
-  const columns = getGridColumns();
-  const padding = responsivePadding.screen * 2;
-  const gap = spacing.md * (columns - 1);
-  return (screenWidth - padding - gap) / columns;
+  // Only recalculate if screen width has changed
+  if (cachedCardWidth === null || Math.abs(lastScreenWidth - screenWidth) > 1) {
+    const columns = getGridColumns();
+    const padding = responsivePadding.screen * 2;
+    const gap = spacing.md * (columns - 1);
+    cachedCardWidth = (screenWidth - padding - gap) / columns;
+    lastScreenWidth = screenWidth;
+  }
+  return cachedCardWidth;
+};
+
+// Reset cache when needed (e.g., on orientation change)
+export const resetCardWidthCache = () => {
+  cachedCardWidth = null;
 }; 

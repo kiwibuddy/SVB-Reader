@@ -37,18 +37,21 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useGroupReading } from '@/context/GroupReadingContext';
 import { getFullBookName } from '@/utils/bookNameMapping';
 import { 
-  getBookInsights, 
   getStoryInsights, 
+  getBookInsights, 
   getLastReactionData, 
   getUserActivityInsights,
   hasUserData,
+  initializeInsights,
+  addSimplifiedStoryRead,
   type BookInsights,
   type StoryInsights,
   type LastReactionData,
   type UserActivityInsights
 } from '@/api/insightQueries';
+import logger from '@/utils/logger';
 import { databaseManager } from '@/api/database-manager';
-import { getColors, getBubbleTextColor } from '@/scripts/getColors';
+import { getColors, getBubbleTextColorSafe } from '@/scripts/getColors';
 import Reanimated, {
   useSharedValue,
   useAnimatedStyle,
@@ -1529,10 +1532,10 @@ const ReadingInsightsCarousel = ({
 
         // Get enhanced insights
         const [bookInsights, storyInsights, lastReaction, activityInsights] = await Promise.all([
-          dataCheck.hasReadBooks ? getBookInsights(favoriteBookKey) : null,
-          favoriteSegmentId && dataCheck.hasReadStories ? getStoryInsights(favoriteSegmentId) : null,
-          dataCheck.hasEmojis ? getLastReactionData() : null,
-          dataCheck.hasActivity ? getUserActivityInsights() : null,
+          dataCheck.hasReadBooks ? getBookInsights(favoriteBookKey).catch(() => null) : null,
+          favoriteSegmentId && dataCheck.hasReadStories ? getStoryInsights(favoriteSegmentId).catch(() => null) : null,
+          dataCheck.hasEmojis ? getLastReactionData().catch(() => null) : null,
+          dataCheck.hasActivity ? getUserActivityInsights().catch(() => null) : null,
         ]);
 
         setEnhancedInsights({
@@ -1626,10 +1629,10 @@ const ReadingInsightsCarousel = ({
 
           // Get enhanced insights
           const [bookInsights, storyInsights, lastReaction, activityInsights] = await Promise.all([
-            dataCheck.hasReadBooks ? getBookInsights(favoriteBookKey) : null,
-            favoriteSegmentId && dataCheck.hasReadStories ? getStoryInsights(favoriteSegmentId) : null,
-            dataCheck.hasEmojis ? getLastReactionData() : null,
-            dataCheck.hasActivity ? getUserActivityInsights() : null,
+            dataCheck.hasReadBooks ? getBookInsights(favoriteBookKey).catch(() => null) : null,
+            favoriteSegmentId && dataCheck.hasReadStories ? getStoryInsights(favoriteSegmentId).catch(() => null) : null,
+            dataCheck.hasEmojis ? getLastReactionData().catch(() => null) : null,
+            dataCheck.hasActivity ? getUserActivityInsights().catch(() => null) : null,
           ]);
 
           setEnhancedInsights({
@@ -1968,7 +1971,7 @@ const ReadingInsightsCarousel = ({
                   {/* Block text preview */}
                   <Text style={{
                     fontSize: sizes.caption,
-                    color: getBubbleTextColor(lastReaction.blockData?.source?.color || 'black', isDarkMode),
+                    color: getBubbleTextColorSafe(lastReaction.blockData?.source?.color || 'black', isDarkMode),
                     lineHeight: 18,
                   }} numberOfLines={2}>
                     {getBlockText(lastReaction.blockData)}
@@ -2101,8 +2104,44 @@ const ReadingInsightsCarousel = ({
 };
 
 const Home = () => {
+  const { colors, isDarkMode } = useAppSettings();
+  const { state, refreshAllData, refreshProgressData, refreshStatistics } = useSQLiteGlobalContext();
+  const [refreshing, setRefreshing] = useState(false);
+  const [insightsInitialized, setInsightsInitialized] = useState(false);
+
+  // Initialize insights system
+  useEffect(() => {
+    const initInsights = async () => {
+      try {
+        await initializeInsights();
+        setInsightsInitialized(true);
+      } catch (error) {
+        logger.error('Failed to initialize insights:', error);
+        // Continue without insights rather than crashing
+        setInsightsInitialized(true);
+      }
+    };
+    
+    initInsights();
+  }, []);
+
+  // Handle refresh with error handling
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        refreshProgressData(),
+        refreshStatistics()
+      ]);
+    } catch (error) {
+      logger.error('Error during refresh:', error);
+      // Continue without crashing
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const { 
-    state,
     updateLastReadSegment,
     updateSegmentId,
   } = useSQLiteGlobalContext();
@@ -2111,7 +2150,6 @@ const Home = () => {
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   const { sizes } = useFontSize();
-  const { colors } = useAppSettings();
   const { t } = useTranslation();
   const styles = createStyles(width >= 768, colors);
   const [currentStreak, setCurrentStreak] = useState(0);
@@ -2949,11 +2987,8 @@ const Home = () => {
         contentContainerStyle={{ paddingBottom: 20 }}
         refreshControl={
           <RefreshControl
-            refreshing={false}
-            onRefresh={() => {
-              // Trigger refresh of all data
-              setRefreshTrigger(prev => prev + 1);
-            }}
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
             colors={[colors.primary]}
             tintColor={colors.primary}
           />

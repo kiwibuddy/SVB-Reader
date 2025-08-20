@@ -79,8 +79,10 @@ export async function markSegmentComplete(
   if (segmentID.startsWith('I')) {
     return;
   }
+  
   try {
-    const db = databaseManager.getDatabase();
+    // Use ensureDatabase to get a valid database connection
+    const db = await databaseManager.ensureDatabase();
     const currentDate = new Date().toISOString();
 
     // Always record in legacy completion table for history
@@ -179,6 +181,19 @@ export async function markSegmentComplete(
 
   } catch (error) {
     logger.error("Error marking segment complete:", error);
+    
+    // If it's a database connection error, try to reinitialize
+    if (error instanceof Error && error.message.includes('Database not initialized')) {
+      try {
+        await databaseManager.initialize();
+        // Retry once after reinitialization
+        return await markSegmentComplete(segmentID, context, planID, challengeID);
+      } catch (retryError) {
+        logger.error("Retry failed after database reinitialization:", retryError);
+        throw retryError;
+      }
+    }
+    
     throw error;
   }
 }
@@ -253,8 +268,10 @@ export const getSegmentCompletionStatus = async (
       color: null
     };
   }
+  
   try {
-    const db = databaseManager.getDatabase();
+    // Use ensureDatabase to get a valid database connection
+    const db = await databaseManager.ensureDatabase();
     let result: any;
 
     if (context === 'main') {
@@ -295,6 +312,18 @@ export const getSegmentCompletionStatus = async (
     }
   } catch (error) {
     logger.error("Error getting segment completion status:", error);
+    
+    // If it's a database connection error, try to reinitialize
+    if (error instanceof Error && error.message.includes('Database not initialized')) {
+      try {
+        await databaseManager.initialize();
+        // Retry once after reinitialization
+        return await getSegmentCompletionStatus(segmentId, context, planId, challengeId);
+      } catch (retryError) {
+        logger.error("Retry failed after database reinitialization:", retryError);
+      }
+    }
+    
     return { isCompleted: false, color: null };
   }
 };
@@ -1460,7 +1489,7 @@ export async function getReadSegments(): Promise<string[]> {
  */
 export async function markSegmentAsRead(segmentId: string): Promise<void> {
   try {
-    const db = databaseManager.getDatabase();
+    const db = await databaseManager.ensureDatabase();
     const currentDate = new Date().toISOString();
     await db.runAsync(`
       INSERT OR REPLACE INTO segment_read_count (segmentID, totalReads, lastReadDate)
@@ -1477,7 +1506,7 @@ export async function markSegmentAsRead(segmentId: string): Promise<void> {
  */
 export async function getActivePlanFromDB(): Promise<any | null> {
   try {
-    const db = databaseManager.getDatabase();
+    const db = await databaseManager.ensureDatabase();
     const result = await db.getFirstAsync<{
       itemID: string;
       isActive: number;
@@ -1512,7 +1541,7 @@ export async function getActivePlanFromDB(): Promise<any | null> {
  */
 export async function getActiveChallengesFromDB(): Promise<Record<string, any>> {
   try {
-    const db = databaseManager.getDatabase();
+    const db = await databaseManager.ensureDatabase();
     const results = await db.getAllAsync<{
       itemID: string;
       isActive: number;

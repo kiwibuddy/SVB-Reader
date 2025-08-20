@@ -180,59 +180,92 @@ export const SQLiteGlobalProvider: React.FC<{ children: React.ReactNode }> = ({ 
     try {
       setState(prev => ({ ...prev, isLoading: true }));
       
-      const [
-        segmentId,
-        readingPlan,
-        lastReadSegment,
-        language,
-        version,
-        readSegments,
-        activePlan,
-        activeChallenges,
-        currentStreak,
-        bestStreak,
-        completedSegmentsCount,
-        totalSegmentsCount,
-        emojiStats,
-        sourceStats,
-        oldTestamentProgress,
-        newTestamentProgress,
-        longestSession,
-        completedBooks,
-        emojiCollection,
-        readingStreak,
-        bookProgress
-      ] = await Promise.all([
-        getCurrentSegmentId(),
-        getCurrentReadingPlan(),
-        getLastReadSegment(),
-        getAppLanguage(),
-        getAppVersion(),
-        getReadSegments(),
-        getActivePlanFromDB(),
-        getActiveChallengesFromDB(),
-        getCurrentStreak(),
-        getBestStreak(),
-        getCompletedSegmentsCount(),
-        getTotalSegmentsCount(),
-        getEmojiStats(),
-        getSourceStats(),
-        getOldTestamentProgress(),
-        getNewTestamentProgress(),
-        getLongestSession(),
-        getCompletedBooks(),
-        checkEmojiCollection(),
-        getReadingStreak(),
-        getBookProgress('all')
-      ]);
+      // Try to load data with fallback to defaults if database fails
+      let segmentId = 'S001';
+      let readingPlan = 'chronological';
+      let lastReadSegment = null;
+      let language = 'en';
+      let version = 'nlt';
+      let readSegments: string[] = [];
+      let activePlan = null;
+      let activeChallenges = {};
+      let currentStreak = 0;
+      let bestStreak = 0;
+      let completedSegmentsCount = 0;
+      let totalSegmentsCount = 0;
+      let emojiStats = {};
+      let sourceStats = {};
+      let oldTestamentProgress: any = 0;
+      let newTestamentProgress: any = 0;
+      let longestSession = null;
+      let completedBooks: string[] = [];
+      let emojiCollection = {};
+      let readingStreak = {};
+      let bookProgress = {};
 
-      // Build completed segments map
+      try {
+        [
+          segmentId,
+          readingPlan,
+          lastReadSegment,
+          language,
+          version,
+          readSegments,
+          activePlan,
+          activeChallenges,
+          currentStreak,
+          bestStreak,
+          completedSegmentsCount,
+          totalSegmentsCount,
+          emojiStats,
+          sourceStats,
+          oldTestamentProgress,
+          newTestamentProgress,
+          longestSession,
+          completedBooks,
+          emojiCollection,
+          readingStreak,
+          bookProgress
+        ] = await Promise.all([
+          getCurrentSegmentId(),
+          getCurrentReadingPlan(),
+          getLastReadSegment(),
+          getAppLanguage(),
+          getAppVersion(),
+          getReadSegments(),
+          getActivePlanFromDB(),
+          getActiveChallengesFromDB(),
+          getCurrentStreak(),
+          getBestStreak(),
+          getCompletedSegmentsCount(),
+          getTotalSegmentsCount(),
+          getEmojiStats(),
+          getSourceStats(),
+          getOldTestamentProgress(),
+          getNewTestamentProgress(),
+          getLongestSession(),
+          getCompletedBooks(),
+          checkEmojiCollection(),
+          getReadingStreak(),
+          getBookProgress('all')
+        ]);
+      } catch (dbError) {
+        logger.warn('Database operations failed, using default values:', dbError);
+        // Continue with default values instead of crashing
+      }
+
+      // Build completed segments map with error handling
       const completedSegments: Record<string, boolean> = {};
-      for (const segmentId of readSegments) {
-        const status = await getSegmentCompletionStatus(segmentId, 'main');
-        if (status.isCompleted) {
-          completedSegments[segmentId] = true;
+      try {
+        for (const segmentId of readSegments) {
+          const status = await getSegmentCompletionStatus(segmentId, 'main');
+          if (status.isCompleted) {
+            completedSegments[segmentId] = true;
+          }
         }
+      } catch (completionError) {
+        logger.error('Error building completed segments map:', completionError);
+        // Continue with empty map rather than failing completely
       }
 
       setState(prev => ({

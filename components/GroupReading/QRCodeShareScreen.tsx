@@ -36,13 +36,17 @@ const QRCodeShareScreen: React.FC<QRCodeShareScreenProps> = ({
 }) => {
   const { colors } = useAppSettings();
 
-  // Use the provided QR code data or fall back to legacy format
+  // Use the provided QR code data or fall back to consistent format
   const qrData = qrCodeData || JSON.stringify({
-    type: 'bible_group_reading',
+    type: 'SVB_SESSION',
     sessionId,
     storyTitle,
     hostUserName,
     timestamp: Date.now(),
+    expiresAt: Date.now() + (30 * 60 * 1000), // 30 minutes
+    storyId: 'S001', // Default story ID
+    scriptureReference: 'Genesis 1:1-2:25', // Default reference
+    hostRole: 'narrator', // Default role
   });
 
   // Create a shareable text message

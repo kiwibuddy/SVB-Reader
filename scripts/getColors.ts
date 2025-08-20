@@ -34,3 +34,11 @@ export const getBubbleTextColor = (color: string, isDarkMode: boolean) => {
       return '#2C2C2E'; // Fallback to dark gray
   }
 };
+
+// Fallback function for when color is undefined or null
+export const getBubbleTextColorSafe = (color: string | undefined | null, isDarkMode: boolean) => {
+  if (!color) {
+    return isDarkMode ? '#F5F5F5' : '#2C2C2E';
+  }
+  return getBubbleTextColor(color, isDarkMode);
+};

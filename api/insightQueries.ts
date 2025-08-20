@@ -1,6 +1,83 @@
 import { databaseManager } from './database-manager';
 import logger from '@/utils/logger';
 // ============================================================================
+// SIMPLIFIED INSIGHTS MODE
+// ============================================================================
+
+// When database is having issues, we can track minimal data in memory
+const simplifiedInsightsCache = new Map<string, { readCount: number; lastRead: string | null }>();
+
+export const addSimplifiedStoryRead = (segmentId: string) => {
+  const existing = simplifiedInsightsCache.get(segmentId);
+  const now = new Date().toISOString();
+  
+  if (existing) {
+    existing.readCount += 1;
+    existing.lastRead = now;
+  } else {
+    simplifiedInsightsCache.set(segmentId, { readCount: 1, lastRead: now });
+  }
+};
+
+export const getSimplifiedStoryInsights = (segmentId: string): StoryInsights => {
+  const data = simplifiedInsightsCache.get(segmentId);
+  
+  return {
+    totalReads: data?.readCount || 0,
+    lastReadDate: data?.lastRead || null,
+    groupReads: 0,
+    individualReads: data?.readCount || 0,
+    firstReadDate: null,
+    readInPlans: 0,
+    readInChallenges: 0,
+  };
+};
+
+// Initialize insights system with health check
+export const initializeInsights = async (): Promise<void> => {
+  try {
+    const isHealthy = await checkDatabaseHealth();
+    if (!isHealthy) {
+      logger.info('Database unhealthy, using simplified insights mode');
+      setUseSimplifiedInsights(true);
+    } else {
+      logger.info('Database healthy, using full insights mode');
+      setUseSimplifiedInsights(false);
+    }
+  } catch (error) {
+    logger.error('Error initializing insights:', error);
+    setUseSimplifiedInsights(true); // Default to simplified mode on error
+  }
+};
+
+// ============================================================================
+// CONFIGURATION AND FALLBACK MANAGEMENT
+// ============================================================================
+
+// Configuration to use simplified insights when database is having issues
+let useSimplifiedInsights = false;
+
+export const setUseSimplifiedInsights = (useSimple: boolean) => {
+  useSimplifiedInsights = useSimple;
+  logger.info(`Insights mode set to: ${useSimple ? 'simplified' : 'full'}`);
+};
+
+export const getUseSimplifiedInsights = () => useSimplifiedInsights;
+
+// Check if database is healthy and switch to simplified mode if needed
+export const checkDatabaseHealth = async (): Promise<boolean> => {
+  try {
+    const db = await databaseManager.ensureDatabase();
+    await db.execAsync('SELECT 1');
+    return true;
+  } catch (error) {
+    logger.warn('Database health check failed, switching to simplified insights mode');
+    setUseSimplifiedInsights(true);
+    return false;
+  }
+};
+
+// ============================================================================
 // ENHANCED INSIGHT QUERIES
 // ============================================================================
 
@@ -53,7 +130,7 @@ export interface UserActivityInsights {
 
 export async function getBookInsights(bookCode: string): Promise<BookInsights> {
   try {
-    const db = databaseManager.getDatabase();
+    const db = await databaseManager.ensureDatabase();
     
     // Get all segments for this book
     const bookSegments = await db.getAllAsync<{ segmentId: string }>(
@@ -156,9 +233,72 @@ export async function getBookInsights(bookCode: string): Promise<BookInsights> {
 // STORY-SPECIFIC INSIGHTS  
 // ============================================================================
 
-export async function getStoryInsights(segmentId: string): Promise<StoryInsights> {
+// Simplified fallback version that doesn't require complex database queries
+export async function getStoryInsightsSimple(segmentId: string): Promise<StoryInsights> {
   try {
-    const db = databaseManager.getDatabase();
+    const db = await databaseManager.ensureDatabase();
+    
+    // Just get basic read count - simpler query
+    const readStats = await db.getFirstAsync<{ 
+      totalReads: number; 
+      lastReadDate: string;
+    }>(`
+      SELECT totalReads, lastReadDate
+      FROM segment_read_count 
+      WHERE segmentID = ?
+    `, [segmentId]);
+    
+    return {
+      totalReads: readStats?.totalReads || 0,
+      lastReadDate: readStats?.lastReadDate || null,
+      groupReads: 0, // Simplified - no complex joins
+      individualReads: readStats?.totalReads || 0,
+      firstReadDate: null, // Simplified - no complex queries
+      readInPlans: 0, // Simplified - no complex joins
+      readInChallenges: 0, // Simplified - no complex joins
+    };
+  } catch (error) {
+    logger.error('Error getting simple story insights:', error);
+    // Return safe defaults
+    return {
+      totalReads: 0,
+      lastReadDate: null,
+      groupReads: 0,
+      individualReads: 0,
+      firstReadDate: null,
+      readInPlans: 0,
+      readInChallenges: 0,
+    };
+  }
+}
+
+export async function getStoryInsights(segmentId: string): Promise<StoryInsights> {
+  // Check if we should use simplified insights
+  if (useSimplifiedInsights) {
+    logger.info('Using simplified story insights due to configuration');
+    // Check both simplified database query and memory cache
+    try {
+      const dbResult = await getStoryInsightsSimple(segmentId);
+      const cacheResult = getSimplifiedStoryInsights(segmentId);
+      
+      // Combine both sources, preferring database if available
+      return {
+        totalReads: Math.max(dbResult.totalReads, cacheResult.totalReads),
+        lastReadDate: dbResult.lastReadDate || cacheResult.lastReadDate,
+        groupReads: dbResult.groupReads,
+        individualReads: Math.max(dbResult.individualReads, cacheResult.individualReads),
+        firstReadDate: dbResult.firstReadDate,
+        readInPlans: dbResult.readInPlans,
+        readInChallenges: dbResult.readInChallenges,
+      };
+    } catch (error) {
+      logger.error('Error getting simplified insights, using cache only:', error);
+      return getSimplifiedStoryInsights(segmentId);
+    }
+  }
+
+  try {
+    const db = await databaseManager.ensureDatabase();
     
     // Get basic read count and dates
     const readStats = await db.getFirstAsync<{ 
@@ -211,15 +351,10 @@ export async function getStoryInsights(segmentId: string): Promise<StoryInsights
     };
   } catch (error) {
     logger.error('Error getting story insights:', error);
-    return {
-      totalReads: 0,
-      lastReadDate: null,
-      groupReads: 0,
-      individualReads: 0,
-      firstReadDate: null,
-      readInPlans: 0,
-      readInChallenges: 0,
-    };
+    // Fallback to simple version if complex queries fail
+    logger.info('Falling back to simple story insights');
+    setUseSimplifiedInsights(true); // Switch to simplified mode for future calls
+    return await getStoryInsightsSimple(segmentId);
   }
 }
 
@@ -229,7 +364,7 @@ export async function getStoryInsights(segmentId: string): Promise<StoryInsights
 
 export async function getLastReactionData(): Promise<LastReactionData | null> {
   try {
-    const db = databaseManager.getDatabase();
+    const db = await databaseManager.ensureDatabase();
     
     // Get the most recent emoji
     const lastEmoji = await db.getFirstAsync<{
@@ -277,7 +412,7 @@ export function getSegmentReference(segmentID: string): string {
 
 export async function getUserActivityInsights(): Promise<UserActivityInsights> {
   try {
-    const db = databaseManager.getDatabase();
+    const db = await databaseManager.ensureDatabase();
     
     // Get reading time preferences (analyze completion times in local timezone)
     const timeAnalysis = await db.getAllAsync<{ hour: number; count: number }>(`
@@ -427,7 +562,7 @@ export async function hasUserData(): Promise<{
   hasActivity: boolean;
 }> {
   try {
-    const db = databaseManager.getDatabase();
+    const db = await databaseManager.ensureDatabase();
     
     const emojiCount = await db.getFirstAsync<{ count: number }>(`
       SELECT COUNT(*) as count FROM emojis

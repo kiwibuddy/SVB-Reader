@@ -57,6 +57,12 @@ export default function QRCodeScanner({
       
       if (session) {
         logger.info('✅ Valid session QR code detected');
+        logger.info('✅ Session details:', {
+          id: session.id,
+          story: session.storyTitle,
+          host: session.hostUserName,
+          role: session.participants[0]?.role
+        });
         onQRCodeScanned(scanResult.data);
         return;
       }
@@ -66,12 +72,25 @@ export default function QRCodeScanner({
       
       if (completionData) {
         logger.info('✅ Valid completion QR code detected');
+        logger.info('✅ Completion details:', {
+          sessionId: completionData.sessionId,
+          storyId: completionData.storyId,
+          timestamp: completionData.timestamp
+        });
         onQRCodeScanned(scanResult.data);
         return;
       }
       
-      // Invalid QR code
+      // Invalid QR code - log more details for debugging
       logger.info('🔴 Invalid QR code format');
+      logger.info('🔴 Raw QR data:', scanResult.data);
+      try {
+        const parsedData = JSON.parse(scanResult.data);
+        logger.info('🔴 Parsed data type:', parsedData.type);
+        logger.info('🔴 Parsed data keys:', Object.keys(parsedData));
+      } catch (parseError) {
+        logger.info('🔴 QR data is not valid JSON');
+      }
       Alert.alert(
         'Invalid QR Code',
         'This QR code is not recognized. Please scan a valid SourceView Together group reading QR code.',
