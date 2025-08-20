@@ -63,7 +63,7 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
       <Text
         style={{
           ...{
-            color: isDarkMode ? '#F5F5F5' : '#2C2C2E', // White for dark mode, dark gray for light mode
+            color: textColor,
             fontSize: 12,
           },
         }}
@@ -80,7 +80,7 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
       key={leafIndex}
       style={{
         ...{
-          color: isDarkMode ? '#F5F5F5' : '#2C2C2E', // White for dark mode, dark gray for light mode
+          color: textColor,
           fontSize: 20,
           lineHeight: 36,
         },

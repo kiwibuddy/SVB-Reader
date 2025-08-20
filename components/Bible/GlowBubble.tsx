@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Animated, Platform } from "react-native";
-import { getColors } from "@/scripts/getColors";
+import { getColors, getBubbleTextColor } from "@/scripts/getColors";
 import { BibleBlock } from "@/types";
 import SourceNameComponent from "./SourceName";
 import BibleInlineComponent from "./Inline";
@@ -171,7 +171,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetV
                   key={`${bIndex}-${index}`}
                   iIndex={`${bIndex}-${index}`}
                   inline={item}
-                  textColor={isDarkMode ? '#F5F5F5' : '#2C2C2E'} // White for dark mode, dark gray for light mode
+                  textColor={getBubbleTextColor(color, isDarkMode)}
                 />
               );
             })}

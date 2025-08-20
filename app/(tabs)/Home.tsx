@@ -48,7 +48,7 @@ import {
   type UserActivityInsights
 } from '@/api/insightQueries';
 import { databaseManager } from '@/api/database-manager';
-import { getColors } from '@/scripts/getColors';
+import { getColors, getBubbleTextColor } from '@/scripts/getColors';
 import Reanimated, {
   useSharedValue,
   useAnimatedStyle,
@@ -1968,7 +1968,7 @@ const ReadingInsightsCarousel = ({
                   {/* Block text preview */}
                   <Text style={{
                     fontSize: sizes.caption,
-                    color: colors.text,
+                    color: getBubbleTextColor(lastReaction.blockData?.source?.color || 'black', isDarkMode),
                     lineHeight: 18,
                   }} numberOfLines={2}>
                     {getBlockText(lastReaction.blockData)}

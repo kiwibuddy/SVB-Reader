@@ -58,7 +58,7 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
   const { isDarkMode } = useAppSettings();
   return (
     <View style={inlineStyle}>
-      <Text style={{lineHeight: 36, fontSize: 20, color: isDarkMode ? '#F5F5F5' : '#2C2C2E'}}>
+      <Text style={{lineHeight: 36, fontSize: 20, color: textColor}}>
         {renderedChildren}
       </Text>
     </View>

@@ -12,3 +12,25 @@ export const getColors = (color: string) => {
       return { dark: "#2C2C2E", light: "#FFFFFF" }; // Fallback to dark gray and white
   }
 };
+
+// Function to get darker text colors for speech bubbles that match the bubble color
+export const getBubbleTextColor = (color: string, isDarkMode: boolean) => {
+  if (isDarkMode) {
+    // In dark mode, keep the existing text color logic
+    return '#F5F5F5'; // White text for dark mode
+  }
+  
+  // In light mode, use darker versions of the bubble colors for better readability
+  switch (color) {
+    case "black":
+      return '#2C2C2E'; // Dark gray text on light gray background
+    case "red":
+      return '#8B0000'; // Dark red text on light red background
+    case "green":
+      return '#006400'; // Dark green text on light green background
+    case "blue":
+      return '#00008B'; // Dark blue text on light blue background
+    default:
+      return '#2C2C2E'; // Fallback to dark gray
+  }
+};
