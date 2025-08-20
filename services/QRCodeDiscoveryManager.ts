@@ -57,6 +57,16 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       logger.info('📱 Host role:', hostRole);
       
       // Create session data for QR code
+      const currentTime = Date.now();
+      const expirationTime = currentTime + (30 * 60 * 1000); // 30 minutes
+      
+      logger.info('🔍 Timestamp generation:', {
+        currentTime: currentTime,
+        expirationTime: expirationTime,
+        currentDate: new Date(currentTime).toISOString(),
+        expirationDate: new Date(expirationTime).toISOString()
+      });
+      
       const qrSessionData: QRCodeSessionData = {
         type: "SVB_SESSION",
         sessionId: session.id,
@@ -65,8 +75,8 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
         scriptureReference: session.scriptureReference,
         hostRole: hostRole,
         hostUserName: session.hostUserName,
-        timestamp: Date.now(),
-        expiresAt: Date.now() + (30 * 60 * 1000), // 30 minutes
+        timestamp: currentTime,
+        expiresAt: expirationTime,
         planId: session.planId,
         challengeId: session.challengeId
       };
@@ -164,9 +174,17 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
         return null;
       }
       
-      // Check if session is expired
-      if (qrSessionData.expiresAt < Date.now()) {
-        logger.error('🔴 Session has expired');
+      // Check if session is expired (allow 2 minute grace period for clock drift)
+      const graceTime = 2 * 60 * 1000; // 2 minutes
+      const currentTimeWithGrace = Date.now() - graceTime;
+      if (qrSessionData.expiresAt < currentTimeWithGrace) {
+        logger.error('🔴 Session has expired', {
+          expiresAt: qrSessionData.expiresAt,
+          currentTime: Date.now(),
+          currentTimeWithGrace: currentTimeWithGrace,
+          expirationDate: new Date(qrSessionData.expiresAt).toISOString(),
+          currentDate: new Date(Date.now()).toISOString()
+        });
         return null;
       }
       
@@ -257,15 +275,56 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
         return false;
       }
       
-      // Check timestamp
-      if (!sessionData.timestamp || sessionData.timestamp > Date.now()) {
-        logger.error('🔴 Invalid timestamp');
+      // Check timestamp - should be reasonable (allow for clock drift)
+      const currentTime = Date.now();
+      logger.info('🔍 Timestamp validation:', {
+        sessionTimestamp: sessionData.timestamp,
+        currentTime: currentTime,
+        difference: currentTime - sessionData.timestamp,
+        isFuture: sessionData.timestamp > currentTime,
+        sessionDate: new Date(sessionData.timestamp).toISOString(),
+        currentDate: new Date(currentTime).toISOString()
+      });
+      
+      if (!sessionData.timestamp) {
+        logger.error('🔴 Missing timestamp');
         return false;
       }
       
-      // Check expiration
-      if (!sessionData.expiresAt || sessionData.expiresAt <= Date.now()) {
-        logger.error('🔴 Session has expired');
+      // Allow timestamp to be up to 5 minutes in the future (for clock drift between devices)
+      const maxFutureTime = currentTime + (5 * 60 * 1000); // 5 minutes
+      // Allow timestamp to be up to 1 hour in the past (for delayed scanning)
+      const maxPastTime = currentTime - (60 * 60 * 1000); // 1 hour
+      
+      if (sessionData.timestamp > maxFutureTime) {
+        logger.error('🔴 Timestamp is too far in the future (more than 5 minutes)', {
+          sessionTimestamp: sessionData.timestamp,
+          maxFutureTime: maxFutureTime,
+          differenceMs: sessionData.timestamp - currentTime
+        });
+        return false;
+      }
+      
+      if (sessionData.timestamp < maxPastTime) {
+        logger.error('🔴 Timestamp is too far in the past (more than 1 hour)', {
+          sessionTimestamp: sessionData.timestamp,
+          maxPastTime: maxPastTime,
+          differenceMs: currentTime - sessionData.timestamp
+        });
+        return false;
+      }
+      
+      // Check expiration (allow 2 minute grace period for clock drift)
+      const graceTime = 2 * 60 * 1000; // 2 minutes
+      const currentTimeWithGrace = Date.now() - graceTime;
+      if (!sessionData.expiresAt || sessionData.expiresAt <= currentTimeWithGrace) {
+        logger.error('🔴 Session has expired', {
+          expiresAt: sessionData.expiresAt,
+          currentTime: Date.now(),
+          currentTimeWithGrace: currentTimeWithGrace,
+          expirationDate: new Date(sessionData.expiresAt).toISOString(),
+          currentDate: new Date(Date.now()).toISOString()
+        });
         return false;
       }
       
@@ -292,16 +351,35 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
         return false;
       }
       
-      // Check timestamp (completion should be recent)
-      if (!completionData.timestamp || completionData.timestamp > Date.now()) {
-        logger.error('🔴 Invalid completion timestamp');
+      // Check timestamp (completion should be reasonable - allow for clock drift)
+      const currentTime = Date.now();
+      
+      if (!completionData.timestamp) {
+        logger.error('🔴 Missing completion timestamp');
         return false;
       }
       
-      // Check if completion is too old (within last 15 minutes)
-      const fifteenMinutesAgo = Date.now() - (15 * 60 * 1000);
-      if (completionData.timestamp < fifteenMinutesAgo) {
-        logger.error('🔴 Completion QR code is too old');
+      // Allow completion timestamp to be up to 5 minutes in the future (for clock drift)
+      const maxFutureTime = currentTime + (5 * 60 * 1000); // 5 minutes
+      if (completionData.timestamp > maxFutureTime) {
+        logger.error('🔴 Completion timestamp too far in the future', {
+          completionTimestamp: completionData.timestamp,
+          currentTime: currentTime,
+          maxFutureTime: maxFutureTime,
+          differenceMs: completionData.timestamp - currentTime
+        });
+        return false;
+      }
+      
+      // Check if completion is too old (within last 30 minutes - increased from 15)
+      const thirtyMinutesAgo = currentTime - (30 * 60 * 1000);
+      if (completionData.timestamp < thirtyMinutesAgo) {
+        logger.error('🔴 Completion QR code is too old (more than 30 minutes)', {
+          completionTimestamp: completionData.timestamp,
+          currentTime: currentTime,
+          thirtyMinutesAgo: thirtyMinutesAgo,
+          differenceMs: currentTime - completionData.timestamp
+        });
         return false;
       }
       

@@ -103,12 +103,12 @@ export default function CheckCircle({
 
   }, [modalCompletionState, isCompleted]);
   
-  // Reset modal ref when session changes
+  // Reset modal ref when session changes (but don't close modal if it's currently open)
   useEffect(() => {
-    if (!currentSession) {
+    if (!currentSession && !showHostQRModal) {
       modalShouldStayOpen.current = false;
     }
-  }, [currentSession]);
+  }, [currentSession, showHostQRModal]);
 
   // Prevent modal from being closed during generation
   useEffect(() => {

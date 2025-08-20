@@ -37,16 +37,17 @@ const QRCodeShareScreen: React.FC<QRCodeShareScreenProps> = ({
   const { colors } = useAppSettings();
 
   // Use the provided QR code data or fall back to consistent format
+  // WARNING: The fallback should rarely be used - QR code data should always be provided
   const qrData = qrCodeData || JSON.stringify({
     type: 'SVB_SESSION',
     sessionId,
+    storyId: sessionId.split('_')[1] || 'S001', // Extract story ID from session ID or default
     storyTitle,
+    scriptureReference: 'Genesis 1:1-2:25', // Default reference - should be overridden
+    hostRole: hostRole || 'narrator', // Use provided role or default
     hostUserName,
     timestamp: Date.now(),
     expiresAt: Date.now() + (30 * 60 * 1000), // 30 minutes
-    storyId: 'S001', // Default story ID
-    scriptureReference: 'Genesis 1:1-2:25', // Default reference
-    hostRole: 'narrator', // Default role
   });
 
   // Create a shareable text message

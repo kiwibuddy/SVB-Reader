@@ -247,7 +247,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: 16,
-      paddingTop: Platform.OS === 'ios' ? 8 : 16,
+      paddingTop: Platform.OS === 'ios' ? 8 : 24,
       paddingBottom: 16,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
@@ -266,7 +266,8 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
     content: {
       flex: 1,
       padding: 16,
-      justifyContent: 'space-between',
+      paddingBottom: Platform.OS === 'ios' ? 16 : 32,
+      // Remove space-between to allow natural flow
     },
     storyInfo: {
       marginBottom: 20,
@@ -356,8 +357,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
       backgroundColor: colors.card,
     },
     roleSelectionSection: {
-      flex: 1,
-      marginBottom: 16,
+      marginBottom: 24,
     },
     rolesContainer: {
       gap: 8,
@@ -402,6 +402,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
       paddingHorizontal: 32,
       borderRadius: 12,
       alignItems: 'center',
+      marginTop: 16,
       shadowColor: '#007AFF',
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,

@@ -39,18 +39,25 @@ export default function RoleSelectionScreen() {
   const [sessionData, setSessionData] = useState<any>(null);
 
   useEffect(() => {
-    if (qrCodeData && hostRole) {
+    if (qrCodeData) {
       // Parse session data
       const session = qrCodeDiscoveryManager.parseSessionFromQRCode(qrCodeData as string);
       if (session) {
         setSessionData(session);
-        // Calculate available roles
-        const roles = qrCodeDiscoveryManager.getAvailableRoles(hostRole as Role);
-        setAvailableRoles(roles);
-        logger.info('📱 Available roles for joining:', roles);
+        // Get host role from the parsed session data (more reliable than params)
+        const sessionHostRole = session.participants[0]?.role;
+        if (sessionHostRole) {
+          // Calculate available roles based on session host role
+          const roles = qrCodeDiscoveryManager.getAvailableRoles(sessionHostRole);
+          setAvailableRoles(roles);
+          logger.info('📱 Available roles for joining:', roles);
+          logger.info('📱 Host role from session:', sessionHostRole);
+        } else {
+          logger.error('🔴 No host role found in session data');
+        }
       }
     }
-  }, [qrCodeData, hostRole]);
+  }, [qrCodeData]);
 
   const handleRoleSelection = (role: Role) => {
     setSelectedRole(role);
@@ -246,6 +253,22 @@ export default function RoleSelectionScreen() {
       fontWeight: 'bold',
       marginLeft: 10,
     },
+    cancelButton: {
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      borderColor: colors.border,
+      paddingVertical: 16,
+      paddingHorizontal: 32,
+      borderRadius: 12,
+      marginTop: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    cancelButtonText: {
+      color: colors.text,
+      fontSize: 18,
+      fontWeight: '600',
+    },
   });
 
   if (!sessionData) {
@@ -335,6 +358,14 @@ export default function RoleSelectionScreen() {
         ) : (
           <Text style={styles.joinButtonText}>Join Story</Text>
         )}
+      </TouchableOpacity>
+      
+      <TouchableOpacity
+        style={styles.cancelButton}
+        onPress={() => router.back()}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.cancelButtonText}>Cancel</Text>
       </TouchableOpacity>
     </ScrollView>
   );

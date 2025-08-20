@@ -52,34 +52,119 @@ export default function QRCodeScanner({
     try {
       logger.info('🔍 QR Code scanned:', scanResult.data.substring(0, 50) + '...');
       
-      // Parse QR code data
-      const session = qrCodeDiscoveryManager.parseSessionFromQRCode(scanResult.data);
-      
-      if (session) {
-        logger.info('✅ Valid session QR code detected');
-        logger.info('✅ Session details:', {
-          id: session.id,
-          story: session.storyTitle,
-          host: session.hostUserName,
-          role: session.participants[0]?.role
-        });
-        onQRCodeScanned(scanResult.data);
-        return;
+      // First, determine the QR code type to use the correct parser
+      let qrCodeType: string | null = null;
+      try {
+        const parsedData = JSON.parse(scanResult.data);
+        qrCodeType = parsedData.type;
+        logger.info('🔍 QR code type detected:', qrCodeType);
+      } catch (parseError) {
+        logger.error('🔴 Failed to parse QR code data for type detection');
       }
       
-      // Check if it's a completion QR code
-      const completionData = qrCodeDiscoveryManager.parseCompletionFromQRCode(scanResult.data);
-      
-      if (completionData) {
-        logger.info('✅ Valid completion QR code detected');
-        logger.info('✅ Completion details:', {
-          sessionId: completionData.sessionId,
-          storyId: completionData.storyId,
-          timestamp: completionData.timestamp
-        });
-        onQRCodeScanned(scanResult.data);
-        return;
+      // Route to the appropriate parser based on type
+      if (qrCodeType === "SVB_COMPLETION") {
+        // Process completion QR code
+        const completionData = qrCodeDiscoveryManager.parseCompletionFromQRCode(scanResult.data);
+        
+        if (completionData) {
+          logger.info('✅ Valid completion QR code detected');
+          logger.info('✅ Completion details:', {
+            sessionId: completionData.sessionId,
+            storyId: completionData.storyId,
+            timestamp: completionData.timestamp
+          });
+          onQRCodeScanned(scanResult.data);
+          return;
+        }
+      } else if (qrCodeType === "SVB_SESSION") {
+        // Process session QR code
+        const session = qrCodeDiscoveryManager.parseSessionFromQRCode(scanResult.data);
+        
+        if (session) {
+          logger.info('✅ Valid session QR code detected');
+          logger.info('✅ Session details:', {
+            id: session.id,
+            story: session.storyTitle,
+            host: session.hostUserName,
+            role: session.participants[0]?.role
+          });
+          onQRCodeScanned(scanResult.data);
+          return;
+        }
+      } else {
+        logger.error('🔴 Unknown QR code type:', qrCodeType);
       }
+      
+      // If session parsing failed, check what type of QR code this is for better error messages
+      try {
+        const parsedData = JSON.parse(scanResult.data);
+        if (parsedData.type === "SVB_SESSION") {
+          // This is a session QR code that failed validation
+          logger.error('🔴 Session QR code validation failed');
+          logger.error('🔴 Parsed session data:', {
+            sessionId: parsedData.sessionId,
+            storyId: parsedData.storyId,
+            timestamp: parsedData.timestamp,
+            expiresAt: parsedData.expiresAt,
+            hostRole: parsedData.hostRole,
+            hostUserName: parsedData.hostUserName
+          });
+          
+          Alert.alert(
+            'Invalid Session QR Code',
+            'This session QR code could not be validated. The session may have expired, or there may be a time synchronization issue between devices. Please try generating a new QR code.',
+            [
+              { 
+                text: 'Try Again', 
+                onPress: () => {
+                  setScanned(false);
+                  setIsProcessing(false);
+                  handledOnceRef.current = false;
+                }
+              },
+              { 
+                text: 'Cancel', 
+                onPress: onClose,
+                style: 'cancel'
+              }
+            ]
+          );
+          return;
+        } else if (parsedData.type === "SVB_COMPLETION") {
+          // This is a completion QR code that failed validation
+          logger.error('🔴 Completion QR code validation failed');
+          logger.error('🔴 Parsed completion data:', {
+            sessionId: parsedData.sessionId,
+            storyId: parsedData.storyId,
+            timestamp: parsedData.timestamp,
+            hostDeviceId: parsedData.hostDeviceId
+          });
+          
+          Alert.alert(
+            'Invalid Completion QR Code',
+            'This completion QR code could not be validated. The completion may have expired, or there may be a time synchronization issue between devices. Please ask the host to generate a new completion QR code.',
+            [
+              { 
+                text: 'Try Again', 
+                onPress: () => {
+                  setScanned(false);
+                  setIsProcessing(false);
+                  handledOnceRef.current = false;
+                }
+              },
+              { 
+                text: 'Cancel', 
+                onPress: onClose,
+                style: 'cancel'
+              }
+            ]
+          );
+          return;
+        }
+              } catch (parseError) {
+          logger.error('🔴 Failed to parse QR code data for type checking');
+        }
       
       // Invalid QR code - log more details for debugging
       logger.info('🔴 Invalid QR code format');
@@ -100,6 +185,7 @@ export default function QRCodeScanner({
             onPress: () => {
               setScanned(false);
               setIsProcessing(false);
+              handledOnceRef.current = false;
             }
           },
           { 
@@ -121,6 +207,7 @@ export default function QRCodeScanner({
             onPress: () => {
               setScanned(false);
               setIsProcessing(false);
+              handledOnceRef.current = false;
             }
           },
           { 

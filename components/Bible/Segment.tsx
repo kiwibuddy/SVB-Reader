@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
           );
         })}
       </ScrollView>
-      {/* Courtesy popup overlay - top-level so it fully covers content and behaves like a modal */}
+      {/* Courtesy popup overlay - COMMENTED OUT FOR NOW
       {showCourtesyPopup && currentSession && (
         <TouchableOpacity
           activeOpacity={1}
@@ -710,6 +710,7 @@ const styles = StyleSheet.create({
           </Animated.View>
         </TouchableOpacity>
       )}
+      */}
       {/* Modal removed - emoji picker is now floating and handled by Block component */}
       <View style={styles.divider} />
 
