@@ -10,3 +10,24 @@ expo-env.d.ts
 .DS_Store
 /dist
 my-key.keystore
+
+# Build artifacts
+ios/build/
+android/build/
+*.ipa
+*.apk
+*.aab
+
+# Large data files that should not be in OTA updates
+# Note: These files are critical for app functionality but excluded from git
+# to prevent unnecessary re-uploads in OTA updates
+assets/data/newBibleNLT1.json
+
+# Logs and temporary files
+*.log
+*.tmp
+*.cache
+
+# EAS build artifacts
+.expo/
+dist/

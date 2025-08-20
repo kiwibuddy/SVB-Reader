@@ -127,7 +127,7 @@ class QRCodeDiscoveryManagerImpl implements QRCodeDiscoveryManager {
       logger.info('📱 Parsing QR code data:', qrCodeData.substring(0, 50) + '...');
       
       // Parse JSON data
-      const qrSessionData: any = JSON.parse(qrCodeData);
+      let qrSessionData: any = JSON.parse(qrCodeData);
       
       // Handle both old and new QR code formats for backward compatibility
       if (qrSessionData.type === "bible_group_reading") {
