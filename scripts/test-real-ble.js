@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 #!/usr/bin/env node
 
 /**
@@ -28,74 +29,74 @@ const testSession = {
 };
 
 async function testBLEInitialization() {
-  console.log('🧪 Testing BLE Initialization...');
+  logger.info('🧪 Testing BLE Initialization...');
   
   try {
     await realBluetoothManager.initialize();
-    console.log('✅ BLE initialization successful');
+    logger.info('✅ BLE initialization successful');
     return true;
   } catch (error) {
-    console.error('❌ BLE initialization failed:', error);
+    logger.error('❌ BLE initialization failed:', error);
     return false;
   }
 }
 
 async function testPeripheralMode() {
-  console.log('🧪 Testing Peripheral Mode (Advertising)...');
+  logger.info('🧪 Testing Peripheral Mode (Advertising)...');
   
   try {
     await realBluetoothManager.startAdvertising(testSession);
-    console.log('✅ Peripheral mode (advertising) successful');
+    logger.info('✅ Peripheral mode (advertising) successful');
     
     // Wait a bit for advertising to start
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     await realBluetoothManager.stopAdvertising();
-    console.log('✅ Peripheral mode (stop advertising) successful');
+    logger.info('✅ Peripheral mode (stop advertising) successful');
     return true;
   } catch (error) {
-    console.error('❌ Peripheral mode failed:', error);
+    logger.error('❌ Peripheral mode failed:', error);
     return false;
   }
 }
 
 async function testCentralMode() {
-  console.log('🧪 Testing Central Mode (Scanning)...');
+  logger.info('🧪 Testing Central Mode (Scanning)...');
   
   try {
     const foundSessions = await realBluetoothManager.startScanning();
-    console.log('✅ Central mode (scanning) started');
-    console.log('📱 Found sessions:', foundSessions.length);
+    logger.info('✅ Central mode (scanning) started');
+    logger.info('📱 Found sessions:', foundSessions.length);
     
     // Wait for scanning to complete
     await new Promise(resolve => setTimeout(resolve, 5000));
     
     await realBluetoothManager.stopScanning();
-    console.log('✅ Central mode (stop scanning) successful');
+    logger.info('✅ Central mode (stop scanning) successful');
     return true;
   } catch (error) {
-    console.error('❌ Central mode failed:', error);
+    logger.error('❌ Central mode failed:', error);
     return false;
   }
 }
 
 async function testDeviceConnection() {
-  console.log('🧪 Testing Device Connection...');
+  logger.info('🧪 Testing Device Connection...');
   
   try {
     // This would require a real device to connect to
     // For now, we'll just test the connection logic
-    console.log('⚠️ Device connection test requires real device');
-    console.log('✅ Device connection logic ready');
+    logger.info('⚠️ Device connection test requires real device');
+    logger.info('✅ Device connection logic ready');
     return true;
   } catch (error) {
-    console.error('❌ Device connection test failed:', error);
+    logger.error('❌ Device connection test failed:', error);
     return false;
   }
 }
 
 async function testMessageExchange() {
-  console.log('🧪 Testing Message Exchange...');
+  logger.info('🧪 Testing Message Exchange...');
   
   try {
     // This would require connected devices
@@ -110,17 +111,17 @@ async function testMessageExchange() {
       timestamp: Date.now()
     };
     
-    console.log('📨 Test message format:', JSON.stringify(testMessage, null, 2));
-    console.log('✅ Message exchange logic ready');
+    logger.info('📨 Test message format:', JSON.stringify(testMessage, null, 2));
+    logger.info('✅ Message exchange logic ready');
     return true;
   } catch (error) {
-    console.error('❌ Message exchange test failed:', error);
+    logger.error('❌ Message exchange test failed:', error);
     return false;
   }
 }
 
 async function runAllTests() {
-  console.log('🚀 Starting Real BLE Tests...\n');
+  logger.info('🚀 Starting Real BLE Tests...\n');
   
   const tests = [
     { name: 'BLE Initialization', fn: testBLEInitialization },
@@ -133,20 +134,20 @@ async function runAllTests() {
   const results = [];
   
   for (const test of tests) {
-    console.log(`\n--- ${test.name} ---`);
+    logger.info(`\n--- ${test.name} ---`);
     const success = await test.fn();
     results.push({ name: test.name, success });
   }
   
-  console.log('\n📊 Test Results:');
-  console.log('================');
+  logger.info('\n📊 Test Results:');
+  logger.info('================');
   
   let passed = 0;
   let failed = 0;
   
   results.forEach(result => {
     const status = result.success ? '✅ PASS' : '❌ FAIL';
-    console.log(`${status} ${result.name}`);
+    logger.info(`${status} ${result.name}`);
     
     if (result.success) {
       passed++;
@@ -155,15 +156,15 @@ async function runAllTests() {
     }
   });
   
-  console.log('\n📈 Summary:');
-  console.log(`✅ Passed: ${passed}`);
-  console.log(`❌ Failed: ${failed}`);
-  console.log(`📊 Total: ${results.length}`);
+  logger.info('\n📈 Summary:');
+  logger.info(`✅ Passed: ${passed}`);
+  logger.info(`❌ Failed: ${failed}`);
+  logger.info(`📊 Total: ${results.length}`);
   
   if (failed === 0) {
-    console.log('\n🎉 All tests passed! Real BLE implementation is ready.');
+    logger.info('\n🎉 All tests passed! Real BLE implementation is ready.');
   } else {
-    console.log('\n⚠️ Some tests failed. Check the implementation.');
+    logger.info('\n⚠️ Some tests failed. Check the implementation.');
   }
   
   return failed === 0;
@@ -176,7 +177,7 @@ if (require.main === module) {
       process.exit(success ? 0 : 1);
     })
     .catch(error => {
-      console.error('💥 Test runner error:', error);
+      logger.error('💥 Test runner error:', error);
       process.exit(1);
     });
 }

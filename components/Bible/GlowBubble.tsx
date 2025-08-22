@@ -74,16 +74,21 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetV
       return;
     }
 
-    // Create optimized animation configuration
-    const animationConfig = {
-      toValue: 1,
-      duration: 4000, // Reduced from 12000ms to 4000ms for better performance
-      useNativeDriver: false, // Fixed: Use false for both platforms to support shadow properties
-    };
-
-    // Start the animation loop
+    // Start the animation loop with subtle pulse effect
+    // Use native driver for opacity animation (performance) but keep shadows static
     animationRef.current = Animated.loop(
-      Animated.timing(glowAnim, animationConfig)
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true, // Enable native driver for opacity animation
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true, // Enable native driver for opacity animation
+        }),
+      ])
     );
     
     animationRef.current.start();
@@ -95,24 +100,12 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetV
         animationRef.current = null;
       }
     };
-  }, [isGlowing, isDarkMode]); // Only re-run when isGlowing or isDarkMode changes
+  }, [isGlowing, isDarkMode, glowAnim]); // Only re-run when isGlowing, isDarkMode, or glowAnim changes
 
-  // Create adaptive glow colors based on dark mode
-  const glowColor = glowAnim.interpolate({
-    inputRange: [0, 0.33, 0.66, 1],
-    outputRange: isDarkMode ? [
-      // Dark mode: very light, almost white pastel colors for maximum visibility
-      "rgba(255, 230, 230, 0.95)", // Very light pink/white
-      "rgba(230, 255, 230, 0.95)", // Very light green/white
-      "rgba(230, 240, 255, 0.95)", // Very light blue/white
-      "rgba(255, 230, 230, 0.95)", // Very light pink/white (loop back)
-    ] : [
-      // Light mode: original vibrant colors
-      "rgba(255, 0, 0, 0.8)",
-      "rgba(0, 255, 0, 0.8)",
-      "rgba(0, 0, 255, 0.8)",
-      "rgba(255, 0, 0, 0.8)",
-    ],
+  // Create subtle pulse effect for glow - simple opacity animation instead of color cycling
+  const pulseOpacity = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.8, 1.0], // Subtle pulse from 80% to 100% opacity
   });
 
   const tailAlignment = color !== "black" ? { left: 15 } : { right: 15 };
@@ -126,21 +119,47 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetV
         onLongPress={onLongPress}
       >
         {hasTail && <SourceNameComponent sourceName={sourceName} align={color !== "black" ? "left" : "right"} />}
+        
+        {/* Outer glow wrapper - creates the glow effect */}
+        {isGlowing && (
+          <Animated.View style={{
+            position: 'absolute',
+            top: -8,
+            left: -8,
+            right: -8,
+            bottom: -8,
+            borderRadius: 18, // Slightly larger than the bubble
+            backgroundColor: 'transparent',
+            borderWidth: 8,
+            borderColor: 'rgba(150, 150, 150, 0.7)', // Brighter, more intense glow color
+            opacity: pulseOpacity, // Animate the opacity for glow effect
+            zIndex: -1, // Place behind the bubble
+          }} />
+        )}
+        
         <Animated.View
           style={[
             styles.bubble,
             {
               backgroundColor: isDarkMode ? colors.dark : colors.light,
               ...(isGlowing ? {
-                shadowColor: glowColor,
-                shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 1,
-                shadowRadius: isDarkMode ? 10 : 10, // Larger glow radius in dark mode for better visibility
+                // Remove shadow properties - they only create drop shadows
+                // shadowColor: "#666666",
+                // shadowOffset: { width: 0, height: 0 },
+                // shadowOpacity: 0.4,
+                // shadowRadius: 12,
+                
+                // No inner border needed since we have outer glow wrapper
+                borderWidth: 0,
+                
+                // Animate the bubble opacity for subtle effect
+                opacity: pulseOpacity,
               } : {
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.1,
                 shadowRadius: 3,
+                borderWidth: 0, // No border when not glowing
               }),
               borderWidth: isTargetVerse ? 3 : 0,
               borderColor: isTargetVerse ? 
@@ -148,7 +167,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetV
                   inputRange: [0, 0.3, 1],
                   outputRange: ['transparent', '#FFD700', '#FFA500'] // Orange to gold to transparent
                 }) : 'transparent',
-              elevation: isGlowing ? (isDarkMode ? 8 : 5) : 3, // Higher elevation in dark mode for better glow visibility
+              elevation: isGlowing ? 4 : 3, // Reduced elevation since we're using borders instead of shadows
             },
           ]}
         >

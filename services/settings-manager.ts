@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ============================================================================
@@ -66,7 +67,7 @@ export async function getSetting<K extends SettingsKey>(
     
     return DEFAULT_SETTINGS[key];
   } catch (error) {
-    console.warn(`Error getting setting ${key}:`, error);
+    logger.warn(`Error getting setting ${key}:`, error);
     return DEFAULT_SETTINGS[key];
   }
 }
@@ -83,7 +84,7 @@ export async function setSetting<K extends SettingsKey>(
     const stringValue = typeof value === 'boolean' ? value.toString() : String(value);
     await AsyncStorage.setItem(storageKey, stringValue);
   } catch (error) {
-    console.error(`Error setting ${key}:`, error);
+    logger.error(`Error setting ${key}:`, error);
     throw error;
   }
 }
@@ -115,7 +116,7 @@ export async function getAllSettings(): Promise<UserSettings> {
     
     return typedSettings;
   } catch (error) {
-    console.error('Error getting all settings:', error);
+    logger.error('Error getting all settings:', error);
     return DEFAULT_SETTINGS;
   }
 }
@@ -133,7 +134,7 @@ export async function updateSettings(
     
     await Promise.all(updatePromises);
   } catch (error) {
-    console.error('Error updating settings:', error);
+    logger.error('Error updating settings:', error);
     throw error;
   }
 }
@@ -147,7 +148,7 @@ export async function resetSettings(): Promise<void> {
     const removePromises = keys.map(key => AsyncStorage.removeItem(key));
     await Promise.all(removePromises);
   } catch (error) {
-    console.error('Error resetting settings:', error);
+    logger.error('Error resetting settings:', error);
     throw error;
   }
 }
@@ -160,7 +161,7 @@ export async function exportSettings(): Promise<string> {
     const settings = await getAllSettings();
     return JSON.stringify(settings, null, 2);
   } catch (error) {
-    console.error('Error exporting settings:', error);
+    logger.error('Error exporting settings:', error);
     throw error;
   }
 }
@@ -184,7 +185,7 @@ export async function importSettings(settingsJson: string): Promise<void> {
     
     await updateSettings(filteredSettings);
   } catch (error) {
-    console.error('Error importing settings:', error);
+    logger.error('Error importing settings:', error);
     throw error;
   }
 }
@@ -267,7 +268,7 @@ export const settingsHelpers = {
       }
       return JSON.stringify(allSettings);
     } catch (error) {
-      console.warn('Error exporting settings:', error);
+      logger.warn('Error exporting settings:', error);
       throw error;
     }
   },
@@ -281,7 +282,7 @@ export const settingsHelpers = {
         }
       }
     } catch (error) {
-      console.warn('Error importing settings:', error);
+      logger.warn('Error importing settings:', error);
       throw error;
     }
   }

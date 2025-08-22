@@ -1,4 +1,5 @@
 import React from 'react';
+import logger from '@/utils/logger';
 import { View, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import GroupSetupScreen from '@/components/GroupReading/GroupSetupScreen';
@@ -39,7 +40,7 @@ export default function GroupSetupPage() {
         }
       });
     } catch (error) {
-      console.error('Error starting broadcast:', error);
+      logger.error('Error starting broadcast:', error);
     }
   };
 

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue } from 'react';
+import logger from '@/utils/logger';
 import {
   View,
   Text,
@@ -82,7 +83,7 @@ const DatabaseDebugScreen: React.FC<DatabaseDebugScreenProps> = ({
                 result.summary + '\n\nCheck console for details.',
                 [{ text: 'OK', onPress: loadDatabaseInfo }]
               );
-              console.log('Migration Result:', result);
+              logger.info('Migration Result:', result);
             } catch (error) {
               Alert.alert('Migration Failed', `Error: ${error}`);
             } finally {
@@ -112,7 +113,7 @@ const DatabaseDebugScreen: React.FC<DatabaseDebugScreenProps> = ({
                 result.summary,
                 [{ text: 'OK', onPress: loadDatabaseInfo }]
               );
-              console.log('Reset Result:', result);
+              logger.info('Reset Result:', result);
             } catch (error) {
               Alert.alert('Reset Failed', `Error: ${error}`);
             } finally {

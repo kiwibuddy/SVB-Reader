@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 import { 
   getSegmentCompletionStatus,
   markSegmentComplete,
@@ -92,8 +93,8 @@ const runTestSuite = async (
   suiteName: string,
   tests: Array<{ name: string; test: () => Promise<any> }>
 ): Promise<TestSuite> => {
-  console.log(`\n🧪 Running test suite: ${suiteName}`);
-  console.log('='.repeat(50));
+  logger.info(`\n🧪 Running test suite: ${suiteName}`);
+  logger.info('='.repeat(50));
 
   const testResults: TestResult[] = [];
   let totalDuration = 0;
@@ -104,22 +105,22 @@ const runTestSuite = async (
     totalDuration += result.duration;
 
     const status = result.passed ? '✅ PASS' : '❌ FAIL';
-    console.log(`${status} ${name} (${result.duration}ms)`);
+    logger.info(`${status} ${name} (${result.duration}ms)`);
     
     if (!result.passed && result.error) {
-      console.log(`   Error: ${result.error}`);
+      logger.info(`   Error: ${result.error}`);
     }
   }
 
   const passedCount = testResults.filter(r => r.passed).length;
   const failedCount = testResults.filter(r => !r.passed).length;
 
-  console.log('\n📊 Summary:');
-  console.log(`   Total: ${testResults.length}`);
-  console.log(`   Passed: ${passedCount}`);
-  console.log(`   Failed: ${failedCount}`);
-  console.log(`   Total Duration: ${totalDuration}ms`);
-  console.log(`   Average Duration: ${Math.round(totalDuration / testResults.length)}ms`);
+  logger.info('\n📊 Summary:');
+  logger.info(`   Total: ${testResults.length}`);
+  logger.info(`   Passed: ${passedCount}`);
+  logger.info(`   Failed: ${failedCount}`);
+  logger.info(`   Total Duration: ${totalDuration}ms`);
+  logger.info(`   Average Duration: ${Math.round(totalDuration / testResults.length)}ms`);
 
   return {
     name: suiteName,
@@ -510,8 +511,8 @@ export const runAllRealTimeUpdateTests = async (): Promise<{
     totalDuration: number;
   };
 }> => {
-  console.log('🚀 Starting Real-Time Update Tests');
-  console.log('='.repeat(60));
+  logger.info('🚀 Starting Real-Time Update Tests');
+  logger.info('='.repeat(60));
 
   const suites = await Promise.all([
     testBasicSQLiteOperations(),
@@ -529,22 +530,22 @@ export const runAllRealTimeUpdateTests = async (): Promise<{
     totalDuration: suites.reduce((sum, suite) => sum + suite.totalDuration, 0),
   };
 
-  console.log('\n🎯 FINAL SUMMARY');
-  console.log('='.repeat(60));
-  console.log(`Total Test Suites: ${summary.totalSuites}`);
-  console.log(`Total Tests: ${summary.totalTests}`);
-  console.log(`Passed: ${summary.totalPassed}`);
-  console.log(`Failed: ${summary.totalFailed}`);
-  console.log(`Total Duration: ${summary.totalDuration}ms`);
-  console.log(`Average Duration: ${Math.round(summary.totalDuration / summary.totalTests)}ms`);
-  console.log(`Success Rate: ${Math.round((summary.totalPassed / summary.totalTests) * 100)}%`);
+  logger.info('\n🎯 FINAL SUMMARY');
+  logger.info('='.repeat(60));
+  logger.info(`Total Test Suites: ${summary.totalSuites}`);
+  logger.info(`Total Tests: ${summary.totalTests}`);
+  logger.info(`Passed: ${summary.totalPassed}`);
+  logger.info(`Failed: ${summary.totalFailed}`);
+  logger.info(`Total Duration: ${summary.totalDuration}ms`);
+  logger.info(`Average Duration: ${Math.round(summary.totalDuration / summary.totalTests)}ms`);
+  logger.info(`Success Rate: ${Math.round((summary.totalPassed / summary.totalTests) * 100)}%`);
 
   if (summary.totalFailed > 0) {
-    console.log('\n❌ FAILED TESTS:');
+    logger.info('\n❌ FAILED TESTS:');
     suites.forEach(suite => {
       suite.tests.forEach(test => {
         if (!test.passed) {
-          console.log(`   ${suite.name} - ${test.name}: ${test.error}`);
+          logger.info(`   ${suite.name} - ${test.name}: ${test.error}`);
         }
       });
     });
@@ -558,15 +559,15 @@ export const runAllRealTimeUpdateTests = async (): Promise<{
 // ============================================================================
 
 export const benchmarkPerformance = async (): Promise<void> => {
-  console.log('\n⚡ Performance Benchmarking');
-  console.log('='.repeat(40));
+  logger.info('\n⚡ Performance Benchmarking');
+  logger.info('='.repeat(40));
 
   // Benchmark original vs optimized functions
   const iterations = 10;
   const segmentIds = ['S001', 'S002', 'S003', 'S004', 'S005'];
 
   // Test individual segment completion status
-  console.log('\n📊 Individual Segment Completion Status:');
+  logger.info('\n📊 Individual Segment Completion Status:');
   
   const originalTimes: number[] = [];
   const optimizedTimes: number[] = [];
@@ -585,12 +586,12 @@ export const benchmarkPerformance = async (): Promise<void> => {
   const avgOptimized = optimizedTimes.reduce((a, b) => a + b, 0) / optimizedTimes.length;
   const improvement = ((avgOriginal - avgOptimized) / avgOriginal) * 100;
 
-  console.log(`   Original: ${Math.round(avgOriginal)}ms average`);
-  console.log(`   Optimized: ${Math.round(avgOptimized)}ms average`);
-  console.log(`   Improvement: ${Math.round(improvement)}%`);
+  logger.info(`   Original: ${Math.round(avgOriginal)}ms average`);
+  logger.info(`   Optimized: ${Math.round(avgOptimized)}ms average`);
+  logger.info(`   Improvement: ${Math.round(improvement)}%`);
 
   // Test batch operations
-  console.log('\n📊 Batch Segment Completion Status:');
+  logger.info('\n📊 Batch Segment Completion Status:');
   
   const batchStart = Date.now();
   await getBatchSegmentCompletionStatus(segmentIds);
@@ -602,15 +603,15 @@ export const benchmarkPerformance = async (): Promise<void> => {
 
   const batchImprovement = ((individualTime - batchTime) / individualTime) * 100;
 
-  console.log(`   Individual: ${individualTime}ms`);
-  console.log(`   Batch: ${batchTime}ms`);
-  console.log(`   Improvement: ${Math.round(batchImprovement)}%`);
+  logger.info(`   Individual: ${individualTime}ms`);
+  logger.info(`   Batch: ${batchTime}ms`);
+  logger.info(`   Improvement: ${Math.round(batchImprovement)}%`);
 
   // Cache performance
-  console.log('\n📊 Cache Performance:');
+  logger.info('\n📊 Cache Performance:');
   const cacheStats = queryCache.getStats();
-  console.log(`   Cache Size: ${cacheStats.size}`);
-  console.log(`   Cached Keys: ${cacheStats.keys.length}`);
+  logger.info(`   Cache Size: ${cacheStats.size}`);
+  logger.info(`   Cached Keys: ${cacheStats.keys.length}`);
 };
 
 // ============================================================================

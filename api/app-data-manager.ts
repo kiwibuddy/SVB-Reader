@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 import { databaseManager } from './database-manager';
 import { 
   markSegmentComplete as markSegmentCompleteDB,
@@ -105,7 +106,7 @@ export async function getAppState(): Promise<AppState> {
 
     return state;
   } catch (error) {
-    console.error('Error getting app state:', error);
+    logger.error('Error getting app state:', error);
     // Return safe defaults
     return {
       currentSegmentId: 'S001',
@@ -136,7 +137,7 @@ export async function updateAppState(updates: Partial<AppState>): Promise<void> 
       WHERE id = 1
     `, ...values);
   } catch (error) {
-    console.error('Error updating app state:', error);
+    logger.error('Error updating app state:', error);
     throw error;
   }
 }
@@ -180,7 +181,7 @@ export async function markSegmentComplete(
       }
     }
   } catch (error) {
-    console.error('Error marking segment complete:', error);
+    logger.error('Error marking segment complete:', error);
     throw error;
   }
 }
@@ -204,7 +205,7 @@ export async function getCompletionStatus(
       challengeId
     };
   } catch (error) {
-    console.error('Error getting completion status:', error);
+    logger.error('Error getting completion status:', error);
     return { isCompleted: false, color: null };
   }
 }
@@ -230,7 +231,7 @@ export async function getCompletedSegments(): Promise<Record<string, CompletionD
     
     return completedSegments;
   } catch (error) {
-    console.error('Error getting completed segments:', error);
+    logger.error('Error getting completed segments:', error);
     return {};
   }
 }
@@ -258,7 +259,7 @@ export async function startPlan(planId: string): Promise<PlanProgress> {
     
     return planProgress;
   } catch (error) {
-    console.error('Error starting plan:', error);
+    logger.error('Error starting plan:', error);
     throw error;
   }
 }
@@ -281,7 +282,7 @@ export async function getActivePlanData(): Promise<PlanProgress | null> {
       progressPercentage: activePlan.progressPercentage || 0
     };
   } catch (error) {
-    console.error('Error getting active plan:', error);
+    logger.error('Error getting active plan:', error);
     return null;
   }
 }
@@ -322,7 +323,7 @@ export async function updatePlanStatus(planId: string, updates: Partial<PlanProg
       `, ...updateValues);
     }
   } catch (error) {
-    console.error('Error updating plan status:', error);
+    logger.error('Error updating plan status:', error);
     throw error;
   }
 }
@@ -350,7 +351,7 @@ export async function startChallenge(challengeId: string): Promise<ChallengeProg
     
     return challengeProgress;
   } catch (error) {
-    console.error('Error starting challenge:', error);
+    logger.error('Error starting challenge:', error);
     throw error;
   }
 }
@@ -377,7 +378,7 @@ export async function getActiveChallengesData(): Promise<Record<string, Challeng
     
     return challengesData;
   } catch (error) {
-    console.error('Error getting active challenges:', error);
+    logger.error('Error getting active challenges:', error);
     return {};
   }
 }
@@ -418,7 +419,7 @@ export async function updateChallengeStatus(challengeId: string, updates: Partia
       `, ...updateValues);
     }
   } catch (error) {
-    console.error('Error updating challenge status:', error);
+    logger.error('Error updating challenge status:', error);
     throw error;
   }
 }
@@ -458,7 +459,7 @@ export async function markSegmentAsRead(segmentId: string, isRead: boolean): Pro
       `, segmentId);
     }
   } catch (error) {
-    console.error('Error marking segment as read:', error);
+    logger.error('Error marking segment as read:', error);
     throw error;
   }
 }
@@ -475,7 +476,7 @@ export async function getReadSegments(): Promise<string[]> {
     
     return results.map(result => result.segmentID);
   } catch (error) {
-    console.error('Error getting read segments:', error);
+    logger.error('Error getting read segments:', error);
     return [];
   }
 }

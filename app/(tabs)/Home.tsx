@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
+// Removed duplicate logger import - using the one from @/utils/logger
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
   View,
@@ -903,7 +904,7 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors, refr
           const status = await getSegmentCompletionStatus(dailySegmentId, 'today');
           setIsDailyCompleted(status.isCompleted);
         } catch (error) {
-          console.error('Error checking daily completion:', error);
+          logger.error('Error checking daily completion:', error);
           setIsDailyCompleted(false);
         }
       }
@@ -1038,9 +1039,9 @@ const StreakCard = ({
   
   // Animate when streak changes
   React.useEffect(() => {
-    console.log('🎯 [StreakCard] Animation trigger - currentStreak:', currentStreak);
+    logger.info('🎯 [StreakCard] Animation trigger - currentStreak:', currentStreak);
     if (currentStreak > 0) {
-      console.log('🎯 [StreakCard] Starting bounce animation for streak:', currentStreak);
+      logger.info('🎯 [StreakCard] Starting bounce animation for streak:', currentStreak);
       // Spring bounce animation for streak number
       streakScale.value = withSpring(1.1, { 
         damping: 10, 
@@ -1475,7 +1476,7 @@ const ReadingInsightsCarousel = ({
 
         // Get comprehensive segment and book read counts from SQLite
         if (!databaseManager.isReady()) {
-          console.log('⏳ Database not ready, skipping SQLite queries');
+          logger.info('⏳ Database not ready, skipping SQLite queries');
           return;
         }
         
@@ -1550,7 +1551,7 @@ const ReadingInsightsCarousel = ({
         const streaks = await getContextualStreaks();
         setContextualStreaks(streaks);
       } catch (error) {
-        console.error('Error calculating insights:', error);
+        logger.error('Error calculating insights:', error);
       }
     };
 
@@ -1573,7 +1574,7 @@ const ReadingInsightsCarousel = ({
 
           // Get comprehensive segment and book read counts from SQLite
           if (!databaseManager.isReady()) {
-            console.log('⏳ Database not ready, skipping SQLite queries');
+            logger.info('⏳ Database not ready, skipping SQLite queries');
             return;
           }
           
@@ -1647,7 +1648,7 @@ const ReadingInsightsCarousel = ({
           const streaks = await getContextualStreaks();
           setContextualStreaks(streaks);
         } catch (error) {
-          console.error('Error refreshing insights:', error);
+          logger.error('Error refreshing insights:', error);
         }
       };
 
@@ -2236,7 +2237,7 @@ const Home = () => {
       
       // Check if today is complete based on today's completions
       if (!databaseManager.isReady()) {
-        console.log('⏳ Database not ready, skipping today completion check');
+        logger.info('⏳ Database not ready, skipping today completion check');
         return;
       }
       
@@ -2276,7 +2277,7 @@ const Home = () => {
         
         // Check if today is complete based on today's completions
         if (!databaseManager.isReady()) {
-          console.log('⏳ Database not ready, skipping today completion check');
+          logger.info('⏳ Database not ready, skipping today completion check');
           return;
         }
         
@@ -2332,7 +2333,7 @@ const Home = () => {
       setChallengeProgresses(challengeProgresses);
       
     } catch (error) {
-      console.error('Error loading progress data:', error);
+      logger.error('Error loading progress data:', error);
     }
   };
 
@@ -2353,7 +2354,7 @@ const Home = () => {
           const status = await getSegmentCompletionStatus(dailySegmentId, 'today');
           setIsDailySegmentCompleted(status.isCompleted);
         } catch (error) {
-          console.error('Error checking daily completion:', error);
+          logger.error('Error checking daily completion:', error);
           setIsDailySegmentCompleted(false);
         }
       }
@@ -2375,7 +2376,7 @@ const Home = () => {
         const hasCompletedToday = await hasDailyCompletionToday('plan', activePlan.planId);
         setActivePlanDailyCompleted(hasCompletedToday);
       } catch (error) {
-        console.error('Error checking plan daily completion:', error);
+        logger.error('Error checking plan daily completion:', error);
         setActivePlanDailyCompleted(false);
       }
     };
@@ -2399,7 +2400,7 @@ const Home = () => {
           const hasCompletedToday = await hasDailyCompletionToday('challenge', undefined, challengeId);
           completionStates[challengeId] = hasCompletedToday;
         } catch (error) {
-          console.error(`Error checking challenge ${challengeId} daily completion:`, error);
+          logger.error(`Error checking challenge ${challengeId} daily completion:`, error);
           completionStates[challengeId] = false;
         }
       }
@@ -2419,7 +2420,7 @@ const Home = () => {
           // Force refresh completion checks when returning to home
           setRefreshTrigger(prev => prev + 1);
         } catch (error) {
-          console.error('Error refreshing progress data:', error);
+          logger.error('Error refreshing progress data:', error);
         }
       };
       
@@ -2580,7 +2581,7 @@ const Home = () => {
   // Group Reading Handlers
   const handleJoinGroup = async (sessionId: string) => {
     // TODO: Parse session from QR code data
-    console.log('🔍 Joining session via QR code:', sessionId);
+    logger.info('🔍 Joining session via QR code:', sessionId);
     
     router.push({
       pathname: '/join-group' as any,
@@ -2676,13 +2677,13 @@ const Home = () => {
   // QR Code Scanner Functions
   const requestCameraPermission = async () => {
     try {
-      console.log('🔍 Requesting camera permission for QR scanning...');
+      logger.info('🔍 Requesting camera permission for QR scanning...');
       // For now, just show the scanner - it will handle permissions internally
       setShowScanner(true);
       setScanned(false);
       return true;
     } catch (error) {
-      console.error('🔴 Error requesting camera permission:', error);
+      logger.error('🔴 Error requesting camera permission:', error);
       return false;
     }
   };
@@ -2692,21 +2693,21 @@ const Home = () => {
       setShowScanner(true);
       setScanned(false);
     } catch (error) {
-      console.error('🔴 Error with QR scanner:', error);
+      logger.error('🔴 Error with QR scanner:', error);
       Alert.alert('Error', 'QR scanner is currently unavailable');
     }
   };
 
   const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
     try {
-      console.log('🔍 QR Code scanned:', { type, data: data.substring(0, 50) + '...' });
+      logger.info('🔍 QR Code scanned:', { type, data: data.substring(0, 50) + '...' });
       setScanned(true);
       
       // Parse QR code data
       const session = qrCodeDiscoveryManager.parseSessionFromQRCode(data);
       
       if (session) {
-        console.log('✅ Valid session QR code detected');
+        logger.info('✅ Valid session QR code detected');
         // Navigate to role selection screen with session data
         router.push({
           pathname: '/role-selection' as any,
@@ -2725,7 +2726,7 @@ const Home = () => {
         const completionData = qrCodeDiscoveryManager.parseCompletionFromQRCode(data);
         
         if (completionData) {
-          console.log('✅ Valid completion QR code detected');
+          logger.info('✅ Valid completion QR code detected');
           // Handle completion QR code
           Alert.alert(
             'Story Completion',
@@ -2739,7 +2740,7 @@ const Home = () => {
             ]
           );
         } else {
-          console.log('🔴 Invalid QR code format');
+          logger.info('🔴 Invalid QR code format');
           Alert.alert(
             'Invalid QR Code',
             'This QR code is not recognized. Please scan a valid SourceView Together group reading QR code.',
@@ -2750,7 +2751,7 @@ const Home = () => {
       
       setShowScanner(false);
     } catch (error) {
-      console.error('🔴 Error processing scanned QR code:', error);
+      logger.error('🔴 Error processing scanned QR code:', error);
       Alert.alert('Error', 'Failed to process QR code');
       setShowScanner(false);
     }
@@ -2758,7 +2759,7 @@ const Home = () => {
 
   const handleCompletionQRCode = async (completionData: any) => {
     try {
-      console.log('✅ Processing completion QR code:', completionData);
+      logger.info('✅ Processing completion QR code:', completionData);
       
       // TODO: Implement completion tracking
       // This will be implemented in Phase 5
@@ -2768,7 +2769,7 @@ const Home = () => {
         [{ text: 'OK' }]
       );
     } catch (error) {
-      console.error('🔴 Error processing completion QR code:', error);
+      logger.error('🔴 Error processing completion QR code:', error);
       Alert.alert('Error', 'Failed to process completion QR code');
     }
   };

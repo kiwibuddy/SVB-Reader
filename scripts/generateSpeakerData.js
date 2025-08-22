@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 const fs = require('fs');
 const path = require('path');
 
@@ -45,7 +46,7 @@ function analyzeSpeakers() {
     });
   });
 
-  console.log(`Found ${greenSpeakers.size} speakers with green speaking roles`);
+  logger.info(`Found ${greenSpeakers.size} speakers with green speaking roles`);
 
   // Second pass: collect ALL appearances (green AND blue) of green speakers
   Object.keys(bibleData).forEach(segmentId => {
@@ -157,24 +158,24 @@ function generateSpeakerSegmentMap(speakerSegments, topOTSpeakers, topNTSpeakers
 }
 
 function main() {
-  console.log('Analyzing Bible speakers...');
+  logger.info('Analyzing Bible speakers...');
   
   const { otSpeakers, ntSpeakers, speakerSegments, greenSpeakersCount } = analyzeSpeakers();
   
-  console.log(`Found ${Object.keys(otSpeakers).length} Old Testament speakers`);
-  console.log(`Found ${Object.keys(ntSpeakers).length} New Testament speakers`);
+  logger.info(`Found ${Object.keys(otSpeakers).length} Old Testament speakers`);
+  logger.info(`Found ${Object.keys(ntSpeakers).length} New Testament speakers`);
   
   const topOTSpeakers = getTopSpeakers(otSpeakers, 20);
   const topNTSpeakers = getTopSpeakers(ntSpeakers, 20);
   
-  console.log('\nTop 20 Old Testament Speakers (ranked by green words):');
+  logger.info('\nTop 20 Old Testament Speakers (ranked by green words):');
   topOTSpeakers.forEach((speaker, index) => {
-    console.log(`${index + 1}. ${speaker.name} - ${speaker.greenWords} green words (${speaker.totalWords} total) in ${speaker.segmentCount} segments (${speaker.colors.join(', ')})`);
+    logger.info(`${index + 1}. ${speaker.name} - ${speaker.greenWords} green words (${speaker.totalWords} total) in ${speaker.segmentCount} segments (${speaker.colors.join(', ')})`);
   });
   
-  console.log('\nTop 20 New Testament Speakers (ranked by green words):');
+  logger.info('\nTop 20 New Testament Speakers (ranked by green words):');
   topNTSpeakers.forEach((speaker, index) => {
-    console.log(`${index + 1}. ${speaker.name} - ${speaker.greenWords} green words (${speaker.totalWords} total) in ${speaker.segmentCount} segments (${speaker.colors.join(', ')})`);
+    logger.info(`${index + 1}. ${speaker.name} - ${speaker.greenWords} green words (${speaker.totalWords} total) in ${speaker.segmentCount} segments (${speaker.colors.join(', ')})`);
   });
 
   // Generate the speaker-segment mapping
@@ -198,8 +199,8 @@ function main() {
   const outputPath = path.join(__dirname, '../assets/data/TopSpeakers.json');
   fs.writeFileSync(outputPath, JSON.stringify(outputData, null, 2));
   
-  console.log(`\nData written to ${outputPath}`);
-  console.log('Speaker analysis complete!');
+  logger.info(`\nData written to ${outputPath}`);
+  logger.info('Speaker analysis complete!');
 }
 
 if (require.main === module) {

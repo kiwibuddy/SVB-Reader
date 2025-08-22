@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 import { databaseManager } from './database-manager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
@@ -52,7 +53,7 @@ export async function migrateAsyncStorageToSQLite(): Promise<MigrationResult> {
   try {
     // Create settings backup before starting migration
     settingsBackup = await createSettingsBackup();
-    console.log('📦 Settings backup created before migration');
+    logger.info('📦 Settings backup created before migration');
 
     // Define rollback operations
     const rollbackOperations: RollbackOperation[] = [
@@ -112,7 +113,7 @@ export async function migrateAsyncStorageToSQLite(): Promise<MigrationResult> {
 
     }, 'AsyncStorage to SQLite Migration', rollbackOperations);
 
-    console.log('✅ Migration completed successfully');
+    logger.info('✅ Migration completed successfully');
 
   } catch (error) {
     result.errors.push(`Migration failed: ${error}`);
@@ -128,9 +129,9 @@ export async function migrateAsyncStorageToSQLite(): Promise<MigrationResult> {
     if (settingsBackup) {
       try {
         await restoreSettingsBackup(settingsBackup);
-        console.log('🔄 Settings restored after migration failure');
+        logger.info('🔄 Settings restored after migration failure');
       } catch (restoreError) {
-        console.error('❌ Failed to restore settings after migration failure:', restoreError);
+        logger.error('❌ Failed to restore settings after migration failure:', restoreError);
         result.errors.push(`Failed to restore settings: ${restoreError}`);
       }
     }
@@ -302,7 +303,7 @@ async function updateDatabaseVersion(): Promise<void> {
       WHERE id = 1
     `, CURRENT_DB_VERSION, newSchemaHash);
   } catch (error) {
-    console.error('Error updating database version:', error);
+    logger.error('Error updating database version:', error);
   }
 }
 
@@ -391,7 +392,7 @@ async function initializeEssentialData(db: any): Promise<void> {
     await (databaseManager as any).populateSegmentsTable();
     
   } catch (error) {
-    console.error('Error initializing essential data:', error);
+    logger.error('Error initializing essential data:', error);
   }
 }
 
@@ -437,7 +438,7 @@ export async function forceRefreshDatabase(): Promise<void> {
     await databaseManager.close();
     await databaseManager.initialize();
   } catch (error) {
-    console.error('Error force refreshing database:', error);
+    logger.error('Error force refreshing database:', error);
     throw error;
   }
 }

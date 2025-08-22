@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue } from 'react';
+import logger from '@/utils/logger';
 import {
   View,
   Text,
@@ -260,6 +261,8 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
     content: {
       flex: 1,
       padding: 16,
+      paddingBottom: Platform.OS === 'ios' ? 16 : 32,
+      // Ensure content can scroll properly on Android
     },
     storyInfo: {
       marginBottom: 24,
@@ -430,7 +433,7 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
     try {
       onStartReading();
     } catch (error) {
-      console.error('Error starting reading:', error);
+      logger.error('Error starting reading:', error);
       Alert.alert('Error', 'Failed to start reading. Please try again.');
     } finally {
       setIsStarting(false);
@@ -611,7 +614,19 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView 
+            style={styles.content} 
+            showsVerticalScrollIndicator={true}
+            contentContainerStyle={{ 
+              flexGrow: 1,
+              paddingBottom: 20
+            }}
+            bounces={true}
+            alwaysBounceVertical={false}
+            nestedScrollEnabled={true}
+            keyboardShouldPersistTaps="handled"
+            removeClippedSubviews={Platform.OS === 'android'}
+          >
             <View style={styles.storyInfo}>
               <Text style={styles.storyTitle}>{storyTitle}</Text>
               <Text style={styles.bookName}>{bookName}</Text>

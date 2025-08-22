@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import logger from '@/utils/logger';import readingPlansData from "../assets/data/ReadingPlansChallenges.json";
+import logger from '@/utils/logger';
+import readingPlansData from "../assets/data/ReadingPlansChallenges.json";
 import { 
   markSegmentComplete as markSegmentCompleteDB,
   getSegmentCompletionStatus,

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import logger from '@/utils/logger';
 import { View } from 'react-native';
 import DatabaseTestRunner from '@/components/testing/DatabaseTestRunner';
 import QuickTestButton from '@/components/QuickTestButton';
@@ -17,43 +18,36 @@ import { runAllTests, runTest1, runTest2, runTest3, runTest4, quickInspection } 
 export default function DatabaseTestingScreen() {
   // 🧪 DATABASE TESTING FUNCTIONS - Console Commands (Development Only)
   useEffect(() => {
+    // Make testing functions available globally in development
     if (__DEV__) {
-      // Make testing functions globally available in development
       (global as any).testDB_DatabaseTesting = {
-        runAllTests,
-        runTest1,
-        runTest2,
-        runTest3,
-        runTest4,
-        quickInspection,
-        // Quick commands for DatabaseTesting
         test1: () => {
-          console.log('🧪 [DatabaseTesting] Running Test 1: Clean Install...');
+          logger.info('🧪 [DatabaseTesting] Running Test 1: Clean Install...');
           return runTest1();
         },
         test2: () => {
-          console.log('🧪 [DatabaseTesting] Running Test 2: Migration...');
+          logger.info('🧪 [DatabaseTesting] Running Test 2: Migration...');
           return runTest2();
         },
         test3: () => {
-          console.log('🧪 [DatabaseTesting] Running Test 3: Settings...');
+          logger.info('🧪 [DatabaseTesting] Running Test 3: Settings...');
           return runTest3();
         },
         test4: () => {
-          console.log('🧪 [DatabaseTesting] Running Test 4: Reset Recovery...');
+          logger.info('🧪 [DatabaseTesting] Running Test 4: Reset Recovery...');
           return runTest4();
         },
         all: () => {
-          console.log('🧪 [DatabaseTesting] Running All Tests...');
+          logger.info('🧪 [DatabaseTesting] Running All Tests...');
           return runAllTests();
         },
         inspect: () => {
-          console.log('🔍 [DatabaseTesting] Inspecting Database...');
+          logger.info('🔍 [DatabaseTesting] Inspecting Database...');
           return quickInspection();
         }
       };
 
-      console.log(`
+      logger.info(`
 🧪 [DatabaseTesting] DATABASE TESTING COMMANDS READY!
 ===================================================
 

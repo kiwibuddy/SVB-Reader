@@ -316,8 +316,16 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
 
         <ScrollView 
           style={styles.content} 
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={true}
+          contentContainerStyle={{ 
+            flexGrow: 1,
+            paddingBottom: 20 // Add extra padding for better scrolling
+          }}
+          bounces={true}
+          alwaysBounceVertical={false}
+          nestedScrollEnabled={true}
+          keyboardShouldPersistTaps="handled"
+          removeClippedSubviews={Platform.OS === 'android'}
         >
           <View style={styles.storyInfo}>
             <Text style={styles.storyTitle}>{storyTitle}</Text>

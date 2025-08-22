@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue } from 'react';
+import logger from '@/utils/logger';
 import { View, Text, TouchableOpacity, useWindowDimensions, Platform } from "react-native";
 import { IntroType } from "@/types";
 import SegmentTitle from "./SegmentTitle";
@@ -340,13 +341,13 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData, context = 'main', p
           
 
         } else {
-          console.error('❌ No segment data found for:', nextSegment);
+          logger.error('❌ No segment data found for:', nextSegment);
         }
       } else {
-        console.error('❌ No next segment found for book:', bookCode);
+        logger.error('❌ No next segment found for book:', bookCode);
       }
     } else {
-      console.error('❌ No book code found for intro:', id);
+      logger.error('❌ No book code found for intro:', id);
     }
   };
 

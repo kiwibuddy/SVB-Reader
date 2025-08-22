@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 #!/usr/bin/env node
 
 const sharp = require('sharp');
@@ -8,13 +9,13 @@ async function generateIcons() {
   const svgPath = path.join(__dirname, '..', 'assets', 'images', 'SourceView Together Icon.svg');
   const outputDir = path.join(__dirname, '..', 'assets', 'images');
 
-  console.log('🎨 Generating app icons from SVG...');
-  console.log('📁 SVG Path:', svgPath);
-  console.log('📁 Output Dir:', outputDir);
+  logger.info('🎨 Generating app icons from SVG...');
+  logger.info('📁 SVG Path:', svgPath);
+  logger.info('📁 Output Dir:', outputDir);
 
   // Check if SVG exists
   if (!fs.existsSync(svgPath)) {
-    console.error('❌ SVG file not found:', svgPath);
+    logger.error('❌ SVG file not found:', svgPath);
     process.exit(1);
   }
 
@@ -31,7 +32,7 @@ async function generateIcons() {
     ];
 
     for (const icon of icons) {
-      console.log(`🖼️  Generating ${icon.description} (${icon.size}x${icon.size})...`);
+      logger.info(`🖼️  Generating ${icon.description} (${icon.size}x${icon.size})...`);
       
       const outputPath = path.join(outputDir, icon.name);
       
@@ -43,13 +44,13 @@ async function generateIcons() {
         .png()
         .toFile(outputPath);
       
-      console.log(`✅ Generated: ${icon.name}`);
+      logger.info(`✅ Generated: ${icon.name}`);
     }
 
-    console.log('🎉 All icons generated successfully!');
+    logger.info('🎉 All icons generated successfully!');
     
   } catch (error) {
-    console.error('❌ Error generating icons:', error);
+    logger.error('❌ Error generating icons:', error);
     process.exit(1);
   }
 }

@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 import { databaseManager } from './database-manager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -87,7 +88,7 @@ export async function initializeDatabaseVersioning(): Promise<void> {
       `, CURRENT_DB_VERSION, schemaHash, '1.0.5'); // Using version from package.json
     }
   } catch (error) {
-    console.error('Error initializing database versioning:', error);
+    logger.error('Error initializing database versioning:', error);
     throw error;
   }
 }
@@ -116,7 +117,7 @@ export async function generateSchemaHash(): Promise<string> {
     
     return hash.toString(16);
   } catch (error) {
-    console.error('Error generating schema hash:', error);
+    logger.error('Error generating schema hash:', error);
     return 'unknown';
   }
 }
@@ -179,7 +180,7 @@ export async function getDatabaseInfo(): Promise<DatabaseInfo> {
       tablesSummary
     };
   } catch (error) {
-    console.error('Error getting database info:', error);
+    logger.error('Error getting database info:', error);
     throw error;
   }
 }
@@ -207,7 +208,7 @@ export async function analyzeDataConflicts(): Promise<ConflictAnalysis> {
           }
         }
       } catch (error) {
-        console.warn(`Error reading AsyncStorage key ${key}:`, error);
+        logger.warn(`Error reading AsyncStorage key ${key}:`, error);
       }
     }
     
@@ -245,7 +246,7 @@ export async function analyzeDataConflicts(): Promise<ConflictAnalysis> {
       recommendations
     };
   } catch (error) {
-    console.error('Error analyzing data conflicts:', error);
+    logger.error('Error analyzing data conflicts:', error);
     throw error;
   }
 }
@@ -386,7 +387,7 @@ export async function isDatabaseOutdated(): Promise<{
       needsMigration: isOutdated
     };
   } catch (error) {
-    console.error('Error checking database version:', error);
+    logger.error('Error checking database version:', error);
     return {
       isOutdated: true,
       currentVersion: 0,
@@ -414,6 +415,6 @@ export async function logDatabaseDiagnostics(): Promise<void> {
     
     // Database diagnostics completed
   } catch (error) {
-    console.error('Error in database diagnostics:', error);
+    logger.error('Error in database diagnostics:', error);
   }
 }

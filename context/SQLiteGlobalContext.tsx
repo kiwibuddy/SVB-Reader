@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import logger from '@/utils/logger';import { 
+import logger from '@/utils/logger';
+import { 
   getCurrentSegmentId,
   setCurrentSegmentId,
   getCurrentReadingPlan,

@@ -1,4 +1,5 @@
 import React from 'react';
+import logger from '@/utils/logger';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useGroupReading } from '@/context/GroupReadingContext';
 import JoinGroupScreen from '@/components/GroupReading/JoinGroupScreen';
@@ -16,16 +17,16 @@ export default function JoinGroupRoute() {
 
   const handleJoinGroup = async (role: any, userName: string) => {
     try {
-      console.log('🔍 Attempting to join session:', { sessionId, role, userName });
+      logger.info('🔍 Attempting to join session:', { sessionId, role, userName });
       const success = await joinSession(sessionId, role, userName);
       if (success) {
-        console.log('🔍 Successfully joined session');
+        logger.info('🔍 Successfully joined session');
         router.back();
       } else {
-        console.error('🔍 Failed to join session');
+        logger.error('🔍 Failed to join session');
       }
     } catch (error) {
-      console.error('🔍 Error joining session:', error);
+      logger.error('🔍 Error joining session:', error);
     }
   };
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import logger from '@/utils/logger';
 import { TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
 import { runAllTests } from '@/scripts/run-database-tests';
 
@@ -10,7 +11,7 @@ export default function QuickTestButton() {
   const runTests = async () => {
     try {
       Alert.alert('🧪 Tests Started', 'Running all database tests...\nCheck console for detailed output.');
-      console.log('🧪 QUICK TEST BUTTON: Starting all database tests...');
+      logger.info('🧪 QUICK TEST BUTTON: Starting all database tests...');
       
       const results = await runAllTests();
       
@@ -23,10 +24,10 @@ export default function QuickTestButton() {
         Alert.alert('❌ Some Tests Failed', `${passed}/${total} tests passed.\n\nCheck console for error details.`);
       }
       
-      console.log('🧪 QUICK TEST BUTTON: Tests completed!');
+      logger.info('🧪 QUICK TEST BUTTON: Tests completed!');
       
     } catch (error) {
-      console.error('❌ Quick test error:', error);
+      logger.error('❌ Quick test error:', error);
       Alert.alert('❌ Test Error', 'Failed to run tests. Check console for details.');
     }
   };

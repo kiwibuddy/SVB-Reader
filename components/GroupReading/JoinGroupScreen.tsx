@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue } from 'react';
+import logger from '@/utils/logger';
 import {
   View,
   Text,
@@ -271,6 +272,8 @@ const JoinGroupScreen: React.FC<JoinGroupScreenProps> = ({
     content: {
       flex: 1,
       padding: 16,
+      paddingBottom: Platform.OS === 'ios' ? 16 : 32,
+      // Ensure content can scroll properly on Android
     },
     storyInfo: {
       marginBottom: 24,
@@ -452,7 +455,7 @@ const JoinGroupScreen: React.FC<JoinGroupScreenProps> = ({
         setUserName(savedName);
       }
     } catch (error) {
-      console.error('Error loading saved user name:', error);
+      logger.error('Error loading saved user name:', error);
     }
   };
 
@@ -460,7 +463,7 @@ const JoinGroupScreen: React.FC<JoinGroupScreenProps> = ({
     try {
       await AsyncStorage.setItem('groupUserName', name);
     } catch (error) {
-      console.error('Error saving user name:', error);
+      logger.error('Error saving user name:', error);
     }
   };
 
@@ -477,7 +480,7 @@ const JoinGroupScreen: React.FC<JoinGroupScreenProps> = ({
       const role = getRole(selectedReaderPosition.color, selectedReaderPosition.position);
       onJoinGroup(role, userName.trim());
     } catch (error) {
-      console.error('Error joining group:', error);
+      logger.error('Error joining group:', error);
       Alert.alert('Error', 'Failed to join group reading session. Please try again.');
     } finally {
       setIsJoining(false);
@@ -637,7 +640,19 @@ const JoinGroupScreen: React.FC<JoinGroupScreenProps> = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView 
+            style={styles.content} 
+            showsVerticalScrollIndicator={true}
+            contentContainerStyle={{ 
+              flexGrow: 1,
+              paddingBottom: 20
+            }}
+            bounces={true}
+            alwaysBounceVertical={false}
+            nestedScrollEnabled={true}
+            keyboardShouldPersistTaps="handled"
+            removeClippedSubviews={Platform.OS === 'android'}
+          >
             <View style={styles.storyInfo}>
               <Text style={styles.storyTitle}>{storyTitle}</Text>
               <Text style={styles.bookName}>{bookName}</Text>

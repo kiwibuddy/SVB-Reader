@@ -213,8 +213,9 @@ const BroadcastingScreen: React.FC<BroadcastingScreenProps> = ({
     },
     content: {
       flex: 1,
-      paddingHorizontal: 24,
-      paddingTop: 32,
+      padding: 16,
+      paddingBottom: Platform.OS === 'ios' ? 16 : 32,
+      // Ensure content can scroll properly on Android
     },
     iconContainer: {
       alignItems: 'center',
@@ -558,7 +559,19 @@ const BroadcastingScreen: React.FC<BroadcastingScreenProps> = ({
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={true}
+        contentContainerStyle={{ 
+          flexGrow: 1,
+          paddingBottom: 20
+        }}
+        bounces={true}
+        alwaysBounceVertical={false}
+        nestedScrollEnabled={true}
+        keyboardShouldPersistTaps="handled"
+        removeClippedSubviews={Platform.OS === 'android'}
+      >
         <View style={styles.iconContainer}>
           <View style={styles.iconRow}>
             {[1, 2, 3, 4].map((index) => (

@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 #!/usr/bin/env node
 
 /**
@@ -8,7 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 
-console.log('🚀 Preparing SourceView Together for Apple App Store submission...\n');
+logger.info('🚀 Preparing SourceView Together for Apple App Store submission...\n');
 
 // Check if all required files exist
 const requiredFiles = [
@@ -19,25 +20,25 @@ const requiredFiles = [
   'utils/logger.ts'
 ];
 
-console.log('📋 Checking required files...');
+logger.info('📋 Checking required files...');
 let allFilesExist = true;
 
 requiredFiles.forEach(file => {
   if (fs.existsSync(file)) {
-    console.log(`✅ ${file}`);
+    logger.info(`✅ ${file}`);
   } else {
-    console.log(`❌ ${file} - MISSING`);
+    logger.info(`❌ ${file} - MISSING`);
     allFilesExist = false;
   }
 });
 
 if (!allFilesExist) {
-  console.log('\n❌ Some required files are missing. Please ensure all files exist before building.');
+  logger.info('\n❌ Some required files are missing. Please ensure all files exist before building.');
   process.exit(1);
 }
 
 // Read and validate app.json
-console.log('\n📱 Validating app.json configuration...');
+logger.info('\n📱 Validating app.json configuration...');
 const appJson = JSON.parse(fs.readFileSync('app.json', 'utf8'));
 
 const checks = [
@@ -108,9 +109,9 @@ checks.forEach(check => {
                   (check.required ? !!check.value : true);
   
   if (isValid) {
-    console.log(`✅ ${check.name}: ${check.value !== undefined ? check.value : 'Not configured'}`);
+    logger.info(`✅ ${check.name}: ${check.value !== undefined ? check.value : 'Not configured'}`);
   } else {
-    console.log(`❌ ${check.name}: ${check.value || 'MISSING'}`);
+    logger.info(`❌ ${check.name}: ${check.value || 'MISSING'}`);
     if (check.required) {
       allChecksPassed = false;
     }
@@ -118,37 +119,37 @@ checks.forEach(check => {
 });
 
 if (!allChecksPassed) {
-  console.log('\n❌ App configuration validation failed. Please fix the issues above.');
+  logger.info('\n❌ App configuration validation failed. Please fix the issues above.');
   process.exit(1);
 }
 
 // Check for console.log statements (should be replaced with logger)
-console.log('\n🔍 Checking for console statements in production code...');
+logger.info('\n🔍 Checking for console statements in production code...');
 const { execSync } = require('child_process');
 
 try {
   const consoleCheck = execSync('find app components -name "*.tsx" -o -name "*.ts" | xargs grep -l "console\\." | grep -v logger.ts || true', { encoding: 'utf8' });
   
   if (consoleCheck.trim()) {
-    console.log('⚠️  Found console statements in:');
-    console.log(consoleCheck);
-    console.log('   These should be replaced with logger for production.');
+    logger.info('⚠️  Found console statements in:');
+    logger.info(consoleCheck);
+    logger.info('   These should be replaced with logger for production.');
   } else {
-    console.log('✅ No console statements found in production code');
+    logger.info('✅ No console statements found in production code');
   }
 } catch (error) {
-  console.log('⚠️  Could not check for console statements');
+  logger.info('⚠️  Could not check for console statements');
 }
 
 // Final success message
-console.log('\n🎉 App Store build preparation complete!');
-console.log('\n📋 Next steps:');
-console.log('1. Run: npm run build:ios');
-console.log('2. Submit to TestFlight: npm run submit:ios');
-console.log('3. After TestFlight approval, submit to App Store review');
+logger.info('\n🎉 App Store build preparation complete!');
+logger.info('\n📋 Next steps:');
+logger.info('1. Run: npm run build:ios');
+logger.info('2. Submit to TestFlight: npm run submit:ios');
+logger.info('3. After TestFlight approval, submit to App Store review');
 
-console.log('\n🔄 For future OTA updates:');
-console.log('- JavaScript/asset changes: npm run update:production');
-console.log('- Native code changes: Increment buildNumber and rebuild');
+logger.info('\n🔄 For future OTA updates:');
+logger.info('- JavaScript/asset changes: npm run update:production');
+logger.info('- Native code changes: Increment buildNumber and rebuild');
 
-console.log('\n✅ Ready for Apple App Store submission!');
+logger.info('\n✅ Ready for Apple App Store submission!');

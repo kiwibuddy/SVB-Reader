@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
@@ -13,9 +14,9 @@ async function generateLogo(svgPath, outputPath, size, backgroundColor = '#80808
       .png()
       .toFile(outputPath);
     
-    console.log(`✅ Generated: ${outputPath} (${size}x${size})`);
+    logger.info(`✅ Generated: ${outputPath} (${size}x${size})`);
   } catch (error) {
-    console.error(`❌ Error generating ${outputPath}:`, error.message);
+    logger.error(`❌ Error generating ${outputPath}:`, error.message);
   }
 }
 
@@ -24,11 +25,11 @@ async function main() {
   const svgPath = path.join(__dirname, '../assets/images/SourceView Together Icon.svg');
   
   if (!fs.existsSync(svgPath)) {
-    console.error('❌ SVG file not found:', svgPath);
+    logger.error('❌ SVG file not found:', svgPath);
     return;
   }
 
-  console.log('🎨 Generating logos with gray background...\n');
+  logger.info('🎨 Generating logos with gray background...\n');
 
   // Generate all required logo sizes
   await generateLogo(svgPath, path.join(outputDir, 'icon.png'), 1024);
@@ -37,8 +38,8 @@ async function main() {
   await generateLogo(svgPath, path.join(outputDir, 'splash-icon.png'), 200);
   await generateLogo(svgPath, path.join(outputDir, 'splash.png'), 1242);
 
-  console.log('\n🎉 All logos generated successfully!');
-  console.log('📱 Your app now has consistent gray background logos everywhere.');
+  logger.info('\n🎉 All logos generated successfully!');
+  logger.info('📱 Your app now has consistent gray background logos everywhere.');
 }
 
 main().catch(console.error);

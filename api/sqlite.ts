@@ -1,5 +1,6 @@
+import logger from '@/utils/logger';
 import { databaseManager } from './database-manager';
-import logger from '@/utils/logger';import { BibleBlock } from "@/types";
+import { BibleBlock } from "@/types";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -489,7 +490,7 @@ export async function getCurrentStreak(): Promise<number> {
     const result = await db.getFirstAsync<{ currentStreak: number }>(
       'SELECT currentStreak FROM streak_data LIMIT 1'
     );
-    console.log('📊 [getCurrentStreak] Raw result from DB:', result);
+    logger.info('📊 [getCurrentStreak] Raw result from DB:', result);
     return result?.currentStreak || 0;
   } catch (error) {
     logger.error("Error getting current streak:", error);

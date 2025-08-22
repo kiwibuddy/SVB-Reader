@@ -20,16 +20,16 @@ export const getBubbleTextColor = (color: string, isDarkMode: boolean) => {
     return '#F5F5F5'; // White text for dark mode
   }
   
-  // In light mode, use darker versions of the bubble colors for better readability
+  // In light mode, use Version A (High Contrast) colors for better readability and WCAG AA compliance
   switch (color) {
     case "black":
       return '#2C2C2E'; // Dark gray text on light gray background
     case "red":
-      return '#8B0000'; // Dark red text on light red background
+      return '#D32F2F'; // Medium red text on light red background - WCAG AA compliant
     case "green":
-      return '#006400'; // Dark green text on light green background
+      return '#388E3C'; // Medium green text on light green background - WCAG AA compliant
     case "blue":
-      return '#00008B'; // Dark blue text on light blue background
+      return '#1976D2'; // Medium blue text on light blue background - WCAG AA compliant
     default:
       return '#2C2C2E'; // Fallback to dark gray
   }

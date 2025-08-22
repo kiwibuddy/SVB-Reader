@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 import { databaseManager } from './database-manager';
 
 // ============================================================================
@@ -115,7 +116,7 @@ class BatchProcessor {
 
       await db.runAsync('COMMIT');
     } catch (error) {
-      console.error('Error executing batch operations:', error);
+      logger.error('Error executing batch operations:', error);
       const rollbackDb = databaseManager.getDatabase();
       await rollbackDb.runAsync('ROLLBACK');
     }
@@ -186,7 +187,7 @@ export const getSegmentCompletionStatusOptimized = async (
 
     return completionData;
   } catch (error) {
-    console.error("Error getting segment completion status:", error);
+    logger.error("Error getting segment completion status:", error);
     return { isCompleted: false, color: null };
   }
 };
@@ -249,7 +250,7 @@ export const getBatchSegmentCompletionStatus = async (
 
     return results;
   } catch (error) {
-    console.error("Error getting batch segment completion status:", error);
+    logger.error("Error getting batch segment completion status:", error);
     // Fallback to individual queries
     for (const segmentId of segmentIds) {
       results[segmentId] = await getSegmentCompletionStatusOptimized(segmentId, context, planId, challengeId);
@@ -290,7 +291,7 @@ export const getOptimizedPlanProgress = async (planId: string): Promise<any> => 
     queryCache.set(cacheKey, progressData, 2 * 60 * 1000); // Cache for 2 minutes
     return progressData;
   } catch (error) {
-    console.error("Error getting optimized plan progress:", error);
+    logger.error("Error getting optimized plan progress:", error);
     return {
       totalSegments: 0,
       completedSegments: 0,
@@ -344,7 +345,7 @@ export const getOptimizedStatistics = async (): Promise<{
     queryCache.set(cacheKey, statistics, 5 * 60 * 1000); // Cache for 5 minutes
     return statistics;
   } catch (error) {
-    console.error("Error getting optimized statistics:", error);
+    logger.error("Error getting optimized statistics:", error);
     return {
       currentStreak: 0,
       bestStreak: 0,

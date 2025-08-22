@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 #!/usr/bin/env node
 
 /**
@@ -10,36 +11,36 @@
 const fs = require('fs');
 const path = require('path');
 
-console.log('🔍 BLUETOOTH SETUP VERIFICATION\n');
+logger.info('🔍 BLUETOOTH SETUP VERIFICATION\n');
 
 // Check 1: Package.json dependencies
-console.log('📦 Checking dependencies...');
+logger.info('📦 Checking dependencies...');
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const hasBlePlx = packageJson.dependencies['react-native-ble-plx'];
 const hasQrCode = packageJson.dependencies['react-native-qrcode-svg'];
 
 if (hasBlePlx) {
-  console.log('✅ react-native-ble-plx installed:', hasBlePlx);
+  logger.info('✅ react-native-ble-plx installed:', hasBlePlx);
 } else {
-  console.log('❌ react-native-ble-plx missing');
+  logger.info('❌ react-native-ble-plx missing');
 }
 
 if (hasQrCode) {
-  console.log('✅ react-native-qrcode-svg installed:', hasQrCode);
+  logger.info('✅ react-native-qrcode-svg installed:', hasQrCode);
 } else {
-  console.log('❌ react-native-qrcode-svg missing');
+  logger.info('❌ react-native-qrcode-svg missing');
 }
 
 // Check 2: App.json configuration
-console.log('\n📱 Checking app.json configuration...');
+logger.info('\n📱 Checking app.json configuration...');
 const appJson = JSON.parse(fs.readFileSync('app.json', 'utf8'));
 
 // Check iOS Bluetooth permissions
 const iosConfig = appJson.expo.ios?.infoPlist;
 if (iosConfig?.NSBluetoothAlwaysUsageDescription) {
-  console.log('✅ iOS Bluetooth permissions configured');
+  logger.info('✅ iOS Bluetooth permissions configured');
 } else {
-  console.log('❌ iOS Bluetooth permissions missing');
+  logger.info('❌ iOS Bluetooth permissions missing');
 }
 
 // Check Android Bluetooth permissions
@@ -57,13 +58,13 @@ const missingPermissions = requiredPermissions.filter(
 );
 
 if (missingPermissions.length === 0) {
-  console.log('✅ Android Bluetooth permissions configured');
+  logger.info('✅ Android Bluetooth permissions configured');
 } else {
-  console.log('❌ Missing Android permissions:', missingPermissions);
+  logger.info('❌ Missing Android permissions:', missingPermissions);
 }
 
 // Check 3: Required files exist
-console.log('\n📁 Checking required files...');
+logger.info('\n📁 Checking required files...');
 const requiredFiles = [
   'services/BluetoothSessionManager.ts',
   'context/GroupReadingContext.tsx',
@@ -80,14 +81,14 @@ const requiredFiles = [
 
 requiredFiles.forEach(file => {
   if (fs.existsSync(file)) {
-    console.log(`✅ ${file}`);
+    logger.info(`✅ ${file}`);
   } else {
-    console.log(`❌ ${file} missing`);
+    logger.info(`❌ ${file} missing`);
   }
 });
 
 // Check 4: Type definitions
-console.log('\n🔧 Checking type definitions...');
+logger.info('\n🔧 Checking type definitions...');
 const typesContent = fs.readFileSync('types.ts', 'utf8');
 const requiredTypes = [
   'BluetoothSessionManager',
@@ -101,28 +102,28 @@ requiredTypes.forEach(type => {
   if (typesContent.includes(`interface ${type}`) || 
       typesContent.includes(`export interface ${type}`) ||
       typesContent.includes(`export type ${type}`)) {
-    console.log(`✅ ${type} type defined`);
+    logger.info(`✅ ${type} type defined`);
   } else {
-    console.log(`❌ ${type} type missing`);
+    logger.info(`❌ ${type} type missing`);
   }
 });
 
 // Check 5: Context integration
-console.log('\n🔗 Checking context integration...');
+logger.info('\n🔗 Checking context integration...');
 const layoutContent = fs.readFileSync('app/_layout.tsx', 'utf8');
 if (layoutContent.includes('GroupReadingProvider')) {
-  console.log('✅ GroupReadingProvider integrated in app layout');
+  logger.info('✅ GroupReadingProvider integrated in app layout');
 } else {
-  console.log('❌ GroupReadingProvider not found in app layout');
+  logger.info('❌ GroupReadingProvider not found in app layout');
 }
 
 // Summary
-console.log('\n📊 SUMMARY');
-console.log('==================');
-console.log('Bluetooth group reading features appear to be properly configured.');
-console.log('\nNext steps:');
-console.log('1. Build development client: eas build --profile development --platform ios');
-console.log('2. Install on test devices');
-console.log('3. Follow testing guide: scripts/bluetooth-testing-guide.md');
-console.log('4. Test with 2+ devices in close proximity');
-console.log('\n🚀 Ready for Bluetooth testing!');
+logger.info('\n📊 SUMMARY');
+logger.info('==================');
+logger.info('Bluetooth group reading features appear to be properly configured.');
+logger.info('\nNext steps:');
+logger.info('1. Build development client: eas build --profile development --platform ios');
+logger.info('2. Install on test devices');
+logger.info('3. Follow testing guide: scripts/bluetooth-testing-guide.md');
+logger.info('4. Test with 2+ devices in close proximity');
+logger.info('\n🚀 Ready for Bluetooth testing!');

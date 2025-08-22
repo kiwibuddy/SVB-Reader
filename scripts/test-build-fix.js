@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 #!/usr/bin/env node
 
 /**
@@ -10,19 +11,19 @@ const fs = require('fs');
 const path = require('path');
 
 function checkForDuplicateDeclarations() {
-  console.log('🔍 Checking for duplicate declarations...');
+  logger.info('🔍 Checking for duplicate declarations...');
   
   const bluetoothManagerPath = path.join(__dirname, '../services/BluetoothSessionManager.ts');
   const realBluetoothManagerPath = path.join(__dirname, '../services/RealBluetoothManager.ts');
   
   // Check if files exist
   if (!fs.existsSync(bluetoothManagerPath)) {
-    console.error('❌ BluetoothSessionManager.ts not found');
+    logger.error('❌ BluetoothSessionManager.ts not found');
     return false;
   }
   
   if (!fs.existsSync(realBluetoothManagerPath)) {
-    console.error('❌ RealBluetoothManager.ts not found');
+    logger.error('❌ RealBluetoothManager.ts not found');
     return false;
   }
   
@@ -33,7 +34,7 @@ function checkForDuplicateDeclarations() {
   // Check for duplicate SERVICE_UUID in BluetoothSessionManager.ts
   const serviceUuidMatches = bluetoothManagerContent.match(/const SERVICE_UUID/g);
   if (serviceUuidMatches && serviceUuidMatches.length > 1) {
-    console.error('❌ Multiple SERVICE_UUID declarations found in BluetoothSessionManager.ts');
+    logger.error('❌ Multiple SERVICE_UUID declarations found in BluetoothSessionManager.ts');
     return false;
   }
   
@@ -47,7 +48,7 @@ function checkForDuplicateDeclarations() {
   
   for (const uuid of undefinedUuids) {
     if (bluetoothManagerContent.includes(uuid)) {
-      console.error(`❌ Undefined UUID found in BluetoothSessionManager.ts: ${uuid}`);
+      logger.error(`❌ Undefined UUID found in BluetoothSessionManager.ts: ${uuid}`);
       return false;
     }
   }
@@ -63,29 +64,29 @@ function checkForDuplicateDeclarations() {
   
   for (const uuid of newUuids) {
     if (!realBluetoothManagerContent.includes(uuid)) {
-      console.error(`❌ New UUID not found in RealBluetoothManager.ts: ${uuid}`);
+      logger.error(`❌ New UUID not found in RealBluetoothManager.ts: ${uuid}`);
       return false;
     }
   }
   
-  console.log('✅ No duplicate declarations found');
-  console.log('✅ All new UUIDs properly defined in RealBluetoothManager.ts');
-  console.log('✅ Build fix verification passed');
+  logger.info('✅ No duplicate declarations found');
+  logger.info('✅ All new UUIDs properly defined in RealBluetoothManager.ts');
+  logger.info('✅ Build fix verification passed');
   
   return true;
 }
 
 function main() {
-  console.log('🚀 Build Fix Verification\n');
+  logger.info('🚀 Build Fix Verification\n');
   
   const success = checkForDuplicateDeclarations();
   
   if (success) {
-    console.log('\n🎉 Build fix verification successful!');
-    console.log('The app should now build without errors.');
+    logger.info('\n🎉 Build fix verification successful!');
+    logger.info('The app should now build without errors.');
   } else {
-    console.log('\n⚠️ Build fix verification failed!');
-    console.log('Please check the issues above.');
+    logger.info('\n⚠️ Build fix verification failed!');
+    logger.info('Please check the issues above.');
   }
   
   return success;

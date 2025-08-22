@@ -1,10 +1,12 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import logger from '@/utils/logger';import { StatusBar } from "expo-status-bar";
+import logger from '@/utils/logger';
+import { StatusBar } from "expo-status-bar";
 import { SQLiteGlobalProvider } from '@/context/SQLiteGlobalContext';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue } from 'react';
+// Removed duplicate logger import
 import 'react-native-reanimated';
 import { BottomNavProvider } from '@/context/BottomNavContext';
 import { FontSizeProvider } from '@/context/FontSizeContext';
@@ -66,12 +68,7 @@ function AppContent() {
         logger.info('📱 Updates enabled:', Updates.isEnabled);
         logger.info('📱 Emergency launch:', Updates.isEmergencyLaunch);
         
-        // Force console.log for debugging in TestFlight
-        console.log('🔄 OTA CHECK - Update ID:', Updates.updateId);
-        console.log('🔄 OTA CHECK - Runtime:', Updates.runtimeVersion);
-        console.log('🔄 OTA CHECK - Enabled:', Updates.isEnabled);
-        console.log('🔄 OTA CHECK - Channel:', Updates.channel);
-        console.log('🔄 OTA CHECK - isEmbedded:', Updates.isEmbeddedLaunch);
+        // OTA update check completed
         
         const update = await Updates.checkForUpdateAsync();
         logger.info('📱 Update check result:', update);

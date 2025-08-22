@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -1133,7 +1133,7 @@ const Navigation = () => {
     const fetchCompletion = async () => {
       // Check if database is ready before making any calls
       if (!databaseManager.isReady()) {
-        console.log('⏳ Database not ready, skipping completion status fetch');
+        logger.info('⏳ Database not ready, skipping completion status fetch');
         return;
       }
 
@@ -1148,7 +1148,7 @@ const Navigation = () => {
                   completed[segmentId] = true;
                 }
               } catch (error) {
-                console.warn(`Warning: Could not get completion status for ${segmentId}:`, error);
+                logger.warn(`Warning: Could not get completion status for ${segmentId}:`, error);
               }
             })
           );
@@ -1176,7 +1176,7 @@ const Navigation = () => {
       const fetchCompletion = async () => {
         // Check if database is ready before making any calls
         if (!databaseManager.isReady()) {
-          console.log('⏳ Database not ready, skipping completion status refresh');
+          logger.info('⏳ Database not ready, skipping completion status refresh');
           return;
         }
 
@@ -1192,7 +1192,7 @@ const Navigation = () => {
                     completed[segmentId] = true;
                   }
                 } catch (error) {
-                  console.warn(`Warning: Could not get completion status for ${segmentId}:`, error);
+                  logger.warn(`Warning: Could not get completion status for ${segmentId}:`, error);
                 }
               })
             );
@@ -1380,7 +1380,7 @@ const Navigation = () => {
     try {
       // Check if database is ready before making any calls
       if (!databaseManager.isReady()) {
-        console.log('⏳ Database not ready, skipping completion status refresh');
+        logger.info('⏳ Database not ready, skipping completion status refresh');
         setRefreshing(false);
         return;
       }

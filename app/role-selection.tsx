@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import logger from '@/utils/logger';import {
+import logger from '@/utils/logger';
+import {
   View,
   Text,
   StyleSheet,

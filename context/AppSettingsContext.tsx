@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import logger from '@/utils/logger';import * as ScreenOrientation from 'expo-screen-orientation';
+import logger from '@/utils/logger';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { type FontSize, type TextSizes } from './FontSizeContext';
 import { Appearance, ColorSchemeName } from 'react-native';
 import { type ColorScheme } from './types';

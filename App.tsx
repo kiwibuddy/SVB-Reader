@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { SplashScreen } from 'expo-router';
 import { databaseManager } from './api/database-manager';
-import logger from './utils/logger';
+import logger from '@/utils/logger';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

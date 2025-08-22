@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue } from 'react';
+import logger from '@/utils/logger';
 import { 
   View, 
   Text, 
@@ -186,7 +187,7 @@ const GroupCompletionBadge: React.FC<{ segmentId: string }> = ({ segmentId }) =>
       );
       setHasGroupCompletion((row?.count || 0) > 0);
     } catch (error) {
-      console.error('Error loading group completion status:', error);
+      logger.error('Error loading group completion status:', error);
     }
   }, [segmentId]);
 

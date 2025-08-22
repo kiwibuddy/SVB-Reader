@@ -186,7 +186,19 @@ const QRInfoScreen: React.FC<QRInfoScreenProps> = ({
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={true}
+        contentContainerStyle={{ 
+          flexGrow: 1,
+          paddingBottom: 20
+        }}
+        bounces={true}
+        alwaysBounceVertical={false}
+        nestedScrollEnabled={true}
+        keyboardShouldPersistTaps="handled"
+        removeClippedSubviews={Platform.OS === 'android'}
+      >
         <View style={styles.iconContainer}>
           <View style={styles.iconBackground}>
             <Ionicons name="qr-code" size={40} color={colors.primary} />

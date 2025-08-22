@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue } from 'react';
+import logger from '@/utils/logger';
 import {
   View,
   Text,
@@ -267,7 +268,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
       flex: 1,
       padding: 16,
       paddingBottom: Platform.OS === 'ios' ? 16 : 32,
-      // Remove space-between to allow natural flow
+      // Ensure content can scroll properly on Android
     },
     storyInfo: {
       marginBottom: 20,
@@ -447,7 +448,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
         setUserName(savedName);
       }
     } catch (error) {
-      console.error('Error loading saved user name:', error);
+      logger.error('Error loading saved user name:', error);
     }
   };
 
@@ -455,7 +456,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
     try {
       await AsyncStorage.setItem('groupUserName', name);
     } catch (error) {
-      console.error('Error saving user name:', error);
+      logger.error('Error saving user name:', error);
     }
   };
 
@@ -491,7 +492,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
         }
       });
     } catch (error) {
-      console.error('Error generating QR code:', error);
+      logger.error('Error generating QR code:', error);
       Alert.alert('Error', 'Failed to generate QR code. Please try again.');
     } finally {
       setIsLoading(false);
@@ -626,84 +627,97 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
           </View>
 
           <View style={styles.content}>
-            <View style={styles.storyInfo}>
-              <Text style={styles.storyTitle}>{storyTitle}</Text>
-              <Text style={styles.bookName}>{bookName}</Text>
-              <Text style={styles.scriptureRef}>{scriptureReference}</Text>
-              <Text style={styles.readingTime}>
-                {readingTime} minute{readingTime !== 1 ? 's' : ''} estimated reading time
-              </Text>
-            </View>
-
-            <View style={styles.userNameSection}>
-              <Text style={styles.label}>Your Name</Text>
-              <TextInput
-                style={styles.input}
-                value={userName}
-                onChangeText={setUserName}
-                placeholder="Enter your name"
-                placeholderTextColor={colors.secondary}
-                autoCapitalize="words"
-                autoCorrect={false}
-              />
-            </View>
-
-            <View style={styles.roleSelectionSection}>
-              <Text style={styles.sectionTitle}>Select Your Reading Role</Text>
-              
-              <View style={styles.rolesContainer}>
-                {getAllRoleOptions().map((option, index) => {
-                  const isSelected = selectedReaderPosition?.color === option.color && 
-                                   selectedReaderPosition?.position === option.position;
-                  
-                  const roleColors = {
-                    'black': '#8E8E93',
-                    'red': '#FF3B30',
-                    'green': '#30D158',
-                    'blue': '#007AFF'
-                  };
-
-                  return (
-                    <TouchableOpacity
-                      key={`${option.color}-${option.position}`}
-                      style={[styles.roleOption, isSelected && styles.selectedRoleOption]}
-                      onPress={() => handleRoleSelect(option.color, option.position)}
-                    >
-                      <View 
-                        style={[
-                          styles.roleColorIcon, 
-                          { backgroundColor: roleColors[option.color as keyof typeof roleColors] + '20' }
-                        ]}
-                      >
-                        <Ionicons 
-                          name="person" 
-                          size={20} 
-                          color={roleColors[option.color as keyof typeof roleColors]} 
-                        />
-                      </View>
-                      <View style={styles.roleInfo}>
-                        <Text style={styles.roleName}>{option.displayName}</Text>
-                        <Text style={styles.roleDescription}>{option.description}</Text>
-                      </View>
-                      {isSelected && (
-                        <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
-                      )}
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-
-            <TouchableOpacity
-              style={[
-                styles.startButton,
-                (!selectedReaderPosition || !userName.trim()) && styles.disabledButton
-              ]}
-              onPress={handleGenerateQRCode}
-              disabled={!selectedReaderPosition || !userName.trim()}
+            <ScrollView 
+              showsVerticalScrollIndicator={true}
+              contentContainerStyle={{ 
+                flexGrow: 1,
+                paddingBottom: 20
+              }}
+              bounces={true}
+              alwaysBounceVertical={false}
+              nestedScrollEnabled={true}
+              keyboardShouldPersistTaps="handled"
+              removeClippedSubviews={Platform.OS === 'android'}
             >
-              <Text style={styles.buttonText}>Generate QR Code</Text>
-            </TouchableOpacity>
+              <View style={styles.storyInfo}>
+                <Text style={styles.storyTitle}>{storyTitle}</Text>
+                <Text style={styles.bookName}>{bookName}</Text>
+                <Text style={styles.scriptureRef}>{scriptureReference}</Text>
+                <Text style={styles.readingTime}>
+                  {readingTime} minute{readingTime !== 1 ? 's' : ''} estimated reading time
+                </Text>
+              </View>
+
+              <View style={styles.userNameSection}>
+                <Text style={styles.label}>Your Name</Text>
+                <TextInput
+                  style={styles.input}
+                  value={userName}
+                  onChangeText={setUserName}
+                  placeholder="Enter your name"
+                  placeholderTextColor={colors.secondary}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                />
+              </View>
+
+              <View style={styles.roleSelectionSection}>
+                <Text style={styles.sectionTitle}>Select Your Reading Role</Text>
+                
+                <View style={styles.rolesContainer}>
+                  {getAllRoleOptions().map((option, index) => {
+                    const isSelected = selectedReaderPosition?.color === option.color && 
+                                     selectedReaderPosition?.position === option.position;
+                    
+                    const roleColors = {
+                      'black': '#8E8E93',
+                      'red': '#FF3B30',
+                      'green': '#30D158',
+                      'blue': '#007AFF'
+                    };
+
+                    return (
+                      <TouchableOpacity
+                        key={`${option.color}-${option.position}`}
+                        style={[styles.roleOption, isSelected && styles.selectedRoleOption]}
+                        onPress={() => handleRoleSelect(option.color, option.position)}
+                      >
+                        <View 
+                          style={[
+                            styles.roleColorIcon, 
+                            { backgroundColor: roleColors[option.color as keyof typeof roleColors] + '20' }
+                          ]}
+                        >
+                          <Ionicons 
+                            name="person" 
+                            size={20} 
+                            color={roleColors[option.color as keyof typeof roleColors]} 
+                          />
+                        </View>
+                        <View style={styles.roleInfo}>
+                          <Text style={styles.roleName}>{option.displayName}</Text>
+                          <Text style={styles.roleDescription}>{option.description}</Text>
+                        </View>
+                        {isSelected && (
+                          <Ionicons name="checkmark-circle" size={24} color="#007AFF" />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={[
+                  styles.startButton,
+                  (!selectedReaderPosition || !userName.trim()) && styles.disabledButton
+                ]}
+                onPress={handleGenerateQRCode}
+                disabled={!selectedReaderPosition || !userName.trim()}
+              >
+                <Text style={styles.buttonText}>Generate QR Code</Text>
+              </TouchableOpacity>
+            </ScrollView>
           </View>
         </SafeAreaView>
       </Animated.View>

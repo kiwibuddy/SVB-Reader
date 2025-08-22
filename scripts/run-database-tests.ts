@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 /**
  * Quick Database Test Commands
  * 
@@ -37,13 +38,13 @@ import { initializeDatabaseWithDiagnostics } from '@/api/database-initialization
  * Test 1: Clean Install Test Suite
  */
 export async function runTest1() {
-  console.log('🧪 Test 1: Starting Clean Install Test Suite...');
+  logger.info('🧪 Test 1: Starting Clean Install Test Suite...');
   try {
     const results = await runCleanInstallTestSuite();
-    console.log('✅ Test 1 Results:', results);
+    logger.info('✅ Test 1 Results:', results);
     return results;
   } catch (error) {
-    console.error('❌ Test 1 Failed:', error);
+    logger.error('❌ Test 1 Failed:', error);
     throw error;
   }
 }
@@ -52,24 +53,24 @@ export async function runTest1() {
  * Test 2: Migration Test with Legacy Data
  */
 export async function runTest2() {
-  console.log('🧪 Test 2: Starting Migration Test...');
+  logger.info('🧪 Test 2: Starting Migration Test...');
   try {
     // Generate legacy data
-    console.log('📝 Generating legacy test data...');
+    logger.info('📝 Generating legacy test data...');
     await generateLegacyTestData();
     
     // Initialize database (triggers migration)
-    console.log('🔄 Initializing database with auto-migration...');
+    logger.info('🔄 Initializing database with auto-migration...');
     const initResult = await initializeDatabaseWithDiagnostics();
     
     // Inspect state
-    console.log('🔍 Inspecting database state...');
+    logger.info('🔍 Inspecting database state...');
     await inspectDatabaseState();
     
-    console.log('✅ Test 2 Results:', initResult);
+    logger.info('✅ Test 2 Results:', initResult);
     return initResult;
   } catch (error) {
-    console.error('❌ Test 2 Failed:', error);
+    logger.error('❌ Test 2 Failed:', error);
     throw error;
   }
 }
@@ -78,13 +79,13 @@ export async function runTest2() {
  * Test 3: Settings Preservation Test
  */
 export async function runTest3() {
-  console.log('🧪 Test 3: Starting Settings Preservation Test...');
+  logger.info('🧪 Test 3: Starting Settings Preservation Test...');
   try {
     const result = await runTestScenario(settingsPreservationScenario);
-    console.log('✅ Test 3 Results:', result);
+    logger.info('✅ Test 3 Results:', result);
     return result;
   } catch (error) {
-    console.error('❌ Test 3 Failed:', error);
+    logger.error('❌ Test 3 Failed:', error);
     throw error;
   }
 }
@@ -93,13 +94,13 @@ export async function runTest3() {
  * Test 4: Database Reset Recovery Test
  */
 export async function runTest4() {
-  console.log('🧪 Test 4: Starting Reset Recovery Test...');
+  logger.info('🧪 Test 4: Starting Reset Recovery Test...');
   try {
     const result = await runTestScenario(resetRecoveryScenario);
-    console.log('✅ Test 4 Results:', result);
+    logger.info('✅ Test 4 Results:', result);
     return result;
   } catch (error) {
-    console.error('❌ Test 4 Failed:', error);
+    logger.error('❌ Test 4 Failed:', error);
     throw error;
   }
 }
@@ -112,7 +113,7 @@ export async function runTest4() {
  * Run all tests in sequence with comprehensive reporting
  */
 export async function runAllTests() {
-  console.log('🧪 Starting All Database Tests...');
+  logger.info('🧪 Starting All Database Tests...');
   const results = {
     test1: null as any,
     test2: null as any,
@@ -168,24 +169,24 @@ export async function runAllTests() {
     results.summary.duration = Date.now() - startTime;
     
     // Generate final report
-    console.log('\n🎯 FINAL TEST REPORT:');
-    console.log('='.repeat(50));
-    console.log(`📊 Total Tests: ${results.summary.total}`);
-    console.log(`✅ Passed: ${results.summary.passed}`);
-    console.log(`❌ Failed: ${results.summary.failed}`);
-    console.log(`⏱️ Duration: ${results.summary.duration}ms`);
-    console.log(`📈 Success Rate: ${Math.round((results.summary.passed / results.summary.total) * 100)}%`);
-    console.log('='.repeat(50));
+    logger.info('\n🎯 FINAL TEST REPORT:');
+    logger.info('='.repeat(50));
+    logger.info(`📊 Total Tests: ${results.summary.total}`);
+    logger.info(`✅ Passed: ${results.summary.passed}`);
+    logger.info(`❌ Failed: ${results.summary.failed}`);
+    logger.info(`⏱️ Duration: ${results.summary.duration}ms`);
+    logger.info(`📈 Success Rate: ${Math.round((results.summary.passed / results.summary.total) * 100)}%`);
+    logger.info('='.repeat(50));
     
     // Export current state for debugging
     const currentState = await exportCurrentState();
-    console.log('\n📦 Current Database State:');
-    console.log(currentState);
+    logger.info('\n📦 Current Database State:');
+    logger.info(currentState);
     
     return results;
     
   } catch (error) {
-    console.error('💥 Critical Error in Test Suite:', error);
+    logger.error('💥 Critical Error in Test Suite:', error);
     results.summary.duration = Date.now() - startTime;
     return results;
   }
@@ -199,11 +200,11 @@ export async function runAllTests() {
  * Quick database state inspection
  */
 export async function quickInspection() {
-  console.log('🔍 Quick Database State Inspection...');
+  logger.info('🔍 Quick Database State Inspection...');
   try {
     await inspectDatabaseState();
   } catch (error) {
-    console.error('❌ Inspection failed:', error);
+    logger.error('❌ Inspection failed:', error);
   }
 }
 
@@ -211,13 +212,13 @@ export async function quickInspection() {
  * Export current state for debugging
  */
 export async function exportState() {
-  console.log('📦 Exporting current database state...');
+  logger.info('📦 Exporting current database state...');
   try {
     const state = await exportCurrentState();
-    console.log(state);
+    logger.info(state);
     return state;
   } catch (error) {
-    console.error('❌ Export failed:', error);
+    logger.error('❌ Export failed:', error);
   }
 }
 

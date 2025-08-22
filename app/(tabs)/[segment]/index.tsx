@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
+import logger from '@/utils/logger';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar, useWindowDimensions } from 'react-native';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
@@ -208,7 +209,7 @@ export default function BibleScreen() {
   const segmentData = useMemo(() => {
     if (!segID) return undefined;
     const data = Bible[segID];
-    console.log(`📚 [BibleScreen] Segment data for ${segID}:`, {
+    logger.info(`📚 [BibleScreen] Segment data for ${segID}:`, {
       hasData: !!data,
       hasContent: !!data?.content,
       hasChildren: !!data?.children,
@@ -240,7 +241,7 @@ export default function BibleScreen() {
     const timer1 = setTimeout(scrollToTop, 50);
     const timer2 = setTimeout(scrollToTop, 200);
     
-    console.log(`📜 [BibleScreen] Resetting scroll position for segment ${segID}`);
+    logger.info(`📜 [BibleScreen] Resetting scroll position for segment ${segID}`);
     
     return () => {
       clearTimeout(timer1);
@@ -251,7 +252,7 @@ export default function BibleScreen() {
   // Verse navigation logic - scroll to specific verse when provided
   useEffect(() => {
     if (verse && chapter && flatListRef.current && segmentData) {
-      console.log(`🎯 [BibleScreen] Navigating to verse ${chapter}:${verse} in segment ${segID}`);
+      logger.info(`🎯 [BibleScreen] Navigating to verse ${chapter}:${verse} in segment ${segID}`);
       
       // Delay to ensure content is fully loaded and rendered
       const scrollToVerse = () => {
@@ -260,7 +261,7 @@ export default function BibleScreen() {
             // Find the verse location in the Bible content
             const targetVerse = findVerseLocation(segmentData, parseInt(chapter as string), parseInt(verse as string));
             if (targetVerse) {
-              console.log(`📍 [BibleScreen] Found verse at position: ${targetVerse.y}px, scrolling...`);
+              logger.info(`📍 [BibleScreen] Found verse at position: ${targetVerse.y}px, scrolling...`);
               
               // Add a small offset to center the verse better
               const scrollPosition = Math.max(0, targetVerse.y - 100);
@@ -270,12 +271,12 @@ export default function BibleScreen() {
                 animated: true 
               });
               
-              console.log(`✅ [BibleScreen] Successfully scrolled to verse ${chapter}:${verse}`);
+              logger.info(`✅ [BibleScreen] Successfully scrolled to verse ${chapter}:${verse}`);
             } else {
-              console.log(`⚠️ [BibleScreen] Verse ${chapter}:${verse} not found in segment ${segID}`);
+              logger.warn(`⚠️ [BibleScreen] Verse ${chapter}:${verse} not found in segment ${segID}`);
             }
           } catch (error) {
-            console.error(`❌ [BibleScreen] Error scrolling to verse:`, error);
+            logger.error(`❌ [BibleScreen] Error scrolling to verse:`, error);
           }
         }
       };
@@ -299,7 +300,7 @@ export default function BibleScreen() {
     // This effect runs when segID changes (user navigates to different segment)
     // The verse and chapter params will be undefined in the new segment
     // This automatically clears the highlighting in the Segment component
-    console.log(`🔄 [BibleScreen] Segment changed to ${segID}, clearing verse highlighting`);
+    logger.info(`🔄 [BibleScreen] Segment changed to ${segID}, clearing verse highlighting`);
   }, [segID]);
 
   // Initialize navigation arrows as visible when entering segment

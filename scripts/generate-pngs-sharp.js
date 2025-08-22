@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 #!/usr/bin/env node
 
 /**
@@ -8,18 +9,18 @@
 const fs = require('fs');
 const path = require('path');
 
-console.log('🚀 SourceView Together PNG Asset Generator (Sharp)');
-console.log('==================================================');
+logger.info('🚀 SourceView Together PNG Asset Generator (Sharp)');
+logger.info('==================================================');
 
 // Check if Sharp is available
 let sharp;
 try {
   sharp = require('sharp');
-  console.log('✅ Sharp library found');
+  logger.info('✅ Sharp library found');
 } catch (error) {
-  console.log('❌ Sharp library not found. Installing...');
-  console.log('📦 Run: npm install sharp');
-  console.log('Then run this script again.');
+  logger.info('❌ Sharp library not found. Installing...');
+  logger.info('📦 Run: npm install sharp');
+  logger.info('Then run this script again.');
   process.exit(1);
 }
 
@@ -56,15 +57,15 @@ async function generatePNGs() {
   
   // Check if SVG exists
   if (!fs.existsSync(svgPath)) {
-    console.error('❌ SVG file not found:', svgPath);
+    logger.error('❌ SVG file not found:', svgPath);
     process.exit(1);
   }
   
-  console.log('✅ Found SVG file:', svgPath);
+  logger.info('✅ Found SVG file:', svgPath);
   
   try {
     for (const asset of assets) {
-      console.log(`\n🔄 Generating ${asset.name} (${asset.size}x${asset.size}px)...`);
+      logger.info(`\n🔄 Generating ${asset.name} (${asset.size}x${asset.size}px)...`);
       
       let pipeline = sharp(svgPath)
         .resize(asset.size, asset.size)
@@ -89,22 +90,22 @@ async function generatePNGs() {
       const outputPath = path.join(__dirname, '../assets/images', asset.name);
       await pipeline.toFile(outputPath);
       
-      console.log(`✅ Generated: ${asset.name}`);
-      console.log(`   📁 Path: ${outputPath}`);
-      console.log(`   📝 ${asset.description}`);
+      logger.info(`✅ Generated: ${asset.name}`);
+      logger.info(`   📁 Path: ${outputPath}`);
+      logger.info(`   📝 ${asset.description}`);
     }
     
-    console.log('\n🎉 All PNG assets generated successfully!');
-    console.log('\n📋 Generated files:');
+    logger.info('\n🎉 All PNG assets generated successfully!');
+    logger.info('\n📋 Generated files:');
     assets.forEach(asset => {
-      console.log(`   - ${asset.name} (${asset.size}x${asset.size}px)`);
+      logger.info(`   - ${asset.name} (${asset.size}x${asset.size}px)`);
     });
     
-    console.log('\n✅ Files are ready for app submission!');
-    console.log('🎯 All files include the grey background as required.');
+    logger.info('\n✅ Files are ready for app submission!');
+    logger.info('🎯 All files include the grey background as required.');
     
   } catch (error) {
-    console.error('❌ Error generating PNGs:', error.message);
+    logger.error('❌ Error generating PNGs:', error.message);
     process.exit(1);
   }
 }

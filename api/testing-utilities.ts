@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 import { databaseManager } from './database-manager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
@@ -51,7 +52,7 @@ export interface CleanInstallTestSuite {
  * Generate test AsyncStorage data that simulates legacy app state
  */
 export async function generateLegacyTestData(): Promise<void> {
-  console.log('📝 Generating legacy test data...');
+  logger.info('📝 Generating legacy test data...');
   
   const testData = {
     // Reading progress data
@@ -97,14 +98,14 @@ export async function generateLegacyTestData(): Promise<void> {
     await AsyncStorage.setItem(key, JSON.stringify(value));
   }
   
-  console.log('✅ Legacy test data generated');
+  logger.info('✅ Legacy test data generated');
 }
 
 /**
  * Clear all test data
  */
 export async function clearAllTestData(): Promise<void> {
-  console.log('🧹 Clearing all test data...');
+  logger.info('🧹 Clearing all test data...');
   
   // Clear AsyncStorage
   await AsyncStorage.clear();
@@ -112,7 +113,7 @@ export async function clearAllTestData(): Promise<void> {
   // Reset database
   await resetDatabaseAndStorage();
   
-  console.log('✅ All test data cleared');
+  logger.info('✅ All test data cleared');
 }
 
 /**
@@ -120,7 +121,7 @@ export async function clearAllTestData(): Promise<void> {
  */
 export async function generateCleanInstallState(): Promise<void> {
   await clearAllTestData();
-  console.log('✅ Clean install state generated');
+  logger.info('✅ Clean install state generated');
 }
 
 // ============================================================================
@@ -341,30 +342,30 @@ export async function runTestScenario(scenario: TestScenario): Promise<TestResul
   
   try {
           // Running test: ${scenario.name}
-    console.log(`📝 Description: ${scenario.description}`);
+    logger.info(`📝 Description: ${scenario.description}`);
     
     // Setup
     await scenario.setup();
-    console.log('✅ Setup completed');
+    logger.info('✅ Setup completed');
     
     // Execute
     const executeResult = await scenario.execute();
-    console.log('✅ Execution completed');
+    logger.info('✅ Execution completed');
     
     // Verify
     const isValid = await scenario.verify(executeResult);
-    console.log(`${isValid ? '✅' : '❌'} Verification ${isValid ? 'passed' : 'failed'}`);
+    logger.info(`${isValid ? '✅' : '❌'} Verification ${isValid ? 'passed' : 'failed'}`);
     
     // Cleanup
     await scenario.cleanup();
-    console.log('✅ Cleanup completed');
+    logger.info('✅ Cleanup completed');
     
     result.success = isValid;
     result.result = executeResult;
     result.duration = Date.now() - startTime;
     
   } catch (error) {
-    console.error(`❌ Test failed: ${scenario.name}`, error);
+    logger.error(`❌ Test failed: ${scenario.name}`, error);
     result.error = error instanceof Error ? error.message : String(error);
     result.duration = Date.now() - startTime;
     
@@ -372,7 +373,7 @@ export async function runTestScenario(scenario: TestScenario): Promise<TestResul
     try {
       await scenario.cleanup();
     } catch (cleanupError) {
-      console.error('❌ Cleanup failed:', cleanupError);
+      logger.error('❌ Cleanup failed:', cleanupError);
     }
   }
   
@@ -398,10 +399,10 @@ export async function runCleanInstallTestSuite(): Promise<TestResult[]> {
     const result = await runTestScenario(scenario);
     results.push(result);
     
-    console.log(`${result.success ? '✅' : '❌'} ${scenario.name}: ${result.success ? 'PASSED' : 'FAILED'} (${result.duration}ms)`);
+    logger.info(`${result.success ? '✅' : '❌'} ${scenario.name}: ${result.success ? 'PASSED' : 'FAILED'} (${result.duration}ms)`);
     
     if (result.error) {
-      console.error(`   Error: ${result.error}`);
+      logger.error(`   Error: ${result.error}`);
     }
     
     // Add delay between tests
@@ -412,13 +413,13 @@ export async function runCleanInstallTestSuite(): Promise<TestResult[]> {
   const passed = results.filter(r => r.success).length;
   const total = results.length;
   
-  console.log('\n📊 Test Suite Summary:');
-  console.log(`${passed}/${total} tests passed`);
+  logger.info('\n📊 Test Suite Summary:');
+  logger.info(`${passed}/${total} tests passed`);
   
   if (passed === total) {
-    console.log('🎉 All tests passed!');
+    logger.info('🎉 All tests passed!');
   } else {
-    console.log('❌ Some tests failed. Review logs above.');
+    logger.info('❌ Some tests failed. Review logs above.');
   }
   
   return results;
@@ -438,36 +439,36 @@ export async function inspectDatabaseState(): Promise<void> {
     const dbInfo = await getDatabaseInfo();
     const conflicts = await analyzeDataConflicts();
     
-    console.log('\n📊 Database Info:');
-    console.log(`- Version: ${dbInfo.version}`);
-    console.log(`- Tables: ${dbInfo.totalTables}`);
-    console.log(`- Schema Hash: ${dbInfo.schemaHash}`);
+    logger.info('\n📊 Database Info:');
+    logger.info(`- Version: ${dbInfo.version}`);
+    logger.info(`- Tables: ${dbInfo.totalTables}`);
+    logger.info(`- Schema Hash: ${dbInfo.schemaHash}`);
     
-    console.log('\n📊 Tables:');
+    logger.info('\n📊 Tables:');
     dbInfo.tablesSummary.forEach(table => {
-      console.log(`- ${table.name}: ${table.rowCount} rows${table.hasData ? ' ✓' : ' (empty)'}`);
+      logger.info(`- ${table.name}: ${table.rowCount} rows${table.hasData ? ' ✓' : ' (empty)'}`);
     });
     
-    console.log('\n⚠️ Conflicts:');
+    logger.info('\n⚠️ Conflicts:');
     if (conflicts.hasConflicts) {
       conflicts.conflicts.forEach(conflict => {
-        console.log(`- ${conflict.key} (${conflict.severity}): ${conflict.description}`);
+        logger.info(`- ${conflict.key} (${conflict.severity}): ${conflict.description}`);
       });
     } else {
-      console.log('- No conflicts detected ✅');
+      logger.info('- No conflicts detected ✅');
     }
     
-    console.log('\n💾 AsyncStorage Keys:');
+    logger.info('\n💾 AsyncStorage Keys:');
     const asyncKeys = await AsyncStorage.getAllKeys();
     const settingsKeys = getSettingsKeys();
     
     asyncKeys.forEach(key => {
       const isSettings = settingsKeys.includes(key);
-      console.log(`- ${key}${isSettings ? ' (settings)' : ''}`);
+      logger.info(`- ${key}${isSettings ? ' (settings)' : ''}`);
     });
     
   } catch (error) {
-    console.error('❌ Failed to inspect database state:', error);
+    logger.error('❌ Failed to inspect database state:', error);
   }
 }
 

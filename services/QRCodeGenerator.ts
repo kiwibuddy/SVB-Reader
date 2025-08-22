@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 import { GroupSession, Role } from '@/types';
 import { qrCodeDiscoveryManager } from './QRCodeDiscoveryManager';
 
@@ -17,10 +18,10 @@ class QRCodeGeneratorImpl implements QRCodeGenerator {
   // Generate QR code data string for session
   async generateSessionQRCodeData(session: GroupSession, hostRole: Role): Promise<string> {
     try {
-      console.log('📱 Generating QR code data for session:', session.id);
+      logger.info('📱 Generating QR code data for session:', session.id);
       return await qrCodeDiscoveryManager.generateSessionQRCode(session, hostRole);
     } catch (error) {
-      console.error('🔴 Error generating QR code data:', error);
+      logger.error('🔴 Error generating QR code data:', error);
       throw error;
     }
   }
@@ -28,10 +29,10 @@ class QRCodeGeneratorImpl implements QRCodeGenerator {
   // Generate QR code data string for completion
   async generateCompletionQRCodeData(session: GroupSession): Promise<string> {
     try {
-      console.log('✅ Generating completion QR code data for session:', session.id);
+      logger.info('✅ Generating completion QR code data for session:', session.id);
       return await qrCodeDiscoveryManager.generateCompletionQRCode(session);
     } catch (error) {
-      console.error('🔴 Error generating completion QR code data:', error);
+      logger.error('🔴 Error generating completion QR code data:', error);
       throw error;
     }
   }
@@ -39,7 +40,7 @@ class QRCodeGeneratorImpl implements QRCodeGenerator {
   // Generate test QR code data
   async generateTestQRCodeData(): Promise<string> {
     try {
-      console.log('🧪 Generating test QR code data...');
+      logger.info('🧪 Generating test QR code data...');
       
       const testSession: GroupSession = {
         id: 'test_session_' + Date.now(),
@@ -63,7 +64,7 @@ class QRCodeGeneratorImpl implements QRCodeGenerator {
       
       return await qrCodeDiscoveryManager.generateSessionQRCode(testSession, 'narrator');
     } catch (error) {
-      console.error('🔴 Error generating test QR code data:', error);
+      logger.error('🔴 Error generating test QR code data:', error);
       throw error;
     }
   }

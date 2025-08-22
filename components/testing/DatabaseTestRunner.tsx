@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue } from 'react';
+import logger from '@/utils/logger';
 import {
   View,
   Text,
@@ -72,9 +73,9 @@ export const DatabaseTestRunner: React.FC = () => {
   };
 
   const logTestResult = (testName: string, result: any) => {
-    console.log(`\n🧪 ===== ${testName.toUpperCase()} RESULT =====`);
-    console.log(JSON.stringify(result, null, 2));
-    console.log(`===== END ${testName.toUpperCase()} =====\n`);
+    logger.info(`\n🧪 ===== ${testName.toUpperCase()} RESULT =====`);
+    logger.info(JSON.stringify(result, null, 2));
+    logger.info(`===== END ${testName.toUpperCase()} =====\n`);
   };
 
   // ============================================================================
@@ -87,7 +88,7 @@ export const DatabaseTestRunner: React.FC = () => {
     
     try {
       const startTime = Date.now();
-      console.log('🧪 Starting Clean Install Test Suite...');
+      logger.info('🧪 Starting Clean Install Test Suite...');
       
       const results = await runCleanInstallTestSuite();
       const duration = Date.now() - startTime;
@@ -128,18 +129,18 @@ export const DatabaseTestRunner: React.FC = () => {
     
     try {
       const startTime = Date.now();
-      console.log('🧪 Starting Migration Test with Legacy Data...');
+      logger.info('🧪 Starting Migration Test with Legacy Data...');
       
       // Step 1: Generate legacy data
-      console.log('📝 Generating legacy test data...');
+      logger.info('📝 Generating legacy test data...');
       await generateLegacyTestData();
       
       // Step 2: Initialize database with diagnostics (triggers migration)
-      console.log('🔄 Initializing database with auto-migration...');
+      logger.info('🔄 Initializing database with auto-migration...');
       const initResult = await initializeDatabaseWithDiagnostics();
       
       // Step 3: Inspect final state
-      console.log('🔍 Inspecting database state...');
+      logger.info('🔍 Inspecting database state...');
       await inspectDatabaseState();
       
       const duration = Date.now() - startTime;
@@ -181,7 +182,7 @@ export const DatabaseTestRunner: React.FC = () => {
     
     try {
       const startTime = Date.now();
-      console.log('🧪 Starting Settings Preservation Test...');
+      logger.info('🧪 Starting Settings Preservation Test...');
       
       const result = await runTestScenario(settingsPreservationScenario);
       const duration = Date.now() - startTime;
@@ -220,7 +221,7 @@ export const DatabaseTestRunner: React.FC = () => {
     
     try {
       const startTime = Date.now();
-      console.log('🧪 Starting Database Reset Recovery Test...');
+      logger.info('🧪 Starting Database Reset Recovery Test...');
       
       const result = await runTestScenario(resetRecoveryScenario);
       const duration = Date.now() - startTime;
@@ -397,15 +398,15 @@ ${testSummaries.map(t =>
     setComprehensiveTodos(todos);
     setOverallReport(report);
     
-    console.log(report);
-    console.log('\n📋 COMPREHENSIVE TODO LIST:');
+    logger.info(report);
+    logger.info('\n📋 COMPREHENSIVE TODO LIST:');
     todos.forEach((todo, index) => {
-      console.log(`\n${index + 1}. [${todo.priority.toUpperCase()}] ${todo.title}`);
-      console.log(`   Category: ${todo.category}`);
-      console.log(`   Description: ${todo.description}`);
-      console.log(`   Action: ${todo.suggestedAction}`);
-      console.log(`   Impact: ${todo.impact}`);
-      console.log(`   Effort: ${todo.effort}`);
+      logger.info(`\n${index + 1}. [${todo.priority.toUpperCase()}] ${todo.title}`);
+      logger.info(`   Category: ${todo.category}`);
+      logger.info(`   Description: ${todo.description}`);
+      logger.info(`   Action: ${todo.suggestedAction}`);
+      logger.info(`   Impact: ${todo.impact}`);
+      logger.info(`   Effort: ${todo.effort}`);
     });
   };
 

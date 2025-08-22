@@ -1,4 +1,5 @@
 import React from 'react';
+import logger from '@/utils/logger';
 import {
   View,
   Text,
@@ -233,7 +234,7 @@ const QRCodeShareScreen: React.FC<QRCodeShareScreenProps> = ({
       // Share action completed
     } catch (error) {
       Alert.alert('Error', 'Unable to share session information.');
-      console.error('Share error:', error);
+      logger.error('Share error:', error);
     }
   };
 
@@ -251,8 +252,13 @@ const QRCodeShareScreen: React.FC<QRCodeShareScreenProps> = ({
 
       <ScrollView 
         style={styles.content} 
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.contentContainer, { paddingBottom: 20 }]}
+        showsVerticalScrollIndicator={true}
+        bounces={true}
+        alwaysBounceVertical={false}
+        nestedScrollEnabled={true}
+        keyboardShouldPersistTaps="handled"
+        removeClippedSubviews={Platform.OS === 'android'}
       >
         <Text style={styles.title}>Invite Others</Text>
         <Text style={styles.subtitle}>

@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 import { SQLiteDatabase } from "expo-sqlite";
 import * as SQLite from "expo-sqlite";
 import { Platform } from "react-native";
@@ -76,14 +77,14 @@ export class DatabaseManager {
     }
 
     try {
-      console.log('🔄 Force resetting Android database due to persistent locked errors...');
+      logger.info('🔄 Force resetting Android database due to persistent locked errors...');
       
       // Close existing database connection
       if (this.db) {
         try {
           await this.db.closeAsync();
         } catch (error) {
-          console.warn('Warning: Could not close database:', error);
+          logger.warn('Warning: Could not close database:', error);
         }
         this.db = null;
       }
@@ -94,9 +95,9 @@ export class DatabaseManager {
       // Delete the database file completely
       try {
         await SQLite.deleteDatabaseAsync("sourceview");
-        console.log('✅ Android database file deleted successfully');
+        logger.info('✅ Android database file deleted successfully');
       } catch (error) {
-        console.warn('Warning: Could not delete database file:', error);
+        logger.warn('Warning: Could not delete database file:', error);
         // If we can't delete, just continue - the database will be recreated
       }
 
@@ -104,9 +105,9 @@ export class DatabaseManager {
       this.isInitialized = false;
       this.initializationPromise = null;
       
-      console.log('🔄 Android database reset complete, will reinitialize...');
+      logger.info('🔄 Android database reset complete, will reinitialize...');
     } catch (error) {
-      console.error('❌ Error during database reset:', error);
+      logger.error('❌ Error during database reset:', error);
       // Don't throw here, just reset the state
       this.isInitialized = false;
       this.db = null;
@@ -120,11 +121,11 @@ export class DatabaseManager {
    */
   async resetDatabase(): Promise<void> {
     if (Platform.OS === 'ios') {
-      console.log('ℹ️ Database reset not needed on iOS - database is working correctly');
+      logger.info('ℹ️ Database reset not needed on iOS - database is working correctly');
       return;
     }
 
-    console.log('🔄 Manual database reset requested for Android...');
+    logger.info('🔄 Manual database reset requested for Android...');
     await this.forceDatabaseReset();
     
     // Reinitialize after reset
@@ -153,7 +154,7 @@ export class DatabaseManager {
       // Apply platform-specific database configuration
       const config = this.getDatabaseConfig();
       
-      console.log(`🔧 Database configuration for ${Platform.OS}:`, {
+      logger.info(`🔧 Database configuration for ${Platform.OS}:`, {
         journalMode: config.journalMode,
         synchronous: config.synchronous,
         cacheSize: config.cacheSize,
@@ -183,11 +184,11 @@ export class DatabaseManager {
           
         } catch (error) {
           lastError = error instanceof Error ? error : new Error(String(error));
-          console.warn(`Attempt ${attempt}/${maxRetries} failed with error:`, error);
+          logger.warn(`Attempt ${attempt}/${maxRetries} failed with error:`, error);
           
           if (attempt < maxRetries) {
             const delay = Math.pow(2, attempt) * 1000;
-            console.log(`Retrying in ${delay / 1000} seconds...`);
+            logger.info(`Retrying in ${delay / 1000} seconds...`);
             await new Promise(resolve => setTimeout(resolve, delay));
           }
         }
@@ -204,23 +205,23 @@ export class DatabaseManager {
       await this.populateSegmentsTable();
       
       this.isInitialized = true;
-      console.log('✅ Database initialized successfully');
+      logger.info('✅ Database initialized successfully');
       
     } catch (error) {
-      console.error("Error initializing database:", error);
+      logger.error("Error initializing database:", error);
       
       // On Android, if all retries failed, try force reset once
       if (Platform.OS === 'android' && this.initializationPromise) {
-        console.log('🔄 All retry attempts failed on Android, attempting database reset...');
+        logger.info('🔄 All retry attempts failed on Android, attempting database reset...');
         try {
           await this.forceDatabaseReset();
           
           // Try initialization again after reset, but only once to prevent infinite loops
-          console.log('🔄 Retrying initialization after database reset...');
+          logger.info('🔄 Retrying initialization after database reset...');
           this.initializationPromise = this.performInitialization();
           return this.initializationPromise;
         } catch (resetError) {
-          console.error('❌ Database reset also failed:', resetError);
+          logger.error('❌ Database reset also failed:', resetError);
           // Don't try to reset again - this prevents infinite loops
           this.isInitialized = false;
           this.db = null;
@@ -463,7 +464,7 @@ export class DatabaseManager {
       }
 
     } catch (error) {
-      console.error("Error creating tables:", error);
+      logger.error("Error creating tables:", error);
       throw error;
     }
   }
@@ -507,7 +508,7 @@ export class DatabaseManager {
         `);
       }
     } catch (error) {
-      console.error("Error during database migration:", error);
+      logger.error("Error during database migration:", error);
       // Don't throw error for migration issues, as they might be expected
     }
   }
@@ -541,7 +542,7 @@ export class DatabaseManager {
         await this.db.execAsync('COMMIT');
       }
     } catch (error) {
-      console.error("Error populating segments table:", error);
+      logger.error("Error populating segments table:", error);
       if (this.db) {
         await this.db.execAsync('ROLLBACK');
       }
@@ -559,13 +560,13 @@ export class DatabaseManager {
       // Test the database connection with a simple query
       this.db.execAsync('SELECT 1').catch(() => {
         // If this fails, the database connection is invalid
-        console.warn('Database connection appears to be invalid, reinitializing...');
+        logger.warn('Database connection appears to be invalid, reinitializing...');
         this.isInitialized = false;
         this.db = null;
         this.initializationPromise = null;
       });
     } catch (error) {
-      console.warn('Database connection test failed:', error);
+      logger.warn('Database connection test failed:', error);
       this.isInitialized = false;
       this.db = null;
       this.initializationPromise = null;
@@ -588,7 +589,7 @@ export class DatabaseManager {
       await this.db.execAsync('SELECT 1');
       return true;
     } catch (error) {
-      console.warn('Database health check failed:', error);
+      logger.warn('Database health check failed:', error);
       return false;
     }
   }
@@ -596,7 +597,7 @@ export class DatabaseManager {
   // Add a method to reinitialize if needed
   async ensureDatabase(): Promise<SQLiteDatabase> {
     if (!this.isInitialized || !this.db || !(await this.checkDatabaseHealth())) {
-      console.log('Database needs reinitialization, reinitializing...');
+      logger.info('Database needs reinitialization, reinitializing...');
       await this.initialize();
     }
     return this.getDatabase();

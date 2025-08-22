@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue } from 'react';
+import logger from '@/utils/logger';
 import { View, Text, Pressable, StyleSheet, Animated, Modal, ActivityIndicator, InteractionManager } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
@@ -89,7 +90,7 @@ export default function CheckCircle({
     
     // If modal should stay open but was closed, reopen it
     if (modalShouldStayOpen.current && !showHostQRModal && hostQRData) {
-      console.log('🎯 Modal was closed unexpectedly, reopening...');
+      logger.info('🎯 Modal was closed unexpectedly, reopening...');
       setTimeout(() => {
         if (modalShouldStayOpen.current && hostQRData) {
           setShowHostQRModal(true);
@@ -120,7 +121,7 @@ export default function CheckCircle({
   // Ensure modal stays open during generation
   useEffect(() => {
     if (isGenerating && modalShouldStayOpen.current && !showHostQRModal) {
-      console.log('🎯 Modal closed during generation, reopening...');
+              logger.info('🎯 Modal closed during generation, reopening...');
       setShowHostQRModal(true);
     }
   }, [isGenerating, showHostQRModal]);
@@ -129,7 +130,7 @@ export default function CheckCircle({
   useEffect(() => {
     if (showHostQRModal && !isCompleted) {
       // Ensure the modal shows the unchecked state for new stories
-      console.log('🎯 Modal opened for new story, ensuring unchecked state');
+      logger.info('🎯 Modal opened for new story, ensuring unchecked state');
       setModalCompletionState(false);
     }
   }, [showHostQRModal, isCompleted]);
@@ -138,15 +139,15 @@ export default function CheckCircle({
   useEffect(() => {
     if (showHostQRModal) {
       // Always reset modal completion state to unchecked when modal opens
-      console.log('🎯 Modal opened, resetting completion state to unchecked');
+      logger.info('🎯 Modal opened, resetting completion state to unchecked');
       setModalCompletionState(false);
-      console.log('🎯 Modal completion state reset to:', false);
+      logger.info('🎯 Modal completion state reset to:', false);
       
       // Also ensure the modal shows a fresh state
       if (hostQRData) {
-        console.log('🎯 Modal has QR data, ensuring fresh state');
+        logger.info('🎯 Modal has QR data, ensuring fresh state');
       } else {
-        console.log('🎯 Modal opening without QR data, will show loading state');
+        logger.info('🎯 Modal opening without QR data, will show loading state');
       }
     }
   }, [showHostQRModal]);
@@ -187,7 +188,7 @@ export default function CheckCircle({
         setReadCount(count);
 
       } catch (error) {
-        console.error('Error loading read count:', error);
+        logger.error('Error loading read count:', error);
       }
       
       // Defer completion status queries to avoid scheduling during insertion phase
@@ -201,7 +202,7 @@ export default function CheckCircle({
             setCompletionColor(status.color);
           }
         } catch (error) {
-          console.error('Error initializing segment completion status:', error);
+          logger.error('Error initializing segment completion status:', error);
         }
       });
     };
@@ -323,7 +324,7 @@ export default function CheckCircle({
     if ((forceGroup || (!forceNormal && inGroupContext)) && isHost) {
       // If modal is already showing, allow regeneration
       if (showHostQRModal) {
-        console.log('🔄 Regenerating completion QR code...');
+        logger.info('🔄 Regenerating completion QR code...');
       }
       
       // Show loading overlay while session becomes ready and QR data is generated
@@ -339,11 +340,11 @@ export default function CheckCircle({
         // Retry briefly in case currentSession has not propagated yet
         for (let attempt = 0; attempt < 10 && !generated; attempt++) {
           if (!currentSession || !currentSession.id || !currentSession.storyId) {
-            console.log(`🔄 Waiting for session to be ready (attempt ${attempt + 1}/10)...`);
+            logger.info(`🔄 Waiting for session to be ready (attempt ${attempt + 1}/10)...`);
             
             // Try to restore session from storage if it's lost
             if (attempt > 2 && !currentSession) {
-              console.log('🔄 Attempting to restore session from database...');
+              logger.info('🔄 Attempting to restore session from database...');
               try {
                 // Use the context's refresh function to restore the session
                 await refreshSessionFromDatabase();
@@ -351,7 +352,7 @@ export default function CheckCircle({
                 await new Promise(r => setTimeout(r, 300));
                 continue;
               } catch (restoreError) {
-                console.log('⚠️ Failed to restore session:', restoreError);
+                logger.info('⚠️ Failed to restore session:', restoreError);
               }
             }
             
@@ -359,38 +360,38 @@ export default function CheckCircle({
             continue;
           }
           
-          console.log('✅ Session ready, generating completion QR code...');
+          logger.info('✅ Session ready, generating completion QR code...');
           const qrData = await generateCompletionQRCode();
           
           // Double-check that the session is still valid after QR generation
           if (!currentSession || !currentSession.id || !currentSession.storyId) {
-            console.log('⚠️ Session became invalid during QR generation, retrying...');
+            logger.info('⚠️ Session became invalid during QR generation, retrying...');
             continue;
           }
           
           if (qrData && qrData.length > 0) {
-            console.log('🎯 Setting hostQRData:', qrData.substring(0, 50) + '...');
+            logger.info('🎯 Setting hostQRData:', qrData.substring(0, 50) + '...');
             setHostQRData(qrData);
             try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
             const count = await getGroupJoinerCompletionCount(currentSession.id, currentSession.storyId);
             setJoinerScans(count);
             generated = true;
-            console.log('✅ Completion QR code generated successfully');
+            logger.info('✅ Completion QR code generated successfully');
           } else {
-            console.log('⚠️ Generated QR data is empty, retrying...');
+            logger.info('⚠️ Generated QR data is empty, retrying...');
             await new Promise(r => setTimeout(r, 300));
           }
         }
         
         if (generated) {
-          console.log('🎯 Setting modal to visible with QR data');
+          logger.info('🎯 Setting modal to visible with QR data');
           modalShouldStayOpen.current = true;
           setShowHostQRModal(true);
-          console.log('🎯 Modal state set to true');
+          logger.info('🎯 Modal state set to true');
           // Add a small delay to ensure the state change propagates
           await new Promise(resolve => setTimeout(resolve, 100));
         } else {
-          console.error('🔴 Failed to generate QR code after 10 attempts');
+          logger.error('🔴 Failed to generate QR code after 10 attempts');
           // Try to refresh the session one more time before showing error
           try {
             await refreshSessionFromDatabase();
@@ -400,12 +401,12 @@ export default function CheckCircle({
               await showErrorToast('Failed to generate QR code. Please restart the group reading session.');
             }
           } catch (refreshError) {
-            console.error('🔴 Failed to refresh session:', refreshError);
+            logger.error('🔴 Failed to refresh session:', refreshError);
             await showErrorToast('Failed to generate QR code. Please restart the group reading session.');
           }
         }
       } catch (e) {
-        console.error('🔴 Error generating completion QR:', e);
+        logger.error('🔴 Error generating completion QR:', e);
         await showErrorToast('Error generating QR code. Please try again.');
       } finally {
         setIsGenerating(false);
@@ -479,7 +480,7 @@ export default function CheckCircle({
         }
         
       } catch (error) {
-        console.error('Error marking segment complete:', error);
+        logger.error('Error marking segment complete:', error);
       }
     }
   };
@@ -595,21 +596,21 @@ export default function CheckCircle({
                   onClose={() => setShowScanner(false)}
                   onQRCodeScanned={async (data: string) => {
               try {
-                console.log('🔍 Joiner scanning QR code:', data.substring(0, 50) + '...');
+                logger.info('🔍 Joiner scanning QR code:', data.substring(0, 50) + '...');
                 
                 const completion = qrCodeDiscoveryManager.parseCompletionFromQRCode(data);
                 if (!completion) {
-                  console.error('🔴 Failed to parse completion QR code');
+                  logger.error('🔴 Failed to parse completion QR code');
                   await showErrorToast('Invalid completion code. Please try again.');
                   setShowScanner(false);
                   return;
                 }
                 
-                console.log('✅ Completion QR code parsed:', { sessionId: completion.sessionId, storyId: completion.storyId });
+                logger.info('✅ Completion QR code parsed:', { sessionId: completion.sessionId, storyId: completion.storyId });
                 
                 // Validate against current session
                 if (!currentSession || completion.sessionId !== currentSession.id || completion.storyId !== currentSession.storyId) {
-                  console.error('🔴 Completion code session mismatch:', {
+                  logger.error('🔴 Completion code session mismatch:', {
                     expectedSessionId: currentSession?.id,
                     actualSessionId: completion.sessionId,
                     expectedStoryId: currentSession?.storyId,
@@ -669,7 +670,7 @@ export default function CheckCircle({
                   });
                 }
               } catch (err) {
-                console.error('🔴 Joiner completion error:', err);
+                logger.error('🔴 Joiner completion error:', err);
                 await showErrorToast('Failed to record completion. Please try again.');
                 setShowScanner(false);
               }
@@ -691,12 +692,12 @@ export default function CheckCircle({
           transparent 
           animationType="fade" 
           onRequestClose={() => {
-            console.log('🎯 Modal onRequestClose triggered');
+            logger.info('🎯 Modal onRequestClose triggered');
             if (modalShouldStayOpen.current) {
-              console.log('🎯 Modal should stay open, ignoring close request');
+              logger.info('🎯 Modal should stay open, ignoring close request');
               return;
             }
-            console.log('🎯 Modal closing via onRequestClose');
+            logger.info('🎯 Modal closing via onRequestClose');
             setShowHostQRModal(false);
           }}
         >
@@ -741,47 +742,47 @@ export default function CheckCircle({
                     if (currentSession.planId) {
                       completionContext = 'plan';
                       contextPlanId = currentSession.planId;
-                      console.log('📚 Using plan context from session:', contextPlanId);
+                      logger.info('📚 Using plan context from session:', contextPlanId);
                     } else if (currentSession.challengeId) {
                       completionContext = 'challenge';
                       contextChallengeId = currentSession.challengeId;
-                      console.log('🏆 Using challenge context from session:', contextChallengeId);
+                      logger.info('🏆 Using challenge context from session:', contextChallengeId);
                     } else if (context === 'plan' && planId) {
                       completionContext = 'plan';
                       contextPlanId = planId;
-                      console.log('📚 Using plan context from props:', contextPlanId);
+                      logger.info('📚 Using plan context from props:', contextPlanId);
                     } else if (context === 'challenge' && challengeId) {
                       completionContext = 'challenge';
                       contextChallengeId = challengeId;
-                      console.log('🏆 Using challenge context from props:', contextChallengeId);
+                      logger.info('🏆 Using challenge context from props:', contextChallengeId);
                     } else if (context === 'today') {
                       completionContext = 'today';
-                      console.log('📅 Using today context');
+                      logger.info('📅 Using today context');
                     } else {
-                      console.log('📖 Using main context');
+                      logger.info('📖 Using main context');
                     }
                     
                     
                     
-                    console.log('🎯 Host confirming completion for segment:', segmentId, 'in context:', completionContext);
+                    logger.info('🎯 Host confirming completion for segment:', segmentId, 'in context:', completionContext);
                     
                     // Mark segment as complete in the appropriate context
                     if (completionContext === 'plan' && contextPlanId) {
-                      console.log('📚 Marking segment complete in plan context:', contextPlanId);
+                      logger.info('📚 Marking segment complete in plan context:', contextPlanId);
                       await markSegmentComplete(segmentId, 'plan', contextPlanId, contextChallengeId);
                     } else if (completionContext === 'challenge' && contextChallengeId) {
-                      console.log('🏆 Marking segment complete in challenge context:', contextChallengeId);
+                      logger.info('🏆 Marking segment complete in challenge context:', contextChallengeId);
                       await markSegmentComplete(segmentId, 'challenge', contextPlanId, contextChallengeId);
                     } else if (completionContext === 'today') {
-                      console.log('📅 Marking segment complete in today context');
+                      logger.info('📅 Marking segment complete in today context');
                       await markSegmentComplete(segmentId, 'today', contextPlanId, contextChallengeId);
                     } else {
-                      console.log('📖 Marking segment complete in main context');
+                      logger.info('📖 Marking segment complete in main context');
                       await markSegmentComplete(segmentId, 'main', contextPlanId, contextChallengeId);
                     }
                     
                     // Record group completion
-                    console.log('👥 Recording group completion');
+                    logger.info('👥 Recording group completion');
                     await recordGroupCompletion(segmentId, currentSession.id, currentSession.storyId, currentRole || 'narrator', true);
                     
                     // Update last read segment
@@ -791,7 +792,7 @@ export default function CheckCircle({
                     setIsCompleted(true);
                     setModalCompletionState(true);
                     
-                    console.log('✅ Segment marked as complete, showing celebration');
+                    logger.info('✅ Segment marked as complete, showing celebration');
                     
                     // Show completion banner and confetti
                     setShowCompletionBanner(true);
@@ -802,7 +803,7 @@ export default function CheckCircle({
                     modalShouldStayOpen.current = false;
                     setShowHostQRModal(false);
                     
-                    console.log('�� Navigating back to context-aware screen');
+                    logger.info('�� Navigating back to context-aware screen');
                     
                     // Navigate back to the appropriate context-aware screen
                     setTimeout(() => {
@@ -825,7 +826,7 @@ export default function CheckCircle({
                       }
                       
                       if (completionContext === 'plan' && contextPlanId) {
-                        console.log('📚 Navigating to Plan screen with expanded plan:', contextPlanId);
+                        logger.info('📚 Navigating to Plan screen with expanded plan:', contextPlanId);
                         const navigationParams = { 
                           expandedPlan: contextPlanId,
                           completedSegment: segmentId,
@@ -837,7 +838,7 @@ export default function CheckCircle({
                           params: navigationParams
                         });
                       } else if (completionContext === 'challenge' && contextChallengeId) {
-                        console.log('🏆 Navigating to Reading-Challenges screen with expanded challenge:', contextChallengeId);
+                        logger.info('🏆 Navigating to Reading-Challenges screen with expanded challenge:', contextChallengeId);
                         const navigationParams = { 
                           expandedChallenge: contextChallengeId,
                           completedSegment: segmentId,
@@ -849,7 +850,7 @@ export default function CheckCircle({
                           params: navigationParams
                         });
                       } else if (completionContext === 'today') {
-                        console.log('📅 Navigating to Navigation screen for today context');
+                        logger.info('📅 Navigating to Navigation screen for today context');
                         const navigationParams = { 
                           expandedBook: segmentId.substring(1, 4),
                           completedSegment: segmentId,
@@ -861,7 +862,7 @@ export default function CheckCircle({
                           params: navigationParams
                         });
                       } else {
-                        console.log('📖 Navigating to Navigation screen for main context');
+                        logger.info('📖 Navigating to Navigation screen for main context');
                         const navigationParams = { 
                           expandedBook: segmentId.substring(1, 4),
                           completedSegment: segmentId,
@@ -877,7 +878,7 @@ export default function CheckCircle({
                     }, 500); // Small delay to ensure completion banner is visible
 
                   } catch (err) {
-                    console.error('🔴 Host confirm error:', err);
+                    logger.error('🔴 Host confirm error:', err);
                     modalShouldStayOpen.current = false;
                     setShowHostQRModal(false);
                   }
@@ -895,7 +896,7 @@ export default function CheckCircle({
                 {modalCompletionState ? 'Story Completed!' : 'Tap to complete story'}
               </Text>
               <Pressable style={styles.dismissTextButton} onPress={() => {
-                console.log('🎯 Dismiss button pressed, closing modal');
+                logger.info('🎯 Dismiss button pressed, closing modal');
                 modalShouldStayOpen.current = false;
                 setShowHostQRModal(false);
                 // Don't trigger completion - just close the modal

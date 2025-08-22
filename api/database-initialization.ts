@@ -1,3 +1,4 @@
+import logger from '@/utils/logger';
 import { databaseManager } from './database-manager';
 import { 
   initializeDatabaseVersioning, 
@@ -31,15 +32,13 @@ export async function initializeDatabaseWithDiagnostics(): Promise<{
     
     // Log diagnostics in development
     if (__DEV__) {
-      // Database initialization completed
-      await logDatabaseDiagnostics();
-      
       if (migrationResult.migrationPerformed) {
-        console.log('✅ Migration performed successfully');
+        logger.info('🔄 Migration was performed successfully');
       } else if (migrationResult.error) {
-        console.error('❌ Migration failed:', migrationResult.error);
+        logger.error('❌ Migration failed:', migrationResult.error);
       } else {
         // Database up to date, no migration needed
+        logger.info('✅ Database is up to date');
       }
     }
     
@@ -50,7 +49,7 @@ export async function initializeDatabaseWithDiagnostics(): Promise<{
     };
     
   } catch (error) {
-    console.error('Database initialization failed:', error);
+    logger.error('Database initialization failed:', error);
     return {
       success: false,
       migrationPerformed: false,

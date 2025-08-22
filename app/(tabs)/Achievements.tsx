@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
 import logger from '@/utils/logger';
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -104,7 +104,7 @@ const Achievements = () => {
         setDimensionsReady(true);
       }
     } catch (error) {
-      console.warn('Error processing window dimensions:', error);
+      logger.warn('Error processing window dimensions:', error);
       // Keep default values
     }
   }, [windowDimensions]);
@@ -123,7 +123,7 @@ const Achievements = () => {
     const percentageWidth = Math.floor(safeWidth * 0.47);
     
     // Use console.log instead of any potential string rendering
-    console.log('Screen metrics:', {
+    logger.info('Screen metrics:', {
       safeWidth,
       calculatedCardWidth,
       percentageWidth,
@@ -180,7 +180,7 @@ const Achievements = () => {
     try {
       return createStyles(isLargeScreen, colors, safeWidth);
     } catch (error) {
-      console.error('Error creating styles:', error);
+      logger.error('Error creating styles:', error);
       // Return fallback styles
       return createStyles(false, { 
         background: '#FFFFFF',
@@ -1422,7 +1422,7 @@ const createStyles = (isLargeScreen: boolean, colors: any, screenWidth: number) 
   // Ensure screenWidth is valid
   let safeScreenWidth = screenWidth;
   if (typeof screenWidth !== 'number' || screenWidth <= 0 || isNaN(screenWidth)) {
-    console.warn('Invalid screenWidth provided to createStyles:', screenWidth);
+    logger.warn('Invalid screenWidth provided to createStyles:', screenWidth);
     safeScreenWidth = 375;
   }
   
