@@ -62,25 +62,13 @@ function AppContent() {
         
         logger.info('🔄 Checking for OTA updates...');
         
-        // Log current update info
-        logger.info('📱 Current update ID:', Updates.updateId || 'No update ID');
-        logger.info('📱 Current runtime version:', Updates.runtimeVersion || 'No runtime version');
-        logger.info('📱 Updates enabled:', Updates.isEnabled);
-        logger.info('📱 Emergency launch:', Updates.isEmergencyLaunch);
-        
         // OTA update check completed
         
         const update = await Updates.checkForUpdateAsync();
-        logger.info('📱 Update check result:', update);
         
         if (update.isAvailable) {
-          logger.info('⬇️ Update available, fetching...');
           const fetchResult = await Updates.fetchUpdateAsync();
-          logger.info('📦 Fetch result:', fetchResult);
-          logger.info('🔄 Update fetched, reloading app...');
           await Updates.reloadAsync();
-        } else {
-          logger.info('✅ No updates available');
         }
       } catch (error) {
         logger.error('❌ Update check failed:', error);

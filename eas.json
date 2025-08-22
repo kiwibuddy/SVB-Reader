@@ -75,13 +75,5 @@
         "track": "internal"
       }
     }
-  },
-  "updates": {
-    "production": {
-      "url": "https://u.expo.dev/your-project-id"
-    },
-    "preview": {
-      "url": "https://u.expo.dev/your-project-id"
-    }
   }
 }
