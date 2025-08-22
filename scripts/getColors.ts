@@ -20,7 +20,7 @@ export const getBubbleTextColor = (color: string, isDarkMode: boolean) => {
     return '#F5F5F5'; // White text for dark mode
   }
   
-  // In light mode, use Version A (High Contrast) colors for better readability and WCAG AA compliance
+  // In light mode, use Version A (High Contrast) colors for WCAG AA compliance
   switch (color) {
     case "black":
       return '#2C2C2E'; // Dark gray text on light gray background

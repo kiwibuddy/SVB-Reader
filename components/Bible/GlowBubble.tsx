@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { View, Text, StyleSheet, Animated, Platform } from "react-native";
+import { View, StyleSheet, Animated, Platform } from "react-native";
 import { getColors, getBubbleTextColorSafe } from "@/scripts/getColors";
 import { BibleBlock } from "@/types";
 import SourceNameComponent from "./SourceName";
@@ -22,7 +22,8 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetV
   const { color = 'black', sourceName = 'Unknown' } = source || {};
   const { isDarkMode } = useAppSettings();
   const colors = getColors(color);
-  const glowAnim = useRef(new Animated.Value(0)).current;
+  // COMMENTED OUT: Animation variables no longer needed for static glow
+  // const glowAnim = useRef(new Animated.Value(0)).current;
   const targetVerseAnim = useRef(new Animated.Value(0)).current;
   
   // Check if this block contains the target verse
@@ -64,49 +65,75 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetV
     }
   }, [isTargetVerse, targetVerseAnim]);
   
-  // Track animation for cleanup
-  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
+  // COMMENTED OUT: Animation tracking no longer needed for static glow
+  // const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
-  useEffect(() => {
-    // Only run animation if glowing is enabled
-    if (!isGlowing) {
-      glowAnim.setValue(0);
-      return;
-    }
+  // COMMENTED OUT: Glow animation for performance optimization
+  // useEffect(() => {
+  //   // Only run animation if glowing is enabled
+  //   if (!isGlowing) {
+  //     glowAnim.setValue(0);
+  //     return;
+  //   }
 
-    // Start the animation loop with subtle pulse effect
-    // Use native driver for opacity animation (performance) but keep shadows static
-    animationRef.current = Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true, // Enable native driver for opacity animation
-        }),
-        Animated.timing(glowAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true, // Enable native driver for opacity animation
-        }),
-      ])
-    );
+  //   // Create optimized animation configuration
+  //   const animationConfig = {
+  //     toValue: 1,
+  //     duration: 4000, // Reduced from 12000ms to 4000ms for better performance
+  //     useNativeDriver: false, // Fixed: Use false for both platforms to support shadow properties
+  //   };
+
+  //   // Start the animation loop
+  //   animationRef.current = Animated.loop(
+  //     Animated.timing(glowAnim, animationConfig)
+  //   );
     
-    animationRef.current.start();
+  //   animationRef.current.start();
 
-    // Cleanup function to stop animation when component unmounts or isGlowing changes
-    return () => {
-      if (animationRef.current) {
-        animationRef.current.stop();
-        animationRef.current = null;
-      }
-    };
-  }, [isGlowing, isDarkMode, glowAnim]); // Only re-run when isGlowing, isDarkMode, or glowAnim changes
+  //   // Cleanup function to stop animation when component unmounts or isGlowing changes
+  //   return () => {
+  //     if (animationRef.current) {
+  //       animationRef.current.stop();
+  //       animationRef.current = null;
+  //     }
+  //   };
+  // }, [isGlowing, isDarkMode]); // Only re-run when isGlowing or isDarkMode changes
 
-  // Create subtle pulse effect for glow - simple opacity animation instead of color cycling
-  const pulseOpacity = glowAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.8, 1.0], // Subtle pulse from 80% to 100% opacity
-  });
+  // COMMENTED OUT: Complex color interpolation for performance
+  // const glowColor = glowAnim.interpolate({
+  //   inputRange: [0, 0.33, 0.66, 1],
+  //   outputRange: isDarkMode ? [
+  //     // Dark mode: very light, almost white pastel colors for maximum visibility
+  //     "rgba(255, 230, 230, 0.95)", // Very light pink/white
+  //     "rgba(230, 255, 230, 0.95)", // Very light green/white
+  //     "rgba(230, 240, 255, 0.95)", // Very light blue/white
+  //     "rgba(255, 230, 230, 0.95)", // Very light pink/white (loop back)
+  //   ] : [
+  //     // Light mode: original vibrant colors
+  //     "rgba(255, 0, 0, 0.8)",
+  //     "rgba(0, 255, 0, 0.8)",
+  //     "rgba(0, 0, 255, 0.8)",
+  //     "rgba(255, 0, 0, 0.8)",
+  //   ],
+  // });
+
+  // NEW: Static glow colors for better performance
+  const getStaticGlowColor = () => {
+    if (isDarkMode) {
+      return "rgba(255, 255, 255, 0.3)"; // Subtle white glow for dark mode
+    }
+    // Light mode: use a subtle glow that matches the bubble color
+    switch (color) {
+      case "red":
+        return "rgba(255, 0, 0, 0.2)"; // Subtle red glow
+      case "green":
+        return "rgba(0, 255, 0, 0.2)"; // Subtle green glow
+      case "blue":
+        return "rgba(0, 0, 255, 0.2)"; // Subtle blue glow
+      default:
+        return "rgba(0, 0, 0, 0.1)"; // Subtle black glow
+    }
+  };
 
   const tailAlignment = color !== "black" ? { left: 15 } : { right: 15 };
 
@@ -119,55 +146,33 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetV
         onLongPress={onLongPress}
       >
         {hasTail && <SourceNameComponent sourceName={sourceName} align={color !== "black" ? "left" : "right"} />}
-        
-        {/* Outer glow wrapper - creates the glow effect */}
-        {isGlowing && (
-          <Animated.View style={{
-            position: 'absolute',
-            top: -8,
-            left: -8,
-            right: -8,
-            bottom: -8,
-            borderRadius: 18, // Slightly larger than the bubble
-            backgroundColor: 'transparent',
-            borderWidth: 8,
-            borderColor: 'rgba(150, 150, 150, 0.7)', // Brighter, more intense glow color
-            opacity: pulseOpacity, // Animate the opacity for glow effect
-            zIndex: -1, // Place behind the bubble
-          }} />
-        )}
-        
         <Animated.View
           style={[
             styles.bubble,
             {
               backgroundColor: isDarkMode ? colors.dark : colors.light,
               ...(isGlowing ? {
-                // Remove shadow properties - they only create drop shadows
-                // shadowColor: "#666666",
-                // shadowOffset: { width: 0, height: 0 },
-                // shadowOpacity: 0.4,
-                // shadowRadius: 12,
-                
-                // No inner border needed since we have outer glow wrapper
-                borderWidth: 0,
-                
-                // Animate the bubble opacity for subtle effect
-                opacity: pulseOpacity,
+                // NEW: Static glow effect for better performance
+                borderWidth: 3,
+                borderColor: getStaticGlowColor(),
+                shadowColor: getStaticGlowColor(),
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.8,
+                shadowRadius: 8,
+                elevation: isDarkMode ? 8 : 5, // Higher elevation in dark mode for better glow visibility
               } : {
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.1,
                 shadowRadius: 3,
-                borderWidth: 0, // No border when not glowing
+                elevation: 3,
               }),
-              borderWidth: isTargetVerse ? 3 : 0,
+              borderWidth: isTargetVerse ? 3 : (isGlowing ? 3 : 0),
               borderColor: isTargetVerse ? 
                 targetVerseAnim.interpolate({
                   inputRange: [0, 0.3, 1],
                   outputRange: ['transparent', '#FFD700', '#FFA500'] // Orange to gold to transparent
-                }) : 'transparent',
-              elevation: isGlowing ? 4 : 3, // Reduced elevation since we're using borders instead of shadows
+                }) : (isGlowing ? getStaticGlowColor() : 'transparent'),
             },
           ]}
         >
