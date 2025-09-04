@@ -1028,6 +1028,22 @@
           ]
         }
       }
+    },
+    {
+      "id": "jesusFilm",
+      "title": "Jesus Film",
+      "description": "12 Stories - 2 Weeks",
+      "image": "island",
+      "longDescription": "Experience the life of Jesus through the lens of the iconic Jesus Film, based on the Gospel of Luke. This chronological journey follows the 12 key stories that bring the film to life, from the miraculous birth of John the Baptist to the resurrection. Discover how Luke's unique perspective as a Gentile physician captures Jesus' compassion for all people and His mission to bring salvation to the world.",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "jesusFilmChronological",
+      "segments": {
+        "Luk": {
+          "segments": [
+            "I042", "S285", "S286", "S287", "S288", "S289", "S290", "S291", "S292", "S293", "S294", "S295", "S296", "S297"
+          ]
+        }
+      }
     }
   ]
 } 

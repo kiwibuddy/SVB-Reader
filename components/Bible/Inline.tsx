@@ -16,6 +16,9 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
   textColor,
   iIndex
 }) => {
+  // Always call hooks at the top level - before any conditional logic
+  const { isDarkMode } = useAppSettings();
+  
   const { children, type, tag = 'defaultTag', pIndex, start } = inline;
 
   if (!children || !Array.isArray(children)) {
@@ -44,7 +47,7 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
       />
     );
   });
-
+  
   // For table elements, don't wrap in Text component
   if (isTableElement) {
     return (
@@ -55,7 +58,6 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
   }
   
   // For regular elements, wrap in Text component
-  const { isDarkMode } = useAppSettings();
   return (
     <View style={inlineStyle}>
       <Text style={{lineHeight: 36, fontSize: 20, color: textColor}}>

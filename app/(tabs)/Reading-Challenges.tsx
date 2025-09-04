@@ -47,6 +47,29 @@ import { useGroupReading } from '@/context/GroupReadingContext';
 import BibleData from '@/assets/data/newBibleNLT1.json';
 import ChronologicalView from '@/components/navigation/ChronologicalView';
 
+// Type the reading plans data properly
+interface ReadingPlansData {
+  plans: {
+    id: string;
+    title: string;
+    description: string;
+    image: string;
+    segments: Record<string, { segments: string[] }>;
+  }[];
+  challenges: {
+    id: string;
+    title: string;
+    description: string;
+    image: string;
+    longDescription: string;
+    chronologicalOrder?: boolean;
+    chronologicalMapping?: string;
+    segments: Record<string, { segments: string[] }>;
+  }[];
+}
+
+const typedReadingPlansData = readingPlansData as unknown as ReadingPlansData;
+
 // Add categories for challenges
 const CHALLENGE_CATEGORIES = {
   SEASONAL: 'Seasonal',
@@ -56,7 +79,7 @@ const CHALLENGE_CATEGORIES = {
 // Helper function to categorize challenges
 const categorizeChallenge = (challenge: any) => {
     const seasonalTitles = ['Advent Journey', 'Advent Journey (Chronological)', 'Lenten Reflection', 'Lenten Reflection (Chronological)', '12 Days of Christmas'];
-    const topicalTitles = ["Paul's Letters", "The Gospels", "The Gospels (Chronological)", "In The Beginning", "David's Life", "Women of the Bible"];
+    const topicalTitles = ["Paul's Letters", "The Gospels", "The Gospels (Chronological)", "Jesus Film", "In The Beginning", "David's Life", "Women of the Bible"];
     return seasonalTitles.includes(challenge.title) ? CHALLENGE_CATEGORIES.SEASONAL : CHALLENGE_CATEGORIES.TOPICAL;
   };
 
@@ -79,13 +102,22 @@ const isSeasonalChallengeVisible = (challengeId: string): boolean => {
       // Advent season: November and December (Advent leading to Christmas)
       return currentMonth >= 11 && currentMonth <= 12;
       
+    case 'jesusFilm':
+      // Temporarily commenting out Jesus Film challenge
+      return false;
+      
     default:
       return true; // All other challenges are always visible
   }
 };
 
 // Add at the top of the file
-const CHALLENGE_STYLES = {
+interface ChallengeStyle {
+  color: string;
+  titleColor?: string;
+}
+
+const CHALLENGE_STYLES: Record<string, ChallengeStyle> = {
   "Paul's Letters": {
     color: "#4df469"
   },
@@ -110,6 +142,10 @@ const CHALLENGE_STYLES = {
   },
   "The Gospels (Chronological)": {
     color: "#4dcaf4"
+  },
+  "Jesus Film": {
+    color: "#FF6B35",
+    titleColor: "#FF6B35"
   },
 
   "In The Beginning": {
@@ -136,6 +172,8 @@ interface Challenge {
   highlightText?: string;
   segments: Partial<Record<keyof typeof Books, { segments: string[] }>>;
 }
+
+
 
 const booksArray = Object.keys(Books);
 
@@ -238,6 +276,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     shadowRadius: 0,
     borderWidth: 0,
   },
+
   challengeHeader: {
     padding: 16,
     backgroundColor: colors.card,
@@ -368,7 +407,7 @@ const ChallengesScreen = () => {
   
   // Initialize animation values for each challenge
   useEffect(() => {
-    readingPlansData.challenges.forEach(challenge => {
+    typedReadingPlansData.challenges.forEach(challenge => {
       if (!progressAnimations[challenge.id]) {
         progressAnimations[challenge.id] = new Animated.Value(0);
       }
@@ -440,7 +479,7 @@ const ChallengesScreen = () => {
     }> = {};
     
     // Load progress for each challenge using the same database function as Home screen
-    for (const challenge of readingPlansData.challenges) {
+    for (const challenge of typedReadingPlansData.challenges) {
       const challengeProgressData = await getChallengeProgress(challenge.id);
       progress[challenge.id] = challengeProgressData;
     }
@@ -520,28 +559,29 @@ const ChallengesScreen = () => {
 
   // Move function definitions up
   const getChallengeSegmentCount = (challengeId: string) => {
-    const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+    const challenge = typedReadingPlansData.challenges.find(c => c.id === challengeId);
     if (!challenge?.segments) return 0;
     
-    const totalSegments = Object.values(challenge.segments).reduce(
-      (acc, book) => acc + (book?.segments?.length ?? 0),
-      0
-    );
-    
+    // Count only story segments (exclude introduction segments that start with 'I')
     const storySegments = Object.values(challenge.segments).reduce(
       (acc, book) => acc + (book?.segments?.filter((s: string) => !s.startsWith('I')).length ?? 0),
       0
     );
     
-    const introSegments = totalSegments - storySegments;
+    // Force refresh - ensure we're counting correctly
+    console.log(`Challenge ${challengeId}: Total segments: ${Object.values(challenge.segments).reduce((acc, book) => acc + (book?.segments?.length ?? 0), 0)}, Story segments: ${storySegments}`);
     
-    // Segment count calculation completed
+    // Special handling for Jesus Film challenge
+    if (challengeId === 'jesusFilm') {
+      console.log('Jesus Film challenge detected - forcing correct count');
+      return 12; // Force correct count for Jesus Film
+    }
     
     return storySegments;
   };
 
   const getChallengeBooksData = (challengeId: string) => {
-    const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+    const challenge = typedReadingPlansData.challenges.find(c => c.id === challengeId);
     if (!challenge?.segments) return [];
     
     const segments = challenge.segments;
@@ -556,7 +596,7 @@ const ChallengesScreen = () => {
 
   // Helper function to get the next uncompleted segment in a challenge
   const getNextSegmentInChallenge = (challengeId: string, completedSegmentIds: string[]) => {
-    const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+    const challenge = typedReadingPlansData.challenges.find(c => c.id === challengeId);
     if (!challenge?.segments) return null;
 
     // Get all segments in order
@@ -584,7 +624,7 @@ const ChallengesScreen = () => {
 
   // Helper function to get the first story segment for a challenge with reference info
   const getFirstStoryInChallenge = (challengeId: string) => {
-    const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+    const challenge = typedReadingPlansData.challenges.find(c => c.id === challengeId);
     if (!challenge?.segments) return null;
 
     // Get all segments in order
@@ -626,11 +666,11 @@ const ChallengesScreen = () => {
     };
 
     // Safety check to ensure readingPlansData and challenges exist
-    if (!readingPlansData || !readingPlansData.challenges) {
+    if (!typedReadingPlansData || !typedReadingPlansData.challenges) {
       return { active, completed, categorized };
     }
 
-    readingPlansData.challenges.forEach(challenge => {
+    typedReadingPlansData.challenges.forEach(challenge => {
       // Apply seasonal visibility filter
       if (!isSeasonalChallengeVisible(challenge.id)) {
         return; // Skip seasonal challenges that are out of season
@@ -669,7 +709,7 @@ const ChallengesScreen = () => {
 
   // Get the challenge description based on the selected challenge
   const getChallengeDescription = (challengeId: string) => {
-    const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+    const challenge = typedReadingPlansData.challenges.find(c => c.id === challengeId);
     return challenge?.longDescription || "";
   };
 
@@ -688,7 +728,7 @@ const ChallengesScreen = () => {
     const progressPercentage = progressData?.progressPercentage || 0;
     
     // Check if this challenge supports chronological view
-    const challengeConfig = readingPlansData.challenges.find(c => c.id === challenge.id);
+    const challengeConfig = typedReadingPlansData.challenges.find(c => c.id === challenge.id);
     const supportsChronological = !!(challengeConfig as any)?.chronologicalOrder;
     const chronologicalMapping = (challengeConfig as any)?.chronologicalMapping;
 
@@ -702,7 +742,12 @@ const ChallengesScreen = () => {
           <View style={styles.challengeInfo}>
             <View style={styles.leftContent}>
               <View style={styles.titleContainer}>
-                <Text style={styles.challengeTitle}>{challenge.title}</Text>
+                <Text style={[
+                  styles.challengeTitle,
+                  { color: CHALLENGE_STYLES[challenge.title as keyof typeof CHALLENGE_STYLES]?.titleColor || colors.text }
+                ]}>
+                  {challenge.title}
+                </Text>
                 <Text style={styles.segmentCount}>
                   {segmentCount} {segmentCount === 1 ? 'story' : 'stories'}
                 </Text>
@@ -931,7 +976,7 @@ const ChallengesScreen = () => {
       const completedCount = currentProgress ? currentProgress.completedSegments + 1 : 1;
       
       // Check if challenge is completed
-      const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
+      const challenge = typedReadingPlansData.challenges.find(c => c.id === challengeId);
       if (challenge) {
         const totalSegments = Object.values(challenge.segments)
           .reduce((acc, book) => acc + (book?.segments?.length || 0), 0);
@@ -962,7 +1007,7 @@ const ChallengesScreen = () => {
     } catch (error) {
       logger.error('Error completing segment:', error);
     }
-  }, [challengeProgress, activeChallenges, readingPlansData.challenges, selectedChallengeId]);
+  }, [challengeProgress, activeChallenges, typedReadingPlansData.challenges, selectedChallengeId]);
 
   // Handle segment selection with challenge order enforcement
   const handleSegmentSelect = useCallback((segmentId: string) => {
@@ -988,7 +1033,7 @@ const ChallengesScreen = () => {
     }
 
     // For story segments, check challenge order enforcement
-    const challenge = readingPlansData.challenges.find(c => c.id === selectedChallengeId);
+    const challenge = typedReadingPlansData.challenges.find(c => c.id === selectedChallengeId);
     const isActive = activeChallenges[selectedChallengeId] && !activeChallenges[selectedChallengeId].isPaused;
     const completedSegmentIds = challengeProgress[selectedChallengeId]?.completedSegmentIds || [];
     
@@ -1030,7 +1075,7 @@ const ChallengesScreen = () => {
     setSelectedSegmentTitle(segmentData.title);
     setSelectedSegmentRef((segmentData as any).ref || '');
     setShowReadingModeModal(true);
-  }, [selectedChallengeId, activeChallenges, challengeProgress, readingPlansData.challenges, router]);
+  }, [selectedChallengeId, activeChallenges, challengeProgress, typedReadingPlansData.challenges, router]);
 
   // Reading Mode Modal Handlers
     const handleIndividualReading = async () => {

@@ -2881,5 +2881,180 @@
         "color": "#FF5722"
       }
     }
+  },
+  "jesusFilmChronological": {
+    "title": "Jesus Film (Chronological)",
+    "description": "12 Stories - 2 Weeks",
+    "longDescription": "Experience the life of Jesus through the lens of the iconic Jesus Film, based on the Gospel of Luke. This chronological journey follows the 12 key stories that bring the film to life, from the miraculous birth of John the Baptist to the resurrection. Discover how Luke's unique perspective as a Gentile physician captures Jesus' compassion for all people and His mission to bring salvation to the world.",
+    "segments": [
+      {
+        "segmentId": "I042",
+        "book": "Luk",
+        "title": "Introduction to Luke",
+        "ref": "1:1-24:53",
+        "phase": "The Gospel Begins",
+        "description": "Luke's unique perspective as a Gentile physician, emphasizing Jesus' compassion for all people",
+        "color": "#FF6B35"
+      },
+      {
+        "segmentId": "S285",
+        "book": "Luk",
+        "title": "Two Miraculous Births",
+        "ref": "1:1-2:40",
+        "phase": "The Birth Narratives",
+        "description": "The angel Gabriel announces the births of John the Baptist and Jesus, fulfilling ancient prophecies",
+        "color": "#FF6B35"
+      },
+      {
+        "segmentId": "S286",
+        "book": "Luk",
+        "title": "Preparing for the Mission in Galilee",
+        "ref": "2:41-4:44",
+        "phase": "Early Life & Preparation",
+        "description": "Jesus' childhood wisdom and His preparation for ministry through baptism and temptation",
+        "color": "#FF6B35"
+      },
+      {
+        "segmentId": "S287",
+        "book": "Luk",
+        "title": "Calling, Healing & Teaching",
+        "ref": "5:1-6:49",
+        "phase": "The Ministry Begins",
+        "description": "Jesus calls His first disciples and begins His ministry of healing and teaching",
+        "color": "#FF6B35"
+      },
+      {
+        "segmentId": "S288",
+        "book": "Luk",
+        "title": "Power, Miracles & Faith",
+        "ref": "7:1-8:56",
+        "phase": "The Ministry Begins",
+        "description": "Miracles reveal Jesus' divine authority and His heart for people in need",
+        "color": "#FF6B35"
+      },
+      {
+        "segmentId": "S289",
+        "book": "Luk",
+        "title": "The Mission in Galilee Completed",
+        "ref": "9:1-9:50",
+        "phase": "The Ministry Expands",
+        "description": "Jesus sends out His disciples and reveals His identity as the Messiah",
+        "color": "#FF6B35"
+      },
+      {
+        "segmentId": "S290",
+        "book": "Luk",
+        "title": "Jesus Set His Face to Jerusalem",
+        "ref": "9:51-11:54",
+        "phase": "The Journey Begins",
+        "description": "Jesus begins His journey to Jerusalem, teaching about discipleship and facing opposition",
+        "color": "#FF6B35"
+      },
+      {
+        "segmentId": "S291",
+        "book": "Luk",
+        "title": "Teaching on True Discipleship",
+        "ref": "12:1-13:9",
+        "phase": "The Journey Continues",
+        "description": "Jesus teaches about the cost of discipleship and God's care for His people",
+        "color": "#FF6B35"
+      },
+      {
+        "segmentId": "S292",
+        "book": "Luk",
+        "title": "Power & Parables",
+        "ref": "13:10-15:32",
+        "phase": "The Journey Continues",
+        "description": "Jesus heals on the Sabbath and shares parables about God's love for the lost",
+        "color": "#FF6B35"
+      },
+      {
+        "segmentId": "S293",
+        "book": "Luk",
+        "title": "More Teaching on True Discipleship",
+        "ref": "16:1-17:10",
+        "phase": "The Journey Continues",
+        "description": "Jesus teaches about wealth, forgiveness, and the power of faith",
+        "color": "#FF6B35"
+      },
+      {
+        "segmentId": "S294",
+        "book": "Luk",
+        "title": "More Power & Parables",
+        "ref": "17:11-19:27",
+        "phase": "The Journey Continues",
+        "description": "Jesus heals ten lepers and shares parables about gratitude and stewardship",
+        "color": "#FF6B35"
+      },
+      {
+        "segmentId": "S295",
+        "book": "Luk",
+        "title": "Jesus Entered Jerusalem",
+        "ref": "19:28-21:38",
+        "phase": "The Final Week",
+        "description": "Jesus' triumphal entry into Jerusalem and His final teachings in the temple",
+        "color": "#FF6B35"
+      },
+      {
+        "segmentId": "S296",
+        "book": "Luk",
+        "title": "Betrayed, Arrested & Denied",
+        "ref": "22:1-22:71",
+        "phase": "The Passion",
+        "description": "The Last Supper, Jesus' prayer in Gethsemane, and Peter's denial",
+        "color": "#FF6B35"
+      },
+      {
+        "segmentId": "S297",
+        "book": "Luk",
+        "title": "Tried, Crucified & Risen",
+        "ref": "23:1-24:53",
+        "phase": "Victory Through Death",
+        "description": "Jesus' trial, crucifixion, and glorious resurrection, completing His mission of salvation",
+        "color": "#FF6B35"
+      }
+    ],
+    "phases": {
+      "The Gospel Begins": {
+        "description": "Luke's introduction and unique perspective on Jesus' life and ministry",
+        "color": "#FF6B35"
+      },
+      "The Birth Narratives": {
+        "description": "The miraculous events surrounding Jesus' birth and early life",
+        "color": "#FF6B35"
+      },
+      "Early Life & Preparation": {
+        "description": "Jesus' childhood and preparation for His earthly ministry",
+        "color": "#FF6B35"
+      },
+      "The Ministry Begins": {
+        "description": "Jesus begins His public ministry with miracles, healing, and teaching",
+        "color": "#FF6B35"
+      },
+      "The Ministry Expands": {
+        "description": "Jesus expands His ministry and reveals His identity to His disciples",
+        "color": "#FF6B35"
+      },
+      "The Journey Begins": {
+        "description": "Jesus begins His journey to Jerusalem, facing increasing opposition",
+        "color": "#FF6B35"
+      },
+      "The Journey Continues": {
+        "description": "Jesus continues teaching and healing as He moves toward Jerusalem",
+        "color": "#FF6B35"
+      },
+      "The Final Week": {
+        "description": "Jesus enters Jerusalem and prepares for His final sacrifice",
+        "color": "#FF6B35"
+      },
+      "The Passion": {
+        "description": "Jesus' suffering, betrayal, and preparation for the cross",
+        "color": "#FF6B35"
+      },
+      "Victory Through Death": {
+        "description": "Jesus' death and resurrection accomplish salvation for all people",
+        "color": "#FF6B35"
+      }
+    }
   }
 } 

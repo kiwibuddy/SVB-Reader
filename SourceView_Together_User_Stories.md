@@ -99,7 +99,7 @@ Users can long-press on speech bubbles to add emoji reactions. Instead of saving
 ## 📚 **Reaction Page: Categorized Scripture Engagement**
 
 ### **Feature Details:**
-A dedicated page displays all saved speech bubbles, organized by emoji categories that encourage specific spiritual practices: ❤️ for memorization, 👍 for sharing with others, 🧐 for wrestling with difficult passages, and 🙏 for prayer development.
+A dedicated page displays all saved speech bubbles, organized by emoji categories that encourage specific spiritual practices: ❤️ (heart emoji) for memorization, 👍 (thumbs up emoji) for sharing with others, 🧐 (thinking emoji) for wrestling with difficult passages, and 🙏 (praying hands emoji) for prayer development.
 
 ### **Biblical Purpose & Vision:**
 **Creating Intentional Scripture Practices:** This feature helps users develop specific spiritual disciplines around Scripture engagement, moving beyond passive reading to active application and practice.

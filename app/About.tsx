@@ -12,6 +12,8 @@ const About = () => {
   const { colors } = useAppSettings();
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showCopyrightModal, setShowCopyrightModal] = useState(false);
+  const [showNLTModal, setShowNLTModal] = useState(false);
 
   const styles = StyleSheet.create({
     container: {
@@ -236,6 +238,18 @@ const About = () => {
       textAlign: 'center',
       marginTop: 16,
     },
+    // Subtle link styles
+    subtleLinkContainer: {
+      paddingVertical: 12,
+      paddingHorizontal: 4,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    subtleLinkText: {
+      color: colors.text,
+      fontSize: sizes.body,
+      fontWeight: '400',
+    },
   });
 
   const PrivacyPolicyModal = () => (
@@ -413,6 +427,132 @@ const About = () => {
     </Modal>
   );
 
+  const CopyrightModal = () => (
+    <Modal
+      visible={showCopyrightModal}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setShowCopyrightModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Copyright</Text>
+            <Pressable
+              style={styles.closeButton}
+              onPress={() => setShowCopyrightModal(false)}
+            >
+              <Ionicons name="close" size={24} color={colors.text} />
+            </Pressable>
+          </View>
+          <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+            <Text style={styles.modalParagraph}>
+              Grateful acknowledgments are made to the Newman Family Foundation for their generous support of the SourceView™ Bible project and to Youth With A Mission (YWAM) for granting permission to use material found in the Christian Growth Study Bible, New International Version, copyright © 1997 by The Zondervan Corporation. (See Acknowledgements for details)
+            </Text>
+            
+            <Text style={styles.modalParagraph}>
+              SourceView™ Bible. Copyright © 2010 by David Joel Hamilton. All rights reserved. Printed in China by Codra Enterprises, Inc. No part of this book may be used or reproduced in any manner whatsoever without written permission except in the case of brief quotations embedded in critical articles and reviews. For information, contact: SourceView Publishing, LLC, 1499 Danville Boulevard, Suite 202, Alamo, CA 94507.
+            </Text>
+
+            <Text style={styles.modalParagraph}>
+              SourceView Publishing Web site: http://www.sourceviewbible.com
+            </Text>
+
+            <Text style={styles.modalParagraph}>
+              SourceView™ and its logo are trademarks of SourceView Publishing, LLC.
+            </Text>
+
+            <Text style={styles.modalSubheading}>FIRST EDITION</Text>
+
+            <Text style={styles.modalParagraph}>
+              Interior typesetting and design by John R. Kohlenberger III/Blue Heron Bookcraft, Battle Ground, WA.
+            </Text>
+
+            <Text style={styles.modalParagraph}>
+              Library of Congress Cataloging-in-Publication Data is available upon request.
+            </Text>
+
+            <Text style={styles.modalParagraph}>
+              ISBN 978-0-9831700-0-6
+            </Text>
+
+            <Text style={styles.modalParagraph}>
+              (Codra) 10 9 8 7 6 5 4 3 2 1
+            </Text>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  const NLTModal = () => (
+    <Modal
+      visible={showNLTModal}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setShowNLTModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>New Living Translation</Text>
+            <Pressable
+              style={styles.closeButton}
+              onPress={() => setShowNLTModal(false)}
+            >
+              <Ionicons name="close" size={24} color={colors.text} />
+            </Pressable>
+          </View>
+          <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+            <Text style={styles.modalParagraph}>
+              Scripture quotations are taken from the Holy Bible, New Living Translation, copyright ©1996, 2004, 2007 by Tyndale House Foundation. Used by permission of Tyndale House Publishers, Inc., Carol Stream, Illinois 60188. All rights reserved.
+            </Text>
+            
+            <Text style={styles.modalParagraph}>
+              Unless otherwise indicated, all Scripture quotations are taken from the Holy Bible, New Living Translation, copyright © 1996, 2004, 2007 by Tyndale House Foundation. Used by permission of Tyndale House Publishers, Inc., Carol Stream, Illinois 60188. All rights reserved.
+            </Text>
+
+            <Text style={styles.modalSubheading}>About the New Living Translation</Text>
+
+            <Text style={styles.modalParagraph}>
+              The New Living Translation combines the latest biblical scholarship with a clear, dynamic writing style that communicates God's Word powerfully to all who hear and read it. It renders the message of the original texts of Scripture into clear, contemporary English that was written to be read aloud.
+            </Text>
+
+            <Text style={styles.modalParagraph}>
+              With a focus on clarity, The New Living Translation invites readers to go deeper into the biblical text to discover God's story for their lives and the world. The NLT conveys the precise meaning of the original languages and helps you understand what the Bible says in today's English with the same clarity as those who once read it in the original languages.
+            </Text>
+
+            <Text style={styles.modalSubheading}>Usage Guidelines</Text>
+
+            <Text style={styles.modalParagraph}>
+              "When quotations from the NLT text are used in non-salable media, such as church bulletins, orders of service, newsletters, transparencies, or similar media, a complete copyright notice is not required, but the initials (NLT) must appear at the end of each quotation."
+            </Text>
+
+            <Text style={styles.modalParagraph}>
+              "Quotations in excess of five hundred (500) verses or 25 percent of the work, or other permission requests, must be directed to and be approved in writing by Tyndale House Publishers, Inc., 351 Executive Drive, Carol Stream, IL 60188."
+            </Text>
+
+            <Text style={styles.modalParagraph}>
+              "Publication of any commentary or other Bible reference work produced for commercial sale that uses the New Living Translation requires written permission for use of the NLT text."
+            </Text>
+
+            <Text style={styles.modalSubheading}>Learn More</Text>
+
+            <Text style={styles.modalParagraph}>
+              For more information about the New Living Translation, visit: https://www.tyndale.com/sites/nlt/
+            </Text>
+
+            <Text style={styles.contactInfo}>
+              Tyndale House Publishers, Inc.{'\n'}
+              351 Executive Drive{'\n'}
+              Carol Stream, IL 60188
+            </Text>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -555,6 +695,25 @@ const About = () => {
             </Text>
           </View>
 
+          {/* About SourceView Section */}
+          <View style={styles.legalSection}>
+            <Text style={styles.legalHeading}>About SourceView</Text>
+            
+            <Pressable
+              style={styles.subtleLinkContainer}
+              onPress={() => setShowCopyrightModal(true)}
+            >
+              <Text style={styles.subtleLinkText}>Copyright</Text>
+            </Pressable>
+            
+            <Pressable
+              style={styles.subtleLinkContainer}
+              onPress={() => setShowNLTModal(true)}
+            >
+              <Text style={styles.subtleLinkText}>New Living Translation</Text>
+            </Pressable>
+          </View>
+
           {/* Legal Section */}
           <View style={styles.legalSection}>
             <Text style={styles.legalHeading}>Legal Information</Text>
@@ -582,6 +741,8 @@ const About = () => {
       {/* Legal Modals */}
       <PrivacyPolicyModal />
       <TermsOfServiceModal />
+      <CopyrightModal />
+      <NLTModal />
     </SafeAreaView>
   );
 };

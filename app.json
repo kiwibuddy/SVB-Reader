@@ -9,8 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
 
-    "description": "Experience the Bible in community with SourceView Together - a revolutionary app that transforms solo Bible reading into dynamic group experiences. Featuring role-based reading, emoji reactions, reading plans, challenges, and progress tracking for individuals and groups.",
-    "keywords": ["bible", "scripture", "reading", "christian", "group", "community", "devotional", "spiritual", "faith", "religion", "study", "prayer"],
+    "description": "SourceView Together: Group Bible Reading App - Transform your Bible study with friends! Join up to 4 people for interactive group Bible reading using our unique speech bubble format. Features role-based reading, real-time emoji reactions, reading plans, challenges, and progress tracking. Perfect for small groups, families, and Bible study communities. Experience Scripture like never before with collaborative reading sessions.",
     "primaryColor": "#FF5733",
     "splash": {
       "image": "./assets/images/splash-icon.png",
@@ -21,8 +20,6 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.sourceview.together",
       "buildNumber": "1",
-      "privacyPolicy": "mailto:sourceviewbible@gmail.com?subject=Privacy%20Policy%20Request&body=Please%20send%20me%20the%20privacy%20policy%20for%20SourceView%20Together%20app.",
-      "supportURL": "mailto:sourceviewbible@gmail.com?subject=SourceView%20Together%20Support&body=Please%20describe%20your%20issue%20or%20question:",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -46,9 +43,7 @@
       "package": "com.sourceview.together",
       "versionCode": 1,
       "allowBackup": true,
-      "icon": "./assets/images/icon.png",
-      "privacyPolicy": "https://kiwibuddy.github.io/SourceView-Together/privacy.html",
-      "supportURL": "mailto:sourceviewbible@gmail.com?subject=SourceView%20Together%20Support&body=Please%20describe%20your%20issue%20or%20question:"
+      "icon": "./assets/images/icon.png"
     },
     "web": {
       "bundler": "metro",
