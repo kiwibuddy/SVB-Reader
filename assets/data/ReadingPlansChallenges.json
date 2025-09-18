@@ -563,348 +563,28 @@
   ],
   "challenges": [
     {
-      "id": "theGospels",
-      "title": "The Gospels",
-      "description": "42 Stories - 6 Weeks",
+      "id": "godsStory7Day",
+      "title": "God's Story: The Good News",
+      "description": "7 Stories - 1 Week",
       "image": "island",
-      "longDescription": "Journey through the life of Jesus with the four Gospel accounts in their traditional book order. Experience His birth, ministry, teachings, death, and resurrection through the complementary perspectives of Matthew, Mark, Luke, and John. Each Gospel offers unique insights into Christ's character and mission, providing a comprehensive foundation for understanding the heart of the Christian faith.",
-      "chronologicalOrder": false,
-      "segments": {
-        "Mat": {
-          "segments": [
-            "I040", "S266", "S267", "S268", "S269", "S270", "S271", "S272", "S273", "S274", "S275", "S276"
-          ]
-        },
-        "Mar": {
-          "segments": [
-            "I041", "S277", "S278", "S279", "S280", "S281", "S282", "S283", "S284"
-          ]
-        },
-        "Luk": {
-          "segments": [
-            "I042", "S285", "S286", "S287", "S288", "S289", "S290", "S291", "S292", "S293", "S294", "S295", "S296", "S297"
-          ]
-        },
-        "Joh": {
-          "segments": [
-            "I043", "S298", "S299", "S300", "S301", "S302", "S303", "S304", "S305", "S306", "S307"
-          ]
-        }
-      }
-    },
-    {
-      "id": "adventJourneyChronological",
-      "title": "Advent Journey",
-      "description": "16 Stories - 4 Weeks",
-      "image": "island",
-      "longDescription": "Prepare your heart for Christmas with this chronological Advent journey. Follow God's promises from ancient prophecies through their fulfillment in Jesus' birth. Perfect for the Christmas season (December - January).",
+      "longDescription": "Experience the complete Gospel story in just one week! From creation to the new creation, journey through the seven pivotal moments that reveal God's redemptive plan for humanity. This chronological journey takes you from Genesis to Revelation, showing how every part of Scripture points to Jesus Christ and His ultimate victory.",
       "chronologicalOrder": true,
-      "chronologicalMapping": "adventJourneyChronological",
-      "segments": {
-        "Isa": {
-          "segments": [
-            "I023", "S191", "S192", "S193", "S194", "S195"
-          ]
-        },
-        "Mic": {
-          "segments": [
-            "I033", "S256"
-          ]
-        },
-        "Mat": {
-          "segments": [
-            "I040", "S266", "S267"
-          ]
-        },
-        "Luk": {
-          "segments": [
-            "I042", "S285", "S286", "S287", "S288", "S289", "S291", "S292", "S294"
-          ]
-        }
-      }
-    },
-    {
-      "id": "lentenReflectionChronological",
-      "title": "Lenten Reflection",
-      "description": "21 Stories - 3 Weeks",
-      "image": "island",
-      "longDescription": "Journey with Jesus through His final weeks in this meaningful Lenten reflection. Follow His path from ministry to passion, death, and resurrection. Perfect for the Lenten season (February - April).",
-      "chronologicalOrder": true,
-      "chronologicalMapping": "lentenReflectionChronological",
-      "segments": {
-        "Mat": {
-          "segments": [
-            "I040", "S267", "S268", "S269", "S270", "S271", "S272", "S273", "S274", "S275", "S276"
-          ]
-        },
-        "Mar": {
-          "segments": [
-            "I041", "S284"
-          ]
-        },
-        "Luk": {
-          "segments": [
-            "I042", "S297"
-          ]
-        },
-        "Joh": {
-          "segments": [
-            "I043", "S299", "S300", "S301", "S302", "S303", "S304", "S305", "S306", "S307"
-          ]
-        }
-      }
-    },
-    {
-      "id": "christmas12",
-      "title": "12 Days of Christmas",
-      "description": "6 Stories - 12 Days",
-      "image": "island",
-      "longDescription": "Celebrate the Christmas season with the nativity stories in chronological order. From the angel's announcements to the early events of Jesus' life, experience the wonder and joy of God becoming man to dwell among us during the traditional twelve days of Christmas.",
-      "chronologicalOrder": true,
-      "chronologicalMapping": "christmas12Chronological",
-      "segments": {
-        "Mat": {
-          "segments": [
-            "I040", "S266"
-          ]
-        },
-        "Luk": {
-          "segments": [
-            "I042", "S285", "S286", "S287", "S288", "S289"
-          ]
-        }
-      }
-    },
-    {
-      "id": "paulsLetters",
-      "title": "Paul's Letters",
-      "description": "35 Stories - 7 Weeks",
-      "image": "island",
-      "longDescription": "Journey through Paul's transformative letters in the order they were written. From his earliest teachings to his final pastoral instructions, experience how the apostle's theology and ministry evolved as he planted churches and discipled believers across the Roman Empire.",
-      "chronologicalOrder": true,
-      "chronologicalMapping": "paulsLettersChronological",
-      "segments": {
-        "Rom": {
-          "segments": [
-            "I045", "S320", "S321", "S322", "S323", "S324", "S325"
-          ]
-        },
-        "1Co": {
-          "segments": [
-            "I046", "S326", "S327", "S328", "S329", "S330"
-          ]
-        },
-        "2Co": {
-          "segments": [
-            "I047", "S331", "S332", "S333", "S334"
-          ]
-        },
-        "Gal": {
-          "segments": [
-            "I048", "S335", "S336"
-          ]
-        },
-        "Eph": {
-          "segments": [
-            "I049", "S337", "S338"
-          ]
-        },
-        "Php": {
-          "segments": [
-            "I050", "S339"
-          ]
-        },
-        "Col": {
-          "segments": [
-            "I051", "S340"
-          ]
-        },
-        "1Th": {
-          "segments": [
-            "I052", "S341"
-          ]
-        },
-        "2Th": {
-          "segments": [
-            "I053", "S342"
-          ]
-        },
-        "1Ti": {
-          "segments": [
-            "I054", "S343"
-          ]
-        },
-        "2Ti": {
-          "segments": [
-            "I055", "S344"
-          ]
-        },
-        "Tit": {
-          "segments": [
-            "I056", "S345"
-          ]
-        },
-        "Phm": {
-          "segments": ["I057", "S346"]
-        }
-      }
-    },
-    {
-      "id": "davidsLife",
-      "title": "David's Life",
-      "description": "35 Stories - 7 Weeks",
-      "image": "island",
-      "longDescription": "Follow the journey of David from shepherd boy to king of Israel. Through victories and failures, discover how this 'man after God's own heart' teaches us about leadership, worship, and walking with God.",
-      "chronologicalOrder": true,
-      "chronologicalMapping": "davidsLifeChronological",
-      "segments": {
-        "1Sa": {
-          "segments": [
-            "I009", "S086", "S087", "S088", "S089", "S090", "S091", "S092", "S093", "S094", "S095", "S096"
-          ]
-        },
-        "2Sa": {
-          "segments": [
-            "I010", "S097", "S098", "S099", "S100", "S101", "S102", "S103", "S104"
-          ]
-        },
-        "1Ki": {
-          "segments": [
-            "I011", "S105", "S106", "S107", "S108", "S109", "S110", "S111", "S112", "S113", "S114", "S115"
-          ]
-        },
-        "Psa": {
-          "segments": [
-            "I019", "S164", "S165", "S166", "S167", "S168", "S169", "S170", "S171", "S172", "S173", "S174", "S175", "S176", "S177", "S178", "S179"
-          ]
-        }
-      }
-    },
-    {
-      "id": "inTheBeginning",
-      "title": "In The Beginning",
-      "description": "18 Stories - 3 Weeks",
-      "image": "island",
-      "longDescription": "Experience the foundational events of human history in chronological order. From the creation of the universe to Abraham's call, witness how God established His covenant relationship with humanity through the great patriarchs of faith.",
-      "chronologicalOrder": true,
-      "chronologicalMapping": "inTheBeginningChronological",
+      "chronologicalMapping": "godsStory7DayChronological",
       "segments": {
         "Gen": {
-          "segments": [
-            "I001", "S001", "S002", "S003", "S004", "S005", "S006", "S007", "S008", "S009", "S010", "S011", "S012", "S013", "S014", "S015", "S016", "S017", "S018"
-          ]
-        }
-      }
-    },
-    {
-      "id": "womenOfTheBible",
-      "title": "Women of the Bible",
-      "description": "20 Stories - 4 Weeks",
-      "image": "island",
-      "longDescription": "Journey through the remarkable stories of biblical women in chronological order. From Eve's pivotal choice in Eden to Mary's faithful 'yes' in Nazareth, experience how women of faith shaped God's redemptive plan across history. This chronological journey reveals the threads of courage, wisdom, and devotion woven throughout Scripture.",
-      "chronologicalOrder": true,
-      "chronologicalMapping": "womenOfTheBibleChronological",
-      "segments": {
-        "Gen": {
-          "segments": [
-            "S002", "S006", "S008", "S009", "S011"
-          ]
+          "segments": ["S001", "S002", "S006"]
         },
         "Exo": {
-          "segments": [
-            "S019", "S020"
-          ]
-        },
-        "Jdg": {
-          "segments": [
-            "S078", "S082"
-          ]
-        },
-        "Rut": {
-          "segments": [
-            "I008", "S085"
-          ]
-        },
-        "1Sa": {
-          "segments": [
-            "S086"
-          ]
-        },
-        "Est": {
-          "segments": [
-            "I017", "S150", "S151", "S152", "S153"
-          ]
-        },
-        "Luk": {
-          "segments": [
-            "S285", "S286", "S287", "S288"
-          ]
+          "segments": ["S025"]
         },
         "Joh": {
-          "segments": [
-            "S301"
-          ]
-        }
-      }
-    },
-    {
-      "id": "newTestamentJourney",
-      "title": "New Testament Journey",
-      "description": "40 Stories - 8 Weeks",
-      "image": "island",
-      "longDescription": "Experience the New Testament in historical order, from Jesus' birth and ministry through the early church's growth and apostolic letters. This chronological journey reveals how the gospel spread from Jerusalem to the ends of the earth, establishing the foundation for Christian faith and practice.",
-      "chronologicalOrder": true,
-      "chronologicalMapping": "newTestamentJourneyChronological",
-      "segments": {
+          "segments": ["S298"]
+        },
         "Luk": {
-          "segments": [
-            "I042", "S285", "S286", "S287", "S288", "S289", "S290", "S291", "S292", "S293", "S294", "S295", "S296", "S297"
-          ]
-        },
-        "Act": {
-          "segments": [
-            "I044", "S308", "S309", "S310", "S311", "S312", "S313", "S314", "S315", "S316", "S317", "S318", "S319"
-          ]
-        },
-        "Rom": {
-          "segments": [
-            "I045", "S320", "S321", "S322", "S323"
-          ]
-        },
-        "1Co": {
-          "segments": [
-            "I046", "S328", "S329", "S330"
-          ]
-        },
-        "Eph": {
-          "segments": [
-            "I049", "S337", "S338"
-          ]
-        },
-        "Tit": {
-          "segments": [
-            "I056", "S345"
-          ]
-        },
-        "Jam": {
-          "segments": [
-            "I059", "S352"
-          ]
-        },
-        "1Pe": {
-          "segments": [
-            "I060", "S353"
-          ]
-        },
-        "1Jn": {
-          "segments": [
-            "I062", "S355"
-          ]
+          "segments": ["S297"]
         },
         "Rev": {
-          "segments": [
-            "I066", "S359", "S365"
-          ]
+          "segments": ["S365"]
         }
       }
     },
@@ -1030,46 +710,350 @@
       }
     },
     {
-      "id": "jesusFilm",
-      "title": "Jesus Film",
-      "description": "12 Stories - 2 Weeks",
+      "id": "newTestamentJourney",
+      "title": "New Testament Journey",
+      "description": "40 Stories - 8 Weeks",
       "image": "island",
-      "longDescription": "Experience the life of Jesus through the lens of the iconic Jesus Film, based on the Gospel of Luke. This chronological journey follows the 12 key stories that bring the film to life, from the miraculous birth of John the Baptist to the resurrection. Discover how Luke's unique perspective as a Gentile physician captures Jesus' compassion for all people and His mission to bring salvation to the world.",
+      "longDescription": "Experience the New Testament in historical order, from Jesus' birth and ministry through the early church's growth and apostolic letters. This chronological journey reveals how the gospel spread from Jerusalem to the ends of the earth, establishing the foundation for Christian faith and practice.",
       "chronologicalOrder": true,
-      "chronologicalMapping": "jesusFilmChronological",
+      "chronologicalMapping": "newTestamentJourneyChronological",
       "segments": {
         "Luk": {
           "segments": [
             "I042", "S285", "S286", "S287", "S288", "S289", "S290", "S291", "S292", "S293", "S294", "S295", "S296", "S297"
           ]
+        },
+        "Act": {
+          "segments": [
+            "I044", "S308", "S309", "S310", "S311", "S312", "S313", "S314", "S315", "S316", "S317", "S318", "S319"
+          ]
+        },
+        "Rom": {
+          "segments": [
+            "I045", "S320", "S321", "S322", "S323"
+          ]
+        },
+        "1Co": {
+          "segments": [
+            "I046", "S328", "S329", "S330"
+          ]
+        },
+        "Eph": {
+          "segments": [
+            "I049", "S337", "S338"
+          ]
+        },
+        "Tit": {
+          "segments": [
+            "I056", "S345"
+          ]
+        },
+        "Jam": {
+          "segments": [
+            "I059", "S352"
+          ]
+        },
+        "1Pe": {
+          "segments": [
+            "I060", "S353"
+          ]
+        },
+        "1Jn": {
+          "segments": [
+            "I062", "S355"
+          ]
+        },
+        "Rev": {
+          "segments": [
+            "I066", "S359", "S365"
+          ]
         }
       }
     },
     {
-      "id": "godsStory7Day",
-      "title": "God's Story: The Good News",
-      "description": "7 Stories - 1 Week",
+      "id": "inTheBeginning",
+      "title": "In The Beginning",
+      "description": "18 Stories - 3 Weeks",
       "image": "island",
-      "longDescription": "Experience the complete Gospel story in just one week! From creation to the new creation, journey through the seven pivotal moments that reveal God's redemptive plan for humanity. This chronological journey takes you from Genesis to Revelation, showing how every part of Scripture points to Jesus Christ and His ultimate victory.",
+      "longDescription": "Experience the foundational events of human history in chronological order. From the creation of the universe to Abraham's call, witness how God established His covenant relationship with humanity through the great patriarchs of faith.",
       "chronologicalOrder": true,
-      "chronologicalMapping": "godsStory7DayChronological",
+      "chronologicalMapping": "inTheBeginningChronological",
       "segments": {
         "Gen": {
-          "segments": ["S001", "S002", "S006"]
+          "segments": [
+            "I001", "S001", "S002", "S003", "S004", "S005", "S006", "S007", "S008", "S009", "S010", "S011", "S012", "S013", "S014", "S015", "S016", "S017", "S018"
+          ]
+        }
+      }
+    },
+    {
+      "id": "theGospels",
+      "title": "The Gospels",
+      "description": "42 Stories - 6 Weeks",
+      "image": "island",
+      "longDescription": "Journey through the life of Jesus with the four Gospel accounts in their traditional book order. Experience His birth, ministry, teachings, death, and resurrection through the complementary perspectives of Matthew, Mark, Luke, and John. Each Gospel offers unique insights into Christ's character and mission, providing a comprehensive foundation for understanding the heart of the Christian faith.",
+      "chronologicalOrder": false,
+      "segments": {
+        "Mat": {
+          "segments": [
+            "I040", "S266", "S267", "S268", "S269", "S270", "S271", "S272", "S273", "S274", "S275", "S276"
+          ]
         },
-        "Exo": {
-          "segments": ["S025"]
-        },
-        "Joh": {
-          "segments": ["S298"]
+        "Mar": {
+          "segments": [
+            "I041", "S277", "S278", "S279", "S280", "S281", "S282", "S283", "S284"
+          ]
         },
         "Luk": {
-          "segments": ["S297"]
+          "segments": [
+            "I042", "S285", "S286", "S287", "S288", "S289", "S290", "S291", "S292", "S293", "S294", "S295", "S296", "S297"
+          ]
         },
-        "Rev": {
-          "segments": ["S365"]
+        "Joh": {
+          "segments": [
+            "I043", "S298", "S299", "S300", "S301", "S302", "S303", "S304", "S305", "S306", "S307"
+          ]
+        }
+      }
+    },
+    {
+      "id": "paulsLetters",
+      "title": "Paul's Letters",
+      "description": "35 Stories - 7 Weeks",
+      "image": "island",
+      "longDescription": "Journey through Paul's transformative letters in the order they were written. From his earliest teachings to his final pastoral instructions, experience how the apostle's theology and ministry evolved as he planted churches and discipled believers across the Roman Empire.",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "paulsLettersChronological",
+      "segments": {
+        "Rom": {
+          "segments": [
+            "I045", "S320", "S321", "S322", "S323", "S324", "S325"
+          ]
+        },
+        "1Co": {
+          "segments": [
+            "I046", "S326", "S327", "S328", "S329", "S330"
+          ]
+        },
+        "2Co": {
+          "segments": [
+            "I047", "S331", "S332", "S333", "S334"
+          ]
+        },
+        "Gal": {
+          "segments": [
+            "I048", "S335", "S336"
+          ]
+        },
+        "Eph": {
+          "segments": [
+            "I049", "S337", "S338"
+          ]
+        },
+        "Php": {
+          "segments": [
+            "I050", "S339"
+          ]
+        },
+        "Col": {
+          "segments": [
+            "I051", "S340"
+          ]
+        },
+        "1Th": {
+          "segments": [
+            "I052", "S341"
+          ]
+        },
+        "2Th": {
+          "segments": [
+            "I053", "S342"
+          ]
+        },
+        "1Ti": {
+          "segments": [
+            "I054", "S343"
+          ]
+        },
+        "2Ti": {
+          "segments": [
+            "I055", "S344"
+          ]
+        },
+        "Tit": {
+          "segments": [
+            "I056", "S345"
+          ]
+        },
+        "Phm": {
+          "segments": ["I057", "S346"]
+        }
+      }
+    },
+    {
+      "id": "womenOfTheBible",
+      "title": "Women of the Bible",
+      "description": "20 Stories - 4 Weeks",
+      "image": "island",
+      "longDescription": "Journey through the remarkable stories of biblical women in chronological order. From Eve's pivotal choice in Eden to Mary's faithful 'yes' in Nazareth, experience how women of faith shaped God's redemptive plan across history. This chronological journey reveals the threads of courage, wisdom, and devotion woven throughout Scripture.",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "womenOfTheBibleChronological",
+      "segments": {
+        "Gen": {
+          "segments": [
+            "S002", "S006", "S008", "S009", "S011"
+          ]
+        },
+        "Exo": {
+          "segments": [
+            "S019", "S020"
+          ]
+        },
+        "Jdg": {
+          "segments": [
+            "S078", "S082"
+          ]
+        },
+        "Rut": {
+          "segments": [
+            "I008", "S085"
+          ]
+        },
+        "1Sa": {
+          "segments": [
+            "S086"
+          ]
+        },
+        "Est": {
+          "segments": [
+            "I017", "S150", "S151", "S152", "S153"
+          ]
+        },
+        "Luk": {
+          "segments": [
+            "S285", "S286", "S287", "S288"
+          ]
+        },
+        "Joh": {
+          "segments": [
+            "S301"
+          ]
+        }
+      }
+    },
+    {
+      "id": "davidsLife",
+      "title": "David's Life",
+      "description": "35 Stories - 7 Weeks",
+      "image": "island",
+      "longDescription": "Follow the journey of David from shepherd boy to king of Israel. Through victories and failures, discover how this 'man after God's own heart' teaches us about leadership, worship, and walking with God.",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "davidsLifeChronological",
+      "segments": {
+        "1Sa": {
+          "segments": [
+            "I009", "S086", "S087", "S088", "S089", "S090", "S091", "S092", "S093", "S094", "S095", "S096"
+          ]
+        },
+        "2Sa": {
+          "segments": [
+            "I010", "S097", "S098", "S099", "S100", "S101", "S102", "S103", "S104"
+          ]
+        },
+        "1Ki": {
+          "segments": [
+            "I011", "S105", "S106", "S107", "S108", "S109", "S110", "S111", "S112", "S113", "S114", "S115"
+          ]
+        },
+        "Psa": {
+          "segments": [
+            "I019", "S164", "S165", "S166", "S167", "S168", "S169", "S170", "S171", "S172", "S173", "S174", "S175", "S176", "S177", "S178", "S179"
+          ]
+        }
+      }
+    },
+    {
+      "id": "adventJourneyChronological",
+      "title": "Advent Journey",
+      "description": "16 Stories - 4 Weeks",
+      "image": "island",
+      "longDescription": "Prepare your heart for Christmas with this chronological Advent journey. Follow God's promises from ancient prophecies through their fulfillment in Jesus' birth. Perfect for the Christmas season (December - January).",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "adventJourneyChronological",
+      "segments": {
+        "Isa": {
+          "segments": [
+            "I023", "S191", "S192", "S193", "S194", "S195"
+          ]
+        },
+        "Mic": {
+          "segments": [
+            "I033", "S256"
+          ]
+        },
+        "Mat": {
+          "segments": [
+            "I040", "S266", "S267"
+          ]
+        },
+        "Luk": {
+          "segments": [
+            "I042", "S285", "S286", "S287", "S288", "S289", "S291", "S292", "S294"
+          ]
+        }
+      }
+    },
+    {
+      "id": "lentenReflectionChronological",
+      "title": "Lenten Reflection",
+      "description": "21 Stories - 3 Weeks",
+      "image": "island",
+      "longDescription": "Journey with Jesus through His final weeks in this meaningful Lenten reflection. Follow His path from ministry to passion, death, and resurrection. Perfect for the Lenten season (February - April).",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "lentenReflectionChronological",
+      "segments": {
+        "Mat": {
+          "segments": [
+            "I040", "S267", "S268", "S269", "S270", "S271", "S272", "S273", "S274", "S275", "S276"
+          ]
+        },
+        "Mar": {
+          "segments": [
+            "I041", "S284"
+          ]
+        },
+        "Luk": {
+          "segments": [
+            "I042", "S297"
+          ]
+        },
+        "Joh": {
+          "segments": [
+            "I043", "S299", "S300", "S301", "S302", "S303", "S304", "S305", "S306", "S307"
+          ]
+        }
+      }
+    },
+    {
+      "id": "christmas12",
+      "title": "12 Days of Christmas",
+      "description": "6 Stories - 12 Days",
+      "image": "island",
+      "longDescription": "Celebrate the Christmas season with the nativity stories in chronological order. From the angel's announcements to the early events of Jesus' life, experience the wonder and joy of God becoming man to dwell among us during the traditional twelve days of Christmas.",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "christmas12Chronological",
+      "segments": {
+        "Mat": {
+          "segments": [
+            "I040", "S266"
+          ]
+        },
+        "Luk": {
+          "segments": [
+            "I042", "S285", "S286", "S287", "S288", "S289"
+          ]
         }
       }
     }
   ]
-} 
+}

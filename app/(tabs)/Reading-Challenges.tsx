@@ -705,18 +705,23 @@ const ChallengesScreen = () => {
       }
     });
 
-    // Sort non-active challenges within each category
-    const sortChallenges = (challenges: Challenge[]) => {
+    // Preserve JSON order (no sorting) - challenges should appear in the order defined in JSON
+    const preserveJSONOrder = (challenges: Challenge[]) => {
+      // Sort only by paused status, keeping JSON order for everything else
       return challenges.sort((a, b) => {
         const aStatus = activeChallenges[a.id]?.isPaused ? 1 : 2;
         const bStatus = activeChallenges[b.id]?.isPaused ? 1 : 2;
         if (aStatus !== bStatus) return aStatus - bStatus;
-        return a.title.localeCompare(b.title);
+        
+        // Preserve original JSON order by finding index in original array
+        const aIndex = typedReadingPlansData.challenges.findIndex(c => c.id === a.id);
+        const bIndex = typedReadingPlansData.challenges.findIndex(c => c.id === b.id);
+        return aIndex - bIndex;
       });
     };
 
-    categorized[CHALLENGE_CATEGORIES.SEASONAL] = sortChallenges(categorized[CHALLENGE_CATEGORIES.SEASONAL]);
-    categorized[CHALLENGE_CATEGORIES.TOPICAL] = sortChallenges(categorized[CHALLENGE_CATEGORIES.TOPICAL]);
+    categorized[CHALLENGE_CATEGORIES.SEASONAL] = preserveJSONOrder(categorized[CHALLENGE_CATEGORIES.SEASONAL]);
+    categorized[CHALLENGE_CATEGORIES.TOPICAL] = preserveJSONOrder(categorized[CHALLENGE_CATEGORIES.TOPICAL]);
 
     return { active, completed, categorized };
   }, [activeChallenges, challengeProgress]);
@@ -1265,10 +1270,16 @@ const ChallengesScreen = () => {
       });
     }
     
-    // Combine all non-active challenges into a single section without category titles
+    // Combine all non-active challenges in JSON order (not by category)
     const seasonalChallenges = organizedChallenges.categorized?.[CHALLENGE_CATEGORIES.SEASONAL] || [];
     const topicalChallenges = organizedChallenges.categorized?.[CHALLENGE_CATEGORIES.TOPICAL] || [];
-    const allAvailableChallenges = [...seasonalChallenges, ...topicalChallenges];
+    
+    // Merge and sort by original JSON order to maintain your desired sequence
+    const allAvailableChallenges = [...seasonalChallenges, ...topicalChallenges].sort((a, b) => {
+      const aIndex = typedReadingPlansData.challenges.findIndex(c => c.id === a.id);
+      const bIndex = typedReadingPlansData.challenges.findIndex(c => c.id === b.id);
+      return aIndex - bIndex;
+    });
     
     if (allAvailableChallenges.length > 0) {
       result.push({
