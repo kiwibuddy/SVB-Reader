@@ -8,7 +8,6 @@ import {
   Alert,
   FlatList,
   Image,
-  useWindowDimensions,
   RefreshControl,
   Animated,
   Dimensions
@@ -39,7 +38,7 @@ import {
   resumePlan,
   endPlan
 } from "@/api/sqlite";
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import { useGroupReading } from '@/context/GroupReadingContext';
 import BibleData from '@/assets/data/newBibleNLT1.json';
@@ -284,9 +283,20 @@ const PlanScreen = () => {
   const params = useLocalSearchParams();
   const { expandedPlan, completedSegment, timestamp } = params;
   const scrollViewRef = useRef<ScrollView>(null);
-  const { width } = useWindowDimensions();
-  const isLargeScreen = width >= 768;
-  const { colors, isDarkMode } = useAppSettings();
+  
+  // Option 2: Memoize with useEffect
+  const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
+  
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setScreenWidth(window.width);
+    });
+    
+    return () => subscription?.remove();
+  }, []);
+  
+  const isLargeScreen = screenWidth >= 768;
+  const { colors, isDarkMode } = useSyncAppSettings();
   const { currentSession, stopSession } = useGroupReading();
   const styles = createStyles(isLargeScreen, colors, isDarkMode);
 

@@ -6,25 +6,27 @@ import {
   StyleSheet, 
   TouchableOpacity, 
   Pressable, 
-  useWindowDimensions, 
-  Platform,
   FlatList,
   Dimensions,
-  Animated
+  Animated,
+  ActivityIndicator
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { Link, useRouter } from "expo-router";
-import { useTranslation } from 'react-i18next';
+import { useRouter } from "expo-router";
+import { useFirstLaunch } from '@/hooks/useFirstLaunch';
+import logger from '@/utils/logger';
 
 
 const { width: screenWidth } = Dimensions.get('window');
 
 const IndexScreen = () => {
   const router = useRouter();
-  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const { t } = useTranslation();
-  const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
+  
+  // First launch detection
+  const { isFirstLaunch, isLoading, markAsLaunched, error } = useFirstLaunch();
+  
+  // Add missing state for current index
+  const [currentIndex, setCurrentIndex] = useState(0);
   
   // Animation values
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -81,22 +83,34 @@ const IndexScreen = () => {
     }
   ];
 
-  // Premium entrance animation
+  // Handle automatic navigation for returning users
   useEffect(() => {
-    Animated.sequence([
-      Animated.timing(headerOpacity, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.spring(cardScale, {
-        toValue: 1,
-        friction: 8,
-        tension: 40,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
+    // Only redirect if we have a definitive answer (not loading state)
+    if (isFirstLaunch === false && !isLoading && !error) {
+      // Not first launch - redirect to Home immediately
+      logger.info('🔄 Returning user detected, redirecting to Home');
+      router.replace('/Home');
+    }
+  }, [isFirstLaunch, isLoading, error, router]);
+
+  // Premium entrance animation (only run for first-time users)
+  useEffect(() => {
+    if (isFirstLaunch === true) {
+      Animated.sequence([
+        Animated.timing(headerOpacity, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.spring(cardScale, {
+          toValue: 1,
+          friction: 8,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isFirstLaunch]);
 
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -201,6 +215,45 @@ const IndexScreen = () => {
   // Memoize the keyExtractor function
   const keyExtractor = useCallback((item: any) => item.id.toString(), []);
 
+  // Show loading spinner while checking first launch status
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#FF5733" />
+        <Text style={{ marginTop: 16, color: '#666', fontSize: 16 }}>
+          Loading...
+        </Text>
+      </View>
+    );
+  }
+
+  // Show error state if first launch check failed
+  if (error) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+        <Text style={{ color: '#FF0000', fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' }}>
+          Error Loading App
+        </Text>
+        <Text style={{ color: '#666', fontSize: 14, textAlign: 'center', marginBottom: 20 }}>
+          {error}
+        </Text>
+        <TouchableOpacity 
+          style={styles.getStartedButton} 
+          onPress={() => router.replace('/Home')}
+        >
+          <Text style={styles.getStartedButtonText}>Continue to App →</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // Only show onboarding for first-time users
+  // For returning users, render null since useEffect will handle redirection
+  if (isFirstLaunch === false) {
+    logger.info('🔄 Returning user - rendering null while redirecting');
+    return null;
+  }
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -277,7 +330,22 @@ const IndexScreen = () => {
       <View style={styles.footer}>
         <View style={styles.finalScreen}>
           <Text style={styles.finalText}>Get ready for a new Bible reading journey!</Text>
-          <Pressable style={styles.getStartedButton} onPress={() => router.push("/Home")}>
+          <Pressable 
+            style={styles.getStartedButton} 
+            onPress={async () => {
+              try {
+                logger.info('🎯 User completed onboarding, marking first launch as complete');
+                await markAsLaunched();
+                logger.info('✅ First launch marked complete, navigating to Home');
+                router.replace("/Home");
+              } catch (error) {
+                // If marking fails, still navigate to avoid blocking user
+                logger.warn('⚠️ Failed to mark first launch complete:', error);
+                logger.info('🔄 Continuing to Home despite storage error');
+                router.replace("/Home");
+              }
+            }}
+          >
             <Text style={styles.getStartedButtonText}>Get Started →</Text>
           </Pressable>
         </View>

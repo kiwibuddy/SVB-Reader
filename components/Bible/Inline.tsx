@@ -9,12 +9,14 @@ interface BibleInlineProps {
   inline: BibleInline;
   textColor: string;
   iIndex: string;
+  bubbleColor?: string;
 }
 
 const BibleInlineComponent: React.FC<BibleInlineProps> = ({
   inline,
   textColor,
-  iIndex
+  iIndex,
+  bubbleColor = 'black'
 }) => {
   // Always call hooks at the top level - before any conditional logic
   const { isDarkMode } = useAppSettings();
@@ -26,11 +28,21 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
     return null;
   }
 
-  const inlineStyle = styles[tag as keyof typeof styles] || {};
+  const originalInlineStyle = styles[tag as keyof typeof styles] || {};
+  // Remove lineHeight from inline styles to prevent inconsistent spacing
+  const { lineHeight, ...inlineStyle } = originalInlineStyle as any;
   
   // Check if this is a table element
   const isTableElement = tag && ['table', 'tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(tag);
   
+  
+  // Check if this inline contains table content
+  const hasTableContent = children.some(leaf => 
+    leaf && typeof leaf === 'object' && 
+    leaf.tag && Array.isArray(leaf.tag) && 
+    leaf.tag.some(tag => ['tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(tag))
+  );
+
   const renderedChildren = children.map((leaf, index) => {
     if (!leaf || typeof leaf !== 'object') {
       logger.warn(`Invalid leaf at index ${index}:`, leaf);
@@ -44,6 +56,8 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
         leafIndex={`${iIndex}-${index}`}
         isIndented={index === 0 && !!start}
         textColor={textColor}
+        bubbleColor={bubbleColor}
+        renderAsTextContent={true}
       />
     );
   });
@@ -56,14 +70,21 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
       </View>
     );
   }
-  
-  // For regular elements, wrap in Text component
-  return (
-    <View style={inlineStyle}>
-      <Text style={{lineHeight: 36, fontSize: 20, color: textColor}}>
+
+  // For content with table elements, wrap in table container
+  if (hasTableContent) {
+    return (
+      <View style={styles.tableWrapper}>
         {renderedChildren}
-      </Text>
-    </View>
+      </View>
+    );
+  }
+  
+  // For regular elements, wrap in Text component for proper inline flow
+  return (
+    <Text style={[inlineStyle, {lineHeight: 36, fontSize: 20, color: textColor}]}>
+      {renderedChildren}
+    </Text>
   );
 };
 
@@ -125,7 +146,7 @@ const styles = StyleSheet.create({
   iot: {
     fontWeight: "bold",
     fontSize: 18,
-    lineHeight: 25,
+    lineHeight: 32,
     marginTop: 25,
     marginBottom: 0,
   },
@@ -351,7 +372,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0, // Normal letter spacing
   },
   rq: {
-    lineHeight: 25,
+    lineHeight: 36,
     fontStyle: "italic",
     textAlign: "right",
     letterSpacing: 0, // Normal letter spacing
@@ -385,5 +406,8 @@ const styles = StyleSheet.create({
     // lineHeight: 0, // Line height for positioning
     // fontFamily: "sans-serif",
     // fontWeight: "100",
+  },
+  tableWrapper: {
+    marginVertical: 8,
   },
 });

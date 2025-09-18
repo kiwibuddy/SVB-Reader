@@ -3056,5 +3056,91 @@
         "color": "#FF6B35"
       }
     }
+  },
+  "godsStory7DayChronological": {
+    "title": "God's Story: The Good News",
+    "description": "7 Stories - 1 Week",
+    "longDescription": "Experience the complete Gospel story in just one week! From creation to the new creation, journey through the seven pivotal moments that reveal God's redemptive plan for humanity. This chronological journey takes you from Genesis to Revelation, showing how every part of Scripture points to Jesus Christ and His ultimate victory.",
+    "segments": [
+      {
+        "segmentId": "S001",
+        "book": "Gen",
+        "title": "God Creates",
+        "ref": "1:1-2:25",
+        "phase": "Creation"
+      },
+      {
+        "segmentId": "S002",
+        "book": "Gen",
+        "title": "People Sin",
+        "ref": "3:1-5:32",
+        "phase": "The Fall"
+      },
+      {
+        "segmentId": "S006",
+        "book": "Gen",
+        "title": "God Makes a Covenant with Abraham",
+        "ref": "15:1-18:15",
+        "phase": "The Promise"
+      },
+      {
+        "segmentId": "S025",
+        "book": "Exo",
+        "title": "The Ten Commandments",
+        "ref": "19:1-20:21",
+        "phase": "The Law"
+      },
+      {
+        "segmentId": "S298",
+        "book": "Joh",
+        "title": "God Came to Us",
+        "ref": "1:1-1:51",
+        "phase": "The Incarnation"
+      },
+      {
+        "segmentId": "S297",
+        "book": "Luk",
+        "title": "Tried, Crucified & Risen",
+        "ref": "23:1-24:53",
+        "phase": "The Redemption"
+      },
+      {
+        "segmentId": "S365",
+        "book": "Rev",
+        "title": "The Holy City is Coming",
+        "ref": "20:4-22:21",
+        "phase": "The Restoration"
+      }
+    ],
+    "phases": {
+      "Creation": {
+        "description": "God creates the heavens, earth, and humanity in His image",
+        "color": "#4CAF50"
+      },
+      "The Fall": {
+        "description": "Humanity rebels against God, bringing sin and death into the world",
+        "color": "#F44336"
+      },
+      "The Promise": {
+        "description": "God makes a covenant with Abraham, promising blessing to all nations",
+        "color": "#FF9800"
+      },
+      "The Law": {
+        "description": "God gives His law to reveal His character and humanity's need for grace",
+        "color": "#2196F3"
+      },
+      "The Incarnation": {
+        "description": "God becomes human in Jesus Christ, fulfilling His promise",
+        "color": "#9C27B0"
+      },
+      "The Redemption": {
+        "description": "Jesus dies for our sins and rises victorious over death",
+        "color": "#E91E63"
+      },
+      "The Restoration": {
+        "description": "God creates a new heaven and earth, restoring all things",
+        "color": "#00BCD4"
+      }
+    }
   }
 } 

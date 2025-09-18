@@ -24,6 +24,7 @@ export interface AppSettingsContextType {
   colors: ColorScheme;
   language: SupportedLanguage;
   setLanguage: (language: SupportedLanguage) => void;
+  isReady: boolean;
 }
 
 const lightColors: ColorScheme = {
@@ -70,20 +71,31 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     button: 16,
     navigation: 16,
   });
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    const systemColorScheme = Appearance.getColorScheme();
-    return systemColorScheme === 'dark';
-  });
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [language, setLanguage] = useState<SupportedLanguage>('en');
+  const [isReady, setIsReady] = useState(false);
   
   const colors = isDarkMode ? darkColors : lightColors;
 
   // Load saved orientation setting - MVP: Default to system behavior
   useEffect(() => {
     const loadSettings = async () => {
-      const savedOrientation = await settingsHelpers.getOrientationLock();
-      setIsOrientationLocked(savedOrientation);
-      await updateOrientation(savedOrientation);
+      try {
+        // Initialize dark mode from system
+        const systemColorScheme = Appearance.getColorScheme();
+        setIsDarkMode(systemColorScheme === 'dark');
+        
+        const savedOrientation = await settingsHelpers.getOrientationLock();
+        setIsOrientationLocked(savedOrientation);
+        await updateOrientation(savedOrientation);
+        
+        // Mark as ready after initial settings are loaded
+        setIsReady(true);
+      } catch (error) {
+        logger.error('Error loading settings:', error);
+        // Still mark as ready even if there's an error
+        setIsReady(true);
+      }
     };
     loadSettings();
   }, []);
@@ -167,6 +179,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       colors,
       language,
       setLanguage: handleSetLanguage,
+      isReady,
     }}>
       {children}
     </AppSettingsContext.Provider>
@@ -176,7 +189,27 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
 export const useAppSettings = () => {
   const context = useContext(AppSettingsContext);
   if (context === undefined) {
-    throw new Error('useAppSettings must be used within an AppSettingsProvider');
+    // Return a default context instead of throwing an error
+    return {
+      fontSize: 'medium' as FontSize,
+      setFontSize: () => {},
+      sizes: {
+        title: 24,
+        subtitle: 18,
+        body: 16,
+        caption: 14,
+        button: 16,
+        navigation: 16,
+      },
+      isOrientationLocked: false,
+      setOrientationLock: async () => {},
+      isDarkMode: false,
+      setDarkMode: async () => {},
+      colors: lightColors,
+      language: 'en' as SupportedLanguage,
+      setLanguage: () => {},
+      isReady: false,
+    };
   }
   return context;
 }; 

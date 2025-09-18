@@ -214,6 +214,7 @@ const styles = StyleSheet.create({
   appIcon: {
     width: 120,
     height: 120,
+    borderRadius: 27, // Rounded corners for the icon (120 * 0.225 for nice rounded appearance)
   },
   title: {
     fontSize: 24,

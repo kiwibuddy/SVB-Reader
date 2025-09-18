@@ -20,6 +20,7 @@ import { useAppSettings } from '@/context/AppSettingsContext';
 import { memo } from "react";
 import { getSegmentCompletionStatus } from "@/api/sqlite";
 import { ANIMATION } from '@/services/animation';
+import * as Haptics from 'expo-haptics';
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -118,6 +119,14 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       setShowCourtesyPopup(true);
     }
   }, [currentSession, showCourtesyPopup, showCourtesy]);
+
+  // Reset reading role when segment changes in individual mode
+  useEffect(() => {
+    if (!currentSession) {
+      // Reset reading role selection when navigating to a new story in individual mode
+      setSelectedReaderPosition(null);
+    }
+  }, [segID, currentSession]);
 
   const dismissCourtesy = useCallback(() => {
     courtesyDismissedRef.current = true;
@@ -345,23 +354,16 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   // Emoji handling is now done directly in the Block component
   const handleLongPress = useCallback((block: BibleBlock, index: number) => {
-    logger.info('🔍 [Segment] handleLongPress triggered:', { 
-      blockIndex: index, 
-      sourceName: block.source?.sourceName,
-      color: block.source?.color 
-    });
-    
     // The actual emoji picker logic is handled by EmojiHandler component
     // This function is called by the Block component when long press is detected
     // We can add any segment-level logic here if needed
     
-    // For debugging: Add haptic feedback to confirm the long press was detected
+    // Add haptic feedback to confirm the long press was detected
     if (Platform.OS === 'ios') {
       try {
-        const Haptics = require('expo-haptics');
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       } catch (error) {
-        logger.info('Haptics not available');
+        // Haptics not available - fail silently
       }
     }
   }, []);
@@ -591,7 +593,7 @@ const styles = StyleSheet.create({
         showsVerticalScrollIndicator={false}
         // Add gesture handling to prevent conflicts with long press
         onScrollBeginDrag={() => {
-          logger.info('🔍 [Segment] ScrollView drag started');
+          // ScrollView drag started - no logging needed in production
         }}
         // Disable scroll when long press is detected
         scrollEnabled={true}

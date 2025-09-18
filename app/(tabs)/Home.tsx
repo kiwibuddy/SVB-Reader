@@ -1,40 +1,33 @@
 import React, { useState, useEffect } from 'react';
 // Removed duplicate logger import - using the one from @/utils/logger
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
-  Image,
   ScrollView,
   StyleSheet,
   Pressable,
   FlatList,
-  ImageBackground,
-  useWindowDimensions,
+  Dimensions,
   Platform,
-  SafeAreaView,
   TouchableOpacity,
   RefreshControl,
   Alert
 } from "react-native";
 // import { BarCodeScanner } from 'expo-barcode-scanner';
-import Card from "@/components/Card";
 import ReadingPlansChallenges from "../../assets/data/ReadingPlansChallenges.json";
 import DailyStoryMap from '../../assets/data/DailyStoryMap.json';
 import { getDayOfYear } from 'date-fns';
-import StickyHeader from "../../components/StickyHeader";
 import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
-import { getCurrentSegmentId, getReadSegments, getActivePlanFromDB, getActiveChallengesFromDB } from "@/api/sqlite";
+import { getActivePlanFromDB, getActiveChallengesFromDB } from "@/api/sqlite";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { getEmojis, getCurrentStreak, getPlanProgress, getChallengeProgress, getSegmentCompletionStatus, getBestStreak, hasDailyCompletionToday, getContextualStreaks } from "@/api/sqlite";
-import { format, isToday, parseISO } from 'date-fns';
 import CustomHeader from "@/components/navigation/CustomHeader";
 import { useFontSize } from '@/context/FontSizeContext';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { type ColorScheme } from '@/context/types';
 import { useTranslation } from '@/hooks/useTranslation';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useGroupReading } from '@/context/GroupReadingContext';
 import { getFullBookName } from '@/utils/bookNameMapping';
 import { 
@@ -62,17 +55,12 @@ import Reanimated, {
   Easing,
 } from 'react-native-reanimated';
 import SegmentTitlesData from '../../assets/data/SegmentTitles.json';
-import NearbyGroupCard from '@/components/GroupReading/NearbyGroupCard';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BibleData from '@/assets/data/newBibleNLT1.json';
 import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
 import QRCodeScanner from '@/components/QRCodeScanner';
 
-import { SegmentType, BibleType } from '@/types';
-// import { BarCodeScanner } from 'expo-barcode-scanner';
-
-const SegmentTitles = require("@/assets/data/SegmentTitles.json") as { [key: string]: SegmentTitle };
-const Bible: any = BibleData;
+import SegmentTitles from '@/assets/data/SegmentTitles.json';
 
 type SegmentTitle = {
   Segment: string;
@@ -81,7 +69,6 @@ type SegmentTitle = {
   ref?: string;  // Making ref optional since not all segments have it
 }
 
-const segIDs = Object.keys(SegmentTitles);
 
 // Move styles outside component to avoid the reference error
 const createStyles = (isLargeScreen: boolean, colors: ColorScheme) => StyleSheet.create({
@@ -915,7 +902,7 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors, refr
 
   // Hide the entire section if today's reading is completed or segment doesn't exist
   if (!dailySegment || isDailyCompleted) return null;
-  const dailyBookName = dailySegment.book && dailySegment.book[0] ? (SegmentTitles[dailySegmentId]?.book[0] || '') : '';
+  const dailyBookName = dailySegment.book && dailySegment.book[0] ? ((SegmentTitles as any)[dailySegmentId]?.book[0] || '') : '';
   const bookNameMapping: { [key: string]: string } = {
     'Gen': 'Genesis', 'Exo': 'Exodus', 'Lev': 'Leviticus', 'Num': 'Numbers', 'Deu': 'Deuteronomy',
     'Jos': 'Joshua', 'Jdg': 'Judges', 'Rut': 'Ruth', '1Sa': '1 Samuel', '2Sa': '2 Samuel',
@@ -944,7 +931,7 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors, refr
           </Text>
           <Text style={styles.activeReadingSubtitle}>
             {dailyBookFullName}
-            {dailySegment.ref ? ` (${dailySegment.ref})` : ''}
+            {(dailySegment as any).ref ? ` (${(dailySegment as any).ref})` : ''}
           </Text>
         </View>
         <TouchableOpacity style={styles.continueButtonIcon} onPress={handleDailyStart}>
@@ -1254,7 +1241,7 @@ const ReadingInsightsCarousel = ({
   const router = useRouter();
   const { sizes } = useFontSize();
   const { colors } = styles;
-  const { isDarkMode } = useAppSettings();
+  const { isDarkMode } = useSyncAppSettings();
   const { t } = useTranslation();
   
   // Helper function to get segment reference
@@ -2105,21 +2092,18 @@ const ReadingInsightsCarousel = ({
 };
 
 const Home = () => {
-  const { colors, isDarkMode } = useAppSettings();
-  const { state, refreshAllData, refreshProgressData, refreshStatistics } = useSQLiteGlobalContext();
+  const { colors, isDarkMode } = useSyncAppSettings();
+  const { state, refreshProgressData, refreshStatistics } = useSQLiteGlobalContext();
   const [refreshing, setRefreshing] = useState(false);
-  const [insightsInitialized, setInsightsInitialized] = useState(false);
 
   // Initialize insights system
   useEffect(() => {
     const initInsights = async () => {
       try {
         await initializeInsights();
-        setInsightsInitialized(true);
       } catch (error) {
         logger.error('Failed to initialize insights:', error);
         // Continue without insights rather than crashing
-        setInsightsInitialized(true);
       }
     };
     
@@ -2148,11 +2132,22 @@ const Home = () => {
   } = useSQLiteGlobalContext();
   // Removed activePlan, activeChallenges dependencies - now using pure SQLite data loading
   const router = useRouter();
-  const { width, height } = useWindowDimensions();
-  const isLandscape = width > height;
+  
+  // Option 2: Memoize with useEffect
+  const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
+  
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setScreenWidth(window.width);
+    });
+    
+    return () => subscription?.remove();
+  }, []);
+  
+  const isLargeScreen = screenWidth >= 768;
   const { sizes } = useFontSize();
   const { t } = useTranslation();
-  const styles = createStyles(width >= 768, colors);
+  const styles = createStyles(isLargeScreen, colors);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
   const [isTodayComplete, setIsTodayComplete] = useState(false);
@@ -2528,7 +2523,7 @@ const Home = () => {
     if (segmentData && segmentToRead) {
       setSelectedSegmentId(segmentToRead);
       setSelectedSegmentTitle(segmentData.title);
-      setSelectedSegmentRef(segmentData.ref || '');
+      setSelectedSegmentRef((segmentData as any).ref || '');
       setShowReadingModeModal(true);
     }
   };
@@ -2540,7 +2535,7 @@ const Home = () => {
       if (segment) {
         setSelectedSegmentId(state.lastReadSegment);
         setSelectedSegmentTitle(segment.title);
-        setSelectedSegmentRef(segment.ref || '');
+        setSelectedSegmentRef((segment as any).ref || '');
         setShowReadingModeModal(true);
       }
     }
@@ -2553,7 +2548,7 @@ const Home = () => {
     if (segmentData) {
       setSelectedSegmentId(planProgress.nextSegmentId);
       setSelectedSegmentTitle(segmentData.title);
-      setSelectedSegmentRef(segmentData.ref || '');
+      setSelectedSegmentRef((segmentData as any).ref || '');
       setShowReadingModeModal(true);
     } else {
       // If no next segment, go to the plan page
@@ -2573,7 +2568,7 @@ const Home = () => {
     if (segmentData) {
       setSelectedSegmentId(challengeProgress.nextSegmentId);
       setSelectedSegmentTitle(segmentData.title);
-      setSelectedSegmentRef(segmentData.ref || '');
+      setSelectedSegmentRef((segmentData as any).ref || '');
       setShowReadingModeModal(true);
     }
   };
@@ -2873,7 +2868,7 @@ const Home = () => {
         // For story segments, show the reading mode modal
         setSelectedSegmentId(segmentId);
         setSelectedSegmentTitle(segmentData.title);
-        setSelectedSegmentRef(segmentData.ref || '');
+        setSelectedSegmentRef((segmentData as any).ref || '');
         setShowReadingModeModal(true);
       }
     }
@@ -3002,6 +2997,7 @@ const Home = () => {
             MVP Version: Context-Aware Navigation & Progress Tracking Fixed - Launch Ready
           </Text> */}
         </View>
+
 
         <View style={styles.getStartedSection}>
           <Text style={styles.sectionTitle}>Get Started</Text>

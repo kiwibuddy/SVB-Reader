@@ -15,10 +15,10 @@ import { useGroupReading } from '@/context/GroupReadingContext';
 import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
 import { Role } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 
 export default function RoleSelectionScreen() {
-  const { colors } = useAppSettings();
+  const { colors } = useSyncAppSettings();
   const router = useRouter();
   const { joinSessionFromQR } = useGroupReading();
   

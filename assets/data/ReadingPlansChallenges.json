@@ -1044,6 +1044,32 @@
           ]
         }
       }
+    },
+    {
+      "id": "godsStory7Day",
+      "title": "God's Story: The Good News",
+      "description": "7 Stories - 1 Week",
+      "image": "island",
+      "longDescription": "Experience the complete Gospel story in just one week! From creation to the new creation, journey through the seven pivotal moments that reveal God's redemptive plan for humanity. This chronological journey takes you from Genesis to Revelation, showing how every part of Scripture points to Jesus Christ and His ultimate victory.",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "godsStory7DayChronological",
+      "segments": {
+        "Gen": {
+          "segments": ["S001", "S002", "S006"]
+        },
+        "Exo": {
+          "segments": ["S025"]
+        },
+        "Joh": {
+          "segments": ["S298"]
+        },
+        "Luk": {
+          "segments": ["S297"]
+        },
+        "Rev": {
+          "segments": ["S365"]
+        }
+      }
     }
   ]
 } 

@@ -9,10 +9,38 @@ interface BibleLeafProps {
   isIndented: boolean;
   textColor: string
   leafIndex: string
+  bubbleColor?: string
+  renderAsTextContent?: boolean
 }
 
-const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textColor, leafIndex }) => {
+const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textColor, leafIndex, bubbleColor = 'black', renderAsTextContent = false }) => {
   const { isDarkMode } = useAppSettings();
+  
+  // Function to get lighter border color based on bubble color
+  const getBorderColor = (color: string) => {
+    switch (color) {
+      case 'red':
+        return 'rgba(255, 0, 0, 0.2)';
+      case 'green':
+        return 'rgba(0, 255, 0, 0.2)';
+      case 'blue':
+        return 'rgba(0, 0, 255, 0.2)';
+      case 'black':
+      default:
+        return 'rgba(128, 128, 128, 0.2)';
+    }
+  };
+
+  // Function to get dynamic cell padding based on column count
+  const getDynamicCellPadding = (columnCount: number) => {
+    if (columnCount <= 2) {
+      return { paddingHorizontal: 16 };
+    } else if (columnCount === 3) {
+      return { paddingHorizontal: 8 };
+    } else {
+      return { paddingHorizontal: 4 };
+    }
+  };
   if (!leaf || typeof leaf !== 'object') {
     logger.warn(`Invalid leaf at index ${leafIndex}:`, leaf);
     return null;
@@ -21,9 +49,112 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
   const { note, text, tag, embeddedDoc, SVitalics, children } = leaf;
   
   // Handle table elements that don't have text but have children
-  if (tag && Array.isArray(tag) && tag.some(t => ['tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(t))) {
+  const isTableTag = tag && (
+    (Array.isArray(tag) && tag.some(t => ['tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(t))) ||
+    (typeof tag === 'string' && ['tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(tag))
+  );
+  
+  if (isTableTag) {
     // For table elements, render children if they exist
     if (children && Array.isArray(children)) {
+      const isTableRow = (Array.isArray(tag) && tag.includes('tr')) || (typeof tag === 'string' && tag === 'tr');
+      const isTableHeader = (Array.isArray(tag) && tag.some(t => ['th', 'th1', 'th2', 'th3'].includes(t))) || 
+                           (typeof tag === 'string' && ['th', 'th1', 'th2', 'th3'].includes(tag));
+      const isTableCell = (Array.isArray(tag) && tag.some(t => ['tc', 'tc1', 'tc2', 'tc3'].includes(t))) || 
+                         (typeof tag === 'string' && ['tc', 'tc1', 'tc2', 'tc3'].includes(tag));
+      
+      if (isTableRow) {
+        // Count columns for dynamic spacing
+        const columnCount = children.length;
+        const dynamicPadding = getDynamicCellPadding(columnCount);
+        
+        return (
+          <View style={styles.tableRow}>
+            {children.map((child, index) => {
+              const isHeader = child.tag && (
+                (Array.isArray(child.tag) && child.tag.some(t => ['th', 'th1', 'th2', 'th3'].includes(t))) ||
+                (typeof child.tag === 'string' && ['th', 'th1', 'th2', 'th3'].includes(child.tag))
+              );
+              const isCell = child.tag && (
+                (Array.isArray(child.tag) && child.tag.some(t => ['tc', 'tc1', 'tc2', 'tc3'].includes(t))) ||
+                (typeof child.tag === 'string' && ['tc', 'tc1', 'tc2', 'tc3'].includes(child.tag))
+              );
+              
+              
+              return (
+                <View key={`${leafIndex}-cell-${index}`} style={[
+                  styles.tableCell,
+                  isHeader && styles.tableHeaderCell,
+                  { borderBottomColor: getBorderColor(bubbleColor) },
+                  dynamicPadding
+                ]}>
+                  <Text style={[
+                    styles.tableCellText,
+                    { color: textColor },
+                    isHeader && styles.tableHeaderText
+                  ]}>
+                    {child.children?.map((textChild: any, textIndex: number) => {
+                      // Check if this text child is a verse number
+                      const isVerseRef = textChild.tag && Array.isArray(textChild.tag) && textChild.tag.some((t: string) => t.indexOf("v") !== -1);
+                      
+                      if (isVerseRef) {
+                        return (
+                          <View
+                            key={`text-${textIndex}`}
+                            style={{
+                              position: 'relative',
+                              top: -6,
+                            }}
+                          >
+                            <Text
+                              style={{
+                                color: textColor,
+                                fontSize: 10,
+                                lineHeight: 20,
+                              }}
+                            >
+                              {textChild.text}
+                              {"\u00A0"}
+                            </Text>
+                          </View>
+                        );
+                      }
+                      
+                      return textChild.text;
+                    })}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        );
+      }
+      
+      if (isTableCell || isTableHeader) {
+        // Use default padding for individual cells (will be overridden by row-level styling)
+        const defaultPadding = getDynamicCellPadding(3); // Default to 3-column spacing
+        
+        return (
+          <View style={[
+            styles.tableCell,
+            isTableHeader && styles.tableHeaderCell,
+            { borderBottomColor: getBorderColor(bubbleColor) },
+            defaultPadding
+          ]}>
+            {children.map((child, index) => (
+              <BibleLeafComponent
+                key={`${leafIndex}-child-${index}`}
+                leaf={child}
+                leafIndex={`${leafIndex}-child-${index}`}
+                isIndented={false}
+                textColor={textColor}
+                bubbleColor={bubbleColor}
+              />
+            ))}
+          </View>
+        );
+      }
+      
       return (
         <View style={styles.tableElement}>
           {children.map((child, index) => (
@@ -33,6 +164,7 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
               leafIndex={`${leafIndex}-child-${index}`}
               isIndented={false}
               textColor={textColor}
+              bubbleColor={bubbleColor}
             />
           ))}
         </View>
@@ -54,25 +186,55 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
   const textSplit = text.split(" ");
   const isVerseRef = tag && Array.isArray(tag) && tag.some(t => t.indexOf("v") !== -1);
   const isChapterRef = tag && Array.isArray(tag) && tag.some(t => t.indexOf("c") !== -1);
-  const tagStyle = tag && Array.isArray(tag) ? tag.reduce((acc, t) => ({ ...acc, ...styles[t as keyof typeof styles] }), {}) : {};
+  const tagStyle = tag && Array.isArray(tag) ? tag.reduce((acc, t) => {
+    const style = styles[t as keyof typeof styles] || {};
+    // Remove lineHeight from tag styles to prevent inconsistent spacing
+    const { lineHeight, ...styleWithoutLineHeight } = style as any;
+    return { ...acc, ...styleWithoutLineHeight };
+  }, {}) : {};
   const embeddedDocStyle = !!embeddedDoc || {};
   const SVitalicsStyle = !!SVitalics || {};
 
   if (isVerseRef) {
+    if (renderAsTextContent) {
+      // Return raw text with superscript styling for inline flow
+      const superscriptMap: {[key: string]: string} = {
+        '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', 
+        '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+        '-': '⁻', // Add superscript hyphen/minus
+        ',': '︐', // Add superscript comma (if needed)
+        '.': '․'  // Add superscript period (if needed)
+      };
+      
+      const superscriptText = text.split('').map(char => superscriptMap[char] || char).join('');
+      
+      return (isIndented ? "     " : "") + superscriptText + "\u00A0";
+    }
     return (
-      <Text
+      <View
         style={{
-          ...{
-            color: textColor,
-            fontSize: 12,
-          },
+          position: 'relative',
+          top: -6,
         }}
       >
-        {isIndented ? "     " : ""}
-        {text}
-        {"\u00A0"}
-      </Text>
+        <Text
+          style={{
+            color: textColor,
+            fontSize: 10,
+            lineHeight: 20,
+          }}
+        >
+          {isIndented ? "     " : ""}
+          {text}
+          {"\u00A0"}
+        </Text>
+      </View>
     );
+  }
+
+  if (renderAsTextContent) {
+    // Return raw text content for inline rendering
+    return (isIndented ? "     " : "") + text;
   }
 
   return (
@@ -96,102 +258,31 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
 export default BibleLeafComponent;
 
 const styles = StyleSheet.create({
-  // embeddedDoc: {
-  //   fontFamily: "Kalam",
-  // },
-  // partial: {
-  //   backgroundColor: "lightgrey",
-  // },
-  // SVitalics: {
-  //   fontStyle: "italic",
-  // },
-  // c: {
-  //   textAlign: "center",
-  //   fontWeight: "bold",
-  //   fontSize: 20, // 1.3em is approximately 18px
-  // },
-  // cl: {
-  //   textAlign: "center",
-  //   fontWeight: "bold",
-  // },
-  // cd: {
-  //   marginLeft: 16, // 1em is approximately 16px
-  //   marginRight: 16,
-  //   fontStyle: "italic",
-  // },
-  // v: {
-  //   color: "inherit",
-  //   fontSize: 16, // Smaller font size for superscript
-  //   verticalAlign: "top",
-  //   lineHeight: 36, // Adjust line height for better spacing
-  // },
   nd: {
     fontVariant: ["small-caps"],
   },
-  // x: {
-  //   fontSize: 16,
-  //   position: "relative",
-  //   paddingHorizontal: 8, // 0.4em is approximately 8px
-  //   marginHorizontal: 2, // 0.1em is approximately 2px
-  //   textAlign: "left",
-  //   borderRadius: 4,
-  //   borderColor: "#dcdcdc",
-  //   borderWidth: 1,
-  // },
-  // xo: {
-  //   fontWeight: "bold",
-  // },
-  // xk: {
-  //   fontStyle: "italic",
-  // },
-  // xq: {
-  //   fontStyle: "italic",
-  // },
-  // notelink: {
-  //   textDecorationLine: "underline",
-  //   padding: 2, // 0.1em is approximately 2px
-  //   color: "#6a6a6a",
-  // },
-  // notelinkSup: {
-  //   fontSize: 10, // 0.7em is approximately 10px
-  //   letterSpacing: -0.03,
-  //   lineHeight: 0,
-  //   fontFamily: "sans-serif",
-  //   fontWeight: "bold",
-  // },
-  // f: {
-  //   fontSize: 16,
-  //   paddingHorizontal: 8, // 0.4em is approximately 8px
-  //   marginHorizontal: 2, // 0.1em is approximately 2px
-  //   textAlign: "left",
-  //   borderRadius: 4,
-  //   borderColor: "#dcdcdc",
-  //   borderWidth: 1,
-  // },
-  // fr: {
-  //   fontWeight: "bold",
-  // },
-  // fk: {
-  //   fontStyle: "italic",
-  //   fontVariant: ["small-caps"],
-  // },
-  // fq: {
-  //   fontStyle: "italic",
-  // },
-  // fl: {
-  //   fontStyle: "italic",
-  //   fontWeight: "bold",
-  // },
-  // fv: {
-  //   color: "#515151",
-  //   fontSize: 12, // 0.75em is approximately 12px
-  //   letterSpacing: -0.03,
-  //   lineHeight: 0,
-  //   fontFamily: "sans-serif",
-  //   fontWeight: "bold",
-  // },
   tableElement: {
+    // Base style for table elements
+  },
+  tableRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    minHeight: 40,
+  },
+  tableCell: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+  },
+  tableHeaderCell: {
+    // No background color for header cells
+  },
+  tableCellText: {
+    fontSize: 20,
+    lineHeight: 36,
+  },
+  tableHeaderText: {
+    fontWeight: '700',
   },
 });

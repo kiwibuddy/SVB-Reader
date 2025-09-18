@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  useWindowDimensions,
+  Dimensions,
   Alert,
   Keyboard,
   TouchableWithoutFeedback,
@@ -27,7 +27,7 @@ import { parseReference } from '@/utils/parseReference';
 import { findSegmentId } from '@/utils/referenceMapping';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import SearchResults from '@/components/navigation/SearchResults';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { getSegmentCompletionStatus } from "@/api/sqlite";
 import { databaseManager } from "@/api/database-manager";
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
@@ -482,7 +482,7 @@ const createStyles = (isLargeScreen: boolean, colors: any) => StyleSheet.create(
     zIndex: -1,
   },
 
-  // Modal styles (matching Reading-emoji.tsx design)
+  // Modal styles (matching Reading-emoji design)
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -612,6 +612,8 @@ const MemoizedAccordion = React.memo(({
   );
 });
 
+MemoizedAccordion.displayName = 'MemoizedAccordion';
+
 const Navigation = () => {
   const { state, updateSegmentId } = useSQLiteGlobalContext();
   // Removed completedSegments dependency - now using pure SQLite data loading
@@ -638,9 +640,20 @@ const Navigation = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { expandedBook, completedSegment, timestamp } = params;
-  const { width } = useWindowDimensions();
-  const isLargeScreen = width >= 768;
-  const { colors } = useAppSettings();
+  
+  // Option 2: Memoize with useEffect
+  const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
+  
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setScreenWidth(window.width);
+    });
+    
+    return () => subscription?.remove();
+  }, []);
+  
+  const isLargeScreen = screenWidth >= 768;
+  const { colors } = useSyncAppSettings();
   const { currentSession, stopSession } = useGroupReading();
   const styles = createStyles(isLargeScreen, colors);
 

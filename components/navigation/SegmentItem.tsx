@@ -171,6 +171,8 @@ const SegmentItem: React.FC<SegmentItemProps> = React.memo(({
   );
 });
 
+SegmentItem.displayName = 'SegmentItem';
+
 export default SegmentItem;
 
 // Inline lightweight badge that shows if a segment has any group completions

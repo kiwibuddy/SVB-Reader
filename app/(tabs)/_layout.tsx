@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Tabs } from "expo-router";
 import { View } from "react-native";
-import { useAppSettings } from "@/context/AppSettingsContext";
+import { useSyncAppSettings } from "@/context/SyncAppSettingsContext";
 import { MaterialIcons } from '@expo/vector-icons';
 
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
@@ -11,7 +11,7 @@ import BottomNavigation from '@/components/navigation/BottomNavigation';
 
 
 export default function TabLayout() {
-  const { isDarkMode, colors } = useAppSettings();
+  const { isDarkMode, colors } = useSyncAppSettings();
 
 
 

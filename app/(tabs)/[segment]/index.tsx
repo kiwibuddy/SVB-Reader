@@ -1,7 +1,7 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import logger from '@/utils/logger';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar, useWindowDimensions } from 'react-native';
+import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar, Dimensions } from 'react-native';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import BibleData from "@/assets/data/newBibleNLT1.json"
 import readingPlansData from "@/assets/data/ReadingPlansChallenges.json";
@@ -16,7 +16,7 @@ import Questions from '@/components/Questions';
 import CheckCircle from '@/components/CheckCircle';
 import { useGroupReading } from '@/context/GroupReadingContext';
 import StickyHeader from '@/components/StickyHeader';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { startReadingSession, updateReadingSession } from '@/api/sqlite';
 import { isLargeScreen, isLandscape, responsivePadding, spacing } from '@/constants/sizes';
 
@@ -180,14 +180,29 @@ const createStyles = (colors: any, isLargeScreen: boolean, isLandscape: boolean)
 export default function BibleScreen() {
   const { currentSession } = useGroupReading();
   const inGroupReading = !!currentSession && currentSession.status === 'reading';
-  const { colors } = useAppSettings();
+  const { colors } = useSyncAppSettings();
   const { updateSegmentId, state } = useSQLiteGlobalContext();
   const router = useRouter();
   const params = useLocalSearchParams();
   const { planId, challengeId, verse, chapter } = params;
   const flatListRef = useRef<ScrollView>(null);
   const { isVisible } = useBottomNavAnimation();
-  const { width, height } = useWindowDimensions();
+  
+  // Option 2: Memoize with useEffect
+  const [screenDimensions, setScreenDimensions] = useState(() => {
+    const { width, height } = Dimensions.get('window');
+    return { width, height };
+  });
+  
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setScreenDimensions({ width: window.width, height: window.height });
+    });
+    
+    return () => subscription?.remove();
+  }, []);
+  
+  const { width, height } = screenDimensions;
   const isLandscapeMode = width > height;
 
 

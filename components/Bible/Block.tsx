@@ -34,6 +34,8 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
   const { source, children } = block;
   const { color = 'black', sourceName = 'Unknown' } = source || {};
 
+
+
   const shouldGlow = toRead || isGlowing;
 
   if (shouldGlow) {
@@ -138,16 +140,18 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
               )}
               <View>
                 {children.map((item: any, index: number) => {
-                  if (item.type === "break") return null;
-                  return (
-                    <BibleInlineComponent
-                      key={`${bIndex}-${index}`}
-                      iIndex={`${bIndex}-${index}`}
-                      inline={item}
-                      textColor={getBubbleTextColorSafe(color, isDarkMode)}
-                    />
-                  );
-                })}
+                    if (item.type === "break") return null;
+                    
+                    return (
+                      <BibleInlineComponent
+                        key={`${bIndex}-${index}`}
+                        iIndex={`${bIndex}-${index}`}
+                        inline={item}
+                        textColor={getBubbleTextColorSafe(color, isDarkMode)}
+                        bubbleColor={color}
+                      />
+                    );
+                  })}
               </View>
             </View>
           </TouchableOpacity>
@@ -189,16 +193,18 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
           )}
           <View>
             {children.map((item: any, index: number) => {
-              if (item.type === "break") return null;
-              return (
-                <BibleInlineComponent
-                  key={`${bIndex}-${index}`}
-                  iIndex={`${bIndex}-${index}`}
-                  inline={item}
-                  textColor={getBubbleTextColorSafe(color, isDarkMode)}
-                />
-              );
-            })}
+                if (item.type === "break") return null;
+                
+                return (
+                  <BibleInlineComponent
+                    key={`${bIndex}-${index}`}
+                    iIndex={`${bIndex}-${index}`}
+                    inline={item}
+                    textColor={getBubbleTextColorSafe(color, isDarkMode)}
+                    bubbleColor={color}
+                  />
+                );
+              })}
           </View>
         </View>
       </EmojiHandler>
@@ -214,5 +220,7 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = memo(({
     prevProps.onLongPress === nextProps.onLongPress
   );
 });
+
+BibleBlockComponent.displayName = 'BibleBlockComponent';
 
 export default BibleBlockComponent;

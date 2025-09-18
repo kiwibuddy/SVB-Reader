@@ -10,52 +10,32 @@ import {
   TouchableOpacity,
   Alert,
   SafeAreaView,
-  useWindowDimensions,
+  Dimensions,
   Platform,
   Animated,
   Modal,
-  TextInput,
   ScrollView,
 } from "react-native"
 import { useRouter } from "expo-router"
 import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext"
-import { useAppSettings } from "@/context/AppSettingsContext"
+import { useSyncAppSettings } from "@/context/SyncAppSettingsContext"
 import { useTranslation } from "@/hooks/useTranslation"
 import { getEmojis, deleteEmoji } from "@/api/sqlite"
 import BibleBlockComponent from "@/components/Bible/Block"
 import type { BibleBlock } from "@/types"
+import type { EmojiReaction } from "@/types/index"
+import { createStyles } from "@/components/reading-emoji/styles"
+import type { SegmentTitle, ActiveFilters, ModalPosition, SourceColorDisplay, SpeakerType } from "@/components/reading-emoji/types"
 import { Ionicons } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
 import { BlurView } from "expo-blur"
 
 
-const SegmentTitles = require("@/assets/data/SegmentTitles.json")
-const Books = require("@/assets/data/BookChapterList.json")
+import SegmentTitles from '@/assets/data/SegmentTitles.json';
+import Books from '@/assets/data/BookChapterList.json';
 
-// Define EmojiReaction interface locally until it's properly exported from types
-interface EmojiReaction {
-  id: number
-  segmentID: string
-  blockID: string
-  blockData: BibleBlock
-  emoji: string
-  note: string
-}
 
-// Add this near the top of the file with other interfaces
-interface EmojiDescription {
-  title: string
-  count: string
-  description: string[]
-}
 
-// Add the type definition (can be near the top with other interfaces)
-type SegmentTitle = {
-  Segment: string
-  title: string
-  book: string[]
-  ref?: string // Making ref optional since not all segments have it
-}
 
 const EMOJI_TYPES = [
   { emoji: "❤️", label: "love", color: "#FF6B47", icon: "heart", backgroundColor: "#FF6B47" },
@@ -76,591 +56,6 @@ const getSegmentReference = (segmentID: string) => {
   return `${segment.book[0]}${segment.ref ? " " + segment.ref : ""}`
 }
 
-const createStyles = (isLargeScreen: boolean, colors: any) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    content: {
-      flex: 1,
-      padding: 16,
-    },
-    welcomeSection: {
-      marginBottom: 20,
-    },
-    welcomeTitleRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      marginBottom: 16,
-    },
-    welcomeTitleContainer: {
-      flex: 1,
-    },
-    welcomeTitle: {
-      fontSize: 24,
-      fontWeight: "600",
-      color: colors.text,
-      marginBottom: 8,
-    },
-    welcomeText: {
-      fontSize: 16,
-      color: colors.secondary,
-      lineHeight: 22,
-    },
-    searchButton: {
-      padding: 8,
-      borderRadius: 8,
-      backgroundColor: colors.card,
-    },
-    searchContainer: {
-      marginTop: 12,
-      marginBottom: 4,
-      position: "relative",
-    },
-    searchInput: {
-      backgroundColor: colors.card,
-      borderRadius: 12,
-      padding: 16,
-      fontSize: 16,
-      color: colors.text,
-      paddingRight: 50,
-    },
-    clearSearchButton: {
-      position: "absolute",
-      right: 16,
-      top: 16,
-      padding: 4,
-    },
-    header: {
-      padding: 16,
-      paddingBottom: 20,
-    },
-    title: {
-      fontSize: 24,
-      fontWeight: "800",
-      color: colors.text,
-      marginBottom: 10,
-      letterSpacing: -0.5,
-    },
-    gridContainer: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 12,
-      marginBottom: 20,
-      marginTop: 4,
-      justifyContent: "space-between",
-    },
-    emojiCard: {
-      width: isLargeScreen ? "23%" : "48%",
-      height: 140,
-      padding: 16,
-      marginBottom: 0,
-      borderRadius: 16,
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
-      shadowOpacity: 0.15,
-      shadowRadius: 8,
-      elevation: 4,
-      transform: [{ scale: 1 }],
-      borderWidth: 1,
-      borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
-      overflow: "hidden",
-    },
-    selectedCard: {
-      transform: [{ scale: 1.03 }],
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 5,
-      },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 8,
-      borderWidth: 2,
-      borderColor: "rgba(255,255,255,0.3)",
-    },
-    unselectedCard: {
-      opacity: 0.7,
-      transform: [{ scale: 0.98 }],
-      shadowOpacity: 0.1,
-    },
-    emojiWrapper: {
-      width: 48,
-      height: 48,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: 12,
-      borderRadius: 24,
-      // Removed grey background to match modern design
-    },
-    emojiText: {
-      fontSize: 32,
-    },
-    emojiInfoContainer: {
-      alignItems: "center",
-    },
-    emojiLabel: {
-      fontSize: 16,
-      color: "white",
-      fontWeight: "bold",
-      letterSpacing: 0.3,
-      textAlign: "center",
-      marginBottom: 6,
-      textShadowColor: 'rgba(0, 0, 0, 0.3)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 2,
-    },
-    emojiCount: {
-      fontSize: 12,
-      color: "rgba(255, 255, 255, 0.9)",
-      textAlign: "center",
-      fontWeight: '500',
-      textShadowColor: 'rgba(0, 0, 0, 0.3)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 2,
-    },
-    // New styles for expandable content matching Reading Plans
-    emojiDetailContainer: {
-      marginVertical: 16,
-      borderRadius: 16,
-      shadowColor: colors.text,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
-      shadowOpacity: 0.08,
-      shadowRadius: 8,
-      elevation: 4,
-      borderWidth: 1,
-      borderColor: Platform.OS === "ios" ? "rgba(0,0,0,0.05)" : "transparent",
-      overflow: "hidden",
-    },
-    emojiDetailHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: 0,
-      paddingHorizontal: 20,
-      paddingVertical: 16,
-      backgroundColor: colors.card,
-    },
-    emojiDetailIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      alignItems: "center",
-      justifyContent: "center",
-      marginRight: 12,
-    },
-    emojiDetailTitle: {
-      fontSize: 20,
-      fontWeight: "700",
-      color: colors.text,
-      letterSpacing: -0.3,
-      flex: 1,
-    },
-    emojiDetailCount: {
-      fontSize: 16,
-      color: colors.secondary,
-      marginBottom: 16,
-      fontWeight: "500",
-    },
-
-    emojiDetailContent: {
-      paddingHorizontal: 20,
-      paddingBottom: 20,
-      backgroundColor: colors.card,
-    },
-    emojiDetailIntro: {
-      color: colors.text,
-      fontSize: 16,
-      lineHeight: 24,
-      marginBottom: 20,
-      textAlign: 'center',
-    },
-    expandButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: 16,
-      paddingHorizontal: 20,
-      borderTopWidth: 1,
-      backgroundColor: colors.card,
-    },
-    expandButtonText: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: colors.text,
-    },
-    expandIcon: {
-      color: colors.secondary,
-    },
-    stepsContainer: {
-      marginTop: 16,
-    },
-    stepRow: {
-      flexDirection: "row",
-      alignItems: "flex-start",
-      marginBottom: 16,
-    },
-    stepNumber: {
-      width: 28,
-      height: 28,
-      borderRadius: 14,
-      alignItems: "center",
-      justifyContent: "center",
-      marginRight: 12,
-      marginTop: 2,
-    },
-    stepNumberText: {
-      color: "white",
-      fontWeight: "700",
-      fontSize: 14,
-    },
-    stepContent: {
-      flex: 1,
-    },
-    stepTitle: {
-      color: colors.text,
-      fontWeight: "700",
-      fontSize: 16,
-      marginBottom: 6,
-    },
-    stepDescription: {
-      color: colors.secondary,
-      fontSize: 15,
-      lineHeight: 22,
-    },
-    conclusionContainer: {
-      marginTop: 20,
-      backgroundColor: colors.background,
-      borderRadius: 12,
-      padding: 16,
-    },
-    conclusionTitle: {
-      color: colors.text,
-      fontWeight: "700",
-      fontSize: 16,
-      marginBottom: 8,
-    },
-    conclusionText: {
-      color: colors.secondary,
-      fontSize: 15,
-      lineHeight: 22,
-    },
-    backButton: {
-      position: "absolute",
-      top: 16,
-      right: 16,
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      backgroundColor: "rgba(0,0,0,0.2)",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 10,
-    },
-    // Add back missing styles that are still used
-    reactionsContainer: {
-      paddingHorizontal: 4,
-    },
-    reactionItemContainer: {
-      marginBottom: 8,
-    },
-    speechBubbleContainer: {
-      position: "relative",
-      zIndex: 1,
-      marginBottom: 2,
-    },
-    reactionEmoji: {
-      position: "absolute",
-      fontSize: 30,
-      padding: 5,
-      zIndex: 100,
-      elevation: 3,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 2,
-    },
-    referenceText: {
-      fontSize: 12,
-      color: colors.secondary,
-      textAlign: "right",
-      marginTop: 1,
-      paddingRight: 16,
-      paddingBottom: 2,
-      fontWeight: "500",
-    },
-    contentContainer: {
-      paddingBottom: 16,
-    },
-    emptyStateContainer: {
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: 48,
-      paddingHorizontal: 32,
-      marginTop: 20,
-      opacity: 0.7,
-    },
-    emptyStateText: {
-      fontSize: 16,
-      color: colors.secondary,
-      textAlign: "center",
-      marginTop: 16,
-    },
-    longPressHint: {
-      fontSize: 12,
-      color: colors.secondary,
-      textAlign: "center",
-      marginTop: 8,
-      marginBottom: 4,
-      paddingHorizontal: 16,
-      fontStyle: "italic",
-      opacity: 0.7,
-    },
-
-    // Jump to passage modal styles
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    modalContainer: {
-      backgroundColor: colors.card,
-      borderRadius: 20,
-      padding: 24,
-      marginHorizontal: 32,
-      maxWidth: 400,
-      width: '100%',
-      shadowColor: '#000',
-      shadowOffset: {
-        width: 0,
-        height: 10,
-      },
-      shadowOpacity: 0.3,
-      shadowRadius: 20,
-      elevation: 10,
-    },
-    modalTitle: {
-      fontSize: 20,
-      fontWeight: '700',
-      color: colors.text,
-      textAlign: 'center',
-      marginBottom: 8,
-    },
-    modalSubtitle: {
-      fontSize: 16,
-      color: colors.secondary,
-      textAlign: 'center',
-      marginBottom: 24,
-      lineHeight: 22,
-    },
-    modalButtonContainer: {
-      flexDirection: 'row',
-      gap: 12,
-    },
-    modalButton: {
-      flex: 1,
-      paddingVertical: 14,
-      paddingHorizontal: 20,
-      borderRadius: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    modalButtonPrimary: {
-      backgroundColor: '#007AFF',
-    },
-    modalButtonSecondary: {
-      backgroundColor: colors.border,
-    },
-    modalButtonDanger: {
-      backgroundColor: '#FF3B30',
-    },
-    modalButtonText: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: 'white',
-    },
-    modalButtonTextSecondary: {
-      color: colors.text,
-    },
-    // Filter interface styles
-    filterHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 8,
-      marginTop: 4,
-      paddingHorizontal: 4,
-    },
-    filterHeaderLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    filterHeaderText: {
-      fontSize: 20,
-      fontWeight: '700',
-      color: colors.text,
-      letterSpacing: -0.3,
-      marginRight: 8,
-    },
-    activeFilterBadge: {
-      backgroundColor: '#007AFF',
-      borderRadius: 10,
-      paddingHorizontal: 8,
-      paddingVertical: 2,
-      minWidth: 20,
-      alignItems: 'center',
-    },
-    activeFilterText: {
-      color: 'white',
-      fontSize: 12,
-      fontWeight: '600',
-    },
-    filterButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      borderRadius: 8,
-      backgroundColor: colors.card,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    filterButtonActive: {
-      backgroundColor: '#E3F2FD',
-      borderColor: '#007AFF',
-    },
-    filterButtonText: {
-      fontSize: 14,
-      fontWeight: '500',
-      color: colors.text,
-      marginLeft: 4,
-    },
-    filterButtonTextActive: {
-      color: '#007AFF',
-    },
-    // Filter panel styles
-    filterPanel: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      zIndex: 1000,
-    },
-    filterPanelContent: {
-      backgroundColor: colors.background,
-      flex: 1,
-      paddingTop: 60, // Account for status bar
-      paddingHorizontal: 20,
-      paddingBottom: 40,
-    },
-    filterPanelHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 20,
-      paddingBottom: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    filterPanelTitle: {
-      fontSize: 20,
-      fontWeight: '700',
-      color: colors.text,
-    },
-    filterPanelHeaderButtons: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    closeFilterButton: {
-      marginLeft: 10,
-    },
-    clearAllButton: {
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 6,
-      backgroundColor: colors.card,
-    },
-    clearAllText: {
-      fontSize: 14,
-      color: colors.text,
-      fontWeight: '500',
-    },
-    filterSection: {
-      marginBottom: 24,
-    },
-    filterSectionTitle: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: colors.text,
-      marginBottom: 12,
-    },
-    filterOption: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 8,
-      paddingHorizontal: 4,
-    },
-    filterCheckbox: {
-      width: 20,
-      height: 20,
-      borderRadius: 4,
-      borderWidth: 2,
-      borderColor: colors.border,
-      marginRight: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    filterCheckboxActive: {
-      backgroundColor: '#007AFF',
-      borderColor: '#007AFF',
-    },
-    filterOptionText: {
-      fontSize: 16,
-      color: colors.text,
-      flex: 1,
-    },
-    sourceColorOption: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flex: 1,
-    },
-    sourceColorDot: {
-      width: 12,
-      height: 12,
-      borderRadius: 6,
-      marginRight: 8,
-    },
-    applyButton: {
-      backgroundColor: '#007AFF',
-      paddingVertical: 16,
-      paddingHorizontal: 24,
-      borderRadius: 12,
-      alignItems: 'center',
-      marginTop: 20,
-      marginBottom: 20,
-    },
-    applyButtonText: {
-      color: 'white',
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    clearFiltersButton: {
-      padding: 4,
-    },
-  })
 
 // Add this helper function near the top with other utility functions
 const getEmojiKey = (emoji: string) => {
@@ -680,9 +75,16 @@ const getEmojiKey = (emoji: string) => {
 
 const ReadingEmoji = () => {
   const router = useRouter()
-  const { width: screenWidth } = useWindowDimensions()
+  
+  // Option 2: Replace useWindowDimensions with Dimensions API and state management
+  const [screenDimensions, setScreenDimensions] = useState(() => {
+    const { width, height } = Dimensions.get('window')
+    return { width, height }
+  })
+  
+  const screenWidth = screenDimensions.width
   const isLargeScreen = screenWidth > 768
-  const { colors } = useAppSettings()
+  const { colors } = useSyncAppSettings()
   const styles = useMemo(() => createStyles(isLargeScreen, colors), [isLargeScreen, colors])
   const { updateSegmentId } = useSQLiteGlobalContext()
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null)
@@ -692,12 +94,7 @@ const ReadingEmoji = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [searchQuery, setSearchQuery] = useState("")
   const [showFilterPanel, setShowFilterPanel] = useState(false)
-  const [activeFilters, setActiveFilters] = useState<{
-    testament: string[]
-    sourceColor: string[]
-    sourceName: string[]
-    book: string[]
-  }>({
+  const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     testament: [],
     sourceColor: [],
     sourceName: [],
@@ -708,7 +105,7 @@ const ReadingEmoji = () => {
   // Jump to passage modal state
   const [showJumpModal, setShowJumpModal] = useState(false)
   const [selectedReaction, setSelectedReaction] = useState<EmojiReaction | null>(null)
-  const [modalPosition, setModalPosition] = useState<{ x: number; y: number } | null>(null);
+  const [modalPosition, setModalPosition] = useState<ModalPosition | null>(null);
 
 
 
@@ -721,8 +118,8 @@ const ReadingEmoji = () => {
   const filterOpacityAnim = useRef(new Animated.Value(0)).current
 
   // Get color for source color filter
-  const getSourceColorDisplay = (color: string) => {
-    const colorMap: { [key: string]: { bg: string, text: string } } = {
+  const getSourceColorDisplay = (color: string): SourceColorDisplay => {
+    const colorMap: { [key: string]: SourceColorDisplay } = {
       'black': { bg: '#2C2C2E', text: 'Narrator' },
       'red': { bg: '#FF3B30', text: 'God/Jesus' },
       'green': { bg: '#30D158', text: 'Main Speaker' },
@@ -732,13 +129,31 @@ const ReadingEmoji = () => {
   }
 
   // Get all possible speaker types (always show all 4)
-  const getAllSpeakerTypes = () => [
+  const getAllSpeakerTypes = (): SpeakerType[] => [
     { color: 'black', display: getSourceColorDisplay('black') },
     { color: 'red', display: getSourceColorDisplay('red') },
     { color: 'green', display: getSourceColorDisplay('green') },
     { color: 'blue', display: getSourceColorDisplay('blue') }
   ]
 
+  // Listen for dimension changes with debounced updates
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>
+    
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      // Debounce dimension updates to prevent excessive re-renders
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        setScreenDimensions({ width: window.width, height: window.height })
+      }, 150) // 150ms debounce
+    })
+    
+    return () => {
+      clearTimeout(timeoutId)
+      subscription?.remove()
+    }
+  }, [])
+  
   useEffect(() => {
     if (selectedEmoji) {
       // Reset animations
@@ -827,7 +242,7 @@ const ReadingEmoji = () => {
       filteredReactions = filteredReactions.filter(reaction => {
         const segmentRef = getSegmentReference(reaction.segmentID)
         const book = segmentRef.split(' ')[0]
-        const bookFullName = Books[book]?.bookName || book
+        const bookFullName = (Books as any)[book]?.bookName || book
         return activeFilters.book.includes(bookFullName)
       })
     }
@@ -865,8 +280,8 @@ const ReadingEmoji = () => {
         testamentOptions.add(testament)
         
         // Add book option (convert abbreviation to full name)
-        if (Books[book]?.bookName) {
-          bookOptions.add(Books[book].bookName)
+        if ((Books as any)[book]?.bookName) {
+          bookOptions.add((Books as any)[book].bookName)
         } else {
           bookOptions.add(book) // Fallback to abbreviation if full name not found
         }
@@ -893,7 +308,7 @@ const ReadingEmoji = () => {
       : Array.from(new Set(reactions.map(reaction => {
           const segmentRef = getSegmentReference(reaction.segmentID)
           const book = segmentRef.split(' ')[0]
-          return Books[book]?.bookName || book
+          return (Books as any)[book]?.bookName || book
         }).filter(Boolean))).sort()
     
     // Speaker Type: Show types from filtered reactions, or all types if no previous filters
@@ -930,8 +345,8 @@ const ReadingEmoji = () => {
         
         const reference = getSegmentReference(reaction.segmentID).toLowerCase();
         const blockTexts = reaction.blockData.children
-          ?.flatMap(inline => inline.children || [])
-          ?.map(leaf => leaf.text || "")
+          ?.flatMap((inline: any) => inline.children || [])
+          ?.map((leaf: any) => leaf.text || "")
           ?.join(" ") || "";
         const blockText = blockTexts.toLowerCase();
         const query = searchQuery.toLowerCase();
@@ -969,7 +384,7 @@ const ReadingEmoji = () => {
       filteredReactions = filteredReactions.filter(reaction => {
         const segmentRef = getSegmentReference(reaction.segmentID)
         const book = segmentRef.split(' ')[0]
-        const bookFullName = Books[book]?.bookName || book
+        const bookFullName = (Books as any)[book]?.bookName || book
         return activeFilters.book.includes(bookFullName)
       })
     }
@@ -1018,7 +433,7 @@ const ReadingEmoji = () => {
   }
 
   // Toggle filter option
-  const toggleFilter = (category: keyof typeof activeFilters, value: string) => {
+  const toggleFilter = (category: keyof ActiveFilters, value: string) => {
     setActiveFilters(prev => {
       const newFilters = { ...prev }
       const currentValues = newFilters[category]
@@ -1063,8 +478,8 @@ const ReadingEmoji = () => {
         
         const reference = getSegmentReference(reaction.segmentID).toLowerCase();
         const blockTexts = reaction.blockData.children
-          ?.flatMap(inline => inline.children || [])
-          ?.map(leaf => leaf.text || "")
+          ?.flatMap((inline: any) => inline.children || [])
+          ?.map((leaf: any) => leaf.text || "")
           ?.join(" ") || "";
         const blockText = blockTexts.toLowerCase();
         const query = searchQuery.toLowerCase();
@@ -1102,7 +517,7 @@ const ReadingEmoji = () => {
       reactionsToCount = reactionsToCount.filter(reaction => {
         const segmentRef = getSegmentReference(reaction.segmentID)
         const book = segmentRef.split(' ')[0]
-        const bookFullName = Books[book]?.bookName || book
+        const bookFullName = (Books as any)[book]?.bookName || book
         return activeFilters.book.includes(bookFullName)
       })
     }
@@ -1128,7 +543,7 @@ const ReadingEmoji = () => {
     return emojiType?.backgroundColor || "#FF6B47"
   }
 
-  const handleLongPress = useCallback((reaction: EmojiReaction, touchPosition?: { x: number; y: number }) => {
+  const handleLongPress = useCallback(async (reaction: EmojiReaction, touchPosition?: ModalPosition) => {
     // Reset modal animations first
     modalScaleAnim.setValue(0);
     modalOpacityAnim.setValue(0);
@@ -1136,7 +551,7 @@ const ReadingEmoji = () => {
     // Haptic feedback for premium feel
     if (Platform.OS === 'ios') {
       try {
-        const Haptics = require('expo-haptics');
+        const Haptics = await import('expo-haptics');
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       } catch (error) {
         // Haptics not available

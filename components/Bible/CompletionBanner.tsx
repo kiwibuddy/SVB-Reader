@@ -3,6 +3,32 @@ import { Animated, StyleSheet, Text, ViewStyle, TextStyle, InteractionManager } 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ANIMATION } from '@/services/animation';
 
+// Array of encouraging completion messages
+const COMPLETION_MESSAGES = [
+  "Well done!",
+  "Amazing work!",
+  "You did it!",
+  "Great job!",
+  "Nice reading!",
+  "Keep going!",
+  "Good stuff!",
+  "Way to go!",
+  "Love it!",
+  "So good!"
+];
+
+// Function to get a random message that's different from the last one
+let lastMessageIndex = -1;
+const getRandomCompletionMessage = (): string => {
+  let randomIndex;
+  do {
+    randomIndex = Math.floor(Math.random() * COMPLETION_MESSAGES.length);
+  } while (randomIndex === lastMessageIndex && COMPLETION_MESSAGES.length > 1);
+  
+  lastMessageIndex = randomIndex;
+  return COMPLETION_MESSAGES[randomIndex];
+};
+
 interface CompletionBannerProps {
   visible: boolean;
   message?: string;
@@ -16,7 +42,7 @@ interface CompletionBannerProps {
 
 const CompletionBanner: React.FC<CompletionBannerProps> = ({
   visible,
-  message = 'Completion confirmed',
+  message,
   durationMs = 1600,
   onHide,
   backgroundColor = '#007AFF',
@@ -27,6 +53,9 @@ const CompletionBanner: React.FC<CompletionBannerProps> = ({
   const insets = useSafeAreaInsets();
   const translateY = useRef(new Animated.Value(-30)).current;
   const opacity = useRef(new Animated.Value(0)).current;
+
+  // Use provided message or get a random one
+  const displayMessage = message || getRandomCompletionMessage();
 
   useEffect(() => {
     if (!visible) return;
@@ -67,7 +96,7 @@ const CompletionBanner: React.FC<CompletionBannerProps> = ({
       ]}
     >
       <Animated.View style={[styles.banner, { backgroundColor }, containerStyle]}>
-        <Text style={[styles.text, { color: textColor }, textStyle]}>{message}</Text>
+        <Text style={[styles.text, { color: textColor }, textStyle]}>{displayMessage}</Text>
       </Animated.View>
     </Animated.View>
   );

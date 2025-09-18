@@ -7,13 +7,12 @@ import {
   StyleSheet,
   Alert,
   FlatList,
-  useWindowDimensions,
+  Dimensions,
   Pressable,
   Platform,
   Image,
   RefreshControl,
-  Animated,
-  Dimensions
+  Animated
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from '@react-navigation/native';
@@ -30,7 +29,7 @@ import { StatusIndicator } from '@/components/StatusIndicator';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { 
   markSegmentComplete, 
   getSegmentCompletionStatus, 
@@ -156,6 +155,10 @@ const CHALLENGE_STYLES: Record<string, ChallengeStyle> = {
   },
   "Women of the Bible": {
     color: "#9f4df4"
+  },
+  "God's Story: The Good News": {
+    color: "#FF6B35",
+    titleColor: "#FF6B35"
   }
 };
 
@@ -350,9 +353,20 @@ const ChallengesScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { expandedChallenge, completedSegment, timestamp } = params;
-  const { width } = useWindowDimensions();
-  const isLargeScreen = width >= 768;
-  const { colors } = useAppSettings();
+  
+  // Option 2: Memoize with useEffect
+  const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
+  
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setScreenWidth(window.width);
+    });
+    
+    return () => subscription?.remove();
+  }, []);
+  
+  const isLargeScreen = screenWidth >= 768;
+  const { colors } = useSyncAppSettings();
   const { currentSession, stopSession } = useGroupReading();
   const styles = createStyles(isLargeScreen, colors);
 

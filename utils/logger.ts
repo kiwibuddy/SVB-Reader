@@ -11,7 +11,8 @@ export const logger = {
    */
   info: (...args: any[]) => {
     if (isDevelopment) {
-      console.log('[INFO]', ...args);
+      // Use setTimeout to avoid text rendering issues in React Native
+      setTimeout(() => console.log('[INFO]', ...args), 0);
     }
   },
 
@@ -20,7 +21,8 @@ export const logger = {
    */
   warn: (...args: any[]) => {
     if (isDevelopment) {
-      console.warn('[WARN]', ...args);
+      // Use setTimeout to avoid text rendering issues in React Native
+      setTimeout(() => console.warn('[WARN]', ...args), 0);
     }
   },
 
@@ -30,7 +32,8 @@ export const logger = {
    */
   error: (...args: any[]) => {
     if (isDevelopment) {
-      console.error('[ERROR]', ...args);
+      // Use setTimeout to avoid text rendering issues in React Native
+      setTimeout(() => console.error('[ERROR]', ...args), 0);
     } else {
       // In production, you might want to send to crash reporting service
       // Example: crashlytics().recordError(new Error(args.join(' ')));
@@ -42,7 +45,8 @@ export const logger = {
    */
   debug: (...args: any[]) => {
     if (isDevelopment) {
-      console.log('[DEBUG]', ...args);
+      // Use setTimeout to avoid text rendering issues in React Native
+      setTimeout(() => console.log('[DEBUG]', ...args), 0);
     }
   },
 
@@ -51,7 +55,8 @@ export const logger = {
    */
   success: (...args: any[]) => {
     if (isDevelopment) {
-      console.log('[SUCCESS]', ...args);
+      // Use setTimeout to avoid text rendering issues in React Native
+      setTimeout(() => console.log('[SUCCESS]', ...args), 0);
     }
   }
 };

@@ -87,8 +87,8 @@ const IntroContentChildComponent: React.FC<any> = ({
           list_item: { color: colors.text, fontSize: 16, lineHeight: 24, fontStyle: 'italic' },
           bullet_list: { marginVertical: 4 },
           ordered_list: { marginVertical: 4 },
-          table: { borderWidth: 1, borderColor: colors.border },
-          table_row: { borderBottomWidth: 1, borderBottomColor: colors.border },
+          table: { borderWidth: 0 },
+          table_row: { borderBottomWidth: 0 },
           table_cell: { padding: 8, color: colors.text, fontSize: 16, fontStyle: 'italic' },
           strong: { fontWeight: 'bold', color: colors.text },
           em: { fontStyle: 'italic', color: colors.text },
@@ -243,8 +243,6 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData, context = 'main', p
   const router = useRouter();
   const { colors } = useAppSettings();
   const styles = createStyles(colors, isIPad);
-
-  // Debug logging removed for production
 
   // Reading Mode Modal State
   const [showReadingModeModal, setShowReadingModeModal] = useState(false);

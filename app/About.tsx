@@ -1,19 +1,65 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Modal } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useFontSize } from '@/context/FontSizeContext';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
+import { clearFirstLaunchFlag } from '@/hooks/useFirstLaunch';
 
 const About = () => {
   const router = useRouter();
   const { sizes } = useFontSize();
-  const { colors } = useAppSettings();
+  const { colors } = useSyncAppSettings();
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showCopyrightModal, setShowCopyrightModal] = useState(false);
   const [showNLTModal, setShowNLTModal] = useState(false);
+
+  const handleResetOnboarding = async () => {
+    try {
+      Alert.alert(
+        'Reset Onboarding',
+        'This will reset the first launch flag and show the onboarding screen on the next app restart. Are you sure?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Reset',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await clearFirstLaunchFlag();
+                Alert.alert(
+                  'Success',
+                  'First launch flag cleared! The app will now show onboarding on the next restart.',
+                  [
+                    {
+                      text: 'Go to Onboarding Now',
+                      onPress: () => router.replace('/'),
+                    },
+                    {
+                      text: 'OK',
+                      style: 'cancel',
+                    },
+                  ]
+                );
+              } catch (error) {
+                Alert.alert(
+                  'Error',
+                  `Failed to clear first launch flag: ${error instanceof Error ? error.message : 'Unknown error'}`
+                );
+              }
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to reset onboarding');
+    }
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -249,6 +295,28 @@ const About = () => {
       color: colors.text,
       fontSize: sizes.body,
       fontWeight: '400',
+    },
+    // Simple reset button styles
+    resetButtonContainer: {
+      marginTop: 32,
+      alignItems: 'center',
+    },
+    resetButton: {
+      backgroundColor: '#FF6B47',
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 8,
+      alignSelf: 'flex-start',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    resetButtonText: {
+      color: '#FFFFFF',
+      fontSize: sizes.body,
+      fontWeight: '600',
     },
   });
 
@@ -732,6 +800,18 @@ const About = () => {
               </Pressable>
             </View>
           </View>
+
+          {/* Reset Onboarding - Only show in development */}
+          {__DEV__ && (
+            <View style={styles.resetButtonContainer}>
+              <Pressable
+                style={styles.resetButton}
+                onPress={handleResetOnboarding}
+              >
+                <Text style={styles.resetButtonText}>Reset Onboarding</Text>
+              </Pressable>
+            </View>
+          )}
           
           {/* Bottom spacing */}
           <View style={{ height: 40 }} />

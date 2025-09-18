@@ -9,7 +9,7 @@ export const createStyles = (colors: any, isTablet: boolean = false) => StyleShe
   contentContainer: {
     maxWidth: '100%',
     alignSelf: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 4,
     paddingTop: 8,
   },
   contentContainerIPad: {
@@ -26,6 +26,7 @@ export const createStyles = (colors: any, isTablet: boolean = false) => StyleShe
   },
   childContainer: {
     marginVertical: 6,
+    paddingHorizontal: 16,
   },
   text: {
     fontSize: isTablet ? 18 : 16,
@@ -155,37 +156,27 @@ export const createStyles = (colors: any, isTablet: boolean = false) => StyleShe
   },
   // Table styles
   tableWrapper: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    overflow: 'hidden',
     marginVertical: 8,
   },
   tableRow: {
     flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   tableHeaderCell: {
     paddingVertical: 10,
     paddingHorizontal: 8,
-    backgroundColor: colors.bubbles?.default || '#F8FAFF',
-    borderRightWidth: 1,
-    borderRightColor: colors.border,
+    backgroundColor: 'transparent',
   },
   tableCell: {
     paddingVertical: 10,
     paddingHorizontal: 8,
-    borderRightWidth: 1,
-    borderRightColor: colors.border,
   },
   tableText: {
-    fontSize: isTablet ? 16 : 14,
-    lineHeight: isTablet ? 24 : 20,
+    fontSize: isTablet ? 24 : 20,
+    lineHeight: isTablet ? 40 : 36,
     color: colors.text,
   },
   tableHeaderText: {
-    fontSize: isTablet ? 16 : 14,
+    fontSize: isTablet ? 24 : 20,
     fontWeight: '700',
     color: colors.text,
   },

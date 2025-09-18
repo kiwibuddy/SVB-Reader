@@ -579,6 +579,43 @@ export class DatabaseManager {
     return this.db;
   }
 
+  /**
+   * Safely get database with automatic initialization
+   * This is the preferred method for most operations
+   */
+  async getSafeDatabase(): Promise<SQLiteDatabase | null> {
+    try {
+      if (!this.isInitialized || !this.db) {
+        logger.info('Database not ready, attempting initialization...');
+        await this.initialize();
+      }
+      
+      if (!this.db) {
+        logger.error('Database initialization failed');
+        return null;
+      }
+      
+      // Test database health
+      await this.db.execAsync('SELECT 1');
+      return this.db;
+    } catch (error) {
+      logger.error('Failed to get safe database connection:', error);
+      
+      // Reset state and try once more
+      this.isInitialized = false;
+      this.db = null;
+      this.initializationPromise = null;
+      
+      try {
+        await this.initialize();
+        return this.db;
+      } catch (retryError) {
+        logger.error('Database retry failed:', retryError);
+        return null;
+      }
+    }
+  }
+
   // Add a method to check database health
   async checkDatabaseHealth(): Promise<boolean> {
     if (!this.db || !this.isInitialized) {

@@ -1,0 +1,6 @@
+
+> sourceview-together@1.0.0 lint
+> expo lint --format=json
+
+CommandError: Unexpected: --format=json
+Did you mean: npx expo lint -- --format=json

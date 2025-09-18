@@ -1,6 +1,7 @@
 import logger from '@/utils/logger';
 import { databaseManager } from './database-manager';
 import { BibleBlock } from "@/types";
+import { SafeDatabaseWrapper } from './database-safe-wrapper';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -61,10 +62,8 @@ interface EmojiCollection {
 // DATABASE INITIALIZATION
 // ============================================================================
 
-// Initialize database when this module is imported
-databaseManager.initialize().catch(error => {
-  logger.error("Failed to initialize database:", error);
-});
+// Database initialization now handled by app-startup-manager
+// No auto-initialization to prevent race conditions
 
 // ============================================================================
 // MAIN COMPLETION TRACKING FUNCTIONS
@@ -1122,32 +1121,37 @@ export async function getCompletedBooks(): Promise<string[]> {
 }
 
 export async function getBookProgress(bookId: string): Promise<BookProgress> {
-  try {
-    const db = databaseManager.getDatabase();
-    
-    // Get total segments for this book (excluding introductions)
-    const totalResult = await db.getFirstAsync<{ count: number }>(
-      'SELECT COUNT(*) as count FROM segments WHERE bookID = ? AND segmentID NOT LIKE "I%"',
-      [bookId]
-    );
-    
-    // Count completed segments for this book (excluding introductions)
-    const completedCount = await db.getFirstAsync<{ count: number }>(`
-      SELECT COUNT(*) as count FROM completedSegments 
-      WHERE segmentID IN (
-        SELECT segmentID FROM segments WHERE bookID = ? AND segmentID NOT LIKE "I%"
-      ) AND isCompleted = 1
-    `, bookId);
-    
-    const total = totalResult?.count || 0;
-    const completed = completedCount?.count || 0;
-    const percentage = total > 0 ? (completed / total) * 100 : 0;
-    
-    return { completed, total, percentage };
-  } catch (error) {
-    logger.error("Error getting book progress:", error);
+  // Validate input
+  if (!bookId || typeof bookId !== 'string') {
+    logger.warn('Invalid bookId provided to getBookProgress:', bookId);
     return { completed: 0, total: 0, percentage: 0 };
   }
+
+  return SafeDatabaseWrapper.safeQuery(
+    async (db) => {
+      // Get total segments for this book (excluding introductions)
+      const totalResult = await db.getFirstAsync<{ count: number }>(
+        'SELECT COUNT(*) as count FROM segments WHERE bookID = ? AND segmentID NOT LIKE "I%"',
+        [bookId]
+      );
+      
+      // Count completed segments for this book (excluding introductions)
+      const completedCount = await db.getFirstAsync<{ count: number }>(`
+        SELECT COUNT(*) as count FROM completedSegments 
+        WHERE segmentID IN (
+          SELECT segmentID FROM segments WHERE bookID = ? AND segmentID NOT LIKE "I%"
+        ) AND isCompleted = 1
+      `, [bookId]);
+      
+      const total = totalResult?.count || 0;
+      const completed = completedCount?.count || 0;
+      const percentage = total > 0 ? (completed / total) * 100 : 0;
+      
+      return { completed, total, percentage };
+    },
+    { completed: 0, total: 0, percentage: 0 },
+    `getBookProgress for ${bookId}`
+  );
 }
 
 export async function checkEmojiCollection(): Promise<EmojiCollection> {

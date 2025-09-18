@@ -160,7 +160,8 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: isLargeScreen ? 16 : 12,
+      paddingTop: isLargeScreen ? 16 : 12,
+      paddingBottom: isLargeScreen ? 8 : 6,
       paddingHorizontal: 8,
     },
     navItem: {
@@ -187,7 +188,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   const containerStyle = [
     styles.container,
     {
-      paddingBottom: Math.max(insets.bottom, isLargeScreen ? 12 : 8),
+      paddingBottom: Math.max(insets.bottom, isLargeScreen ? 4 : 2),
       backgroundColor: colors.background,
       borderTopColor: colors.border,
       shadowColor: colors.text,

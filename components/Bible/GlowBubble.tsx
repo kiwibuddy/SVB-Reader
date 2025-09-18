@@ -196,6 +196,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetV
                   iIndex={`${bIndex}-${index}`}
                   inline={item}
                   textColor={getBubbleTextColorSafe(color, isDarkMode)}
+                  bubbleColor={color}
                 />
               );
             })}

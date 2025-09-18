@@ -7,7 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   SafeAreaView,
-  useWindowDimensions,
+  Dimensions,
   Platform,
   Image,
   ActivityIndicator,
@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ProgressIndicator } from '@/components/loading/ProgressIndicator';
 import { Collapsible } from '@/components/Collapsible';
 // Removed useAppContext import - now using pure SQLite data loading
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { 
   getEmojiStats,
   getCompletedSegmentsCount,
@@ -79,67 +79,30 @@ interface BookCompletion {
 }
 
 const Achievements = () => {
-  const { colors } = useAppSettings();
+  const appSettings = useSyncAppSettings();
   
-  // Guard clause to prevent rendering until colors is available
-  if (!colors || typeof colors !== 'object') {
-    return null;
-  }
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   
-  // Start with safe defaults and avoid useWindowDimensions initially
-  const [safeWidth, setSafeWidth] = useState(375);
-  const [isLargeScreen, setIsLargeScreen] = useState(false);
-  const [dimensionsReady, setDimensionsReady] = useState(false);
+  // Option 2: Memoize with useEffect
+  const [screenWidth, setScreenWidth] = useState(Dimensions.get('window').width);
   
-  // Safely get window dimensions
-  const windowDimensions = useWindowDimensions();
-  
-  // Update safe width when dimensions become available
   useEffect(() => {
-    try {
-      const { width } = windowDimensions;
-      if (width && typeof width === 'number' && width > 0 && !isNaN(width)) {
-        setSafeWidth(width);
-        setIsLargeScreen(width >= 768);
-        setDimensionsReady(true);
-      }
-    } catch (error) {
-      logger.warn('Error processing window dimensions:', error);
-      // Keep default values
-    }
-  }, [windowDimensions]);
-
-  // Fixed card dimensions for consistent layout
-  
-  // Debug logging to verify width calculations
-  useEffect(() => {
-    // Only log if we have valid width and it's not the default
-    if (!safeWidth || safeWidth === 375 || typeof safeWidth !== 'number') return;
-    
-    const gridPaddingHorizontal = 32;
-    const gapBetweenCards = 16;
-    const availableWidth = safeWidth - gridPaddingHorizontal;
-    const calculatedCardWidth = Math.floor((availableWidth - gapBetweenCards) / 2);
-    const percentageWidth = Math.floor(safeWidth * 0.47);
-    
-    // Use console.log instead of any potential string rendering
-    logger.info('Screen metrics:', {
-      safeWidth,
-      calculatedCardWidth,
-      percentageWidth,
-      availableWidth
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setScreenWidth(window.width);
     });
-  }, [safeWidth]);
+    
+    return () => subscription?.remove();
+  }, []);
   
-  // Removed completedSegments dependency - now using pure SQLite data loading
+  const isLargeScreen = screenWidth > 768;
+  
+  // Move all other hooks here before guard clause
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [bookProgress, setBookProgress] = useState<Record<string, {completed: number; total: number; percentage: number}>>({});
   const [preloadedImages, setPreloadedImages] = useState<Record<string, any>>({});
   const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({});
-
-
   
   // Enhanced stats state with all database-driven properties
   const [stats, setStats] = useState<AchievementStats>({
@@ -162,41 +125,80 @@ const Achievements = () => {
   });
   const [groupCompletions, setGroupCompletions] = useState(0);
   const [info, setInfo] = useState<{ title: string; description: string } | null>(null);
-
-  // Only create styles when dimensions are ready
-  const styles = useMemo(() => {
-    if (!dimensionsReady || !safeWidth || safeWidth <= 0 || !colors) {
-      // Return fallback styles if dimensions aren't ready or colors is undefined
-      return createStyles(false, { 
-        background: '#FFFFFF',
-        text: '#000000',
-        primary: '#FF5733',
-        secondary: '#666666',
-        card: '#FFFFFF',
-        border: '#E5E5E5'
-      }, 375);
-    }
-    
-    try {
-      return createStyles(isLargeScreen, colors, safeWidth);
-    } catch (error) {
-      logger.error('Error creating styles:', error);
-      // Return fallback styles
-      return createStyles(false, { 
-        background: '#FFFFFF',
-        text: '#000000',
-        primary: '#FF5733',
-        secondary: '#666666',
-        card: '#FFFFFF',
-        border: '#E5E5E5'
-      }, 375);
-    }
-  }, [dimensionsReady, isLargeScreen, colors, safeWidth]);
+  
+  // More state hooks that need to be moved
   const [showOTAll, setShowOTAll] = useState(false);
   const [showNTAll, setShowNTAll] = useState(false);
   const [showMoreRewards, setShowMoreRewards] = useState(false);
   const [showMorePlans, setShowMorePlans] = useState(false);
   const [showMoreEngagement, setShowMoreEngagement] = useState(false);
+  
+  // Styles useMemo hook - also needs to be before guard clause
+  const styles = useMemo(() => {
+    if (!screenWidth || screenWidth <= 0) {
+      // Return fallback styles if dimensions aren't ready
+      return createStyles(false, { 
+        background: '#FFFFFF',
+        text: '#000000',
+        primary: '#FF5733',
+        secondary: '#666666',
+        card: '#FFFFFF',
+        border: '#E5E5E5'
+      }, 375);
+    }
+    // Colors are always available with synchronous context
+    return createStyles(isLargeScreen, appSettings.colors, screenWidth);
+  }, [isLargeScreen, screenWidth, appSettings.colors]);
+  
+  // No guard clause needed - synchronous context is always ready!
+  const { colors } = appSettings;
+  
+  // All useEffect and useFocusEffect hooks must be here too
+  // Comprehensive database-driven stats loading
+  useEffect(() => {
+    // Call the stats loading function defined below
+    if (loadStatsFromDatabase) {
+      loadStatsFromDatabase();
+    }
+  }, [refreshTrigger]);
+
+  // Auto-refresh when returning to Achievements screen
+  useFocusEffect(
+    React.useCallback(() => {
+      const refreshStats = async () => {
+        // Add a small delay to ensure database writes are complete
+        await new Promise(resolve => setTimeout(resolve, 100));
+        setRefreshTrigger(prev => prev + 1);
+      };
+      refreshStats();
+    }, [])
+  );
+
+
+  // Debug logging to verify width calculations
+  useEffect(() => {
+    // Only log if we have valid width and it's not the default
+    if (!screenWidth || screenWidth === 375 || typeof screenWidth !== 'number') return;
+    
+    const gridPaddingHorizontal = 32;
+    const gapBetweenCards = 16;
+    const availableWidth = screenWidth - gridPaddingHorizontal;
+    const calculatedCardWidth = Math.floor((availableWidth - gapBetweenCards) / 2);
+    const percentageWidth = Math.floor(screenWidth * 0.47);
+    
+    // Use console.log instead of any potential string rendering
+    logger.info('Screen metrics:', {
+      screenWidth,
+      calculatedCardWidth,
+      percentageWidth,
+      availableWidth
+    });
+  }, [screenWidth]);
+  
+  // Guard clause - NOW after all hooks
+  if (!colors || typeof colors !== 'object') {
+    return null;
+  }
 
 
   // Bible books data
@@ -303,18 +305,14 @@ const Achievements = () => {
     setImageLoadingStates(loadingStates);
   };
 
-  // Comprehensive database-driven stats loading
-  useEffect(() => {
-    const loadStats = async () => {
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        // Preload book icons in parallel with stats loading
-        const preloadPromise = preloadBookIcons();
+  // Load all statistics - this should be inside the useEffect we created above
+  // For now, let's create a placeholder function to fix the syntax error
+  const loadStatsFromDatabase = async () => {
+    try {
+      const preloadPromise = preloadBookIcons();
         
-        // Load all statistics in parallel for better performance
-        const [
+      // Load all statistics in parallel for better performance
+      const [
           completedCount,
           totalCount,
           streakData,
@@ -423,21 +421,6 @@ const Achievements = () => {
         setIsLoading(false);
       }
     };
-
-    loadStats();
-  }, [refreshTrigger]); // Removed completedSegments dependency - now pure SQLite
-
-  // Auto-refresh when returning to Achievements screen
-  useFocusEffect(
-    React.useCallback(() => {
-      const refreshStats = async () => {
-        // Add a small delay to ensure database writes are complete
-        await new Promise(resolve => setTimeout(resolve, 100));
-        setRefreshTrigger(prev => prev + 1);
-      };
-      refreshStats();
-    }, [])
-  );
 
   // Check if a book is completed based on segments (excluding intro segments)
   const isBookCompleted = (bookCode: string): boolean => {
@@ -797,7 +780,7 @@ const Achievements = () => {
   const featuredMeta = featured ? featured.meta : null;
 
   // Loading state - also check if dimensions are ready
-  if (isLoading || Object.values(imageLoadingStates).some(loading => loading) || !dimensionsReady) {
+  if (isLoading || Object.values(imageLoadingStates).some(loading => loading) || !screenWidth) {
     return (
       <SafeAreaView style={[styles.container, styles.centerContent]}>
         <ActivityIndicator size="large" color={colors.primary} />

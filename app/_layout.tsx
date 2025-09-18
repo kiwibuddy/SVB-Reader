@@ -10,7 +10,8 @@ import React, { useState, useEffect, useCallback, useMemo, useRef, useContext, u
 import 'react-native-reanimated';
 import { BottomNavProvider } from '@/context/BottomNavContext';
 import { FontSizeProvider } from '@/context/FontSizeContext';
-import { AppSettingsProvider, useAppSettings } from '@/context/AppSettingsContext';
+import { SyncAppSettingsProvider, useSyncAppSettings } from '@/context/SyncAppSettingsContext';
+import { initializeAppSystems } from '@/services/app-startup-manager';
 import { GroupReadingProvider } from '@/context/GroupReadingContext';
 import { View, Text, Alert } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -23,20 +24,18 @@ import '../config/i18n'; // Import this to initialize i18next
 SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
-  const { isDarkMode, colors } = useAppSettings();
+  const { isDarkMode, colors } = useSyncAppSettings();
   const [dbReady, setDbReady] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
   
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        // Simple initialization
-        const result = await initializeDatabaseWithDiagnostics();
+        // Use new synchronous initialization system
+        const result = await initializeAppSystems();
         if (result.success) {
-          // Database initialized successfully
-          if (result.migrationPerformed) {
-            logger.info('🔄 Data migration was performed');
-          }
+          // App systems initialized successfully
+          logger.info('✅ App systems initialized successfully');
           
           // Check for updates in background (non-blocking)
           checkForUpdates();
@@ -158,8 +157,8 @@ export default function RootLayout() {
   }
 
   return (
-    <AppSettingsProvider>
+    <SyncAppSettingsProvider>
       <AppContent />
-    </AppSettingsProvider>
+    </SyncAppSettingsProvider>
   );
 }

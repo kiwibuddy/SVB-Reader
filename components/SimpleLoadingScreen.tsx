@@ -61,5 +61,6 @@ const styles = StyleSheet.create({
   appIcon: {
     width: 80,
     height: 80,
+    borderRadius: 18, // Rounded corners for the icon
   },
 });
