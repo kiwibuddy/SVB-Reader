@@ -745,7 +745,7 @@
   },
   "adventJourneyChronological": {
     "title": "Advent Journey (Chronological)",
-    "description": "16 Stories - 4 Weeks", 
+    "description": "16 Stories - 4 Weeks",
     "longDescription": "Journey through Advent with a chronological flow from ancient prophecies to their fulfillment in Jesus. This focused 4-week plan follows the biblical timeline, showing how God's promises unfold across centuries, culminating in the birth of the Messiah.",
     "segments": [
       {
@@ -756,7 +756,7 @@
         "phase": "Ancient Promises"
       },
       {
-        "segmentId": "S192", 
+        "segmentId": "S192",
         "book": "Isa",
         "title": "A Child is Born",
         "ref": "9:1-7",
@@ -799,7 +799,7 @@
       },
       {
         "segmentId": "S286",
-        "book": "Luk", 
+        "book": "Luk",
         "title": "The Birth of Jesus Foretold",
         "ref": "1:26-38",
         "phase": "Divine Announcements"
@@ -808,7 +808,7 @@
         "segmentId": "S287",
         "book": "Luk",
         "title": "Mary Visits Elizabeth",
-        "ref": "1:39-56", 
+        "ref": "1:39-56",
         "phase": "Divine Announcements"
       },
       {
@@ -828,7 +828,7 @@
       {
         "segmentId": "S289",
         "book": "Luk",
-        "title": "Jesus is Presented in the Temple", 
+        "title": "Jesus is Presented in the Temple",
         "ref": "2:21-40",
         "phase": "The Nativity"
       },
@@ -2262,16 +2262,9 @@
   },
   "oldTestamentJourneyChronological": {
     "title": "Old Testament Journey (Chronological)",
-    "description": "55 Stories - 11 Weeks",
+    "description": "57 Stories - 11 Weeks",
     "longDescription": "Journey through God's redemptive plan from Creation to the prophets in historical order. Experience how God established His covenant people, delivered them from bondage, gave them His law, and prepared them for the coming Messiah through judges, kings, and prophets.",
     "segments": [
-      {
-        "segmentId": "I001",
-        "book": "Gen",
-        "title": "Introduction to Genesis",
-        "ref": "1:1-50:26",
-        "phase": "The Beginning"
-      },
       {
         "segmentId": "S001",
         "book": "Gen",
@@ -2315,13 +2308,6 @@
         "phase": "The Patriarchs"
       },
       {
-        "segmentId": "I002",
-        "book": "Exo",
-        "title": "Introduction to Exodus",
-        "ref": "1:1-40:38",
-        "phase": "The Exodus"
-      },
-      {
         "segmentId": "S019",
         "book": "Exo",
         "title": "Moses is Born",
@@ -2357,13 +2343,6 @@
         "phase": "The Exodus"
       },
       {
-        "segmentId": "I003",
-        "book": "Lev",
-        "title": "Introduction to Leviticus",
-        "ref": "1:1-27:34",
-        "phase": "The Law"
-      },
-      {
         "segmentId": "S039",
         "book": "Lev",
         "title": "The Day of Atonement",
@@ -2371,25 +2350,11 @@
         "phase": "The Law"
       },
       {
-        "segmentId": "I004",
-        "book": "Num",
-        "title": "Introduction to Numbers",
-        "ref": "1:1-36:13",
-        "phase": "The Wilderness"
-      },
-      {
         "segmentId": "S049",
         "book": "Num",
         "title": "The Bronze Serpent",
         "ref": "21:4-9",
         "phase": "The Wilderness"
-      },
-      {
-        "segmentId": "I005",
-        "book": "Deu",
-        "title": "Introduction to Deuteronomy",
-        "ref": "1:1-34:12",
-        "phase": "The Law Renewed"
       },
       {
         "segmentId": "S057",
@@ -2413,13 +2378,6 @@
         "phase": "The Law Renewed"
       },
       {
-        "segmentId": "I006",
-        "book": "Jos",
-        "title": "Introduction to Joshua",
-        "ref": "1:1-24:33",
-        "phase": "The Conquest"
-      },
-      {
         "segmentId": "S070",
         "book": "Jos",
         "title": "The Fall of Jericho",
@@ -2432,13 +2390,6 @@
         "title": "Joshua's Farewell",
         "ref": "23:1-24:33",
         "phase": "The Conquest"
-      },
-      {
-        "segmentId": "I007",
-        "book": "Jdg",
-        "title": "Introduction to Judges",
-        "ref": "1:1-21:25",
-        "phase": "The Judges"
       },
       {
         "segmentId": "S077",
@@ -2455,25 +2406,11 @@
         "phase": "The Judges"
       },
       {
-        "segmentId": "I008",
-        "book": "Rut",
-        "title": "Introduction to Ruth",
-        "ref": "1:1-4:22",
-        "phase": "The Judges"
-      },
-      {
         "segmentId": "S085",
         "book": "Rut",
         "title": "Ruth's Loyalty",
         "ref": "1:1-4:22",
         "phase": "The Judges"
-      },
-      {
-        "segmentId": "I009",
-        "book": "1Sa",
-        "title": "Introduction to 1 Samuel",
-        "ref": "1:1-31:13",
-        "phase": "The Kingdom Begins"
       },
       {
         "segmentId": "S088",
@@ -2497,25 +2434,11 @@
         "phase": "The Kingdom Begins"
       },
       {
-        "segmentId": "I010",
-        "book": "2Sa",
-        "title": "Introduction to 2 Samuel",
-        "ref": "1:1-24:25",
-        "phase": "David's Reign"
-      },
-      {
         "segmentId": "S097",
         "book": "2Sa",
         "title": "David Becomes King",
         "ref": "2:8-5:25",
         "phase": "David's Reign"
-      },
-      {
-        "segmentId": "I011",
-        "book": "1Ki",
-        "title": "Introduction to 1 Kings",
-        "ref": "1:1-22:53",
-        "phase": "The Kingdom Divides"
       },
       {
         "segmentId": "S106",
@@ -2539,13 +2462,6 @@
         "phase": "The Kingdom Divides"
       },
       {
-        "segmentId": "I012",
-        "book": "2Ki",
-        "title": "Introduction to 2 Kings",
-        "ref": "1:1-25:30",
-        "phase": "The Kingdom Falls"
-      },
-      {
         "segmentId": "S121",
         "book": "2Ki",
         "title": "Elijah's Ministry",
@@ -2560,13 +2476,6 @@
         "phase": "The Kingdom Falls"
       },
       {
-        "segmentId": "I016",
-        "book": "Neh",
-        "title": "Introduction to Nehemiah",
-        "ref": "1:1-13:31",
-        "phase": "The Return"
-      },
-      {
         "segmentId": "S149",
         "book": "Neh",
         "title": "Nehemiah Rebuilds the Wall",
@@ -2579,13 +2488,6 @@
         "title": "The People Renew the Covenant",
         "ref": "8:1-10:39",
         "phase": "The Return"
-      },
-      {
-        "segmentId": "I019",
-        "book": "Psa",
-        "title": "Introduction to Psalms",
-        "ref": "1:1-150:6",
-        "phase": "Worship & Wisdom"
       },
       {
         "segmentId": "S164",
@@ -2630,25 +2532,11 @@
         "phase": "Worship & Wisdom"
       },
       {
-        "segmentId": "I020",
-        "book": "Pro",
-        "title": "Introduction to Proverbs",
-        "ref": "1:1-31:31",
-        "phase": "Worship & Wisdom"
-      },
-      {
         "segmentId": "S180",
         "book": "Pro",
         "title": "The Beginning of Wisdom",
         "ref": "1:1-9:18",
         "phase": "Worship & Wisdom"
-      },
-      {
-        "segmentId": "I023",
-        "book": "Isa",
-        "title": "Introduction to Isaiah",
-        "ref": "1:1-66:24",
-        "phase": "The Prophets"
       },
       {
         "segmentId": "S191",
@@ -2693,13 +2581,6 @@
         "phase": "The Prophets"
       },
       {
-        "segmentId": "I024",
-        "book": "Jer",
-        "title": "Introduction to Jeremiah",
-        "ref": "1:1-52:34",
-        "phase": "The Prophets"
-      },
-      {
         "segmentId": "S206",
         "book": "Jer",
         "title": "Jeremiah's Call",
@@ -2728,13 +2609,6 @@
         "phase": "The Prophets"
       },
       {
-        "segmentId": "I026",
-        "book": "Eze",
-        "title": "Introduction to Ezekiel",
-        "ref": "1:1-48:35",
-        "phase": "The Prophets"
-      },
-      {
         "segmentId": "S227",
         "book": "Eze",
         "title": "Ezekiel's Vision",
@@ -2756,13 +2630,6 @@
         "phase": "The Prophets"
       },
       {
-        "segmentId": "I027",
-        "book": "Dan",
-        "title": "Introduction to Daniel",
-        "ref": "1:1-12:13",
-        "phase": "The Prophets"
-      },
-      {
         "segmentId": "S245",
         "book": "Dan",
         "title": "Daniel in Babylon",
@@ -2777,13 +2644,6 @@
         "phase": "The Prophets"
       },
       {
-        "segmentId": "I029",
-        "book": "Joe",
-        "title": "Introduction to Joel",
-        "ref": "1:1-3:21",
-        "phase": "The Prophets"
-      },
-      {
         "segmentId": "S251",
         "book": "Joe",
         "title": "The Day of the Lord",
@@ -2791,24 +2651,10 @@
         "phase": "The Prophets"
       },
       {
-        "segmentId": "I032",
-        "book": "Jon",
-        "title": "Introduction to Jonah",
-        "ref": "1:1-4:11",
-        "phase": "The Prophets"
-      },
-      {
         "segmentId": "S255",
         "book": "Jon",
         "title": "Jonah's Mission",
         "ref": "1:1-4:11",
-        "phase": "The Prophets"
-      },
-      {
-        "segmentId": "I035",
-        "book": "Hab",
-        "title": "Introduction to Habakkuk",
-        "ref": "1:1-3:19",
         "phase": "The Prophets"
       },
       {
@@ -3143,4 +2989,4 @@
       }
     }
   }
-} 
+}

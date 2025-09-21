@@ -71,6 +71,13 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="ReadingPlans"
+          options={{
+            title: "Reading Plans",
+            tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,
+          }}
+        />
+        <Tabs.Screen
           name="Achievements"
           options={{
             title: 'Achievements',

@@ -977,6 +977,50 @@ const PLAN_STYLES = {
   "SchoolYear1": { color: "#FF6347" }
 };
 
+// Function to get plan category color based on story count (matching ReadingPlans page)
+const getPlanCategoryColor = (planData: any) => {
+  if (!planData || !planData.segments) return '#7B68EE'; // Default color
+  
+  // Count total segments across all books
+  let totalSegments = 0;
+  Object.values(planData.segments).forEach((book: any) => {
+    if (book && book.segments) {
+      totalSegments += book.segments.length;
+    }
+  });
+  
+  // Categorize based on story count (matching ReadingPlans logic)
+  if (totalSegments >= 100) {
+    return '#00C853'; // Green for Long (100+ stories)
+  } else if (totalSegments >= 30) {
+    return '#FF9800'; // Orange for Medium (30-100 stories)
+  } else {
+    return '#E91E63'; // Pink for Short (under 30 stories)
+  }
+};
+
+// Function to get challenge category color based on story count (matching ReadingPlans page)
+const getChallengeCategoryColor = (challengeData: any) => {
+  if (!challengeData || !challengeData.segments) return '#E91E63'; // Default pink for challenges
+  
+  // Count total segments across all books
+  let totalSegments = 0;
+  Object.values(challengeData.segments).forEach((book: any) => {
+    if (book && book.segments) {
+      totalSegments += book.segments.length;
+    }
+  });
+  
+  // Categorize based on story count (matching ReadingPlans logic)
+  if (totalSegments >= 100) {
+    return '#00C853'; // Green for Long (100+ stories)
+  } else if (totalSegments >= 30) {
+    return '#FF9800'; // Orange for Medium (30-100 stories)
+  } else {
+    return '#E91E63'; // Pink for Short (under 30 stories)
+  }
+};
+
 interface SectionStyles {
   section: any;
   sectionTitle: any;
@@ -2481,16 +2525,13 @@ const Home = () => {
     return null; // All segments completed
   };
 
-  // Calculate available plans (excluding SchoolYear2, SchoolYear3, and test plans)
-  const getAvailablePlansCount = () => {
-    return ReadingPlansChallenges.plans.filter(plan => 
+  // Calculate total available plans and challenges
+  const getTotalAvailablePlansCount = () => {
+    const availablePlans = ReadingPlansChallenges.plans.filter(plan => 
       !['SchoolYear2', 'SchoolYear3', 'test'].includes(plan.id)
     ).length;
-  };
-
-  // Calculate available challenges
-  const getAvailableChallengesCount = () => {
-    return ReadingPlansChallenges.challenges.length;
+    const availableChallenges = ReadingPlansChallenges.challenges.length;
+    return availablePlans + availableChallenges;
   };
 
   // Calculate total active plans/challenges
@@ -3001,33 +3042,22 @@ const Home = () => {
 
         <View style={styles.getStartedSection}>
           <Text style={styles.sectionTitle}>Get Started</Text>
-          <View style={styles.gridContainer}>
-            <Pressable 
-              style={[styles.onboardingCard, { backgroundColor: '#7B68EE' }]}
-              onPress={() => router.push("/Plan")}
-            >
-              <View style={styles.onboardingCardContent}>
-                <View style={styles.onboardingIconContainer}>
-                  <Ionicons name="calendar-outline" size={32} color="#FFFFFF" />
-                </View>
-                <Text style={styles.onboardingCardTitle}>Reading Plans</Text>
-                <Text style={styles.onboardingCardSubtitle}>{getAvailablePlansCount()} Plans</Text>
-              </View>
-            </Pressable>
-
-            <Pressable 
-              style={[styles.onboardingCard, { backgroundColor: '#FF69B4' }]}
-              onPress={() => router.push("/Reading-Challenges")}
-            >
-              <View style={styles.onboardingCardContent}>
-                <View style={styles.onboardingIconContainer}>
-                  <Ionicons name="flag-outline" size={32} color="#FFFFFF" />
-                </View>
-                <Text style={styles.onboardingCardTitle}>Challenges</Text>
-                <Text style={styles.onboardingCardSubtitle}>{getAvailableChallengesCount()} Challenges</Text>
-              </View>
-            </Pressable>
-          </View>
+          
+          {/* Single Reading Plans Card */}
+          <Pressable 
+            style={[styles.continueReading, { backgroundColor: '#7B68EE' }]}
+            onPress={() => router.push("/ReadingPlans")}
+          >
+            <View style={styles.readingInfo}>
+              <Text style={[styles.readingTitle, { color: '#FFFFFF' }]}>Reading Plans</Text>
+              <Text style={[styles.readingSubtitle, { color: 'rgba(255, 255, 255, 0.8)' }]}>
+                Choose your Bible reading plans
+              </Text>
+            </View>
+            <View style={styles.qrScanButton}>
+              <Ionicons name="calendar-outline" size={32} color="#FFFFFF" />
+            </View>
+          </Pressable>
           
           {/* QR Code Group Reading Card */}
           <View style={[styles.continueReading, { backgroundColor: '#42A5F5' }]}>
@@ -3055,7 +3085,7 @@ const Home = () => {
             {hasTodaysReading && dailySegment && (
               <View style={styles.activeReadingCard}>
                 <View style={styles.activeReadingContent}>
-                  <View style={[styles.activeReadingIcon, { backgroundColor: '#4CAF50' }]}> 
+                  <View style={[styles.activeReadingIcon, { backgroundColor: '#666666' }]}> 
                     <Ionicons name="calendar-outline" size={24} color="#FFFFFF" />
                   </View>
                   <View style={styles.activeReadingInfo}>
@@ -3075,7 +3105,7 @@ const Home = () => {
               (() => {
                 const planData = ReadingPlansChallenges.plans.find((plan: any) => plan.id === activePlan.planId);
                 if (!planData) return null;
-                const planColor = (PLAN_STYLES as any)[planData.title]?.color || '#7B68EE';
+                const planColor = getPlanCategoryColor(planData);
                 return (
                   <View style={styles.activeReadingCard}>
                     <View style={styles.activeReadingContent}>
@@ -3108,7 +3138,7 @@ const Home = () => {
               const challengeData = ReadingPlansChallenges.challenges.find((c: any) => c.id === challenge.challengeId);
               if (!challengeData) return null;
               const progressData = challengeProgresses[id];
-              const challengeColor = '#FF69B4'; // Use consistent pink color for all challenges
+              const challengeColor = getChallengeCategoryColor(challengeData);
               return (
                 <View key={id} style={styles.activeReadingCard}>
                   <View style={styles.activeReadingContent}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import ChronologicalSegmentItem from './ChronologicalSegmentItem';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import ChronologicalMappings from '@/assets/data/ChronologicalMappings.json';
@@ -29,7 +29,7 @@ const ChronologicalView: React.FC<ChronologicalViewProps> = ({
 
   const styles = StyleSheet.create({
     container: {
-      flex: 1,
+      // Remove flex: 1 to prevent conflicts with parent ScrollView
     },
     phaseHeader: {
       backgroundColor: colors.background,
@@ -86,7 +86,7 @@ const ChronologicalView: React.FC<ChronologicalViewProps> = ({
   const phases = Object.keys(mappingData.phases || {});
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
       {phases.map((phaseName) => {
         const phase = mappingData.phases[phaseName];
         const phaseSegments = segmentsByPhase[phaseName] || [];
@@ -129,7 +129,7 @@ const ChronologicalView: React.FC<ChronologicalViewProps> = ({
           </View>
         );
       })}
-    </ScrollView>
+    </View>
   );
 };
 
