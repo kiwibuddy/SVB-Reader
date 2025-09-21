@@ -1741,14 +1741,7 @@ const ReadingInsightsCarousel = ({
 
   // Create card data array with conditional inclusion based on available data
   const cardsData = [
-    // Always show streak card
-    {
-      id: 'streak',
-      type: 'streak',
-      icon: '🔥',
-      title: 'Reading Streak',
-      backgroundColor: colors.card,
-    },
+    // Removed streak card - no longer showing it
     // Show favorite book if user has read books
     ...(enhancedInsights.dataAvailability.hasReadBooks ? [{
       id: 'favorite-book',
@@ -1823,18 +1816,7 @@ const ReadingInsightsCarousel = ({
       ));
     };
 
-    if (item.type === 'streak') {
-      return (
-        <StreakCard 
-          currentStreak={currentStreak} 
-          isTodayComplete={isTodayComplete} 
-          colors={colors} 
-          item={item} 
-          localStyles={localStyles}
-          contextualStreaks={contextualStreaks}
-        />
-      );
-    }
+    // Streak card removed - no longer used
 
     if (item.type === 'favorite-book') {
       const bookInsights = item.insights;
@@ -2116,6 +2098,11 @@ const ReadingInsightsCarousel = ({
       </Pressable>
     );
   };
+
+  // Only render the section if there are cards to show
+  if (cardsData.length === 0) {
+    return null;
+  }
 
   return (
     <View style={styles.section}>
