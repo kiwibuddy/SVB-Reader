@@ -701,7 +701,8 @@
             "S365"
           ]
         }
-      }
+      },
+      "shortDescription": "Complete the entire Bible in one year with this comprehensive reading plan. Perfect for building biblical literacy."
     },
     {
       "id": "SchoolYear1",
@@ -1005,7 +1006,8 @@
             "S264"
           ]
         }
-      }
+      },
+      "shortDescription": "Essential Bible stories curated for a meaningful school year journey. Ideal for students and classrooms."
     },
     {
       "id": "NT100Days",
@@ -1248,7 +1250,8 @@
             "S365"
           ]
         }
-      }
+      },
+      "shortDescription": "Discover the New Testament through 100 carefully selected stories. Great for new believers."
     }
   ],
   "challenges": [
@@ -1288,7 +1291,8 @@
             "S365"
           ]
         }
-      }
+      },
+      "shortDescription": "Experience the Gospel in seven pivotal moments of redemption. Quick overview of God's plan."
     },
     {
       "id": "oldTestamentJourney",
@@ -1444,7 +1448,8 @@
             "S259"
           ]
         }
-      }
+      },
+      "shortDescription": "Explore God's covenant relationship from Creation to the prophets. Foundational for understanding Christ."
     },
     {
       "id": "newTestamentJourney",
@@ -1545,7 +1550,8 @@
             "S365"
           ]
         }
-      }
+      },
+      "shortDescription": "Follow Jesus and the early church through key New Testament books. Builds strong discipleship foundation."
     },
     {
       "id": "inTheBeginning",
@@ -1579,7 +1585,8 @@
             "S018"
           ]
         }
-      }
+      },
+      "shortDescription": "Witness humanity's origins and God's first covenant promises. Starting point for Bible study."
     },
     {
       "id": "theGospels",
@@ -1651,7 +1658,8 @@
             "S307"
           ]
         }
-      }
+      },
+      "shortDescription": "Journey through Jesus' life, ministry, death, and resurrection. Heart of the Christian faith."
     },
     {
       "id": "paulsLetters",
@@ -1754,7 +1762,8 @@
             "S346"
           ]
         }
-      }
+      },
+      "shortDescription": "Study the apostle's teachings on faith, grace, and Christian living. Transformative for spiritual growth."
     },
     {
       "id": "womenOfTheBible",
@@ -1819,7 +1828,8 @@
             "S301"
           ]
         }
-      }
+      },
+      "shortDescription": "Meet remarkable women who shaped biblical history. Inspiring stories of faith and courage."
     },
     {
       "id": "davidsLife",
@@ -1896,7 +1906,8 @@
             "S179"
           ]
         }
-      }
+      },
+      "shortDescription": "Follow Israel's greatest king from shepherd to throne. Lessons in leadership and worship."
     },
     {
       "id": "adventJourneyChronological",
@@ -1943,7 +1954,8 @@
             "S294"
           ]
         }
-      }
+      },
+      "shortDescription": "Prepare your heart for Christmas with prophecy and fulfillment. Perfect for the holiday season."
     },
     {
       "id": "lentenReflectionChronological",
@@ -1995,7 +2007,8 @@
             "S307"
           ]
         }
-      }
+      },
+      "shortDescription": "Walk with Jesus through His final weeks and resurrection. Meaningful for Easter preparation."
     },
     {
       "id": "christmas12",
@@ -2022,7 +2035,8 @@
             "S289"
           ]
         }
-      }
+      },
+      "shortDescription": "Celebrate Christ's birth with nativity stories and reflections. Tradition meets scripture."
     }
   ]
 }

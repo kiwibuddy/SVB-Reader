@@ -55,6 +55,8 @@ interface ReadingPlansData {
     id: string;
     title: string;
     description: string;
+    shortDescription?: string;
+    longDescription?: string;
     image: string;
     segments: Record<string, { segments: string[] }>;
   }[];
@@ -62,8 +64,9 @@ interface ReadingPlansData {
     id: string;
     title: string;
     description: string;
-    image: string;
+    shortDescription?: string;
     longDescription: string;
+    image: string;
     chronologicalOrder?: boolean;
     chronologicalMapping?: string;
     segments: Record<string, { segments: string[] }>;
@@ -76,6 +79,7 @@ interface UnifiedPlan {
   id: string;
   title: string;
   description: string;
+  shortDescription?: string;
   longDescription?: string;
   type: 'plan' | 'challenge';
   segments: Record<string, { segments: string[] }>;
@@ -83,9 +87,9 @@ interface UnifiedPlan {
 
 // Category definitions
 const PLAN_CATEGORIES = {
-  LONG: 'Long',
-  MEDIUM: 'Medium',
-  SHORT: 'Short'
+  LONG: 'Whole Year Plans',
+  MEDIUM: 'Monthly Challenges', 
+  SHORT: 'Mini Studies'
 };
 
 // Categorization thresholds
@@ -144,9 +148,10 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 16,
-    color: "#FF9F0A",
+    fontWeight: '600',
+    marginBottom: 12,
+    color: colors.text,
+    letterSpacing: -0.3,
   },
   activePlanItem: {
     flexDirection: 'row',
@@ -166,6 +171,7 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
   },
   activePlanContent: {
     flex: 1,
+    marginRight: 10, // 10px padding from dropdown arrow
   },
   activePlanTitle: {
     fontSize: 18,
@@ -287,12 +293,20 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
   },
   planContent: {
     flex: 1,
+    marginRight: 10, // 10px padding from dropdown arrow
   },
   planTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: colors.text,
     marginBottom: 4,
+  },
+  planDescription: {
+    fontSize: 14,                     // Match home page subtitle
+    color: colors.secondary,          // Match home page subtitle
+    marginBottom: 4,
+    lineHeight: 20,                   // Better line height for 14px font
+    width: '100%',                    // Align with progress bar width (full content width)
   },
   planSubtitle: {
     fontSize: 14,
@@ -330,9 +344,6 @@ const createStyles = (isLargeScreen: boolean, colors: any, isDarkMode: boolean) 
   },
   expandedContent: {
     marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
   description: {
     color: colors.secondary,
@@ -456,6 +467,8 @@ const ReadingPlansScreen = () => {
         id: plan.id,
         title: plan.title,
         description: plan.description,
+        shortDescription: plan.shortDescription,
+        longDescription: plan.longDescription,
         type: 'plan' as const,
         segments: plan.segments
       }));
@@ -466,6 +479,7 @@ const ReadingPlansScreen = () => {
         id: challenge.id,
         title: challenge.title,
         description: challenge.description,
+        shortDescription: challenge.shortDescription,
         longDescription: challenge.longDescription,
         type: 'challenge' as const,
         segments: challenge.segments
@@ -689,6 +703,12 @@ const ReadingPlansScreen = () => {
       return challenge?.longDescription || challenge?.description || "";
     }
     
+    // For plans, check if they have longDescription first
+    const plan = typedReadingPlansData.plans.find(p => p.id === planId);
+    if (plan?.longDescription) {
+      return plan.longDescription;
+    }
+    
     // Plan descriptions (keeping existing logic from Plan.tsx)
     switch (planId) {
       case "Bible1Year":
@@ -856,6 +876,7 @@ const ReadingPlansScreen = () => {
     const isExpanded = expandedPlanId === item.id;
     const planBooksData = isExpanded ? getPlanBooksData(item.id, item.type) : [];
     const completedSegments = progress?.completedSegmentIds || [];
+    const planTitleColor = getPlanTitleColor(item);
 
     return (
       <View>
@@ -868,7 +889,10 @@ const ReadingPlansScreen = () => {
           onPress={() => handlePlanPress(item)}
         >
           <View style={styles.activePlanContent}>
-            <Text style={styles.activePlanTitle}>{item.title}</Text>
+            <Text style={[styles.activePlanTitle, { color: planTitleColor }]}>{item.title}</Text>
+            {item.shortDescription && (
+              <Text style={styles.planDescription}>{item.shortDescription}</Text>
+            )}
             <Text style={styles.activePlanSubtitle}>{storyCount} stories</Text>
             <View style={styles.progressContainer}>
               <View style={styles.progressBar}>
@@ -951,10 +975,6 @@ const ReadingPlansScreen = () => {
         {/* Expanded Content */}
         {isExpanded && (
           <View style={[styles.expandedContent, isLast && { borderBottomWidth: 0 }]}>
-            <Text style={styles.description}>
-              {getPlanDescription(item.id, item.type)}
-            </Text>
-
             <View style={styles.booksContainer}>
               <View style={styles.accordionContainer}>
                 {(() => {
@@ -1022,6 +1042,13 @@ const ReadingPlansScreen = () => {
     );
   };
 
+  // Helper function to get plan title color based on category
+  const getPlanTitleColor = (item: UnifiedPlan) => {
+    const storyCount = getStoryCount(item);
+    const category = categorizePlan(storyCount);
+    return getCategoryColor(category);
+  };
+
   // Render plan item in category
   const renderPlanItem = ({ item, index, isLast }: { item: UnifiedPlan; index: number; isLast: boolean }) => {
     const storyCount = getStoryCount(item);
@@ -1029,6 +1056,7 @@ const ReadingPlansScreen = () => {
     const planBooksData = isExpanded ? getPlanBooksData(item.id, item.type) : [];
     const progress = item.type === 'plan' ? planProgress[item.id] : challengeProgress[item.id];
     const completedSegments = progress?.completedSegmentIds || [];
+    const planTitleColor = getPlanTitleColor(item);
     
     return (
       <View>
@@ -1041,7 +1069,10 @@ const ReadingPlansScreen = () => {
           onPress={() => handleStartPlanPress(item)}
         >
           <View style={styles.planContent}>
-            <Text style={styles.planTitle}>{item.title}</Text>
+            <Text style={[styles.planTitle, { color: planTitleColor }]}>{item.title}</Text>
+            {item.shortDescription && (
+              <Text style={styles.planDescription}>{item.shortDescription}</Text>
+            )}
             <Text style={styles.planSubtitle}>{storyCount} stories</Text>
           </View>
           <TouchableOpacity 
@@ -1066,10 +1097,6 @@ const ReadingPlansScreen = () => {
         {/* Expanded Content */}
         {isExpanded && (
           <View style={[styles.expandedContent, isLast && { borderBottomWidth: 0 }]}>
-            <Text style={styles.description}>
-              {getPlanDescription(item.id, item.type)}
-            </Text>
-
             <View style={styles.booksContainer}>
               <View style={styles.accordionContainer}>
                 {(() => {
@@ -1141,7 +1168,7 @@ const ReadingPlansScreen = () => {
   const getCategoryColor = (title: string) => {
     switch (title) {
       case PLAN_CATEGORIES.LONG:
-        return '#00C853'; // Green
+        return '#007AFF'; // Blue
       case PLAN_CATEGORIES.MEDIUM:
         return '#FF9800'; // Orange  
       case PLAN_CATEGORIES.SHORT:

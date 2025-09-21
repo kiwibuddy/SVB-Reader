@@ -3045,7 +3045,7 @@ const Home = () => {
           
           {/* Single Reading Plans Card */}
           <Pressable 
-            style={[styles.continueReading, { backgroundColor: '#7B68EE' }]}
+            style={[styles.continueReading, { backgroundColor: '#00C853' }]}
             onPress={() => router.push("/ReadingPlans")}
           >
             <View style={styles.readingInfo}>
