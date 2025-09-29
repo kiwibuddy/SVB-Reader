@@ -991,11 +991,11 @@ const getPlanCategoryColor = (planData: any) => {
   
   // Categorize based on story count (matching ReadingPlans logic)
   if (totalSegments >= 100) {
-    return '#00C853'; // Green for Long (100+ stories)
+    return '#007AFF'; // Blue for Whole Year Plans (100+ stories)
   } else if (totalSegments >= 30) {
-    return '#FF9800'; // Orange for Medium (30-100 stories)
+    return '#FF9800'; // Orange for Monthly Challenges (30-100 stories)
   } else {
-    return '#E91E63'; // Pink for Short (under 30 stories)
+    return '#E91E63'; // Pink for Mini Studies (under 30 stories)
   }
 };
 
@@ -1013,11 +1013,11 @@ const getChallengeCategoryColor = (challengeData: any) => {
   
   // Categorize based on story count (matching ReadingPlans logic)
   if (totalSegments >= 100) {
-    return '#00C853'; // Green for Long (100+ stories)
+    return '#007AFF'; // Blue for Whole Year Plans (100+ stories)
   } else if (totalSegments >= 30) {
-    return '#FF9800'; // Orange for Medium (30-100 stories)
+    return '#FF9800'; // Orange for Monthly Challenges (30-100 stories)
   } else {
-    return '#E91E63'; // Pink for Short (under 30 stories)
+    return '#E91E63'; // Pink for Mini Studies (under 30 stories)
   }
 };
 
@@ -1938,7 +1938,7 @@ const ReadingInsightsCarousel = ({
           
           {lastReaction && (
             <View style={{ marginTop: 8, flex: 1 }}>
-              {/* Speech bubble with proper styling matching BibleBlockComponent */}
+              {/* Speech bubble container matching Reading-emoji page structure */}
               <View style={{ position: 'relative', marginBottom: 8 }}>
                 {/* Speaker name above bubble (matching BibleBlockComponent) */}
                 {lastReaction.blockData?.source?.sourceName && (
@@ -1953,51 +1953,61 @@ const ReadingInsightsCarousel = ({
                   </Text>
                 )}
                 
-                {/* Speech bubble container */}
-                <View style={{
-                  backgroundColor: getSpeakerBackgroundColor(lastReaction.blockData?.source?.color),
-                  borderRadius: 16,
-                  padding: 16,
-                  position: 'relative',
-                  minHeight: 60,
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.08,
-                  shadowRadius: 4,
-                  elevation: 2,
-                }}>
-                  {/* Speech bubble tail (matching BibleBlockComponent) */}
+                {/* Speech bubble container - matches Reading-emoji structure */}
+                <View style={{ position: 'relative', zIndex: 1 }}>
+                  {/* Speech bubble content */}
                   <View style={{
-                    position: "absolute",
-                    top: -9,
-                    [lastReaction.blockData?.source?.color !== "black" ? "left" : "right"]: 15,
-                    width: 0,
-                    height: 0,
-                    borderLeftWidth: 10,
-                    borderRightWidth: 10,
-                    borderBottomWidth: 10,
-                    borderLeftColor: "transparent",
-                    borderRightColor: "transparent",
-                    borderBottomColor: getSpeakerBackgroundColor(lastReaction.blockData?.source?.color),
-                    zIndex: 2,
-                  }} />
+                    backgroundColor: getSpeakerBackgroundColor(lastReaction.blockData?.source?.color),
+                    borderRadius: 16,
+                    padding: 16,
+                    position: 'relative',
+                    minHeight: 60,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 4,
+                    elevation: 2,
+                  }}>
+                    {/* Speech bubble tail (matching BibleBlockComponent) */}
+                    <View style={{
+                      position: "absolute",
+                      top: -9,
+                      [lastReaction.blockData?.source?.color !== "black" ? "left" : "right"]: 15,
+                      width: 0,
+                      height: 0,
+                      borderLeftWidth: 10,
+                      borderRightWidth: 10,
+                      borderBottomWidth: 10,
+                      borderLeftColor: "transparent",
+                      borderRightColor: "transparent",
+                      borderBottomColor: getSpeakerBackgroundColor(lastReaction.blockData?.source?.color),
+                      zIndex: 2,
+                    }} />
+                    
+                    {/* Block text preview */}
+                    <Text style={{
+                      fontSize: sizes.caption,
+                      color: getBubbleTextColorSafe(lastReaction.blockData?.source?.color || 'black', isDarkMode),
+                      lineHeight: 18,
+                    }} numberOfLines={2}>
+                      {getBlockText(lastReaction.blockData)}
+                    </Text>
+                  </View>
                   
-                  {/* Block text preview */}
-                  <Text style={{
-                    fontSize: sizes.caption,
-                    color: getBubbleTextColorSafe(lastReaction.blockData?.source?.color || 'black', isDarkMode),
-                    lineHeight: 18,
-                  }} numberOfLines={2}>
-                    {getBlockText(lastReaction.blockData)}
-                  </Text>
-                  
-                  {/* Emoji overlay positioned like in Reading-emoji */}
+                  {/* Emoji positioned as sibling to speech bubble - exactly like Reading-emoji page */}
                   <Text style={{
                     position: 'absolute',
-                    top: 25,
-                    [lastReaction.blockData?.source?.color === "black" ? "left" : "right"]: 10,
-                    fontSize: 20,
-                    zIndex: 1,
+                    top: -20, // Same as emojiTopOffset in Reading-emoji
+                    [lastReaction.blockData?.source?.color === "black" ? "left" : "right"]: 10, // Same alignment logic
+                    fontSize: 30, // Same as styles.reactionEmoji
+                    padding: 5, // Same as styles.reactionEmoji
+                    zIndex: 100, // Same as styles.reactionEmoji
+                    elevation: 3, // Same as styles.reactionEmoji
+                    shadowColor: "#000", // Same as styles.reactionEmoji
+                    shadowOffset: { width: 0, height: 2 }, // Same as styles.reactionEmoji
+                    shadowOpacity: 0.2, // Same as styles.reactionEmoji
+                    shadowRadius: 2, // Same as styles.reactionEmoji
+                    pointerEvents: "none", // Same as Reading-emoji
                   }}>
                     {item.value}
                   </Text>
@@ -3130,7 +3140,7 @@ const Home = () => {
                 <View key={id} style={styles.activeReadingCard}>
                   <View style={styles.activeReadingContent}>
                     <View style={[styles.activeReadingIcon, { backgroundColor: challengeColor }]}> 
-                      <Ionicons name="flag-outline" size={24} color="#FFFFFF" />
+                      <Ionicons name="calendar-outline" size={24} color="#FFFFFF" />
                     </View>
                     <View style={styles.activeReadingInfo}>
                       <Text style={styles.activeReadingTitle}>{challengeData.title}</Text>

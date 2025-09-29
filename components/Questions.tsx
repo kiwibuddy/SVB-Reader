@@ -1,81 +1,91 @@
-import { Text, View, FlatList, Image, Pressable, StyleSheet, Animated, Platform } from 'react-native'
+import { Text, View, Pressable, StyleSheet, Animated, Platform } from 'react-native'
 import React, { useState, useEffect, useRef } from 'react'
-// Removed unused useAppContext import - component doesn't use GlobalContext
-import QuestionsList from "@/assets/data/QuestionRefs.json";
-import UIData from "@/assets/data/UI-ENG.json";
+import { MaterialIcons } from '@expo/vector-icons'
+import SchoolQuestions from "@/assets/data/SchoolQuestions.json";
+import FamilyQuestions from "@/assets/data/FamilyQuestions.json";
+import SmallGroupQuestions from "@/assets/data/SmallGroupQuestions.json";
+import SchoolQuestionsSet2 from "@/assets/data/SchoolQuestionsSet2.json";
+import FamilyQuestionsSet2 from "@/assets/data/FamilyQuestionsSet2.json";
+import SmallGroupQuestionsSet2 from "@/assets/data/SmallGroupQuestionsSet2.json";
 import { useAppSettings } from '@/context/AppSettingsContext';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 
-// Define the type for questions with an index signature
-interface Questions {
-  [key: string]: string; // Allow indexing with a string
-}
-const Qs: Questions = UIData.Questions;
+// Define audience types
+type AudienceType = 'school' | 'family' | 'smallgroup';
+
+// Define question data sources for each audience
+const audienceQuestionData = {
+  school: {
+    set1: SchoolQuestions.SchoolQuestions,
+    set2: SchoolQuestionsSet2.SchoolQuestionsSet2
+  },
+  family: {
+    set1: FamilyQuestions.FamilyQuestions,
+    set2: FamilyQuestionsSet2.FamilyQuestionsSet2
+  },
+  smallgroup: {
+    set1: SmallGroupQuestions.SmallGroupQuestions,
+    set2: SmallGroupQuestionsSet2.SmallGroupQuestionsSet2
+  }
+};
 
 interface QuestionsProps {
   segmentId: string;
 }
 
-// Define question categories with their colors and icons (only 3 categories)
-const QUESTION_CATEGORIES = [
-  {
-    id: 'QRef1',
-    title: 'Opening the Word',
-    subtitle: 'Reflection Questions',
-    icon: 'book-outline',
-    gradientColors: ['#7B68EE', '#9B7EF7'],
+// Define audience configurations
+const AUDIENCE_CONFIG = {
+  school: {
+    title: 'School Questions',
+    color: '#4ECDC4', // Teal color
+    backgroundColor: '#E8F8F5', // Light teal background
   },
-  {
-    id: 'QRef2', 
-    title: 'Following Examples',
-    subtitle: 'Application Questions',
-    icon: 'people-outline',
-    gradientColors: ['#FF69B4', '#FF8BC6'],
+  family: {
+    title: 'Family Questions', 
+    color: '#FF69B4', // Pink color
+    backgroundColor: '#FDF2F8', // Light pink background
   },
-  {
-    id: 'QRef3',
-    title: 'Growing Deeper',
-    subtitle: 'Spiritual Growth',
-    icon: 'leaf-outline', 
-    gradientColors: ['#4ECDC4', '#6ED9D1'],
+  smallgroup: {
+    title: 'Small Group Questions',
+    color: '#9CA3AF', // Light grey color
+    backgroundColor: '#F9FAFB', // Light grey background
   }
-];
+};
 
 const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
   const { colors } = useAppSettings();
-  const [selectedCategory, setSelectedCategory] = useState(0);
+  const [selectedAudience, setSelectedAudience] = useState<AudienceType>('school');
+  const [currentSet, setCurrentSet] = useState<'set1' | 'set2'>('set1');
   const [questions, setQuestions] = useState<string[]>([]);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     loadQuestions();
-  }, [segmentId, selectedCategory]);
+  }, [segmentId, selectedAudience, currentSet]);
 
   const loadQuestions = () => {
-    const segmentQuestions = QuestionsList[segmentId as keyof typeof QuestionsList];
+    // Get the questions directly for this segment and audience
+    const audienceQuestions = audienceQuestionData[selectedAudience];
+    const questionSet = audienceQuestions[currentSet];
+    const segmentQuestions = questionSet[segmentId as keyof typeof questionSet];
+    
     if (!segmentQuestions) {
       setQuestions([]);
       return;
     }
 
-    const currentCategory = QUESTION_CATEGORIES[selectedCategory];
-    const qRefKey = segmentQuestions[currentCategory.id as keyof typeof segmentQuestions];
+    // Convert the question object to an array
+    const questionsArray = [
+      segmentQuestions.Q1,
+      segmentQuestions.Q2,
+      segmentQuestions.Q3,
+      segmentQuestions.Q4
+    ].filter(Boolean); // Remove any undefined questions
     
-    if (!qRefKey) {
-      setQuestions([]);
-      return;
-    }
-
-    // Get questions for this category
-    const questionKeys = Object.keys(Qs).filter(key => key.startsWith(qRefKey + '-Q'));
-    const questionTexts = questionKeys.map(key => Qs[key]).filter(Boolean);
-    
-    setQuestions(questionTexts);
+    setQuestions(questionsArray);
   };
 
-  const handleCategoryChange = (index: number) => {
-    if (index === selectedCategory) return;
+  const handleAudienceChange = (audience: AudienceType) => {
+    if (audience === selectedAudience) return;
     
     // Fade out
     Animated.timing(fadeAnim, {
@@ -83,8 +93,9 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
       duration: 150,
       useNativeDriver: true,
     }).start(() => {
-      // Change category
-      setSelectedCategory(index);
+      // Change audience and reset to set1
+      setSelectedAudience(audience);
+      setCurrentSet('set1');
       
       // Fade in
       Animated.timing(fadeAnim, {
@@ -95,73 +106,89 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
     });
   };
 
-  const currentCategory = QUESTION_CATEGORIES[selectedCategory];
+  const handleRefreshQuestions = () => {
+    // Fade out
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
+      // Toggle between set1 and set2
+      setCurrentSet(currentSet === 'set1' ? 'set2' : 'set1');
+      
+      // Fade in
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }).start();
+    });
+  };
 
   const styles = StyleSheet.create({
     container: {
       marginHorizontal: 16,
       marginTop: 16,
-      marginBottom: 16, // Standard app spacing
+      marginBottom: 16,
     },
-    card: {
-      backgroundColor: colors.card,
-      borderRadius: 16,
-      overflow: 'hidden',
-      shadowColor: colors.text,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      elevation: 5,
-      borderWidth: 1,
-      borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
+    title: {
+      fontSize: 20,
+      fontWeight: '600',
+      color: colors.text,
+      textAlign: 'center',
+      marginBottom: 20,
+      letterSpacing: -0.3,
     },
-    cardHeader: {
-      height: 100,
+    audienceSelector: {
+      flexDirection: 'row',
+      gap: 8,
+      marginBottom: 20,
+    },
+    audienceButton: {
+      flex: 1,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 12,
+      alignItems: 'center',
       justifyContent: 'center',
-      alignItems: 'center',
-      paddingHorizontal: 20,
+      borderWidth: 2,
+      borderColor: 'transparent',
     },
-    headerContent: {
-      alignItems: 'center',
+    audienceButtonSelected: {
+      borderColor: AUDIENCE_CONFIG[selectedAudience].color,
+      backgroundColor: AUDIENCE_CONFIG[selectedAudience].backgroundColor,
     },
-    headerIcon: {
-      marginBottom: 8,
-    },
-    headerTitle: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: '#FFFFFF',
+    audienceButtonText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.text,
       textAlign: 'center',
-      textShadowColor: 'rgba(0, 0, 0, 0.3)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 2,
     },
-    headerSubtitle: {
-      fontSize: 12,
-      color: 'rgba(255, 255, 255, 0.9)',
-      textAlign: 'center',
-      marginTop: 2,
-      textShadowColor: 'rgba(0, 0, 0, 0.3)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 2,
-    },
-    cardContent: {
-      backgroundColor: colors.card,
-      padding: 20,
+    audienceButtonTextSelected: {
+      color: AUDIENCE_CONFIG[selectedAudience].color,
     },
     questionsContainer: {
-      marginBottom: 20,
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      padding: 20,
+      shadowColor: colors.text,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 6,
+      elevation: 2,
+      borderWidth: 1,
+      borderColor: Platform.OS === 'ios' ? 'rgba(0,0,0,0.05)' : 'transparent',
     },
     questionItem: {
       flexDirection: 'row',
       alignItems: 'flex-start',
-      marginBottom: 12,
+      marginBottom: 16,
     },
     questionBullet: {
       width: 6,
       height: 6,
       borderRadius: 3,
-      backgroundColor: currentCategory.gradientColors[0],
+      backgroundColor: AUDIENCE_CONFIG[selectedAudience].color,
       marginTop: 8,
       marginRight: 12,
     },
@@ -170,43 +197,6 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
       fontSize: 15,
       lineHeight: 22,
       color: colors.text,
-    },
-    categorySelector: {
-      flexDirection: 'row',
-      gap: 8,
-    },
-    categoryButton: {
-      flex: 1,
-      height: 60,
-      borderRadius: 12,
-      overflow: 'hidden',
-      borderWidth: 2,
-      borderColor: 'transparent',
-    },
-    categoryButtonSelected: {
-      borderColor: 'rgba(255, 255, 255, 0.3)',
-      transform: [{ scale: 1.02 }],
-    },
-    categoryButtonGradient: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingHorizontal: 8,
-    },
-    categoryButtonContent: {
-      alignItems: 'center',
-    },
-    categoryButtonIcon: {
-      marginBottom: 4,
-    },
-    categoryButtonText: {
-      fontSize: 11,
-      fontWeight: '600',
-      color: '#FFFFFF',
-      textAlign: 'center',
-      textShadowColor: 'rgba(0, 0, 0, 0.3)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 2,
     },
     emptyState: {
       alignItems: 'center',
@@ -218,93 +208,93 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
       color: colors.secondary,
       textAlign: 'center',
     },
+    refreshButton: {
+      alignSelf: 'center',
+      marginTop: 16,
+      padding: 8,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: AUDIENCE_CONFIG[selectedAudience].color,
+      backgroundColor: AUDIENCE_CONFIG[selectedAudience].backgroundColor,
+      minWidth: 40,
+      minHeight: 40,
+    },
   });
 
   return (
     <View style={styles.container}>
-      <View style={styles.card}>
-        {/* Header with gradient */}
-        <LinearGradient
-          colors={currentCategory.gradientColors as any}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.cardHeader}
-        >
-          <View style={styles.headerContent}>
-            <Ionicons 
-              name={currentCategory.icon as any} 
-              size={32} 
-              color="#FFFFFF" 
-              style={styles.headerIcon}
-            />
-            <Text style={styles.headerTitle}>
-              {currentCategory.title}
-            </Text>
-            <Text style={styles.headerSubtitle}>
-              {currentCategory.subtitle}
-            </Text>
-          </View>
-        </LinearGradient>
+      {/* Title - Get story title from segmentId */}
+      <Text style={styles.title}>
+        {(() => {
+          // Import SegmentTitles to get the story title
+          const SegmentTitles = require('@/assets/data/SegmentTitles.json');
+          const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+          const storyTitle = segmentData?.title || 'Story Questions';
+          return `${storyTitle} Questions`;
+        })()}
+      </Text>
 
-        {/* Content */}
-        <View style={styles.cardContent}>
-          <Animated.View style={[styles.questionsContainer, { opacity: fadeAnim }]}>
-            {questions.length > 0 ? (
-              questions.map((question, index) => (
-                <View key={index} style={styles.questionItem}>
-                  <View style={styles.questionBullet} />
-                  <Text style={styles.questionText}>{question}</Text>
-                </View>
-              ))
-            ) : (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>
-                  No questions available for this category
-                </Text>
-              </View>
-            )}
-          </Animated.View>
-
-          {/* Category selector buttons */}
-          <View style={styles.categorySelector}>
-            {QUESTION_CATEGORIES.map((category, index) => (
-              <Pressable
-                key={index}
+      {/* Audience Selector */}
+      <View style={styles.audienceSelector}>
+        {Object.entries(AUDIENCE_CONFIG).map(([audienceKey, config]) => {
+          const audience = audienceKey as AudienceType;
+          const isSelected = audience === selectedAudience;
+          
+          return (
+            <Pressable
+              key={audience}
+              style={[
+                styles.audienceButton,
+                isSelected && styles.audienceButtonSelected
+              ]}
+              onPress={() => handleAudienceChange(audience)}
+            >
+              <Text 
                 style={[
-                  styles.categoryButton,
-                  selectedCategory === index && styles.categoryButtonSelected
+                  styles.audienceButtonText,
+                  isSelected && styles.audienceButtonTextSelected
                 ]}
-                onPress={() => handleCategoryChange(index)}
               >
-                <LinearGradient
-                  colors={selectedCategory === index ? category.gradientColors as any : ['transparent', 'transparent']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.categoryButtonGradient}
-                >
-                  <View style={styles.categoryButtonContent}>
-                    <Ionicons 
-                      name={category.icon as any} 
-                      size={16} 
-                      color={selectedCategory === index ? "#FFFFFF" : colors.secondary}
-                      style={styles.categoryButtonIcon}
-                    />
-                    <Text 
-                      style={[
-                        styles.categoryButtonText,
-                        { color: selectedCategory === index ? "#FFFFFF" : colors.secondary }
-                      ]}
-                      numberOfLines={2}
-                    >
-                      {category.title}
-                    </Text>
-                  </View>
-                </LinearGradient>
-              </Pressable>
-            ))}
-          </View>
-        </View>
+                {config.title}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
+
+      {/* Questions Container */}
+      <Animated.View style={[styles.questionsContainer, { opacity: fadeAnim }]}>
+        {questions.length > 0 ? (
+          <>
+            {questions.map((question, index) => (
+              <View key={index} style={styles.questionItem}>
+                <View style={styles.questionBullet} />
+                <Text style={styles.questionText}>{question}</Text>
+              </View>
+            ))}
+            
+            {/* Refresh Button inside the card */}
+            <Pressable
+              style={styles.refreshButton}
+              onPress={handleRefreshQuestions}
+            >
+              <MaterialIcons 
+                name="autorenew" 
+                size={20} 
+                color={AUDIENCE_CONFIG[selectedAudience].color} 
+              />
+            </Pressable>
+          </>
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>
+              No questions available for this audience
+            </Text>
+          </View>
+        )}
+      </Animated.View>
     </View>
   );
 };

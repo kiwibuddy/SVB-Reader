@@ -1,0 +1,52 @@
+{
+  "S001": {
+    "QRef1": "FAM001-S0",
+    "QRef2": "FAM002-S0",
+    "QRef3": "FAM003-S0"
+  },
+  "S002": {
+    "QRef1": "FAM001-S1",
+    "QRef2": "FAM002-S1",
+    "QRef3": "FAM003-S1"
+  },
+  "S003": {
+    "QRef1": "FAM001-S2",
+    "QRef2": "FAM002-S2",
+    "QRef3": "FAM003-S2"
+  },
+  "S004": {
+    "QRef1": "FAM001-S0",
+    "QRef2": "FAM002-S0",
+    "QRef3": "FAM003-S0"
+  },
+  "S005": {
+    "QRef1": "FAM001-S1",
+    "QRef2": "FAM002-S1",
+    "QRef3": "FAM003-S1"
+  },
+  "S006": {
+    "QRef1": "FAM001-S2",
+    "QRef2": "FAM002-S2",
+    "QRef3": "FAM003-S2"
+  },
+  "S007": {
+    "QRef1": "FAM001-S0",
+    "QRef2": "FAM002-S0",
+    "QRef3": "FAM003-S0"
+  },
+  "S008": {
+    "QRef1": "FAM001-S1",
+    "QRef2": "FAM002-S1",
+    "QRef3": "FAM003-S1"
+  },
+  "S009": {
+    "QRef1": "FAM001-S2",
+    "QRef2": "FAM002-S2",
+    "QRef3": "FAM003-S2"
+  },
+  "S010": {
+    "QRef1": "FAM001-S0",
+    "QRef2": "FAM002-S0",
+    "QRef3": "FAM003-S0"
+  }
+}

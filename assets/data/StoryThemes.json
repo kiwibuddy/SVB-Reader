@@ -1,0 +1,104 @@
+{
+  "storyThemes": {
+    "S001": {
+      "primaryTheme": "creation",
+      "secondaryThemes": ["god_character", "human_nature"],
+      "narrativeType": "foundational",
+      "audienceFocus": {
+        "school": "understanding_gods_character",
+        "family": "family_values_creation",
+        "smallgroup": "cultural_engagement"
+      }
+    },
+    "S002": {
+      "primaryTheme": "fall",
+      "secondaryThemes": ["sin", "consequences", "redemption"],
+      "narrativeType": "foundational",
+      "audienceFocus": {
+        "school": "peer_pressure_resistance",
+        "family": "family_relationships",
+        "smallgroup": "cultural_challenges"
+      }
+    },
+    "S003": {
+      "primaryTheme": "covenant",
+      "secondaryThemes": ["faithfulness", "promise", "relationship"],
+      "narrativeType": "foundational",
+      "audienceFocus": {
+        "school": "faith_development",
+        "family": "family_commitment",
+        "smallgroup": "community_faithfulness"
+      }
+    },
+    "S004": {
+      "primaryTheme": "faith",
+      "secondaryThemes": ["trust", "obedience", "testing"],
+      "narrativeType": "character_study",
+      "audienceFocus": {
+        "school": "academic_pressure",
+        "family": "family_trust",
+        "smallgroup": "career_faith"
+      }
+    },
+    "S005": {
+      "primaryTheme": "leadership",
+      "secondaryThemes": ["responsibility", "service", "humility"],
+      "narrativeType": "character_study",
+      "audienceFocus": {
+        "school": "leadership_development",
+        "family": "family_leadership",
+        "smallgroup": "workplace_leadership"
+      }
+    },
+    "S006": {
+      "primaryTheme": "deliverance",
+      "secondaryThemes": ["salvation", "freedom", "power"],
+      "narrativeType": "redemptive",
+      "audienceFocus": {
+        "school": "personal_struggles",
+        "family": "family_deliverance",
+        "smallgroup": "life_challenges"
+      }
+    },
+    "S007": {
+      "primaryTheme": "wisdom",
+      "secondaryThemes": ["guidance", "discernment", "teaching"],
+      "narrativeType": "instructional",
+      "audienceFocus": {
+        "school": "decision_making",
+        "family": "family_wisdom",
+        "smallgroup": "life_wisdom"
+      }
+    },
+    "S008": {
+      "primaryTheme": "worship",
+      "secondaryThemes": ["praise", "devotion", "sacrifice"],
+      "narrativeType": "devotional",
+      "audienceFocus": {
+        "school": "spiritual_disciplines",
+        "family": "family_worship",
+        "smallgroup": "community_worship"
+      }
+    },
+    "S009": {
+      "primaryTheme": "prophecy",
+      "secondaryThemes": ["warning", "hope", "future"],
+      "narrativeType": "prophetic",
+      "audienceFocus": {
+        "school": "future_planning",
+        "family": "family_hope",
+        "smallgroup": "cultural_prophecy"
+      }
+    },
+    "S010": {
+      "primaryTheme": "incarnation",
+      "secondaryThemes": ["love", "humility", "divine_nature"],
+      "narrativeType": "foundational",
+      "audienceFocus": {
+        "school": "identity_formation",
+        "family": "family_love",
+        "smallgroup": "cultural_incarnation"
+      }
+    }
+  }
+}

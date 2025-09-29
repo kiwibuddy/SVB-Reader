@@ -1,0 +1,2193 @@
+{
+  "FamilyQuestions": {
+    "S001": {
+      "Q1": "What words did you hear again and again?",
+      "Q2": "What does this show about God?",
+      "Q3": "How should we treat people God made?",
+      "Q4": "What kind action will we do this week?"
+    },
+    "S002": {
+      "Q1": "What happened in the garden in this story?",
+      "Q2": "What does this teach about listening to God?",
+      "Q3": "When do we feel tempted to do wrong?",
+      "Q4": "What will we do when we feel tempted?"
+    },
+    "S003": {
+      "Q1": "What was different about Noah’s choices?",
+      "Q2": "What do we learn about right and wrong?",
+      "Q3": "How can our family choose what is right?",
+      "Q4": "What is one way we will trust God?"
+    },
+    "S004": {
+      "Q1": "What were the people trying to build together?",
+      "Q2": "What might God want them to remember about Him?",
+      "Q3": "Where can we include someone who feels left out?",
+      "Q4": "What humble step will we take this week?"
+    },
+    "S005": {
+      "Q1": "What did God ask Abram to do?",
+      "Q2": "How did Abram show trust in God?",
+      "Q3": "Where can we trust God even when unsure?",
+      "Q4": "What short prayer will we say together?"
+    },
+    "S006": {
+      "Q1": "What promise did God give Abram?",
+      "Q2": "What does this show about God’s faithfulness?",
+      "Q3": "How can we keep our promises this week?",
+      "Q4": "What promise will we keep on purpose?"
+    },
+    "S007": {
+      "Q1": "What serious problem did the cities have?",
+      "Q2": "What does this show about God’s holiness and care?",
+      "Q3": "How can we choose what is good and safe?",
+      "Q4": "What prayer will we pray for our city?"
+    },
+    "S008": {
+      "Q1": "What hard test did Abraham face?",
+      "Q2": "What does this teach about trust in God?",
+      "Q3": "Where do we need to trust God as a family?",
+      "Q4": "What step of trust will we take this week?"
+    },
+    "S009": {
+      "Q1": "What changes happened in the family here?",
+      "Q2": "What does this show about God’s long plan?",
+      "Q3": "Where do we need patience at home or school?",
+      "Q4": "What patient habit will we practice?"
+    },
+    "S010": {
+      "Q1": "What choices did Jacob make?",
+      "Q2": "What happened because of those choices?",
+      "Q3": "Where do we need honesty this week?",
+      "Q4": "What honest choice will we make today?"
+    },
+    "S011": {
+      "Q1": "What new family tensions did you notice?",
+      "Q2": "What do they teach about jealousy and kindness?",
+      "Q3": "How can we show kindness when we feel left out?",
+      "Q4": "What kind word will we speak today?"
+    },
+    "S012": {
+      "Q1": "What big moments stood out to you?",
+      "Q2": "What might Jacob be wrestling about inside?",
+      "Q3": "Where are we wrestling with fear or change?",
+      "Q4": "What prayer will we bring to God tonight?"
+    },
+    "S013": {
+      "Q1": "What led Jacob to move again?",
+      "Q2": "Where do you see God caring for the family?",
+      "Q3": "How can we trust God in our changes?",
+      "Q4": "What steady step will we take this week?"
+    },
+    "S014": {
+      "Q1": "What hard things happened to Joseph?",
+      "Q2": "What good traits grew in him through this?",
+      "Q3": "Where do we need courage when life is hard?",
+      "Q4": "What brave step will we take together?"
+    },
+    "S015": {
+      "Q1": "What helped Joseph in his new role?",
+      "Q2": "What danger comes with success or praise?",
+      "Q3": "How can we stay humble when noticed?",
+      "Q4": "What thanks will we give God this week?"
+    },
+    "S016": {
+      "Q1": "What feelings did the brothers have?",
+      "Q2": "How did Joseph treat them with power?",
+      "Q3": "Where can we show mercy at home or school?",
+      "Q4": "What forgiving step will we take?"
+    },
+    "S017": {
+      "Q1": "What emotions did you hear in the reunion?",
+      "Q2": "What does this show about forgiveness?",
+      "Q3": "Who might we need to forgive or call?",
+      "Q4": "What first step toward peace will we take?"
+    },
+    "S018": {
+      "Q1": "What blessings or last words stood out?",
+      "Q2": "What do they show about finishing with faith?",
+      "Q3": "What kind of legacy do we want as a family?",
+      "Q4": "What priority will we set this week?"
+    },
+    "S019": {
+      "Q1": "What hard things happened to God’s people?",
+      "Q2": "How did God call Moses to help?",
+      "Q3": "Where could we help someone who is hurting?",
+      "Q4": "What small action will we take to help?"
+    },
+    "S020": {
+      "Q1": "What fears or obstacles did you notice?",
+      "Q2": "What did obedience look like here?",
+      "Q3": "Where do we need courage to do right?",
+      "Q4": "What brave action will we take this week?"
+    },
+    "S021": {
+      "Q1": "What patterns did you see in the plagues?",
+      "Q2": "What does this teach about hard hearts and mercy?",
+      "Q3": "Where do we keep doing unhelpful habits?",
+      "Q4": "What change will we try this week?"
+    },
+    "S022": {
+      "Q1": "What special instructions did God give?",
+      "Q2": "What do they show about rescue and belonging?",
+      "Q3": "How can we remember God’s care this week?",
+      "Q4": "What reminder will we keep in our home?"
+    },
+    "S023": {
+      "Q1": "What choices and feelings did the people have?",
+      "Q2": "What does God’s rescue teach about trust?",
+      "Q3": "Where do we feel stuck and need help?",
+      "Q4": "What step will we take while trusting God?"
+    },
+    "S024": {
+      "Q1": "Where did the people complain, and where did God provide?",
+      "Q2": "What does this say about gratitude and trust?",
+      "Q3": "How can we practice thankfulness each day?",
+      "Q4": "What will we thank God for tonight?"
+    },
+    "S025": {
+      "Q1": "Which command stood out to you today?",
+      "Q2": "What do these teach about loving God and people?",
+      "Q3": "How would our home look if we lived these well?",
+      "Q4": "Which one will we focus on this week?"
+    },
+    "S026": {
+      "Q1": "What kinds of rules did you hear?",
+      "Q2": "What do they show about fairness and care?",
+      "Q3": "Where can we be fair with others this week?",
+      "Q4": "What fair action will we choose today?"
+    },
+    "S027": {
+      "Q1": "What details did you notice about God’s tent?",
+      "Q2": "What does that show about God living with His people?",
+      "Q3": "How can we make space for God at home?",
+      "Q4": "What small worship habit will we try?"
+    },
+    "S028": {
+      "Q1": "What jobs did the priests have?",
+      "Q2": "What does holy living look like here?",
+      "Q3": "Where do we need good boundaries at home?",
+      "Q4": "What boundary will we set kindly this week?"
+    },
+    "S029": {
+      "Q1": "What new instructions stood out today?",
+      "Q2": "What do they teach about prayer and rest?",
+      "Q3": "Where do we need quiet time with God?",
+      "Q4": "When will we set a short quiet time?"
+    },
+    "S030": {
+      "Q1": "What went wrong while Moses was away?",
+      "Q2": "What do we learn about idols and mercy?",
+      "Q3": "What things try to take God’s first place for us?",
+      "Q4": "What will we put down to put God first?"
+    },
+    "S031": {
+      "Q1": "How did the people respond to the plan?",
+      "Q2": "What do you see about generosity and skill?",
+      "Q3": "Where can we offer our time or talents?",
+      "Q4": "What task will we each do this week?"
+    },
+    "S032": {
+      "Q1": "What showed the work was finished?",
+      "Q2": "What does God’s glory mean for the people?",
+      "Q3": "How can we honor God in ordinary places?",
+      "Q4": "What simple worship will we do at home?"
+    },
+    "S033": {
+      "Q1": "What offerings did you hear about?",
+      "Q2": "What do they teach about sin and thanks?",
+      "Q3": "How can we say sorry and thank you to God?",
+      "Q4": "What honest prayer will we say today?"
+    },
+    "S034": {
+      "Q1": "What other offerings were added?",
+      "Q2": "What do they show about daily life with God?",
+      "Q3": "Where can we turn routine into worship?",
+      "Q4": "What daily moment will we give to God?"
+    },
+    "S035": {
+      "Q1": "What steps prepared the priests to serve?",
+      "Q2": "What does this teach about getting ready to serve?",
+      "Q3": "How can we prepare our hearts to serve others?",
+      "Q4": "What small prep will we do before serving?"
+    },
+    "S036": {
+      "Q1": "What kinds of differences were explained?",
+      "Q2": "What values about health and holiness appear?",
+      "Q3": "How can we care for body and soul this week?",
+      "Q4": "What healthy habit will we practice?"
+    },
+    "S037": {
+      "Q1": "What patterns of careful living did you hear?",
+      "Q2": "What does attention to detail teach us?",
+      "Q3": "Where do small choices shape our family life?",
+      "Q4": "What small good choice will we repeat?"
+    },
+    "S038": {
+      "Q1": "What pictures of forgiveness stood out?",
+      "Q2": "What do they teach about God making a way?",
+      "Q3": "How do forgiven people treat others?",
+      "Q4": "Who will we forgive or ask forgiveness from?"
+    },
+    "S039": {
+      "Q1": "What commands did God give His people?",
+      "Q2": "What do they show about living differently for God?",
+      "Q3": "Where is God asking us to be different kindly?",
+      "Q4": "What one change will we practice this week?"
+    },
+    "S040": {
+      "Q1": "What was expected from leaders here?",
+      "Q2": "What does this show about example and care?",
+      "Q3": "Where do we lead by example at home or school?",
+      "Q4": "What good example will we set this week?"
+    },
+    "S041": {
+      "Q1": "What special days did you hear about?",
+      "Q2": "What do they teach about remembering together?",
+      "Q3": "What family rhythm helps us remember God?",
+      "Q4": "What reminder will we set for this week?"
+    },
+    "S042": {
+      "Q1": "What rests and releases were described?",
+      "Q2": "What do they show about trust and renewal?",
+      "Q3": "Where do we need rest or to forgive a debt?",
+      "Q4": "What reset will we try this week?"
+    },
+    "S043": {
+      "Q1": "What choices and results were compared?",
+      "Q2": "What does this teach about wise paths?",
+      "Q3": "Where do our choices lead us right now?",
+      "Q4": "What wise choice will we make today?"
+    },
+    "S044": {
+      "Q1": "Why might the people be counted here?",
+      "Q2": "What does this show about order and purpose?",
+      "Q3": "Where do we need a plan to serve well?",
+      "Q4": "What organizing step will we take this week?"
+    },
+    "S045": {
+      "Q1": "What special role did the Levites have?",
+      "Q2": "What does set-apart service look like?",
+      "Q3": "Where can we serve others with care?",
+      "Q4": "What service will we offer this week?"
+    },
+    "S046": {
+      "Q1": "What practices of dedication stood out?",
+      "Q2": "What do they show about living under blessing?",
+      "Q3": "What habit could we dedicate to God this week?",
+      "Q4": "What will we dedicate together in prayer?"
+    },
+    "S047": {
+      "Q1": "What celebrations and preparations happened?",
+      "Q2": "What do we learn about starting well with God?",
+      "Q3": "Where do we need to prepare before we start?",
+      "Q4": "What first step will we take to prepare?"
+    },
+    "S048": {
+      "Q1": "Where did you hear complaints, and where care?",
+      "Q2": "What does this show about trust and contentment?",
+      "Q3": "When do we start to complain easily?",
+      "Q4": "What thank you will we say instead this week?"
+    },
+    "S049": {
+      "Q1": "What reports did the people bring back?",
+      "Q2": "What is the difference between fear and faith here?",
+      "Q3": "Where is fear shrinking our view of God?",
+      "Q4": "What faith step will we take this week?"
+    },
+    "S050": {
+      "Q1": "What started the rebellion in this story?",
+      "Q2": "What does this teach about pride and humility?",
+      "Q3": "Where do we resist guidance that helps us grow?",
+      "Q4": "What humble step will we choose today?"
+    },
+    "S051": {
+      "Q1": "What wins and helps did God give?",
+      "Q2": "What does this show about care in hard places?",
+      "Q3": "Where have we seen small wins lately?",
+      "Q4": "What thanks will we give for them?"
+    },
+    "S052": {
+      "Q1": "What tensions did you hear in Balaam’s heart?",
+      "Q2": "What does this teach about motives and truth?",
+      "Q3": "Where do mixed motives pull us off track?",
+      "Q4": "What clear honest step will we take?"
+    },
+    "S053": {
+      "Q1": "What seemed new in this counting?",
+      "Q2": "What does this say about being ready to serve?",
+      "Q3": "How can we help someone take their place?",
+      "Q4": "Who will we encourage this week?"
+    },
+    "S054": {
+      "Q1": "What commitments did people make to God?",
+      "Q2": "What do vows teach about words and actions?",
+      "Q3": "Where do we need to match words with deeds?",
+      "Q4": "What promise will we keep carefully this week?"
+    },
+    "S055": {
+      "Q1": "What lessons came from travels and battles?",
+      "Q2": "What do we learn about guidance and patience?",
+      "Q3": "Where do we need steady patience at home?",
+      "Q4": "What steady step will we repeat each day?"
+    },
+    "S056": {
+      "Q1": "What plans and borders were set up?",
+      "Q2": "What do they teach about wisdom and safety?",
+      "Q3": "Where do we need clear boundaries right now?",
+      "Q4": "What boundary will we set kindly today?"
+    },
+    "S057": {
+      "Q1": "What memories were retold in this section?",
+      "Q2": "What does remembering teach about faith and identity?",
+      "Q3": "What story of God’s help can we share?",
+      "Q4": "When will we share it this week?"
+    },
+    "S058": {
+      "Q1": "What calls to listen did you notice?",
+      "Q2": "What does this say about hearing and doing?",
+      "Q3": "Where do we need to act on what we know?",
+      "Q4": "What small obedience will we do today?"
+    },
+    "S059": {
+      "Q1": "What big themes of the covenant appeared?",
+      "Q2": "What do they show about love and loyalty?",
+      "Q3": "How can covenant love shape our family life?",
+      "Q4": "What act of loyal love will we do?"
+    },
+    "S060": {
+      "Q1": "What goals of obedience were described?",
+      "Q2": "What does witness look like in this passage?",
+      "Q3": "Where could our choices point others to God?",
+      "Q4": "What witness will we live out this week?"
+    },
+    "S061": {
+      "Q1": "What kinds of justice or care were urged?",
+      "Q2": "What does this show about God’s heart for people?",
+      "Q3": "Where can we protect or help someone?",
+      "Q4": "What just action will we take this week?"
+    },
+    "S062": {
+      "Q1": "What new instructions stood out today?",
+      "Q2": "What values are being shaped by these rules?",
+      "Q3": "Where do these values challenge our habits?",
+      "Q4": "What one change will we try this week?"
+    },
+    "S063": {
+      "Q1": "What protections or limits were given?",
+      "Q2": "What do they teach about wisdom and restraint?",
+      "Q3": "What family rules help us use screens and words wisely?",
+      "Q4": "What family boundary will we agree on and remind each other about?"
+    },
+    "S064": {
+      "Q1": "What themes kept repeating here?",
+      "Q2": "What picture of community do they paint?",
+      "Q3": "Where can our home reflect that picture more?",
+      "Q4": "What practice will we add to our routine?"
+    },
+    "S065": {
+      "Q1": "What choices and outcomes were compared?",
+      "Q2": "What do you learn about the direction of a life?",
+      "Q3": "Where are our choices taking us now?",
+      "Q4": "What course change will we make today?"
+    },
+    "S066": {
+      "Q1": "What invitation did God give His people?",
+      "Q2": "What does choosing life look like?",
+      "Q3": "Where do we need to choose life this week?",
+      "Q4": "What life-giving step will we take?"
+    },
+    "S067": {
+      "Q1": "What moments of change did you notice?",
+      "Q2": "What does this teach about passing on leadership?",
+      "Q3": "Who can we encourage to lead or try?",
+      "Q4": "What encouragement will we give this week?"
+    },
+    "S068": {
+      "Q1": "What blessings or farewells stood out?",
+      "Q2": "What do they show about God’s faithfulness?",
+      "Q3": "How can we finish our tasks with faith?",
+      "Q4": "What will we finish well this week?"
+    },
+    "S069": {
+      "Q1": "What words to Joshua stood out?",
+      "Q2": "What helps people be strong and brave here?",
+      "Q3": "Where do we need courage at school or work?",
+      "Q4": "What truth will we repeat this week?"
+    },
+    "S070": {
+      "Q1": "What did trust look like in this story?",
+      "Q2": "What does this teach about God’s unusual ways?",
+      "Q3": "Where might obedience look unusual for us?",
+      "Q4": "What faithful step will we take this week?"
+    },
+    "S071": {
+      "Q1": "What caused the setback here?",
+      "Q2": "What do we learn about honesty and community?",
+      "Q3": "Where could hidden choices hurt our home?",
+      "Q4": "What confession or fix will we make?"
+    },
+    "S072": {
+      "Q1": "What progress and challenges were recorded?",
+      "Q2": "What does steady obedience look like over time?",
+      "Q3": "What family project could use more teamwork this week?",
+      "Q4": "What small part of our project will each person commit to?"
+    },
+    "S073": {
+      "Q1": "What borders and portions were given?",
+      "Q2": "What does that teach about order and fairness?",
+      "Q3": "Where do clear roles help us at home?",
+      "Q4": "What role will each of us take this week?"
+    },
+    "S074": {
+      "Q1": "What patterns in giving the land continued?",
+      "Q2": "What values guided those choices?",
+      "Q3": "Where can we practice fairness when sharing?",
+      "Q4": "What fair choice will we make today?"
+    },
+    "S075": {
+      "Q1": "What needs or gaps were finished up?",
+      "Q2": "What do we learn about completing good work?",
+      "Q3": "What family tradition or routine helps us finish things together?",
+      "Q4": "What family activity will we complete and celebrate this week?"
+    },
+    "S076": {
+      "Q1": "What reminders did Joshua give the people?",
+      "Q2": "What do they teach about loyalty to God?",
+      "Q3": "Where are we tempted to drift from good ways?",
+      "Q4": "What guardrail will we set this week?"
+    },
+    "S077": {
+      "Q1": "What cycle did you hear in Judges?",
+      "Q2": "What does this teach about habits and hearts?",
+      "Q3": "Where do we see this cycle in our lives?",
+      "Q4": "What early step will we take to break it?"
+    },
+    "S078": {
+      "Q1": "What leaders or moments stood out?",
+      "Q2": "What do these stories show about God using unlikely people?",
+      "Q3": "Where could God use our strengths to help?",
+      "Q4": "What service will we do this week?"
+    },
+    "S079": {
+      "Q1": "What doubts and signs did Gideon have?",
+      "Q2": "What does God’s patience teach us here?",
+      "Q3": "Where do we need courage in weakness?",
+      "Q4": "What small brave step will we take today?"
+    },
+    "S080": {
+      "Q1": "What warning signs did you notice in Abimelech?",
+      "Q2": "What do we learn about ambition and pride?",
+      "Q3": "Where could power plays harm our family or class?",
+      "Q4": "What humble choice will we make?"
+    },
+    "S081": {
+      "Q1": "What stood out about vows and words?",
+      "Q2": "What do we learn about promises and wisdom?",
+      "Q3": "Where do our words run ahead of wisdom?",
+      "Q4": "What careful speaking habit will we practice?"
+    },
+    "S082": {
+      "Q1": "What strengths and weaknesses did Samson show?",
+      "Q2": "What does this teach about calling and choices?",
+      "Q3": "Where are we strong yet vulnerable?",
+      "Q4": "What safeguard will we put in place?"
+    },
+    "S083": {
+      "Q1": "What scenes showed confusion about right and wrong?",
+      "Q2": "What happens when everyone does only what they want?",
+      "Q3": "Where do we see that around us?",
+      "Q4": "What truth will guide us this week?"
+    },
+    "S084": {
+      "Q1": "What troubled you in these stories?",
+      "Q2": "What do they show about the need for justice?",
+      "Q3": "Where can we protect someone who is vulnerable?",
+      "Q4": "What careful action will we take?"
+    },
+    "S085": {
+      "Q1": "What choices by Ruth or Boaz stood out?",
+      "Q2": "What do we learn about loyal love and kindness?",
+      "Q3": "Where could loyal kindness help someone we know?",
+      "Q4": "What kind action will we do this week?"
+    },
+    "S086": {
+      "Q1": "What signs showed God was with Samuel?",
+      "Q2": "What does listening to God look like here?",
+      "Q3": "Where do we sense God nudging us to listen?",
+      "Q4": "When will we be quiet and listen this week?"
+    },
+    "S087": {
+      "Q1": "Why did the people want a king?",
+      "Q2": "What does this show about fear and trust?",
+      "Q3": "Where do we feel pressure to fit in?",
+      "Q4": "What trusting choice will we make instead?"
+    },
+    "S088": {
+      "Q1": "What marked Saul’s start as king?",
+      "Q2": "What do you notice about humility and calling?",
+      "Q3": "Where could humility help us lead better?",
+      "Q4": "What humble practice will we try this week?"
+    },
+    "S089": {
+      "Q1": "What choices showed foolishness here?",
+      "Q2": "What do we learn about impatience and pressure?",
+      "Q3": "Where do we rush instead of waiting wisely?",
+      "Q4": "What pause will we build into our day?"
+    },
+    "S090": {
+      "Q1": "What contrasts did you see between Saul and David?",
+      "Q2": "What does God seeing the heart mean to you?",
+      "Q3": "Where do appearances trick us at school?",
+      "Q4": "What family kindness routine will we do together this week?"
+    },
+    "S091": {
+      "Q1": "What moments of courage or fear did you hear?",
+      "Q2": "What does God value in a leader here?",
+      "Q3": "Where do we face a big challenge?",
+      "Q4": "What step of faith will we take this week?"
+    },
+    "S092": {
+      "Q1": "What tensions were between Saul, David, and Jonathan?",
+      "Q2": "What do we learn about loyalty and jealousy?",
+      "Q3": "Where can we be loyal friends under pressure?",
+      "Q4": "What kind action will we do for a friend?"
+    },
+    "S093": {
+      "Q1": "What choices did David make when pressed?",
+      "Q2": "What do those choices show about trust?",
+      "Q3": "Where do we need wisdom when stressed?",
+      "Q4": "What wise step will we take before reacting?"
+    },
+    "S094": {
+      "Q1": "Where did David have a chance to get even?",
+      "Q2": "What does his restraint teach us?",
+      "Q3": "Where could restraint help in our home or school?",
+      "Q4": "What gentle response will we choose this week?"
+    },
+    "S095": {
+      "Q1": "What contrasts did you hear between Saul and David?",
+      "Q2": "What does it show about seeking God first?",
+      "Q3": "Where are we tempted to take shortcuts?",
+      "Q4": "What practice will help us seek God first?"
+    },
+    "S096": {
+      "Q1": "What did David do when he heard the news?",
+      "Q2": "What does lament teach us about grief?",
+      "Q3": "How can we support each other during hard times as a family?",
+      "Q4": "What simple prayer of lament will we say?"
+    },
+    "S097": {
+      "Q1": "What steps led to David becoming king?",
+      "Q2": "What do we learn about waiting and promise?",
+      "Q3": "What family goal requires patience from all of us?",
+      "Q4": "What patient habit will we keep this week?"
+    },
+    "S098": {
+      "Q1": "What promises stood out to you?",
+      "Q2": "What does this show about God’s grace?",
+      "Q3": "What family promises help us feel secure together?",
+      "Q4": "What promise of God will we repeat this week?"
+    },
+    "S099": {
+      "Q1": "What victories were given here?",
+      "Q2": "What keeps success humble and thankful?",
+      "Q3": "Where can we give God credit for wins?",
+      "Q4": "What thanks will we give after a win this week?"
+    },
+    "S100": {
+      "Q1": "What warning signs did you notice?",
+      "Q2": "What do we learn about sin and confession?",
+      "Q3": "Where could small wrongs grow bigger?",
+      "Q4": "What guardrail will we set as a family?"
+    },
+    "S101": {
+      "Q1": "What seeds of division were planted?",
+      "Q2": "What do we learn about flattery and ambition?",
+      "Q3": "Where do we see these hurts around us?",
+      "Q4": "What peacemaking step will we take?"
+    },
+    "S102": {
+      "Q1": "What choices pushed the conflict forward?",
+      "Q2": "What do we learn about listening to wise counsel?",
+      "Q3": "Whose wise voice should we hear this week?",
+      "Q4": "What step will we take to ask for advice?"
+    },
+    "S103": {
+      "Q1": "What actions moved things toward peace?",
+      "Q2": "What does this teach about mercy and unity?",
+      "Q3": "Where do we need repair in a relationship?",
+      "Q4": "What first step toward repair will we take?"
+    },
+    "S104": {
+      "Q1": "What highs and lows did you hear?",
+      "Q2": "What does it teach about finishing well?",
+      "Q3": "Where do we need to finish something faithfully?",
+      "Q4": "What family project will we complete successfully this week?"
+    },
+    "S105": {
+      "Q1": "What made this a hard transition?",
+      "Q2": "What does a good start look like here?",
+      "Q3": "Where are we starting something new?",
+      "Q4": "What first step of wisdom will we take?"
+    },
+    "S106": {
+      "Q1": "What did Solomon ask God for?",
+      "Q2": "What does God value in that request?",
+      "Q3": "What family decisions require wisdom from all of us?",
+      "Q4": "What daily habit will help us grow in wisdom?"
+    },
+    "S107": {
+      "Q1": "What effort and care went into the work?",
+      "Q2": "What does excellence in serving God look like?",
+      "Q3": "Where can we do careful, quality work?",
+      "Q4": "What quality step will we take on a task?"
+    },
+    "S108": {
+      "Q1": "What prayers or praises stood out?",
+      "Q2": "What does God’s presence mean for people?",
+      "Q3": "How can we dedicate a space or time to God?",
+      "Q4": "What family prayer will we say together this week?"
+    },
+    "S109": {
+      "Q1": "What pulled Solomon’s heart away?",
+      "Q2": "What warning do we see about drift?",
+      "Q3": "Where could comfort pull us off course?",
+      "Q4": "What course correction will we make today?"
+    },
+    "S110": {
+      "Q1": "What words and choices caused the split?",
+      "Q2": "What does this show about pride and listening?",
+      "Q3": "Where do stubborn words hurt our home?",
+      "Q4": "What listening step will we practice this week?"
+    },
+    "S111": {
+      "Q1": "What patterns kept repeating?",
+      "Q2": "What do we learn about legacy and compromise?",
+      "Q3": "What patterns do we want in our family?",
+      "Q4": "What good pattern will we begin today?"
+    },
+    "S112": {
+      "Q1": "What bold moments did Elijah have?",
+      "Q2": "What do we learn about loyalty to God?",
+      "Q3": "Where do we face mixed loyalties?",
+      "Q4": "What faithful choice will we make this week?"
+    },
+    "S113": {
+      "Q1": "What highs and lows did Elijah feel?",
+      "Q2": "How did God care for him in weakness?",
+      "Q3": "Where do we feel tired or afraid?",
+      "Q4": "What family rest activity will refresh us this week?"
+    },
+    "S114": {
+      "Q1": "What injustice did you hear about?",
+      "Q2": "What does God say about truth and justice?",
+      "Q3": "Where can we stand up kindly for what’s right?",
+      "Q4": "What careful truth will we speak this week?"
+    },
+    "S115": {
+      "Q1": "What alliances and choices stood out?",
+      "Q2": "What do they teach about partnership and trust?",
+      "Q3": "Who influences us most right now?",
+      "Q4": "What boundary or choice will keep us wise?"
+    },
+    "S116": {
+      "Q1": "Which personal stories touched you?",
+      "Q2": "What do we learn about compassion and faith?",
+      "Q3": "Who near us needs quiet help?",
+      "Q4": "What simple help will we give this week?"
+    },
+    "S117": {
+      "Q1": "What bigger events were in this reading?",
+      "Q2": "What does this show about God’s reach?",
+      "Q3": "Who is outside our usual circle?",
+      "Q4": "What welcome step will we take toward them?"
+    },
+    "S118": {
+      "Q1": "What judgments and reforms happened?",
+      "Q2": "What do we learn about zeal and motives?",
+      "Q3": "Where do we need zeal with wisdom and love?",
+      "Q4": "What focused good step will we take?"
+    },
+    "S119": {
+      "Q1": "What dangers and rescues appeared?",
+      "Q2": "What does this show about courage and covenant?",
+      "Q3": "What good thing should we protect right now?",
+      "Q4": "What safeguard will we put in place?"
+    },
+    "S120": {
+      "Q1": "What mixed stories of leadership did you hear?",
+      "Q2": "What does partial obedience lead to?",
+      "Q3": "Where do we stop short of good?",
+      "Q4": "What completion step will we take this week?"
+    },
+    "S121": {
+      "Q1": "What choices led to decline?",
+      "Q2": "What warnings do you notice about drift?",
+      "Q3": "Where do lesser loves pull our hearts?",
+      "Q4": "What re‑centering step will we take today?"
+    },
+    "S122": {
+      "Q1": "What prayers or miracles stood out?",
+      "Q2": "What shows trust under pressure?",
+      "Q3": "Where are we under pressure now?",
+      "Q4": "What prayer will we pray before acting?"
+    },
+    "S123": {
+      "Q1": "What contrasts did you see among these kings?",
+      "Q2": "What do we learn about repentance and renewal?",
+      "Q3": "Where do we need a fresh start?",
+      "Q4": "What first step toward change will we take?"
+    },
+    "S124": {
+      "Q1": "What warnings were ignored?",
+      "Q2": "What does this teach about sowing and reaping?",
+      "Q3": "Where are we ignoring wise advice?",
+      "Q4": "What listening change will we make this week?"
+    },
+    "S125": {
+      "Q1": "What names or notes caught your eye?",
+      "Q2": "What does long memory say about identity?",
+      "Q3": "Who passed faith to us?",
+      "Q4": "How will we thank or honor them?"
+    },
+    "S126": {
+      "Q1": "What roles or tribes were highlighted?",
+      "Q2": "What family gifts and talents do you notice?",
+      "Q3": "Where do we fit in our community’s work?",
+      "Q4": "What part will each of us play this week?"
+    },
+    "S127": {
+      "Q1": "What repeating details did you see?",
+      "Q2": "What does this say about God’s steady care?",
+      "Q3": "How does belonging shape our choices?",
+      "Q4": "Who will we encourage for faithfulness?"
+    },
+    "S128": {
+      "Q1": "What transitions happened here?",
+      "Q2": "What do grief and honor look like together?",
+      "Q3": "What family season change are we experiencing together?",
+      "Q4": "What anchor practice will keep us steady?"
+    },
+    "S129": {
+      "Q1": "What reactions to God’s presence did you hear?",
+      "Q2": "What do reverence and joy look like together?",
+      "Q3": "How can reverence and joy meet in our home?",
+      "Q4": "What worship habit will we practice?"
+    },
+    "S130": {
+      "Q1": "What promises and wins stood out?",
+      "Q2": "What do they show about God’s help?",
+      "Q3": "Where can gratitude replace self‑credit?",
+      "Q4": "What praise will we give after work well done?"
+    },
+    "S131": {
+      "Q1": "What mistake and mercy appeared?",
+      "Q2": "What do we learn about confession and planning?",
+      "Q3": "Where do we need to admit wrong and adjust?",
+      "Q4": "What correction step will we take this week?"
+    },
+    "S132": {
+      "Q1": "What roles were set in place?",
+      "Q2": "What does this show about shared service?",
+      "Q3": "Where could better structure help us?",
+      "Q4": "What simple system will we set up?"
+    },
+    "S133": {
+      "Q1": "What responsibilities stood out?",
+      "Q2": "What do we learn about teamwork and trust?",
+      "Q3": "Where should we ask for help to do better?",
+      "Q4": "What team step will we take this week?"
+    },
+    "S134": {
+      "Q1": "What resources and partners were gathered?",
+      "Q2": "What does this teach about vision and teamwork?",
+      "Q3": "Where do we need partners to build good things?",
+      "Q4": "What clear ask will we make this week?"
+    },
+    "S135": {
+      "Q1": "What moments of dedication moved you?",
+      "Q2": "What does this show about God keeping promises?",
+      "Q3": "How can we dedicate our work to God?",
+      "Q4": "What simple prayer will we offer today?"
+    },
+    "S136": {
+      "Q1": "What achievements were listed?",
+      "Q2": "What priorities and pitfalls come with success?",
+      "Q3": "How will we keep worship above success?",
+      "Q4": "What practice will keep our hearts centered?"
+    },
+    "S137": {
+      "Q1": "What counsel did he hear and choose?",
+      "Q2": "What do we learn about pride and listening?",
+      "Q3": "Where have we ignored good advice?",
+      "Q4": "What listening habit will we practice first?"
+    },
+    "S138": {
+      "Q1": "What battles or prayers stood out?",
+      "Q2": "What does relying on God in crisis look like?",
+      "Q3": "Where can we rely on God instead of panic?",
+      "Q4": "What family prayer will we say when feeling worried?"
+    },
+    "S139": {
+      "Q1": "What alliances and prayers marked his reign?",
+      "Q2": "What does seeking God before battle teach?",
+      "Q3": "Where should we pray before we plan?",
+      "Q4": "What first prayer will start our plan?"
+    },
+    "S140": {
+      "Q1": "What dangers and rescues happened?",
+      "Q2": "What does this show about God preserving good?",
+      "Q3": "What good has God trusted us to guard?",
+      "Q4": "What protective step will we take?"
+    },
+    "S141": {
+      "Q1": "What patterns did you notice across kings?",
+      "Q2": "What warning do you see about pride?",
+      "Q3": "Where could pride creep into our strengths?",
+      "Q4": "What humble safeguard will we set?"
+    },
+    "S142": {
+      "Q1": "What renewals stood out to you?",
+      "Q2": "What does this show about trust and worship?",
+      "Q3": "Where do we need to renew a good habit?",
+      "Q4": "What family worship or Bible reading will we restart this week?"
+    },
+    "S143": {
+      "Q1": "What swings between faith and evil appeared?",
+      "Q2": "What do we learn about judgment and mercy?",
+      "Q3": "Where do we need hope that change is possible?",
+      "Q4": "What family pattern will we change together this week?"
+    },
+    "S144": {
+      "Q1": "What discovery in Josiah’s time was key?",
+      "Q2": "What does Scripture do to reshape people?",
+      "Q3": "Where does our family need God's Word to guide us?",
+      "Q4": "What Bible time will we set each day this week?"
+    },
+    "S145": {
+      "Q1": "What first steps happened on returning?",
+      "Q2": "What does rebuilding worship teach?",
+      "Q3": "What family tradition needs rebuilding or strengthening?",
+      "Q4": "What family routine or tradition will we start this week?"
+    },
+    "S146": {
+      "Q1": "What kinds of pushback showed up?",
+      "Q2": "What helped them keep going?",
+      "Q3": "Where are we discouraged while doing good?",
+      "Q4": "How will we encourage each other when things get hard?"
+    },
+    "S147": {
+      "Q1": "What focus did Ezra bring?",
+      "Q2": "What does setting your heart to learn and do mean?",
+      "Q3": "How can we set our hearts to God’s word?",
+      "Q4": "What small plan will we start this week?"
+    },
+    "S148": {
+      "Q1": "What problem was faced and owned?",
+      "Q2": "What does real repentance look like?",
+      "Q3": "Where do we need honest attention to a habit?",
+      "Q4": "What clear turn back will we make?"
+    },
+    "S149": {
+      "Q1": "What burden and plan did Nehemiah carry?",
+      "Q2": "What does prayerful planning teach?",
+      "Q3": "Where do we sense a burden to own?",
+      "Q4": "What first move will we make in prayer?"
+    },
+    "S150": {
+      "Q1": "What tactics tried to stop the work?",
+      "Q2": "What kept people focused?",
+      "Q3": "Where do distractions pull us off good work?",
+      "Q4": "What focus step will we take this week?"
+    },
+    "S151": {
+      "Q1": "What practices restored joy and identity?",
+      "Q2": "What do confession and celebration do together?",
+      "Q3": "What rhythm helps our hearts after stress?",
+      "Q4": "What family prayer time or routine will we start this week?"
+    },
+    "S152": {
+      "Q1": "What commitments stood out to you?",
+      "Q2": "What does accountability with worship look like?",
+      "Q3": "Where do we need support to keep good habits?",
+      "Q4": "What family habit will we start to help each other stay on track?"
+    },
+    "S153": {
+      "Q1": "What unlikely turns did you hear?",
+      "Q2": "What does this suggest about purpose where we are?",
+      "Q3": "Where can our place help others now?",
+      "Q4": "What step will we take to serve here?"
+    },
+    "S154": {
+      "Q1": "What risks and choices shaped the rescue?",
+      "Q2": "What do we learn about courage and timing?",
+      "Q3": "Where might we need to speak up kindly?",
+      "Q4": "What respectful step will we take this week?"
+    },
+    "S155": {
+      "Q1": "What losses and responses began Job’s story?",
+      "Q2": "What do we learn about honest lament?",
+      "Q3": "Where do we need room to bring pain to God?",
+      "Q4": "What family prayer will comfort us when we're sad?"
+    },
+    "S156": {
+      "Q1": "What advice did friends give?",
+      "Q2": "What are the limits of quick answers?",
+      "Q3": "How can we be better friends to the hurting?",
+      "Q4": "What gentle action will we do for someone in our family this week?"
+    },
+    "S157": {
+      "Q1": "What accusations appeared here?",
+      "Q2": "What hope did Job still hold?",
+      "Q3": "Where are we holding on without full answers?",
+      "Q4": "What small trust step will we take today?"
+    },
+    "S158": {
+      "Q1": "What themes of justice and protest showed up?",
+      "Q2": "What did Job claim about integrity?",
+      "Q3": "Where do we long for fairness now?",
+      "Q4": "What honest request will we bring to God?"
+    },
+    "S159": {
+      "Q1": "What final defenses did Job make?",
+      "Q2": "What does it mean to search our hearts with God?",
+      "Q3": "Where do we need to check our motives?",
+      "Q4": "What family decision will we make together after talking it over?"
+    },
+    "S160": {
+      "Q1": "What new angles did Elihu bring?",
+      "Q2": "What does he say about God as teacher?",
+      "Q3": "Where could we welcome correction?",
+      "Q4": "What listening step will we practice this week?"
+    },
+    "S161": {
+      "Q1": "What pictures of God’s power moved you?",
+      "Q2": "What does humility before mystery do in Job?",
+      "Q3": "Where can we trust God without full answers?",
+      "Q4": "What act of trust will we choose this week?"
+    },
+    "S162": {
+      "Q1": "What lines stayed with you?",
+      "Q2": "What portraits of the righteous and wicked appeared?",
+      "Q3": "How do these touch our choices at school or home?",
+      "Q4": "What prayer or verse will we carry this week?"
+    },
+    "S163": {
+      "Q1": "What cries or praises stood out?",
+      "Q2": "What do we learn about God’s nearness in trouble?",
+      "Q3": "Where do we need help this week?",
+      "Q4": "What family prayer will we say at bedtime this week?"
+    },
+    "S164": {
+      "Q1": "What images of God spoke to you?",
+      "Q2": "What do these say about guidance and trust?",
+      "Q3": "How will we practice trust in a situation now?",
+      "Q4": "What verse will we keep on a note card?"
+    },
+    "S165": {
+      "Q1": "What testimonies or laments did you hear?",
+      "Q2": "What do we learn about fear and praise?",
+      "Q3": "What fear do we need to name before God?",
+      "Q4": "What family thank-you will we say to God together tonight?"
+    },
+    "S166": {
+      "Q1": "What refrains or longings did you notice?",
+      "Q2": "What does it mean to thirst for God?",
+      "Q3": "Where do we feel dry or discouraged?",
+      "Q4": "What simple practice will help us seek God?"
+    },
+    "S167": {
+      "Q1": "What contrasts between plotting and trusting stood out?",
+      "Q2": "What responses of faith showed up in hard times?",
+      "Q3": "Where are we tempted to strike back?",
+      "Q4": "What trusting response will we choose instead?"
+    },
+    "S168": {
+      "Q1": "What pictures of creation and blessing did you hear?",
+      "Q2": "What do we learn about justice and mercy?",
+      "Q3": "Who can we pray for in leadership?",
+      "Q4": "What short prayer will we offer this week?"
+    },
+    "S169": {
+      "Q1": "What struggles with envy or doubt appeared?",
+      "Q2": "What changed when the writer met with God?",
+      "Q3": "Where does comparison steal our joy?",
+      "Q4": "What gratitude step will we take today?"
+    },
+    "S170": {
+      "Q1": "What history or warnings were retold?",
+      "Q2": "What lessons should we remember and share?",
+      "Q3": "What story of God’s help can we pass on?",
+      "Q4": "Who will we tell and when this week?"
+    },
+    "S171": {
+      "Q1": "What songs of longing and praise stood out?",
+      "Q2": "What do you notice about God’s faithfulness?",
+      "Q3": "Where do we want to sense God in daily life?",
+      "Q4": "What family prayer time will we add to our routine this week?"
+    },
+    "S172": {
+      "Q1": "What calls to worship and trust did you hear?",
+      "Q2": "What do these psalms say about God’s reign and care?",
+      "Q3": "How could praise point others to God?",
+      "Q4": "What family praise will we say loudly this week?"
+    },
+    "S173": {
+      "Q1": "What commitments and confessions appeared?",
+      "Q2": "How do these psalms remember God’s works?",
+      "Q3": "What commitment do we need to renew?",
+      "Q4": "What step will help us keep it this week?"
+    },
+    "S174": {
+      "Q1": "What patterns of rescue and thanks came up?",
+      "Q2": "What does it mean to fear the Lord daily?",
+      "Q3": "Where did God help us recently?",
+      "Q4": "Who will we thank or encourage because of it?"
+    },
+    "S175": {
+      "Q1": "What themes of praise and trust did you hear?",
+      "Q2": "How does God lift the humble?",
+      "Q3": "Where do we need humility when seen or praised?",
+      "Q4": "What family celebration will we do together this week?"
+    },
+    "S176": {
+      "Q1": "What lines about God’s word stood out?",
+      "Q2": "What value does Scripture bring to life?",
+      "Q3": "How can we weave Scripture into our day?",
+      "Q4": "What practice will we start (read, memorize, reflect)?"
+    },
+    "S177": {
+      "Q1": "What pilgrim songs or thankful lines did you like?",
+      "Q2": "What do they say about steadfast love?",
+      "Q3": "What journey needs God’s help now?",
+      "Q4": "What short prayer will we pray along the way?"
+    },
+    "S178": {
+      "Q1": "What strong feelings and praises were together?",
+      "Q2": "What does bringing our whole heart to God look like?",
+      "Q3": "Where do we need to bring big feelings to prayer?",
+      "Q4": "What family prayer will help us share our real feelings with God?"
+    },
+    "S179": {
+      "Q1": "What reasons to praise filled these psalms?",
+      "Q2": "Who is invited to praise and how?",
+      "Q3": "How could praise shape our routines?",
+      "Q4": "What one way will we practice praise this week?"
+    },
+    "S180": {
+      "Q1": "What contrasts between wisdom and folly stood out?",
+      "Q2": "What is the value of listening and correction?",
+      "Q3": "Where do we most need wisdom for a choice now?",
+      "Q4": "What step will we take to seek counsel this week?"
+    },
+    "S181": {
+      "Q1": "Which sayings or pictures stood out to you?",
+      "Q2": "What do they teach about wise and foolish choices?",
+      "Q3": "Where do we need this wisdom right now?",
+      "Q4": "What step will we take to walk wisely this week?"
+    },
+    "S182": {
+      "Q1": "What themes repeat in these proverbs?",
+      "Q2": "What do they say about words and choices?",
+      "Q3": "Where do our words need more care?",
+      "Q4": "What speaking habit will we practice this week?"
+    },
+    "S183": {
+      "Q1": "Which contrast was most striking to you?",
+      "Q2": "What does it reveal about the heart?",
+      "Q3": "Where do our habits guide our path?",
+      "Q4": "What small good habit will we start today?"
+    },
+    "S184": {
+      "Q1": "What counsel or warning helped you most?",
+      "Q2": "What do these sayings teach about friendship and correction?",
+      "Q3": "Where do we need honest feedback?",
+      "Q4": "Who will we invite to speak into our life?"
+    },
+    "S185": {
+      "Q1": "What do these proverbs value most?",
+      "Q2": "What do they teach about work and laziness?",
+      "Q3": "Where do we need steady effort this week?",
+      "Q4": "What family chore or routine will we all help with this week?"
+    },
+    "S186": {
+      "Q1": "Which proverb fits our life today?",
+      "Q2": "What wisdom does it give about temptation?",
+      "Q3": "Where do we face that temptation now?",
+      "Q4": "What family rule will we all agree to follow this week?"
+    },
+    "S187": {
+      "Q1": "What struggles with meaning did you notice?",
+      "Q2": "What does the writer say about work and pleasure?",
+      "Q3": "Where do we chase things that do not satisfy?",
+      "Q4": "What practice will help us enjoy God’s gifts wisely?"
+    },
+    "S188": {
+      "Q1": "What tensions did you hear between joy and limits?",
+      "Q2": "What does it mean here to fear God?",
+      "Q3": "How could reverence shape our plans this week?",
+      "Q4": "What simple joy will we receive with thanks?"
+    },
+    "S189": {
+      "Q1": "What words about love and promise did you hear?",
+      "Q2": "What does this poem value in relationships?",
+      "Q3": "How can we show respect and kindness in our home?",
+      "Q4": "What boundary or habit will help us honor others?"
+    },
+    "S190": {
+      "Q1": "What charges and hopes were named?",
+      "Q2": "What does God want from His people here?",
+      "Q3": "Where must justice and worship meet in us?",
+      "Q4": "What act of kindness or fairness will we do?"
+    },
+    "S191": {
+      "Q1": "What part of Isaiah’s vision stood out?",
+      "Q2": "What does holy mean in this chapter?",
+      "Q3": "How does God’s call meet our weakness?",
+      "Q4": "What family commitment will we make to God together this week?"
+    },
+    "S192": {
+      "Q1": "What warnings and promises did you notice?",
+      "Q2": "What does Emmanuel’s reign look like?",
+      "Q3": "Where do we long for that kind of peace?",
+      "Q4": "How will we live under that hope today?"
+    },
+    "S193": {
+      "Q1": "Which nations were addressed, and why?",
+      "Q2": "What does God judge among the nations?",
+      "Q3": "Where do we see pride or cruelty today?",
+      "Q4": "What prayer or action for justice will we take?"
+    },
+    "S194": {
+      "Q1": "What patterns repeat across these prophecies?",
+      "Q2": "What do idols promise but fail to give?",
+      "Q3": "Where are we tempted by false security?",
+      "Q4": "What will we trust God with this week?"
+    },
+    "S195": {
+      "Q1": "What signs of judgment and rescue appeared?",
+      "Q2": "What does this teach about God’s rule?",
+      "Q3": "Where do we need hope in hard news?",
+      "Q4": "What faithful family action will we do today to stay connected to God?"
+    },
+    "S196": {
+      "Q1": "What themes continued from before?",
+      "Q2": "What do we learn about pride and trust?",
+      "Q3": "Where do we rely on our own strength?",
+      "Q4": "What family prayer or Bible time will help us lean on God this week?"
+    },
+    "S197": {
+      "Q1": "What future hope is described here?",
+      "Q2": "What does God promise to His people?",
+      "Q3": "Where do we need courage now?",
+      "Q4": "What step will show our trust in that promise?"
+    },
+    "S198": {
+      "Q1": "What rescue and what mistake did you hear?",
+      "Q2": "What do they teach about trust and pride?",
+      "Q3": "Where could success make us drift?",
+      "Q4": "What humble guard will we set this week?"
+    },
+    "S199": {
+      "Q1": "What images of God’s power stood out?",
+      "Q2": "How are idols different from the Lord?",
+      "Q3": "Where do we feel weak or afraid now?",
+      "Q4": "What truth from here will we hold to?"
+    },
+    "S200": {
+      "Q1": "What marks the Servant’s mission?",
+      "Q2": "What contrasts appear between God and idols?",
+      "Q3": "Where do we need gentle justice and healing?",
+      "Q4": "What response of trust will we offer today?"
+    },
+    "S201": {
+      "Q1": "What did God say about Cyrus and history?",
+      "Q2": "What does this show about God’s control?",
+      "Q3": "Where do we struggle to see God at work?",
+      "Q4": "What patient trust will we practice this week?"
+    },
+    "S202": {
+      "Q1": "What roles of the Servant are highlighted?",
+      "Q2": "What hope is offered to the tired?",
+      "Q3": "Where do we feel called to serve others?",
+      "Q4": "What small servant step will we take today?"
+    },
+    "S203": {
+      "Q1": "What suffering and victory are described?",
+      "Q2": "What does this say about God’s way to save?",
+      "Q3": "How does this shape our view of Jesus?",
+      "Q4": "How will we respond to this grace this week?"
+    },
+    "S204": {
+      "Q1": "What kind of fasting and justice does God want?",
+      "Q2": "What promises follow humble repentance?",
+      "Q3": "Where could we practice true fasting now?",
+      "Q4": "What act of mercy will we choose this week?"
+    },
+    "S205": {
+      "Q1": "What pictures of judgment and renewal appear?",
+      "Q2": "What hope is given to God’s servants?",
+      "Q3": "Where do we need that hope for the future?",
+      "Q4": "What step will align us with God’s future today?"
+    },
+    "S206": {
+      "Q1": "What parts of Jeremiah’s call stood out?",
+      "Q2": "What did God promise him?",
+      "Q3": "Where do we fear speaking truth?",
+      "Q4": "What brave, kind step will we take this week?"
+    },
+    "S207": {
+      "Q1": "What sins were named here?",
+      "Q2": "What did God warn would happen?",
+      "Q3": "Where are similar roots in our world?",
+      "Q4": "What family change will we make together to get back on track?"
+    },
+    "S208": {
+      "Q1": "What false trusts were exposed?",
+      "Q2": "What does true worship require?",
+      "Q3": "Where do we act without heart?",
+      "Q4": "What honest change will we seek this week?"
+    },
+    "S209": {
+      "Q1": "What covenant failures were described?",
+      "Q2": "What do they show about stubborn hearts?",
+      "Q3": "Where do we resist God’s ways?",
+      "Q4": "What practice will help us return to Him?"
+    },
+    "S210": {
+      "Q1": "What shows God’s reluctance to judge?",
+      "Q2": "What does this teach about sin’s harm?",
+      "Q3": "Where do we downplay hurtful choices?",
+      "Q4": "What family limit will help us stay safe and wise this week?"    },
+    "S211": {
+      "Q1": "What signs of mercy appeared?",
+      "Q2": "What conditions were given for return?",
+      "Q3": "Where do we see God opening a door?",
+      "Q4": "What opportunity will our family step into together this week?"
+    },
+    "S212": {
+      "Q1": "What opposition did Jeremiah face?",
+      "Q2": "How did he respond under pressure?",
+      "Q3": "Where do we need courage to keep going?",
+      "Q4": "What family help will we ask for when things get hard this week?"
+    },
+    "S213": {
+      "Q1": "Which leaders were addressed and why?",
+      "Q2": "What does God require of leaders?",
+      "Q3": "Where do we lead in small ways?",
+      "Q4": "What leader habit will we practice this week?"
+    },
+    "S214": {
+      "Q1": "What conflict over truth did you hear?",
+      "Q2": "What marks a true message?",
+      "Q3": "Where do we need discernment in voices we hear?",
+      "Q4": "What test of truth will we use this week?"
+    },
+    "S215": {
+      "Q1": "What hope was given to the exiles?",
+      "Q2": "What did the new covenant promise?",
+      "Q3": "Where do we need hope in a long season?",
+      "Q4": "What family waiting or patience practice will we learn together this week?"
+    },
+    "S216": {
+      "Q1": "What action did Jeremiah take by faith?",
+      "Q2": "What does this show about hope in crisis?",
+      "Q3": "Where can we act now toward a future good?",
+      "Q4": "What small family investment will we make for a better future this week?"
+    },
+    "S217": {
+      "Q1": "What covenants were compared?",
+      "Q2": "What faithfulness was praised?",
+      "Q3": "Where do we need to keep our word?",
+      "Q4": "What promise will we honor this week?"
+    },
+    "S218": {
+      "Q1": "What trials continued for Jeremiah?",
+      "Q2": "What kept him faithful under pressure?",
+      "Q3": "Where are we tired of doing good?",
+      "Q4": "What perseverance step will we take today?"
+    },
+    "S219": {
+      "Q1": "What scenes marked the fall of the city?",
+      "Q2": "What do you learn about consequences and grief?",
+      "Q3": "Where do we see the cost of ignoring warnings?",
+      "Q4": "What wise change will we make now?"
+    },
+    "S220": {
+      "Q1": "What choices led toward Egypt?",
+      "Q2": "What do they show about fear and trust?",
+      "Q3": "Where do fear‑based choices tempt us?",
+      "Q4": "What trust choice will we make this week?"
+    },
+    "S221": {
+      "Q1": "What judgments were announced?",
+      "Q2": "What does this teach about God’s justice?",
+      "Q3": "Where do we long to see justice today?",
+      "Q4": "What prayer for justice will we offer?"
+    },
+    "S222": {
+      "Q1": "What further judgments were declared?",
+      "Q2": "What reasons were given for them?",
+      "Q3": "Where do we see the same roots of harm?",
+      "Q4": "What step will we take toward repair?"
+    },
+    "S223": {
+      "Q1": "What fate awaited Babylon here?",
+      "Q2": "What does this say about pride and power?",
+      "Q3": "Where do we trust in image or status?",
+      "Q4": "What humble action will we choose today?"
+    },
+    "S224": {
+      "Q1": "What closing notes ended Jeremiah’s book?",
+      "Q2": "How did the ending confirm earlier warnings?",
+      "Q3": "What lesson will we keep from this book?",
+      "Q4": "What practice will help us remember it?"
+    },
+    "S225": {
+      "Q1": "What images of grief stood out?",
+      "Q2": "What do they teach about sin and sorrow?",
+      "Q3": "Where do we need to lament honestly?",
+      "Q4": "What prayer of lament will we bring to God?"
+    },
+    "S226": {
+      "Q1": "What turns toward hope appeared?",
+      "Q2": "What was remembered about God’s mercy?",
+      "Q3": "Where do we need hope to rise again?",
+      "Q4": "What daily mercy reminder will we keep?"
+    },
+    "S227": {
+      "Q1": "What part of the vision stayed with you?",
+      "Q2": "What does God’s glory communicate here?",
+      "Q3": "How does awe change our daily life?",
+      "Q4": "What practice will help us live with awe?"
+    },
+    "S228": {
+      "Q1": "What actions did Ezekiel act out?",
+      "Q2": "What message did they send?",
+      "Q3": "Where do we need a wake‑up call today?",
+      "Q4": "What change will we make before day’s end?"
+    },
+    "S229": {
+      "Q1": "What reasons were given for God’s departure?",
+      "Q2": "What do we learn about idolatry and God’s presence?",
+      "Q3": "Where do we crowd out God in daily life?",
+      "Q4": "What will we remove to make room for Him?"
+    },
+    "S230": {
+      "Q1": "What signs of exile were acted out?",
+      "Q2": "What do they reveal about stubborn hearts?",
+      "Q3": "Where do warnings fail to move us?",
+      "Q4": "What step of humble listening will we take?"
+    },
+    "S231": {
+      "Q1": "What strong pictures describe unfaithfulness?",
+      "Q2": "What do they show about covenant love?",
+      "Q3": "Where do we treat promises too lightly?",
+      "Q4": "What faithful act will we choose this week?"
+    },
+    "S232": {
+      "Q1": "What images of judgment and sorrow stood out?",
+      "Q2": "How do justice and mercy both appear here?",
+      "Q3": "Where do we need both truth and kindness?",
+      "Q4": "What wise blend will we practice this week?"
+    },
+    "S233": {
+      "Q1": "What history of rebellion was recalled?",
+      "Q2": "What does this reveal about God’s patience?",
+      "Q3": "Where are we repeating old mistakes?",
+      "Q4": "What new path will we take starting today?"
+    },
+    "S234": {
+      "Q1": "What hard pictures are used to confront sin?",
+      "Q2": "What do they say about betrayal and result?",
+      "Q3": "Where do we see broken trust today?",
+      "Q4": "What faithful repair can we begin this week?"
+    },
+    "S235": {
+      "Q1": "Which nations were addressed here?",
+      "Q2": "What lessons are there about pride and harm?",
+      "Q3": "Where must we resist contempt for others?",
+      "Q4": "What respectful action will we take today?"
+    },
+    "S236": {
+      "Q1": "What judgments fell on Egypt’s pride?",
+      "Q2": "What does this reveal about false strength?",
+      "Q3": "Where do we lean on fragile supports?",
+      "Q4": "What stronger trust will we practice this week?"
+    },
+    "S237": {
+      "Q1": "What was Ezekiel’s watchman role?",
+      "Q2": "What responsibility did he have to warn?",
+      "Q3": "Where should we speak up with care and truth?",
+      "Q4": "What careful word will we share this week?"
+    },
+    "S238": {
+      "Q1": "What shepherd images showed God’s care?",
+      "Q2": "What promises of renewal were given?",
+      "Q3": "Where do we need that shepherding now?",
+      "Q4": "What step will we take to receive His care?"
+    },
+    "S239": {
+      "Q1": "What visions of new life appeared?",
+      "Q2": "What do they show about God’s Spirit and future?",
+      "Q3": "Where do we hope to see renewal?",
+      "Q4": "What act of hope will we practice this week?"
+    },
+    "S240": {
+      "Q1": "What details of the measured temple stood out?",
+      "Q2": "What do order and holiness communicate?",
+      "Q3": "Where do boundaries help us meet with God?",
+      "Q4": "What boundary will we honor this week?"
+    },
+    "S241": {
+      "Q1": "What moment marked the return of glory?",
+      "Q2": "What does this mean for worship and life?",
+      "Q3": "Where do we sense God rebuilding our hearts?",
+      "Q4": "What worship response will we bring this week?"
+    },
+    "S242": {
+      "Q1": "What roles and rhythms filled this vision?",
+      "Q2": "What do special times teach about community?",
+      "Q3": "Which rhythm could shape our week well?",
+      "Q4": "What time will we guard for God this week?"
+    },
+    "S243": {
+      "Q1": "What life‑giving images stood out?",
+      "Q2": "What do they show about God with His people?",
+      "Q3": "Where do we long to see healing flow?",
+      "Q4": "What step will we take toward that healing?"
+    },
+    "S244": {
+      "Q1": "What pressures tested Daniel and friends?",
+      "Q2": "What choices kept them faithful?",
+      "Q3": "Where do we need resolve in a hard place?",
+      "Q4": "What faithful practice will we keep this week?"
+    },
+    "S245": {
+      "Q1": "What rescues and humblings happened?",
+      "Q2": "What do they show about God’s rule?",
+      "Q3": "Where do we need courage to stand firm?",
+      "Q4": "What bold yet kind step will we take?"
+    },
+    "S246": {
+      "Q1": "What warning showed up at the feast?",
+      "Q2": "What does Daniel’s witness show under threat?",
+      "Q3": "Where could integrity cost us something?",
+      "Q4": "What choice will we make to stay faithful?"
+    },
+    "S247": {
+      "Q1": "What visions or themes stood out?",
+      "Q2": "What do they teach about God’s final rule?",
+      "Q3": "Where do we need endurance and hope?",
+      "Q4": "What practice will help us endure this week?"
+    },
+    "S248": {
+      "Q1": "What insights about future conflicts appeared?",
+      "Q2": "What does this say about unseen struggle?",
+      "Q3": "Where do we feel outmatched or anxious?",
+      "Q4": "What prayer will we keep in those moments?"
+    },
+    "S249": {
+      "Q1": "What signs of steadfast love did you hear?",
+      "Q2": "What did unfaithfulness cost in this story?",
+      "Q3": "Where do we return to lesser loves?",
+      "Q4": "What turn back to God will we make today?"
+    },
+    "S250": {
+      "Q1": "What calls to return were heard?",
+      "Q2": "What does God promise to people who come back?",
+      "Q3": "Where do we need to come home to God?",
+      "Q4": "What practical step will we take today?"
+    },
+    "S251": {
+      "Q1": "What pictures describe the Day of the Lord?",
+      "Q2": "What responses does God invite?",
+      "Q3": "Where do we need a full‑heart return to God?",
+      "Q4": "What act of repentance will we practice now?"
+    },
+    "S252": {
+      "Q1": "What injustices were called out?",
+      "Q2": "What does God want instead of empty worship?",
+      "Q3": "Who near us needs us to do what is right?",
+      "Q4": "What just action will we take this week?"
+    },
+    "S253": {
+      "Q1": "What visions did Amos receive?",
+      "Q2": "What hope remained after judgment?",
+      "Q3": "Where do we need both truth and hope today?",
+      "Q4": "What step will we take to seek both together?"
+    },
+    "S254": {
+      "Q1": "What was Edom judged for?",
+      "Q2": "What warning do we see about pride and gloating?",
+      "Q3": "Where are we tempted to cheer others’ falls?",
+      "Q4": "What humble compassion will we show instead?"
+    },
+    "S255": {
+      "Q1": "What surprised you in Jonah’s story?",
+      "Q2": "What does God’s mercy to Nineveh reveal?",
+      "Q3": "Who is hard for us to show mercy to?",
+      "Q4": "What merciful step will we take this week?"
+    },
+    "S256": {
+      "Q1": "What charges and hopes appear in Micah?",
+      "Q2": "What does God require of His people?",
+      "Q3": "Where can we do justice and love mercy now?",
+      "Q4": "What humble step will we take this week?"
+    },
+    "S257": {
+      "Q1": "What laments and promises were together?",
+      "Q2": "What hope did Micah hold for the future?",
+      "Q3": "Where do we need that hope today?",
+      "Q4": "What prayer of hope will we pray this week?"
+    },
+    "S258": {
+      "Q1": "What picture of God’s justice did you see?",
+      "Q2": "What comfort is offered to the oppressed?",
+      "Q3": "Where do we long for God to set things right?",
+      "Q4": "What faithful trust will we practice today?"
+    },
+    "S259": {
+      "Q1": "What questions did Habakkuk bring?",
+      "Q2": "What answers or tensions remained?",
+      "Q3": "Where will we choose faith when answers delay?",
+      "Q4": "What practice will help us rejoice while we wait?"
+    },
+    "S260": {
+      "Q1": "What warnings and songs appeared?",
+      "Q2": "What hope is offered to the humble who seek God?",
+      "Q3": "Where do we need humility and courage together?",
+      "Q4": "What seeking step will we take this week?"
+    },
+    "S261": {
+      "Q1": "What priorities did Haggai confront?",
+      "Q2": "What promise did God give to rebuilders?",
+      "Q3": "Where have we delayed good work we should do?",
+      "Q4": "What first step will we take to rebuild?"
+    },
+    "S262": {
+      "Q1": "What visions encouraged the people to build?",
+      "Q2": "What do they say about cleansing and power?",
+      "Q3": "Where do we need fresh courage to serve?",
+      "Q4": "What act of service will we do this week?"
+    },
+    "S263": {
+      "Q1": "What questions about fasting were answered?",
+      "Q2": "What kind of community did God promise?",
+      "Q3": "Where can we practice truth and peace now?",
+      "Q4": "What peacemaking choice will we make today?"
+    },
+    "S264": {
+      "Q1": "What do these chapters say about the coming King?",
+      "Q2": "What images of salvation and mourning appeared?",
+      "Q3": "Where do we welcome Jesus’ gentle rule?",
+      "Q4": "What step of allegiance will we take this week?"
+    },
+    "S265": {
+      "Q1": "What questions did God raise with His people?",
+      "Q2": "What problems in worship and justice were corrected?",
+      "Q3": "Where do we need a fresh heart in worship?",
+      "Q4": "What change will we make before next week?"
+    },
+    "S266": {
+      "Q1": "What beginnings of the kingdom did you see?",
+      "Q2": "What did Jesus announce and invite people into?",
+      "Q3": "Where do we need to repent and follow Him?",
+      "Q4": "What first step of obedience will we take?"
+    },
+    "S267": {
+      "Q1": "What teachings from the Sermon stood out?",
+      "Q2": "What picture of righteousness did Jesus give?",
+      "Q3": "Where do we need to live this at school or home?",
+      "Q4": "What practice will we start this week?"
+    },
+    "S268": {
+      "Q1": "What signs and responses marked Jesus’ work?",
+      "Q2": "What do we learn about faith and authority?",
+      "Q3": "Where do we need to trust Jesus’ authority now?",
+      "Q4": "What act of trust will we take this week?"
+    },
+    "S269": {
+      "Q1": "What parables or questions stood out?",
+      "Q2": "What do they reveal about the kingdom’s growth?",
+      "Q3": "Where do we see small beginnings with big promise?",
+      "Q4": "What faithful seed will we plant this week?"
+    },
+    "S270": {
+      "Q1": "What conflicts and confessions appeared?",
+      "Q2": "What do we learn about faith under pushback?",
+      "Q3": "Where is it hard to follow Jesus right now?",
+      "Q4": "What step will we take to follow anyway?"
+    },
+    "S271": {
+      "Q1": "What values did Jesus teach here?",
+      "Q2": "What do they show about forgiveness and humility?",
+      "Q3": "Where do we need these at home or school?",
+      "Q4": "What step will we take to practice them?"
+    },
+    "S272": {
+      "Q1": "What scenes stood out to you?",
+      "Q2": "What do they show about cost and priorities?",
+      "Q3": "Where is Jesus asking us to trust Him?",
+      "Q4": "What step of obedience will we take?"
+    },
+    "S273": {
+      "Q1": "What responses to Jesus did you notice?",
+      "Q2": "What does this reveal about His authority?",
+      "Q3": "Where will we welcome His authority this week?",
+      "Q4": "What act of honor will we offer Him?"
+    },
+    "S274": {
+      "Q1": "What warnings and hopes did you hear?",
+      "Q2": "What do they teach about being ready and faithful?",
+      "Q3": "Where do we feel unprepared or distracted?",
+      "Q4": "What watchful habit will we begin?"
+    },
+    "S275": {
+      "Q1": "What moments moved you most?",
+      "Q2": "What do they show about love and betrayal?",
+      "Q3": "Where is it hard to stay loyal to Jesus?",
+      "Q4": "What loyal step will we take today?"
+    },
+    "S276": {
+      "Q1": "What details about the cross and empty tomb stood out?",
+      "Q2": "What does this mean for hope and mission?",
+      "Q3": "Where do we need resurrection hope now?",
+      "Q4": "What witness will we share this week?"
+    },
+    "S277": {
+      "Q1": "What first actions marked Jesus’ work?",
+      "Q2": "What do they show about the gospel’s power?",
+      "Q3": "Where do we need good news today?",
+      "Q4": "What response will we make now?"
+    },
+    "S278": {
+      "Q1": "What kinds of needs did Jesus meet?",
+      "Q2": "What does this model about serving others?",
+      "Q3": "Who near us needs quiet help?",
+      "Q4": "What act of service will we do this week?"
+    },
+    "S279": {
+      "Q1": "What tensions did you hear as Jesus served?",
+      "Q2": "What do we learn about power and humility?",
+      "Q3": "Where can we serve even when it costs?",
+      "Q4": "What humble step will we take?"
+    },
+    "S280": {
+      "Q1": "What confessions or confusions appeared?",
+      "Q2": "What does Jesus teach about following Him?",
+      "Q3": "Where do we resist the way of the cross?",
+      "Q4": "What surrender will we offer this week?"
+    },
+    "S281": {
+      "Q1": "What teaching challenged ambition here?",
+      "Q2": "What does true greatness look like?",
+      "Q3": "Where could we take a lower place?",
+      "Q4": "What serving choice will we make?"
+    },
+    "S282": {
+      "Q1": "What questions or traps were raised for Jesus?",
+      "Q2": "How did He answer with wisdom and truth?",
+      "Q3": "Where do we need wise words under pressure?",
+      "Q4": "What practice will help us answer well?"
+    },
+    "S283": {
+      "Q1": "What failures and faithfulness did you notice?",
+      "Q2": "What does this show about weakness and prayer?",
+      "Q3": "Where are we vulnerable to fear or denial?",
+      "Q4": "What guard of prayer will we keep?"
+    },
+    "S284": {
+      "Q1": "What scenes of injustice and victory stood out?",
+      "Q2": "What does the cross and resurrection mean to you?",
+      "Q3": "Where do we need courage because He lives?",
+      "Q4": "What bold faith step will we take?"
+    },
+    "S285": {
+      "Q1": "What surprises filled these birth stories?",
+      "Q2": "What do they show about timing and grace?",
+      "Q3": "Where do we need to trust God’s timing?",
+      "Q4": "What small act of faith will we take?"
+    },
+    "S286": {
+      "Q1": "What preparations or tests appeared?",
+      "Q2": "What do we learn about identity and mission?",
+      "Q3": "Where is God preparing us quietly now?",
+      "Q4": "What practice will ready our hearts?"
+    },
+    "S287": {
+      "Q1": "What calls or healings stood out?",
+      "Q2": "What do they show about following daily?",
+      "Q3": "Where might Jesus be calling us to leave something?",
+      "Q4": "What step will we take to follow?"
+    },
+    "S288": {
+      "Q1": "What links did you see between faith and healing?",
+      "Q2": "What did Jesus notice in those who came?",
+      "Q3": "Where will we reach out in faith this week?",
+      "Q4": "What prayer will we bring to Jesus?"
+    },
+    "S289": {
+      "Q1": "What milestones closed this phase?",
+      "Q2": "What does Jesus expect of His disciples now?",
+      "Q3": "Where can we put learning into practice?",
+      "Q4": "What action will we take this week?"
+    },
+    "S290": {
+      "Q1": "What choices showed Jesus’ resolve?",
+      "Q2": "What does discipleship cost look like here?",
+      "Q3": "Where do we need focused resolve today?",
+      "Q4": "What distraction will we lay down?"
+    },
+    "S291": {
+      "Q1": "What teachings challenged comfort or fear?",
+      "Q2": "What do they say about trust and priorities?",
+      "Q3": "Where do priorities need rearranging?",
+      "Q4": "What first change will we make?"
+    },
+    "S292": {
+      "Q1": "Which parable or healing stayed with you?",
+      "Q2": "What truth about the kingdom did you notice?",
+      "Q3": "Where do we see that truth in daily life?",
+      "Q4": "What small act will live it out?"
+    },
+    "S293": {
+      "Q1": "What habits of faith did Jesus commend?",
+      "Q2": "What obstacles did He warn about?",
+      "Q3": "Which habit do we need most now?",
+      "Q4": "What step will we take to grow it?"
+    },
+    "S294": {
+      "Q1": "What did you notice about mercy and justice?",
+      "Q2": "What does Jesus look for in hearts here?",
+      "Q3": "Where do we need a fresh heart today?",
+      "Q4": "What prayer will we make this week?"
+    },
+    "S295": {
+      "Q1": "What responses to Jesus appeared?",
+      "Q2": "What does His authority challenge in people?",
+      "Q3": "Where is Jesus challenging our comfort?",
+      "Q4": "What obedient step will we take?"
+    },
+    "S296": {
+      "Q1": "What warnings or prayers were missed?",
+      "Q2": "What do we learn about weakness and grace?",
+      "Q3": "Where do we need watchfulness in temptation?",
+      "Q4": "What watch will we keep this week?"
+    },
+    "S297": {
+      "Q1": "What moved you most in this account?",
+      "Q2": "What does the resurrection call us to do?",
+      "Q3": "Where will we live differently because He rose?",
+      "Q4": "What witness will we share soon?"
+    },
+    "S298": {
+      "Q1": "What titles or images describe Jesus?",
+      "Q2": "How did the first disciples respond?",
+      "Q3": "Where do we need to come and see again?",
+      "Q4": "What step will we take toward Jesus?"
+    },
+    "S299": {
+      "Q1": "What signs or talks stood out here?",
+      "Q2": "What do they reveal about new life in Jesus?",
+      "Q3": "Where do we need His transformation today?",
+      "Q4": "What request will we bring to Him?"
+    },
+    "S300": {
+      "Q1": "What patterns connect these signs?",
+      "Q2": "What do they say about hunger, fear, and faith?",
+      "Q3": "Where are we hungry or afraid now?",
+      "Q4": "What trust step will we take?"
+    },
+    "S301": {
+      "Q1": "What debates or claims about Jesus arose?",
+      "Q2": "What did Jesus reveal about Himself here?",
+      "Q3": "Where do we need to take a stand on Jesus?",
+      "Q4": "What confession will we make this week?"
+    },
+    "S302": {
+      "Q1": "What changed in the healed person’s life?",
+      "Q2": "What did leaders’ reactions reveal?",
+      "Q3": "Where do we fear others’ opinions now?",
+      "Q4": "What faithful choice will we make anyway?"
+    },
+    "S303": {
+      "Q1": "What emotions surrounded this sign?",
+      "Q2": "What does Jesus show about life and death?",
+      "Q3": "Where do we need His comfort or power?",
+      "Q4": "What prayer will we ask Him to answer?"
+    },
+    "S304": {
+      "Q1": "What act of service stood out?",
+      "Q2": "What does Jesus teach about love and identity?",
+      "Q3": "Where can we serve without being noticed?",
+      "Q4": "What simple family kindness will we do for each other this week?"
+    },
+    "S305": {
+      "Q1": "What images of abiding and unity spoke to you?",
+      "Q2": "What does fruitfulness look like here?",
+      "Q3": "Where do we need to remain in Jesus this week?",
+      "Q4": "What practice will help us abide?"
+    },
+    "S306": {
+      "Q1": "What injustices and fulfillments appeared?",
+      "Q2": "What does Jesus’ sacrifice mean for us?",
+      "Q3": "Where do we need to rest in His finished work?",
+      "Q4": "What response of gratitude will we offer?"
+    },
+    "S307": {
+      "Q1": "What proofs and meetings were recorded?",
+      "Q2": "What mission did Jesus give His followers?",
+      "Q3": "Where can we be a witness this week?",
+      "Q4": "What next step will we take today?"
+    },
+    "S308": {
+      "Q1": "What happened when the Spirit came?",
+      "Q2": "What does this mean for fear and boldness?",
+      "Q3": "Where do we need Spirit-given courage now?",
+      "Q4": "What family prayer will we pray together for courage?"
+    },
+    "S309": {
+      "Q1": "What tensions rose as the church grew?",
+      "Q2": "How did believers respond under pressure?",
+      "Q3": "Where do we need courage to obey God?",
+      "Q4": "What bold step will we take this week?"
+    },
+    "S310": {
+      "Q1": "What ministries multiplied here?",
+      "Q2": "What do we learn from Stephen’s witness?",
+      "Q3": "Where can we serve despite pushback?",
+      "Q4": "What steady act will we continue?"
+    },
+    "S311": {
+      "Q1": "What changed in Saul’s life and direction?",
+      "Q2": "What does this show about grace and calling?",
+      "Q3": "Where could God be turning us around?",
+      "Q4": "What step will we take in that new direction?"
+    },
+    "S312": {
+      "Q1": "What barriers were crossed in this story?",
+      "Q2": "What does God show about welcome and inclusion?",
+      "Q3": "Who is outside our usual circle now?",
+      "Q4": "What welcome step will we take?"
+    },
+    "S313": {
+      "Q1": "What patterns of preaching and response appeared?",
+      "Q2": "What kept the team focused amid pushback?",
+      "Q3": "Where do we need endurance in serving?",
+      "Q4": "What practice will help us keep going?"
+    },
+    "S314": {
+      "Q1": "What problem did the church solve here?",
+      "Q2": "What does the decision say about grace?",
+      "Q3": "Where do we add burdens God does not?",
+      "Q4": "What freeing step will we take?"
+    },
+    "S315": {
+      "Q1": "What new doors and detours showed up?",
+      "Q2": "What does guidance look like on the move?",
+      "Q3": "Where do we need guidance right now?",
+      "Q4": "What step will we take with the light we have?"
+    },
+    "S316": {
+      "Q1": "What growth and conflicts marked this time?",
+      "Q2": "What do you notice about teaching and change?",
+      "Q3": "Where do we need deeper learning or repentance?",
+      "Q4": "What step will we take to grow?"
+    },
+    "S317": {
+      "Q1": "What led to Paul’s arrest?",
+      "Q2": "What does courage look like in his defense?",
+      "Q3": "Where could we speak truth under pressure?",
+      "Q4": "What words will we prepare in prayer?"
+    },
+    "S318": {
+      "Q1": "What hearings and appeals happened?",
+      "Q2": "What does Paul model in witness and reason?",
+      "Q3": "Where do we need gentle, clear words now?",
+      "Q4": "What respectful family response will we model for others to see?"
+    },
+    "S319": {
+      "Q1": "What crises and rescues happened on the way?",
+      "Q2": "What does leadership look like in the storm?",
+      "Q3": "Where are we weathering a storm now?",
+      "Q4": "What stabilizing step will we take?"
+    },
+    "S320": {
+      "Q1": "What problem with sin is described?",
+      "Q2": "What does this mean for every person?",
+      "Q3": "Where do we see this around us now?",
+      "Q4": "What honest family confession will we share together this week?"
+    },
+    "S321": {
+      "Q1": "What good news is announced here?",
+      "Q2": "What does faith do that law cannot?",
+      "Q3": "Where do we try to earn what God gives?",
+      "Q4": "What trust step will we take today?"
+    },
+    "S322": {
+      "Q1": "What changes when we live by the Spirit?",
+      "Q2": "What hope is given for our struggle?",
+      "Q3": "Where do we need the Spirit’s help now?",
+      "Q4": "What prayer will we pray each day this week?"
+    },
+    "S323": {
+      "Q1": "What story of mercy unfolds here?",
+      "Q2": "What does this say about God’s plan and people?",
+      "Q3": "Where do we need humility in God’s story?",
+      "Q4": "What worship response will we bring?"
+    },
+    "S324": {
+      "Q1": "What marks a changed life in this text?",
+      "Q2": "What does love look like in practice here?",
+      "Q3": "Where can we show this kind of love?",
+      "Q4": "What act of love will we choose?"
+    },
+    "S325": {
+      "Q1": "What teamwork did you notice here?",
+      "Q2": "What do these greetings reveal about the church?",
+      "Q3": "Who helps us follow Jesus well now?",
+      "Q4": "How will we thank or support them this week?"
+    },
+    "S326": {
+      "Q1": "What problems were addressed in this church?",
+      "Q2": "What does true unity rest on here?",
+      "Q3": "Where do we need to lay aside pride today?",
+      "Q4": "What step will build unity this week?"
+    },
+    "S327": {
+      "Q1": "What guidance was given for purity here?",
+      "Q2": "What principles stand out for honor and care?",
+      "Q3": "Where do we need wisdom in relationships now?",
+      "Q4": "What boundary will we keep this week?"
+    },
+    "S328": {
+      "Q1": "What does Paul teach about freedom and love?",
+      "Q2": "How should freedom be used with others?",
+      "Q3": "Where do we need self-control for someone’s good?",
+      "Q4": "What choice will we make out of love?"
+    },
+    "S329": {
+      "Q1": "What do you learn about love and worship here?",
+      "Q2": "What order and purpose guide the church?",
+      "Q3": "Where can we build others up when we meet?",
+      "Q4": "What encouraging word will we speak?"
+    },
+    "S330": {
+      "Q1": "What hope does the resurrection secure here?",
+      "Q2": "How does that shape work and giving?",
+      "Q3": "Where do we need a new perspective now?",
+      "Q4": "What generous act will we plan?"
+    },
+    "S331": {
+      "Q1": "What hardships and comforts were named?",
+      "Q2": "What does ministry look like through weakness?",
+      "Q3": "Where do we need comfort to keep serving?",
+      "Q4": "What step will we take in dependence on God?"
+    },
+    "S332": {
+      "Q1": "What treasure in jars of clay did you see?",
+      "Q2": "What does grace change in relationships?",
+      "Q3": "Where do we need to forgive or reconcile?",
+      "Q4": "What move toward grace will we make?"
+    },
+    "S333": {
+      "Q1": "What examples of giving stood out?",
+      "Q2": "What principles guide cheerful giving?",
+      "Q3": "Where can we share to meet a need now?",
+      "Q4": "What gift will we prepare this week?"
+    },
+    "S334": {
+      "Q1": "What marks true and false servants?",
+      "Q2": "What warnings does Paul give?",
+      "Q3": "Where do appearances mislead us today?",
+      "Q4": "What family test will we use to help each other spot false messages?"
+    },
+    "S335": {
+      "Q1": "What story did Paul tell of his calling?",
+      "Q2": "What does this show about grace vs. earning?",
+      "Q3": "Where do we rest in approval more than grace?",
+      "Q4": "What truth will we hold this week?"
+    },
+    "S336": {
+      "Q1": "What is the core of the gospel here?",
+      "Q2": "What fruit should follow faith in Christ?",
+      "Q3": "Where do we want to see this fruit grow?",
+      "Q4": "What step will we take to walk by the Spirit?"
+    },
+    "S337": {
+      "Q1": "What blessings in Christ were listed?",
+      "Q2": "What does adoption into God’s family mean?",
+      "Q3": "Where do we forget our true identity?",
+      "Q4": "What reminder will we carry this week?"
+    },
+    "S338": {
+      "Q1": "What practices mark a healthy church family?",
+      "Q2": "What old ways must be put off here?",
+      "Q3": "Where do we need new habits in speech or life?",
+      "Q4": "What new way will we put on this week?"
+    },
+    "S339": {
+      "Q1": "What themes of joy and unity appeared?",
+      "Q2": "What practices fight anxiety and division?",
+      "Q3": "Where can we choose joy in our routine?",
+      "Q4": "What habit will help us rejoice daily?"
+    },
+    "S340": {
+      "Q1": "What does Paul say about Jesus’ supremacy?",
+      "Q2": "What changes when Christ is our center?",
+      "Q3": "Where are we pulled off center now?",
+      "Q4": "What family step will we take to keep Jesus at the center of our home?"
+    },
+    "S341": {
+      "Q1": "What hopes and commands shape waiting here?",
+      "Q2": "What does holy living look like in this text?",
+      "Q3": "Where do we need hope to keep going?",
+      "Q4": "What step will help us stay awake to God?"
+    },
+    "S342": {
+      "Q1": "What confusions about the return were corrected?",
+      "Q2": "What steadiness does Paul call for?",
+      "Q3": "Where do rumors unsettle our faith now?",
+      "Q4": "What grounding truth will we repeat?"
+    },
+    "S343": {
+      "Q1": "What instructions did Paul give Timothy?",
+      "Q2": "What example should leaders set?",
+      "Q3": "Where can we be faithful with small things?",
+      "Q4": "What step will we take to serve steadily?"
+    },
+    "S344": {
+      "Q1": "What charges and comforts stood out?",
+      "Q2": "What does finishing the race involve?",
+      "Q3": "Where do we need endurance today?",
+      "Q4": "What step will help us finish well?"
+    },
+    "S345": {
+      "Q1": "What truths about salvation were emphasized?",
+      "Q2": "What does grace train us to do now?",
+      "Q3": "Where do we need grace to change habits?",
+      "Q4": "What good family work will we devote ourselves to this week?"
+    },
+    "S346": {
+      "Q1": "What requests did Paul make to Philemon?",
+      "Q2": "What does gospel reconciliation look like?",
+      "Q3": "Where do we need to repair a relationship now?",
+      "Q4": "What first step will we take?"
+    },
+    "S347": {
+      "Q1": "What comparisons lifted Jesus high?",
+      "Q2": "What warnings urge us to listen to Him?",
+      "Q3": "Where have we drifted from His voice?",
+      "Q4": "What family response of faith will we make together today?"
+    },
+    "S348": {
+      "Q1": "What kind of priest is Jesus shown to be?",
+      "Q2": "What hope comes from His intercession?",
+      "Q3": "Where do we need His help right now?",
+      "Q4": "What family prayer will we bring with confidence together today?"
+    },
+    "S349": {
+      "Q1": "What makes the new covenant better?",
+      "Q2": "What does Christ’s sacrifice accomplish?",
+      "Q3": "Where do we still carry guilt or shame?",
+      "Q4": "What family truth will we rest in together this week?"
+    },
+    "S350": {
+      "Q1": "What examples of faith inspired you?",
+      "Q2": "What does running the race require now?",
+      "Q3": "What weight or sin slows us down?",
+      "Q4": "What will we lay aside this week?"
+    },
+    "S351": {
+      "Q1": "What contrasts mark old and new ways?",
+      "Q2": "What practices of love and holiness are urged?",
+      "Q3": "Where do we need peace and purity?",
+      "Q4": "What step will we take today?"
+    },
+    "S352": {
+      "Q1": "What links between faith and works appeared?",
+      "Q2": "What do you learn about speech and wisdom?",
+      "Q3": "Where do we need to put faith into action?",
+      "Q4": "What work of love will we do this week?"
+    },
+    "S353": {
+      "Q1": "What encouragements for suffering did you see?",
+      "Q2": "What hope anchors believers here?",
+      "Q3": "Where do we need courage to do right?",
+      "Q4": "What gentle answer will we give this week?"
+    },
+    "S354": {
+      "Q1": "What warnings about false teaching were given?",
+      "Q2": "What hope points to the Lord’s patience?",
+      "Q3": "Where do we need diligence and hope together?",
+      "Q4": "What step will help us grow in grace?"
+    },
+    "S355": {
+      "Q1": "What tests of truth and love were given?",
+      "Q2": "What does walking in the light look like?",
+      "Q3": "Where do we need assurance or change now?",
+      "Q4": "What step will we take toward the light?"
+    },
+    "S356": {
+      "Q1": "What danger did John warn about?",
+      "Q2": "What does faithful love look like now?",
+      "Q3": "Where do we need to guard our home or heart?",
+      "Q4": "What boundary will we set this week?"
+    },
+    "S357": {
+      "Q1": "What problem did John address here?",
+      "Q2": "What does honest hospitality look like?",
+      "Q3": "Who could we welcome or support this week?",
+      "Q4": "What act of hospitality will we do?"
+    },
+    "S358": {
+      "Q1": "What threats to the faith were highlighted?",
+      "Q2": "What must believers build themselves up in?",
+      "Q3": "Where do we need mercy and watchfulness now?",
+      "Q4": "What step will help us contend well?"
+    },
+    "S359": {
+      "Q1": "What strengths and weaknesses were named?",
+      "Q2": "What calls to repent or endure stood out?",
+      "Q3": "Which message speaks most to us now?",
+      "Q4": "What response will we make this week?"
+    },
+    "S360": {
+      "Q1": "What visions and cries did you notice?",
+      "Q2": "What hope do the sealed receive?",
+      "Q3": "Where do we need endurance in trial now?",
+      "Q4": "What prayer will keep us steady?"
+    },
+    "S361": {
+      "Q1": "What warnings and judgments unfolded?",
+      "Q2": "What response is God seeking from people?",
+      "Q3": "Where do we need to turn from compromise?",
+      "Q4": "What step of repentance will we take?"
+    },
+    "S362": {
+      "Q1": "What symbols of conflict and hope appeared?",
+      "Q2": "What do they teach about faithful endurance?",
+      "Q3": "Where do we feel worn out in the fight?",
+      "Q4": "What practice will renew our strength?"
+    },
+    "S363": {
+      "Q1": "What scenes of judgment filled this reading?",
+      "Q2": "What do they reveal about God’s justice?",
+      "Q3": "Where do we long for final justice now?",
+      "Q4": "What trust will we hold in the meantime?"
+    },
+    "S364": {
+      "Q1": "What contrasts appear between Babylon and the Lamb?",
+      "Q2": "What warnings call people to come out?",
+      "Q3": "Where are we drawn to Babylon-like habits?",
+      "Q4": "What break will we make this week?"
+    },
+    "S365": {
+      "Q1": "What pictures of the new creation moved you?",
+      "Q2": "What promises anchor our hope?",
+      "Q3": "Where do we need this hope today?",
+      "Q4": "What step will help us live as citizens of that city?"
+    }
+  }
+}
