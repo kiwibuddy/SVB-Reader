@@ -14,18 +14,22 @@ import { Ionicons } from '@expo/vector-icons';
 
 interface EmojiPickerProps {
   onEmojiSelect: (emoji: string) => void;
+  onNoteSelect: () => void;
   onClose: () => void;
   position?: { x: number; y: number };
   onLayout?: (width: number, height: number) => void;
+  existingNote?: string | null;
 }
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const EmojiPicker: React.FC<EmojiPickerProps> = ({ 
-  onEmojiSelect, 
+  onEmojiSelect,
+  onNoteSelect,
   onClose, 
   position = { x: screenWidth / 2, y: screenHeight / 2 },
-  onLayout
+  onLayout,
+  existingNote
 }) => {
   
   const EMOJIS = useMemo(() => [
@@ -53,6 +57,19 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
     onEmojiSelect(emoji);
   };
 
+  const handleNotePress = () => {
+    // Haptic feedback
+    if (Platform.OS === 'ios') {
+      try {
+        const Haptics = require('expo-haptics');
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {
+        // Haptics not available, continue without feedback
+      }
+    }
+    onNoteSelect();
+  };
+
   const handleClose = () => {
     onClose();
   };
@@ -74,6 +91,28 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
               <Text style={styles.emojiText}>{item.emoji}</Text>
             </TouchableOpacity>
           ))}
+          
+          {/* Note button */}
+          <TouchableOpacity
+            style={[
+              styles.emojiButton,
+              styles.noteButton,
+              { backgroundColor: existingNote ? '#FFB34715' : 'rgba(142, 142, 147, 0.08)' }
+            ]}
+            onPress={handleNotePress}
+            activeOpacity={0.7}
+          >
+            <Ionicons 
+              name={existingNote ? "document-text" : "create-outline"} 
+              size={24} 
+              color={existingNote ? '#FFB347' : '#8E8E93'} 
+            />
+            {existingNote && (
+              <View style={styles.noteBadge}>
+                <View style={styles.noteBadgeDot} />
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
         
         {/* Close button */}
@@ -153,6 +192,34 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.08)',
+  },
+  noteButton: {
+    position: 'relative',
+  },
+  noteBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  noteBadgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFB347',
   },
 });
 

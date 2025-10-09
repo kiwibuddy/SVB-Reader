@@ -159,21 +159,21 @@ export async function getBookInsights(bookCode: string): Promise<BookInsights> {
       SELECT COALESCE(SUM(totalReads), 0) as total
       FROM segment_read_count 
       WHERE segmentID IN (${placeholders})
-    `, segmentIds);
+    `, ...segmentIds);
     
     // Get stories that have been read at least once
     const readStoriesCount = await db.getFirstAsync<{ count: number }>(`
       SELECT COUNT(*) as count
       FROM segment_read_count 
       WHERE segmentID IN (${placeholders}) AND totalReads > 0
-    `, segmentIds);
+    `, ...segmentIds);
     
     // Get last read date for any story in this book
     const lastReadDate = await db.getFirstAsync<{ lastReadDate: string }>(`
       SELECT MAX(lastReadDate) as lastReadDate
       FROM segment_read_count 
       WHERE segmentID IN (${placeholders}) AND totalReads > 0
-    `, segmentIds);
+    `, ...segmentIds);
     
     // Get most read story in this book
     const favoriteStory = await db.getFirstAsync<{ segmentId: string; reads: number }>(`
@@ -182,21 +182,21 @@ export async function getBookInsights(bookCode: string): Promise<BookInsights> {
       WHERE segmentID IN (${placeholders})
       ORDER BY totalReads DESC, lastReadDate DESC
       LIMIT 1
-    `, segmentIds);
+    `, ...segmentIds);
     
     // Get group vs individual reads for the entire book
     const groupReads = await db.getFirstAsync<{ count: number }>(`
       SELECT COUNT(*) as count 
       FROM group_segment_completion 
       WHERE segmentID IN (${placeholders})
-    `, segmentIds);
+    `, ...segmentIds);
     
     // Calculate minimum read count (for books where all stories have been read multiple times)
     const minReadCount = await db.getFirstAsync<{ minReads: number }>(`
       SELECT MIN(COALESCE(totalReads, 0)) as minReads
       FROM segment_read_count 
       WHERE segmentID IN (${placeholders}) AND totalReads > 0
-    `, segmentIds);
+    `, ...segmentIds);
     
     const totalReads = totalAllReads?.total || 0;
     const storiesRead = readStoriesCount?.count || 0;

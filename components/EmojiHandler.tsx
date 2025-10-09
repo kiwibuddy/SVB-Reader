@@ -1,12 +1,14 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import logger from '@/utils/logger';
-import { View, Pressable, Text, StyleSheet, Modal, Platform, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { View, Pressable, Text, StyleSheet, Modal, Platform, TouchableOpacity, useWindowDimensions, Alert } from 'react-native';
 import { LongPressGestureHandler, State, Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 import { BibleBlock } from '@/types';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { addEmoji, deleteEmoji, getEmoji } from '@/api/sqlite';
 import EmojiPicker from './EmojiPicker';
+import NoteInput from './NoteInput';
 
 interface EmojiHandlerProps {
   block: BibleBlock;
@@ -57,8 +59,10 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   const { state, updateSegmentId, updateEmojiActions } = useSQLiteGlobalContext();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const [showPicker, setShowPicker] = useState(false);
+  const [showNoteInput, setShowNoteInput] = useState(false);
   const [pickerPosition, setPickerPosition] = useState({ x: 0, y: 0 });
   const [existingEmoji, setExistingEmoji] = useState<string | null>(null);
+  const [existingNote, setExistingNote] = useState<string | null>(null);
   
   // Emoji picker dimensions with validation
   const [pickerWidth, setPickerWidth] = useState<number>(POSITIONING_CONSTANTS.DEFAULT_PICKER_WIDTH);
@@ -146,46 +150,61 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   // When hasTail=false: consecutive bubbles need emoji positioned higher (smaller top value)
   const emojiTopOffset = hasTail ? 35 : -15;
 
-  // CRITICAL: Load existing emoji when component mounts
+  // CRITICAL: Load existing emoji and note when component mounts
   useEffect(() => {
     if (!isMountedRef.current) return;
     
-    const loadEmoji = async () => {
+    const loadReaction = async () => {
       try {
         if (!state.segmentId || !blockId) {
           logger.warn('🔍 [EmojiHandler] Missing segmentId or blockId:', { segmentId: state.segmentId, blockId });
           return;
         }
         
-        const emoji = await getEmoji(state.segmentId, blockId);
-        if (isMountedRef.current) {
-          setExistingEmoji(emoji);
+        // Load both emoji and note from database
+        const db = await import('@/api/database-manager').then(m => m.databaseManager.getDatabase());
+        const result = await db.getFirstAsync<{ emoji: string | null; note: string | null }>(
+          `SELECT emoji, note FROM emojis WHERE segmentID = ? AND blockID = ?`,
+          state.segmentId,
+          blockId
+        );
+        
+        if (isMountedRef.current && result) {
+          setExistingEmoji(result.emoji);
+          setExistingNote(result.note);
         }
       } catch (error) {
-        logger.error('🔍 [EmojiHandler] Error loading emoji:', error);
+        logger.error('🔍 [EmojiHandler] Error loading reaction:', error);
       }
     };
-    loadEmoji();
+    loadReaction();
   }, [state.segmentId, blockId]);
 
-  // CRITICAL: Update emoji when emojiActions changes (for external updates)
+  // CRITICAL: Update reaction when emojiActions changes (for external updates)
   useEffect(() => {
     if (!isMountedRef.current) return;
     
     if (state.emojiActions > 0) { // Only update if there have been emoji actions
-      const loadEmoji = async () => {
+      const loadReaction = async () => {
         try {
           if (!state.segmentId || !blockId) return;
           
-          const emoji = await getEmoji(state.segmentId, blockId);
-          if (isMountedRef.current) {
-            setExistingEmoji(emoji);
+          const db = await import('@/api/database-manager').then(m => m.databaseManager.getDatabase());
+          const result = await db.getFirstAsync<{ emoji: string | null; note: string | null }>(
+            `SELECT emoji, note FROM emojis WHERE segmentID = ? AND blockID = ?`,
+            state.segmentId,
+            blockId
+          );
+          
+          if (isMountedRef.current && result) {
+            setExistingEmoji(result.emoji);
+            setExistingNote(result.note);
           }
         } catch (error) {
-          logger.error('🔍 [EmojiHandler] Error loading emoji from actions:', error);
+          logger.error('🔍 [EmojiHandler] Error loading reaction from actions:', error);
         }
       };
-      loadEmoji();
+      loadReaction();
     }
   }, [state.segmentId, blockId, state.emojiActions]);
 
@@ -231,7 +250,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     }
   }, [state.segmentId, blockId, block, state.emojiActions, updateEmojiActions]);
 
-  // CRITICAL: Enhanced emoji deletion with validation
+  // CRITICAL: Enhanced emoji deletion with confirmation and note preservation
   const handleEmojiDelete = useCallback(async () => {
     if (!isMountedRef.current) return;
     
@@ -241,18 +260,54 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         return;
       }
       
-      await deleteEmoji(state.segmentId, blockId);
-      
-      if (isMountedRef.current) {
-        setExistingEmoji(null);
-        
-        // Update context to trigger re-renders
-        updateEmojiActions(state.emojiActions + 1);
-      }
+      // Show confirmation alert
+      Alert.alert(
+        'Remove Emoji',
+        existingNote 
+          ? 'Remove this emoji? Your note will be preserved.' 
+          : 'Remove this emoji reaction?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Remove',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                const db = await import('@/api/database-manager').then(m => m.databaseManager.getDatabase());
+                
+                // If there's a note, keep the reaction but remove the emoji
+                if (existingNote && existingNote.trim().length > 0) {
+                  await db.runAsync(`
+                    UPDATE emojis 
+                    SET emoji = NULL 
+                    WHERE segmentID = ? AND blockID = ?
+                  `, state.segmentId, blockId);
+                } else {
+                  // No note exists, delete the entire reaction
+                  await deleteEmoji(state.segmentId, blockId);
+                }
+                
+                if (isMountedRef.current) {
+                  setExistingEmoji(null);
+                  
+                  // Update context to trigger re-renders
+                  updateEmojiActions(state.emojiActions + 1);
+                }
+              } catch (error) {
+                logger.error('🔍 [EmojiHandler] Error deleting emoji:', error);
+              }
+            },
+          },
+        ],
+        { cancelable: true }
+      );
     } catch (error) {
-      logger.error('🔍 [EmojiHandler] Error deleting emoji:', error);
+      logger.error('🔍 [EmojiHandler] Error in handleEmojiDelete:', error);
     }
-  }, [state.segmentId, blockId, state.emojiActions, updateEmojiActions]);
+  }, [state.segmentId, blockId, existingNote, state.emojiActions, updateEmojiActions]);
 
   // CRITICAL: Enhanced picker close with validation
   const handlePickerClose = useCallback(() => {
@@ -260,6 +315,56 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     
     setShowPicker(false);
     gestureInProgressRef.current = false;
+  }, []);
+
+  // Handle note selection - show note input
+  const handleNoteSelect = useCallback(() => {
+    if (!isMountedRef.current) return;
+    
+    setShowPicker(false);
+    setShowNoteInput(true);
+  }, []);
+
+  // Save note (with or without emoji)
+  const handleNoteSave = useCallback(async (noteText: string) => {
+    if (!isMountedRef.current) return;
+    
+    try {
+      if (!state.segmentId || !blockId) {
+        logger.error('🔍 [EmojiHandler] Missing required data for note save:', { segmentId: state.segmentId, blockId });
+        return;
+      }
+      
+      const db = await import('@/api/database-manager').then(m => m.databaseManager.getDatabase());
+      
+      // Save note with existing emoji (or null if no emoji)
+      await db.runAsync(`
+        INSERT OR REPLACE INTO emojis (
+          segmentID,
+          blockID,
+          blockData,
+          emoji,
+          note
+        ) VALUES (?, ?, ?, ?, ?)
+      `, state.segmentId, blockId, JSON.stringify(block), existingEmoji, noteText);
+      
+      if (isMountedRef.current) {
+        setExistingNote(noteText);
+        setShowNoteInput(false);
+        
+        // Update context to trigger re-renders
+        updateEmojiActions(state.emojiActions + 1);
+      }
+    } catch (error) {
+      logger.error('🔍 [EmojiHandler] Error saving note:', error);
+    }
+  }, [state.segmentId, blockId, block, existingEmoji, state.emojiActions, updateEmojiActions]);
+
+  // Cancel note input
+  const handleNoteCancel = useCallback(() => {
+    if (!isMountedRef.current) return;
+    
+    setShowNoteInput(false);
   }, []);
 
   // CRITICAL: Enhanced gesture handler with comprehensive validation
@@ -335,12 +440,25 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         </TouchableOpacity>
       </GestureDetector>
       
-      {/* CRITICAL: Emoji positioned using the working version's logic */}
-      {existingEmoji && (
+      {/* CRITICAL: Emoji and/or Note indicator positioned inline */}
+      {(existingEmoji || existingNote) && (
         <View style={[styles.reactionContainer, { top: emojiTopOffset }, emojiAlignment]}>
-          <Pressable onPress={handleEmojiDelete}>
-            <Text style={styles.reactionText}>{existingEmoji}</Text>
-          </Pressable>
+          {existingEmoji && (
+            <Pressable onPress={handleEmojiDelete}>
+              <Text style={styles.reactionText}>{existingEmoji}</Text>
+            </Pressable>
+          )}
+          {existingNote && (
+            <Pressable onPress={() => setShowNoteInput(true)}>
+              <View style={styles.noteIconContainer}>
+                <Ionicons 
+                  name="document-text" 
+                  size={28} 
+                  color="#666666" 
+                />
+              </View>
+            </Pressable>
+          )}
         </View>
       )}
 
@@ -350,18 +468,35 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         transparent={true}
         animationType="none"
         onRequestClose={handlePickerClose}
-
       >
         <EmojiPicker
           onEmojiSelect={handleEmojiSelect}
+          onNoteSelect={handleNoteSelect}
           onClose={handlePickerClose}
           position={pickerPosition}
+          existingNote={existingNote}
           onLayout={(width, height) => {
             if (isMountedRef.current && width > 0) {
               setPickerWidth(width);
             }
           }}
         />
+      </Modal>
+
+      {/* Modal for note input */}
+      <Modal
+        visible={showNoteInput}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={handleNoteCancel}
+      >
+        <View style={styles.noteInputContainer}>
+          <NoteInput
+            initialValue={existingNote || ''}
+            onSave={handleNoteSave}
+            onCancel={handleNoteCancel}
+          />
+        </View>
       </Modal>
     </View>
   );
@@ -374,6 +509,8 @@ const styles = StyleSheet.create({
   // Using the working version's styling for emoji positioning
   reactionContainer: {
     flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
     padding: 5,
     position: "absolute",  // CRITICAL: Must be absolute
     elevation: 3,
@@ -390,6 +527,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
+  },
+  noteIconContainer: {
+    padding: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 1,
+  },
+  noteInputContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });
 

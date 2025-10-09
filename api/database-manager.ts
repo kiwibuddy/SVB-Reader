@@ -261,8 +261,8 @@ export class DatabaseManager {
           segmentID TEXT NOT NULL,
           blockID TEXT NOT NULL,
           blockData TEXT NOT NULL,
-          emoji TEXT NOT NULL,
-          note TEXT NOT NULL,
+          emoji TEXT,
+          note TEXT DEFAULT '',
           UNIQUE(segmentID, blockID)
         );
 

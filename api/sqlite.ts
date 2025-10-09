@@ -98,7 +98,6 @@ export async function markSegmentComplete(
 
     // Global read count is incremented on EVERY completion regardless of context
     // This gives users accurate total read counts across all reading modes
-    logger.info(`📊 [ReadCount] Incrementing global count for segment ${segmentID} (${context} completion)`);
     await db.runAsync(`
       INSERT OR REPLACE INTO segment_read_count (
         segmentID,
@@ -218,7 +217,6 @@ export async function recordGroupCompletion(
     );
     
     // Also increment global read count for group completions
-    logger.info(`📊 [ReadCount] Incrementing global count for segment ${segmentID} (group completion)`);
     await db.runAsync(`
       INSERT OR REPLACE INTO segment_read_count (
         segmentID,
@@ -489,7 +487,6 @@ export async function getCurrentStreak(): Promise<number> {
     const result = await db.getFirstAsync<{ currentStreak: number }>(
       'SELECT currentStreak FROM streak_data LIMIT 1'
     );
-    logger.info('📊 [getCurrentStreak] Raw result from DB:', result);
     return result?.currentStreak || 0;
   } catch (error) {
     logger.error("Error getting current streak:", error);
@@ -661,7 +658,8 @@ export async function addEmoji(
   segmentID: string,
   blockID: string,
   blockData: BibleBlock,
-  emoji: string
+  emoji: string | null = null,
+  note: string = ''
 ) {
   try {
     const db = databaseManager.getDatabase();
@@ -673,7 +671,7 @@ export async function addEmoji(
         emoji,
         note
       ) VALUES (?, ?, ?, ?, ?)
-    `, segmentID, blockID, JSON.stringify(blockData), emoji, '');
+    `, segmentID, blockID, JSON.stringify(blockData), emoji, note);
   } catch (error) {
     logger.error("Error adding emoji:", error);
   }

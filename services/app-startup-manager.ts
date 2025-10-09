@@ -1,5 +1,6 @@
 import { databaseManager } from '@/api/database-manager';
 import { initializeSettingsTable, migrateFromAsyncStorage } from './sync-settings-manager';
+import { migrateEmojiTableForNotes } from '@/api/database-migration';
 import logger from '@/utils/logger';
 
 // ============================================================================
@@ -18,10 +19,13 @@ export async function initializeAppSystems(): Promise<{
     // 1. Initialize database first (this is critical)
     await databaseManager.initialize();
     
-    // 2. Initialize settings table structure
+    // 2. Run schema migrations (before settings initialization)
+    await runSchemaMigrations();
+    
+    // 3. Initialize settings table structure
     await initializeSettingsTable();
     
-    // 3. Migrate from AsyncStorage if needed (background operation)
+    // 4. Migrate from AsyncStorage if needed (background operation)
     migrateFromAsyncStorage().catch(error => {
       // Don't block startup for migration failures
       setTimeout(() => {
@@ -35,6 +39,39 @@ export async function initializeAppSystems(): Promise<{
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown initialization error'
     };
+  }
+}
+
+/**
+ * Run necessary schema migrations
+ */
+async function runSchemaMigrations(): Promise<void> {
+  try {
+    // Check if we need to migrate emoji table for notes feature
+    const db = databaseManager.getDatabase();
+    
+    // Check if the emojis table has the old schema (emoji NOT NULL)
+    const tableInfo = await db.getAllAsync<{ name: string; type: string; notnull: number }>(
+      "PRAGMA table_info(emojis)"
+    );
+    
+    const emojiColumn = tableInfo.find(col => col.name === 'emoji');
+    const needsMigration = emojiColumn && emojiColumn.notnull === 1;
+    
+    if (needsMigration) {
+      logger.info('📝 Emoji table needs migration for notes feature');
+      const result = await migrateEmojiTableForNotes();
+      if (result.success) {
+        logger.info('✅ Emoji table migration successful');
+      } else {
+        logger.error('❌ Emoji table migration failed:', result.error);
+      }
+    } else {
+      logger.info('✅ Emoji table already supports notes feature');
+    }
+  } catch (error) {
+    logger.error('Error checking/running migrations:', error);
+    // Don't throw - allow app to continue even if migration check fails
   }
 }
 

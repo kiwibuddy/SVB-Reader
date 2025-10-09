@@ -29,6 +29,8 @@ import type { SegmentTitle, ActiveFilters, ModalPosition, SourceColorDisplay, Sp
 import { Ionicons } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
 import { BlurView } from "expo-blur"
+import NoteModal from "@/components/NoteModal"
+import { updateNoteText, deleteNote } from "@/api/note-functions"
 
 
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
@@ -98,7 +100,8 @@ const ReadingEmoji = () => {
     testament: [],
     sourceColor: [],
     sourceName: [],
-    book: []
+    book: [],
+    hasNotes: false
   })
   const { t } = useTranslation()
 
@@ -106,6 +109,10 @@ const ReadingEmoji = () => {
   const [showJumpModal, setShowJumpModal] = useState(false)
   const [selectedReaction, setSelectedReaction] = useState<EmojiReaction | null>(null)
   const [modalPosition, setModalPosition] = useState<ModalPosition | null>(null);
+
+  // Note modal state
+  const [showNoteModal, setShowNoteModal] = useState(false)
+  const [selectedNoteReaction, setSelectedNoteReaction] = useState<EmojiReaction | null>(null)
 
 
 
@@ -188,8 +195,19 @@ const ReadingEmoji = () => {
               typeof item !== 'object' ||
               typeof item.segmentID !== 'string' || 
               typeof item.blockID !== 'string' || 
-              typeof item.emoji !== 'string' ||
               !item.blockData) {
+            return false;
+          }
+          
+          // Allow emoji to be null (for note-only reactions) or a string
+          if (item.emoji !== null && typeof item.emoji !== 'string') {
+            return false;
+          }
+          
+          // Must have either an emoji OR a note to be valid
+          const hasEmoji = item.emoji && typeof item.emoji === 'string' && item.emoji.trim().length > 0;
+          const hasNote = item.note && typeof item.note === 'string' && item.note.trim().length > 0;
+          if (!hasEmoji && !hasNote) {
             return false;
           }
           
@@ -388,6 +406,13 @@ const ReadingEmoji = () => {
         return activeFilters.book.includes(bookFullName)
       })
     }
+
+    // Filter by hasNotes
+    if (activeFilters.hasNotes) {
+      filteredReactions = filteredReactions.filter(reaction => 
+        reaction.note && reaction.note.trim().length > 0
+      )
+    }
     
     // Filter by emoji type if selected
     if (selectedEmoji) {
@@ -454,13 +479,21 @@ const ReadingEmoji = () => {
       testament: [],
       sourceColor: [],
       sourceName: [],
-      book: []
+      book: [],
+      hasNotes: false
     })
   }
 
   // Get active filter count
   const getActiveFilterCount = () => {
-    return Object.values(activeFilters).flat().length
+    const arrayFilters = [
+      ...activeFilters.testament,
+      ...activeFilters.sourceColor,
+      ...activeFilters.sourceName,
+      ...activeFilters.book
+    ].length;
+    const booleanFilters = activeFilters.hasNotes ? 1 : 0;
+    return arrayFilters + booleanFilters;
   }
 
   // Replace existing filteredReactions with the new function
@@ -619,9 +652,26 @@ const ReadingEmoji = () => {
   const handleDeleteReaction = useCallback(() => {
     if (!selectedReaction) return;
     
+    const hasEmoji = selectedReaction.emoji && selectedReaction.emoji.trim().length > 0;
+    const hasNote = selectedReaction.note && selectedReaction.note.trim().length > 0;
+    
+    let title = "Remove Reaction";
+    let message = "Are you sure you want to remove this reaction?";
+    
+    if (hasEmoji && hasNote) {
+      title = "Remove Reaction";
+      message = "This will remove both the emoji and note. Are you sure?";
+    } else if (hasEmoji) {
+      title = "Remove Emoji";
+      message = "Are you sure you want to remove this emoji reaction?";
+    } else if (hasNote) {
+      title = "Remove Note";
+      message = "Are you sure you want to remove this note?";
+    }
+    
     Alert.alert(
-      "Remove Emoji",
-      "Are you sure you want to remove this emoji reaction?",
+      title,
+      message,
       [
       {
           text: "Cancel",
@@ -643,7 +693,7 @@ const ReadingEmoji = () => {
               modalScaleAnim.setValue(0);
               modalOpacityAnim.setValue(0);
             } catch (error) {
-              logger.error('Error deleting emoji:', error);
+              logger.error('Error deleting reaction:', error);
             }
           },
         },
@@ -673,6 +723,85 @@ const ReadingEmoji = () => {
       modalOpacityAnim.setValue(0);
     });
   }, [modalScaleAnim, modalOpacityAnim]);
+
+  // Handle note view
+  const handleNoteView = useCallback((reaction: EmojiReaction) => {
+    // Haptic feedback
+    if (Platform.OS === 'ios') {
+      import('expo-haptics').then(Haptics => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }).catch(() => {});
+    }
+    
+    setSelectedNoteReaction(reaction);
+    setShowNoteModal(true);
+  }, []);
+
+  // Handle note edit
+  const handleNoteEdit = useCallback(async (newNoteText: string) => {
+    if (!selectedNoteReaction) return;
+    
+    try {
+      await updateNoteText(selectedNoteReaction.segmentID, selectedNoteReaction.blockID, newNoteText);
+      
+      // Update local state
+      setReactions(prev => prev.map(r => 
+        r.id === selectedNoteReaction.id 
+          ? { ...r, note: newNoteText }
+          : r
+      ));
+      
+      setShowNoteModal(false);
+      setSelectedNoteReaction(null);
+      
+      // Show success feedback
+      if (Platform.OS === 'ios') {
+        import('expo-haptics').then(Haptics => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }).catch(() => {});
+      }
+    } catch (error) {
+      logger.error('Error editing note:', error);
+      Alert.alert('Error', 'Failed to update note. Please try again.');
+    }
+  }, [selectedNoteReaction]);
+
+  // Handle note delete
+  const handleNoteDelete = useCallback(async () => {
+    if (!selectedNoteReaction) return;
+    
+    try {
+      await deleteNote(selectedNoteReaction.segmentID, selectedNoteReaction.blockID);
+      
+      // Update local state - keep emoji if exists, else remove entire reaction
+      setReactions(prev => {
+        if (selectedNoteReaction.emoji) {
+          // Keep reaction but clear note
+          return prev.map(r => 
+            r.id === selectedNoteReaction.id 
+              ? { ...r, note: '' }
+              : r
+          );
+        } else {
+          // Remove entire reaction (note-only)
+          return prev.filter(r => r.id !== selectedNoteReaction.id);
+        }
+      });
+      
+      setShowNoteModal(false);
+      setSelectedNoteReaction(null);
+      
+      // Show success feedback
+      if (Platform.OS === 'ios') {
+        import('expo-haptics').then(Haptics => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }).catch(() => {});
+      }
+    } catch (error) {
+      logger.error('Error deleting note:', error);
+      Alert.alert('Error', 'Failed to delete note. Please try again.');
+    }
+  }, [selectedNoteReaction]);
 
   const handleEmojiTypeSelect = (emoji: string) => {
     if (selectedEmoji === emoji) {
@@ -892,7 +1021,12 @@ const ReadingEmoji = () => {
       
       // Dynamic height positioning - same logic as main reading view
       // Since all bubbles in Reading-emoji page have hasTail={true}, use 35
-      const emojiTopOffset = 25; // hasTail is always true here
+      // Check what indicators to show
+      const hasEmoji = reaction.emoji && reaction.emoji.trim().length > 0;
+      const hasNote = reaction.note && reaction.note.trim().length > 0;
+      
+      // Adjust vertical position for note-only reactions
+      const emojiTopOffset = hasEmoji ? 25 : 30; // Note-only needs more offset
 
       return (
         <View style={styles.reactionItemContainer}>
@@ -908,12 +1042,31 @@ const ReadingEmoji = () => {
                 handleLongPress(reaction, touchPosition);
               }}
             />
-            <Text 
-              style={[styles.reactionEmoji, { top: emojiTopOffset }, emojiAlignment]}
-              pointerEvents="none"
-            >
-              {reaction.emoji}
-            </Text>
+            
+            {/* Indicator container - shows emoji and/or note icon */}
+            <View style={[styles.indicatorContainer, { top: emojiTopOffset }, emojiAlignment]}>
+              {hasEmoji && (
+                <Text 
+                  style={styles.reactionEmoji}
+                  pointerEvents="none"
+                >
+                  {reaction.emoji}
+                </Text>
+              )}
+              {hasNote && (
+                <TouchableOpacity
+                  onPress={() => handleNoteView(reaction)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  style={styles.noteIconContainer}
+                >
+                  <Ionicons 
+                    name="document-text" 
+                    size={28} 
+                    color="#666666" 
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
           <Text style={styles.referenceText}>{getSegmentReference(reaction.segmentID)}</Text>
         </View>
@@ -939,39 +1092,13 @@ const ReadingEmoji = () => {
     return renderHeader();
   }, [reactions, activeFilters, selectedEmoji, refreshTrigger, colors]); // Add colors dependency
 
-  // Calculate dynamic modal position based on touch coordinates
+  // Always center modal on screen
   const getModalPosition = useCallback(() => {
-    const modalWidth = 300; // Approximate modal width
-    const modalHeight = 200; // Approximate modal height
-    
-    if (!modalPosition) {
-      // Default center position if no touch position - properly centered
-      return { 
-        justifyContent: 'center' as const,
-        alignItems: 'center' as const,
-      };
-    }
-    
-    const { x, y } = modalPosition;
-    
-    // Calculate position with bounds checking
-    let left = x - modalWidth / 2;
-    let top = y - modalHeight / 2;
-    
-    // Ensure modal doesn't go off screen with proper margins
-    const margin = 32; // Consistent with modalContainer marginHorizontal
-    const maxLeft = screenWidth - modalWidth - margin;
-    const maxTop = 600 - modalHeight - margin; // Conservative screen height
-    
-    left = Math.max(margin, Math.min(left, maxLeft));
-    top = Math.max(60, Math.min(top, maxTop)); // Account for status bar
-    
     return { 
-      position: 'absolute' as const,
-      top, 
-      left
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
     };
-  }, [modalPosition, screenWidth]);
+  }, []);
 
   // Premium Jump to Passage Modal Component
   const renderJumpToPassageModal = () => (
@@ -985,7 +1112,6 @@ const ReadingEmoji = () => {
         <Animated.View
           style={[
             styles.modalContainer,
-            modalPosition && { position: 'relative' }, // Override position when using touch coordinates
             {
               transform: [{ scale: modalScaleAnim }],
               opacity: modalOpacityAnim,
@@ -994,7 +1120,11 @@ const ReadingEmoji = () => {
         >
           <Text style={styles.modalTitle}>Jump to Passage</Text>
           <Text style={styles.modalSubtitle}>
-            {selectedReaction ? `Go to ${getSegmentReference(selectedReaction.segmentID)} where you added this ${selectedReaction.emoji} reaction` : ''}
+            {selectedReaction ? (
+              selectedReaction.emoji 
+                ? `Go to ${getSegmentReference(selectedReaction.segmentID)} where you added this ${selectedReaction.emoji} reaction`
+                : `Go to ${getSegmentReference(selectedReaction.segmentID)} where you added this note`
+            ) : ''}
           </Text>
           
           <View style={styles.modalButtonContainer}>
@@ -1004,6 +1134,21 @@ const ReadingEmoji = () => {
             >
               <Text style={[styles.modalButtonText, styles.modalButtonTextSecondary]}>Remove</Text>
             </TouchableOpacity>
+
+            {selectedReaction && selectedReaction.note && selectedReaction.note.trim().length > 0 && (
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonSecondary]}
+                onPress={() => {
+                  handleCloseModal();
+                  if (selectedReaction) {
+                    setTimeout(() => handleNoteView(selectedReaction), 300);
+                  }
+                }}
+              >
+                <Ionicons name="document-text" size={16} color="#FFB347" />
+                <Text style={[styles.modalButtonText, styles.modalButtonTextSecondary]}>View Note</Text>
+              </TouchableOpacity>
+            )}
             
             <TouchableOpacity
               style={[styles.modalButton, styles.modalButtonPrimary]}
@@ -1043,6 +1188,28 @@ const ReadingEmoji = () => {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+          {/* Has Notes Filter */}
+          <View style={styles.filterSection}>
+            <Text style={styles.filterSectionTitle}>Content</Text>
+            <TouchableOpacity
+              style={styles.filterOption}
+              onPress={() => setActiveFilters(prev => ({ ...prev, hasNotes: !prev.hasNotes }))}
+            >
+              <View style={[
+                styles.filterCheckbox,
+                activeFilters.hasNotes && styles.filterCheckboxActive
+              ]}>
+                {activeFilters.hasNotes && (
+                  <Ionicons name="checkmark" size={14} color="white" />
+                )}
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="document-text" size={18} color="#FFB347" />
+                <Text style={styles.filterOptionText}>Has Notes</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
           {/* Testament Filter */}
           <View style={styles.filterSection}>
             <Text style={styles.filterSectionTitle}>Testament</Text>
@@ -1179,6 +1346,35 @@ const ReadingEmoji = () => {
       
       {/* Premium Filter Panel */}
       {renderFilterPanel()}
+
+      {/* Note Modal */}
+      {selectedNoteReaction && (
+        <NoteModal
+          visible={showNoteModal}
+          noteText={selectedNoteReaction.note || ''}
+          emojiIcon={selectedNoteReaction.emoji}
+          scriptureReference={getSegmentReference(selectedNoteReaction.segmentID)}
+          scriptureText={(() => {
+            try {
+              const blockData = typeof selectedNoteReaction.blockData === 'string' 
+                ? JSON.parse(selectedNoteReaction.blockData)
+                : selectedNoteReaction.blockData;
+              return blockData.children
+                ?.flatMap((inline: any) => inline.children || [])
+                ?.map((leaf: any) => leaf.text || '')
+                ?.join(' ') || '';
+            } catch {
+              return '';
+            }
+          })()}
+          onClose={() => {
+            setShowNoteModal(false);
+            setSelectedNoteReaction(null);
+          }}
+          onEdit={handleNoteEdit}
+          onDelete={handleNoteDelete}
+        />
+      )}
     </SafeAreaView>
   )
 }

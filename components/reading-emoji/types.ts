@@ -12,6 +12,7 @@ export interface ActiveFilters {
   sourceColor: string[]
   sourceName: string[]
   book: string[]
+  hasNotes: boolean
 }
 
 export interface ModalPosition {

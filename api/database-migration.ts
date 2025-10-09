@@ -442,3 +442,61 @@ export async function forceRefreshDatabase(): Promise<void> {
     throw error;
   }
 }
+
+/**
+ * Migrate emojis table to allow NULL emoji values (for note-only reactions)
+ * Version 1.0.1 - Notes Feature Migration
+ */
+export async function migrateEmojiTableForNotes(): Promise<{ success: boolean; error?: string }> {
+  try {
+    logger.info('🔄 Starting emoji table migration for notes feature...');
+    const db = databaseManager.getDatabase();
+    
+    // Begin transaction
+    await db.execAsync('BEGIN TRANSACTION');
+    
+    try {
+      // Step 1: Create new table with updated schema
+      await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS emojis_new (
+          id INTEGER PRIMARY KEY NOT NULL,
+          segmentID TEXT NOT NULL,
+          blockID TEXT NOT NULL,
+          blockData TEXT NOT NULL,
+          emoji TEXT,
+          note TEXT DEFAULT '',
+          lastUpdated DATETIME DEFAULT (datetime('now')),
+          UNIQUE(segmentID, blockID)
+        );
+      `);
+      
+      // Step 2: Copy existing data
+      await db.execAsync(`
+        INSERT INTO emojis_new (id, segmentID, blockID, blockData, emoji, note)
+        SELECT id, segmentID, blockID, blockData, emoji, COALESCE(note, '') FROM emojis;
+      `);
+      
+      // Step 3: Drop old table
+      await db.execAsync('DROP TABLE emojis;');
+      
+      // Step 4: Rename new table
+      await db.execAsync('ALTER TABLE emojis_new RENAME TO emojis;');
+      
+      // Commit transaction
+      await db.execAsync('COMMIT');
+      
+      logger.info('✅ Emoji table migration completed successfully');
+      return { success: true };
+      
+    } catch (error) {
+      // Rollback on error
+      await db.execAsync('ROLLBACK');
+      throw error;
+    }
+    
+  } catch (error) {
+    const errorMessage = `Failed to migrate emoji table: ${error}`;
+    logger.error('❌', errorMessage);
+    return { success: false, error: errorMessage };
+  }
+}
