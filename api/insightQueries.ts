@@ -1,5 +1,6 @@
 import { databaseManager } from './database-manager';
 import logger from '@/utils/logger';
+import SegmentTitles from '@/assets/data/SegmentTitles.json';
 // ============================================================================
 // SIMPLIFIED INSIGHTS MODE
 // ============================================================================
@@ -104,6 +105,14 @@ export interface StoryInsights {
 
 export interface LastReactionData {
   emoji: string;
+  segmentId: string;
+  storyTitle: string;
+  blockData: any;
+  date: string;
+}
+
+export interface LastNoteData {
+  note: string;
   segmentId: string;
   storyTitle: string;
   blockData: any;
@@ -375,26 +384,101 @@ export async function getLastReactionData(): Promise<LastReactionData | null> {
     }>(`
       SELECT emoji, segmentID, blockData, id
       FROM emojis 
+      WHERE emoji IS NOT NULL AND emoji != ''
       ORDER BY id DESC 
       LIMIT 1
     `);
     
-    if (!lastEmoji) return null;
+    if (!lastEmoji) {
+      logger.info('📝 [getLastReactionData] No emoji found');
+      return null;
+    }
     
-    // Get story title from segments table or SegmentTitles
-    const storyTitle = await db.getFirstAsync<{ title: string }>(`
-      SELECT title FROM segments WHERE segmentID = ?
-    `, [lastEmoji.segmentID]);
+    logger.info('📝 [getLastReactionData] Last emoji data:', {
+      segmentID: lastEmoji.segmentID,
+      emoji: lastEmoji.emoji,
+      hasBlockData: !!lastEmoji.blockData
+    });
+    
+    // Get story title from SegmentTitles.json
+    const segmentData = SegmentTitles[lastEmoji.segmentID as keyof typeof SegmentTitles] as any;
+    const storyTitle = segmentData?.title || 'Unknown Story';
+    
+    logger.info('📝 [getLastReactionData] Segment lookup result:', {
+      segmentID: lastEmoji.segmentID,
+      hasSegmentData: !!segmentData,
+      storyTitle,
+      book: segmentData?.book,
+      ref: segmentData?.ref
+    });
     
     return {
       emoji: lastEmoji.emoji,
       segmentId: lastEmoji.segmentID,
-      storyTitle: storyTitle?.title || 'Unknown Story',
+      storyTitle,
       blockData: JSON.parse(lastEmoji.blockData || '{}'),
       date: new Date().toISOString(), // Since we don't have creation date, use current
     };
   } catch (error) {
     logger.error('Error getting last reaction:', error);
+    return null;
+  }
+}
+
+// ============================================================================
+// LAST NOTE DATA
+// ============================================================================
+
+export async function getLastNoteData(): Promise<LastNoteData | null> {
+  try {
+    const db = await databaseManager.ensureDatabase();
+    
+    // Get the most recent note
+    const lastNote = await db.getFirstAsync<{
+      note: string;
+      segmentID: string;
+      blockData: string;
+      id: number;
+    }>(`
+      SELECT note, segmentID, blockData, id
+      FROM emojis 
+      WHERE note IS NOT NULL AND note != ''
+      ORDER BY id DESC 
+      LIMIT 1
+    `);
+    
+    if (!lastNote) {
+      logger.info('📝 [getLastNoteData] No note found');
+      return null;
+    }
+    
+    logger.info('📝 [getLastNoteData] Last note data:', {
+      segmentID: lastNote.segmentID,
+      noteLength: lastNote.note?.length || 0,
+      hasBlockData: !!lastNote.blockData
+    });
+    
+    // Get story title from SegmentTitles.json
+    const segmentData = SegmentTitles[lastNote.segmentID as keyof typeof SegmentTitles] as any;
+    const storyTitle = segmentData?.title || 'Unknown Story';
+    
+    logger.info('📝 [getLastNoteData] Segment lookup result:', {
+      segmentID: lastNote.segmentID,
+      hasSegmentData: !!segmentData,
+      storyTitle,
+      book: segmentData?.book,
+      ref: segmentData?.ref
+    });
+    
+    return {
+      note: lastNote.note,
+      segmentId: lastNote.segmentID,
+      storyTitle,
+      blockData: JSON.parse(lastNote.blockData || '{}'),
+      date: new Date().toISOString(), // Since we don't have creation date, use current
+    };
+  } catch (error) {
+    logger.error('Error getting last note:', error);
     return null;
   }
 }
@@ -560,12 +644,17 @@ export async function hasUserData(): Promise<{
   hasReadBooks: boolean;
   hasReadStories: boolean;
   hasActivity: boolean;
+  hasNotes: boolean;
 }> {
   try {
     const db = await databaseManager.ensureDatabase();
     
     const emojiCount = await db.getFirstAsync<{ count: number }>(`
-      SELECT COUNT(*) as count FROM emojis
+      SELECT COUNT(*) as count FROM emojis WHERE emoji IS NOT NULL AND emoji != ''
+    `);
+    
+    const noteCount = await db.getFirstAsync<{ count: number }>(`
+      SELECT COUNT(*) as count FROM emojis WHERE note IS NOT NULL AND note != ''
     `);
     
     // Check for read books (any stories read, not necessarily completed books)
@@ -590,6 +679,7 @@ export async function hasUserData(): Promise<{
       hasReadBooks: (readBooksCount?.count || 0) > 0, // Show if any books have been read
       hasReadStories: (readStoriesCount?.count || 0) > 0,
       hasActivity: (activityCount?.count || 0) > 0,
+      hasNotes: (noteCount?.count || 0) > 0,
     };
   } catch (error) {
     logger.error('Error checking user data:', error);
@@ -598,6 +688,7 @@ export async function hasUserData(): Promise<{
       hasReadBooks: false,
       hasReadStories: false,
       hasActivity: false,
+      hasNotes: false,
     };
   }
 }

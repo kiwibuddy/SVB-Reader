@@ -147,6 +147,36 @@ const NoteModal: React.FC<NoteModalProps> = ({
     setIsEditing(false);
   };
 
+  const handleDeleteFromEdit = () => {
+    Alert.alert(
+      'Delete Note',
+      'Are you sure you want to delete this note? This action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            // Haptic feedback
+            if (Platform.OS === 'ios') {
+              try {
+                const Haptics = await import('expo-haptics');
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+              } catch (error) {
+                // Haptics not available
+              }
+            }
+            onDelete();
+            setIsEditing(false);
+          },
+        },
+      ]
+    );
+  };
+
   // If in editing mode, show the NoteInput component
   if (isEditing) {
     return (
@@ -161,6 +191,8 @@ const NoteModal: React.FC<NoteModalProps> = ({
             initialValue={noteText}
             onSave={handleSaveEdit}
             onCancel={handleCancelEdit}
+            onDelete={handleDeleteFromEdit}
+            isEditing={true}
           />
         </View>
       </Modal>

@@ -33,7 +33,8 @@ import { getFullBookName } from '@/utils/bookNameMapping';
 import { 
   getStoryInsights, 
   getBookInsights, 
-  getLastReactionData, 
+  getLastReactionData,
+  getLastNoteData,
   getUserActivityInsights,
   hasUserData,
   initializeInsights,
@@ -41,6 +42,7 @@ import {
   type BookInsights,
   type StoryInsights,
   type LastReactionData,
+  type LastNoteData,
   type UserActivityInsights
 } from '@/api/insightQueries';
 import logger from '@/utils/logger';
@@ -1484,12 +1486,14 @@ const ReadingInsightsCarousel = ({
     bookInsights: null as BookInsights | null,
     storyInsights: null as StoryInsights | null,
     lastReaction: null as LastReactionData | null,
+    lastNote: null as LastNoteData | null,
     activityInsights: null as UserActivityInsights | null,
     dataAvailability: {
       hasEmojis: false,
       hasReadBooks: false,
       hasReadStories: false,
       hasActivity: false,
+      hasNotes: false,
     }
   });
 
@@ -1563,10 +1567,11 @@ const ReadingInsightsCarousel = ({
         });
 
         // Get enhanced insights
-        const [bookInsights, storyInsights, lastReaction, activityInsights] = await Promise.all([
+        const [bookInsights, storyInsights, lastReaction, lastNote, activityInsights] = await Promise.all([
           dataCheck.hasReadBooks ? getBookInsights(favoriteBookKey).catch(() => null) : null,
           favoriteSegmentId && dataCheck.hasReadStories ? getStoryInsights(favoriteSegmentId).catch(() => null) : null,
           dataCheck.hasEmojis ? getLastReactionData().catch(() => null) : null,
+          dataCheck.hasNotes ? getLastNoteData().catch(() => null) : null,
           dataCheck.hasActivity ? getUserActivityInsights().catch(() => null) : null,
         ]);
 
@@ -1574,6 +1579,7 @@ const ReadingInsightsCarousel = ({
           bookInsights,
           storyInsights,
           lastReaction,
+          lastNote,
           activityInsights,
           dataAvailability: dataCheck,
         });
@@ -1660,10 +1666,11 @@ const ReadingInsightsCarousel = ({
           });
 
           // Get enhanced insights
-          const [bookInsights, storyInsights, lastReaction, activityInsights] = await Promise.all([
+          const [bookInsights, storyInsights, lastReaction, lastNote, activityInsights] = await Promise.all([
             dataCheck.hasReadBooks ? getBookInsights(favoriteBookKey).catch(() => null) : null,
             favoriteSegmentId && dataCheck.hasReadStories ? getStoryInsights(favoriteSegmentId).catch(() => null) : null,
             dataCheck.hasEmojis ? getLastReactionData().catch(() => null) : null,
+            dataCheck.hasNotes ? getLastNoteData().catch(() => null) : null,
             dataCheck.hasActivity ? getUserActivityInsights().catch(() => null) : null,
           ]);
 
@@ -1671,6 +1678,7 @@ const ReadingInsightsCarousel = ({
             bookInsights,
             storyInsights,
             lastReaction,
+            lastNote,
             activityInsights,
             dataAvailability: dataCheck,
           });
@@ -1715,6 +1723,20 @@ const ReadingInsightsCarousel = ({
         pathname: "/Reading-emoji",
         params: { selectedEmoji: insights.lastUsedEmoji }
       });
+    }
+  };
+
+  const handleNotePress = () => {
+    if (enhancedInsights.lastNote) {
+      router.push({
+        pathname: "/[segment]",
+        params: {
+          segment: `ENG-NLT-${enhancedInsights.lastNote.segmentId}`,
+          book: enhancedInsights.lastNote.segmentId.substring(1, 4),
+        }
+      });
+    } else {
+      router.push("/Reading-emoji");
     }
   };
 
@@ -1774,6 +1796,16 @@ const ReadingInsightsCarousel = ({
       backgroundColor: colors.card,
       onPress: handleEmojiPress,
       lastReaction: enhancedInsights.lastReaction,
+    }] : []),
+    // Show last note if user has notes
+    ...(enhancedInsights.dataAvailability.hasNotes ? [{
+      id: 'note',
+      type: 'note',
+      icon: '📝',
+      title: 'Notes',
+      backgroundColor: colors.card,
+      onPress: handleNotePress,
+      lastNote: enhancedInsights.lastNote,
     }] : []),
 
     // Show activity insights if user has activity data
@@ -1922,6 +1954,22 @@ const ReadingInsightsCarousel = ({
     if (item.type === 'emoji') {
       const lastReaction = item.lastReaction;
       
+      // Debug logging
+      if (lastReaction) {
+        logger.info('📱 [Home Reactions Card] Rendering with data:', {
+          segmentId: lastReaction.segmentId,
+          storyTitle: lastReaction.storyTitle,
+          hasBlockData: !!lastReaction.blockData,
+          sourceName: lastReaction.blockData?.source?.sourceName
+        });
+        
+        const refResult = getSegmentReference(lastReaction.segmentId);
+        logger.info('📱 [Home Reactions Card] getSegmentReference result:', {
+          segmentId: lastReaction.segmentId,
+          reference: refResult
+        });
+      }
+      
       return (
         <Pressable 
           style={({ pressed }) => [
@@ -1946,7 +1994,7 @@ const ReadingInsightsCarousel = ({
                     fontSize: sizes.caption * 0.75,
                     fontWeight: '600',
                     color: colors.secondary,
-                    marginBottom: 4,
+                    marginBottom: 8,
                     textAlign: lastReaction.blockData.source.color !== "black" ? "left" : "right",
                   }}>
                     {lastReaction.blockData.source.sourceName.toUpperCase()}
@@ -2014,27 +2062,108 @@ const ReadingInsightsCarousel = ({
                 </View>
               </View>
               
-              {/* Reference */}
-              <Text style={[localStyles.cardSubtitle, { 
-                fontSize: sizes.caption * 0.9, 
-                fontWeight: '500',
-                textAlign: 'center',
-                marginBottom: 2,
-                color: colors.secondary,
-              }]}>
-                {getSegmentReference(lastReaction.segmentId)}
-              </Text>
+              {/* Story title and reference - matching notes card style */}
+              <View style={{ alignItems: 'center' }}>
+                <Text style={[localStyles.cardSubtitle, { 
+                  fontSize: sizes.caption * 0.85,
+                  fontWeight: '600',
+                  textAlign: 'center',
+                  marginBottom: 2,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                }]}>
+                  {lastReaction.storyTitle}
+                </Text>
+                <Text style={[localStyles.cardSubtitle, { 
+                  fontSize: sizes.caption * 0.85,
+                  textAlign: 'center',
+                  fontStyle: 'italic',
+                }]}>
+                  {getSegmentReference(lastReaction.segmentId)}
+                </Text>
+              </View>
+            </View>
+          )}
+        </Pressable>
+      );
+    }
+
+    if (item.type === 'note') {
+      const lastNote = item.lastNote;
+      
+      // Debug logging
+      if (lastNote) {
+        logger.info('📱 [Home Notes Card] Rendering with data:', {
+          segmentId: lastNote.segmentId,
+          storyTitle: lastNote.storyTitle,
+          noteLength: lastNote.note?.length || 0,
+          hasBlockData: !!lastNote.blockData,
+          sourceName: lastNote.blockData?.source?.sourceName
+        });
+        
+        const refResult = getSegmentReference(lastNote.segmentId);
+        logger.info('📱 [Home Notes Card] getSegmentReference result:', {
+          segmentId: lastNote.segmentId,
+          reference: refResult
+        });
+      }
+      
+      return (
+        <Pressable 
+          style={({ pressed }) => [
+            localStyles.insightCard,
+            { backgroundColor: item.backgroundColor },
+            pressed && { opacity: 0.8 }
+          ]}
+          onPress={item.onPress}
+        >
+          <View style={localStyles.cardHeader}>
+            <Text style={localStyles.cardIcon}>{item.icon}</Text>
+            <Text style={[localStyles.cardTitle, { fontSize: sizes.body, fontWeight: '600' }]}>{item.title}</Text>
+          </View>
+          
+          {lastNote && (
+            <View style={{ marginTop: 8, flex: 1 }}>
+              {/* Note bubble - light grey style */}
+              <View style={{
+                backgroundColor: isDarkMode ? 'rgba(200, 200, 200, 0.15)' : 'rgba(100, 100, 100, 0.08)',
+                borderRadius: 12,
+                padding: 14,
+                marginBottom: 10,
+                borderWidth: 1,
+                borderColor: isDarkMode ? 'rgba(200, 200, 200, 0.2)' : 'rgba(100, 100, 100, 0.12)',
+              }}>
+                <Text style={{
+                  fontSize: sizes.caption,
+                  color: colors.text,
+                  lineHeight: 18,
+                }} numberOfLines={2}>
+                  {lastNote.note}
+                </Text>
+              </View>
               
-              {/* Story title */}
-              <Text style={[localStyles.cardSubtitle, { 
-                fontSize: sizes.caption * 0.8,
-                textAlign: 'center',
-                fontStyle: 'italic',
-                color: colors.secondary,
-                opacity: 0.7,
-              }]}>
-                "{lastReaction.storyTitle}"
-              </Text>
+              {/* Source name and reference */}
+              <View style={{ alignItems: 'center' }}>
+                {lastNote.blockData?.source?.sourceName && (
+                  <Text style={[localStyles.cardSubtitle, { 
+                    fontSize: sizes.caption * 0.85,
+                    fontWeight: '600',
+                    textAlign: 'center',
+                    marginBottom: 2,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                  }]}>
+                    {lastNote.blockData.source.sourceName}
+                  </Text>
+                )}
+                <Text style={[localStyles.cardSubtitle, { 
+                  fontSize: sizes.caption * 0.85,
+                  textAlign: 'center',
+                  fontStyle: 'italic',
+                }]}>
+                  {getSegmentReference(lastNote.segmentId)}
+                </Text>
+              </View>
             </View>
           )}
         </Pressable>

@@ -92,6 +92,19 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     };
   }, []);
 
+  // CRITICAL: Reset state when segmentId changes to prevent ghost notes
+  useEffect(() => {
+    if (!isMountedRef.current) return;
+    
+    // Reset all state when segmentId changes
+    setExistingEmoji(null);
+    setExistingNote(null);
+    setShowPicker(false);
+    setShowNoteInput(false);
+    
+    logger.info('🔍 [EmojiHandler] Reset state for new segment:', { segmentId: state.segmentId, blockId });
+  }, [state.segmentId]);
+
   // CRITICAL: Enhanced position calculation with comprehensive validation
   const getCenteredPosition = useCallback((absoluteY: number) => {
     'worklet';
@@ -158,6 +171,11 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
       try {
         if (!state.segmentId || !blockId) {
           logger.warn('🔍 [EmojiHandler] Missing segmentId or blockId:', { segmentId: state.segmentId, blockId });
+          // Reset state when missing data
+          if (isMountedRef.current) {
+            setExistingEmoji(null);
+            setExistingNote(null);
+          }
           return;
         }
         
@@ -169,12 +187,17 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
           blockId
         );
         
-        if (isMountedRef.current && result) {
-          setExistingEmoji(result.emoji);
-          setExistingNote(result.note);
+        if (isMountedRef.current) {
+          setExistingEmoji(result?.emoji || null);
+          setExistingNote(result?.note || null);
         }
       } catch (error) {
         logger.error('🔍 [EmojiHandler] Error loading reaction:', error);
+        // Reset state on error
+        if (isMountedRef.current) {
+          setExistingEmoji(null);
+          setExistingNote(null);
+        }
       }
     };
     loadReaction();

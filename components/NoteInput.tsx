@@ -16,14 +16,18 @@ interface NoteInputProps {
   initialValue?: string;
   onSave: (noteText: string) => void;
   onCancel: () => void;
+  onDelete?: () => void;
   maxLength?: number;
+  isEditing?: boolean;
 }
 
 const NoteInput: React.FC<NoteInputProps> = ({
   initialValue = '',
   onSave,
   onCancel,
+  onDelete,
   maxLength = 500,
+  isEditing = false,
 }) => {
   const { colors, isDarkMode } = useAppSettings();
   const [noteText, setNoteText] = useState(initialValue);
@@ -111,7 +115,7 @@ const NoteInput: React.FC<NoteInputProps> = ({
               color={colors.text} 
             />
             <Text style={[styles.headerTitle, { color: colors.text }]}>
-              Add Note
+              {isEditing ? 'Edit Note' : 'Add Note'}
             </Text>
           </View>
           <TouchableOpacity
@@ -171,6 +175,23 @@ const NoteInput: React.FC<NoteInputProps> = ({
             </Text>
           </TouchableOpacity>
 
+          {/* Delete button - only show when editing existing note */}
+          {isEditing && onDelete && (
+            <TouchableOpacity
+              style={[
+                styles.button,
+                styles.deleteButton,
+                { borderColor: '#FF3B30' }
+              ]}
+              onPress={onDelete}
+            >
+              <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+              <Text style={[styles.buttonText, { color: '#FF3B30' }]}>
+                Delete
+              </Text>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
             style={[
               styles.button,
@@ -188,7 +209,9 @@ const NoteInput: React.FC<NoteInputProps> = ({
             ) : (
               <>
                 <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                <Text style={styles.saveButtonText}>Add Note</Text>
+                <Text style={styles.saveButtonText}>
+                  {isEditing ? 'Save Note' : 'Add Note'}
+                </Text>
               </>
             )}
           </TouchableOpacity>
@@ -205,7 +228,11 @@ const styles = StyleSheet.create({
   container: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 24,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    paddingTop: Platform.OS === 'ios' ? 44 : 24, // Extra padding for iPhone camera cutout
+    paddingHorizontal: 24,
+    paddingBottom: 24,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -272,6 +299,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cancelButton: {
+    borderWidth: 1,
+  },
+  deleteButton: {
     borderWidth: 1,
   },
   buttonText: {
