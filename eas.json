@@ -28,8 +28,10 @@
     },
     "preview": {
       "distribution": "internal",
+      "resourceClass": "large",
       "ios": {
-        "buildConfiguration": "Release"
+        "buildConfiguration": "Release",
+        "image": "latest"
       },
       "android": {
         "buildType": "apk"
@@ -39,9 +41,11 @@
       "distribution": "store",
       "autoIncrement": false,
       "channel": "production",
+      "resourceClass": "large",
       "ios": {
         "buildConfiguration": "Release",
-        "scheme": "SourceViewTogether"
+        "scheme": "SourceViewTogether",
+        "image": "latest"
       },
       "android": {
         "buildType": "app-bundle"

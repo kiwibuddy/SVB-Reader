@@ -57,7 +57,7 @@ export class SafeDatabaseWrapper {
   ): Promise<T | null> {
     return this.safeQuery(
       async (db) => {
-        const result = await db.getFirstAsync<T>(query, params);
+        const result = await db.getFirstAsync(query, params) as T | null;
         return result || defaultValue;
       },
       defaultValue,
@@ -76,7 +76,7 @@ export class SafeDatabaseWrapper {
   ): Promise<T[]> {
     return this.safeQuery(
       async (db) => {
-        const result = await db.getAllAsync<T>(query, params);
+        const result = await db.getAllAsync(query, params) as T[];
         return result || defaultValue;
       },
       defaultValue,
@@ -92,7 +92,7 @@ export class SafeDatabaseWrapper {
     params: any[] = [],
     operationName: string = 'run query'
   ): Promise<{ success: boolean; changes?: number }> {
-    return this.safeQuery(
+    return this.safeQuery<{ success: boolean; changes?: number }>(
       async (db) => {
         const result = await db.runAsync(query, params);
         return { success: true, changes: result.changes };

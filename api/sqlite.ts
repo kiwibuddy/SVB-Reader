@@ -1128,18 +1128,18 @@ export async function getBookProgress(bookId: string): Promise<BookProgress> {
   return SafeDatabaseWrapper.safeQuery(
     async (db) => {
       // Get total segments for this book (excluding introductions)
-      const totalResult = await db.getFirstAsync<{ count: number }>(
+      const totalResult = await db.getFirstAsync(
         'SELECT COUNT(*) as count FROM segments WHERE bookID = ? AND segmentID NOT LIKE "I%"',
         [bookId]
-      );
+      ) as { count: number } | null;
       
       // Count completed segments for this book (excluding introductions)
-      const completedCount = await db.getFirstAsync<{ count: number }>(`
+      const completedCount = await db.getFirstAsync(`
         SELECT COUNT(*) as count FROM completedSegments 
         WHERE segmentID IN (
           SELECT segmentID FROM segments WHERE bookID = ? AND segmentID NOT LIKE "I%"
         ) AND isCompleted = 1
-      `, [bookId]);
+      `, [bookId]) as { count: number } | null;
       
       const total = totalResult?.count || 0;
       const completed = completedCount?.count || 0;

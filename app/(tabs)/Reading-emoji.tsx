@@ -463,10 +463,17 @@ const ReadingEmoji = () => {
       const newFilters = { ...prev }
       const currentValues = newFilters[category]
       
-      if (currentValues.includes(value)) {
-        newFilters[category] = currentValues.filter(v => v !== value)
+      // Handle boolean filters differently
+      if (category === 'hasNotes') {
+        newFilters[category] = !currentValues as boolean
       } else {
-        newFilters[category] = [...currentValues, value]
+        // Handle array filters
+        const arrayValues = currentValues as string[]
+        if (arrayValues.includes(value)) {
+          newFilters[category] = arrayValues.filter((v: string) => v !== value) as any
+        } else {
+          newFilters[category] = [...arrayValues, value] as any
+        }
       }
       
       return newFilters

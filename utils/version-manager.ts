@@ -18,8 +18,8 @@ export interface AppVersion {
 
 export const APP_VERSION_INFO: AppVersion = {
   version: '1.2.0',
-  buildNumber: '1', 
-  runtimeVersion: '1.0.0',
+  buildNumber: '17', 
+  runtimeVersion: '1.2.0',
   releaseDate: new Date().toISOString(),
   buildType: 'production'
 };

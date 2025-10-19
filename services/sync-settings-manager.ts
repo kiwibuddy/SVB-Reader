@@ -102,14 +102,15 @@ export function hasSettingSync(key: SettingsKey): boolean {
  * Get all settings synchronously with smart defaults
  */
 export function getAllSettingsSync(): UserSettings {
-  const settings: Partial<UserSettings> = {};
-  
-  // Get each setting with smart fallbacks
-  (Object.keys(DEFAULT_SETTINGS) as SettingsKey[]).forEach(key => {
-    settings[key] = getSyncSetting(key) || getSmartDefault(key);
-  });
-  
-  return settings as UserSettings;
+  return {
+    isDarkMode: getSyncSetting('isDarkMode') ?? getSmartDefault('isDarkMode'),
+    language: getSyncSetting('language') ?? getSmartDefault('language'),
+    isOrientationLocked: getSyncSetting('isOrientationLocked') ?? getSmartDefault('isOrientationLocked'),
+    groupUserName: getSyncSetting('groupUserName') ?? getSmartDefault('groupUserName'),
+    notificationsEnabled: getSyncSetting('notificationsEnabled') ?? getSmartDefault('notificationsEnabled'),
+    fontSize: getSyncSetting('fontSize') ?? getSmartDefault('fontSize'),
+    autoBackup: getSyncSetting('autoBackup') ?? getSmartDefault('autoBackup'),
+  };
 }
 
 // ============================================================================

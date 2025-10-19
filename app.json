@@ -2,7 +2,7 @@
   "expo": {
     "name": "SourceView Together",
     "slug": "SVB-Youth",
-    "version": "1.0.1",
+    "version": "1.2.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -19,7 +19,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sourceview.together",
-      "buildNumber": "1",
+      "buildNumber": "17",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -91,7 +91,7 @@
       "watchman": false
     },
     "owner": "kiwibuddy",
-    "runtimeVersion": "1.0.0",
+    "runtimeVersion": "1.2.0",
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
