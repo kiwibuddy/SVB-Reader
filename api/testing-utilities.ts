@@ -16,6 +16,16 @@ import {
 } from './database-diagnostics';
 import { initializeDatabaseWithDiagnostics } from './database-initialization';
 import { settingsHelpers, getSettingsKeys } from '@/services/settings-manager';
+import { 
+  migrateQuestionsToDatabase, 
+  getMigrationStats,
+  forceRemigrate 
+} from './questions-migration';
+import { 
+  getQuestionsForSegment,
+  getQuestionsCount,
+  type AudienceType 
+} from './question-functions';
 
 // ============================================================================
 // CLEAN INSTALL TESTING UTILITIES
@@ -493,4 +503,201 @@ export async function exportCurrentState(): Promise<string> {
   } catch (error) {
     throw new Error(`Failed to export state: ${error}`);
   }
+}
+
+// ============================================================================
+// QUESTIONS MIGRATION TESTING
+// ============================================================================
+
+/**
+ * Test questions migration and verify data integrity
+ */
+export async function testQuestionsMigration(): Promise<{
+  success: boolean;
+  totalQuestions: number;
+  sampleTests: { segmentId: string; audience: AudienceType; set: 1 | 2; questionCount: number }[];
+  errors: string[];
+}> {
+  logger.info('🧪 Testing questions migration...');
+  const errors: string[] = [];
+  
+  try {
+    // Run migration
+    const migrationResult = await migrateQuestionsToDatabase();
+    if (!migrationResult.success) {
+      errors.push(`Migration failed: ${migrationResult.error}`);
+      return { success: false, totalQuestions: 0, sampleTests: [], errors };
+    }
+    
+    logger.info(`✅ Migration completed: ${migrationResult.totalInserted} question sets`);
+    
+    // Get stats
+    const stats = await getMigrationStats();
+    logger.info(`📊 Total questions in database: ${stats.totalQuestions}`);
+    logger.info(`📊 By audience:`, stats.byAudience);
+    logger.info(`📊 By sets:`, stats.bySets);
+    
+    // Test sample queries
+    const sampleTests = [
+      { segmentId: 'S001', audience: 'school' as AudienceType, set: 1 as 1 | 2 },
+      { segmentId: 'S001', audience: 'family' as AudienceType, set: 1 as 1 | 2 },
+      { segmentId: 'S001', audience: 'smallgroup' as AudienceType, set: 1 as 1 | 2 },
+      { segmentId: 'S010', audience: 'school' as AudienceType, set: 2 as 1 | 2 },
+      { segmentId: 'S050', audience: 'family' as AudienceType, set: 2 as 1 | 2 }
+    ];
+    
+    const results = [];
+    for (const test of sampleTests) {
+      const questions = await getQuestionsForSegment(test.segmentId, test.audience, test.set);
+      logger.info(`  ${test.segmentId} (${test.audience}, set ${test.set}): ${questions.length} questions`);
+      
+      if (questions.length === 0) {
+        errors.push(`No questions found for ${test.segmentId} ${test.audience} set ${test.set}`);
+      }
+      
+      results.push({
+        ...test,
+        questionCount: questions.length
+      });
+    }
+    
+    const success = errors.length === 0;
+    logger.info(success ? '✅ All tests passed!' : `❌ ${errors.length} errors found`);
+    
+    return {
+      success,
+      totalQuestions: stats.totalQuestions,
+      sampleTests: results,
+      errors
+    };
+    
+  } catch (error) {
+    logger.error('❌ Test failed:', error);
+    errors.push(error instanceof Error ? error.message : String(error));
+    return { success: false, totalQuestions: 0, sampleTests: [], errors };
+  }
+}
+
+/**
+ * Compare questions from database vs original JSON (for validation before deletion)
+ */
+export async function compareQuestionsWithJSON(): Promise<{
+  matches: number;
+  mismatches: { segmentId: string; audience: string; set: number; issue: string }[];
+  success: boolean;
+}> {
+  logger.info('🔍 Comparing database questions with JSON originals...');
+  
+  try {
+    // Import original JSON files
+    const SchoolQuestions = require('@/assets/data/SchoolQuestions.json');
+    const FamilyQuestions = require('@/assets/data/FamilyQuestions.json');
+    const SmallGroupQuestions = require('@/assets/data/SmallGroupQuestions.json');
+    const SchoolQuestionsSet2 = require('@/assets/data/SchoolQuestionsSet2.json');
+    const FamilyQuestionsSet2 = require('@/assets/data/FamilyQuestionsSet2.json');
+    const SmallGroupQuestionsSet2 = require('@/assets/data/SmallGroupQuestionsSet2.json');
+    
+    const testSets = [
+      { data: SchoolQuestions.SchoolQuestions, audience: 'school', set: 1 },
+      { data: FamilyQuestions.FamilyQuestions, audience: 'family', set: 1 },
+      { data: SmallGroupQuestions.SmallGroupQuestions, audience: 'smallgroup', set: 1 },
+      { data: SchoolQuestionsSet2.SchoolQuestionsSet2, audience: 'school', set: 2 },
+      { data: FamilyQuestionsSet2.FamilyQuestionsSet2, audience: 'family', set: 2 },
+      { data: SmallGroupQuestionsSet2.SmallGroupQuestionsSet2, audience: 'smallgroup', set: 2 }
+    ];
+    
+    let matches = 0;
+    const mismatches: { segmentId: string; audience: string; set: number; issue: string }[] = [];
+    
+    for (const { data, audience, set } of testSets) {
+      const segments = Object.keys(data);
+      logger.info(`  Testing ${audience} set ${set}: ${segments.length} segments`);
+      
+      for (const segmentId of segments) {
+        const jsonQuestions = data[segmentId];
+        const jsonArray = [jsonQuestions.Q1, jsonQuestions.Q2, jsonQuestions.Q3, jsonQuestions.Q4]
+          .filter(q => q !== null && q !== undefined);
+        
+        const dbQuestions = await getQuestionsForSegment(segmentId, audience as AudienceType, set as 1 | 2);
+        
+        if (dbQuestions.length !== jsonArray.length) {
+          mismatches.push({
+            segmentId,
+            audience,
+            set,
+            issue: `Count mismatch: JSON ${jsonArray.length} vs DB ${dbQuestions.length}`
+          });
+        } else if (JSON.stringify(jsonArray) !== JSON.stringify(dbQuestions)) {
+          mismatches.push({
+            segmentId,
+            audience,
+            set,
+            issue: `Content mismatch`
+          });
+        } else {
+          matches++;
+        }
+      }
+    }
+    
+    logger.info(`✅ Matches: ${matches}`);
+    if (mismatches.length > 0) {
+      logger.error(`❌ Mismatches: ${mismatches.length}`);
+      mismatches.slice(0, 5).forEach(m => {
+        logger.error(`  - ${m.segmentId} (${m.audience} set ${m.set}): ${m.issue}`);
+      });
+    }
+    
+    return { matches, mismatches, success: mismatches.length === 0 };
+    
+  } catch (error) {
+    logger.error('❌ Comparison failed:', error);
+    return { matches: 0, mismatches: [], success: false };
+  }
+}
+
+/**
+ * Performance test for questions queries
+ */
+export async function testQuestionsPerformance(): Promise<{
+  avgQueryTime: number;
+  maxQueryTime: number;
+  minQueryTime: number;
+  totalQueries: number;
+}> {
+  logger.info('⚡ Testing questions query performance...');
+  
+  const testSegments = ['S001', 'S010', 'S050', 'S100', 'S200', 'S300'];
+  const audiences: AudienceType[] = ['school', 'family', 'smallgroup'];
+  const sets: (1 | 2)[] = [1, 2];
+  
+  const times: number[] = [];
+  
+  for (const segmentId of testSegments) {
+    for (const audience of audiences) {
+      for (const set of sets) {
+        const start = Date.now();
+        await getQuestionsForSegment(segmentId, audience, set);
+        const duration = Date.now() - start;
+        times.push(duration);
+      }
+    }
+  }
+  
+  const avgQueryTime = times.reduce((a, b) => a + b, 0) / times.length;
+  const maxQueryTime = Math.max(...times);
+  const minQueryTime = Math.min(...times);
+  
+  logger.info(`📊 Performance Results:`);
+  logger.info(`  - Average: ${avgQueryTime.toFixed(2)}ms`);
+  logger.info(`  - Max: ${maxQueryTime}ms`);
+  logger.info(`  - Min: ${minQueryTime}ms`);
+  logger.info(`  - Total queries: ${times.length}`);
+  
+  return {
+    avgQueryTime,
+    maxQueryTime,
+    minQueryTime,
+    totalQueries: times.length
+  };
 }

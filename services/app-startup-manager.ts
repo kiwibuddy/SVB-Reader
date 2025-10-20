@@ -1,6 +1,7 @@
 import { databaseManager } from '@/api/database-manager';
 import { initializeSettingsTable, migrateFromAsyncStorage } from './sync-settings-manager';
 import { migrateEmojiTableForNotes } from '@/api/database-migration';
+import { migrateQuestionsToDatabase } from '@/api/questions-migration';
 import logger from '@/utils/logger';
 
 // ============================================================================
@@ -69,6 +70,16 @@ async function runSchemaMigrations(): Promise<void> {
     } else {
       logger.info('✅ Emoji table already supports notes feature');
     }
+
+    // Migrate questions from JSON to SQLite (one-time migration) - run in background to not block startup
+    migrateQuestionsToDatabase().then((questionsResult) => {
+      if (questionsResult.success && questionsResult.totalInserted > 0) {
+        logger.info(`Questions migrated: ${questionsResult.totalInserted} sets`);
+      }
+    }).catch(error => {
+      logger.error('Questions migration error:', error);
+    });
+
   } catch (error) {
     logger.error('Error checking/running migrations:', error);
     // Don't throw - allow app to continue even if migration check fails

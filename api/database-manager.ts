@@ -432,6 +432,20 @@ export class DatabaseManager {
         );
         CREATE INDEX IF NOT EXISTS idx_group_sessions_id ON group_reading_sessions(sessionId);
         CREATE INDEX IF NOT EXISTS idx_group_sessions_expires ON group_reading_sessions(expiresAt);
+
+        -- Questions table for study questions
+        CREATE TABLE IF NOT EXISTS questions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          segmentID TEXT NOT NULL,
+          audienceType TEXT NOT NULL,
+          questionSet INTEGER NOT NULL DEFAULT 1,
+          Q1 TEXT,
+          Q2 TEXT,
+          Q3 TEXT,
+          Q4 TEXT,
+          UNIQUE(segmentID, audienceType, questionSet)
+        );
+        CREATE INDEX IF NOT EXISTS idx_questions_lookup ON questions(segmentID, audienceType, questionSet);
       `);
 
       // Initialize streak_data if empty

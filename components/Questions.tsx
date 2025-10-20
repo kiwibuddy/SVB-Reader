@@ -1,32 +1,9 @@
-import { Text, View, Pressable, StyleSheet, Animated, Platform } from 'react-native'
+import { Text, View, Pressable, StyleSheet, Animated, Platform, ActivityIndicator } from 'react-native'
 import React, { useState, useEffect, useRef } from 'react'
 import { MaterialIcons } from '@expo/vector-icons'
-import SchoolQuestions from "@/assets/data/SchoolQuestions.json";
-import FamilyQuestions from "@/assets/data/FamilyQuestions.json";
-import SmallGroupQuestions from "@/assets/data/SmallGroupQuestions.json";
-import SchoolQuestionsSet2 from "@/assets/data/SchoolQuestionsSet2.json";
-import FamilyQuestionsSet2 from "@/assets/data/FamilyQuestionsSet2.json";
-import SmallGroupQuestionsSet2 from "@/assets/data/SmallGroupQuestionsSet2.json";
 import { useAppSettings } from '@/context/AppSettingsContext';
-
-// Define audience types
-type AudienceType = 'school' | 'family' | 'smallgroup';
-
-// Define question data sources for each audience
-const audienceQuestionData = {
-  school: {
-    set1: SchoolQuestions.SchoolQuestions,
-    set2: SchoolQuestionsSet2.SchoolQuestionsSet2
-  },
-  family: {
-    set1: FamilyQuestions.FamilyQuestions,
-    set2: FamilyQuestionsSet2.FamilyQuestionsSet2
-  },
-  smallgroup: {
-    set1: SmallGroupQuestions.SmallGroupQuestions,
-    set2: SmallGroupQuestionsSet2.SmallGroupQuestionsSet2
-  }
-};
+import { getQuestionsForSegment, hasQuestionsData, type AudienceType } from '@/api/question-functions';
+import logger from '@/utils/logger';
 
 interface QuestionsProps {
   segmentId: string;
@@ -54,75 +31,73 @@ const AUDIENCE_CONFIG = {
 const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
   const { colors } = useAppSettings();
   const [selectedAudience, setSelectedAudience] = useState<AudienceType>('school');
-  const [currentSet, setCurrentSet] = useState<'set1' | 'set2'>('set1');
+  const [currentSet, setCurrentSet] = useState<1 | 2>(1);
   const [questions, setQuestions] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const retryCountRef = useRef(0);
 
   useEffect(() => {
+    retryCountRef.current = 0; // Reset retry count on new query
     loadQuestions();
   }, [segmentId, selectedAudience, currentSet]);
 
-  const loadQuestions = () => {
-    // Get the questions directly for this segment and audience
-    const audienceQuestions = audienceQuestionData[selectedAudience];
-    const questionSet = audienceQuestions[currentSet];
-    const segmentQuestions = questionSet[segmentId as keyof typeof questionSet];
-    
-    if (!segmentQuestions) {
-      setQuestions([]);
-      return;
-    }
+  const loadQuestions = async () => {
+    setIsLoading(true);
+    try {
+      // Check if questions data exists in database (handles migration in progress)
+      const dataExists = await hasQuestionsData();
+      if (!dataExists && retryCountRef.current < 5) {
+        setQuestions([]);
+        setIsLoading(false);
+        retryCountRef.current++;
+        
+        // Retry after a delay
+        setTimeout(() => loadQuestions(), 2000);
+        return;
+      }
 
-    // Convert the question object to an array
-    const questionsArray = [
-      segmentQuestions.Q1,
-      segmentQuestions.Q2,
-      segmentQuestions.Q3,
-      segmentQuestions.Q4
-    ].filter(Boolean); // Remove any undefined questions
-    
-    setQuestions(questionsArray);
+      // Fetch questions from SQLite database
+      const fetchedQuestions = await getQuestionsForSegment(
+        segmentId,
+        selectedAudience,
+        currentSet
+      );
+      
+      setQuestions(fetchedQuestions);
+    } catch (error) {
+      logger.error('Error loading questions:', error);
+      setQuestions([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleAudienceChange = (audience: AudienceType) => {
     if (audience === selectedAudience) return;
     
-    // Fade out
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 150,
-      useNativeDriver: true,
-    }).start(() => {
-      // Change audience and reset to set1
-      setSelectedAudience(audience);
-      setCurrentSet('set1');
-      
-      // Fade in
+    // Update state immediately before animation
+    setSelectedAudience(audience);
+    setCurrentSet(1);
+    
+    // Then do the fade animation
+    Animated.sequence([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 150,
         useNativeDriver: true,
-      }).start();
-    });
+      })
+    ]).start();
   };
 
   const handleRefreshQuestions = () => {
-    // Fade out
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 150,
-      useNativeDriver: true,
-    }).start(() => {
-      // Toggle between set1 and set2
-      setCurrentSet(currentSet === 'set1' ? 'set2' : 'set1');
-      
-      // Fade in
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
-    });
+    // Toggle between set 1 and set 2
+    setCurrentSet(prev => prev === 1 ? 2 : 1);
   };
 
   const styles = StyleSheet.create({
@@ -266,7 +241,14 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
 
       {/* Questions Container */}
       <Animated.View style={[styles.questionsContainer, { opacity: fadeAnim }]}>
-        {questions.length > 0 ? (
+        {isLoading ? (
+          <View style={styles.emptyState}>
+            <ActivityIndicator size="small" color={AUDIENCE_CONFIG[selectedAudience].color} />
+            <Text style={[styles.emptyStateText, { marginTop: 8 }]}>
+              Loading questions...
+            </Text>
+          </View>
+        ) : questions.length > 0 ? (
           <>
             {questions.map((question, index) => (
               <View key={index} style={styles.questionItem}>

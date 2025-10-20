@@ -20,33 +20,19 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded) {
-      // Initialize database before hiding splash screen
+      // Hide splash screen immediately - don't wait for database
+      SplashScreen.hideAsync();
+      
+      // Initialize database in background (non-blocking)
       const initializeDatabase = async () => {
-        const maxRetries = 3;
-        let attempt = 0;
-        
-        while (attempt < maxRetries) {
-          try {
-            attempt++;
-            logger.info(`🔄 Database initialization attempt ${attempt}/${maxRetries}`);
-            await databaseManager.initialize();
-            logger.success('✅ Database initialized successfully');
-            return;
-          } catch (error) {
-            logger.error(`❌ Database initialization attempt ${attempt} failed:`, error);
-            if (attempt < maxRetries) {
-              logger.info(`⏳ Retrying in ${Math.pow(2, attempt)} seconds...`);
-              await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
-            }
-          }
+        try {
+          await databaseManager.initialize();
+        } catch (error) {
+          logger.error('Database initialization failed:', error);
         }
-        
-        logger.error('❌ All database initialization attempts failed');
       };
       
-      initializeDatabase().finally(() => {
-        SplashScreen.hideAsync();
-      });
+      initializeDatabase();
     }
   }, [loaded]);
 

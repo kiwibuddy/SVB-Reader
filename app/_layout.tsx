@@ -31,23 +31,18 @@ function AppContent() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        // Use new synchronous initialization system
         const result = await initializeAppSystems();
+        
         if (result.success) {
-          // App systems initialized successfully
-          logger.info('✅ App systems initialized successfully');
-          
-          // Check for updates in background (non-blocking)
-          checkForUpdates();
-          
           setDbReady(true);
+          checkForUpdates();
         } else {
-          logger.error('❌ Database initialization failed:', result.error);
-          setDbError(result.error || 'Unknown database error');
+          logger.error('Database initialization failed:', result.error);
+          setDbReady(true);
         }
       } catch (error) {
-        logger.error('❌ Critical initialization error:', error);
-        setDbError(error instanceof Error ? error.message : 'Critical initialization error');
+        logger.error('Critical initialization error:', error);
+        setDbReady(true);
       }
     };
 
