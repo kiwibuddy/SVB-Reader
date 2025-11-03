@@ -28,7 +28,6 @@
     },
     "preview": {
       "distribution": "internal",
-      "resourceClass": "large",
       "ios": {
         "buildConfiguration": "Release",
         "image": "latest"
@@ -41,7 +40,6 @@
       "distribution": "store",
       "autoIncrement": false,
       "channel": "production",
-      "resourceClass": "large",
       "ios": {
         "buildConfiguration": "Release",
         "scheme": "SourceViewTogether",
