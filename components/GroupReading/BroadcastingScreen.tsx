@@ -11,10 +11,11 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { GroupSession, Role, SegmentType, BibleType } from '@/types';
 import RoleProgressBar from '@/components/RoleProgressBar';
-import BibleData from "@/assets/data/newBibleNLT1.json";
+import { useTranslation } from '@/hooks/useTranslation';
+import { bibleLoader } from '@/services/BibleLoader';
 import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
 import { getColors } from "@/scripts/getColors";
 
@@ -25,9 +26,6 @@ interface BroadcastingScreenProps {
   onStopBroadcasting: () => void;
   onStartReading: () => void;
 }
-
-// Type assertion for Bible data
-const Bible: any = BibleData;
 
 const ROLE_COLORS: Record<Role, string> = {
   narrator: '#8E8E93',
@@ -50,14 +48,20 @@ const BroadcastingScreen: React.FC<BroadcastingScreenProps> = ({
   onStopBroadcasting,
   onStartReading,
 }) => {
-  const { colors } = useAppSettings();
+  const { t } = useTranslation();
+  const { colors, language } = useSyncAppSettings();
   const [pulseAnim] = useState(new Animated.Value(1));
+
+  // Load Bible dynamically based on current language
+  const Bible = useMemo(() => {
+    return bibleLoader.getCurrentBible();
+  }, [language]); // Re-load when language changes
 
   // Get segment data and calculate memoized content (same as main Segment component)
   const segmentData = useMemo(() => {
     if (!session?.storyId) return null;
     return Bible[session.storyId];
-  }, [session?.storyId]);
+  }, [session?.storyId, Bible]);
 
   // Use pre-calculated color data from segmentData instead of recalculating from split content
   const colorData = useMemo(() => {
@@ -592,28 +596,28 @@ const BroadcastingScreen: React.FC<BroadcastingScreenProps> = ({
             ))}
           </View>
           <Text style={styles.title}>Broadcasting Active</Text>
-          <Text style={styles.subtitle}>Others can now join</Text>
+          <Text style={styles.subtitle}>{t('UI.groupReading.othersCanNowJoin')}</Text>
           <Text style={styles.storyName}>"{session.storyTitle}"</Text>
         </View>
 
         <View style={styles.sessionInfo}>
-          <Text style={styles.sessionId}>Session ID: {session.id}</Text>
+          <Text style={styles.sessionId}>{t('UI.groupReading.sessionId')}: {session.id}</Text>
           
           <View style={styles.progressSection}>
-            <Text style={styles.progressTitle}>Story role distribution:</Text>
+            <Text style={styles.progressTitle}>{t('UI.groupReading.storyRoleDistribution')}</Text>
             <RoleProgressBar 
               colorData={colorData}
               height={6}
             />
             <Text style={styles.progressExplanation}>
-              Shows the speaking parts in this story: Gray (Narrator), Red (God), Green (Main Character), Blue (Other Voices).
+              {t('UI.groupReading.showsTheSpeakingParts')}
             </Text>
           </View>
         </View>
 
         {/* Role Icons Display */}
         <View style={styles.roleIconsContainer}>
-          <Text style={styles.roleIconsTitle}>Reading roles for this story:</Text>
+          <Text style={styles.roleIconsTitle}>{t('UI.groupReading.readingRolesForThisStory')}</Text>
           <View style={styles.roleIconsRow}>
             {renderRoleIcons()}
           </View>
@@ -621,7 +625,7 @@ const BroadcastingScreen: React.FC<BroadcastingScreenProps> = ({
 
         <View style={styles.participantsSection}>
           <Text style={styles.sectionTitle}>
-            Readers ({session.participants.length} of 4)
+            {t('UI.groupReading.readersCount').replace('{count}', session.participants.length.toString())}
           </Text>
           {renderParticipants()}
         </View>

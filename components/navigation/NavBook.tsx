@@ -14,7 +14,7 @@ import SegmentItem from "./SegmentItem";
 import { Ionicons } from '@expo/vector-icons';
 import Books from "@/assets/data/BookChapterList.json";
 import { markSegmentComplete, getSegmentCompletionStatus } from "@/api/sqlite";
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import '@/utils/suppressLogs';
 
 // Image mapping - Lazy loaded to reduce console noise
@@ -242,8 +242,11 @@ interface BibleData {
   };
 }
 
-// Import and type the Bible data
-const Bible: BibleData = require('@/assets/data/newBibleNLT1.json');
+// Import Bible loader for language support
+import { bibleLoader } from '@/services/BibleLoader';
+
+// Get current Bible data (switches based on user language)
+const Bible: BibleData = bibleLoader.getCurrentBible();
 
 export interface AccordionItem {
   djhBook: string;
@@ -321,7 +324,7 @@ const Accordion: React.FC<AccordionProps> = ({
   searchQuery = null, // New prop
   originalSegmentCount // New prop
 }) => {
-  const { colors } = useAppSettings();
+  const { colors, language } = useSyncAppSettings();
   const [isExpandedState, setIsExpanded] = useState(isExpanded || false);
   
   // Animation for progress bar
@@ -518,11 +521,21 @@ const Accordion: React.FC<AccordionProps> = ({
             <View style={[styles.bookIcon, { backgroundColor: colors.border }]} />
           )}
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>{item.bookName}</Text>
+            <Text style={styles.title}>{(() => {
+              if (language === 'fr') {
+                try {
+                  const fraUI = require('@/assets/data/FRA-UI.json');
+                  return fraUI.bookNames?.[item.djhBook.toUpperCase()]?.bookName || item.bookName;
+                } catch (error) {
+                  return item.bookName;
+                }
+              }
+              return item.bookName;
+            })()}</Text>
             <Text style={styles.subtitle}>
               {totalSegments > 0 && completedCount === totalSegments
-                ? 'Completed'
-                : `${completedCount} of ${totalSegments} ${totalSegments === 1 ? 'story' : 'stories'} read`
+                ? (language === 'fr' ? 'Terminé' : 'Completed')
+                : `${completedCount} ${language === 'fr' ? 'sur' : 'of'} ${totalSegments} ${totalSegments === 1 ? (language === 'fr' ? 'histoire' : 'story') : (language === 'fr' ? 'histoires lues' : 'stories read')}`
               }
             </Text>
             {/* Animated Progress bar */}
@@ -570,7 +583,7 @@ const Accordion: React.FC<AccordionProps> = ({
           {actualSegments.length > 0 ? (
             actualSegments.map((segment, index) => renderSegment(segment, index))
           ) : (
-            <Text style={{ padding: 16, color: colors.secondary }}>No segments available</Text>
+            <Text style={{ padding: 16, color: colors.secondary }}>{language === 'fr' ? 'Aucun segment disponible' : 'No segments available'}</Text>
           )}
         </View>
       )}

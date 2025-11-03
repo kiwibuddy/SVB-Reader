@@ -3,7 +3,8 @@ import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions, Platf
 import { useRouter, usePathname, useFocusEffect } from "expo-router";
 import { Ionicons } from '@expo/vector-icons'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import { isLargeScreen, isLandscape } from '@/constants/sizes';
 
 declare global {
@@ -21,7 +22,8 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   const { height } = useWindowDimensions();
   const [isVisible] = React.useState(new Animated.Value(1));
   const lastScrollY = React.useRef(0);
-  const { colors } = useAppSettings();
+  const { colors } = useSyncAppSettings();
+  const { t } = useTranslation();
 
   // iPad-specific override: always show bottom navigation on iPad even if "large screen"
   const isIPad = Platform.OS === 'ios' && (Platform as any).isPad === true;
@@ -218,7 +220,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
             color={pathname === "/Home" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Home" && styles.activeText]}>
-            Home
+            {t('UI.navigation.home')}
           </Text>
         </Pressable>
 
@@ -232,7 +234,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
             color={pathname === "/Reading-emoji" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Reading-emoji" && styles.activeText]}>
-            Reactions
+            {t('UI.navigation.emoji')}
           </Text>
         </Pressable>
 
@@ -246,7 +248,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
             color={pathname === "/Achievements" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Achievements" && styles.activeText]}>
-            Achievements
+            {t('UI.navigation.achievements')}
           </Text>
         </Pressable>
 
@@ -289,7 +291,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
             color={pathname === "/Navigation" ? colors.primary : colors.secondary} 
           />
           <Text style={[styles.navText, pathname === "/Navigation" && styles.activeText]}>
-            Search
+            {t('UI.navigation.search')}
           </Text>
         </Pressable>
       </View>

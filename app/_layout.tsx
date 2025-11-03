@@ -19,14 +19,19 @@ import { initializeDatabaseWithDiagnostics } from '@/api/database-initialization
 import * as Updates from 'expo-updates';
 import { SimpleLoadingScreen } from '@/components/SimpleLoadingScreen';
 import '../config/i18n'; // Import this to initialize i18next
+import { languageDetectionService } from '@/services/LanguageDetectionService';
+import { bibleStorageManager } from '@/services/BibleStorageManager';
+import BibleDownloadModal from '@/components/BibleDownloadModal';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
-  const { isDarkMode, colors } = useSyncAppSettings();
+  const { isDarkMode, colors, language, setLanguage } = useSyncAppSettings();
   const [dbReady, setDbReady] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
+  const [showBibleDownload, setShowBibleDownload] = useState(false);
+  const [detectedLanguage, setDetectedLanguage] = useState<'fr' | 'es' | 'pt' | null>(null);
   
   useEffect(() => {
     const initializeApp = async () => {
@@ -36,6 +41,7 @@ function AppContent() {
         if (result.success) {
           setDbReady(true);
           checkForUpdates();
+          checkDeviceLanguage();
         } else {
           logger.error('Database initialization failed:', result.error);
           setDbReady(true);
@@ -69,9 +75,50 @@ function AppContent() {
         logger.error('❌ Error details:', JSON.stringify(error, null, 2));
       }
     };
+
+    const checkDeviceLanguage = async () => {
+      try {
+        const detection = await languageDetectionService.detectLanguageOnLaunch();
+        
+        if (detection.shouldPromptDownload && detection.deviceLanguage !== 'en') {
+          // Device is set to French (or other supported language) and it's first launch
+          setDetectedLanguage(detection.deviceLanguage as 'fr' | 'es' | 'pt');
+          
+          // Wait a bit for UI to settle, then show prompt
+          setTimeout(() => {
+            Alert.alert(
+              `Télécharger la Bible en ${languageDetectionService.getLanguageDisplayName(detection.deviceLanguage)}?`,
+              `Votre appareil est configuré en ${languageDetectionService.getLanguageDisplayName(detection.deviceLanguage)}. Souhaitez-vous télécharger la Bible dans cette langue?`,
+              [
+                {
+                  text: 'Non merci',
+                  style: 'cancel',
+                  onPress: () => {
+                    languageDetectionService.markLanguageDetectionShown();
+                    languageDetectionService.markFirstLaunchComplete();
+                  },
+                },
+                {
+                  text: 'Télécharger',
+                  onPress: async () => {
+                    // Switch to detected language
+                    await setLanguage(detection.deviceLanguage);
+                    setShowBibleDownload(true);
+                    languageDetectionService.markLanguageDetectionShown();
+                    languageDetectionService.markFirstLaunchComplete();
+                  },
+                },
+              ]
+            );
+          }, 2000); // 2 second delay for smooth UX
+        }
+      } catch (error) {
+        logger.error('❌ Language detection failed:', error);
+      }
+    };
     
     initializeApp();
-  }, []);
+  }, [setLanguage]);
   
   if (dbError) {
     return (
@@ -124,6 +171,21 @@ function AppContent() {
               </SQLiteGlobalProvider>
             </GroupReadingProvider>
           </FontSizeProvider>
+          
+          {/* Auto-detected language Bible download modal */}
+          {detectedLanguage && (
+            <BibleDownloadModal
+              visible={showBibleDownload}
+              language={detectedLanguage}
+              languageDisplay={languageDetectionService.getLanguageDisplayName(detectedLanguage)}
+              fileSize={17245238}
+              onClose={() => setShowBibleDownload(false)}
+              onDownloadComplete={() => {
+                setShowBibleDownload(false);
+                Alert.alert('Success!', 'Bible downloaded successfully!');
+              }}
+            />
+          )}
         </View>
       </ThemeProvider>
     </GestureHandlerRootView>

@@ -31,3 +31,11 @@ assets/data/newBibleNLT1.json
 # EAS build artifacts
 .expo/
 dist/
+
+
+# Remove French Bible from bundle (will be downloaded on-demand)
+assets/data/FRA-Bible.json
+
+# Metadata file (temporary, already uploaded to Firebase)
+metadata.json
+

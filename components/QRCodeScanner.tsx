@@ -13,6 +13,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
+import { useTranslation } from '@/hooks/useTranslation';
 import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -31,12 +32,14 @@ const SCANNER_SIZE = Math.min(width, height) * 0.7;
 export default function QRCodeScanner({ 
   onQRCodeScanned, 
   onClose, 
-  title = "Scan QR Code",
+  title,
   variant = 'full'
 }: QRCodeScannerProps) {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const insets = useSafeAreaInsets();
+  const displayTitle = title || t('UI.qrScanner.title');
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -386,16 +389,16 @@ export default function QRCodeScanner({
         <View style={styles.permissionContainer}>
           <Ionicons name="camera-outline" size={64} color={colors.text} />
           <Text style={[styles.permissionTitle, { color: colors.text }]}>
-            Camera Permission Required
+            {t('UI.cameraPermission.title')}
           </Text>
           <Text style={[styles.permissionText, { color: colors.text }]}>
-            To scan QR codes, please grant camera permission in your device settings.
+            {t('UI.cameraPermission.message')}
           </Text>
           <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
-            <Text style={styles.permissionButtonText}>Allow Camera Access</Text>
+            <Text style={styles.permissionButtonText}>{t('UI.cameraPermission.allowAccess')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.permissionButton, { marginTop: 12, backgroundColor: '#666' }]} onPress={onClose}>
-            <Text style={styles.permissionButtonText}>Close</Text>
+            <Text style={styles.permissionButtonText}>{t('UI.cameraPermission.close')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -414,7 +417,7 @@ export default function QRCodeScanner({
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Ionicons name="close" size={24} color="white" />
           </TouchableOpacity>
-          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.title}>{displayTitle}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -427,9 +430,9 @@ export default function QRCodeScanner({
           </View>
 
           <Text style={styles.instructions}>
-            Position the QR code within the frame{"\n"}
-            • Hold steady and align the code inside the box{"\n"}
-            • Increase screen brightness if scanning fails
+            {t('UI.qrScanner.positionCode')}{"\n"}
+            • {t('UI.qrScanner.holdSteady')}{"\n"}
+            • {t('UI.qrScanner.increaseBrightness')}
           </Text>
 
           {isProcessing && (

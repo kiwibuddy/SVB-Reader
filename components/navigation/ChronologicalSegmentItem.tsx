@@ -3,7 +3,7 @@ import logger from '@/utils/logger';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { databaseManager } from '@/api/database-manager';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 
 interface ChronologicalSegmentItemProps {
   segmentId: string;
@@ -34,7 +34,20 @@ const ChronologicalSegmentItem: React.FC<ChronologicalSegmentItemProps> = ({
   planId,
   challengeId
 }) => {
-  const { colors } = useAppSettings();
+  const { colors, language } = useSyncAppSettings();
+
+  // Get localized title
+  const localizedTitle = useMemo(() => {
+    if (language === 'fr') {
+      try {
+        const fraUI = require('@/assets/data/FRA-UI.json');
+        return fraUI.Titles?.[segmentId] || title;
+      } catch (error) {
+        return title;
+      }
+    }
+    return title;
+  }, [segmentId, title, language]);
 
   const styles = StyleSheet.create({
     container: {
@@ -117,7 +130,7 @@ const ChronologicalSegmentItem: React.FC<ChronologicalSegmentItemProps> = ({
       <View style={styles.contentContainer}>
         <View style={styles.titleRow}>
           <Text style={styles.title} numberOfLines={2}>
-            {title}
+            {localizedTitle}
           </Text>
           <View style={styles.bookBadge}>
             <Text style={styles.bookText}>{book}</Text>

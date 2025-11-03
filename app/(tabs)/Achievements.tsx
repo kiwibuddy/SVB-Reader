@@ -37,6 +37,7 @@ import {
 } from '@/api/sqlite';
 import { imageMap } from '@/components/navigation/NavBook';
 import { databaseManager } from '@/api/database-manager';
+import { useTranslation } from '@/hooks/useTranslation';
 
 
 // Enhanced Types
@@ -80,6 +81,7 @@ interface BookCompletion {
 
 const Achievements = () => {
   const appSettings = useSyncAppSettings();
+  const { t } = useTranslation();
   
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   
@@ -469,7 +471,7 @@ const Achievements = () => {
     // Reading Milestones
     {
       id: 'first_story',
-      title: 'First Story',
+      title: t('UI.achievements.firstStory'),
       description: 'Read your first Bible story',
       icon: 'book-outline',
       color: '#4CAF50',
@@ -480,7 +482,7 @@ const Achievements = () => {
     },
     {
       id: 'bible_explorer',
-      title: 'Bible Explorer',
+      title: t('UI.achievements.bibleExplorer'),
       description: 'Read 10 Bible stories',
       icon: 'compass-outline',
       color: '#2196F3',
@@ -627,7 +629,7 @@ const Achievements = () => {
     // Testament Progress
     {
       id: 'old_testament',
-      title: 'Old Testament Master',
+      title: t('UI.achievements.oldTestamentMaster'),
       description: 'Complete the Old Testament',
       icon: 'library-outline',
       color: '#8D6E63',
@@ -638,7 +640,7 @@ const Achievements = () => {
     },
     {
       id: 'new_testament',
-      title: 'New Testament Master',
+      title: t('UI.achievements.newTestamentMaster'),
       description: 'Complete the New Testament',
       icon: 'star-outline',
       color: '#607D8B',
@@ -801,19 +803,19 @@ const Achievements = () => {
       <View style={styles.statsContainer}>
         <StatCard
           icon="book-outline"
-          title="Stories Read"
+          title={t('UI.achievements.storiesRead')}
           value={String(stats.completedStories)} // Always convert to string explicitly
           backgroundColor="#4CAF50"
         />
         <StatCard
           icon="flame-outline"
-          title="Current Streak"
+          title={t('UI.achievements.currentStreak')}
           value={String(stats.currentStreak)} // Always convert to string explicitly
           backgroundColor="#7B68EE"
         />
         <StatCard
           icon="trending-up-outline"
-          title="Complete Bible"
+          title={t('UI.achievements.completeBible')}
           value={`${stats.completionPercentage}%`}
           backgroundColor="#FF8C00"
         />
@@ -897,7 +899,7 @@ const Achievements = () => {
       <View style={styles.section}>
         <View style={styles.sectionHeaderRow}>
           <Text style={[styles.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>
-            Story Rewards
+            {t('UI.achievements.storyRewards')}
           </Text>
           {rest.length > 0 && (
             <TouchableOpacity 
@@ -1035,13 +1037,13 @@ const Achievements = () => {
                 marginBottom: isLikelyOneLine ? 16 : 8 // Add extra space for one-line titles
               }
             ]} numberOfLines={1}> 
-              {isCompleted ? 'Completed' : (() => {
+              {isCompleted ? t('UI.achievements.completed') : (() => {
                 if (showStoryProgress && progress > 0) {
                   return `${progress} of ${total}`;
                 } else if (achievement.progress > 0) {
                   return `${achievement.progress} of ${achievement.total}`;
                 } else {
-                  return 'Not started';
+                  return t('UI.achievements.notStarted');
                 }
               })()}
             </Text>
@@ -1070,9 +1072,9 @@ const Achievements = () => {
     
     // Determine status text
     const getStatusText = (): string => {
-      if (progress === 100) return 'Completed';
-      if (progress > 0) return `${progressData.completed}/${progressData.total} stories`;
-      return 'Not Started';
+      if (progress === 100) return t('UI.achievements.completed');
+      if (progress > 0) return `${progressData.completed}/${progressData.total} ${appSettings.language === 'fr' ? 'histoires' : 'stories'}`;
+      return t('UI.achievements.notStarted');
     };
     
     return (
@@ -1108,7 +1110,17 @@ const Achievements = () => {
           
           <View style={styles.bookInfo}>
             <Text style={[styles.bookTitle, styles.completedBookTitle]} numberOfLines={2}>
-              {book.bookName}
+              {(() => {
+                if (appSettings.language === 'fr') {
+                  try {
+                    const fraUI = require('@/assets/data/FRA-UI.json');
+                    return fraUI.bookNames?.[book.bookCode.toUpperCase()]?.bookName || book.bookName;
+                  } catch (error) {
+                    return book.bookName;
+                  }
+                }
+                return book.bookName;
+              })()}
             </Text>
             <Text style={[styles.bookStatus, { color: progressColor }]} numberOfLines={1}>
               {getStatusText()}
@@ -1210,9 +1222,9 @@ const Achievements = () => {
         }
       >
         <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>Achievements</Text>
+          <Text style={styles.welcomeTitle}>{t('UI.tabs.achievements')}</Text>
           <Text style={styles.welcomeText}>
-            Track your Bible reading progress and celebrate your milestones
+            {t('UI.achievements.subtitle')}
           </Text>
         </View>
 
@@ -1230,7 +1242,7 @@ const Achievements = () => {
           const items = [
             {
               id: 'plan_first_story',
-              title: 'Plan Starter',
+              title: t('UI.achievements.planStarter'),
               description: 'Complete 1 plan story',
               icon: 'calendar-outline' as keyof typeof Ionicons.glyphMap,
               color: '#7B68EE',
@@ -1241,7 +1253,7 @@ const Achievements = () => {
             },
             {
               id: 'plan_week',
-              title: 'Plan Week',
+              title: t('UI.achievements.planWeek'),
               description: 'Read plans 7 days in a row',
               icon: 'calendar-outline' as keyof typeof Ionicons.glyphMap,
               color: '#7B68EE',
@@ -1325,7 +1337,7 @@ const Achievements = () => {
           return (
             <View style={styles.section}>
               <View style={styles.sectionHeaderRow}>
-                <Text style={[styles.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>Plans & Challenges</Text>
+                <Text style={[styles.sectionTitle, { marginBottom: 0, paddingHorizontal: 0 }]}>{t('UI.achievements.plansAndChallenges')}</Text>
                 {rest.length > 0 && (
                   <TouchableOpacity onPress={() => setShowMorePlans(!showMorePlans)} activeOpacity={0.7} style={styles.moreIconOnly}>
                     <Ionicons name={showMorePlans ? 'chevron-up' : 'chevron-down'} size={20} color={colors.secondary} />
@@ -1377,10 +1389,10 @@ const Achievements = () => {
         })()}
 
         {/* Old Testament Books */}
-        {renderBooksSection('Old Testament Books', oldTestamentBooks, 'OT')}
+        {renderBooksSection(t('UI.achievements.oldTestamentBooks'), oldTestamentBooks, 'OT')}
 
         {/* New Testament Books */}
-        {renderBooksSection('New Testament Books', newTestamentBooks, 'NT')}
+        {renderBooksSection(t('UI.achievements.newTestamentBooks'), newTestamentBooks, 'NT')}
         
         {/* Bottom spacing for better visual balance */}
         <View style={styles.bottomSpacing} />

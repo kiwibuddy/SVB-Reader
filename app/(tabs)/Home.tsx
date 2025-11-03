@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 // Removed duplicate logger import - using the one from @/utils/logger
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -58,9 +58,10 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import SegmentTitlesData from '../../assets/data/SegmentTitles.json';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
-import BibleData from '@/assets/data/newBibleNLT1.json';
+import { bibleLoader } from '@/services/BibleLoader';
 import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
 import QRCodeScanner from '@/components/QRCodeScanner';
+import FRA_UI from '@/assets/data/FRA-UI.json';
 
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 
@@ -768,6 +769,7 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors, refr
   const router = useRouter();
   const { sizes } = useFontSize();
   const { t } = useTranslation();
+  const { language } = useSyncAppSettings();
   
   // Custom styles specific to this component for better aesthetics
   const localStyles = StyleSheet.create({
@@ -927,7 +929,7 @@ const ContinueReadingSection = ({ lastReadSegment, onPress, styles, colors, refr
           <Ionicons name="book-outline" size={24} color="#FFFFFF" />
         </View>
         <View style={styles.activeReadingInfo}>
-          <Text style={styles.activeReadingTitle}>Today's Reading</Text>
+          <Text style={styles.activeReadingTitle}>{t('UI.home.todaysReading')}</Text>
           <Text style={styles.activeReadingSubtitle}>
             {dailySegment.title}
           </Text>
@@ -1065,6 +1067,7 @@ const StreakCard = ({
     main: number;
   };
 }) => {
+  const { t } = useTranslation();
   // Animation values for streak updates
   const streakScale = useSharedValue(1);
   const statusOpacity = useSharedValue(isTodayComplete ? 1 : 0.3);
@@ -1206,22 +1209,22 @@ const StreakCard = ({
             <Reanimated.Text style={[localStyles.streakNumber, animatedStreakStyle]}>
               {contextualStreaks.overall || currentStreak}
             </Reanimated.Text>
-            <Text style={localStyles.streakDaysText}>days</Text>
+            <Text style={localStyles.streakDaysText}>{t('UI.dayStreak.days')}</Text>
           </View>
           <View style={localStyles.streakProgress} />
         </View>
         
         <View style={localStyles.streakTextContainer}>
           <Text style={localStyles.streakMessage}>
-            {(contextualStreaks.overall || currentStreak) === 0 ? 'Start your reading journey!' :
-             (contextualStreaks.overall || currentStreak) === 1 ? 'Great start! Keep it going!' : 
-             (contextualStreaks.overall || currentStreak) < 7 ? `Keep building your streak!` :
-             'Amazing streak! Keep it up!'}
+            {(contextualStreaks.overall || currentStreak) === 0 ? t('UI.dayStreak.startJourney') :
+             (contextualStreaks.overall || currentStreak) === 1 ? t('UI.dayStreak.greatStart') : 
+             (contextualStreaks.overall || currentStreak) < 7 ? t('UI.dayStreak.keepBuilding') :
+             t('UI.dayStreak.amazing')}
           </Text>
           <Text style={localStyles.streakGoal}>
             {(contextualStreaks.overall || currentStreak) < 7 ? 
-              `${7 - (contextualStreaks.overall || currentStreak)} more days to 7!` : 
-              'Keep building your streak!'}
+              t('UI.dayStreak.daysToSeven', { count: 7 - (contextualStreaks.overall || currentStreak) }) : 
+              t('UI.dayStreak.keepBuilding')}
           </Text>
         </View>
       </View>
@@ -1229,7 +1232,7 @@ const StreakCard = ({
       {/* Contextual Streak Breakdown */}
       <View style={{ marginTop: 12, marginBottom: 8 }}>
         <Text style={[localStyles.cardSubtitle, { marginBottom: 8, fontWeight: '600', fontSize: 11 }]}>
-          Reading Breakdown:
+          {t('UI.dayStreak.readingBreakdown')}
         </Text>
         <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end' }}>
           <DonutRing 
@@ -1287,14 +1290,51 @@ const ReadingInsightsCarousel = ({
   const router = useRouter();
   const { sizes } = useFontSize();
   const { colors } = styles;
-  const { isDarkMode } = useSyncAppSettings();
+  const { isDarkMode, language } = useSyncAppSettings();
   const { t } = useTranslation();
+  
+  // State to track when Bible is loaded (for French translations)
+  const [bibleLoadingKey, setBibleLoadingKey] = useState(0);
+  
+  // Ensure French Bible is loaded when language changes to French
+  useEffect(() => {
+    const ensureBibleLoaded = async () => {
+      if (language === 'fr') {
+        try {
+          const isAvailable = await bibleLoader.isBibleAvailable(language);
+          if (isAvailable) {
+            const loaded = await bibleLoader.preloadBible(language);
+            if (loaded) {
+              logger.info(`✅ French Bible preloaded for Home cards, triggering re-render`);
+              setBibleLoadingKey(prev => prev + 1);
+            }
+          }
+        } catch (error) {
+          logger.error(`❌ Failed to ensure French Bible loaded:`, error);
+        }
+      }
+    };
+    
+    ensureBibleLoaded();
+  }, [language]);
   
   // Helper function to get segment reference
   const getSegmentReference = (segmentID: string) => {
     const segment = SegmentTitlesData[segmentID as keyof typeof SegmentTitlesData] as any;
     if (!segment) return "";
-    return `${segment.book[0]}${segment.ref ? " " + segment.ref : ""}`;
+    const bookCode = segment.book[0];
+    const ref = segment.ref ? " " + segment.ref : "";
+    
+    // Translate book name if in French mode
+    if (language === 'fr') {
+      const bookCodeUpper = bookCode.toUpperCase();
+      const frenchBook = (FRA_UI.bookNames as any)[bookCodeUpper];
+      if (frenchBook && frenchBook["Abbreviation Translation"]) {
+        return `${frenchBook["Abbreviation Translation"]}${ref}`;
+      }
+    }
+    
+    return `${bookCode}${ref}`;
   };
   
   // Helper functions for speaker styling (using consistent vibrant colors)
@@ -1593,7 +1633,7 @@ const ReadingInsightsCarousel = ({
     };
 
     calculateInsights();
-  }, [refreshTrigger]); // Update when refreshTrigger changes
+  }, [refreshTrigger, language]); // Update when refreshTrigger or language changes
 
   // Refresh insights when returning to Home screen
   useFocusEffect(
@@ -1769,8 +1809,9 @@ const ReadingInsightsCarousel = ({
       id: 'favorite-book',
       type: 'favorite-book',
       icon: '📚',
-      title: 'Favorite Book',
+      title: t('UI.home.favoriteBook'),
       value: insights.favoriteBookFullName,
+      bookCode: insights.favoriteBook, // Add book code for translation
       backgroundColor: colors.card,
       onPress: handleBookPress,
       insights: enhancedInsights.bookInsights,
@@ -1780,8 +1821,9 @@ const ReadingInsightsCarousel = ({
       id: 'favorite-story',
       type: 'favorite-story',
       icon: '📖',
-      title: 'Favorite Story',
+      title: t('UI.home.favoriteStory'),
       value: insights.favoriteSegment,
+      segmentId: insights.favoriteSegmentId, // Add segment ID for translation
       backgroundColor: colors.card,
       onPress: handleStoryPress,
       insights: enhancedInsights.storyInsights,
@@ -1791,7 +1833,7 @@ const ReadingInsightsCarousel = ({
       id: 'emoji',
       type: 'emoji',
       icon: '💬',
-      title: 'Reactions',
+      title: t('UI.home.reactions'),
       value: enhancedInsights.lastReaction?.emoji || insights.lastUsedEmoji,
       backgroundColor: colors.card,
       onPress: handleEmojiPress,
@@ -1802,7 +1844,7 @@ const ReadingInsightsCarousel = ({
       id: 'note',
       type: 'note',
       icon: '📝',
-      title: 'Notes',
+      title: t('UI.home.notes'),
       backgroundColor: colors.card,
       onPress: handleNotePress,
       lastNote: enhancedInsights.lastNote,
@@ -1813,7 +1855,7 @@ const ReadingInsightsCarousel = ({
       id: 'activity',
       type: 'activity',
       icon: '⚡',
-      title: 'Reading Habits',
+      title: language === 'fr' ? 'Habitudes de lecture' : 'Reading Habits',
       backgroundColor: colors.card,
       insights: enhancedInsights.activityInsights,
     }] : []),
@@ -1822,17 +1864,31 @@ const ReadingInsightsCarousel = ({
   const renderCard = ({ item }: { item: any }) => {
     // Helper function to format date
     const formatDate = (dateString: string | null) => {
-      if (!dateString) return 'Never';
+      if (!dateString) {
+        return language === 'fr' ? 'Jamais' : 'Never';
+      }
       const date = new Date(dateString);
       const now = new Date();
       const diffMs = now.getTime() - date.getTime();
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
       
-      if (diffDays === 0) return 'Today';
-      if (diffDays === 1) return 'Yesterday';
-      if (diffDays < 7) return `${diffDays} days ago`;
-      if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-      return `${Math.floor(diffDays / 30)} months ago`;
+      if (language === 'fr') {
+        if (diffDays === 0) return 'Aujourd\'hui';
+        if (diffDays === 1) return 'Hier';
+        if (diffDays < 7) return `Il y a ${diffDays} jour${diffDays > 1 ? 's' : ''}`;
+        if (diffDays < 30) {
+          const weeks = Math.floor(diffDays / 7);
+          return `Il y a ${weeks} semaine${weeks > 1 ? 's' : ''}`;
+        }
+        const months = Math.floor(diffDays / 30);
+        return `Il y a ${months} mois`;
+      } else {
+        if (diffDays === 0) return 'Today';
+        if (diffDays === 1) return 'Yesterday';
+        if (diffDays < 7) return `${diffDays} days ago`;
+        if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+        return `${Math.floor(diffDays / 30)} months ago`;
+      }
     };
 
     // Helper function to render insight bullets
@@ -1857,22 +1913,52 @@ const ReadingInsightsCarousel = ({
       if (bookInsights) {
         // Show book completion count (how many times the entire book was read)
         if (bookInsights.totalReads > 0) {
-          insights.push(`Book completed ${bookInsights.totalReads} time${bookInsights.totalReads !== 1 ? 's' : ''}`);
+          if (language === 'fr') {
+            insights.push(`Livre complété ${bookInsights.totalReads} fois`);
+          } else {
+            insights.push(`Book completed ${bookInsights.totalReads} time${bookInsights.totalReads !== 1 ? 's' : ''}`);
+          }
         }
         // Show how many stories read from this book
         if (bookInsights.storiesRead > 0) {
-          insights.push(`${bookInsights.storiesRead}/${bookInsights.totalStories} stories read`);
+          if (language === 'fr') {
+            insights.push(`${bookInsights.storiesRead}/${bookInsights.totalStories} histoires lues`);
+          } else {
+            insights.push(`${bookInsights.storiesRead}/${bookInsights.totalStories} stories read`);
+          }
         }
         // Show most read story from this book
         if (bookInsights.favoriteStory) {
-          const storyTitle = SegmentTitlesData[bookInsights.favoriteStory as keyof typeof SegmentTitlesData] as any;
-          const shortTitle = storyTitle?.title ? 
-            (storyTitle.title.length > 25 ? storyTitle.title.substring(0, 25) + '...' : storyTitle.title) :
-            'Unknown Story';
-          insights.push(`Most read: "${shortTitle}"`);
+          let shortTitle = '';
+          
+          if (language === 'fr') {
+            // Load French title from FRA-UI.json Titles object
+            const frenchTitle = (FRA_UI.Titles as any)[bookInsights.favoriteStory];
+            if (frenchTitle) {
+              shortTitle = frenchTitle.length > 25 ? frenchTitle.substring(0, 25) + '...' : frenchTitle;
+            }
+          }
+          
+          // Fallback to English if French not found
+          if (!shortTitle) {
+            const storyTitle = SegmentTitlesData[bookInsights.favoriteStory as keyof typeof SegmentTitlesData] as any;
+            shortTitle = storyTitle?.title ? 
+              (storyTitle.title.length > 25 ? storyTitle.title.substring(0, 25) + '...' : storyTitle.title) :
+              (language === 'fr' ? 'Histoire inconnue' : 'Unknown Story');
+          }
+          
+          if (language === 'fr') {
+            insights.push(`Plus lue : "${shortTitle}"`);
+          } else {
+            insights.push(`Most read: "${shortTitle}"`);
+          }
         }
         if (bookInsights.lastReadDate) {
-          insights.push(`Last read ${formatDate(bookInsights.lastReadDate)}`);
+          if (language === 'fr') {
+            insights.push(`Dernière lecture ${formatDate(bookInsights.lastReadDate)}`);
+          } else {
+            insights.push(`Last read ${formatDate(bookInsights.lastReadDate)}`);
+          }
         }
       }
 
@@ -1890,7 +1976,17 @@ const ReadingInsightsCarousel = ({
             <Text style={[localStyles.cardTitle, { fontSize: sizes.body, fontWeight: '600' }]}>{item.title}</Text>
           </View>
           <Text style={[localStyles.cardValue, { fontSize: sizes.subtitle, fontWeight: '700' }]} numberOfLines={1}>
-            {item.value}
+            {(() => {
+              // Translate book name if in French mode
+              if (language === 'fr' && item.bookCode) {
+                const bookCodeUpper = item.bookCode.toUpperCase();
+                const frenchBook = (FRA_UI.bookNames as any)[bookCodeUpper];
+                if (frenchBook && frenchBook.bookName) {
+                  return frenchBook.bookName;
+                }
+              }
+              return item.value;
+            })()}
           </Text>
           {insights.length > 0 && (
             <View style={{ marginTop: 8 }}>
@@ -1907,22 +2003,44 @@ const ReadingInsightsCarousel = ({
       
       if (storyInsights) {
         if (storyInsights.totalReads > 0) {
-          insights.push(`Read ${storyInsights.totalReads} time${storyInsights.totalReads !== 1 ? 's' : ''}`);
+          if (language === 'fr') {
+            insights.push(`Lue ${storyInsights.totalReads} fois`);
+          } else {
+            insights.push(`Read ${storyInsights.totalReads} time${storyInsights.totalReads !== 1 ? 's' : ''}`);
+          }
         }
         if (storyInsights.lastReadDate) {
-          insights.push(`Last read ${formatDate(storyInsights.lastReadDate)}`);
+          if (language === 'fr') {
+            insights.push(`Dernière lecture ${formatDate(storyInsights.lastReadDate)}`);
+          } else {
+            insights.push(`Last read ${formatDate(storyInsights.lastReadDate)}`);
+          }
         }
         if (storyInsights.firstReadDate) {
-          insights.push(`First read ${formatDate(storyInsights.firstReadDate)}`);
+          if (language === 'fr') {
+            insights.push(`Première lecture ${formatDate(storyInsights.firstReadDate)}`);
+          } else {
+            insights.push(`First read ${formatDate(storyInsights.firstReadDate)}`);
+          }
         }
         if (storyInsights.groupReads > 0) {
-          insights.push(`${storyInsights.groupReads} group session${storyInsights.groupReads !== 1 ? 's' : ''}`);
+          if (language === 'fr') {
+            insights.push(`${storyInsights.groupReads} session${storyInsights.groupReads !== 1 ? 's' : ''} de groupe`);
+          } else {
+            insights.push(`${storyInsights.groupReads} group session${storyInsights.groupReads !== 1 ? 's' : ''}`);
+          }
         }
         if (storyInsights.readInPlans > 0 || storyInsights.readInChallenges > 0) {
           const contexts = [];
-          if (storyInsights.readInPlans > 0) contexts.push(`${storyInsights.readInPlans} plan${storyInsights.readInPlans !== 1 ? 's' : ''}`);
-          if (storyInsights.readInChallenges > 0) contexts.push(`${storyInsights.readInChallenges} challenge${storyInsights.readInChallenges !== 1 ? 's' : ''}`);
-          insights.push(`Read in ${contexts.join(', ')}`);
+          if (language === 'fr') {
+            if (storyInsights.readInPlans > 0) contexts.push(`${storyInsights.readInPlans} plan${storyInsights.readInPlans !== 1 ? 's' : ''}`);
+            if (storyInsights.readInChallenges > 0) contexts.push(`${storyInsights.readInChallenges} défi${storyInsights.readInChallenges !== 1 ? 's' : ''}`);
+            insights.push(`Lue dans ${contexts.join(', ')}`);
+          } else {
+            if (storyInsights.readInPlans > 0) contexts.push(`${storyInsights.readInPlans} plan${storyInsights.readInPlans !== 1 ? 's' : ''}`);
+            if (storyInsights.readInChallenges > 0) contexts.push(`${storyInsights.readInChallenges} challenge${storyInsights.readInChallenges !== 1 ? 's' : ''}`);
+            insights.push(`Read in ${contexts.join(', ')}`);
+          }
         }
       }
 
@@ -1940,7 +2058,14 @@ const ReadingInsightsCarousel = ({
             <Text style={[localStyles.cardTitle, { fontSize: sizes.body, fontWeight: '600' }]}>{item.title}</Text>
           </View>
           <Text style={[localStyles.cardValue, { fontSize: sizes.subtitle, fontWeight: '700' }]} numberOfLines={2}>
-            {item.value}
+            {(() => {
+              // Translate story title if in French mode
+              if (language === 'fr' && item.segmentId) {
+                const frenchTitle = (FRA_UI.Titles as any)[item.segmentId];
+                if (frenchTitle) return frenchTitle;
+              }
+              return item.value;
+            })()}
           </Text>
           {insights.length > 0 && (
             <View style={{ marginTop: 8 }}>
@@ -1997,7 +2122,16 @@ const ReadingInsightsCarousel = ({
                     marginBottom: 8,
                     textAlign: lastReaction.blockData.source.color !== "black" ? "left" : "right",
                   }}>
-                    {lastReaction.blockData.source.sourceName.toUpperCase()}
+                    {(() => {
+                      // Translate source names for French
+                      const sourceName = lastReaction.blockData.source.sourceName;
+                      if (language === 'fr') {
+                        // Load from FRA-UI.json Sources object
+                        const frenchName = (FRA_UI.Sources as any)[sourceName] || sourceName;
+                        return frenchName.toUpperCase();
+                      }
+                      return sourceName.toUpperCase();
+                    })()}
                   </Text>
                 )}
                 
@@ -2038,7 +2172,44 @@ const ReadingInsightsCarousel = ({
                       color: getBubbleTextColorSafe(lastReaction.blockData?.source?.color || 'black', isDarkMode),
                       lineHeight: 18,
                     }} numberOfLines={2}>
-                      {getBlockText(lastReaction.blockData)}
+                      {(() => {
+                        // Load French scripture if in French mode
+                        if (language === 'fr') {
+                          try {
+                            const frenchBible = bibleLoader.getCurrentBible('fr');
+                            const segments = frenchBible?.segments || frenchBible;
+                            const segment = segments?.[lastReaction.segmentId];
+                            
+                            if (segment && segment.blockData && Array.isArray(segment.blockData)) {
+                              // Try to find matching block by ref
+                              const blockRef = lastReaction.blockData?.ref;
+                              const sourceName = lastReaction.blockData?.source?.sourceName;
+                              
+                              // Find block with matching ref and source
+                              const matchingBlock = segment.blockData.find((block: any) => 
+                                block.ref === blockRef && 
+                                block.source?.sourceName === sourceName
+                              );
+                              
+                              if (matchingBlock) {
+                                // Extract text from French block
+                                if (matchingBlock.children) {
+                                  const text = matchingBlock.children
+                                    .flatMap((inline: any) => inline.children || [])
+                                    .map((leaf: any) => leaf.text || "")
+                                    .join(" ");
+                                  if (text) return text;
+                                }
+                                if (matchingBlock.text) return matchingBlock.text;
+                              }
+                            }
+                          } catch (error) {
+                            logger.warn('Could not load French scripture for reaction card:', error);
+                          }
+                        }
+                        // Fallback to English
+                        return getBlockText(lastReaction.blockData);
+                      })()}
                     </Text>
                   </View>
                   
@@ -2072,7 +2243,15 @@ const ReadingInsightsCarousel = ({
                   textTransform: 'uppercase',
                   letterSpacing: 0.5,
                 }]}>
-                  {lastReaction.storyTitle}
+                  {(() => {
+                    // Load French story title from FRA-UI.json Titles object if in French mode
+                    if (language === 'fr') {
+                      const frenchTitle = (FRA_UI.Titles as any)[lastReaction.segmentId];
+                      if (frenchTitle) return frenchTitle;
+                    }
+                    // Fallback to English
+                    return lastReaction.storyTitle;
+                  })()}
                 </Text>
                 <Text style={[localStyles.cardSubtitle, { 
                   fontSize: sizes.caption * 0.85,
@@ -2153,7 +2332,16 @@ const ReadingInsightsCarousel = ({
                     textTransform: 'uppercase',
                     letterSpacing: 0.5,
                   }]}>
-                    {lastNote.blockData.source.sourceName}
+                    {(() => {
+                      // Translate source names from FRA-UI.json Sources object
+                      const sourceName = lastNote.blockData.source.sourceName;
+                      if (language === 'fr') {
+                        // Load from FRA-UI.json Sources object
+                        const frenchName = (FRA_UI.Sources as any)[sourceName] || sourceName;
+                        return frenchName;
+                      }
+                      return sourceName;
+                    })()}
                   </Text>
                 )}
                 <Text style={[localStyles.cardSubtitle, { 
@@ -2176,24 +2364,72 @@ const ReadingInsightsCarousel = ({
       
       if (activityInsights) {
         if (activityInsights.favoriteTimeOfDay) {
-          insights.push(`Prefers ${activityInsights.favoriteTimeOfDay} reading`);
+          if (language === 'fr') {
+            const timeTranslations: Record<string, string> = {
+              'morning': 'matinale',
+              'afternoon': 'd\'après-midi',
+              'evening': 'du soir',
+              'night': 'nocturne'
+            };
+            const translatedTime = timeTranslations[activityInsights.favoriteTimeOfDay.toLowerCase()] || activityInsights.favoriteTimeOfDay;
+            insights.push(`Préfère la lecture ${translatedTime}`);
+          } else {
+            insights.push(`Prefers ${activityInsights.favoriteTimeOfDay} reading`);
+          }
         }
         if (activityInsights.preferredReadingMode) {
-          insights.push(`${activityInsights.preferredReadingMode === 'mixed' ? 'Mixed' : activityInsights.preferredReadingMode} reader`);
+          if (language === 'fr') {
+            const modeTranslations: Record<string, string> = {
+              'mixed': 'Lecture mixte',
+              'individual': 'Lecture individuelle',
+              'group': 'Lecture en groupe'
+            };
+            insights.push(modeTranslations[activityInsights.preferredReadingMode.toLowerCase()] || activityInsights.preferredReadingMode);
+          } else {
+            insights.push(`${activityInsights.preferredReadingMode === 'mixed' ? 'Mixed' : activityInsights.preferredReadingMode} reader`);
+          }
         }
         if (activityInsights.longestSession > 1) {
-          insights.push(`Longest: ${activityInsights.longestSession} stories`);
+          if (language === 'fr') {
+            insights.push(`Plus longue : ${activityInsights.longestSession} histoires`);
+          } else {
+            insights.push(`Longest: ${activityInsights.longestSession} stories`);
+          }
         }
         if (activityInsights.averageSessionLength > 0) {
-          insights.push(`Avg: ${activityInsights.averageSessionLength} stories/session`);
+          if (language === 'fr') {
+            insights.push(`Moy : ${activityInsights.averageSessionLength} histoires/session`);
+          } else {
+            insights.push(`Avg: ${activityInsights.averageSessionLength} stories/session`);
+          }
         }
         if (activityInsights.mostActiveDay) {
-          insights.push(`Most active: ${activityInsights.mostActiveDay}s`);
+          if (language === 'fr') {
+            const dayTranslations: Record<string, string> = {
+              'Sunday': 'Dimanche',
+              'Monday': 'Lundi',
+              'Tuesday': 'Mardi',
+              'Wednesday': 'Mercredi',
+              'Thursday': 'Jeudi',
+              'Friday': 'Vendredi',
+              'Saturday': 'Samedi'
+            };
+            const translatedDay = dayTranslations[activityInsights.mostActiveDay] || activityInsights.mostActiveDay;
+            insights.push(`Plus actif : ${translatedDay}s`);
+          } else {
+            insights.push(`Most active: ${activityInsights.mostActiveDay}s`);
+          }
         }
         if (activityInsights.readingPattern) {
-          const pattern = activityInsights.readingPattern === 'single' ? 'one story' : 
-                         activityInsights.readingPattern === 'multiple' ? 'multiple stories' : 'mixed sessions';
-          insights.push(`Usually reads ${pattern}`);
+          if (language === 'fr') {
+            const pattern = activityInsights.readingPattern === 'single' ? 'une histoire' : 
+                           activityInsights.readingPattern === 'multiple' ? 'plusieurs histoires' : 'sessions mixtes';
+            insights.push(`Lit généralement ${pattern}`);
+          } else {
+            const pattern = activityInsights.readingPattern === 'single' ? 'one story' : 
+                           activityInsights.readingPattern === 'multiple' ? 'multiple stories' : 'mixed sessions';
+            insights.push(`Usually reads ${pattern}`);
+          }
         }
       }
 
@@ -2205,7 +2441,10 @@ const ReadingInsightsCarousel = ({
           </View>
           {activityInsights?.totalDaysActive && (
             <Text style={[localStyles.cardValue, { fontSize: sizes.subtitle, fontWeight: '700' }]}>
-              {activityInsights.totalDaysActive} active day{activityInsights.totalDaysActive !== 1 ? 's' : ''}
+              {language === 'fr' 
+                ? `${activityInsights.totalDaysActive} jour${activityInsights.totalDaysActive !== 1 ? 's' : ''} actif${activityInsights.totalDaysActive !== 1 ? 's' : ''}`
+                : `${activityInsights.totalDaysActive} active day${activityInsights.totalDaysActive !== 1 ? 's' : ''}`
+              }
             </Text>
           )}
           {insights.length > 0 && (
@@ -2245,7 +2484,7 @@ const ReadingInsightsCarousel = ({
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Reading Insights</Text>
+      <Text style={styles.sectionTitle}>{t('UI.home.readingInsights')}</Text>
       <FlatList
         data={cardsData}
         renderItem={renderCard}
@@ -2262,8 +2501,8 @@ const ReadingInsightsCarousel = ({
 };
 
 const Home = () => {
-  const { colors, isDarkMode } = useSyncAppSettings();
-  const { state, refreshProgressData, refreshStatistics } = useSQLiteGlobalContext();
+  const { colors, isDarkMode, language } = useSyncAppSettings();
+  const { state, refreshProgressData, refreshStatistics, updateLastReadSegment, updateSegmentId } = useSQLiteGlobalContext();
   const [refreshing, setRefreshing] = useState(false);
 
   // Initialize insights system
@@ -2296,10 +2535,7 @@ const Home = () => {
     }
   };
 
-  const { 
-    updateLastReadSegment,
-    updateSegmentId,
-  } = useSQLiteGlobalContext();
+  // Removed duplicate useSQLiteGlobalContext call - already destructured above
   // Removed activePlan, activeChallenges dependencies - now using pure SQLite data loading
   const router = useRouter();
   
@@ -2689,7 +2925,15 @@ const Home = () => {
     const segmentData = SegmentTitles[segmentToRead as keyof typeof SegmentTitles];
     if (segmentData && segmentToRead) {
       setSelectedSegmentId(segmentToRead);
-      setSelectedSegmentTitle(segmentData.title);
+      
+      // Translate title if in French mode
+      let title = segmentData.title;
+      if (language === 'fr') {
+        const frenchTitle = (FRA_UI.Titles as any)[segmentToRead];
+        if (frenchTitle) title = frenchTitle;
+      }
+      
+      setSelectedSegmentTitle(title);
       setSelectedSegmentRef((segmentData as any).ref || '');
       setShowReadingModeModal(true);
     }
@@ -2701,7 +2945,15 @@ const Home = () => {
       const segment = SegmentTitles[state.lastReadSegment as keyof typeof SegmentTitles];
       if (segment) {
         setSelectedSegmentId(state.lastReadSegment);
-        setSelectedSegmentTitle(segment.title);
+        
+        // Translate title if in French mode
+        let title = segment.title;
+        if (language === 'fr') {
+          const frenchTitle = (FRA_UI.Titles as any)[state.lastReadSegment];
+          if (frenchTitle) title = frenchTitle;
+        }
+        
+        setSelectedSegmentTitle(title);
         setSelectedSegmentRef((segment as any).ref || '');
         setShowReadingModeModal(true);
       }
@@ -2714,7 +2966,15 @@ const Home = () => {
     const segmentData = SegmentTitles[planProgress.nextSegmentId as keyof typeof SegmentTitles];
     if (segmentData) {
       setSelectedSegmentId(planProgress.nextSegmentId);
-      setSelectedSegmentTitle(segmentData.title);
+      
+      // Translate title if in French mode
+      let title = segmentData.title;
+      if (language === 'fr') {
+        const frenchTitle = (FRA_UI.Titles as any)[planProgress.nextSegmentId];
+        if (frenchTitle) title = frenchTitle;
+      }
+      
+      setSelectedSegmentTitle(title);
       setSelectedSegmentRef((segmentData as any).ref || '');
       setShowReadingModeModal(true);
     } else {
@@ -2734,7 +2994,15 @@ const Home = () => {
     const segmentData = SegmentTitles[challengeProgress.nextSegmentId as keyof typeof SegmentTitles];
     if (segmentData) {
       setSelectedSegmentId(challengeProgress.nextSegmentId);
-      setSelectedSegmentTitle(segmentData.title);
+      
+      // Translate title if in French mode
+      let title = segmentData.title;
+      if (language === 'fr') {
+        const frenchTitle = (FRA_UI.Titles as any)[challengeProgress.nextSegmentId];
+        if (frenchTitle) title = frenchTitle;
+      }
+      
+      setSelectedSegmentTitle(title);
       setSelectedSegmentRef((segmentData as any).ref || '');
       setShowReadingModeModal(true);
     }
@@ -2856,7 +3124,7 @@ const Home = () => {
       setScanned(false);
     } catch (error) {
       logger.error('🔴 Error with QR scanner:', error);
-      Alert.alert('Error', 'QR scanner is currently unavailable');
+      Alert.alert(t('UI.alerts.error'), t('UI.alerts.qrScannerUnavailable'));
     }
   };
 
@@ -2891,12 +3159,12 @@ const Home = () => {
           logger.info('✅ Valid completion QR code detected');
           // Handle completion QR code
           Alert.alert(
-            'Story Completion',
-            'This QR code is for marking a story as complete in group reading mode.',
+            t('UI.alerts.storyCompletion'),
+            t('UI.alerts.storyCompletionMessage'),
             [
-              { text: 'Cancel', style: 'cancel' },
+              { text: t('UI.alerts.cancel'), style: 'cancel' },
               { 
-                text: 'Mark Complete', 
+                text: t('UI.alerts.markComplete'), 
                 onPress: () => handleCompletionQRCode(completionData)
               }
             ]
@@ -2904,9 +3172,9 @@ const Home = () => {
         } else {
           logger.info('🔴 Invalid QR code format');
           Alert.alert(
-            'Invalid QR Code',
-            'This QR code is not recognized. Please scan a valid SourceView Together group reading QR code.',
-            [{ text: 'OK' }]
+            t('UI.alerts.invalidQRCode'),
+            t('UI.alerts.invalidQRMessage'),
+            [{ text: t('UI.alerts.ok') }]
           );
         }
       }
@@ -2914,7 +3182,7 @@ const Home = () => {
       setShowScanner(false);
     } catch (error) {
       logger.error('🔴 Error processing scanned QR code:', error);
-      Alert.alert('Error', 'Failed to process QR code');
+      Alert.alert(t('UI.alerts.error'), t('UI.alerts.failedToProcessQR'));
       setShowScanner(false);
     }
   };
@@ -3034,7 +3302,15 @@ const Home = () => {
       } else {
         // For story segments, show the reading mode modal
         setSelectedSegmentId(segmentId);
-        setSelectedSegmentTitle(segmentData.title);
+        
+        // Translate title if in French mode
+        let title = segmentData.title;
+        if (language === 'fr') {
+          const frenchTitle = (FRA_UI.Titles as any)[segmentId];
+          if (frenchTitle) title = frenchTitle;
+        }
+        
+        setSelectedSegmentTitle(title);
         setSelectedSegmentRef((segmentData as any).ref || '');
         setShowReadingModeModal(true);
       }
@@ -3068,25 +3344,40 @@ const Home = () => {
     return `${bookFullName}${segment.ref ? ` (${segment.ref})` : ''}`;
   };
 
-  // Helper to format today's date (e.g., "Tuesday 8th Aug")
+  // Helper to format today's date (e.g., "Tuesday 8th Aug" or "Mardi 8 Nov")
   const formatTodaysDate = () => {
     const today = new Date();
-    const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
-    const day = today.getDate();
-    const month = today.toLocaleDateString('en-US', { month: 'short' });
+    const locale = language === 'fr' ? 'fr-FR' : 'en-US';
     
-    // Add ordinal suffix
-    const getOrdinalSuffix = (num: number) => {
-      if (num >= 11 && num <= 13) return 'th';
-      switch (num % 10) {
-        case 1: return 'st';
-        case 2: return 'nd';
-        case 3: return 'rd';
-        default: return 'th';
-      }
-    };
-    
-    return `${dayName} ${day}${getOrdinalSuffix(day)} ${month}`;
+    if (language === 'fr') {
+      // French format: "Lundi 3 Nov"
+      const dayName = today.toLocaleDateString(locale, { weekday: 'long' });
+      const day = today.getDate();
+      const month = today.toLocaleDateString(locale, { month: 'short' });
+      
+      // Capitalize first letter of day name
+      const capitalizedDayName = dayName.charAt(0).toUpperCase() + dayName.slice(1);
+      
+      return `${capitalizedDayName} ${day} ${month}`;
+    } else {
+      // English format: "Monday 3rd Nov"
+      const dayName = today.toLocaleDateString(locale, { weekday: 'long' });
+      const day = today.getDate();
+      const month = today.toLocaleDateString(locale, { month: 'short' });
+      
+      // Add ordinal suffix
+      const getOrdinalSuffix = (num: number) => {
+        if (num >= 11 && num <= 13) return 'th';
+        switch (num % 10) {
+          case 1: return 'st';
+          case 2: return 'nd';
+          case 3: return 'rd';
+          default: return 'th';
+        }
+      };
+      
+      return `${dayName} ${day}${getOrdinalSuffix(day)} ${month}`;
+    }
   };
 
   // Helper to check if there is at least one valid active plan or challenge
@@ -3102,7 +3393,30 @@ const Home = () => {
   const today = new Date();
   const dayOfYear = getDayOfYear(today);
   const dailySegmentId = (DailyStoryMap as string[])[(dayOfYear - 1) % DailyStoryMap.length];
-  const dailySegment = SegmentTitles[dailySegmentId as keyof typeof SegmentTitles];
+  
+  // Get segment title based on language
+  const dailySegment = useMemo(() => {
+    if (!dailySegmentId) return null;
+    
+    // Get base segment from English
+    const baseSegment = SegmentTitles[dailySegmentId as keyof typeof SegmentTitles];
+    if (!baseSegment) return null;
+    
+    // If French, load title from FRA-UI.json Titles object
+    if (language === 'fr') {
+      const frenchTitle = (FRA_UI.Titles as any)[dailySegmentId];
+      if (frenchTitle) {
+        return {
+          ...baseSegment,
+          title: frenchTitle
+        };
+      }
+    }
+    
+    // Return English version
+    return baseSegment;
+  }, [dailySegmentId, language]);
+  
   const hasTodaysReading = !!(dailySegment && !isDailySegmentCompleted);
   
   // Show the section if there's Today's Reading, active plans, or active challenges
@@ -3167,7 +3481,7 @@ const Home = () => {
 
 
         <View style={styles.getStartedSection}>
-          <Text style={styles.sectionTitle}>Get Started</Text>
+          <Text style={styles.sectionTitle}>{t('UI.landing.getStarted')}</Text>
           
           {/* Single Reading Plans Card */}
           <Pressable 
@@ -3175,9 +3489,9 @@ const Home = () => {
             onPress={() => router.push("/ReadingPlans")}
           >
             <View style={styles.readingInfo}>
-              <Text style={[styles.readingTitle, { color: '#FFFFFF' }]}>Reading Plans</Text>
+              <Text style={[styles.readingTitle, { color: '#FFFFFF' }]}>{t('UI.landing.readingPlans')}</Text>
               <Text style={[styles.readingSubtitle, { color: 'rgba(255, 255, 255, 0.8)' }]}>
-                Choose your Bible reading plans
+                {t('UI.landing.chooseYourPlans')}
               </Text>
             </View>
             <View style={styles.qrScanButton}>
@@ -3188,9 +3502,9 @@ const Home = () => {
           {/* QR Code Group Reading Card */}
           <View style={[styles.continueReading, { backgroundColor: '#42A5F5' }]}>
             <View style={styles.readingInfo}>
-              <Text style={[styles.readingTitle, { color: '#FFFFFF' }]}>Join Group Reading</Text>
+              <Text style={[styles.readingTitle, { color: '#FFFFFF' }]}>{t('UI.landing.joinGroupReading')}</Text>
               <Text style={[styles.readingSubtitle, { color: 'rgba(255, 255, 255, 0.9)' }]}>
-                Scan QR code to join a story group
+                {t('UI.landing.scanQRCode')}
               </Text>
             </View>
             <TouchableOpacity 
@@ -3205,7 +3519,7 @@ const Home = () => {
         {/* Today's Stories Section */}
         {showTodaysStoriesSection && (
           <View style={styles.activeReadingSection}>
-            <Text style={styles.sectionTitle}>Today's Stories</Text>
+            <Text style={styles.sectionTitle}>{t('UI.landing.todaysStories')}</Text>
             
             {/* Today's Reading - Always first */}
             {hasTodaysReading && dailySegment && (
@@ -3241,7 +3555,7 @@ const Home = () => {
                       <View style={styles.activeReadingInfo}>
                         <Text style={styles.activeReadingTitle}>{planData.title}</Text>
                         <Text style={styles.activeReadingSubtitle}>
-                          {planProgress?.nextSegmentTitle || 'Plan Completed!'}
+                          {planProgress?.nextSegmentTitle || t('UI.home.planCompleted')}
                         </Text>
                         <Text style={styles.activeReadingSubtitle}>
                           {(() => {
@@ -3274,7 +3588,7 @@ const Home = () => {
                     <View style={styles.activeReadingInfo}>
                       <Text style={styles.activeReadingTitle}>{challengeData.title}</Text>
                       <Text style={styles.activeReadingSubtitle}>
-                        {progressData?.nextSegmentTitle || 'Challenge Completed!'}
+                        {progressData?.nextSegmentTitle || t('UI.home.challengeCompleted')}
                       </Text>
                       <Text style={styles.activeReadingSubtitle}>
                         {(() => {
@@ -3361,7 +3675,7 @@ const Home = () => {
       {showScanner && (
         <View style={styles.scannerContainer}>
           <QRCodeScanner
-            title="Scan QR Code"
+            title={t('UI.qrScanner.title')}
             onClose={handleCloseScanner}
             onQRCodeScanned={(data: string) => {
               handleBarCodeScanned({ type: 'qr', data });

@@ -1,0 +1,2074 @@
+{
+  "SchoolQuestionsSet2": {
+    "S001": {
+      "Q1": "Which day of creation would you want to witness?",
+      "Q2": "What does this show about God's power and our worth?",
+      "Q3": "Where do you see God’s creation around you at school or in life?",
+      "Q4": "What is one way you can honor God’s creation this week?"
+    },
+    "S002": {
+      "Q1": "What surprised you most in the garden story?",
+      "Q2": "What does this reveal about our impulse to hide and God's heart?",
+      "Q3": "Where do you notice similar dynamics of temptation or blame in your life?",
+      "Q4": "What boundary or honest step will you take this week?"
+    },
+    "S003": {
+      "Q1": "If you were filming Noah's story, which scene would you focus on?",
+      "Q2": "What does this teach about God's justice and mercy and how we should live?",
+      "Q3": "When is it hardest for you to follow God at school?",
+      "Q4": "What step of integrity will you practice this week?"
+    },
+    "S004": {
+      "Q1": "What caught your attention about the tower builders?",
+      "Q2": "What does this expose about pride, identity, and God's place?",
+      "Q3": "Where do you see name‑making or exclusion in your context?",
+      "Q4": "What bridge‑building step could you take this week?"
+    },
+    "S005": {
+      "Q1": "Which part of Abram's journey stood out to you?",
+      "Q2": "What does this say about trusting God's call and our purpose?",
+      "Q3": "Where might God be inviting you to trust Him at school?",
+      "Q4": "What first step of faith will you take this week?"
+    },
+    "S006": {
+      "Q1": "What struck you about God's promises here?",
+      "Q2": "What does this show about God's faithfulness and our identity?",
+      "Q3": "How does promise‑keeping shape friendships at school?",
+      "Q4": "What commitment will you honor carefully this week?"
+    },
+    "S007": {
+      "Q1": "Which character's actions surprised you most?",
+      "Q2": "What does this say about God's holiness and our responsibility?",
+      "Q3": "Where do you see brokenness that calls for courage and compassion?",
+      "Q4": "What careful, kind action will you take this week?"
+    },
+    "S008": {
+      "Q1": "What emotions did you notice in Abraham's test?",
+      "Q2": "What does this teach about trust and surrender?",
+      "Q3": "Where is trust hardest for you right now at school?",
+      "Q4": "What step of trust will you take this week?"
+    },
+    "S009": {
+      "Q1": "What family dynamics grabbed your attention?",
+      "Q2": "What does this show about God working over time and our place in His story?",
+      "Q3": "How does long‑term faithfulness encourage you in slow seasons?",
+      "Q4": "What patient practice will you keep this week?"
+    },
+    "S010": {
+      "Q1": "How did Jacob's deception play out?",
+      "Q2": "What does this reveal about integrity and who we are becoming?",
+      "Q3": "Where are you tempted to cut corners in student life?",
+      "Q4": "What honest choice will you make this week?"
+    },
+    "S011": {
+      "Q1": "Which brother's story interested you most?",
+      "Q2": "What does this say about comparison, worth, and God's purposes?",
+      "Q3": "Where do you notice comparison and rivalry in friend groups or teams?",
+      "Q4": "What peacemaking step could you try this week?"
+    },
+    "S012": {
+      "Q1": "What did you notice about Jacob's wrestling match?",
+      "Q2": "What does this teach about identity and depending on God?",
+      "Q3": "Where are you wrestling with God or yourself right now?",
+      "Q4": "What honest prayer or conversation will you start this week?"
+    },
+    "S013": {
+      "Q1": "What stood out in all these family moves?",
+      "Q2": "What does this show about God's care in messy change and how we walk?",
+      "Q3": "How does this speak to you in a time of change at school?",
+      "Q4": "What steady step will you take in change this week?"
+    },
+    "S014": {
+      "Q1": "Which of Joseph's hardships hit you hardest?",
+      "Q2": "What does this show about purpose in hard seasons?",
+      "Q3": "Where do setbacks test your character at school?",
+      "Q4": "What resilient habit will you practice this week?"
+    },
+    "S015": {
+      "Q1": "How did Joseph handle his new power?",
+      "Q2": "What does this teach about humility, power, and God's wisdom?",
+      "Q3": "How can you stay grounded when noticed or praised?",
+      "Q4": "What grounding practice will you keep this week?"
+    },
+    "S016": {
+      "Q1": "What emotions surfaced when the brothers met?",
+      "Q2": "What does this reveal about truth, mercy, and rebuilding trust?",
+      "Q3": "Where could you show mercy in a tense relationship?",
+      "Q4": "What step toward reconciliation will you take this week?"
+    },
+    "S017": {
+      "Q1": "Describe the reunion scene that stuck with you.",
+      "Q2": "What does this show about forgiveness and restored identity?",
+      "Q3": "Where might God be inviting you to rebuild trust?",
+      "Q4": "What first step toward peace will you take this week?"
+    },
+    "S018": {
+      "Q1": "Which blessing or farewell moved you?",
+      "Q2": "What does this say about legacy and finishing with faith?",
+      "Q3": "How does thinking about legacy affect your choices now?",
+      "Q4": "What priority will you realign this week?"
+    },
+    "S019": {
+      "Q1": "What grabbed you about Moses at the burning bush?",
+      "Q2": "What does this show about God's concern and our calling?",
+      "Q3": "Where might God be nudging you to speak or serve at school?",
+      "Q4": "What step of courage will you take this week?"
+    },
+    "S020": {
+      "Q1": "How did Pharaoh's reactions strike you?",
+      "Q2": "What does this teach about obedience under pressure and who leads?",
+      "Q3": "Where do you feel pressure to stay silent or give up?",
+      "Q4": "What faithful action will you take despite pressure?"
+    },
+    "S021": {
+      "Q1": "Which plague would have convinced you?",
+      "Q2": "What does this reveal about stubborn hearts and God's patience?",
+      "Q3": "Where do stubborn patterns show up in your own life?",
+      "Q4": "What change will you practice to soften your heart this week?"
+    },
+    "S022": {
+      "Q1": "What symbols in the Passover stood out?",
+      "Q2": "What does this show about rescue, belonging, and identity?",
+      "Q3": "How might remembering God’s care shape your week?",
+      "Q4": "What simple reminder will you keep before you this week?"
+    },
+    "S023": {
+      "Q1": "Picture yourself at the Red Sea - what do you see?",
+      "Q2": "What does this teach about fear, trust, and who saves?",
+      "Q3": "Where do you feel stuck and in need of God’s help?",
+      "Q4": "What step will you take while trusting God to make a way?"
+    },
+    "S024": {
+      "Q1": "When did the people's attitudes shift in the desert?",
+      "Q2": "What does this reveal about daily dependence on God?",
+      "Q3": "How could gratitude shift your school week?",
+      "Q4": "What daily practice of thanks will you try?"
+    },
+    "S025": {
+      "Q1": "Which commandment speaks loudest to you?",
+      "Q2": "What does this teach about love, freedom, and how to live?",
+      "Q3": "How would school life look if these shaped the culture?",
+      "Q4": "Which one command will you focus on this week?"
+    },
+    "S026": {
+      "Q1": "What surprised you in these community rules?",
+      "Q2": "What does this say about justice, neighbor-love, and our responsibility?",
+      "Q3": "Where could fairness or care grow in your context?",
+      "Q4": "What fair action will you practice this week?"
+    },
+    "S027": {
+      "Q1": "Imagine walking into the tabernacle - what catches your eye?",
+      "Q2": "What does this reveal about God wanting to be with us and our worship?",
+      "Q3": "How could your gifts help create space for God at school?",
+      "Q4": "What contribution will you make this week?"
+    },
+    "S028": {
+      "Q1": "What struck you about the priests' responsibilities?",
+      "Q2": "What does this teach about holiness and representing God?",
+      "Q3": "Where do you need healthy boundaries to serve well?",
+      "Q4": "What boundary will you set or renew this week?"
+    },
+    "S029": {
+      "Q1": "Which worship practice stood out to you?",
+      "Q2": "What does this say about rest, devotion, and ordered life?",
+      "Q3": "Where do you need rest or focus to meet with God?",
+      "Q4": "What simple rhythm will you keep this week?"
+    },
+    "S030": {
+      "Q1": "How quickly did everything fall apart?",
+      "Q2": "What does this expose about idols, leadership, and God's mercy?",
+      "Q3": "What ‘idols’ compete for your loyalty at school?",
+      "Q4": "What will you put down and what will you take up this week?"
+    },
+    "S031": {
+      "Q1": "What impressed you about the people's giving?",
+      "Q2": "What does this show about generosity, skill, and purpose?",
+      "Q3": "Where could you offer time or talent this week?",
+      "Q4": "What specific task will you volunteer to do?"
+    },
+    "S032": {
+      "Q1": "Describe the moment God's glory filled the tabernacle.",
+      "Q2": "What does this teach about God's presence and our response?",
+      "Q3": "How can you honor God’s presence in ordinary places?",
+      "Q4": "What practice will help you notice God this week?"
+    },
+    "S033": {
+      "Q1": "Which offering made the most sense to you?",
+      "Q2": "What does this teach about sin, gratitude, and approaching God?",
+      "Q3": "How might confession and thanks shape your week?",
+      "Q4": "What honest prayer will you bring to God today?"
+    },
+    "S034": {
+      "Q1": "What patterns did you notice in these rituals?",
+      "Q2": "What does this show about everyday worship and God's holiness?",
+      "Q3": "Where could you turn routine into worship this week?",
+      "Q4": "What daily moment will you dedicate to God?"
+    },
+    "S035": {
+      "Q1": "What stood out in the ordination ceremony?",
+      "Q2": "What does this reveal about calling and readiness?",
+      "Q3": "How might you prepare your heart before serving others?",
+      "Q4": "What preparation step will you take this week?"
+    },
+    "S036": {
+      "Q1": "Which distinction surprised you most?",
+      "Q2": "What does this say about holiness, health, and wisdom?",
+      "Q3": "How could wise care of body and soul help your week?",
+      "Q4": "What healthy habit will you practice faithfully?"
+    },
+    "S037": {
+      "Q1": "What careful details did you notice?",
+      "Q2": "What does this teach about small choices shaping character?",
+      "Q3": "Where do small choices shape your character at school?",
+      "Q4": "What small faithful choice will you repeat this week?"
+    },
+    "S038": {
+      "Q1": "Picture the Day of Atonement - what strikes you?",
+      "Q2": "What does this reveal about forgiveness and access to God?",
+      "Q3": "How does forgiveness change how you live at school?",
+      "Q4": "What step will you take to seek or extend forgiveness?"
+    },
+    "S039": {
+      "Q1": "How does \"be holy\" land with you?",
+      "Q2": "What does this say about God's character and distinct living?",
+      "Q3": "Where are you called to be different for the right reasons?",
+      "Q4": "What one difference will you practice this week?"
+    },
+    "S040": {
+      "Q1": "What expectations for leaders caught your attention?",
+      "Q2": "What does this teach about example, influence, and integrity?",
+      "Q3": "Where do you have influence among peers?",
+      "Q4": "What example will you set this week?"
+    },
+    "S041": {
+      "Q1": "Which festival would you want to experience?",
+      "Q2": "What does this teach about remembering God together and our identity?",
+      "Q3": "What rhythm helps you remember God in busy weeks?",
+      "Q4": "What reminder will you add into your week?"
+    },
+    "S042": {
+      "Q1": "What grabbed you about the year of jubilee?",
+      "Q2": "What does this reveal about trust, renewal, and justice?",
+      "Q3": "Where do you need rest or to let go of burdens?",
+      "Q4": "What reset step will you take this week?"
+    },
+    "S043": {
+      "Q1": "Which blessing or curse felt most real?",
+      "Q2": "What does this say about choices and the path of life with God?",
+      "Q3": "Where are your choices leading you this week?",
+      "Q4": "What wise choice will you make today?"
+    },
+    "S044": {
+      "Q1": "Why do you think God wanted them counted?",
+      "Q2": "What does this show about order, belonging, and mission?",
+      "Q3": "Where do you need structure to serve better at school?",
+      "Q4": "What organizing step will you take this week?"
+    },
+    "S045": {
+      "Q1": "What unique about the Levites' calling?",
+      "Q2": "What does this teach about being set apart to serve?",
+      "Q3": "Where might you be set apart to help others at school?",
+      "Q4": "What service will you offer this week?"
+    },
+    "S046": {
+      "Q1": "How did dedication look different here?",
+      "Q2": "What does this reveal about living under God's blessing?",
+      "Q3": "How could a dedicated habit shape your school life?",
+      "Q4": "What habit will you dedicate to God this week?"
+    },
+    "S047": {
+      "Q1": "What emotions filled the celebration?",
+      "Q2": "What does this say about starting well with God?",
+      "Q3": "Where do you need to prepare before you move forward?",
+      "Q4": "What first step will you take to prepare well?"
+    },
+    "S048": {
+      "Q1": "When did complaining take over?",
+      "Q2": "What does this reveal about trust versus complaint?",
+      "Q3": "Where do you slip into complaint during busy weeks?",
+      "Q4": "What gratitude practice will you choose instead?"
+    },
+    "S049": {
+      "Q1": "Which spy would you have sided with?",
+      "Q2": "What does this teach about fear versus faith?",
+      "Q3": "Where is fear shrinking your vision at school?",
+      "Q4": "What faith step will you take despite fear this week?"
+    },
+    "S050": {
+      "Q1": "What sparked the rebellion?",
+      "Q2": "What does this reveal about pride, authority, and humility?",
+      "Q3": "Where do you resist guidance that could help you grow?",
+      "Q4": "What humble step will you take this week?"
+    },
+    "S051": {
+      "Q1": "Where did you see God provide?",
+      "Q2": "What does this say about God's care and our courage?",
+      "Q3": "Where have you seen small wins in a tough season?",
+      "Q4": "What gratitude or testimony will you share this week?"
+    },
+    "S052": {
+      "Q1": "What confused you about Balaam?",
+      "Q2": "What does this reveal about motives, truth, and integrity?",
+      "Q3": "Where are mixed motives pulling you off course?",
+      "Q4": "What clear, honest step will you take this week?"
+    },
+    "S053": {
+      "Q1": "How had the people changed since the first count?",
+      "Q2": "What does this show about readiness and purpose across time?",
+      "Q3": "How can you help the next person take their place well?",
+      "Q4": "What mentoring or support step will you take?"
+    },
+    "S054": {
+      "Q1": "Which vow stood out to you?",
+      "Q2": "What does this teach about words, integrity, and follow-through?",
+      "Q3": "Where do you need to match words with actions?",
+      "Q4": "What commitment will you keep carefully this week?"
+    },
+    "S055": {
+      "Q1": "What journey detail caught your attention?",
+      "Q2": "What does this say about perseverance and guidance?",
+      "Q3": "Where do you need steady perseverance at school?",
+      "Q4": "What small step will you repeat each day this week?"
+    },
+    "S056": {
+      "Q1": "Why all these boundary markers?",
+      "Q2": "What does this reveal about wisdom, safety, and trust?",
+      "Q3": "Where do you need clear boundaries to thrive?",
+      "Q4": "What boundary will you set or renew today?"
+    },
+    "S057": {
+      "Q1": "What memories did Moses emphasize?",
+      "Q2": "What does this teach about identity shaped by remembering?",
+      "Q3": "What memory of God’s help strengthens you now?",
+      "Q4": "How will you remember and share it this week?"
+    },
+    "S058": {
+      "Q1": "How many times did Moses say \"listen\"?",
+      "Q2": "What does this show about hearing that leads to doing?",
+      "Q3": "Where do you need to match listening with action?",
+      "Q4": "What small act of obedience will you do today?"
+    },
+    "S059": {
+      "Q1": "What's at the heart of this covenant?",
+      "Q2": "What does this say about love, loyalty, and worship?",
+      "Q3": "How can covenant love shape your school relationships?",
+      "Q4": "What act of loyal love will you practice this week?"
+    },
+    "S060": {
+      "Q1": "Where is all this obedience heading?",
+      "Q2": "What does this reveal about witness and why we exist?",
+      "Q3": "Where could your choices point others toward God?",
+      "Q4": "What witness will you live out this week?"
+    },
+    "S081": {
+      "Q1": "Did Jephthah's vow shock you?",
+      "Q2": "Why are rash promises so dangerous?",
+      "Q3": "Where do your words run ahead of wisdom?",
+      "Q4": "What careful speaking habit will you practice?"
+    },
+    "S082": {
+      "Q1": "If Samson was so strong, why did he fall?",
+      "Q2": "How can your greatest strength become your weakness?",
+      "Q3": "Where are you strong yet vulnerable at school?",
+      "Q4": "What safeguard will you put in place this week?"
+    },
+    "S083": {
+      "Q1": "Why was everyone doing whatever they wanted?",
+      "Q2": "What happens when there's no true guide?",
+      "Q3": "Where do you see \"everyone does their own thing\" at school?",
+      "Q4": "What guiding truth will you follow this week?"
+    },
+    "S084": {
+      "Q1": "How did things get this dark?",
+      "Q2": "Where was God in all this chaos?",
+      "Q3": "Where can you be a voice for what's right?",
+      "Q4": "What protective step will you take for someone vulnerable?"
+    },
+    "S085": {
+      "Q1": "Which character would you want as a friend?",
+      "Q2": "How does loyalty change everything?",
+      "Q3": "Where could loyal kindness change a situation at school?",
+      "Q4": "What loyal action will you take this week?"
+    },
+    "S086": {
+      "Q1": "How young was Samuel when God called?",
+      "Q2": "Can God really speak to teenagers?",
+      "Q3": "Where do you sense God nudging you to listen?",
+      "Q4": "What listening practice will you try this week?"
+    },
+    "S087": {
+      "Q1": "Were the people wrong to want a king?",
+      "Q2": "Is fitting in always bad?",
+      "Q3": "Where do you feel pressure to fit in rather than trust God?",
+      "Q4": "What counter-cultural choice will you make this week?"
+    },
+    "S088": {
+      "Q1": "How did Saul go from hiding to king?",
+      "Q2": "When does humility turn to pride?",
+      "Q3": "Where could humility shape your leadership among peers?",
+      "Q4": "What humble practice will you choose this week?"
+    },
+    "S089": {
+      "Q1": "Why couldn't Saul just wait?",
+      "Q2": "How does impatience ruin things?",
+      "Q3": "Where do time pressure and image drive your decisions?",
+      "Q4": "What wise pause will you build into your week?"
+    },
+    "S090": {
+      "Q1": "If God looks at hearts, what does He see in yours?",
+      "Q2": "Why did God choose the smallest brother?",
+      "Q3": "Where do outward appearances mislead at school?",
+      "Q4": "What heart habit will you cultivate this week?"
+    },
+    "S091": {
+      "Q1": "Could you face your Goliath with just a sling?",
+      "Q2": "Where does that kind of courage come from?",
+      "Q3": "Where do you face an oversized challenge at school?",
+      "Q4": "What step of faith will you take toward that challenge?"
+    },
+    "S092": {
+      "Q1": "Who was the better friend - David or Jonathan?",
+      "Q2": "How do you stay loyal when it costs you?",
+      "Q3": "Where could you practice loyal friendship under pressure?",
+      "Q4": "What boundary or habit will guard your heart this week?"
+    },
+    "S093": {
+      "Q1": "When did David almost lose it?",
+      "Q2": "How do you keep your cool under stress?",
+      "Q3": "Where do you need wisdom when stressed?",
+      "Q4": "What wise step will you take before reacting?"
+    },
+    "S094": {
+      "Q1": "Could you spare someone who's hunting you?",
+      "Q2": "Is revenge ever worth it?",
+      "Q3": "Where could restraint break a harmful cycle?",
+      "Q4": "What gracious response will you choose if provoked?"
+    },
+    "S095": {
+      "Q1": "Which looks more desperate - Saul or David?",
+      "Q2": "Where do shortcuts lead us?",
+      "Q3": "Where are you tempted to take shortcuts?",
+      "Q4": "What practice will help you seek God first?"
+    },
+    "S096": {
+      "Q1": "How do you honor someone who hurt you?",
+      "Q2": "Is grief a sign of weakness or strength?",
+      "Q3": "Where do you need space to grieve or honor someone?",
+      "Q4": "What simple step of lament will you take?"
+    },
+    "S097": {
+      "Q1": "How long did David wait to be king?",
+      "Q2": "Is waiting always part of God's plan?",
+      "Q3": "Where is waiting shaping your character now?",
+      "Q4": "What faithful habit will you keep while you wait?"
+    },
+    "S098": {
+      "Q1": "If God promised David a forever kingdom, where is it?",
+      "Q2": "How do God's promises outlast our mistakes?",
+      "Q3": "How does promise shape your hope during pressure?",
+      "Q4": "What hope practice will you carry this week?"
+    },
+    "S099": {
+      "Q1": "Did success change David?",
+      "Q2": "How do you handle winning well?",
+      "Q3": "How will you handle success without losing humility?",
+      "Q4": "What gratitude step will you take after a win?"
+    },
+    "S100": {
+      "Q1": "When did David's life spiral?",
+      "Q2": "Can one bad choice really ruin everything?",
+      "Q3": "Where could small compromises grow into bigger harm?",
+      "Q4": "What guardrail will you set in place this week?"
+    },
+    "S101": {
+      "Q1": "When did Absalom's plan start forming?",
+      "Q2": "How does flattery manipulate people?",
+      "Q3": "Where do you see subtle power plays around you?",
+      "Q4": "What peacemaking step could you take this week?"
+    },
+    "S102": {
+      "Q1": "Whose advice won the day?",
+      "Q2": "Why do people listen to bad counsel?",
+      "Q3": "Whose voices most influence your choices right now?",
+      "Q4": "What wise counsel will you seek before deciding?"
+    },
+    "S103": {
+      "Q1": "How did David handle coming back?",
+      "Q2": "Is restoration possible after betrayal?",
+      "Q3": "Where do you sense need for restoration in a group?",
+      "Q4": "What step toward repair will you take this week?"
+    },
+    "S104": {
+      "Q1": "Which of David's final acts surprised you?",
+      "Q2": "How do you want your story to end?",
+      "Q3": "Where do end-of-season choices matter most?",
+      "Q4": "What finish-well practice will you adopt this week?"
+    },
+    "S105": {
+      "Q1": "Why all the drama over who becomes king?",
+      "Q2": "How should leadership transitions work?",
+      "Q3": "Where are you entering a new responsibility?",
+      "Q4": "What first step will you take to seek wisdom?"
+    },
+    "S106": {
+      "Q1": "If you got one wish, what would you ask for?",
+      "Q2": "Why did Solomon's request please God?",
+      "Q3": "Where do you most need discernment this month?",
+      "Q4": "What daily habit will you use to grow in wisdom?"
+    },
+    "S107": {
+      "Q1": "Could you build something this magnificent?",
+      "Q2": "When does excellence become worship?",
+      "Q3": "Where could excellence honor God in your studies?",
+      "Q4": "What quality step will you take on a task?"
+    },
+    "S108": {
+      "Q1": "What would you pray at a dedication?",
+      "Q2": "How does God's presence change a place?",
+      "Q3": "How could you dedicate a space or routine to God?",
+      "Q4": "What short prayer of dedication will you pray?"
+    },
+    "S109": {
+      "Q1": "When did Solomon start slipping?",
+      "Q2": "How does comfort lead to compromise?",
+      "Q3": "Where might comfort be pulling you off course?",
+      "Q4": "What course correction will you make today?"
+    },
+    "S110": {
+      "Q1": "Could one conversation prevent a civil war?",
+      "Q2": "Why don't people listen to each other?",
+      "Q3": "Where does stubbornness divide teams or friends?",
+      "Q4": "What listening step will you take before speaking?"
+    },
+    "S111": {
+      "Q1": "Can you see the pattern across these kings?",
+      "Q2": "Which mistakes keep repeating?",
+      "Q3": "Which patterns do you want to avoid?",
+      "Q4": "What practice will you adopt to shape a better legacy?"
+    },
+    "S112": {
+      "Q1": "Would you stand alone like Elijah?",
+      "Q2": "What's the cost of total loyalty to God?",
+      "Q3": "Where do you face competing loyalties?",
+      "Q4": "What step will you take to choose faithfulness?"
+    },
+    "S113": {
+      "Q1": "Ever felt as done as Elijah under the tree?",
+      "Q2": "Where was God when Elijah gave up?",
+      "Q3": "Where do you feel depleted or discouraged?",
+      "Q4": "What rest or obedience step will you take?"
+    },
+    "S114": {
+      "Q1": "How did Ahab get away with murder?",
+      "Q2": "Who speaks truth to power today?",
+      "Q3": "Where do you see misuse of power?",
+      "Q4": "What courageous truth-telling step will you take?"
+    },
+    "S115": {
+      "Q1": "Which alliance surprised you?",
+      "Q2": "Who influences your decisions most?",
+      "Q3": "Where do your alliances shape your walk with God?",
+      "Q4": "What boundary will you set for healthier influence?"
+    },
+    "S116": {
+      "Q1": "Which miracle would you want to witness?",
+      "Q2": "How does God care for individuals?",
+      "Q3": "Who near you needs quiet help or encouragement?",
+      "Q4": "What simple act of care will you offer?"
+    },
+    "S117": {
+      "Q1": "Did God care about other nations too?",
+      "Q2": "How far does God's love reach?",
+      "Q3": "Who is outside your usual circle at school?",
+      "Q4": "What step will you take toward them?"
+    },
+    "S118": {
+      "Q1": "Was Jehu too violent or just right?",
+      "Q2": "When does zeal become dangerous?",
+      "Q3": "Where do you need zeal guided by wisdom?",
+      "Q4": "What focused step will you take this week?"
+    },
+    "S119": {
+      "Q1": "How close did the royal line come to ending?",
+      "Q2": "Who protected what mattered most?",
+      "Q3": "What good thing has God entrusted to you?",
+      "Q4": "What safeguard will you put in place?"
+    },
+    "S120": {
+      "Q1": "Why couldn't these kings go all the way?",
+      "Q2": "Is partial obedience really disobedience?",
+      "Q3": "Where do you tend to stop short of what's good?",
+      "Q4": "What completion step will you take this week?"
+    },
+    "S121": {
+      "Q1": "When did you know Israel was doomed?",
+      "Q2": "How do nations fall from the inside?",
+      "Q3": "Where do lesser loves pull your heart away from God?",
+      "Q4": "What re-centering step will you take today?"
+    },
+    "S122": {
+      "Q1": "Which miracle gave you hope?",
+      "Q2": "Can one good leader change everything?",
+      "Q3": "Where are you facing pressure that tests your trust?",
+      "Q4": "What prayerful step will you take before acting?"
+    },
+    "S123": {
+      "Q1": "How can one king be so evil and his son so good?",
+      "Q2": "Is change always possible?",
+      "Q3": "Where do you need a clean start with God?",
+      "Q4": "What first step toward change will you take?"
+    },
+    "S124": {
+      "Q1": "Could Judah have avoided exile?",
+      "Q2": "When is it too late to turn back?",
+      "Q3": "Where are you ignoring wise counsel right now?",
+      "Q4": "What listening change will you make this week?"
+    },
+    "S125": {
+      "Q1": "Does your family tree matter to God?",
+      "Q2": "How does faith pass through generations?",
+      "Q3": "Who has passed faith or wisdom to you?",
+      "Q4": "What thanks will you express to them?"
+    },
+    "S126": {
+      "Q1": "Which tribe would you want to be in?",
+      "Q2": "Where do you fit in God's story?",
+      "Q3": "Where do you fit in your community's shared work?",
+      "Q4": "What part will you play faithfully this week?"
+    },
+    "S127": {
+      "Q1": "Why repeat information we already know?",
+      "Q2": "How does remembering shape who we are?",
+      "Q3": "How does belonging shape your choices?",
+      "Q4": "Who will you encourage for their faithfulness?"
+    },
+    "S128": {
+      "Q1": "How do you grieve and hope at the same time?",
+      "Q2": "Is it okay to feel multiple emotions?",
+      "Q3": "Where are you between an ending and beginning?",
+      "Q4": "What anchor practice will keep you steady?"
+    },
+    "S129": {
+      "Q1": "Would you dance like David did?",
+      "Q2": "When is worship worth looking foolish?",
+      "Q3": "How can reverence and joy meet in your routines?",
+      "Q4": "What worship habit will you practice this week?"
+    },
+    "S130": {
+      "Q1": "Did David earn these victories?",
+      "Q2": "Who really wins our battles?",
+      "Q3": "Where can gratitude replace self-credit in your life?",
+      "Q4": "What praise step will you take after work well done?"
+    },
+    "S131": {
+      "Q1": "Why count people if God didn't want it?",
+      "Q2": "Can good intentions still be wrong?",
+      "Q3": "Where do you need to admit wrong and adjust?",
+      "Q4": "What correction step will you take this week?"
+    },
+    "S132": {
+      "Q1": "Does organization matter to God?",
+      "Q2": "Why all these detailed roles?",
+      "Q3": "Where could better structure help your group?",
+      "Q4": "What one system will you set up or simplify?"
+    },
+    "S133": {
+      "Q1": "Could you handle that much responsibility?",
+      "Q2": "How do you know what you're responsible for?",
+      "Q3": "Where should you delegate or ask for help?",
+      "Q4": "What team step will you take this week?"
+    },
+    "S134": {
+      "Q1": "Where did all these resources come from?",
+      "Q2": "What makes people give generously?",
+      "Q3": "Where do you need partners to build something good?",
+      "Q4": "What clear ask will you make this week?"
+    },
+    "S135": {
+      "Q1": "If you were there, what would you feel?",
+      "Q2": "When have you felt God's presence strongly?",
+      "Q3": "How can you dedicate your work or gifts to God?",
+      "Q4": "What simple dedication prayer will you offer?"
+    },
+    "S136": {
+      "Q1": "Which achievement impressed you most?",
+      "Q2": "When do achievements become idols?",
+      "Q3": "How will you keep worship above achievement?",
+      "Q4": "What practice will keep your heart centered?"
+    },
+    "S137": {
+      "Q1": "Whose advice would you have taken?",
+      "Q2": "Why do we dismiss good advice?",
+      "Q3": "Where have you dismissed good advice too quickly?",
+      "Q4": "What listening habit will you practice?"
+    },
+    "S138": {
+      "Q1": "Which king would you follow?",
+      "Q2": "Can God use imperfect leaders?",
+      "Q3": "Where could you rely on God rather than panic?",
+      "Q4": "What prayer-first step will you take?"
+    },
+    "S139": {
+      "Q1": "Why make alliances with enemies?",
+      "Q2": "Should God's people partner with anyone?",
+      "Q3": "Where do you need to pray before you plan?",
+      "Q4": "What first prayer will start your planning?"
+    },
+    "S140": {
+      "Q1": "How close did evil come to winning?",
+      "Q2": "Who kept hope alive in dark times?",
+      "Q3": "What good has God trusted you to guard?",
+      "Q4": "What protective step will you take?"
+    },
+    "S141": {
+      "Q1": "Which king's downfall hurt most?",
+      "Q2": "How does pride sneak into our strengths?",
+      "Q3": "Where could pride creep into your strengths at school?",
+      "Q4": "What humble safeguard will you put in place?"
+    },
+    "S142": {
+      "Q1": "Could one person really cleanse a whole nation?",
+      "Q2": "What does spiritual renewal look like?",
+      "Q3": "Where do you need to renew a good habit with God?",
+      "Q4": "What renewal step will you take this week?"
+    },
+    "S143": {
+      "Q1": "How can someone so evil repent?",
+      "Q2": "Is anyone beyond God's reach?",
+      "Q3": "Where do you need hope that change is possible?",
+      "Q4": "What first step toward change will you take?"
+    },
+    "S144": {
+      "Q1": "If finding Scripture changed everything, why don't we read it more?",
+      "Q2": "What would happen if we really listened to God's word?",
+      "Q3": "Where could Scripture re-center your week at school?",
+      "Q4": "What time will you set to read and respond each day?"
+    },
+    "S145": {
+      "Q1": "Would you want to return to ruins?",
+      "Q2": "Why go back when you could stay comfortable?",
+      "Q3": "Where do you need to rebuild something that matters?",
+      "Q4": "What first brick will you lay this week?"
+    },
+    "S146": {
+      "Q1": "Why did their neighbors try to stop them?",
+      "Q2": "What threatens people about others' success?",
+      "Q3": "Where do you face discouragement while doing good?",
+      "Q4": "What steady step will you take despite pushback?"
+    },
+    "S147": {
+      "Q1": "How did Ezra become such an expert?",
+      "Q2": "What's the difference between knowing and doing?",
+      "Q3": "How can you set your heart to learn and live God's word?",
+      "Q4": "What small plan will you start this week?"
+    },
+    "S148": {
+      "Q1": "Why confess publicly instead of privately?",
+      "Q2": "When does private sin need public confession?",
+      "Q3": "Where do compromises need honest attention in your life?",
+      "Q4": "What clear step will you take to turn back to God?"
+    },
+    "S149": {
+      "Q1": "Could one person's burden change a city?",
+      "Q2": "What breaks your heart that others ignore?",
+      "Q3": "Where do you sense a burden you need to own?",
+      "Q4": "What first move will you make with prayer and wisdom?"
+    },
+    "S150": {
+      "Q1": "How did they build with swords in hand?",
+      "Q2": "Can you work while under attack?",
+      "Q3": "Where do distractions pull you off good work at school?",
+      "Q4": "What focus step will you take to keep building?"
+    },
+    "S151": {
+      "Q1": "Why read Scripture until noon?",
+      "Q2": "How do confession and celebration go together?",
+      "Q3": "What rhythm helps restore your heart after stress?",
+      "Q4": "What rhythm will you build into this week?"
+    },
+    "S152": {
+      "Q1": "Why make promises you might break?",
+      "Q2": "What's the point of public commitment?",
+      "Q3": "Where do you need support to keep good commitments?",
+      "Q4": "What accountability step will you set up?"
+    },
+    "S153": {
+      "Q1": "How did Esther end up as queen?",
+      "Q2": "Can God use beauty pageants?",
+      "Q3": "Where might your position help others?",
+      "Q4": "What step will you take to serve where you are?"
+    },
+    "S154": {
+      "Q1": "Would you risk everything for your people?",
+      "Q2": "When is silence not an option?",
+      "Q3": "Where might you need to speak up for someone?",
+      "Q4": "What respectful step will you take to use your voice?"
+    },
+    "S155": {
+      "Q1": "If you were Job, would you still trust God?",
+      "Q2": "Where is God when everything falls apart?",
+      "Q3": "Where do you need room to bring pain to God?",
+      "Q4": "What simple prayer will you say in your own words?"
+    },
+    "S156": {
+      "Q1": "Are Job's friends helping or hurting?",
+      "Q2": "What makes someone a good friend in crisis?",
+      "Q3": "How can you be a better friend to someone hurting?",
+      "Q4": "What gentle action will you take to support them?"
+    },
+    "S157": {
+      "Q1": "Why does Job keep arguing?",
+      "Q2": "Is it okay to question God?",
+      "Q3": "Where are you holding on without full understanding?",
+      "Q4": "What small trust step will you take today?"
+    },
+    "S158": {
+      "Q1": "Does God owe Job an explanation?",
+      "Q2": "How do you trust when life seems unfair?",
+      "Q3": "Where do you long for fairness or clarity now?",
+      "Q4": "What honest request will you bring to God?"
+    },
+    "S159": {
+      "Q1": "Has Job said too much or not enough?",
+      "Q2": "When should we stop defending ourselves?",
+      "Q3": "Where do you need to examine motives and actions?",
+      "Q4": "What next step will you take after reflection?"
+    },
+    "S160": {
+      "Q1": "Does Elihu help or just talk more?",
+      "Q2": "Who has the right to correct you?",
+      "Q3": "Where could you welcome fresh correction or insight?",
+      "Q4": "What listening step will you practice this week?"
+    },
+    "S161": {
+      "Q1": "Which of God's questions hit hardest?",
+      "Q2": "Why doesn't God answer Job's questions directly?",
+      "Q3": "Where can you trust God without complete answers?",
+      "Q4": "What act of trust will you choose this week?"
+    },
+    "S162": {
+      "Q1": "Which psalm line would you tweet?",
+      "Q2": "How do these ancient songs speak today?",
+      "Q3": "How do these portraits intersect with your choices right now?",
+      "Q4": "What daily prayer or verse will you carry this week?"
+    },
+    "S163": {
+      "Q1": "If you wrote a psalm, what would it say?",
+      "Q2": "Why do biblical writers complain to God?",
+      "Q3": "Where do you need help or strength this week?",
+      "Q4": "What one-sentence prayer will you pray daily?"
+    },
+    "S164": {
+      "Q1": "Which name for God fits your life now?",
+      "Q2": "How many ways can we describe God?",
+      "Q3": "How will you practice trust in one concrete situation?",
+      "Q4": "What verse will you screenshot or write down?"
+    },
+    "S165": {
+      "Q1": "Do you relate more to the praise or lament?",
+      "Q2": "Can faith and fear exist together?",
+      "Q3": "What fear needs naming before God?",
+      "Q4": "What step of praise or seeking help will you take?"
+    },
+    "S166": {
+      "Q1": "Have you ever felt spiritually dry?",
+      "Q2": "Where is God when we can't feel Him?",
+      "Q3": "Where do you feel spiritually dry or discouraged?",
+      "Q4": "What simple seek-God practice will you add?"
+    },
+    "S167": {
+      "Q1": "Would you rather get even or trust God?",
+      "Q2": "Why is revenge so tempting?",
+      "Q3": "Where are you tempted to retaliate or despair?",
+      "Q4": "What trusting response will you choose instead?"
+    },
+    "S168": {
+      "Q1": "If God is King, what changes?",
+      "Q2": "How should God's rule affect daily life?",
+      "Q3": "How will you pray for leaders and communities?",
+      "Q4": "What short prayer will you offer for them?"
+    },
+    "S169": {
+      "Q1": "Why do good people sometimes struggle more?",
+      "Q2": "Does following God guarantee easy life?",
+      "Q3": "Where does comparison steal your joy?",
+      "Q4": "What gratitude step will you practice this week?"
+    },
+    "S170": {
+      "Q1": "Which Bible story would you tell a kid?",
+      "Q2": "Why keep telling old stories?",
+      "Q3": "What story of God's help could you share with someone younger?",
+      "Q4": "Who will you tell and when this week?"
+    },
+    "S171": {
+      "Q1": "Why do we sing to God?",
+      "Q2": "What's the connection between music and faith?",
+      "Q3": "Where do you long to sense God's presence in ordinary life?",
+      "Q4": "What small draw-near practice will you add?"
+    },
+    "S172": {
+      "Q1": "How loud should worship be?",
+      "Q2": "Is quiet or loud worship better?",
+      "Q3": "How could public gratitude point others to God?",
+      "Q4": "What brief line of praise will you speak daily?"
+    },
+    "S173": {
+      "Q1": "Can you keep a promise to God?",
+      "Q2": "Why make commitments we might break?",
+      "Q3": "What commitment do you need to renew with God?",
+      "Q4": "What step will you take to keep it?"
+    },
+    "S174": {
+      "Q1": "Who has rescued you lately?",
+      "Q2": "Do we notice when God helps us?",
+      "Q3": "Where have you seen God rescue you recently?",
+      "Q4": "Who will you thank or encourage because of it?"
+    },
+    "S175": {
+      "Q1": "Are you better at asking or thanking?",
+      "Q2": "Why is humility so hard when things go well?",
+      "Q3": "Where do you need humility in visibility or success?",
+      "Q4": "What simple act of thanks will you offer?"
+    },
+    "S176": {
+      "Q1": "How would you survive without Google? How did they survive without the Bible app?",
+      "Q2": "Why does this psalm go on forever about God's word?",
+      "Q3": "How could you weave Scripture into your day?",
+      "Q4": "What one practice will you start?"
+    },
+    "S177": {
+      "Q1": "Are we there yet? What journey feels longest to you?",
+      "Q2": "Why sing while traveling?",
+      "Q3": "What journey are you on that needs God's help?",
+      "Q4": "What short prayer will you pray along the way?"
+    },
+    "S178": {
+      "Q1": "Is it wrong to be angry at God?",
+      "Q2": "How honest can we be in prayer?",
+      "Q3": "Where do you need to bring strong feelings into prayer?",
+      "Q4": "What honest prayer step will you take?"
+    },
+    "S179": {
+      "Q1": "If everything praises God, why don't we?",
+      "Q2": "What would change if we praised more?",
+      "Q3": "How could praise reshape ordinary routines?",
+      "Q4": "What one way will you practice praise?"
+    },
+    "S180": {
+      "Q1": "Who's the wisest person you know?",
+      "Q2": "Where does real wisdom come from?",
+      "Q3": "Where do you most need wisdom for a choice?",
+      "Q4": "What step will you take to seek counsel?"
+    },
+    "S181": {
+      "Q1": "Which proverb sounds like your parents?",
+      "Q2": "Why do wise sayings stick in our heads?",
+      "Q3": "Where could this wisdom correct a current habit?",
+      "Q4": "What one practice will you adopt this week?"
+    },
+    "S182": {
+      "Q1": "If you could fix one thing about your words, what would it be?",
+      "Q2": "Why do words have so much power?",
+      "Q3": "Where do your words need more care?",
+      "Q4": "What speaking habit will you practice?"
+    },
+    "S183": {
+      "Q1": "Which proverb describes your life right now?",
+      "Q2": "How do small choices create big outcomes?",
+      "Q3": "Where do your habits shape your path?",
+      "Q4": "What small habit will you start today?"
+    },
+    "S184": {
+      "Q1": "Who gives you the best advice?",
+      "Q2": "Why is it hard to accept correction?",
+      "Q3": "Where do you need honest feedback?",
+      "Q4": "Who will you invite to speak truth to you?"
+    },
+    "S185": {
+      "Q1": "Are you more like the ant or the sluggard?",
+      "Q2": "What's the difference between rest and laziness?",
+      "Q3": "Where do you need steady effort this week?",
+      "Q4": "What daily step will you repeat?"
+    },
+    "S186": {
+      "Q1": "Which temptation trips you up most?",
+      "Q2": "How do boundaries actually give freedom?",
+      "Q3": "Where do you face that temptation now?",
+      "Q4": "What boundary will you set this week?"
+    },
+    "S187": {
+      "Q1": "Does anything really matter if we all die?",
+      "Q2": "What's the point of working so hard?",
+      "Q3": "Where do you chase what doesn't satisfy?",
+      "Q4": "What practice will help you enjoy God's gifts?"
+    },
+    "S188": {
+      "Q1": "Can you enjoy life and honor God?",
+      "Q2": "Is it okay to have fun?",
+      "Q3": "How could reverence shape your plans?",
+      "Q4": "What simple joy will you receive with thanks?"
+    },
+    "S189": {
+      "Q1": "Is this too much for youth group?",
+      "Q2": "What does God think about romance?",
+      "Q3": "How can you honor others in words and actions?",
+      "Q4": "What boundary or practice will protect love?"
+    },
+    "S190": {
+      "Q1": "Which bothers God more - bad worship or bad behavior?",
+      "Q2": "Can you worship and be mean?",
+      "Q3": "Where must justice and worship meet in you?",
+      "Q4": "What act of justice will you do this week?"
+    },
+    "S191": {
+      "Q1": "Would you volunteer like Isaiah?",
+      "Q2": "What makes someone ready to serve God?",
+      "Q3": "How does God's call meet your weakness?",
+      "Q4": "What \"here am I\" step will you take?"
+    },
+    "S192": {
+      "Q1": "What kind of king would you want?",
+      "Q2": "Why do we need a perfect ruler?",
+      "Q3": "Where do you long for that kind of peace?",
+      "Q4": "How will you live under that hope today?"
+    },
+    "S193": {
+      "Q1": "Why does God care about other nations?",
+      "Q2": "Is God only interested in His people?",
+      "Q3": "Where do you see pride or cruelty today?",
+      "Q4": "What prayer or action for justice will you take?"
+    },
+    "S194": {
+      "Q1": "Do people still trust in things that can't save?",
+      "Q2": "What are modern idols?",
+      "Q3": "Where are you tempted by false security?",
+      "Q4": "What will you trust God with this week?"
+    },
+    "S195": {
+      "Q1": "Can you have hope while everything falls apart?",
+      "Q2": "Where is God in the chaos?",
+      "Q3": "Where do you need hope in hard news?",
+      "Q4": "What faithful step will you take today?"
+    },
+    "S196": {
+      "Q1": "Why do strong people think they don't need God?",
+      "Q2": "When does confidence become arrogance?",
+      "Q3": "Where do you rely on your own strength?",
+      "Q4": "How will you depend on God this week?"
+    },
+    "S197": {
+      "Q1": "If you could see the future, would you want to?",
+      "Q2": "Why does God show us glimpses of what's coming?",
+      "Q3": "Where do you need courage now?",
+      "Q4": "What step expresses trust in that promise?"
+    },
+    "S198": {
+      "Q1": "How can the same person be so good then so bad?",
+      "Q2": "What does success do to our hearts?",
+      "Q3": "Where could success lead you to drift?",
+      "Q4": "What guard will keep you humble?"
+    },
+    "S199": {
+      "Q1": "Who's stronger - your fears or your God?",
+      "Q2": "What's your biggest fear right now?",
+      "Q3": "Where do you feel weak or afraid now?",
+      "Q4": "What truth from here will you hold to?"
+    },
+    "S200": {
+      "Q1": "What kind of servant-leader would you follow?",
+      "Q2": "How is God's servant different from world leaders?",
+      "Q3": "Where do you need gentle justice and healing?",
+      "Q4": "What response of trust will you offer?"
+    },
+    "S201": {
+      "Q1": "How can God use pagan kings for His purposes?",
+      "Q2": "Who's really in control of history?",
+      "Q3": "Where do you struggle to see God at work?",
+      "Q4": "What patient trust will you practice this week?"
+    },
+    "S202": {
+      "Q1": "Which role of the servant appeals to you most?",
+      "Q2": "How can weakness be strength?",
+      "Q3": "Where do you feel called to serve others?",
+      "Q4": "What small servant step will you take today?"
+    },
+    "S203": {
+      "Q1": "Could you handle being misunderstood for doing right?",
+      "Q2": "Why did the servant have to suffer?",
+      "Q3": "How does this shape your view of Jesus?",
+      "Q4": "How will you respond to this grace?"
+    },
+    "S204": {
+      "Q1": "What's the difference between real and fake fasting?",
+      "Q2": "Can you worship God and ignore people?",
+      "Q3": "Where could you practice true fasting now?",
+      "Q4": "What act of mercy will you choose?"
+    },
+    "S205": {
+      "Q1": "Does God's patience ever run out?",
+      "Q2": "How many chances do we get?",
+      "Q3": "Where do you need hope for the future?",
+      "Q4": "What step aligns with God's future today?"
+    },
+    "S206": {
+      "Q1": "Would you want Jeremiah's job?",
+      "Q2": "Why choose a hard calling?",
+      "Q3": "Where do you fear speaking truth?",
+      "Q4": "What brave, kind step will you take?"
+    },
+    "S207": {
+      "Q1": "Which sin sounds most like today?",
+      "Q2": "Do nations still make God angry?",
+      "Q3": "Where are similar roots in your world?",
+      "Q4": "What turn-back step will you take today?"
+    },
+    "S208": {
+      "Q1": "Can you go to church and still miss God?",
+      "Q2": "What's worse - no worship or fake worship?",
+      "Q3": "Where do you perform without heart?",
+      "Q4": "What honest change will you seek?"
+    },
+    "S209": {
+      "Q1": "Why is it so hard to keep promises to God?",
+      "Q2": "What happens when we break covenant?",
+      "Q3": "Where do you resist God's ways?",
+      "Q4": "What practice will help you return?"
+    },
+    "S210": {
+      "Q1": "If God doesn't want to punish, why does He?",
+      "Q2": "How serious is sin really?",
+      "Q3": "Where do you downplay harmful choices?",
+      "Q4": "What wise limit will you set?"
+    },
+    "S211": {
+      "Q1": "Is it ever too late to come back to God?",
+      "Q2": "What does real return look like?",
+      "Q3": "Where do you see God opening a door?",
+      "Q4": "What step will you take through it?"
+    },
+    "S212": {
+      "Q1": "Would you keep going if everyone hated you?",
+      "Q2": "Where do prophets find strength?",
+      "Q3": "Where do you need courage to keep going?",
+      "Q4": "What support will you seek?"
+    },
+    "S213": {
+      "Q1": "What makes a leader good or bad?",
+      "Q2": "Who's responsible for bad leadership?",
+      "Q3": "Where do you lead in small ways?",
+      "Q4": "What leader habit will you practice?"
+    },
+    "S214": {
+      "Q1": "How can you tell real truth from fake?",
+      "Q2": "Why do people prefer comfortable lies?",
+      "Q3": "Where do you need discernment?",
+      "Q4": "What test of truth will you use?"
+    },
+    "S215": {
+      "Q1": "Could you hope in exile?",
+      "Q2": "What keeps hope alive in dark times?",
+      "Q3": "Where do you need hope in a long season?",
+      "Q4": "What patient practice will you adopt?"
+    },
+    "S216": {
+      "Q1": "Why buy land in a doomed city?",
+      "Q2": "What does hope look like in action?",
+      "Q3": "Where can you act toward future good?",
+      "Q4": "What small investment will you make?"
+    },
+    "S217": {
+      "Q1": "Which covenant would you rather live under?",
+      "Q2": "Why do some people keep promises better?",
+      "Q3": "Where do you need to keep your word?",
+      "Q4": "What promise will you honor this week?"
+    },
+    "S218": {
+      "Q1": "How long can you do right when no one cares?",
+      "Q2": "What keeps you going when tired?",
+      "Q3": "Where are you tired of doing good?",
+      "Q4": "What perseverance step will you take?"
+    },
+    "S219": {
+      "Q1": "Did they think warnings were just talk?",
+      "Q2": "When do consequences become real?",
+      "Q3": "Where do you see the cost of ignoring warnings?",
+      "Q4": "What wise change will you make now?"
+    },
+    "S220": {
+      "Q1": "Why run to Egypt when God said not to?",
+      "Q2": "Where do we run when scared?",
+      "Q3": "Where do fear-based choices tempt you?",
+      "Q4": "What trust choice will you make?"
+    },
+    "S221": {
+      "Q1": "Does God care about nations that don't know Him?",
+      "Q2": "Is anyone outside God's justice?",
+      "Q3": "Where do you long to see justice today?",
+      "Q4": "What prayer for justice will you offer?"
+    },
+    "S222": {
+      "Q1": "Do powerful nations last forever?",
+      "Q2": "What brings empires down?",
+      "Q3": "Where do you see those same roots of harm?",
+      "Q4": "What step toward repair will you take?"
+    },
+    "S223": {
+      "Q1": "Can bullies rule forever?",
+      "Q2": "What happens to proud empires?",
+      "Q3": "Where do you trust in image or status?",
+      "Q4": "What humble action will you choose?"
+    },
+    "S224": {
+      "Q1": "Did Jeremiah waste his life warning people?",
+      "Q2": "Was it worth it if no one listened?",
+      "Q3": "What lesson will you keep from this book?",
+      "Q4": "What practice will help you remember?"
+    },
+    "S225": {
+      "Q1": "Is it okay to be this sad?",
+      "Q2": "When should we mourn?",
+      "Q3": "Where do you need to lament honestly?",
+      "Q4": "What prayer of lament will you bring?"
+    },
+    "S226": {
+      "Q1": "Can hope survive total destruction?",
+      "Q2": "Where do you find hope in the ruins?",
+      "Q3": "Where do you need hope to rise again?",
+      "Q4": "What daily reminder of mercy will you keep?"
+    },
+    "S227": {
+      "Q1": "If you saw this, could you speak?",
+      "Q2": "What's it like to see God's glory?",
+      "Q3": "How does awe change how you live?",
+      "Q4": "What practice will help you live with awe?"
+    },
+    "S228": {
+      "Q1": "Why act out messages instead of just speaking?",
+      "Q2": "Do actions speak louder than words?",
+      "Q3": "Where do you need a wake-up call?",
+      "Q4": "What change will you make before day's end?"
+    },
+    "S229": {
+      "Q1": "Can God's presence actually leave?",
+      "Q2": "What drives God away?",
+      "Q3": "Where do you crowd out God in daily life?",
+      "Q4": "What will you remove to make room?"
+    },
+    "S230": {
+      "Q1": "Do people ever get the message?",
+      "Q2": "Why are we so stubborn?",
+      "Q3": "Where do warnings fail to move you?",
+      "Q4": "What step of humble listening will you take?"
+    },
+    "S231": {
+      "Q1": "Why such shocking language about unfaithfulness?",
+      "Q2": "How serious is betraying God?",
+      "Q3": "Where do you treat promises lightly?",
+      "Q4": "What faithful act will you choose?"
+    },
+    "S232": {
+      "Q1": "Can you have justice without mercy?",
+      "Q2": "Which does God prefer?",
+      "Q3": "Where do you need both truth and kindness?",
+      "Q4": "What wise blend will you practice?"
+    },
+    "S233": {
+      "Q1": "Do we repeat our ancestors' mistakes?",
+      "Q2": "How do you break family patterns?",
+      "Q3": "Where are you repeating old mistakes?",
+      "Q4": "What new path will you take today?"
+    },
+    "S234": {
+      "Q1": "Why use such a shocking story here?",
+      "Q2": "How serious is unfaithfulness to God?",
+      "Q3": "Where do you see loyalty and betrayal play out at school?",
+      "Q4": "What faithful act will you choose this week?"
+    },
+    "S235": {
+      "Q1": "Why judge nations that don't even follow God?",
+      "Q2": "Is God only in charge of Christians?",
+      "Q3": "Where must you resist contempt for others?",
+      "Q4": "What respectful action will you take today?"
+    },
+    "S236": {
+      "Q1": "Why was relying on Egypt such a bad idea?",
+      "Q2": "What happens when we trust powerful people instead of God?",
+      "Q3": "Where do you lean on fragile supports?",
+      "Q4": "What stronger trust will you practice this week?"
+    },
+    "S237": {
+      "Q1": "What's the job of a watchman?",
+      "Q2": "Are we responsible for our own choices?",
+      "Q3": "Where should you speak up with care and truth?",
+      "Q4": "What careful word will you share this week?"
+    },
+    "S238": {
+      "Q1": "Which promise here sounds the best?",
+      "Q2": "How is God different from the bad leaders in this story?",
+      "Q3": "Where do you need shepherding—guidance, rest, healing?",
+      "Q4": "What step will you take to receive His care?"
+    },
+    "S239": {
+      "Q1": "Picture the valley of dry bones coming to life—what does that look like?",
+      "Q2": "Can God bring life to things that seem completely dead?",
+      "Q3": "Where do you hope to see new life emerge?",
+      "Q4": "What practical act of hope will you practice?"
+    },
+    "S240": {
+      "Q1": "Why so many measurements?",
+      "Q2": "What does all this detail say about how much God cares?",
+      "Q3": "Where do boundaries help you meet with God?",
+      "Q4": "What boundary will you honor daily this week?"
+    },
+    "S241": {
+      "Q1": "What would it feel like when God's glory returns?",
+      "Q2": "Can God's presence really come back after leaving?",
+      "Q3": "Where do you sense God rebuilding your heart?",
+      "Q4": "What worship response will you bring this week?"
+    },
+    "S242": {
+      "Q1": "Why so many details about schedules and portions?",
+      "Q2": "Does God care about our routines?",
+      "Q3": "Which rhythm could shape your week well?",
+      "Q4": "What time will you guard for God this week?"
+    },
+    "S243": {
+      "Q1": "If you followed this river, where would it lead?",
+      "Q2": "What brings dead things to life?",
+      "Q3": "Where do you long to see healing flow?",
+      "Q4": "What step will you take toward that healing?"
+    },
+    "S244": {
+      "Q1": "Would you eat vegetables over royal food?",
+      "Q2": "When does different equal better?",
+      "Q3": "Where do you need resolve in a difficult environment?",
+      "Q4": "What faithful practice will you keep this week?"
+    },
+    "S245": {
+      "Q1": "Which rescue was more impressive?",
+      "Q2": "How does God humble the proud?",
+      "Q3": "Where do you need courage to stand firm?",
+      "Q4": "What bold yet respectful step will you take?"
+    },
+    "S246": {
+      "Q1": "Could you stay faithful knowing the cost?",
+      "Q2": "Is integrity worth your life?",
+      "Q3": "Where might integrity cost you something?",
+      "Q4": "What choice will you make to stay faithful?"
+    },
+    "S247": {
+      "Q1": "Which vision scares you most?",
+      "Q2": "Why show such frightening futures?",
+      "Q3": "Where do you need endurance and hope?",
+      "Q4": "What practice will help you endure this week?"
+    },
+    "S248": {
+      "Q1": "Do spiritual battles really happen?",
+      "Q2": "Who's fighting who in the heavens?",
+      "Q3": "Where do you feel outmatched or anxious?",
+      "Q4": "What prayer will you keep in those moments?"
+    },
+    "S249": {
+      "Q1": "How can God love someone who keeps cheating?",
+      "Q2": "What kind of love never gives up?",
+      "Q3": "Where do you return to lesser loves?",
+      "Q4": "What turn back to God will you make today?"
+    },
+    "S250": {
+      "Q1": "How many times will God say \"come back\"?",
+      "Q2": "Is there a point of no return?",
+      "Q3": "Where do you need to come home to God?",
+      "Q4": "What practical step will you take today?"
+    },
+    "S251": {
+      "Q1": "What would the Day of the Lord look like?",
+      "Q2": "Should we be scared or excited?",
+      "Q3": "Where do you need wholehearted return to God?",
+      "Q4": "What act of repentance will you practice?"
+    },
+    "S252": {
+      "Q1": "Can you worship God and hurt people?",
+      "Q2": "Which matters more - rituals or relationships?",
+      "Q3": "Where can you do right for someone overlooked?",
+      "Q4": "What just action will you take this week?"
+    },
+    "S253": {
+      "Q1": "Is there hope after judgment?",
+      "Q2": "What survives God's anger?",
+      "Q3": "Where do you need both truth and hope?",
+      "Q4": "What step will you take to seek both?"
+    },
+    "S254": {
+      "Q1": "Is it wrong to be happy when enemies fall?",
+      "Q2": "What's the difference between justice and revenge?",
+      "Q3": "Where might you celebrate another's fall?",
+      "Q4": "What humble compassion will you show instead?"
+    },
+    "S255": {
+      "Q1": "Would you run from God's call?",
+      "Q2": "Can God use reluctant prophets?",
+      "Q3": "Who is hard for you to show mercy to?",
+      "Q4": "What merciful step will you take this week?"
+    },
+    "S256": {
+      "Q1": "What does God actually want from us?",
+      "Q2": "Is it really that simple?",
+      "Q3": "Where can you do justice and love mercy?",
+      "Q4": "What humble step will you take this week?"
+    },
+    "S257": {
+      "Q1": "Can you trust God when He seems silent?",
+      "Q2": "Where is hope when everything's dark?",
+      "Q3": "Where do you need that hope today?",
+      "Q4": "What prayer of hope will you pray this week?"
+    },
+    "S258": {
+      "Q1": "Does God care about bullies?",
+      "Q2": "Will evil people really pay?",
+      "Q3": "Where do you long for God to set things right?",
+      "Q4": "What faithful trust will you practice today?"
+    },
+    "S259": {
+      "Q1": "Is it okay to argue with God?",
+      "Q2": "What if God's answers don't satisfy?",
+      "Q3": "Where will you choose faith when answers delay?",
+      "Q4": "What practice will help you rejoice in waiting?"
+    },
+    "S260": {
+      "Q1": "Who is the remnant?",
+      "Q2": "Are you part of God's remnant?",
+      "Q3": "Where do you need humility and courage together?",
+      "Q4": "What seeking step will you take this week?"
+    },
+    "S261": {
+      "Q1": "Why did rebuilding matter so much?",
+      "Q2": "What needs rebuilding in your life?",
+      "Q3": "Where have you delayed good work you should do?",
+      "Q4": "What first step will you take to rebuild?"
+    },
+    "S262": {
+      "Q1": "Do small beginnings matter?",
+      "Q2": "Can our little efforts make a difference?",
+      "Q3": "Where do you need fresh encouragement to serve?",
+      "Q4": "What act of service will you do this week?"
+    },
+    "S263": {
+      "Q1": "What's better - fasting or justice?",
+      "Q2": "Can you be religious and mean?",
+      "Q3": "Where can you practice truth and peace?",
+      "Q4": "What peacemaking choice will you make?"
+    },
+    "S264": {
+      "Q1": "What kind of king do you want?",
+      "Q2": "Why do we need a perfect king?",
+      "Q3": "Where do you welcome Jesus' gentle rule?",
+      "Q4": "What allegiance step will you take this week?"
+    },
+    "S265": {
+      "Q1": "What questions is God asking you?",
+      "Q2": "Are you giving God leftovers?",
+      "Q3": "Where do you need a fresh heart in worship?",
+      "Q4": "What change will you make before next week?"
+    },
+    "S266": {
+      "Q1": "If you were there, would you follow Jesus?",
+      "Q2": "What's so different about His kingdom?",
+      "Q3": "Where do you need to repent and follow?",
+      "Q4": "What first step of obedience will you take?"
+    },
+    "S267": {
+      "Q1": "Which teaching hits hardest?",
+      "Q2": "Could you actually live this way?",
+      "Q3": "Where do you need to live this at school?",
+      "Q4": "What practice will you start this week?"
+    },
+    "S268": {
+      "Q1": "Which miracle would you want to see?",
+      "Q2": "Why did some people still doubt?",
+      "Q3": "Where do you need to trust Jesus' authority?",
+      "Q4": "What act of trust will you take this week?"
+    },
+    "S269": {
+      "Q1": "Which story makes the kingdom clearest?",
+      "Q2": "Why teach in parables?",
+      "Q3": "Where do you see small beginnings with big potential?",
+      "Q4": "What faithful seed will you plant this week?"
+    },
+    "S270": {
+      "Q1": "Why did religious people hate Jesus?",
+      "Q2": "When does doing right make enemies?",
+      "Q3": "Where is it hard to follow Jesus right now?",
+      "Q4": "What step will you take to follow anyway?"
+    },
+    "S271": {
+      "Q1": "Which value would change your school most?",
+      "Q2": "How counter-cultural is Jesus?",
+      "Q3": "Where do you need these values at school?",
+      "Q4": "What step will you take to practice them?"
+    },
+    "S272": {
+      "Q1": "What would you give up to follow Jesus?",
+      "Q2": "Is anything too precious to surrender?",
+      "Q3": "Where is Jesus asking you to trust Him?",
+      "Q4": "What step of obedience will you take?"
+    },
+    "S273": {
+      "Q1": "How would you have welcomed Jesus?",
+      "Q2": "Do we recognize authority when we see it?",
+      "Q3": "Where will you welcome His authority this week?",
+      "Q4": "What act of honor will you offer Him?"
+    },
+    "S274": {
+      "Q1": "Which warning or hope grabbed you?",
+      "Q2": "Are you ready for Jesus to return?",
+      "Q3": "Where do you feel unprepared or distracted?",
+      "Q4": "What watchful habit will you begin?"
+    },
+    "S275": {
+      "Q1": "Which moment in Jesus' final days hit hardest?",
+      "Q2": "Could you stay loyal when everyone runs?",
+      "Q3": "Where is it hard to stay loyal to Jesus?",
+      "Q4": "What loyal step will you take today?"
+    },
+    "S276": {
+      "Q1": "If you'd been there, would you believe?",
+      "Q2": "What makes resurrection hard to accept?",
+      "Q3": "Where do you need resurrection hope now?",
+      "Q4": "What witness will you share this week?"
+    },
+    "S277": {
+      "Q1": "Which of Jesus' first actions surprises you?",
+      "Q2": "Why start with ordinary people?",
+      "Q3": "Where do you need good news today?",
+      "Q4": "What response will you make now?"
+    },
+    "S278": {
+      "Q1": "Which need would you want Jesus to meet?",
+      "Q2": "Why did Jesus help so many people?",
+      "Q3": "Who near you needs quiet help?",
+      "Q4": "What act of service will you do this week?"
+    },
+    "S279": {
+      "Q1": "Would you follow Jesus if it cost popularity?",
+      "Q2": "Why does doing good create enemies?",
+      "Q3": "Where might faithful service draw criticism?",
+      "Q4": "What humble step will you take even if it costs?"
+    },
+    "S280": {
+      "Q1": "Could you carry a cross for Jesus?",
+      "Q2": "What's the hardest part of following Him?",
+      "Q3": "Where do you resist the way of the cross?",
+      "Q4": "What surrender step will you take this week?"
+    },
+    "S281": {
+      "Q1": "How would your school define greatness?",
+      "Q2": "What makes someone truly great?",
+      "Q3": "Where could taking a lower place bless others?",
+      "Q4": "What serving choice will you make this week?"
+    },
+    "S282": {
+      "Q1": "How would you answer Jesus' critics?",
+      "Q2": "Why do religious people often miss God?",
+      "Q3": "Where do you need wise words under pressure?",
+      "Q4": "What preparation will help you answer well?"
+    },
+    "S283": {
+      "Q1": "Which disciple's failure hits closest to home?",
+      "Q2": "Why do we fail when pressure comes?",
+      "Q3": "Where are you vulnerable to fear-driven choices?",
+      "Q4": "What guard of prayer will you put in place?"
+    },
+    "S284": {
+      "Q1": "Which part of the crucifixion story hurts most?",
+      "Q2": "Why did Jesus have to die?",
+      "Q3": "Where do you need courage because He lives?",
+      "Q4": "What bold next step will you take this week?"
+    },
+    "S285": {
+      "Q1": "Which birth announcement would you want to hear?",
+      "Q2": "Why did God come as a baby?",
+      "Q3": "Where do you need to trust God's timing?",
+      "Q4": "What small act of faith will you take?"
+    },
+    "S286": {
+      "Q1": "Would you recognize Jesus if you met Him?",
+      "Q2": "How do we prepare to meet God?",
+      "Q3": "Where is quiet preparation needed in your life?",
+      "Q4": "What practice will ready your heart?"
+    },
+    "S287": {
+      "Q1": "Which call would be hardest to accept?",
+      "Q2": "What does following Jesus cost?",
+      "Q3": "Where is He calling you to leave something?",
+      "Q4": "What concrete follow step will you take?"
+    },
+    "S288": {
+      "Q1": "Which person's faith impresses you most?",
+      "Q2": "What does Jesus respond to in people?",
+      "Q3": "Where will you reach out in faith this week?",
+      "Q4": "What specific prayer will you bring to Jesus?"
+    },
+    "S289": {
+      "Q1": "If Jesus sent you out, would you go?",
+      "Q2": "What does Jesus expect from followers?",
+      "Q3": "Where can you put learning into practice?",
+      "Q4": "What action will you take this week?"
+    },
+    "S290": {
+      "Q1": "Could you be as determined as Jesus?",
+      "Q2": "What does holy determination look like?",
+      "Q3": "Where do you need focused resolve today?",
+      "Q4": "What distraction will you lay down?"
+    },
+    "S291": {
+      "Q1": "Which teaching challenges you most?",
+      "Q2": "Why does Jesus care about our priorities?",
+      "Q3": "Where do priorities need rearranging?",
+      "Q4": "What first change will you make?"
+    },
+    "S292": {
+      "Q1": "Which story or healing speaks to you?",
+      "Q2": "What does the kingdom look like in action?",
+      "Q3": "Where do you see that truth in daily life?",
+      "Q4": "What small act will live it out?"
+    },
+    "S293": {
+      "Q1": "Which habit of faith seems hardest?",
+      "Q2": "What obstacles trip us up most?",
+      "Q3": "Which habit do you need most now?",
+      "Q4": "What step will you take to grow it?"
+    },
+    "S294": {
+      "Q1": "How does Jesus treat outsiders?",
+      "Q2": "Why does Jesus care about the forgotten?",
+      "Q3": "Where do you need a fresh heart today?",
+      "Q4": "What prayer will you make this week?"
+    },
+    "S295": {
+      "Q1": "How would you have reacted to Jesus' arrival?",
+      "Q2": "Why did some welcome and others reject?",
+      "Q3": "Where is Jesus challenging your comfort?",
+      "Q4": "What obedient step will you take?"
+    },
+    "S296": {
+      "Q1": "Which disciple's failure feels most relatable?",
+      "Q2": "Why do we fail when pressure comes?",
+      "Q3": "Where do you need watchfulness in temptation?",
+      "Q4": "What practical watch will you keep?"
+    },
+    "S297": {
+      "Q1": "What would convince you Jesus is alive?",
+      "Q2": "How does resurrection change everything?",
+      "Q3": "Where will you live differently because He rose?",
+      "Q4": "What witness will you share soon?"
+    },
+    "S298": {
+      "Q1": "Which description of Jesus stands out?",
+      "Q2": "Why so many names for one person?",
+      "Q3": "Where do you need to \"come and see\" again?",
+      "Q4": "What step will you take toward Jesus?"
+    },
+    "S299": {
+      "Q1": "Which conversation would you want to overhear?",
+      "Q2": "How does Jesus change people?",
+      "Q3": "Where do you need transformation today?",
+      "Q4": "What request will you bring to Him?"
+    },
+    "S300": {
+      "Q1": "Which miracle would you want to witness?",
+      "Q2": "Why do we still struggle with fear?",
+      "Q3": "Where are you hungry or afraid now?",
+      "Q4": "What trust step will you take?"
+    },
+    "S301": {
+      "Q1": "Would you defend Jesus if it cost you?",
+      "Q2": "Why do people argue about Jesus?",
+      "Q3": "Where do you need to take a stand on Jesus?",
+      "Q4": "What confession will you make this week?"
+    },
+    "S302": {
+      "Q1": "Which character in the story do you relate to?",
+      "Q2": "Why do religious people often miss God?",
+      "Q3": "Where do others' opinions pressure your choices?",
+      "Q4": "What faithful action will you take anyway?"
+    },
+    "S303": {
+      "Q1": "If Jesus could raise someone you love, who would it be?",
+      "Q2": "Why does Jesus weep if He knows the ending?",
+      "Q3": "Where do you need His comfort or power?",
+      "Q4": "What prayer will you ask Him to answer?"
+    },
+    "S304": {
+      "Q1": "Could you wash someone's dirty feet?",
+      "Q2": "Why does serving feel so awkward?",
+      "Q3": "Where can you serve without being noticed?",
+      "Q4": "What unseen service will you do this week?"
+    },
+    "S305": {
+      "Q1": "What does it mean to \"abide\" in Jesus?",
+      "Q2": "How connected are you to the vine?",
+      "Q3": "Where do you need to remain in Jesus this week?",
+      "Q4": "What daily practice will help you abide?"
+    },
+    "S306": {
+      "Q1": "Which moment at the cross is hardest to face?",
+      "Q2": "Why did Jesus have to die?",
+      "Q3": "Where do you need to rest in His finished work?",
+      "Q4": "What gratitude"
+    },
+    "S307": {
+      "Q1": "Which resurrection proof convinces you most?",
+      "Q2": "What mission does Jesus give His followers?",
+      "Q3": "Where can you be a witness this week?",
+      "Q4": "What next step will you take today?"
+    },
+    "S308": {
+      "Q1": "How would you feel if the Spirit came on you?",
+      "Q2": "What changes when God's Spirit arrives?",
+      "Q3": "Where do you need Spirit-given courage now?",
+      "Q4": "What prayer for power will you pray daily?"
+    },
+    "S309": {
+      "Q1": "Would you keep preaching if threatened?",
+      "Q2": "Why does the gospel create opposition?",
+      "Q3": "Where do you need courage to obey God?",
+      "Q4": "What bold step will you take this week?"
+    },
+    "S310": {
+      "Q1": "Which ministry story inspires you most?",
+      "Q2": "What does Stephen's witness teach about courage?",
+      "Q3": "Where can you serve despite pushback?",
+      "Q4": "What steady act will you continue this week?"
+    },
+    "S311": {
+      "Q1": "How completely did Paul's life change?",
+      "Q2": "Can anyone be too far gone for God?",
+      "Q3": "Where could God be turning you around?",
+      "Q4": "What step will you take in that new direction?"
+    },
+    "S312": {
+      "Q1": "Why was it so hard to accept non-Jews?",
+      "Q2": "What barriers do we create in the church?",
+      "Q3": "Who is outside your usual circle now?",
+      "Q4": "What welcome step will you take toward them?"
+    },
+    "S313": {
+      "Q1": "How did they keep going when people hated them?",
+      "Q2": "What keeps missionaries motivated?",
+      "Q3": "Where do you need endurance in serving?",
+      "Q4": "What practice will help you keep going?"
+    },
+    "S314": {
+      "Q1": "Should new Christians follow all the old rules?",
+      "Q2": "What's essential versus optional in faith?",
+      "Q3": "Where do you add burdens God doesn't?",
+      "Q4": "What freeing step will you take?"
+    },
+    "S315": {
+      "Q1": "How do you know where God wants you to go?",
+      "Q2": "What does guidance look like on the move?",
+      "Q3": "Where do you need guidance right now?",
+      "Q4": "What step will you take with the light you have?"
+    },
+    "S316": {
+      "Q1": "Which conflict in the church surprises you?",
+      "Q2": "How do you handle disagreement in Christian community?",
+      "Q3": "Where do you need deeper learning or repentance?",
+      "Q4": "What step will you take to grow?"
+    },
+    "S317": {
+      "Q1": "Would you defend your faith if arrested?",
+      "Q2": "How do you speak truth under pressure?",
+      "Q3": "Where could you speak truth under pressure?",
+      "Q4": "What words will you prepare in prayer?"
+    },
+    "S318": {
+      "Q1": "How would you defend Christianity to a judge?",
+      "Q2": "What makes a good witness for Jesus?",
+      "Q3": "Where do you need gentle, clear words now?",
+      "Q4": "What respectful response will you give?"
+    },
+    "S319": {
+      "Q1": "Would you trust God in a shipwreck?",
+      "Q2": "How do you lead when everything's falling apart?",
+      "Q3": "Where are you weathering a storm now?",
+      "Q4": "What stabilizing step will you take?"
+    },
+    "S320": {
+      "Q1": "Do you think you're basically good?",
+      "Q2": "What's the real problem with humanity?",
+      "Q3": "Where do you see this reality around you?",
+      "Q4": "What honest step toward God will you take?"
+    },
+    "S321": {
+      "Q1": "What's the difference between earning and receiving?",
+      "Q2": "Why can't good works save us?",
+      "Q3": "Where do you try to earn what God gives?",
+      "Q4": "What trust step will you take today?"
+    },
+    "S322": {
+      "Q1": "What's different about life with the Spirit?",
+      "Q2": "How does the Spirit help us?",
+      "Q3": "Where do you need the Spirit's help now?",
+      "Q4": "What simple prayer will you pray each day?"
+    },
+    "S323": {
+      "Q1": "Why did God choose Israel if they kept messing up?",
+      "Q2": "How does God's mercy work in history?",
+      "Q3": "Where do you need humility in God's story?",
+      "Q4": "What worship response will you bring?"
+    },
+    "S324": {
+      "Q1": "What does a transformed life actually look like?",
+      "Q2": "How does love show up in daily choices?",
+      "Q3": "Where can you offer this kind of love?",
+      "Q4": "What act of love will you choose?"
+    },
+    "S325": {
+      "Q1": "Which person mentioned would you want to meet?",
+      "Q2": "What makes Christian community work?",
+      "Q3": "Who helps you follow Jesus faithfully now?",
+      "Q4": "How will you thank or support them?"
+    },
+    "S326": {
+      "Q1": "Which church problem sounds most familiar?",
+      "Q2": "What does real unity require?",
+      "Q3": "Where do you need to lay aside pride today?",
+      "Q4": "What step will build unity this week?"
+    },
+    "S327": {
+      "Q1": "How do you honor others in relationships?",
+      "Q2": "What boundaries protect love?",
+      "Q3": "Where do you need wisdom in relationships now?",
+      "Q4": "What boundary will you keep this week?"
+    },
+    "S328": {
+      "Q1": "When should you limit your freedom for others?",
+      "Q2": "How does love shape our choices?",
+      "Q3": "Where do you need self-control for someone's good?",
+      "Q4": "What choice will you make out of love?"
+    },
+    "S329": {
+      "Q1": "What makes worship gatherings work well?",
+      "Q2": "How can you build others up when you meet?",
+      "Q3": "Where can you build others up when you meet?",
+      "Q4": "What encouraging word will you speak?"
+    },
+    "S330": {
+      "Q1": "How does resurrection hope change daily life?",
+      "Q2": "Why does the resurrection matter for everything?",
+      "Q3": "Where do you need a resurrection perspective now?",
+      "Q4": "What generous act will you plan?"
+    },
+    "S331": {
+      "Q1": "How do you serve when you feel weak?",
+      "Q2": "What does ministry through weakness look like?",
+      "Q3": "Where do you need comfort to keep serving?",
+      "Q4": "What step will you take in dependence on God?"
+    },
+    "S332": {
+      "Q1": "What treasure do you carry in your clay jar?",
+      "Q2": "How does grace change relationships?",
+      "Q3": "Where do you need to forgive or reconcile?",
+      "Q4": "What move toward grace will you make?"
+    },
+    "S333": {
+      "Q1": "Which example of giving inspires you?",
+      "Q2": "What motivates cheerful giving?",
+      "Q3": "Where can you share to meet a need now?",
+      "Q4": "What gift will you prepare this week?"
+    },
+    "S334": {
+      "Q1": "How can you tell real from fake spiritual leaders?",
+      "Q2": "What red flags should you watch for?",
+      "Q3": "Where do appearances mislead you today?",
+      "Q4": "What test will you use before trusting a voice?"
+    },
+    "S335": {
+      "Q1": "What's Paul's story of how he became a Christian?",
+      "Q2": "Why does grace matter more than earning?",
+      "Q3": "Where do you rest in approval more than grace?",
+      "Q4": "What truth will you hold this week?"
+    },
+    "S336": {
+      "Q1": "What's at the core of the gospel?",
+      "Q2": "What fruit should follow faith in Christ?",
+      "Q3": "Where do you want to see this fruit grow?",
+      "Q4": "What step will you take to walk by the Spirit?"
+    },
+    "S337": {
+      "Q1": "Which blessing in Christ means most to you?",
+      "Q2": "What does being God's child change?",
+      "Q3": "Where do you forget your true identity?",
+      "Q4": "What reminder will you carry this week?"
+    },
+    "S338": {
+      "Q1": "Which old way needs to go?",
+      "Q2": "What new way will you put on?",
+      "Q3": "Where do you need renewal in speech or habits?",
+      "Q4": "What new way will you put on this week?"
+    },
+    "S339": {
+      "Q1": "What makes you most anxious?",
+      "Q2": "How do joy and unity fight anxiety?",
+      "Q3": "Where can you choose joy in your routine?",
+      "Q4": "What habit will help you rejoice daily?"
+    },
+    "S340": {
+      "Q1": "What would change if Jesus was truly supreme in your life?",
+      "Q2": "How does Christ-centeredness look different?",
+      "Q3": "Where are you pulled off center now?",
+      "Q4": "What Christ-centered step will you take?"
+    },
+    "S341": {
+      "Q1": "How do you stay faithful while waiting?",
+      "Q2": "What does holy living look like while waiting?",
+      "Q3": "Where do you need hope for perseverance?",
+      "Q4": "What step will help you stay awake to God?"
+    },
+    "S342": {
+      "Q1": "Which rumor or confusion troubles you most?",
+      "Q2": "What keeps you steady when others panic?",
+      "Q3": "Where do rumors unsettle your faith now?",
+      "Q4": "What grounding truth will you repeat?"
+    },
+    "S343": {
+      "Q1": "Which instruction to Timothy speaks to you?",
+      "Q2": "What example should young leaders set?",
+      "Q3": "Where can you be faithful with small things?",
+      "Q4": "What step will you take to serve steadily?"
+    },
+    "S344": {
+      "Q1": "Which charge or comfort hits hardest?",
+      "Q2": "What does finishing the race involve?",
+      "Q3": "Where do you need endurance today?",
+      "Q4": "What practice will help you finish well?"
+    },
+    "S345": {
+      "Q1": "How does grace train us to live?",
+      "Q2": "What good works flow from salvation?",
+      "Q3": "Where do you need grace to change a habit?",
+      "Q4": "What good work will you devote to this week?"
+    },
+    "S346": {
+      "Q1": "Would you forgive someone who stole from you?",
+      "Q2": "What does gospel reconciliation look like?",
+      "Q3": "Where do you need to repair a relationship?",
+      "Q4": "What first step will you take?"
+    },
+    "S347": {
+      "Q1": "Why is Jesus better than angels?",
+      "Q2": "What happens when we drift from His voice?",
+      "Q3": "Where have you drifted from His voice?",
+      "Q4": "What response of faith will you make today?"
+    },
+    "S348": {
+      "Q1": "What kind of priest do you need?",
+      "Q2": "How does Jesus' intercession help you?",
+      "Q3": "Where do you need His help right now?",
+      "Q4": "What prayer will you bring with confidence?"
+    },
+    "S349": {
+      "Q1": "What makes the new covenant better?",
+      "Q2": "How does Christ's sacrifice change everything?",
+      "Q3": "Where do you still carry guilt or shame?",
+      "Q4": "What truth will you rest in this week?"
+    },
+    "S350": {
+      "Q1": "Which hero of faith inspires you most?",
+      "Q2": "What does running your race require?",
+      "Q3": "What weight or sin slows you down?",
+      "Q4": "What will you lay aside this week?"
+    },
+    "S351": {
+      "Q1": "What's the biggest contrast between old and new ways?",
+      "Q2": "What practices of love are urged?",
+      "Q3": "Where do you need peace and purity?",
+      "Q4": "What step will you take today?"
+    },
+    "S352": {
+      "Q1": "How do faith and works connect?",
+      "Q2": "What role do words play in wisdom?",
+      "Q3": "Where do you need to put faith into action?",
+      "Q4": "What work of love will you do this week?"
+    },
+    "S353": {
+      "Q1": "Which encouragement for suffering speaks to you?",
+      "Q2": "What hope anchors believers here?",
+      "Q3": "Where do you need courage to do right?",
+      "Q4": "What gentle answer will you give this week?"
+    },
+    "S354": {
+      "Q1": "Which warning about false teaching concerns you?",
+      "Q2": "How does God's patience give hope?",
+      "Q3": "Where do you need diligence and hope together?",
+      "Q4": "What step will help you grow in grace?"
+    },
+    "S355": {
+      "Q1": "What tests help you know if something is true?",
+      "Q2": "What does walking in the light look like?",
+      "Q3": "Where do you need assurance or change now?",
+      "Q4": "What step will you take toward the light?"
+    },
+    "S356": {
+      "Q1": "What danger does John warn about?",
+      "Q2": "How do you guard your heart and home?",
+      "Q3": "Where do you need to guard your home or heart?",
+      "Q4": "What boundary will you set this week?"
+    },
+    "S357": {
+      "Q1": "What problem does John address?",
+      "Q2": "What does honest hospitality look like?",
+      "Q3": "Who could you welcome or support this week?",
+      "Q4": "What act of hospitality will you do?"
+    },
+    "S358": {
+      "Q1": "What threats to faith are highlighted?",
+      "Q2": "How do believers build themselves up?",
+      "Q3": "Where do you need mercy and vigilance now?",
+      "Q4": "What step will help you contend well?"
+    },
+    "S359": {
+      "Q1": "Which church's message speaks to you most?",
+      "Q2": "What calls to repent or endure stand out?",
+      "Q3": "Which message speaks most to you now?",
+      "Q4": "What response will you make this week?"
+    },
+    "S360": {
+      "Q1": "Which vision would you want to see?",
+      "Q2": "What hope do the sealed receive?",
+      "Q3": "Where do you need endurance in trial now?",
+      "Q4": "What prayer will keep you steady daily?"
+    },
+    "S361": {
+      "Q1": "Which warning feels most urgent?",
+      "Q2": "What response is God seeking from people?",
+      "Q3": "Where do you need to turn from compromise?",
+      "Q4": "What step of repentance will you take?"
+    },
+    "S362": {
+      "Q1": "Which symbol of conflict or hope speaks to you?",
+      "Q2": "What do they teach about faithful endurance?",
+      "Q3": "Where do you feel worn out in the fight?",
+      "Q4": "What practice will renew your strength?"
+    },
+    "S363": {
+      "Q1": "Which scene of judgment affects you most?",
+      "Q2": "What do they reveal about God's justice?",
+      "Q3": "Where do you long for final justice now?",
+      "Q4": "What trust will you hold in the meantime?"
+    },
+    "S364": {
+      "Q1": "What contrasts between Babylon and the Lamb stand out?",
+      "Q2": "What warnings call people to come out?",
+      "Q3": "Where are you drawn to Babylon-like habits?",
+      "Q4": "What break will you make this week?"
+    },
+    "S365": {
+      "Q1": "Which image of the new creation moves you most?",
+      "Q2": "What promises anchor hope for the future?",
+      "Q3": "Where do you need this hope today?",
+      "Q4": "What step will help you live as a citizen of that city?"
+    }
+  }
+}

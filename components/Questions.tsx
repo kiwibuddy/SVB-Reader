@@ -1,28 +1,29 @@
 import { Text, View, Pressable, StyleSheet, Animated, Platform, ActivityIndicator } from 'react-native'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { MaterialIcons } from '@expo/vector-icons'
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import { getQuestionsForSegment, hasQuestionsData, type AudienceType } from '@/api/question-functions';
+import { questionsLoader } from '@/services/QuestionsLoader';
 import logger from '@/utils/logger';
+import FRA_UI from '@/assets/data/FRA-UI.json';
 
 interface QuestionsProps {
   segmentId: string;
 }
 
-// Define audience configurations
+// Define audience configurations (titles will be translated dynamically)
 const AUDIENCE_CONFIG = {
   school: {
-    title: 'School Questions',
     color: '#4ECDC4', // Teal color
     backgroundColor: '#E8F8F5', // Light teal background
   },
   family: {
-    title: 'Family Questions', 
     color: '#FF69B4', // Pink color
     backgroundColor: '#FDF2F8', // Light pink background
   },
   smallgroup: {
-    title: 'Small Group Questions',
     color: '#9CA3AF', // Light grey color
     backgroundColor: '#F9FAFB', // Light grey background
   }
@@ -30,6 +31,8 @@ const AUDIENCE_CONFIG = {
 
 const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
   const { colors } = useAppSettings();
+  const { language } = useSyncAppSettings();
+  const { t } = useTranslation();
   const [selectedAudience, setSelectedAudience] = useState<AudienceType>('school');
   const [currentSet, setCurrentSet] = useState<1 | 2>(1);
   const [questions, setQuestions] = useState<string[]>([]);
@@ -37,32 +40,62 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const retryCountRef = useRef(0);
 
+  // Get translated audience titles
+  const audienceTitles = useMemo(() => ({
+    school: t('UI.home.schoolQuestions'),
+    family: t('UI.home.familyQuestions'),
+    smallgroup: t('UI.home.smallGroupQuestions'),
+  }), [language, t]);
+
   useEffect(() => {
     retryCountRef.current = 0; // Reset retry count on new query
     loadQuestions();
-  }, [segmentId, selectedAudience, currentSet]);
+  }, [segmentId, selectedAudience, currentSet, language]);
 
   const loadQuestions = async () => {
     setIsLoading(true);
     try {
-      // Check if questions data exists in database (handles migration in progress)
-      const dataExists = await hasQuestionsData();
-      if (!dataExists && retryCountRef.current < 5) {
-        setQuestions([]);
-        setIsLoading(false);
-        retryCountRef.current++;
-        
-        // Retry after a delay
-        setTimeout(() => loadQuestions(), 2000);
-        return;
-      }
+      let fetchedQuestions: string[] = [];
 
-      // Fetch questions from SQLite database
-      const fetchedQuestions = await getQuestionsForSegment(
-        segmentId,
-        selectedAudience,
-        currentSet
-      );
+      // Load questions based on language
+      if (language === 'fr') {
+        // For French, load from downloaded Bible file
+        logger.info(`📖 Loading French questions for ${segmentId}, audience: ${selectedAudience}, set: ${currentSet}`);
+        const segmentQuestions = await questionsLoader.getQuestions(segmentId, 'fr');
+        
+        if (segmentQuestions) {
+          // Get questions for the selected audience and set
+          const audienceQuestions = segmentQuestions[selectedAudience];
+          const setKey = currentSet === 1 ? 'set1' : 'set2';
+          fetchedQuestions = audienceQuestions[setKey] || [];
+          logger.info(`✅ Loaded ${fetchedQuestions.length} French questions`);
+        } else {
+          logger.warn(`⚠️ No French questions found for ${segmentId}`);
+        }
+      } else {
+        // For English, load from SQLite database
+        logger.info(`📖 Loading English questions for ${segmentId}, audience: ${selectedAudience}, set: ${currentSet}`);
+        
+        // Check if questions data exists in database (handles migration in progress)
+        const dataExists = await hasQuestionsData();
+        if (!dataExists && retryCountRef.current < 5) {
+          setQuestions([]);
+          setIsLoading(false);
+          retryCountRef.current++;
+          
+          // Retry after a delay
+          setTimeout(() => loadQuestions(), 2000);
+          return;
+        }
+
+        // Fetch questions from SQLite database
+        fetchedQuestions = await getQuestionsForSegment(
+          segmentId,
+          selectedAudience,
+          currentSet
+        );
+        logger.info(`✅ Loaded ${fetchedQuestions.length} English questions`);
+      }
       
       setQuestions(fetchedQuestions);
     } catch (error) {
@@ -203,11 +236,24 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
       {/* Title - Get story title from segmentId */}
       <Text style={styles.title}>
         {(() => {
-          // Import SegmentTitles to get the story title
-          const SegmentTitles = require('@/assets/data/SegmentTitles.json');
-          const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
-          const storyTitle = segmentData?.title || 'Story Questions';
-          return `${storyTitle} Questions`;
+          // Get translated story title
+          let storyTitle = 'Story';
+          
+          if (language === 'fr' && FRA_UI.Titles) {
+            const frenchTitle = (FRA_UI.Titles as Record<string, string>)[segmentId];
+            if (frenchTitle) {
+              storyTitle = frenchTitle;
+            }
+          }
+          
+          // Fallback to English if French not found
+          if (storyTitle === 'Story' || language === 'en') {
+            const SegmentTitles = require('@/assets/data/SegmentTitles.json');
+            const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+            storyTitle = segmentData?.title || 'Story';
+          }
+          
+          return `${storyTitle} ${t('UI.home.questions')}`;
         })()}
       </Text>
 
@@ -232,7 +278,7 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
                   isSelected && styles.audienceButtonTextSelected
                 ]}
               >
-                {config.title}
+                {audienceTitles[audience]}
               </Text>
             </Pressable>
           );
@@ -245,7 +291,7 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
           <View style={styles.emptyState}>
             <ActivityIndicator size="small" color={AUDIENCE_CONFIG[selectedAudience].color} />
             <Text style={[styles.emptyStateText, { marginTop: 8 }]}>
-              Loading questions...
+              {t('UI.home.loadingQuestions')}
             </Text>
           </View>
         ) : questions.length > 0 ? (
@@ -272,7 +318,7 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
         ) : (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>
-              No questions available for this audience
+              {t('UI.home.noQuestionsAvailable')}
             </Text>
           </View>
         )}

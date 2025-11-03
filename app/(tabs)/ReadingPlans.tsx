@@ -29,6 +29,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import { 
   markSegmentComplete, 
   getSegmentCompletionStatus, 
@@ -85,7 +86,7 @@ interface UnifiedPlan {
   segments: Record<string, { segments: string[] }>;
 }
 
-// Category definitions
+// Category definitions (will be translated dynamically)
 const PLAN_CATEGORIES = {
   LONG: 'Whole Year Plans',
   MEDIUM: 'Monthly Challenges', 
@@ -378,7 +379,8 @@ const ReadingPlansScreen = () => {
   }, []);
   
   const isLargeScreen = screenWidth >= 768;
-  const { colors, isDarkMode } = useSyncAppSettings();
+  const { colors, isDarkMode, language } = useSyncAppSettings();
+  const { t } = useTranslation();
   const { currentSession, stopSession } = useGroupReading();
   const styles = createStyles(isLargeScreen, colors, isDarkMode);
 
@@ -520,24 +522,27 @@ const ReadingPlansScreen = () => {
 
   // Categories for scrolling
   const categories = useMemo(() => {
+    const storiesWord = language === 'fr' ? 'histoires' : 'stories';
+    const plansWord = language === 'fr' ? 'plans' : 'plans';
+    
     return [
       {
-        title: PLAN_CATEGORIES.LONG,
-        subtitle: `100+ stories • ${organizedPlans.categorized[PLAN_CATEGORIES.LONG].length} plans`,
+        title: t('UI.planCategories.wholeYearPlans'),
+        subtitle: `100+ ${storiesWord} • ${organizedPlans.categorized[PLAN_CATEGORIES.LONG].length} ${plansWord}`,
         plans: organizedPlans.categorized[PLAN_CATEGORIES.LONG]
       },
       {
-        title: PLAN_CATEGORIES.MEDIUM,
-        subtitle: `30-100 stories • ${organizedPlans.categorized[PLAN_CATEGORIES.MEDIUM].length} plans`,
+        title: t('UI.planCategories.monthlyChallenges'),
+        subtitle: `30-100 ${storiesWord} • ${organizedPlans.categorized[PLAN_CATEGORIES.MEDIUM].length} ${plansWord}`,
         plans: organizedPlans.categorized[PLAN_CATEGORIES.MEDIUM]
       },
       {
-        title: PLAN_CATEGORIES.SHORT,
-        subtitle: `Under 30 stories • ${organizedPlans.categorized[PLAN_CATEGORIES.SHORT].length} plans`,
+        title: t('UI.planCategories.miniStudies'),
+        subtitle: `${language === 'fr' ? 'Moins de' : 'Under'} 30 ${storiesWord} • ${organizedPlans.categorized[PLAN_CATEGORIES.SHORT].length} ${plansWord}`,
         plans: organizedPlans.categorized[PLAN_CATEGORIES.SHORT]
       }
     ];
-  }, [organizedPlans]);
+  }, [organizedPlans, language, t]);
 
   // Load data functions
   const loadAllProgress = async () => {
@@ -889,11 +894,21 @@ const ReadingPlansScreen = () => {
           onPress={() => handlePlanPress(item)}
         >
           <View style={styles.activePlanContent}>
-            <Text style={[styles.activePlanTitle, { color: planTitleColor }]}>{item.title}</Text>
+            <Text style={[styles.activePlanTitle, { color: planTitleColor }]}>
+              {language === 'fr' && t(`UI.plans.${item.id}.title`) !== `UI.plans.${item.id}.title`
+                ? t(`UI.plans.${item.id}.title`)
+                : item.title}
+            </Text>
             {item.shortDescription && (
-              <Text style={styles.planDescription}>{item.shortDescription}</Text>
+              <Text style={styles.planDescription}>
+                {language === 'fr' && t(`UI.plans.${item.id}.description`) !== `UI.plans.${item.id}.description`
+                  ? t(`UI.plans.${item.id}.description`)
+                  : item.shortDescription}
+              </Text>
             )}
-            <Text style={styles.activePlanSubtitle}>{storyCount} stories</Text>
+            <Text style={styles.activePlanSubtitle}>
+              {storyCount} {storyCount === 1 ? t('UI.planCategories.story') : t('UI.planCategories.stories')}
+            </Text>
             <View style={styles.progressContainer}>
               <View style={styles.progressBar}>
                 <Animated.View 
@@ -919,26 +934,30 @@ const ReadingPlansScreen = () => {
               style={styles.pauseButton}
               onPress={(e) => {
                 e.stopPropagation();
+                const planTitle = language === 'fr' && t(`UI.plans.${item.id}.title`) !== `UI.plans.${item.id}.title`
+                  ? t(`UI.plans.${item.id}.title`)
+                  : item.title;
+                
                 Alert.alert(
-                  `Reading ${item.type === 'plan' ? 'Plan' : 'Challenge'} Options`,
-                  `What would you like to do with "${item.title}"?`,
+                  item.type === 'plan' ? t('UI.alerts.readingPlanOptions') : t('UI.alerts.readingChallengeOptions'),
+                  t('UI.alerts.whatWouldYouLikeToDo').replace('{title}', planTitle),
                   [
-                    { text: 'Cancel', style: 'cancel' },
+                    { text: t('UI.alerts.cancel'), style: 'cancel' },
                     { 
-                      text: isPaused ? 'Resume' : 'Pause', 
+                      text: isPaused ? t('UI.alerts.resume') : t('UI.alerts.pause'), 
                       onPress: () => isPaused ? resumePlanAction(item.id, item.type) : pausePlanAction(item.id, item.type)
                     },
                     { 
-                      text: 'End', 
+                      text: t('UI.alerts.end'), 
                       style: 'destructive',
                       onPress: () => {
                         Alert.alert(
-                          `End Reading ${item.type === 'plan' ? 'Plan' : 'Challenge'}?`,
-                          `Are you sure you want to end "${item.title}"? This will delete all progress and cannot be undone.`,
+                          item.type === 'plan' ? t('UI.alerts.endReadingPlan') : t('UI.alerts.endReadingChallenge'),
+                          t('UI.alerts.endConfirmation').replace('{title}', planTitle),
                           [
-                            { text: 'Cancel', style: 'cancel' },
+                            { text: t('UI.alerts.cancel'), style: 'cancel' },
                             { 
-                              text: 'End', 
+                              text: t('UI.alerts.end'), 
                               style: 'destructive',
                               onPress: () => endPlanAction(item.id, item.type)
                             }
@@ -1069,11 +1088,21 @@ const ReadingPlansScreen = () => {
           onPress={() => handleStartPlanPress(item)}
         >
           <View style={styles.planContent}>
-            <Text style={[styles.planTitle, { color: planTitleColor }]}>{item.title}</Text>
+            <Text style={[styles.planTitle, { color: planTitleColor }]}>
+              {language === 'fr' && t(`UI.plans.${item.id}.title`) !== `UI.plans.${item.id}.title`
+                ? t(`UI.plans.${item.id}.title`)
+                : item.title}
+            </Text>
             {item.shortDescription && (
-              <Text style={styles.planDescription}>{item.shortDescription}</Text>
+              <Text style={styles.planDescription}>
+                {language === 'fr' && t(`UI.plans.${item.id}.description`) !== `UI.plans.${item.id}.description`
+                  ? t(`UI.plans.${item.id}.description`)
+                  : item.shortDescription}
+              </Text>
             )}
-            <Text style={styles.planSubtitle}>{storyCount} stories</Text>
+            <Text style={styles.planSubtitle}>
+              {storyCount} {storyCount === 1 ? t('UI.planCategories.story') : t('UI.planCategories.stories')}
+            </Text>
           </View>
           <TouchableOpacity 
             style={[styles.playButton, isExpanded && styles.playButtonExpanded]}
@@ -1425,7 +1454,7 @@ const ReadingPlansScreen = () => {
               marginBottom: 12,
               textAlign: 'center'
             }}>
-              Start Reading {startConfirmationData.planType === 'plan' ? 'Plan' : 'Challenge'}
+              {t(startConfirmationData.planType === 'plan' ? 'UI.startConfirmation.titlePlan' : 'UI.startConfirmation.title')}
             </Text>
             
             <Text style={{
@@ -1435,8 +1464,8 @@ const ReadingPlansScreen = () => {
               textAlign: 'center',
               lineHeight: 22,
             }}>
-              You're about to start "{startConfirmationData.planTitle}". 
-              {startConfirmationData.firstStory ? ` Your first story will be:` : ''}
+              {t('UI.startConfirmation.youreAboutToStart').replace('{title}', startConfirmationData.planTitle)}
+              {startConfirmationData.firstStory ? ` ${t('UI.startConfirmation.yourFirstStoryWillBe')}` : ''}
             </Text>
 
             {startConfirmationData.firstStory && (

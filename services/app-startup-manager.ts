@@ -2,6 +2,7 @@ import { databaseManager } from '@/api/database-manager';
 import { initializeSettingsTable, migrateFromAsyncStorage } from './sync-settings-manager';
 import { migrateEmojiTableForNotes } from '@/api/database-migration';
 import { migrateQuestionsToDatabase } from '@/api/questions-migration';
+import { bibleStorageManager } from './BibleStorageManager';
 import logger from '@/utils/logger';
 
 // ============================================================================
@@ -32,6 +33,11 @@ export async function initializeAppSystems(): Promise<{
       setTimeout(() => {
         logger.info('AsyncStorage migration completed with warnings:', error);
       }, 1000);
+    });
+    
+    // 5. Initialize Bible storage manager (background operation)
+    bibleStorageManager.initialize().catch(error => {
+      logger.error('Bible storage initialization failed:', error);
     });
     
     return { success: true };

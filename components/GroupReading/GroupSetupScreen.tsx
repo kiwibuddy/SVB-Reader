@@ -16,11 +16,12 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { Role, SegmentType, BibleType, GroupSession } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RoleProgressBar from '@/components/RoleProgressBar';
-import BibleData from "@/assets/data/newBibleNLT1.json";
+import { useTranslation } from '@/hooks/useTranslation';
+import { bibleLoader } from '@/services/BibleLoader';
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import Books from "@/assets/data/BookChapterList.json";
 import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
@@ -42,11 +43,6 @@ interface GroupSetupScreenProps {
   challengeId?: string;
 }
 
-// Type assertion for Bible data
-const Bible: any = BibleData;
-
-
-
 // Helper function to get book name
 const getBookName = (bookCode: string): string => {
   const book = Books[bookCode as keyof typeof Books];
@@ -62,7 +58,8 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
   planId,
   challengeId,
 }) => {
-  const { colors } = useAppSettings();
+  const { t } = useTranslation();
+  const { colors, language } = useSyncAppSettings();
   const { startHostSession, generateSessionQRCodeWithSession } = useGroupReading();
   const [selectedReaderPosition, setSelectedReaderPosition] = useState<{
     color: string;
@@ -71,6 +68,11 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
   const [userName, setUserName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [slideAnim] = useState(new Animated.Value(screenHeight));
+
+  // Load Bible dynamically based on current language
+  const Bible = useMemo(() => {
+    return bibleLoader.getCurrentBible();
+  }, [language]); // Re-load when language changes
 
   // Animation for fullscreen slide up
   useEffect(() => {
@@ -84,7 +86,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
   // Get segment data and calculate memoized content (same as main Segment component)
   const segmentData = useMemo(() => {
     return Bible[storyId];
-  }, [storyId]);
+  }, [storyId, Bible]);
 
   // Get segment title data
   const segmentTitleData = useMemo(() => {
@@ -649,12 +651,12 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
               </View>
 
               <View style={styles.userNameSection}>
-                <Text style={styles.label}>Your Name</Text>
+                <Text style={styles.label}>{t('UI.groupReading.yourName')}</Text>
                 <TextInput
                   style={styles.input}
                   value={userName}
                   onChangeText={setUserName}
-                  placeholder="Enter your name"
+                  placeholder={t('UI.groupReading.enterYourName')}
                   placeholderTextColor={colors.secondary}
                   autoCapitalize="words"
                   autoCorrect={false}
@@ -662,7 +664,7 @@ const GroupSetupScreen: React.FC<GroupSetupScreenProps> = ({
               </View>
 
               <View style={styles.roleSelectionSection}>
-                <Text style={styles.sectionTitle}>Select Your Reading Role</Text>
+                <Text style={styles.sectionTitle}>{t('UI.groupReading.selectYourReadingRole')}</Text>
                 
                 <View style={styles.rolesContainer}>
                   {getAllRoleOptions().map((option, index) => {

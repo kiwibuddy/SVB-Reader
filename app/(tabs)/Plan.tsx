@@ -41,7 +41,7 @@ import {
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import { useGroupReading } from '@/context/GroupReadingContext';
-import BibleData from '@/assets/data/newBibleNLT1.json';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface BookSegments {
   segments: string[];
@@ -280,6 +280,7 @@ const PlanScreen = () => {
   // Removed activePlan, plan management dependencies - now using pure SQLite data loading
 
   const router = useRouter();
+  const { t } = useTranslation();
   const params = useLocalSearchParams();
   const { expandedPlan, completedSegment, timestamp } = params;
   const scrollViewRef = useRef<ScrollView>(null);
@@ -296,7 +297,7 @@ const PlanScreen = () => {
   }, []);
   
   const isLargeScreen = screenWidth >= 768;
-  const { colors, isDarkMode } = useSyncAppSettings();
+  const { colors, isDarkMode, language } = useSyncAppSettings();
   const { currentSession, stopSession } = useGroupReading();
   const styles = createStyles(isLargeScreen, colors, isDarkMode);
 
@@ -723,7 +724,7 @@ const PlanScreen = () => {
         `You are currently on "${activePlan.planId}". Would you like to pause it and switch to "${planId}"?`,
         [
           {
-            text: 'Cancel',
+            text: t('UI.alerts.cancel'),
             style: 'cancel'
           },
           {
@@ -1039,7 +1040,11 @@ const PlanScreen = () => {
             <View style={styles.leftContent}>
               <View style={styles.titleContainer}>
                 <View style={styles.titleRow}>
-                  <Text style={styles.planTitle}>{plan.title}</Text>
+                  <Text style={styles.planTitle}>
+                    {language === 'fr' && t(`UI.plans.${plan.id}.title`) !== `UI.plans.${plan.id}.title` 
+                      ? t(`UI.plans.${plan.id}.title`) 
+                      : plan.title}
+                  </Text>
                 </View>
                 <Text style={styles.segmentCount}>
                   {segmentCount} {segmentCount === 1 ? 'story' : 'stories'}
@@ -1310,10 +1315,10 @@ const PlanScreen = () => {
   const ListHeaderComponent = useCallback(() => (
     <View style={styles.welcomeSection}>
       <View >
-        <Text style={styles.welcomeTitle}>Reading Plans</Text>
+        <Text style={styles.welcomeTitle}>{t('UI.planPage.title')}</Text>
       </View>
       <Text style={styles.welcomeText}>
-        Welcome to the Bible Reading Plans and Challenges screen, where you can find personalized reading plans and spiritual challenges designed to deepen your understanding of Scripture and transform your faith.
+        {t('UI.planPage.subtitle')}
       </Text>
     </View>
   ), [styles.welcomeSection, styles.welcomeTitle, styles.welcomeText]);
@@ -1432,7 +1437,7 @@ const PlanScreen = () => {
               marginBottom: 12,
               textAlign: 'center'
             }}>
-              Start Reading Plan
+              {t('UI.startConfirmation.titlePlan')}
             </Text>
             
             <Text style={{
@@ -1442,8 +1447,8 @@ const PlanScreen = () => {
               textAlign: 'center',
               lineHeight: 22,
             }}>
-              You're about to start "{startConfirmationData.planTitle}". 
-              {startConfirmationData.firstStory ? ` Your first story will be:` : ''}
+              {t('UI.startConfirmation.youreAboutToStart').replace('{title}', startConfirmationData.planTitle)}
+              {startConfirmationData.firstStory ? ` ${t('UI.startConfirmation.yourFirstStoryWillBe')}` : ''}
             </Text>
 
             {startConfirmationData.firstStory && (
@@ -1601,7 +1606,7 @@ const PlanScreen = () => {
                   textAlign: 'center',
                   fontWeight: '500',
                 }}>
-                  Cancel
+                  {t('UI.alerts.cancel')}
                 </Text>
               </TouchableOpacity>
 
@@ -1619,7 +1624,7 @@ const PlanScreen = () => {
                   textAlign: 'center',
                   fontWeight: '600',
                 }}>
-                  {enforcementData.isStartPlan ? 'Start Plan' : 'Read Next'}
+                  {enforcementData.isStartPlan ? t('UI.alerts.startPlan') : t('UI.alerts.readNext')}
                 </Text>
               </TouchableOpacity>
             </View>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -8,15 +8,18 @@ import {
   Switch,
   Platform,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Picker } from '@react-native-picker/picker';
 import { useFontSize } from '@/context/FontSizeContext';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings, SupportedLanguage } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
-import { SupportedLanguage } from '@/context/AppSettingsContext';
 import { Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { bibleStorageManager } from '@/services/BibleStorageManager';
+import BibleDownloadModal from '@/components/BibleDownloadModal';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -35,16 +38,102 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
     colors,
     language,
     setLanguage 
-  } = useAppSettings();
+  } = useSyncAppSettings();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  
+  // State for collapsible language selector
+  const [isLanguageExpanded, setIsLanguageExpanded] = useState(false);
+  
+  // State for Bible downloads
+  const [isFrenchBibleDownloaded, setIsFrenchBibleDownloaded] = useState(false);
+  const [showBibleDownloadModal, setShowBibleDownloadModal] = useState(false);
+  const [checkingDownload, setCheckingDownload] = useState(false);
+  const [frenchBibleSize, setFrenchBibleSize] = useState(52073208); // Default to new size
 
-  // MVP: Only English supported for launch
+  // Supported languages: English and French
   const languages: { label: string; value: SupportedLanguage }[] = [
     { label: 'English', value: 'en' },
-    // { label: 'Français', value: 'fr' }, // Will re-add in v2
-    // { label: 'Deutsch', value: 'de' }   // Will re-add in v2
+    { label: 'Français', value: 'fr' },
+    // { label: 'Deutsch', value: 'de' }   // German support - coming in future version
   ];
+  
+  // Check if French Bible is downloaded
+  useEffect(() => {
+    checkBibleDownloadStatus();
+  }, [language]);
+
+  const checkBibleDownloadStatus = async () => {
+    if (language === 'fr') {
+      setCheckingDownload(true);
+      const isDownloaded = await bibleStorageManager.isBibleDownloaded('fr');
+      setIsFrenchBibleDownloaded(isDownloaded);
+      
+      // Fetch metadata to get actual file size
+      const metadata = await bibleStorageManager.getBibleMetadata('fr');
+      if (metadata) {
+        setFrenchBibleSize(metadata.files.bible.size);
+      }
+      
+      setCheckingDownload(false);
+    }
+  };
+
+  // Handle language change - only one can be active at a time
+  const handleLanguageToggle = async (selectedLang: SupportedLanguage) => {
+    console.log('Language toggle:', selectedLang);
+    await setLanguage(selectedLang);
+    
+    // Check if French Bible is downloaded when switching to French
+    if (selectedLang === 'fr') {
+      const isDownloaded = await bibleStorageManager.isBibleDownloaded('fr');
+      setIsFrenchBibleDownloaded(isDownloaded);
+      
+      if (!isDownloaded) {
+        // Prompt user to download French Bible
+        setTimeout(() => {
+          Alert.alert(
+            t('UI.bibleDownload.downloadBible'),
+            t('UI.bibleDownload.frenchBibleRequired'),
+            [
+              {
+                text: t('UI.alerts.cancel'),
+                style: 'cancel',
+              },
+              {
+                text: t('UI.bibleDownload.download'),
+                onPress: () => setShowBibleDownloadModal(true),
+              },
+            ]
+          );
+        }, 500);
+      }
+    }
+  };
+
+  const handleDeleteBible = async () => {
+    Alert.alert(
+      t('UI.bibleDownload.deleteBible'),
+      t('UI.bibleDownload.deleteBibleConfirm'),
+      [
+        {
+          text: t('UI.alerts.cancel'),
+          style: 'cancel',
+        },
+        {
+          text: t('UI.bibleDownload.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            const success = await bibleStorageManager.deleteBible('fr');
+            if (success) {
+              setIsFrenchBibleDownloaded(false);
+              Alert.alert(t('UI.alerts.success'), t('UI.bibleDownload.bibleDeleted'));
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const sliderValue = useMemo(() => {
     switch(fontSize) {
@@ -67,7 +156,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: colors.background + 'CC',
+      backgroundColor: colors.background,
       zIndex: 100000,
     },
     modalContent: {
@@ -91,10 +180,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
     setting: {
       marginBottom: 20,
     },
+    settingRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 20,
+      paddingVertical: 8,
+    },
     settingLabel: {
       fontSize: sizes.subtitle,
       marginBottom: 8,
       color: colors.text,
+    },
+    settingLabelContainer: {
+      flex: 1,
+    },
+    settingValue: {
+      fontSize: sizes.caption,
+      color: colors.secondary,
+      marginTop: 4,
     },
     fontSizePreview: {
       flexDirection: 'row',
@@ -127,28 +231,69 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
       fontSize: sizes.button,
       fontWeight: '600',
     },
-    languageSelector: {
+    languageList: {
       backgroundColor: colors.card,
       borderRadius: 8,
-      padding: 12,
-      marginTop: 8,
-      width: '100%',
+      marginTop: 12,
+      paddingVertical: 4,
+      borderWidth: 1,
+      borderColor: colors.border,
     },
-    languageOption: {
-      padding: 12,
+    languageItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
-    selectedLanguage: {
-      backgroundColor: colors.primary + '20',
-    },
-    languageText: {
+    languageItemText: {
+      fontSize: sizes.body,
       color: colors.text,
-      fontSize: 16,
     },
-    selectedLanguageText: {
+    languageItemTextActive: {
       color: colors.primary,
       fontWeight: '600',
+    },
+    downloadStatus: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 12,
+      borderRadius: 8,
+      marginBottom: 12,
+      gap: 8,
+    },
+    downloadStatusText: {
+      fontSize: sizes.body,
+      marginLeft: 8,
+    },
+    downloadButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 12,
+      borderRadius: 8,
+      gap: 8,
+    },
+    downloadButtonText: {
+      color: '#FFFFFF',
+      fontSize: sizes.body,
+      fontWeight: '600',
+    },
+    deleteButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 10,
+      borderRadius: 8,
+      borderWidth: 1,
+      gap: 6,
+      marginTop: 8,
+    },
+    deleteButtonText: {
+      fontSize: sizes.caption,
+      fontWeight: '500',
     },
   });
 
@@ -188,13 +333,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
           }
         ]}
       >
-        <Pressable style={{width: '100%', height: '100%'}} onPress={onClose}>
+        <View style={{width: '100%', height: '100%'}}>
           <View style={modalStyles.modalContent}>
-            <Text style={modalStyles.title}>Settings</Text>
+            <Text style={modalStyles.title}>{t('UI.settings.title')}</Text>
             
             {/* Font Size */}
             <View style={modalStyles.setting}>
-              <Text style={modalStyles.settingLabel}>Font Size</Text>
+              <Text style={modalStyles.settingLabel}>{t('UI.settings.fontSize')}</Text>
               <View style={modalStyles.fontSizePreview}>
                 {(['small', 'medium', 'large'] as FontSize[]).map((size) => (
                   <Text 
@@ -220,35 +365,116 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
               />
             </View>
 
-            {/* Language Selection */}
+            {/* Language Selection - Collapsible */}
             <View style={modalStyles.setting}>
-              <Text style={modalStyles.settingLabel}>Language</Text>
-              <View style={modalStyles.languageSelector}>
-                {languages.map((lang) => (
-                  <TouchableOpacity
-                    key={lang.value}
-                    style={[
-                      modalStyles.languageOption,
-                      language === lang.value && modalStyles.selectedLanguage,
-                    ]}
-                    onPress={() => setLanguage(lang.value)}
-                  >
-                    <Text
-                      style={[
-                        modalStyles.languageText,
-                        language === lang.value && modalStyles.selectedLanguageText,
-                      ]}
-                    >
-                      {lang.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              <TouchableOpacity 
+                style={modalStyles.settingRow}
+                onPress={() => setIsLanguageExpanded(!isLanguageExpanded)}
+              >
+                <View style={modalStyles.settingLabelContainer}>
+                  <Text style={modalStyles.settingLabel}>{t('UI.settings.language')}</Text>
+                  <Text style={modalStyles.settingValue}>
+                    {language === 'fr' ? 'Français' : 'English'}
+                  </Text>
+                </View>
+                <MaterialIcons 
+                  name={isLanguageExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
+                  size={24} 
+                  color={colors.text} 
+                />
+              </TouchableOpacity>
+              
+              {/* Expanded Language List */}
+              {isLanguageExpanded && (
+                <View style={modalStyles.languageList}>
+                  {languages.map((lang, index) => {
+                    const isActive = language === lang.value;
+                    console.log(`Language ${lang.value}: isActive=${isActive}, current=${language}`);
+                    
+                    return (
+                      <View 
+                        key={lang.value} 
+                        style={[
+                          modalStyles.languageItem,
+                          index === languages.length - 1 && { borderBottomWidth: 0 }
+                        ]}
+                      >
+                        <Text style={[
+                          modalStyles.languageItemText,
+                          isActive && modalStyles.languageItemTextActive
+                        ]}>
+                          {lang.label} {isActive && '✓'}
+                        </Text>
+                        <Switch
+                          value={isActive}
+                          onValueChange={async (isOn) => {
+                            console.log(`Toggle ${lang.value}: isOn=${isOn}, current=${language}`);
+                            if (isOn && !isActive) {
+                              await handleLanguageToggle(lang.value);
+                            }
+                          }}
+                        />
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
             </View>
 
+            {/* Bible Downloads Section - Only show when French is selected */}
+            {language === 'fr' && (
+              <View style={modalStyles.setting}>
+                <Text style={[modalStyles.settingLabel, { marginBottom: 12 }]}>
+                  📖 {t('UI.bibleDownload.frenchBible')}
+                </Text>
+                
+                {checkingDownload ? (
+                  <Text style={[modalStyles.settingValue, { marginLeft: 8 }]}>
+                    {t('UI.bibleDownload.checking')}...
+                  </Text>
+                ) : isFrenchBibleDownloaded ? (
+                  <View>
+                    <View style={[modalStyles.downloadStatus, { backgroundColor: colors.card }]}>
+                      <Ionicons name="checkmark-circle" size={20} color="#34C759" />
+                      <Text style={[modalStyles.downloadStatusText, { color: colors.text }]}>
+                        {t('UI.bibleDownload.downloaded')} (16.4 MB)
+                      </Text>
+                    </View>
+                    <TouchableOpacity 
+                      style={[modalStyles.deleteButton, { borderColor: colors.border }]}
+                      onPress={handleDeleteBible}
+                    >
+                      <Ionicons name="trash-outline" size={18} color="#FF3B30" />
+                      <Text style={[modalStyles.deleteButtonText, { color: '#FF3B30' }]}>
+                        {t('UI.bibleDownload.delete')}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View>
+                    <View style={[modalStyles.downloadStatus, { backgroundColor: colors.card }]}>
+                      <Ionicons name="cloud-download-outline" size={20} color={colors.secondary} />
+                      <Text style={[modalStyles.downloadStatusText, { color: colors.secondary }]}>
+                        {t('UI.bibleDownload.notDownloaded')}
+                      </Text>
+                    </View>
+                    <TouchableOpacity 
+                      style={[modalStyles.downloadButton, { backgroundColor: colors.tint }]}
+                      onPress={() => setShowBibleDownloadModal(true)}
+                    >
+                      <Ionicons name="download-outline" size={18} color="#FFFFFF" />
+                      <Text style={modalStyles.downloadButtonText}>
+                        {t('UI.bibleDownload.downloadNow')} ({(frenchBibleSize / 1024 / 1024).toFixed(1)} MB)
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            )}
+
             {/* Dark Mode */}
-            <View style={modalStyles.setting}>
-              <Text style={modalStyles.settingLabel}>Dark Mode</Text>
+            <View style={modalStyles.settingRow}>
+              <Text style={modalStyles.settingLabel}>{t('UI.settings.darkMode')}</Text>
               <Switch
                 value={isDarkMode}
                 onValueChange={async (value) => {
@@ -258,8 +484,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
             </View>
 
             {/* Orientation Lock */}
-            <View style={modalStyles.setting}>
-              <Text style={modalStyles.settingLabel}>Lock Screen Orientation</Text>
+            <View style={modalStyles.settingRow}>
+              <Text style={modalStyles.settingLabel}>{t('UI.settings.lockOrientation')}</Text>
               <Switch
                 value={isOrientationLocked}
                 onValueChange={async (value) => {
@@ -272,11 +498,24 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
               style={modalStyles.closeButton}
               onPress={onClose}
             >
-              <Text style={modalStyles.closeButtonText}>Close</Text>
+              <Text style={modalStyles.closeButtonText}>{t('UI.settings.close')}</Text>
             </TouchableOpacity>
           </View>
-        </Pressable>
+        </View>
       </Animated.View>
+
+      {/* Bible Download Modal */}
+      <BibleDownloadModal
+        visible={showBibleDownloadModal}
+        language="fr"
+        languageDisplay="Français"
+        fileSize={frenchBibleSize} // Dynamically fetched from metadata
+        onClose={() => setShowBibleDownloadModal(false)}
+        onDownloadComplete={() => {
+          setIsFrenchBibleDownloaded(true);
+          setShowBibleDownloadModal(false);
+        }}
+      />
     </Modal>
   );
 };

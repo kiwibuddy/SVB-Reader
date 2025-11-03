@@ -1,0 +1,17 @@
+{
+  "language": "fr",
+  "languageDisplay": "Français",
+  "version": "NBS-2002",
+  "lastUpdated": "2025-11-03",
+  "files": {
+    "bible": {
+      "name": "FRA-Bible-with-questions.json",
+      "size": 52073208,
+      "url": "https://firebasestorage.googleapis.com/v0/b/sourceview-together.firebasestorage.app/o/Bible%2Ffr%2FFRA-Bible-with-questions.json?alt=media&token=27120a35-ac2e-48b6-bfe4-541f14d6fd59",
+      "description": "French Bible (NBS 2002) with integrated discussion questions for School, Family, and Small Group audiences"
+    }
+  },
+  "totalSize": 52073208,
+  "description": "Complete French Bible translation (Nouvelle Bible Segond 2002) with 4,380 discussion questions across three audience types (School, Family, Small Group) for all 365 segments"
+}
+

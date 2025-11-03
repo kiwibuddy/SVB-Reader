@@ -18,7 +18,7 @@ import CelebrationPopup from "@/components/CelebrationPopup";
 import { getCheckColor } from '@/scripts/getCheckColors';
 import { markSegmentComplete, getSegmentCompletionStatus } from "@/api/sqlite";
 import { databaseManager } from '@/api/database-manager';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 
 interface ColorData {
   total: number;
@@ -65,7 +65,20 @@ const SegmentItem: React.FC<SegmentItemProps> = React.memo(({
     isCompleted: false,
     color: null
   });
-  const { colors } = useAppSettings();
+  const { colors, language } = useSyncAppSettings();
+
+  // Get localized title
+  const localizedTitle = useMemo(() => {
+    if (language === 'fr') {
+      try {
+        const fraUI = require('@/assets/data/FRA-UI.json');
+        return fraUI.Titles?.[segment.id] || segment.title;
+      } catch (error) {
+        return segment.title;
+      }
+    }
+    return segment.title;
+  }, [segment.id, segment.title, language]);
 
   useEffect(() => {
     const loadStatus = async () => {
@@ -147,7 +160,7 @@ const SegmentItem: React.FC<SegmentItemProps> = React.memo(({
     >
       <View style={styles.textContainer}>
         <Text style={[styles.title, isIntroduction && styles.introTitle]}>
-          {segment.title}
+          {localizedTitle}
         </Text>
         {segment.ref && (
           <Text style={styles.reference}>
@@ -177,7 +190,7 @@ export default SegmentItem;
 
 // Inline lightweight badge that shows if a segment has any group completions
 const GroupCompletionBadge: React.FC<{ segmentId: string }> = ({ segmentId }) => {
-  const { colors } = useAppSettings();
+  const { colors } = useSyncAppSettings();
   const [hasGroupCompletion, setHasGroupCompletion] = useState<boolean>(false);
 
   const loadGroupCompletion = useCallback(async () => {

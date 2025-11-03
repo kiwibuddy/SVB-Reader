@@ -11,8 +11,9 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from '@/hooks/useTranslation';
 import { ANIMATION } from '@/services/animation';
 import { useRouter } from 'expo-router';
 import { getDayOfYear } from 'date-fns';
@@ -46,7 +47,8 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
   planId,
   challengeId,
 }) => {
-  const { colors } = useAppSettings();
+  const { colors } = useSyncAppSettings();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [slideAnim] = React.useState(new Animated.Value(-screenHeight)); // Changed from screenHeight to -screenHeight for slide-down effect
@@ -305,7 +307,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
       >
         <View style={styles.header}>
           <View style={{ width: 32 }} />
-          <Text style={styles.headerTitle}>Choose Reading Mode</Text>
+          <Text style={styles.headerTitle}>{t('UI.readingMode.title')}</Text>
           <TouchableOpacity 
             style={styles.closeButton}
             onPress={onCancel}
@@ -340,16 +342,16 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
                 <View style={styles.optionIcon}>
                   <Ionicons name="person-outline" size={24} color="#FF5733" />
                 </View>
-                <Text style={styles.optionTitle}>Read Alone</Text>
+                <Text style={styles.optionTitle}>{t('UI.readingMode.readAlone')}</Text>
               </View>
               <Text style={styles.optionDescription}>
-                Enjoy a personal reading experience at your own pace with interactive features and personalized insights.
+                {t('UI.readingMode.readAloneDescription')}
               </Text>
               <TouchableOpacity 
                 style={[styles.actionButton, styles.primaryButton]}
                 onPress={handleContextAwareIndividualReading}
               >
-                <Text style={styles.primaryButtonText}>Start Individual Reading</Text>
+                <Text style={styles.primaryButtonText}>{t('UI.readingMode.startIndividualReading')}</Text>
               </TouchableOpacity>
             </View>
 
@@ -358,16 +360,16 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
                 <View style={styles.optionIcon}>
                   <Ionicons name="people-outline" size={24} color="#FF5733" />
                 </View>
-                <Text style={styles.optionTitle}>Read with Others</Text>
+                <Text style={styles.optionTitle}>{t('UI.readingMode.readWithOthers')}</Text>
               </View>
               <Text style={styles.optionDescription}>
-                Create or join a group reading session to experience Scripture together with synchronized reading and shared discussions.
+                {t('UI.readingMode.readWithOthersDescription')}
               </Text>
               <TouchableOpacity 
                 style={[styles.actionButton, styles.secondaryButton]}
                 onPress={handleContextAwareGroupReading}
               >
-                <Text style={styles.secondaryButtonText}>Start Group Reading</Text>
+                <Text style={styles.secondaryButtonText}>{t('UI.readingMode.startGroupReading')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -377,7 +379,7 @@ const ReadingModeModal: React.FC<ReadingModeModalProps> = ({
               style={styles.cancelButton}
               onPress={onCancel}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={styles.cancelButtonText}>{t('UI.readingMode.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

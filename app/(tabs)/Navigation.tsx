@@ -31,10 +31,11 @@ import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { getSegmentCompletionStatus } from "@/api/sqlite";
 import { databaseManager } from "@/api/database-manager";
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
-import BibleData from '@/assets/data/newBibleNLT1.json';
 import TopSpeakersData from '@/assets/data/TopSpeakers.json';
 import { useFocusEffect } from '@react-navigation/native';
 import { useGroupReading } from '@/context/GroupReadingContext';
+import { useTranslation } from '@/hooks/useTranslation';
+import FRA_UI from '@/assets/data/FRA-UI.json';
 
 
 export type SegmentKey = keyof typeof SegmentTitles;
@@ -653,7 +654,8 @@ const Navigation = () => {
   }, []);
   
   const isLargeScreen = screenWidth >= 768;
-  const { colors } = useSyncAppSettings();
+  const { colors, language } = useSyncAppSettings();
+  const { t } = useTranslation();
   const { currentSession, stopSession } = useGroupReading();
   const styles = createStyles(isLargeScreen, colors);
 
@@ -919,8 +921,13 @@ const Navigation = () => {
       // Navigate directly to the segment with verse information
       const segment = SegmentTitles[verseNavigationData.segmentId as keyof typeof SegmentTitles];
       
+      // Use current language and version from state for verse navigation
+      const langCode = state.language?.toUpperCase() || language.toUpperCase() || 'ENG';
+      const version = state.version?.toUpperCase() || 'NLT';
+      const segmentPrefix = `${langCode}-${version}`;
+      
       const params: any = {
-        segment: `ENG-NLT-${verseNavigationData.segmentId}`,
+        segment: `${segmentPrefix}-${verseNavigationData.segmentId}`,
         book: segment?.book[0] || '',
         verse: verseNavigationData.verse.toString(),
         chapter: verseNavigationData.chapter.toString(),
@@ -1246,10 +1253,15 @@ const Navigation = () => {
       // Check if this is an introduction segment
       if (segmentId.startsWith('I')) {
         // For introduction segments, navigate directly without showing modal
+        // Use current language and version from state, or fallback to defaults
+        const langCode = state.language?.toUpperCase() || language.toUpperCase() || 'ENG';
+        const version = state.version?.toUpperCase() || 'NLT';
+        const segmentPrefix = `${langCode}-${version}`;
+        
         router.push({
           pathname: "/[segment]",
           params: {
-            segment: `ENG-NLT-${segmentId}`,
+            segment: `${segmentPrefix}-${segmentId}`,
             book: segmentData.book[0] || '',
             context: 'main'
           }
@@ -1257,7 +1269,17 @@ const Navigation = () => {
       } else {
         // For story segments, show the reading mode modal
         setSelectedSegmentId(segmentId);
-        setSelectedSegmentTitle(segmentData.title);
+        
+        // Translate title if in French mode
+        let title = segmentData.title;
+        if (language === 'fr') {
+          const frenchTitle = (FRA_UI.Titles as any)[segmentId];
+          if (frenchTitle) {
+            title = frenchTitle;
+          }
+        }
+        
+        setSelectedSegmentTitle(title);
         setSelectedSegmentRef(segmentData.ref || '');
         setShowReadingModeModal(true);
       }
@@ -1273,11 +1295,16 @@ const Navigation = () => {
       await stopSession();
     }
     
-    await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
+    // Use current language and version from state, or fallback to defaults
+    const langCode = state.language?.toUpperCase() || language.toUpperCase() || 'ENG';
+    const version = state.version?.toUpperCase() || 'NLT';
+    const segmentPrefix = `${langCode}-${version}`;
+    
+    await updateSegmentId(`${segmentPrefix}-${selectedSegmentId}`);
     const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
     
     const params: any = {
-      segment: `ENG-NLT-${selectedSegmentId}`,
+      segment: `${segmentPrefix}-${selectedSegmentId}`,
       book: segment?.book[0] || '',
       freshStart: Date.now().toString() // Force fresh start from reading mode modal
     };
@@ -1432,9 +1459,9 @@ const Navigation = () => {
           <View style={styles.welcomeSection}>
             <View style={styles.welcomeTitleRow}>
               <View style={styles.welcomeTitleContainer}>
-                <Text style={styles.welcomeTitle}>Story Finder</Text>
+                <Text style={styles.welcomeTitle}>{t('UI.search.title')}</Text>
                 <Text style={styles.welcomeText}>
-                  Navigate through books and chapters to find your next story
+                  {t('UI.search.subtitle')}
                 </Text>
               </View>
             </View>
@@ -1451,7 +1478,7 @@ const Navigation = () => {
               />
               <TextInput
                 style={[styles.searchInput]}
-                placeholder="Search books or verses (e.g., John 3:16)..."
+                placeholder={t('UI.search.placeholder')}
                 placeholderTextColor={colors.secondary}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -1553,10 +1580,10 @@ const Navigation = () => {
       >
         <View style={styles.filterPanelContent}>
           <View style={styles.filterPanelHeader}>
-            <Text style={styles.filterPanelTitle}>Find Your Story</Text>
+            <Text style={styles.filterPanelTitle}>{t('UI.filters.findYourStory')}</Text>
             <View style={styles.filterPanelHeaderButtons}>
               <TouchableOpacity style={styles.clearAllButton} onPress={clearAllFilters}>
-                <Text style={styles.clearAllText}>Clear All</Text>
+                <Text style={styles.clearAllText}>{t('UI.filters.clearAll')}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.closeFilterButton} 
@@ -1571,7 +1598,7 @@ const Navigation = () => {
           <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
             {/* Testament Filter */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Testament</Text>
+              <Text style={styles.filterSectionTitle}>{t('UI.filters.testament')}</Text>
               {['Old Testament', 'New Testament'].map(testament => (
                 <TouchableOpacity
                   key={testament}
@@ -1586,14 +1613,16 @@ const Navigation = () => {
                       <Ionicons name="checkmark" size={14} color="white" />
                     )}
                   </View>
-                  <Text style={styles.filterOptionText}>{testament}</Text>
+                  <Text style={styles.filterOptionText}>
+                    {testament === 'Old Testament' ? t('UI.filters.oldTestament') : t('UI.filters.newTestament')}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
 
             {/* Reading Time Filter */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Reading Time</Text>
+              <Text style={styles.filterSectionTitle}>{t('UI.filters.readingTime')}</Text>
               {['5-10 min', '10-15 min', '15-20 min'].map(time => (
                 <TouchableOpacity
                   key={time}
@@ -1615,10 +1644,10 @@ const Navigation = () => {
 
             {/* Speakers Filter */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Key Speakers</Text>
+              <Text style={styles.filterSectionTitle}>{t('UI.filters.keySpeakers')}</Text>
               
               {/* Old Testament Speakers */}
-              <Text style={[styles.filterSectionTitle, { fontSize: 14, marginTop: 12, marginBottom: 8 }]}>Old Testament</Text>
+              <Text style={[styles.filterSectionTitle, { fontSize: 14, marginTop: 12, marginBottom: 8 }]}>{t('UI.filters.oldTestament')}</Text>
               {getOTSpeakers().map((speaker: string) => (
                 <TouchableOpacity
                   key={speaker}
@@ -1642,7 +1671,7 @@ const Navigation = () => {
                   onPress={() => setShowAllOTSpeakers(true)}
                 >
                   <Text style={[styles.filterOptionText, { color: '#007AFF', fontWeight: '600' }]}>
-                    Show {TopSpeakersData.oldTestament.length - 5} more...
+                    {t('UI.filters.showMore', { count: TopSpeakersData.oldTestament.length - 5 })}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -1658,7 +1687,7 @@ const Navigation = () => {
               )}
 
               {/* New Testament Speakers */}
-              <Text style={[styles.filterSectionTitle, { fontSize: 14, marginTop: 16, marginBottom: 8 }]}>New Testament</Text>
+              <Text style={[styles.filterSectionTitle, { fontSize: 14, marginTop: 16, marginBottom: 8 }]}>{t('UI.filters.newTestament')}</Text>
               {getNTSpeakers().map((speaker: string) => (
                 <TouchableOpacity
                   key={speaker}
@@ -1682,7 +1711,7 @@ const Navigation = () => {
                   onPress={() => setShowAllNTSpeakers(true)}
                 >
                   <Text style={[styles.filterOptionText, { color: '#007AFF', fontWeight: '600' }]}>
-                    Show {TopSpeakersData.newTestament.length - 5} more...
+                    {t('UI.filters.showMore', { count: TopSpeakersData.newTestament.length - 5 })}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -1729,7 +1758,7 @@ const Navigation = () => {
             onPress={toggleFilterPanel}
           >
             <Text style={styles.applyButtonText}>
-              Apply Filters {getActiveFilterCount() > 0 && `(${getActiveFilterCount()})`}
+              {t('UI.filters.applyFilters')} {getActiveFilterCount() > 0 && `(${getActiveFilterCount()})`}
             </Text>
           </TouchableOpacity>
         </View>

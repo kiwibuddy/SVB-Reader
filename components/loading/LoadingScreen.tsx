@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, AccessibilityInfo, Image } from 'react-native';
 import { ProgressIndicator, LinearProgress } from './ProgressIndicator';
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export type LoadingStage = 
   | 'initializing'
@@ -19,13 +20,14 @@ interface LoadingScreenProps {
   onComplete?: () => void;
 }
 
-const LOADING_MESSAGES: Record<LoadingStage, string> = {
-  'initializing': 'Initializing SourceView Together...',
-  'loading-database': 'Loading Bible content...',
-  'loading-content': 'Preparing verses...',
-  'preparing-reading': 'Setting up your reading experience...',
-  'almost-ready': 'Almost ready...',
-  'complete': 'Welcome to SourceView Together!',
+// Loading stage to translation key mapping
+const LOADING_MESSAGE_KEYS: Record<LoadingStage, string> = {
+  'initializing': 'UI.loading.initializing',
+  'loading-database': 'UI.loading.loadingDatabase',
+  'loading-content': 'UI.loading.loadingContent',
+  'preparing-reading': 'UI.loading.preparingReading',
+  'almost-ready': 'UI.loading.almostReady',
+  'complete': 'UI.loading.complete',
 };
 
 const STAGE_PROGRESS: Record<LoadingStage, number> = {
@@ -45,6 +47,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
   onComplete,
 }) => {
   const { colors, isDarkMode } = useAppSettings();
+  const { t } = useTranslation();
   const [reduceMotion, setReduceMotion] = useState(false);
   const [announceMessage, setAnnounceMessage] = useState<string>('');
 
@@ -59,16 +62,16 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
 
   // Handle stage changes for accessibility
   useEffect(() => {
-    const message = customMessage || LOADING_MESSAGES[stage];
+    const message = customMessage || t(LOADING_MESSAGE_KEYS[stage]);
     setAnnounceMessage(message);
     
     if (stage === 'complete' && onComplete) {
       setTimeout(onComplete, 500);
     }
-  }, [stage, customMessage, onComplete]);
+  }, [stage, customMessage, onComplete, t]);
 
   const currentProgress = progress !== undefined ? progress : STAGE_PROGRESS[stage];
-  const displayMessage = customMessage || LOADING_MESSAGES[stage];
+  const displayMessage = customMessage || t(LOADING_MESSAGE_KEYS[stage]);
 
   const getAnimationType = () => {
     if (reduceMotion) return 'gentle-pulse';

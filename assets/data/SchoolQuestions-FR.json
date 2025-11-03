@@ -1,0 +1,2194 @@
+{
+  "SchoolQuestions": {
+    "S001": {
+      "Q1": "Quels motifs ou mots répétés as-tu remarqués en lisant ?",
+      "Q2": "Que suggère ce passage sur le caractère de Dieu ?",
+      "Q3": "Comment cela pourrait-il changer ta façon de voir les gens à l'école ?",
+      "Q4": "De quelle manière peux-tu refléter la sollicitude de Dieu cette semaine ?"
+    },
+    "S002": {
+      "Q1": "Quels moments t'ont le plus marqué dans cette histoire, et pourquoi ?",
+      "Q2": "Comment le passage décrit-il l'attrait de la tentation ?",
+      "Q3": "Où remarques-tu des schémas similaires dans la vie étudiante ?",
+      "Q4": "Quelle limite sage vas-tu essayer cette semaine ?"
+    },
+    "S003": {
+      "Q1": "Quelles différences vois-tu entre Noé et son monde ?",
+      "Q2": "Où vois-tu à la fois la justice et la miséricorde dans l'histoire ?",
+      "Q3": "Quand est-ce le plus difficile pour toi de suivre Dieu à l'école ?",
+      "Q4": "Quel petit geste d'intégrité vas-tu pratiquer cette semaine ?"
+    },
+    "S004": {
+      "Q1": "Quelles motivations remarques-tu derrière la construction de la ville et de la tour ?",
+      "Q2": "Que révèle la réponse de Dieu sur l'orgueil et les limites ?",
+      "Q3": "Où vois-tu de l'orgueil ou de l'exclusion dans ton école ?",
+      "Q4": "Quel geste de réconciliation pourrais-tu faire cette semaine ?"
+    },
+    "S005": {
+      "Q1": "Qu'est-ce que Dieu demande à Abram de faire dans ce passage ?",
+      "Q2": "Quels coûts ou risques l'obéissance aurait-elle pu signifier pour Abram ?",
+      "Q3": "Où Dieu pourrait-il t'inviter à lui faire confiance à l'école ?",
+      "Q4": "Quel premier pas de foi vas-tu faire cette semaine ?"
+    },
+    "S006": {
+      "Q1": "Quelles promesses ou signes sont mis en évidence dans ce passage ?",
+      "Q2": "Que montre cela sur la fidélité et le timing de Dieu ?",
+      "Q3": "Comment tenir ses promesses façonne-t-il les amitiés à l'école ?",
+      "Q4": "Quel engagement vas-tu honorer soigneusement cette semaine ?"
+    },
+    "S007": {
+      "Q1": "Quelles tensions remarques-tu entre justice et miséricorde ici ?",
+      "Q2": "Que montrent les actions d'Abraham sur l'intercession et la sollicitude ?",
+      "Q3": "Où vois-tu de la souffrance qui appelle courage et compassion ?",
+      "Q4": "Quelle action prudente et bienveillante vas-tu entreprendre cette semaine ?"
+    },
+    "S008": {
+      "Q1": "Quel combat intérieur ressens-tu dans cette histoire ?",
+      "Q2": "Que dit ce passage sur la confiance et l'abandon ?",
+      "Q3": "Où la confiance est-elle la plus difficile pour toi en ce moment à l'école ?",
+      "Q4": "Quel pas de confiance vas-tu faire cette semaine ?"
+    },
+    "S009": {
+      "Q1": "Quels changements clés se produisent dans l'histoire de cette famille ?",
+      "Q2": "Que suggère cela sur le fait que Dieu œuvre à travers les générations ?",
+      "Q3": "Comment la fidélité à long terme t'encourage-t-elle dans les moments difficiles ?",
+      "Q4": "Quelle pratique patiente vas-tu maintenir cette semaine ?"
+    },
+    "S010": {
+      "Q1": "Quelles motivations semblent guider les choix faits ici ?",
+      "Q2": "Quelles conséquences de la tromperie remarques-tu dans l'histoire ?",
+      "Q3": "Où es-tu tenté de prendre des raccourcis dans la vie étudiante ?",
+      "Q4": "Quel choix honnête vas-tu faire cette semaine ?"
+    },
+    "S011": {
+      "Q1": "Quelles nouvelles dynamiques ou tensions apparaissent dans ces chapitres ?",
+      "Q2": "Que montrent ces dynamiques sur la comparaison et la rivalité ?",
+      "Q3": "Où remarques-tu des pressions similaires dans les groupes d'amis ou les équipes ?",
+      "Q4": "Quel geste de paix pourrais-tu essayer cette semaine ?"
+    },
+    "S012": {
+      "Q1": "Quels moments décisifs te marquent dans cette lecture ?",
+      "Q2": "Que suggère la lutte de Jacob sur l'identité et la peur ?",
+      "Q3": "Où es-tu en train de lutter avec Dieu ou toi-même en ce moment ?",
+      "Q4": "Quelle prière ou conversation honnête vas-tu commencer cette semaine ?"
+    },
+    "S013": {
+      "Q1": "Quelles décisions mènent à la réinstallation ici ?",
+      "Q2": "Que remarques-tu sur la sollicitude de Dieu dans les situations compliquées ?",
+      "Q3": "Comment cela te parle-t-il dans une période de changement à l'école ?",
+      "Q4": "Quel pas stable vas-tu faire face à un changement que tu affrontes ?"
+    },
+    "S014": {
+      "Q1": "Quelles épreuves Joseph affronte-t-il dans cette section ?",
+      "Q2": "Quels traits de caractère se développent à travers ces épreuves ?",
+      "Q3": "Où les revers testent-ils ton caractère à l'école ?",
+      "Q4": "Quelle habitude de résilience vas-tu pratiquer cette semaine ?"
+    },
+    "S015": {
+      "Q1": "Quels moments révèlent la sagesse et l'humilité de Joseph ?",
+      "Q2": "Que met en garde l'histoire sur le succès et le pouvoir ?",
+      "Q3": "Comment peux-tu rester ancré quand tu es remarqué ou loué ?",
+      "Q4": "Quelle pratique d'ancrage vas-tu maintenir cette semaine ?"
+    },
+    "S016": {
+      "Q1": "Quelles émotions ou motivations animent les frères ici ?",
+      "Q2": "Comment Joseph gère-t-il le pouvoir et les blessures du passé ?",
+      "Q3": "Où pourrais-tu montrer une miséricorde sage dans une relation tendue ?",
+      "Q4": "Quel pas vers la réconciliation vas-tu faire ?"
+    },
+    "S017": {
+      "Q1": "Quelles émotions et risques sont présents dans les retrouvailles ?",
+      "Q2": "Que montre ce passage sur le pardon et la confiance ?",
+      "Q3": "Où Dieu pourrait-il t'inviter à reconstruire la confiance ?",
+      "Q4": "Quel premier pas vers la paix vas-tu essayer cette semaine ?"
+    },
+    "S018": {
+      "Q1": "Quels thèmes de bénédiction ou d'héritage remarques-tu ?",
+      "Q2": "Que disent ces fins sur la foi tout au long d'une vie ?",
+      "Q3": "Comment penser à l'héritage façonne-t-il tes choix maintenant ?",
+      "Q4": "Quelle priorité vas-tu réaligner cette semaine ?"
+    },
+    "S019": {
+      "Q1": "Quelles formes de souffrance et d'espoir apparaissent ici ?",
+      "Q2": "Que révèle l'appel de Moïse sur le but ?",
+      "Q3": "Où Dieu pourrait-il te pousser à parler ou à servir à l'école ?",
+      "Q4": "Quel petit acte de courage vas-tu faire cette semaine ?"
+    },
+    "S020": {
+      "Q1": "Quelles peurs ou obstacles surgissent dans cette lecture ?",
+      "Q2": "Qu'apprends-tu sur l'obéissance sous pression ?",
+      "Q3": "Où ressens-tu la pression de rester silencieux ou d'abandonner ?",
+      "Q4": "Quelle action fidèle vas-tu entreprendre malgré la pression ?"
+    },
+    "S021": {
+      "Q1": "Quels schémas vois-tu à travers les plaies ?",
+      "Q2": "Que montre cela sur les cœurs endurcis et les secondes chances ?",
+      "Q3": "Où remarques-tu des schémas obstinés dans ta propre vie ?",
+      "Q4": "Quel changement vas-tu pratiquer pour adoucir ton cœur ?"
+    },
+    "S022": {
+      "Q1": "Quelles instructions ou symboles te marquent ?",
+      "Q2": "Qu'enseigne cela sur le salut et l'appartenance ?",
+      "Q3": "Comment se souvenir de la sollicitude de Dieu pourrait-il façonner ta semaine ?",
+      "Q4": "Quel simple rappel vas-tu garder avec toi cette semaine ?"
+    },
+    "S023": {
+      "Q1": "Quels choix et émotions marquent cette évasion ?",
+      "Q2": "Que révèle le sauvetage sur la peur et la confiance ?",
+      "Q3": "Où te sens-tu coincé et as besoin de l'aide de Dieu ?",
+      "Q4": "Quel pas vas-tu faire en faisant confiance à Dieu pour ouvrir un chemin ?"
+    },
+    "S024": {
+      "Q1": "Où vois-tu des plaintes et où vois-tu des provisions ?",
+      "Q2": "Que montre cela sur la gratitude et la confiance quotidienne ?",
+      "Q3": "Comment la gratitude pourrait-elle transformer ta semaine d'école ?",
+      "Q4": "Quelle pratique quotidienne de remerciement vas-tu essayer ?"
+    },
+    "S025": {
+      "Q1": "Quels commandements te frappent le plus aujourd'hui ?",
+      "Q2": "Que révèlent-ils sur l'amour de Dieu et du prochain ?",
+      "Q3": "À quoi ressemblerait la vie à l'école si ceux-ci façonnaient la culture ?",
+      "Q4": "Sur lequel vas-tu te concentrer pour le vivre cette semaine ?"
+    },
+    "S026": {
+      "Q1": "Quels types de protections ou de valeurs sont établis ici ?",
+      "Q2": "Quelle communauté Dieu forme-t-il à travers ces lois ?",
+      "Q3": "Où l'équité ou la sollicitude pourraient-elles grandir dans ton contexte ?",
+      "Q4": "Quelle action juste vas-tu pratiquer cette semaine ?"
+    },
+    "S027": {
+      "Q1": "Quels détails montrent le désir de Dieu d'habiter avec son peuple ?",
+      "Q2": "Que communiquent la beauté et l'ordre dans l'adoration ?",
+      "Q3": "Comment tes dons pourraient-ils aider à créer de l'espace pour Dieu à l'école ?",
+      "Q4": "Quelle contribution vas-tu apporter cette semaine ?"
+    },
+    "S028": {
+      "Q1": "Quels rôles et limites vois-tu pour les leaders ici ?",
+      "Q2": "À quoi ressemble la sainteté dans la pratique quotidienne ?",
+      "Q3": "Où as-tu besoin de limites saines pour bien servir ?",
+      "Q4": "Quelle limite vas-tu établir ou renouveler cette semaine ?"
+    },
+    "S029": {
+      "Q1": "Quelles pratiques sont mises en évidence dans ces instructions ?",
+      "Q2": "Qu'enseignent-elles sur le repos, la prière et la dévotion ?",
+      "Q3": "Où as-tu besoin de repos ou de concentration pour rencontrer Dieu ?",
+      "Q4": "Quel rythme simple vas-tu maintenir cette semaine ?"
+    },
+    "S030": {
+      "Q1": "Qu'est-ce qui a conduit le peuple vers l'idolâtrie en ce moment ?",
+      "Q2": "Que remarques-tu sur l'intercession de Moïse et la miséricorde de Dieu ?",
+      "Q3": "Quelles « idoles » modernes rivalisent pour ta confiance à l'école ?",
+      "Q4": "Qu'arrêteras-tu de faire et que commenceras-tu à faire cette semaine ?"
+    },
+    "S031": {
+      "Q1": "Quelles réponses le peuple a-t-il au plan de Dieu ?",
+      "Q2": "Que vois-tu sur la générosité et les compétences dans le service ?",
+      "Q3": "Où pourrais-tu offrir du temps ou des talents cette semaine ?",
+      "Q4": "Quelle tâche spécifique vas-tu proposer de faire ?"
+    },
+    "S032": {
+      "Q1": "Qu'est-ce qui complète le travail dans ce passage ?",
+      "Q2": "Que signifie la présence de Dieu pour la communauté ?",
+      "Q3": "Comment peux-tu honorer la présence de Dieu dans des lieux ordinaires ?",
+      "Q4": "Quelle pratique t'aidera à remarquer Dieu cette semaine ?"
+    },
+    "S033": {
+      "Q1": "Quels types d'offrandes sont décrits ici ?",
+      "Q2": "Qu'enseignent-ils sur le péché, la gratitude et l'adoration ?",
+      "Q3": "Comment la confession et les remerciements pourraient-ils façonner ta semaine ?",
+      "Q4": "Quelle prière honnête vas-tu apporter à Dieu aujourd'hui ?"
+    },
+    "S034": {
+      "Q1": "Quelles offrandes supplémentaires te marquent ?",
+      "Q2": "Que suggèrent-elles sur la vie quotidienne avec Dieu ?",
+      "Q3": "Où pourrais-tu transformer la routine en adoration cette semaine ?",
+      "Q4": "Quel moment quotidien vas-tu dédier à Dieu ?"
+    },
+    "S035": {
+      "Q1": "Quelles étapes d'ordination remarques-tu ?",
+      "Q2": "Que montre cela sur la préparation pour servir ?",
+      "Q3": "Comment pourrais-tu préparer ton cœur avant de servir les autres ?",
+      "Q4": "Quelle étape de préparation vas-tu faire cette semaine ?"
+    },
+    "S036": {
+      "Q1": "Quelles distinctions sont faites dans cette section ?",
+      "Q2": "Quelles valeurs sur la santé et la sainteté apparaissent ici ?",
+      "Q3": "Comment un soin sage du corps et de l'âme pourrait-il aider ta semaine ?",
+      "Q4": "Quelle habitude saine vas-tu pratiquer fidèlement ?"
+    },
+    "S037": {
+      "Q1": "Quels schémas supplémentaires de sollicitude vois-tu ?",
+      "Q2": "Qu'enseigne l'attention aux détails sur la sainteté ?",
+      "Q3": "Où les petits choix façonnent-ils ton caractère à l'école ?",
+      "Q4": "Quel petit choix fidèle vas-tu répéter cette semaine ?"
+    },
+    "S038": {
+      "Q1": "Quelles images d'expiation te marquent ?",
+      "Q2": "Qu'enseigne cela sur le péché, le pardon et l'accès à Dieu ?",
+      "Q3": "Comment les gens pardonnés vivent-ils différemment à l'école ?",
+      "Q4": "Quel pas vas-tu faire pour chercher ou accorder le pardon ?"
+    },
+    "S039": {
+      "Q1": "Quels commandements ou avertissements sont soulignés ici ?",
+      "Q2": "Que montrent-ils sur le cœur de Dieu pour une vie distincte ?",
+      "Q3": "Où es-tu appelé à être différent pour les bonnes raisons ?",
+      "Q4": "Quelle différence vas-tu pratiquer cette semaine ?"
+    },
+    "S040": {
+      "Q1": "Quelles attentes sont placées sur ceux qui dirigent ?",
+      "Q2": "Que suggère cela sur l'exemple et l'influence ?",
+      "Q3": "Où as-tu de l'influence parmi tes pairs ?",
+      "Q4": "Quel exemple vas-tu donner cette semaine ?"
+    },
+    "S041": {
+      "Q1": "Quels rythmes ou festivals sont décrits ici ?",
+      "Q2": "Qu'enseignent-ils sur le fait de se souvenir de Dieu ensemble ?",
+      "Q3": "Quel rythme t'aide à te souvenir de Dieu dans les semaines chargées ?",
+      "Q4": "Quel rappel vas-tu programmer dans ta semaine ?"
+    },
+    "S042": {
+      "Q1": "Quelles pratiques de repos et de libération apparaissent ici ?",
+      "Q2": "Que révèlent-elles sur la confiance, la justice et le renouveau ?",
+      "Q3": "Où as-tu besoin de repos ou de libérer un fardeau ?",
+      "Q4": "Quelle réinitialisation vas-tu pratiquer cette semaine ?"
+    },
+    "S043": {
+      "Q1": "Quels choix et résultats sont placés côte à côte ?",
+      "Q2": "Qu'enseigne cela sur le chemin de la bénédiction ?",
+      "Q3": "Où tes choix orientent-ils ta semaine à l'école ?",
+      "Q4": "Quel choix sage vas-tu faire aujourd'hui ?"
+    },
+    "S044": {
+      "Q1": "Quels buts ce recensement pourrait-il servir pour le peuple ?",
+      "Q2": "Que montre la préparation ordonnée sur la confiance et la mission ?",
+      "Q3": "Où as-tu besoin de structure pour mieux servir à l'école ?",
+      "Q4": "Quelle étape d'organisation vas-tu faire cette semaine ?"
+    },
+    "S045": {
+      "Q1": "Quel rôle unique les Lévites ont-ils ici ?",
+      "Q2": "À quoi ressemble le service dévoué en pratique ?",
+      "Q3": "Où Dieu pourrait-il te mettre à part pour servir les autres ?",
+      "Q4": "Quel service vas-tu offrir cette semaine ?"
+    },
+    "S046": {
+      "Q1": "Quelles pratiques de consécration te marquent ?",
+      "Q2": "Que montrent-elles sur le fait de vivre sous la bénédiction de Dieu ?",
+      "Q3": "Comment des habitudes dédiées pourraient-elles façonner ta vie scolaire ?",
+      "Q4": "Quelle habitude vas-tu dédier à Dieu cette semaine ?"
+    },
+    "S047": {
+      "Q1": "Quelles préparations et célébrations se passent ici ?",
+      "Q2": "Qu'apprends-tu sur bien commencer avec Dieu ?",
+      "Q3": "Où as-tu besoin de te préparer avant d'avancer ?",
+      "Q4": "Quel premier pas vas-tu faire pour bien te préparer ?"
+    },
+    "S048": {
+      "Q1": "Où vois-tu des plaintes et où vois-tu de la sollicitude dans cette histoire ?",
+      "Q2": "Que révèle cela sur la confiance et le contentement ?",
+      "Q3": "Où glisses-tu dans la plainte pendant les semaines chargées ?",
+      "Q4": "Quelle pratique de gratitude vas-tu choisir à la place ?"
+    },
+    "S049": {
+      "Q1": "Quels rapports et réactions te marquent ?",
+      "Q2": "À quoi ressemblent la peur et la foi en ce moment ?",
+      "Q3": "Où la peur rétrécit-elle ta vision à l'école ?",
+      "Q4": "Quel pas de foi vas-tu faire malgré la peur ?"
+    },
+    "S050": {
+      "Q1": "Qu'est-ce qui déclenche la rébellion ici ?",
+      "Q2": "Qu'apprends-tu sur l'autorité, l'orgueil et l'humilité ?",
+      "Q3": "Où résistes-tu aux conseils qui pourraient t'aider à grandir ?",
+      "Q4": "Quel pas humble vas-tu faire cette semaine ?"
+    },
+    "S051": {
+      "Q1": "Quelles provisions ou victoires sont mises en évidence ?",
+      "Q2": "Que montre cela sur la sollicitude de Dieu dans les endroits difficiles ?",
+      "Q3": "Où as-tu vu de petites victoires dans une saison difficile ?",
+      "Q4": "Quelle gratitude ou témoignage vas-tu partager cette semaine ?"
+    },
+    "S052": {
+      "Q1": "Quelles tensions remarques-tu dans les choix de Balaam ?",
+      "Q2": "Que suggère ce passage sur les motivations et l'intégrité ?",
+      "Q3": "Où des motivations mixtes te font-elles dévier ?",
+      "Q4": "Quel pas clair et honnête vas-tu faire cette semaine ?"
+    },
+    "S053": {
+      "Q1": "Quels changements remarques-tu par rapport au premier compte ?",
+      "Q2": "Que dit cela sur les générations et la préparation ?",
+      "Q3": "Comment peux-tu aider la prochaine personne à bien prendre sa place ?",
+      "Q4": "Quel pas de mentorat ou de soutien vas-tu faire ?"
+    },
+    "S054": {
+      "Q1": "Quels engagements et rythmes sont décrits ici ?",
+      "Q2": "Qu'enseignent les vœux sur les mots et le suivi ?",
+      "Q3": "Où as-tu besoin de faire correspondre les mots et les actions ?",
+      "Q4": "Quel engagement vas-tu tenir soigneusement cette semaine ?"
+    },
+    "S055": {
+      "Q1": "Quelles leçons se dégagent des batailles et des voyages ?",
+      "Q2": "Qu'apprends-tu sur la persévérance et la guidance ?",
+      "Q3": "Où as-tu besoin de persévérance stable à l'école ?",
+      "Q4": "Quelle action stable vas-tu répéter chaque jour ?"
+    },
+    "S056": {
+      "Q1": "Quelles instructions les préparent pour la nouvelle terre ?",
+      "Q2": "Que révèlent les frontières et les plans sur la sagesse ?",
+      "Q3": "Où as-tu besoin de frontières claires pour prospérer ?",
+      "Q4": "Quelle frontière vas-tu établir ou renouveler aujourd'hui ?"
+    },
+    "S057": {
+      "Q1": "Quels souvenirs ou révisions sont soulignés ici ?",
+      "Q2": "Qu'enseigne le fait de se souvenir sur la foi et l'identité ?",
+      "Q3": "Quel souvenir de l'aide de Dieu te fortifie maintenant ?",
+      "Q4": "Comment vas-tu te souvenir et le partager cette semaine ?"
+    },
+    "S058": {
+      "Q1": "Quels appels à écouter se démarquent dans ce passage ?",
+      "Q2": "Que dit cela sur entendre et faire la parole de Dieu ?",
+      "Q3": "Où as-tu besoin de faire correspondre l'écoute et l'action ?",
+      "Q4": "Quel petit acte d'obéissance vas-tu faire aujourd'hui ?"
+    },
+    "S059": {
+      "Q1": "Quels thèmes centraux de l'alliance apparaissent ici ?",
+      "Q2": "Que montrent-ils sur l'amour, la loyauté et l'adoration ?",
+      "Q3": "Comment l'amour d'alliance peut-il façonner tes relations scolaires ?",
+      "Q4": "Quel acte d'amour loyal vas-tu pratiquer cette semaine ?"
+    },
+    "S060": {
+      "Q1": "Quels buts ou résultats de l'obéissance sont décrits ?",
+      "Q2": "Qu'apprends-tu sur la bénédiction et le témoignage ?",
+      "Q3": "Où tes choix pourraient-ils orienter les autres vers Dieu ?",
+      "Q4": "Quel témoignage vas-tu vivre cette semaine ?"
+    },
+    "S061": {
+      "Q1": "Quels types de justice ou de sollicitude sont encouragés ici ?",
+      "Q2": "Que révèle cela sur le cœur de Dieu pour la communauté ?",
+      "Q3": "Où l'équité ou la protection pourraient-elles grandir à l'école ?",
+      "Q4": "Quelle action juste vas-tu entreprendre cette semaine ?"
+    },
+    "S062": {
+      "Q1": "Quelles autres instructions te marquent ?",
+      "Q2": "Quelles valeurs sont formées par ces lois ?",
+      "Q3": "Où ces valeurs remettent-elles en question tes habitudes ?",
+      "Q4": "Quel changement vas-tu pratiquer pendant une semaine ?"
+    },
+    "S063": {
+      "Q1": "Quelles protections ou limites sont soulignées ici ?",
+      "Q2": "Qu'enseignent-elles sur la sagesse et la retenue ?",
+      "Q3": "Comment des limites sages t'aident-elles à te concentrer sur les études et les amitiés ?",
+      "Q4": "Quelle limite saine vas-tu fixer pour toi cette semaine ?"
+    },
+    "S064": {
+      "Q1": "Quels thèmes se répètent dans ces lois ?",
+      "Q2": "Quelle image de communauté se forme à partir de ces thèmes ?",
+      "Q3": "Où ton groupe pourrait-il mieux refléter cette image ?",
+      "Q4": "Quelle pratique vas-tu ajouter à ta routine ?"
+    },
+    "S065": {
+      "Q1": "Quels choix et résultats sont à nouveau contrastés ici ?",
+      "Q2": "Qu'apprends-tu sur la direction d'une vie ?",
+      "Q3": "Où tes choix quotidiens te mènent-ils en ce moment ?",
+      "Q4": "Quelle correction de cap vas-tu faire aujourd'hui ?"
+    },
+    "S066": {
+      "Q1": "Quelle invitation ou quel avertissement est présenté ici ?",
+      "Q2": "À quoi ressemble le choix de la vie en pratique ?",
+      "Q3": "Où as-tu besoin de choisir la vie plutôt que des choses moindres ?",
+      "Q4": "Quel pas positif vas-tu faire cette semaine ?"
+    },
+    "S067": {
+      "Q1": "Quels moments de transition se démarquent ici ?",
+      "Q2": "Qu'enseigne cela sur les passations de leadership et les éloges ?",
+      "Q3": "Où pourrais-tu aider quelqu'un à entrer dans le leadership ?",
+      "Q4": "Quel encouragement vas-tu exprimer cette semaine ?"
+    },
+    "S068": {
+      "Q1": "Quelles bénédictions ou adieux sont donnés ici ?",
+      "Q2": "Que révèlent-ils sur la fidélité de Dieu jusqu'à la fin ?",
+      "Q3": "Comment cela façonne-t-il la façon dont tu termines bien les saisons ?",
+      "Q4": "Quel pas vas-tu faire pour bien finir cette semaine ?"
+    },
+    "S069": {
+      "Q1": "Quels mots ou commandements à Josué se démarquent ?",
+      "Q2": "Que dit cela sur le courage et la méditation de la parole de Dieu ?",
+      "Q3": "Où as-tu besoin de courage pour obéir à l'école ?",
+      "Q4": "Quelle vérité vas-tu méditer chaque jour ?"
+    },
+    "S070": {
+      "Q1": "Quels actes de confiance remarques-tu dans cette histoire ?",
+      "Q2": "Que t'enseigne la façon de vaincre de Dieu sur la foi ?",
+      "Q3": "Où l'obéissance pourrait-elle sembler inhabituelle mais fidèle ?",
+      "Q4": "Quel pas fidèle vas-tu faire cette semaine ?"
+    },
+    "S071": {
+      "Q1": "Quels facteurs contribuent au revers ici ?",
+      "Q2": "Qu'apprends-tu sur l'honnêteté, le péché et l'impact communautaire ?",
+      "Q3": "Où des choix cachés pourraient-ils nuire à ton groupe ?",
+      "Q4": "Quel pas de confession ou de réparation vas-tu faire ?"
+    },
+    "S072": {
+      "Q1": "Quels progrès et défis sont enregistrés ici ?",
+      "Q2": "À quoi ressemble l'obéissance constante au fil du temps ?",
+      "Q3": "Quel devoir scolaire ou objectif a besoin de ton effort constant ?",
+      "Q4": "Quelle action quotidienne vas-tu faire vers cet objectif cette semaine ?"
+    },
+    "S073": {
+      "Q1": "Quelles frontières et portions sont décrites ?",
+      "Q2": "Qu'enseigne cela sur l'ordre et l'équité ?",
+      "Q3": "Où les rôles clairs aident-ils les équipes à bien fonctionner ?",
+      "Q4": "Quel rôle vas-tu embrasser et servir cette semaine ?"
+    },
+    "S074": {
+      "Q1": "Quels schémas continuent dans l'attribution de la terre ?",
+      "Q2": "Quelles valeurs guident la distribution que tu vois ?",
+      "Q3": "Où peux-tu pratiquer l'équité quand les ressources sont limitées ?",
+      "Q4": "Quel choix équitable vas-tu faire aujourd'hui ?"
+    },
+    "S075": {
+      "Q1": "Quels besoins ou lacunes restants sont abordés ici ?",
+      "Q2": "Que montre cela sur bien terminer les tâches ?",
+      "Q3": "Comment bien terminer renforce-t-il ta confiance académique ?",
+      "Q4": "Quel devoir ou projet vas-tu terminer pour être fier cette semaine ?"
+    },
+    "S076": {
+      "Q1": "Quels rappels ou avertissements Josué donne-t-il ?",
+      "Q2": "Qu'enseignent-ils sur la loyauté et le compromis ?",
+      "Q3": "Où es-tu tenté de dériver de tes convictions ?",
+      "Q4": "Quelle barrière vas-tu mettre en place cette semaine ?"
+    },
+    "S077": {
+      "Q1": "Quel cycle vois-tu se répéter ici ?",
+      "Q2": "Qu'enseigne cela sur le cœur et les habitudes ?",
+      "Q3": "Où remarques-tu ce cycle dans tes propres choix ?",
+      "Q4": "Quel pas précoce vas-tu faire pour briser le cycle ?"
+    },
+    "S078": {
+      "Q1": "Quels leaders ou moments t'ont marqué ?",
+      "Q2": "Que suggèrent ces histoires sur les instruments improbables de Dieu ?",
+      "Q3": "Où Dieu pourrait-il utiliser tes forces uniques ?",
+      "Q4": "Quel pas de service vas-tu faire cette semaine ?"
+    },
+    "S079": {
+      "Q1": "Quels doutes et signes apparaissent dans l'histoire de Gédéon ?",
+      "Q2": "Qu'enseigne la patience de Dieu sur la foi grandissante ?",
+      "Q3": "Où as-tu besoin de courage dans la faiblesse à l'école ?",
+      "Q4": "Quel petit acte de courage vas-tu faire aujourd'hui ?"
+    },
+    "S080": {
+      "Q1": "Quels signes d'avertissement vois-tu dans la montée d'Abimélec ?",
+      "Q2": "Qu'apprends-tu sur l'ambition et la responsabilité ?",
+      "Q3": "Où les jeux de pouvoir pourraient-ils nuire à ton groupe ou ton équipe ?",
+      "Q4": "Quel pas responsable vas-tu ajouter cette semaine ?"
+    },
+    "S081": {
+      "Q1": "Que remarques-tu sur les vœux et les mots ici ?",
+      "Q2": "Que révèle cela sur les promesses hâtives et la sagesse ?",
+      "Q3": "Où tes mots dépassent-ils la sagesse ?",
+      "Q4": "Quelle habitude de parole prudente vas-tu pratiquer ?"
+    },
+    "S082": {
+      "Q1": "Quelles forces et faiblesses remarques-tu chez Samson ?",
+      "Q2": "Qu'enseigne cela sur l'appel et le compromis ?",
+      "Q3": "Où es-tu fort mais vulnérable à l'école ?",
+      "Q4": "Quelle protection vas-tu mettre en place cette semaine ?"
+    },
+    "S083": {
+      "Q1": "Quelles scènes montrent une confusion morale dans cette section ?",
+      "Q2": "Que révèle cela sur la vie sans vrai guide ?",
+      "Q3": "Où vois-tu « chacun fait ce qu'il veut » à l'école ?",
+      "Q4": "Quelle vérité directrice vas-tu suivre cette semaine ?"
+    },
+    "S084": {
+      "Q1": "Quels autres exemples approfondissent la préoccupation ici ?",
+      "Q2": "Que dit cela sur la communauté sans justice ?",
+      "Q3": "Où peux-tu être une voix pour ce qui est juste et bon ?",
+      "Q4": "Quel pas de protection vas-tu faire pour quelqu'un de vulnérable ?"
+    },
+    "S085": {
+      "Q1": "Quels choix de Ruth et Boaz te marquent ?",
+      "Q2": "Qu'apprends-tu sur la loyauté, le courage et la bonté ?",
+      "Q3": "Où une bonté loyale pourrait-elle changer une situation à l'école ?",
+      "Q4": "Quelle action loyale vas-tu entreprendre cette semaine ?"
+    },
+    "S086": {
+      "Q1": "Quels signes de la présence de Dieu apparaissent dans la vie de Samuel ?",
+      "Q2": "Qu'apprends-tu sur l'écoute et la réponse à Dieu ?",
+      "Q3": "Où sens-tu un appel à écouter plus attentivement ?",
+      "Q4": "Quelle pratique d'écoute vas-tu essayer cette semaine ?"
+    },
+    "S087": {
+      "Q1": "Quelles raisons le peuple donne-t-il pour vouloir un roi ?",
+      "Q2": "Que révèle cela sur la peur, la comparaison et la confiance ?",
+      "Q3": "Où ressens-tu la pression de t'intégrer plutôt que de faire confiance à Dieu ?",
+      "Q4": "Quel choix vas-tu faire qui va à l'encontre de la foule cette semaine ?"
+    },
+    "S088": {
+      "Q1": "Quels moments marquent la montée de Saül au leadership ?",
+      "Q2": "Que remarques-tu sur l'humilité, les signes et l'appel ?",
+      "Q3": "Où l'humilité pourrait-elle façonner ton leadership parmi tes pairs ?",
+      "Q4": "Quelle pratique humble vas-tu choisir cette semaine ?"
+    },
+    "S089": {
+      "Q1": "Quels choix montrent la folie dans le leadership de Saül ?",
+      "Q2": "Quelles leçons vois-tu sur l'impatience et la pression ?",
+      "Q3": "Où la pression du temps et l'image guident-elles tes décisions ?",
+      "Q4": "Quelle pause sage vas-tu intégrer dans ta semaine ?"
+    },
+    "S090": {
+      "Q1": "Quels contrastes apparaissent entre Saül et David ici ?",
+      "Q2": "Qu'enseigne cela sur le fait que Dieu voit le cœur ?",
+      "Q3": "Où les apparences extérieures trompent-elles à l'école ?",
+      "Q4": "Quelle qualité de caractère vas-tu travailler à développer chaque jour cette semaine ?"
+    },
+    "S091": {
+      "Q1": "Quels moments de courage ou de peur t'ont marqué dans cette lecture ?",
+      "Q2": "Que suggère cette histoire sur ce que Dieu valorise chez un leader ?",
+      "Q3": "Où fais-tu face à un défi qui semble démesuré à l'école ?",
+      "Q4": "Quel pas de foi vas-tu faire vers ce défi cette semaine ?"
+    },
+    "S092": {
+      "Q1": "Quelles tensions remarques-tu entre Saül, David et Jonathan ?",
+      "Q2": "Qu'apprends-tu ici sur la loyauté, la jalousie et la confiance ?",
+      "Q3": "Où pourrais-tu pratiquer l'amitié loyale sous pression ?",
+      "Q4": "Quelle limite ou habitude t'aidera à protéger ton cœur cette semaine ?"
+    },
+    "S093": {
+      "Q1": "Quels choix David fait-il sous pression ?",
+      "Q2": "Que montrent ces choix sur la peur, la sagesse et la confiance ?",
+      "Q3": "Où as-tu besoin de sagesse quand tu te sens stressé ou coincé ?",
+      "Q4": "Quel pas sage vas-tu faire avant de réagir cette semaine ?"
+    },
+    "S094": {
+      "Q1": "Où vois-tu des chances de vengeance ou de représailles dans ce passage ?",
+      "Q2": "Que révèle la retenue de David sur l'honneur et la patience ?",
+      "Q3": "Où la retenue pourrait-elle briser un cycle nuisible dans ton contexte ?",
+      "Q4": "Quelle réponse gracieuse vas-tu choisir si provoqué cette semaine ?"
+    },
+    "S095": {
+      "Q1": "Quels contrastes vois-tu entre la peur de Saül et la réponse de David ?",
+      "Q2": "Qu'enseigne cela sur chercher Dieu versus des solutions rapides ?",
+      "Q3": "Où es-tu tenté de prendre un raccourci au lieu de chercher Dieu ?",
+      "Q4": "Quelle pratique t'aidera à chercher Dieu en premier cette semaine ?"
+    },
+    "S096": {
+      "Q1": "Quelles émotions et actions marquent la lamentation de David ?",
+      "Q2": "Qu'enseigne la lamentation ici sur le deuil et le leadership ?",
+      "Q3": "Comment traites-tu les émotions difficiles tout en restant concentré sur les études ?",
+      "Q4": "Quel pas simple vas-tu faire pour pratiquer la lamentation honnête ?"
+    },
+    "S097": {
+      "Q1": "Quelles étapes mènent de l'attente à la royauté de David ?",
+      "Q2": "Que remarques-tu sur la patience, le timing et la promesse ?",
+      "Q3": "Où l'attente façonne-t-elle ton caractère en ce moment ?",
+      "Q4": "Quelle habitude fidèle vas-tu maintenir pendant que tu attends ?"
+    },
+    "S098": {
+      "Q1": "Quelles promesses ou thèmes te marquent le plus ?",
+      "Q2": "Que révèle cette alliance sur le royaume et la grâce de Dieu ?",
+      "Q3": "Comment la promesse façonne-t-elle ton espoir pendant les pressions scolaires ?",
+      "Q4": "Quelle pratique d'espoir vas-tu emporter dans cette semaine ?"
+    },
+    "S099": {
+      "Q1": "Quelles victoires ou percées sont mises en évidence ici ?",
+      "Q2": "Quelles protections maintiennent le succès humble et centré sur Dieu ?",
+      "Q3": "Comment vas-tu gérer le succès sans perdre l'humilité ?",
+      "Q4": "Quel pas de gratitude vas-tu faire après une victoire cette semaine ?"
+    },
+    "S100": {
+      "Q1": "Quels signes d'alerte précoces mènent à l'échec ici ?",
+      "Q2": "Que montre ce passage sur le péché, la confession et les conséquences ?",
+      "Q3": "Où de petits compromis pourraient-ils devenir un plus grand mal ?",
+      "Q4": "Quelle barrière vas-tu mettre en place cette semaine ?"
+    },
+    "S101": {
+      "Q1": "Quelles graines de division commencent à apparaître dans cette section ?",
+      "Q2": "Qu'apprends-tu sur la flatterie, l'ambition et l'influence ?",
+      "Q3": "Où vois-tu des tactiques similaires façonner la vie étudiante ?",
+      "Q4": "Quel pas de paix pourrais-tu faire cette semaine ?"
+    },
+    "S102": {
+      "Q1": "Quelles décisions font avancer le conflit ici ?",
+      "Q2": "Que révèle cela sur le conseil, l'orgueil et l'écoute ?",
+      "Q3": "Quelles voix influencent le plus tes choix en ce moment ?",
+      "Q4": "Quel conseil sage vas-tu chercher avant de décider ?"
+    },
+    "S103": {
+      "Q1": "Quelles actions et attitudes mènent à la restauration ?",
+      "Q2": "Que remarques-tu sur la miséricorde, la justice et l'unité ici ?",
+      "Q3": "Où sens-tu un besoin de restauration dans un groupe auquel tu appartiens ?",
+      "Q4": "Quel pas vers la réparation vas-tu faire cette semaine ?"
+    },
+    "S104": {
+      "Q1": "Quels hauts et bas marquent cette période de la vie de David ?",
+      "Q2": "Que suggère cela sur terminer avec humilité et confiance ?",
+      "Q3": "Où les choix à la fin d'une période comptent-ils le plus pour toi ?",
+      "Q4": "Quel objectif académique vas-tu terminer en force cette semaine ?"
+    },
+    "S105": {
+      "Q1": "Quels défis entourent cette transition de leadership ?",
+      "Q2": "Que montre le début de Salomon sur la sagesse et la dépendance ?",
+      "Q3": "Où fais-tu face à une nouvelle responsabilité ou un nouveau rôle ?",
+      "Q4": "Quel premier pas vas-tu faire pour chercher la sagesse ?"
+    },
+    "S106": {
+      "Q1": "Quelle demande définit le début de Salomon ?",
+      "Q2": "Que montre la réponse de Dieu sur ce qu'Il valorise ?",
+      "Q3": "Quelles amitiés ou activités ont besoin de sagesse en ce moment ?",
+      "Q4": "Quelle habitude quotidienne vas-tu utiliser pour grandir en sagesse ?"
+    },
+    "S107": {
+      "Q1": "Quels efforts et soins sont mis dans ce travail de construction ?",
+      "Q2": "À quoi ressemble l'excellence dans l'adoration et le service ici ?",
+      "Q3": "Où l'excellence pourrait-elle honorer Dieu dans tes études ou ton service ?",
+      "Q4": "Quel pas de qualité vas-tu faire sur une tâche cette semaine ?"
+    },
+    "S108": {
+      "Q1": "Quels thèmes dans la prière et la dédicace te marquent ?",
+      "Q2": "Que signifie la présence de Dieu pour la communauté ici ?",
+      "Q3": "Comment pourrais-tu dédier un espace ou une routine à Dieu à l'école ?",
+      "Q4": "Quelle prière personnelle t'aidera à rester concentré cette semaine ?"
+    },
+    "S109": {
+      "Q1": "Qu'est-ce qui détourne le cœur de Salomon au fil du temps ?",
+      "Q2": "De quoi cela met-il en garde sur la dérive, le désir et la loyauté divisée ?",
+      "Q3": "Où le confort ou le succès pourraient-ils te faire dévier ?",
+      "Q4": "Quelle correction de cap vas-tu faire aujourd'hui ?"
+    },
+    "S110": {
+      "Q1": "Quels choix et mots déclenchent la division ici ?",
+      "Q2": "Que montre cela sur l'écoute, l'orgueil et les conséquences ?",
+      "Q3": "Où l'entêtement divise-t-il les équipes ou les amis autour de toi ?",
+      "Q4": "Quel pas d'écoute vas-tu faire avant de parler cette semaine ?"
+    },
+    "S111": {
+      "Q1": "Quels schémas répétés remarques-tu à travers ces règnes ?",
+      "Q2": "Qu'apprends-tu sur l'héritage, le compromis et la réforme ?",
+      "Q3": "Quels schémas veux-tu éviter dans ta propre influence ?",
+      "Q4": "Quelle pratique vas-tu adopter pour façonner un meilleur héritage ?"
+    },
+    "S112": {
+      "Q1": "Quelles confrontations et moments de foi se démarquent ?",
+      "Q2": "Que révèle cela sur la loyauté envers le vrai Dieu ?",
+      "Q3": "Où fais-tu face à des loyautés concurrentes ou des motivations mixtes ?",
+      "Q4": "Quel pas vas-tu faire pour choisir la fidélité cette semaine ?"
+    },
+    "S113": {
+      "Q1": "Quels hauts et bas Élie vit-il ici ?",
+      "Q2": "Que fournit Dieu dans la faiblesse et la peur d'Élie ?",
+      "Q3": "Où te sens-tu épuisé ou découragé en ce moment ?",
+      "Q4": "Quelle pause saine t'aidera à recharger cette semaine ?"
+    },
+    "S114": {
+      "Q1": "Quelles injustices ou abus de pouvoir apparaissent ici ?",
+      "Q2": "Que dit Dieu sur la vérité, la justice et l'autorité ?",
+      "Q3": "Où vois-tu un mauvais usage du pouvoir dans ton contexte ?",
+      "Q4": "Quel pas courageux de dire la vérité vas-tu faire sagement ?"
+    },
+    "S115": {
+      "Q1": "Quelles alliances et quels choix te marquent ?",
+      "Q2": "Que révèlent-ils sur le partenariat, le risque et la confiance ?",
+      "Q3": "Où tes alliances façonnent-elles ta marche avec Dieu ?",
+      "Q4": "Quelle limite vas-tu fixer pour une influence plus saine ?"
+    },
+    "S116": {
+      "Q1": "Quelles histoires personnelles ou besoins t'ont le plus touché ?",
+      "Q2": "Qu'apprends-tu sur la compassion, la foi et la sollicitude de Dieu ?",
+      "Q3": "Qui près de toi a besoin d'aide ou d'encouragement discret ?",
+      "Q4": "Quel simple acte de sollicitude vas-tu offrir cette semaine ?"
+    },
+    "S117": {
+      "Q1": "Quelles scènes ou tensions internationales sont mises en évidence ?",
+      "Q2": "Que montre cela sur la portée de Dieu parmi les nations ?",
+      "Q3": "Qui est en dehors de ton cercle habituel à l'école ou à la maison ?",
+      "Q4": "Quel pas vas-tu faire vers eux cette semaine ?"
+    },
+    "S118": {
+      "Q1": "Quels jugements et réformes se déroulent dans ce passage ?",
+      "Q2": "Qu'apprends-tu sur le zèle, l'obéissance et les motivations ?",
+      "Q3": "Où as-tu besoin de zèle guidé par la sagesse et l'amour ?",
+      "Q4": "Quel pas concentré vas-tu faire cette semaine ?"
+    },
+    "S119": {
+      "Q1": "Quelles menaces et sauvetages façonnent cette période ?",
+      "Q2": "Que dit cela sur le courage, la protection et l'alliance ?",
+      "Q3": "Où peux-tu protéger quelque chose de bon qui est en danger ?",
+      "Q4": "Quel pas de protection vas-tu faire cette semaine ?"
+    },
+    "S120": {
+      "Q1": "Quels bilans mitigés de leadership vois-tu ici ?",
+      "Q2": "Quels schémas d'obéissance partielle apparaissent à travers les rois ?",
+      "Q3": "Où as-tu tendance à t'arrêter avant ce qui est bon ?",
+      "Q4": "Quel pas de finalisation vas-tu faire cette semaine ?"
+    },
+    "S121": {
+      "Q1": "Quels choix mènent à l'affaiblissement et à la chute ?",
+      "Q2": "Quels avertissements se démarquent sur l'idolâtrie et la dérive ?",
+      "Q3": "Où des amours moindres détournent-elles ton cœur de Dieu ?",
+      "Q4": "Quel pas vas-tu faire pour te recentrer aujourd'hui ?"
+    },
+    "S122": {
+      "Q1": "Quelles réformes, prières ou miracles se démarquent ici ?",
+      "Q2": "Qu'est-ce qui montre la confiance en Dieu sous la menace et la pression ?",
+      "Q3": "Où fais-tu face à une pression qui teste ta confiance ?",
+      "Q4": "Quel pas de prière vas-tu faire avant d'agir ?"
+    },
+    "S123": {
+      "Q1": "Quels contrastes vois-tu parmi ces rois ?",
+      "Q2": "Qu'apprends-tu sur la repentance, le renouveau et l'héritage ?",
+      "Q3": "Où as-tu besoin d'un nouveau départ avec Dieu ?",
+      "Q4": "Quel pas de repentance vas-tu faire cette semaine ?"
+    },
+    "S124": {
+      "Q1": "Quels avertissements ont été ignorés menant à la perte ?",
+      "Q2": "Que montre cela sur semer, récolter et les cœurs obstinés ?",
+      "Q3": "Où ignores-tu un conseil sage en ce moment ?",
+      "Q4": "Quel changement d'écoute vas-tu faire cette semaine ?"
+    },
+    "S125": {
+      "Q1": "Quels noms ou brèves notes attirent ton attention ?",
+      "Q2": "Que suggère cette longue mémoire sur l'identité et la promesse ?",
+      "Q3": "Qui t'a transmis la foi à travers le temps ou la famille ?",
+      "Q4": "Quels remerciements vas-tu exprimer à un mentor ou un membre de la famille ?"
+    },
+    "S126": {
+      "Q1": "Quels rôles ou tribus sont mis en évidence ici ?",
+      "Q2": "Quelles forces personnelles pour aider les autres remarques-tu ?",
+      "Q3": "Où te situes-tu dans le travail partagé de ta communauté ?",
+      "Q4": "Quelle partie vas-tu jouer fidèlement cette semaine ?"
+    },
+    "S127": {
+      "Q1": "Quels détails ou schémas répétitifs as-tu remarqués ?",
+      "Q2": "Que suggère cela sur la fidélité constante de Dieu ?",
+      "Q3": "Comment l'appartenance façonne-t-elle les choix que tu fais ?",
+      "Q4": "Qui vas-tu honorer ou encourager pour leur fidélité ?"
+    },
+    "S128": {
+      "Q1": "Quelles transitions et réponses se déroulent dans cette lecture ?",
+      "Q2": "Qu'apprends-tu sur le deuil, l'honneur et l'espoir ensemble ?",
+      "Q3": "Comment gères-tu les transitions scolaires - changements de niveau, amitiés ou activités ?",
+      "Q4": "Quelle pratique d'ancrage te gardera stable cette semaine ?"
+    },
+    "S129": {
+      "Q1": "Quelles réactions à la présence de Dieu apparaissent dans cette scène ?",
+      "Q2": "À quoi ressemblent la révérence et la joie côte à côte ici ?",
+      "Q3": "Comment la révérence et la joie pourraient-elles se rencontrer dans tes routines ?",
+      "Q4": "Quelle habitude d'adoration vas-tu pratiquer cette semaine ?"
+    },
+    "S130": {
+      "Q1": "Quelles promesses et victoires sont mises en évidence ici ?",
+      "Q2": "Que montrent-elles sur l'initiative et l'aide de Dieu ?",
+      "Q3": "Où la gratitude pourrait-elle remplacer le fait de s'attribuer le mérite dans ta vie ?",
+      "Q4": "Quel pas de louange vas-tu faire après un travail bien fait ?"
+    },
+    "S131": {
+      "Q1": "Quelles erreurs et miséricorde apparaissent dans ce passage ?",
+      "Q2": "Qu'apprends-tu sur la confession, la sagesse et la planification ?",
+      "Q3": "Où as-tu besoin d'admettre une erreur et d'ajuster ton plan ?",
+      "Q4": "Quel pas de correction vas-tu faire cette semaine ?"
+    },
+    "S132": {
+      "Q1": "Quelle organisation et quels rôles sont mis en place ici ?",
+      "Q2": "Que montre cela sur le service partagé et l'ordre ?",
+      "Q3": "Où une meilleure structure pourrait-elle aider ton groupe ou ton équipe ?",
+      "Q4": "Quel système vas-tu mettre en place ou simplifier ?"
+    },
+    "S133": {
+      "Q1": "Quels rôles et responsabilités te marquent ?",
+      "Q2": "Qu'apprends-tu sur l'intendance, la confiance et le travail d'équipe ?",
+      "Q3": "Où peux-tu déléguer ou demander de l'aide pour faire mieux ?",
+      "Q4": "Quel pas d'équipe vas-tu faire cette semaine ?"
+    },
+    "S134": {
+      "Q1": "Quelles ressources et partenariats sont rassemblés ici ?",
+      "Q2": "Que dit cela sur la vision, la planification et le travail d'équipe ?",
+      "Q3": "Où as-tu besoin de partenaires pour construire quelque chose de bon ?",
+      "Q4": "Quelle demande claire vas-tu faire à un coéquipier cette semaine ?"
+    },
+    "S135": {
+      "Q1": "Quels moments de dédicace ou d'adoration t'ont le plus touché ?",
+      "Q2": "Que révèle cela sur la fidélité de Dieu aux promesses ?",
+      "Q3": "Comment peux-tu dédier ton travail ou tes dons à Dieu cette semaine ?",
+      "Q4": "Quelle simple prière de dédicace vas-tu offrir ?"
+    },
+    "S136": {
+      "Q1": "Quels accomplissements et projets sont enregistrés ici ?",
+      "Q2": "Quelles priorités et pièges viennent avec l'accomplissement ?",
+      "Q3": "Comment vas-tu garder l'adoration au-dessus de l'accomplissement à l'école ?",
+      "Q4": "Quelle pratique gardera ton cœur centré cette semaine ?"
+    },
+    "S137": {
+      "Q1": "Quels choix de conseil et résultats vois-tu ?",
+      "Q2": "Que montre cela sur l'orgueil, l'humilité et l'écoute ?",
+      "Q3": "Où as-tu rejeté un conseil sage trop rapidement ?",
+      "Q4": "Quelle pratique d'écoute vas-tu utiliser avant de décider ?"
+    },
+    "S138": {
+      "Q1": "Quelles batailles, réformes ou prières se démarquent ici ?",
+      "Q2": "Qu'apprends-tu sur compter sur Dieu en crise ?",
+      "Q3": "Où pourrais-tu compter sur Dieu plutôt que paniquer ?",
+      "Q4": "Quelle prière t'aidera à rester calme dans les moments stressants cette semaine ?"
+    },
+    "S139": {
+      "Q1": "Quelles alliances et prières marquent ce règne ?",
+      "Q2": "Qu'enseigne chercher Dieu avant la bataille ?",
+      "Q3": "Où as-tu besoin de prier avant de planifier ?",
+      "Q4": "Quelle première prière commencera ta planification cette semaine ?"
+    },
+    "S140": {
+      "Q1": "Quels dangers et sauvetages façonnent cette période de l'histoire ?",
+      "Q2": "Que montre cela sur Dieu préservant ses desseins ?",
+      "Q3": "Quelle bonne chose Dieu t'a-t-il confiée pour la garder ?",
+      "Q4": "Quel pas de protection vas-tu faire cette semaine ?"
+    },
+    "S141": {
+      "Q1": "Quels schémas vois-tu parmi ces quatre rois ?",
+      "Q2": "Quel avertissement remarques-tu sur l'orgueil et la dérive ?",
+      "Q3": "Où l'orgueil pourrait-il s'infiltrer dans tes forces à l'école ?",
+      "Q4": "Quelle protection humble vas-tu mettre en place ?"
+    },
+    "S142": {
+      "Q1": "Quelles réformes et renouvellements te marquent ?",
+      "Q2": "Que révèle cela sur la confiance, l'adoration et le courage ?",
+      "Q3": "Où as-tu besoin de renouveler une bonne habitude avec Dieu ?",
+      "Q4": "Quelle habitude spirituelle vas-tu commencer à pratiquer quotidiennement cette semaine ?"
+    },
+    "S143": {
+      "Q1": "Quels balancements entre foi et mal apparaissent ici ?",
+      "Q2": "Qu'apprends-tu sur le jugement, la repentance et la miséricorde ?",
+      "Q3": "Où as-tu besoin d'espoir que le changement soit encore possible ?",
+      "Q4": "Quelle habitude personnelle vas-tu t'engager à changer cette semaine ?"
+    },
+    "S144": {
+      "Q1": "Quelles découvertes et réponses se démarquent au temps de Josias ?",
+      "Q2": "Que montre cela sur l'Écriture remodelant un peuple ?",
+      "Q3": "Où l'Écriture pourrait-elle recentrer ta semaine à l'école ?",
+      "Q4": "Quel temps vas-tu réserver pour lire et répondre chaque jour ?"
+    },
+    "S145": {
+      "Q1": "Quels premiers pas sont faits alors que les gens rentrent chez eux ?",
+      "Q2": "Qu'enseigne la reconstruction de l'adoration après un long revers ?",
+      "Q3": "Où as-tu besoin de reconstruire quelque chose qui compte ?",
+      "Q4": "Quelle première brique vas-tu poser cette semaine ?"
+    },
+    "S146": {
+      "Q1": "Quels types d'opposition apparaissent dans ce passage ?",
+      "Q2": "Qu'est-ce qui garde le peuple stable malgré la résistance ?",
+      "Q3": "Où fais-tu face au découragement en faisant le bien ?",
+      "Q4": "Quel pas stable vas-tu faire malgré le refus ?"
+    },
+    "S147": {
+      "Q1": "Quelle concentration Esdras apporte-t-il au peuple ?",
+      "Q2": "Qu'enseigne le fait de mettre son cœur à étudier et à faire ?",
+      "Q3": "Comment pourrais-tu mettre ton cœur à apprendre et à vivre la parole de Dieu ?",
+      "Q4": "Quel petit plan vas-tu commencer cette semaine ?"
+    },
+    "S148": {
+      "Q1": "Quel problème est confronté et comment les gens répondent-ils ?",
+      "Q2": "À quoi ressemble la vraie repentance en communauté ?",
+      "Q3": "Où les compromis ont-ils besoin d'une attention honnête dans ta vie ?",
+      "Q4": "Quel pas clair vas-tu faire pour revenir à Dieu ?"
+    },
+    "S149": {
+      "Q1": "Quel fardeau et quel plan se forment dans le cœur de Néhémie ?",
+      "Q2": "Qu'enseigne la planification priante pour les tâches difficiles ?",
+      "Q3": "Où sens-tu un fardeau que tu dois assumer ?",
+      "Q4": "Quel premier mouvement vas-tu faire avec prière et sagesse ?"
+    },
+    "S150": {
+      "Q1": "Quelles tactiques d'opposition remarques-tu ?",
+      "Q2": "Qu'est-ce qui aide le peuple à rester concentré sur le travail ?",
+      "Q3": "Où les distractions te détournent-elles du bon travail à l'école ?",
+      "Q4": "Quel pas de concentration vas-tu faire pour continuer à construire ?"
+    },
+    "S151": {
+      "Q1": "Quelles pratiques restaurent l'identité et la joie ici ?",
+      "Q2": "Que font ensemble la confession et la célébration ?",
+      "Q3": "Quels rythmes aident à restaurer ton cœur après le stress ?",
+      "Q4": "Quel rythme vas-tu intégrer dans cette semaine ?"
+    },
+    "S152": {
+      "Q1": "Quelles actions de dédicace et engagements se démarquent ?",
+      "Q2": "Qu'apprends-tu sur la responsabilité et l'adoration ?",
+      "Q3": "Où as-tu besoin de soutien pour garder de bons engagements ?",
+      "Q4": "Quel partenaire d'étude ou ami vas-tu demander de vérifier avec toi cette semaine ?"
+    },
+    "S153": {
+      "Q1": "Quelles ouvertures ou tournants improbables vois-tu ?",
+      "Q2": "Que suggère cela sur la providence et le but ?",
+      "Q3": "Où ta position pourrait-elle t'aider à bénir les autres ?",
+      "Q4": "Quel pas vas-tu faire pour servir là où tu es ?"
+    },
+    "S154": {
+      "Q1": "Quels risques et décisions façonnent le sauvetage ici ?",
+      "Q2": "Qu'enseigne cela sur le courage et le timing ?",
+      "Q3": "Où pourrais-tu avoir besoin de parler pour quelqu'un ?",
+      "Q4": "Quel pas respectueux vas-tu faire pour utiliser ta voix ?"
+    },
+    "S155": {
+      "Q1": "Quelles pertes et réponses marquent l'histoire précoce de Job ?",
+      "Q2": "Qu'apprends-tu sur la lamentation honnête et la foi ?",
+      "Q3": "Où as-tu besoin d'espace pour apporter la douleur à Dieu ?",
+      "Q4": "Quelle simple prière vas-tu dire dans tes propres mots ?"
+    },
+    "S156": {
+      "Q1": "Quels conseils les amis de Job donnent-ils, et quelles sont ses limites ?",
+      "Q2": "Que montre cela sur les réponses rapides et le vrai réconfort ?",
+      "Q3": "Comment peux-tu être un meilleur ami pour quelqu'un qui souffre ?",
+      "Q4": "Quelle action douce vas-tu prendre pour les soutenir ?"
+    },
+    "S157": {
+      "Q1": "Quelles accusations ou revendications apparaissent dans cette section ?",
+      "Q2": "Que remarques-tu sur l'espoir et la confusion de Job ensemble ?",
+      "Q3": "Où t'accroches-tu sans pleine compréhension ?",
+      "Q4": "Quel petit pas de confiance vas-tu faire aujourd'hui ?"
+    },
+    "S158": {
+      "Q1": "Quels thèmes de justice et de protestation apparaissent ici ?",
+      "Q2": "Que revendique Job sur l'intégrité devant Dieu ?",
+      "Q3": "Où désires-tu l'équité ou la clarté en ce moment ?",
+      "Q4": "Quelle demande honnête vas-tu apporter à Dieu cette semaine ?"
+    },
+    "S159": {
+      "Q1": "Quelles défenses finales ou auto-réflexion Job fait-il ?",
+      "Q2": "Qu'enseigne cela sur examiner le cœur avec Dieu ?",
+      "Q3": "Où as-tu besoin d'examiner les motivations et les actions ?",
+      "Q4": "Quel prochain pas vas-tu faire après réflexion ?"
+    },
+    "S160": {
+      "Q1": "Quels nouveaux angles ou corrections Élihu offre-t-il ?",
+      "Q2": "Que dit-il sur la grandeur et l'enseignement de Dieu ?",
+      "Q3": "Où pourrais-tu accueillir une correction ou une perspicacité fraîche ?",
+      "Q4": "Quel pas d'écoute vas-tu pratiquer cette semaine ?"
+    },
+    "S161": {
+      "Q1": "Quelles images de la puissance et de la sagesse de Dieu t'ont touché ?",
+      "Q2": "Que produit l'humilité devant le mystère chez Job ?",
+      "Q3": "Où peux-tu faire confiance à Dieu sans réponses complètes ?",
+      "Q4": "Quel acte de confiance vas-tu choisir cette semaine ?"
+    },
+    "S162": {
+      "Q1": "Quelles lignes de ces psaumes sont restées avec toi ?",
+      "Q2": "Quels portraits des justes et des méchants apparaissent ?",
+      "Q3": "Comment ces portraits se croisent-ils avec tes choix à l'école ?",
+      "Q4": "Quelle pratique de méditation ou de prière vas-tu essayer ?"
+    },
+    "S163": {
+      "Q1": "Quels cris ou louanges t'ont marqué dans ces psaumes ?",
+      "Q2": "Qu'apprends-tu sur la proximité de Dieu dans les ennuis ?",
+      "Q3": "Où as-tu besoin d'aide ou de force cette semaine ?",
+      "Q4": "Quelle prière d'une phrase vas-tu apporter à Dieu ?"
+    },
+    "S164": {
+      "Q1": "Quelles images de Dieu comme berger, rocher ou bouclier t'ont parlé ?",
+      "Q2": "Que disent ces psaumes sur la guidance et la confiance ?",
+      "Q3": "Comment vas-tu pratiquer la confiance dans une situation scolaire ?",
+      "Q4": "Quel verset vas-tu emporter avec toi cette semaine ?"
+    },
+    "S165": {
+      "Q1": "Quels témoignages ou lamentations as-tu remarqués ici ?",
+      "Q2": "Qu'apprends-tu sur la peur, le refuge et la louange ?",
+      "Q3": "Quelle peur as-tu besoin de nommer devant Dieu aujourd'hui ?",
+      "Q4": "Quel pas vas-tu faire pour louer Dieu ou chercher de l'aide ?"
+    },
+    "S166": {
+      "Q1": "Quels refrains ou désirs répétés as-tu entendus ?",
+      "Q2": "Que disent ces psaumes sur avoir soif de Dieu ?",
+      "Q3": "Où te sens-tu spirituellement sec ou découragé ?",
+      "Q4": "Quelle pratique simple t'aidera à chercher Dieu cette semaine ?"
+    },
+    "S167": {
+      "Q1": "Quels contrastes entre comploter et faire confiance t'ont marqué ?",
+      "Q2": "Quelles réponses de foi apparaissent dans les moments difficiles ?",
+      "Q3": "Où es-tu tenté de riposter ou de désespérer ?",
+      "Q4": "Quelle réponse de confiance vas-tu choisir à la place ?"
+    },
+    "S168": {
+      "Q1": "Quelles images de la création et de la bénédiction ont attiré ton attention ?",
+      "Q2": "Qu'apprends-tu sur la justice, la miséricorde et le Roi ?",
+      "Q3": "Comment vas-tu prier pour les leaders et les communautés cette semaine ?",
+      "Q4": "Quelle courte prière vas-tu offrir pour ta ville ou ton école ?"
+    },
+    "S169": {
+      "Q1": "Quelles luttes avec l'envie ou le doute apparaissent ici ?",
+      "Q2": "Qu'est-ce qui change quand le psalmiste entre dans la présence de Dieu ?",
+      "Q3": "Où la comparaison vole-t-elle ta joie à l'école ?",
+      "Q4": "Quel pas de gratitude vas-tu faire pour recadrer ta vision ?"
+    },
+    "S170": {
+      "Q1": "Quelle histoire ou quels avertissements sont racontés dans ces psaumes ?",
+      "Q2": "Quelles leçons sommes-nous censés nous rappeler et transmettre ?",
+      "Q3": "Quelle histoire de l'aide de Dieu pourrais-tu partager avec quelqu'un de plus jeune ?",
+      "Q4": "À qui vas-tu le dire et quand cette semaine ?"
+    },
+    "S171": {
+      "Q1": "Quels chants de désir et de louange t'ont marqué ?",
+      "Q2": "Que remarques-tu sur la fidélité de Dieu à ses promesses ?",
+      "Q3": "Où désires-tu sentir la présence de Dieu dans la vie quotidienne ?",
+      "Q4": "Quelle petite pratique t'aidera à t'approcher cette semaine ?"
+    },
+    "S172": {
+      "Q1": "Quels appels à l'adoration et à la confiance as-tu vus ?",
+      "Q2": "Que disent ces psaumes sur le règne et la sollicitude de Dieu ?",
+      "Q3": "Comment la louange publique pourrait-elle orienter les autres vers Dieu à l'école ?",
+      "Q4": "Quelle brève ligne de louange vas-tu répéter cette semaine ?"
+    },
+    "S173": {
+      "Q1": "Quels engagements et confessions apparaissent ici ?",
+      "Q2": "Comment ces psaumes modélisent-ils le fait de se souvenir des œuvres de Dieu ?",
+      "Q3": "Quel engagement as-tu besoin de renouveler avec Dieu ?",
+      "Q4": "Quel pas vas-tu faire pour le garder cette semaine ?"
+    },
+    "S174": {
+      "Q1": "Quels schémas de sauvetage et de remerciements reviennent ici ?",
+      "Q2": "À quoi ressemble craindre le Seigneur dans les choix quotidiens ?",
+      "Q3": "Où as-tu vu Dieu te secourir récemment ?",
+      "Q4": "Qui vas-tu remercier ou encourager à cause de cela ?"
+    },
+    "S175": {
+      "Q1": "Quels thèmes de louange et de confiance as-tu remarqués ?",
+      "Q2": "Comment Dieu élève-t-il les humbles et aide-t-il les nécessiteux ici ?",
+      "Q3": "Où as-tu besoin d'humilité dans le succès ou la visibilité ?",
+      "Q4": "Quel simple acte de remerciement vas-tu offrir aujourd'hui ?"
+    },
+    "S176": {
+      "Q1": "Quelles lignes sur la parole de Dieu t'ont le plus marqué ?",
+      "Q2": "Que vois-tu sur la valeur de l'Écriture pour la vie ?",
+      "Q3": "Comment pourrais-tu tisser l'Écriture dans ta journée à l'école ?",
+      "Q4": "Quelle pratique vas-tu commencer (lire, mémoriser, réfléchir) ?"
+    },
+    "S177": {
+      "Q1": "Quels chants de pèlerins ou refrains reconnaissants ont attiré ton oreille ?",
+      "Q2": "Qu'apprends-tu sur l'amour constant de Dieu ?",
+      "Q3": "Quel voyage fais-tu qui a besoin de l'aide de Dieu ?",
+      "Q4": "Quelle courte prière vas-tu prier en chemin ?"
+    },
+    "S178": {
+      "Q1": "Quelles fortes émotions et louanges apparaissent ensemble ici ?",
+      "Q2": "Que montre cela sur apporter tout ton cœur à Dieu ?",
+      "Q3": "Où as-tu besoin d'apporter de forts sentiments dans la prière ?",
+      "Q4": "Quel pas honnête vas-tu faire avec Dieu cette semaine ?"
+    },
+    "S179": {
+      "Q1": "Quelles raisons de louer remplissent ces psaumes de clôture ?",
+      "Q2": "Que remarques-tu sur qui loue et comment ils louent ?",
+      "Q3": "Comment la louange pourrait-elle façonner tes routines ordinaires ?",
+      "Q4": "Quelle façon de pratiquer la louange vas-tu essayer cette semaine ?"
+    },
+    "S180": {
+      "Q1": "Quels contrastes entre sagesse et folie t'ont marqué ?",
+      "Q2": "Quelle valeur vois-tu dans l'écoute et la correction ?",
+      "Q3": "Où as-tu le plus besoin de sagesse pour un choix que tu affrontes ?",
+      "Q4": "Quel pas vas-tu faire pour chercher conseil cette semaine ?"
+    },
+    "S181": {
+      "Q1": "Quels dictons ou images t'ont marqué ?",
+      "Q2": "Qu'enseignent-ils sur la sagesse et la folie ?",
+      "Q3": "Où as-tu besoin de cette sagesse en ce moment ?",
+      "Q4": "Quel pas vas-tu faire pour marcher sagement cette semaine ?"
+    },
+    "S182": {
+      "Q1": "Quels thèmes se répètent dans ces proverbes ?",
+      "Q2": "Que disent-ils sur les mots et les choix ?",
+      "Q3": "Où tes mots ont-ils besoin de plus de soin ?",
+      "Q4": "Quelle habitude de parole vas-tu pratiquer cette semaine ?"
+    },
+    "S183": {
+      "Q1": "Quels contrastes ont été les plus frappants pour toi ?",
+      "Q2": "Que révèlent-ils sur le cœur ?",
+      "Q3": "Où tes habitudes façonnent-elles ton chemin ?",
+      "Q4": "Quelle petite habitude vas-tu commencer aujourd'hui ?"
+    },
+    "S184": {
+      "Q1": "Quels conseils ou avertissements t'ont marqué ?",
+      "Q2": "Que montrent-ils sur l'amitié et la correction ?",
+      "Q3": "Où as-tu besoin de commentaires honnêtes ?",
+      "Q4": "Qui vas-tu inviter à te dire la vérité ?"
+    },
+    "S185": {
+      "Q1": "Que valorisent le plus ces proverbes ?",
+      "Q2": "Qu'enseignent-ils sur la diligence et la paresse ?",
+      "Q3": "Où as-tu besoin d'effort constant à l'école ?",
+      "Q4": "Quel pas quotidien vas-tu répéter cette semaine ?"
+    },
+    "S186": {
+      "Q1": "Quel proverbe correspond le mieux à ta vie aujourd'hui ?",
+      "Q2": "Quelle sagesse offre-t-il sur la tentation ?",
+      "Q3": "Où fais-tu face à cette tentation maintenant ?",
+      "Q4": "Quelle limite vas-tu fixer cette semaine ?"
+    },
+    "S187": {
+      "Q1": "Quelles luttes avec le sens as-tu remarquées ?",
+      "Q2": "Que dit l'auteur sur le travail et le plaisir ?",
+      "Q3": "Où cours-tu après ce qui ne satisfait pas ?",
+      "Q4": "Quelle pratique t'aidera à profiter sagement des dons de Dieu ?"
+    },
+    "S188": {
+      "Q1": "Quelles tensions apparaissent entre joie et limites ?",
+      "Q2": "Que signifie craindre Dieu ici ?",
+      "Q3": "Comment la révérence pourrait-elle façonner tes plans cette semaine ?",
+      "Q4": "Quelle joie simple vas-tu recevoir avec reconnaissance ?"
+    },
+    "S189": {
+      "Q1": "Quelle image de l'amour et de l'engagement vois-tu ?",
+      "Q2": "Que valorise le poème dans les relations ?",
+      "Q3": "Comment peux-tu honorer les autres en paroles et en actes ?",
+      "Q4": "Quelle limite ou pratique aidera à protéger l'amour ?"
+    },
+    "S190": {
+      "Q1": "Quelles accusations et espoirs sont nommés ici ?",
+      "Q2": "Que cherche Dieu de son peuple ?",
+      "Q3": "Où la justice et l'adoration doivent-elles se rencontrer en toi ?",
+      "Q4": "Quel acte de justice vas-tu faire cette semaine ?"
+    },
+    "S191": {
+      "Q1": "Quelles scènes de la vision t'ont frappé ?",
+      "Q2": "Que signifie saint dans ce chapitre ?",
+      "Q3": "Comment l'appel de Dieu rencontre-t-il ta faiblesse ?",
+      "Q4": "Quel oui à Dieu vas-tu offrir cette semaine ?"
+    },
+    "S192": {
+      "Q1": "Quels avertissements et promesses entends-tu ?",
+      "Q2": "À quoi ressemble le règne d'Emmanuel ?",
+      "Q3": "Où désires-tu ce genre de règne ?",
+      "Q4": "Comment vivras-tu sous cet espoir aujourd'hui ?"
+    },
+    "S193": {
+      "Q1": "Quelles nations sont interpellées, et pourquoi ?",
+      "Q2": "Que juge Dieu parmi les nations ?",
+      "Q3": "Où vois-tu de l'orgueil ou de la cruauté aujourd'hui ?",
+      "Q4": "Quelle prière ou action entreprendras-tu pour la justice ?"
+    },
+    "S194": {
+      "Q1": "Quels schémas se répètent à travers ces prophéties ?",
+      "Q2": "Que promettent les idoles et qu'échouent-elles à livrer ?",
+      "Q3": "Où es-tu tenté par de fausses sécurités ?",
+      "Q4": "En quoi feras-tu confiance à Dieu cette semaine ?"
+    },
+    "S195": {
+      "Q1": "Quels signes de jugement et de salut apparaissent ?",
+      "Q2": "Que signifie la souveraineté de Dieu ici ?",
+      "Q3": "Où as-tu besoin d'espoir face aux mauvaises nouvelles ?",
+      "Q4": "Quel pas fidèle feras-tu aujourd'hui ?"
+    },
+    "S196": {
+      "Q1": "Quels thèmes continuent de la dernière section ?",
+      "Q2": "Qu'apprends-tu sur la dépendance et l'orgueil ?",
+      "Q3": "Où t'appuies-tu sur ta propre force ?",
+      "Q4": "Comment dépendras-tu de Dieu cette semaine ?"
+    },
+    "S197": {
+      "Q1": "Quel espoir futur est décrit ici ?",
+      "Q2": "Que promet Dieu aux rachetés ?",
+      "Q3": "Où as-tu besoin de ce courage maintenant ?",
+      "Q4": "Quel pas exprime ta confiance en cette promesse ?"
+    },
+    "S198": {
+      "Q1": "Quelles délivrances et échecs sont enregistrés ?",
+      "Q2": "Qu'enseignent-ils sur la confiance et l'orgueil ?",
+      "Q3": "Où le succès pourrait-il te faire dériver ?",
+      "Q4": "Quelle garde te gardera humble cette semaine ?"
+    },
+    "S199": {
+      "Q1": "Quelles images de la puissance de Dieu se démarquent ?",
+      "Q2": "Comment les idoles sont-elles contrastées avec le Seigneur ?",
+      "Q3": "Où te sens-tu faible ou effrayé maintenant ?",
+      "Q4": "À quelle vérité d'ici t'accrocheras-tu ?"
+    },
+    "S200": {
+      "Q1": "Qu'est-ce qui marque la mission du Serviteur dans ce texte ?",
+      "Q2": "Quels contrastes apparaissent entre Dieu et les idoles ?",
+      "Q3": "Où as-tu besoin de justice douce et de guérison ?",
+      "Q4": "Quelle réponse de confiance offriras-tu aujourd'hui ?"
+    },
+    "S201": {
+      "Q1": "Que déclare Dieu sur Cyrus et l'histoire ?",
+      "Q2": "Que montre cela sur le contrôle de Dieu ?",
+      "Q3": "Où as-tu du mal à voir Dieu à l'œuvre ?",
+      "Q4": "Quelle confiance patiente pratiqueras-tu cette semaine ?"
+    },
+    "S202": {
+      "Q1": "Quels rôles du Serviteur sont mis en évidence ?",
+      "Q2": "Quel espoir est offert aux fatigués ?",
+      "Q3": "Où te sens-tu appelé à servir les autres ?",
+      "Q4": "Quel petit pas de serviteur feras-tu aujourd'hui ?"
+    },
+    "S203": {
+      "Q1": "Quelles souffrances et victoire sont décrites ici ?",
+      "Q2": "Que dit cela sur la manière de Dieu de sauver ?",
+      "Q3": "Comment cela façonne-t-il ta vision de Jésus ?",
+      "Q4": "Comment répondras-tu à cette grâce cette semaine ?"
+    },
+    "S204": {
+      "Q1": "Quel genre de jeûne et de justice Dieu désire-t-il ?",
+      "Q2": "Quelles promesses suivent la repentance humble ?",
+      "Q3": "Où pourrais-tu pratiquer le vrai jeûne maintenant ?",
+      "Q4": "Quel acte de justice ou de miséricorde choisiras-tu ?"
+    },
+    "S205": {
+      "Q1": "Quelles images de jugement et de renouveau apparaissent ?",
+      "Q2": "Quel espoir est offert aux serviteurs de Dieu ?",
+      "Q3": "Où as-tu besoin de cet espoir pour l'avenir ?",
+      "Q4": "Quel pas t'aligne avec l'avenir de Dieu aujourd'hui ?"
+    },
+    "S206": {
+      "Q1": "Quelles parties de l'appel de Jérémie se démarquent ?",
+      "Q2": "Que lui promet Dieu ?",
+      "Q3": "Où crains-tu de dire la vérité ?",
+      "Q4": "Quel pas d'obéissance feras-tu cette semaine ?"
+    },
+    "S207": {
+      "Q1": "Quels péchés sont nommés dans cette section ?",
+      "Q2": "Que prévient Dieu qu'il arrivera ?",
+      "Q3": "Où sont des racines similaires dans ton contexte ?",
+      "Q4": "Quel pas de retour feras-tu aujourd'hui ?"
+    },
+    "S208": {
+      "Q1": "Quelles fausses confiances sont exposées ici ?",
+      "Q2": "Qu'exige la vraie adoration ?",
+      "Q3": "Où accomplis-tu sans cœur ?",
+      "Q4": "Quel changement honnête chercheras-tu cette semaine ?"
+    },
+    "S209": {
+      "Q1": "Quels échecs d'alliance sont décrits ?",
+      "Q2": "Que montre cela sur les cœurs obstinés ?",
+      "Q3": "Où résistes-tu aux voies de Dieu ?",
+      "Q4": "Quelle pratique t'aidera à revenir ?"
+    },
+    "S210": {
+      "Q1": "Quelles images montrent la réticence de Dieu à juger ?",
+      "Q2": "Qu'enseigne cela sur la gravité du péché ?",
+      "Q3": "Où minimises-tu des choix nuisibles ?",
+      "Q4": "Quelle limite sage fixeras-tu cette semaine ?"
+    },
+    "S211": {
+      "Q1": "Quels signes de miséricorde apparaissent dans ces chapitres ?",
+      "Q2": "Quelles conditions sont données pour le retour ?",
+      "Q3": "Où vois-tu Dieu ouvrir une porte aujourd'hui ?",
+      "Q4": "Quel pas feras-tu à travers cette porte ?"
+    },
+    "S212": {
+      "Q1": "Quelle opposition Jérémie affronte-t-il ?",
+      "Q2": "Comment répond-il sous pression ?",
+      "Q3": "Où as-tu besoin de courage pour continuer à parler ?",
+      "Q4": "Quel soutien chercheras-tu cette semaine ?"
+    },
+    "S213": {
+      "Q1": "Quels leaders sont interpellés et pourquoi ?",
+      "Q2": "Qu'exige Dieu des leaders ?",
+      "Q3": "Où diriges-tu, même de petites manières ?",
+      "Q4": "Quelle habitude de leader pratiqueras-tu cette semaine ?"
+    },
+    "S214": {
+      "Q1": "Quel conflit sur la vérité apparaît ici ?",
+      "Q2": "Qu'est-ce qui marque un vrai versus faux message ?",
+      "Q3": "Où as-tu besoin de discernement dans les voix que tu entends ?",
+      "Q4": "Quel test de vérité utiliseras-tu cette semaine ?"
+    },
+    "S215": {
+      "Q1": "Quel espoir est offert aux exilés ?",
+      "Q2": "Que promet la nouvelle alliance ?",
+      "Q3": "Où as-tu besoin d'espoir dans une longue saison ?",
+      "Q4": "Quelle pratique patiente adopteras-tu cette semaine ?"
+    },
+    "S216": {
+      "Q1": "Quelle action Jérémie prend-il par foi ?",
+      "Q2": "Que montre cela sur l'espoir pendant la crise ?",
+      "Q3": "Où peux-tu agir maintenant vers un bien futur ?",
+      "Q4": "Quel petit investissement feras-tu cette semaine ?"
+    },
+    "S217": {
+      "Q1": "Quelles alliances sont comparées dans ce passage ?",
+      "Q2": "Quelle fidélité est recommandée ici ?",
+      "Q3": "Où as-tu besoin de tenir ta parole ?",
+      "Q4": "Quelle promesse honoreras-tu cette semaine ?"
+    },
+    "S218": {
+      "Q1": "Quelles épreuves continuent pour Jérémie ?",
+      "Q2": "Qu'est-ce qui le garde fidèle sous pression ?",
+      "Q3": "Où te sens-tu fatigué de faire le bien ?",
+      "Q4": "Quel pas de persévérance feras-tu aujourd'hui ?"
+    },
+    "S219": {
+      "Q1": "Quelles scènes marquent la chute de Jérusalem ?",
+      "Q2": "Qu'apprends-tu sur les conséquences et le deuil ?",
+      "Q3": "Où vois-tu le coût d'ignorer les avertissements ?",
+      "Q4": "Quel changement sage feras-tu maintenant ?"
+    },
+    "S220": {
+      "Q1": "Quels choix mènent vers la fuite en Égypte ?",
+      "Q2": "Que révèlent-ils sur la peur et la confiance ?",
+      "Q3": "Où les choix faits par peur te tentent-ils ?",
+      "Q4": "Quel choix de confiance feras-tu cette semaine ?"
+    },
+    "S221": {
+      "Q1": "Quels jugements sont annoncés sur les nations ?",
+      "Q2": "Qu'enseigne cela sur la justice de Dieu ?",
+      "Q3": "Où désires-tu voir la justice aujourd'hui ?",
+      "Q4": "Quelle prière pour la justice offriras-tu ?"
+    },
+    "S222": {
+      "Q1": "Quels autres jugements sont déclarés ici ?",
+      "Q2": "Quelles raisons sont données pour eux ?",
+      "Q3": "Où vois-tu ces mêmes racines de mal ?",
+      "Q4": "Quel pas feras-tu vers la réparation ?"
+    },
+    "S223": {
+      "Q1": "Quel sort attend Babylone dans cette section ?",
+      "Q2": "Que dit cela sur l'orgueil et l'empire ?",
+      "Q3": "Où fais-tu confiance au pouvoir ou à l'image ?",
+      "Q4": "Quelle action humble choisiras-tu aujourd'hui ?"
+    },
+    "S224": {
+      "Q1": "Quelles notes finales ferment le livre de Jérémie ?",
+      "Q2": "Comment la fin confirme-t-elle les avertissements antérieurs ?",
+      "Q3": "Quelle leçon n'oublieras-tu pas de ce livre ?",
+      "Q4": "Quelle pratique t'aidera à t'en souvenir ?"
+    },
+    "S225": {
+      "Q1": "Quelles images de deuil t'ont le plus frappé ?",
+      "Q2": "Qu'enseignent-elles sur le péché et la tristesse ?",
+      "Q3": "Où as-tu besoin de te lamenter honnêtement ?",
+      "Q4": "Quelle prière de lamentation apporteras-tu à Dieu ?"
+    },
+    "S226": {
+      "Q1": "Quels tournants vers l'espoir apparaissent dans ces poèmes ?",
+      "Q2": "De quoi se souvient-on sur la miséricorde de Dieu ?",
+      "Q3": "Où as-tu besoin que l'espoir se lève à nouveau ?",
+      "Q4": "Quel rappel quotidien de miséricorde garderas-tu ?"
+    },
+    "S227": {
+      "Q1": "Quelles parties de la vision sont restées avec toi ?",
+      "Q2": "Que communique la gloire de Dieu ici ?",
+      "Q3": "Comment la crainte change-t-elle ta façon de vivre ?",
+      "Q4": "Quelle pratique t'aidera à vivre avec émerveillement ?"
+    },
+    "S228": {
+      "Q1": "Quelles actions symboliques Ézéchiel accomplit-il ?",
+      "Q2": "Quel message envoient-elles au peuple ?",
+      "Q3": "Où as-tu besoin de prêter attention à ce qui se passe vraiment ?",
+      "Q4": "Quel changement feras-tu avant la fin de la journée ?"
+    },
+    "S229": {
+      "Q1": "Quelles raisons sont données pour le départ de Dieu ?",
+      "Q2": "Qu'enseigne cela sur l'idolâtrie et la présence ?",
+      "Q3": "Où encombres-tu Dieu dans la vie quotidienne ?",
+      "Q4": "Que retireras-tu pour faire de la place à Dieu ?"
+    },
+    "S230": {
+      "Q1": "Quels signes représentés d'exil apparaissent ici ?",
+      "Q2": "Que révèlent-ils sur les cœurs obstinés ?",
+      "Q3": "Où les avertissements échouent-ils à te toucher ?",
+      "Q4": "Quel pas d'écoute humble feras-tu ?"
+    },
+    "S231": {
+      "Q1": "Quelles métaphores décrivent l'infidélité d'Israël ?",
+      "Q2": "Que montrent-elles sur l'amour d'alliance ?",
+      "Q3": "Où traites-tu l'amour comme jetable ?",
+      "Q4": "Quel acte fidèle choisiras-tu cette semaine ?"
+    },
+    "S232": {
+      "Q1": "Quelles images de jugement et de lamentation se démarquent ?",
+      "Q2": "Quel équilibre de justice et de miséricorde est montré ?",
+      "Q3": "Où as-tu besoin à la fois de vérité et de tendresse ?",
+      "Q4": "Quel mélange sage pratiqueras-tu cette semaine ?"
+    },
+    "S233": {
+      "Q1": "Quelle histoire de rébellion est rappelée ?",
+      "Q2": "Que révèle cela sur la patience de Dieu ?",
+      "Q3": "Où répètes-tu de vieilles erreurs ?",
+      "Q4": "Quel nouveau chemin prendras-tu dès aujourd'hui ?"
+    },
+    "S234": {
+      "Q1": "Quelles images dures sont utilisées pour confronter le péché ?",
+      "Q2": "Que disent-elles sur la trahison et les conséquences ?",
+      "Q3": "Où vois-tu une trahison relationnelle aujourd'hui ?",
+      "Q4": "Quelle réparation fidèle peux-tu commencer cette semaine ?"
+    },
+    "S235": {
+      "Q1": "Quelles nations sont interpellées dans cette section ?",
+      "Q2": "Quelles leçons sont ici pour l'orgueil et la cruauté ?",
+      "Q3": "Où dois-tu résister au mépris pour les autres ?",
+      "Q4": "Quelle action respectueuse feras-tu aujourd'hui ?"
+    },
+    "S236": {
+      "Q1": "Quels jugements tombent sur l'Égypte et son orgueil ?",
+      "Q2": "Que révèle cela sur la fausse force ?",
+      "Q3": "Où comptes-tu sur des soutiens fragiles ?",
+      "Q4": "Quelle confiance plus forte pratiqueras-tu cette semaine ?"
+    },
+    "S237": {
+      "Q1": "Quelles autres prophéties contre l'Égypte apparaissent ?",
+      "Q2": "Qu'enseignent-elles sur la gloire et la chute humaines ?",
+      "Q3": "Où l'apparence impressionne-t-elle plus que la vraie force ?",
+      "Q4": "Quelle vraie force chercheras-tu cette semaine ?"
+    },
+    "S238": {
+      "Q1": "Quel rôle le guetteur a-t-il dans ce chapitre ?",
+      "Q2": "Que montre cela sur la responsabilité et l'avertissement ?",
+      "Q3": "Où dois-tu parler pour aider les autres ?",
+      "Q4": "Quel mot sage diras-tu cette semaine ?"
+    },
+    "S239": {
+      "Q1": "Quelles promesses de restauration apparaissent ici ?",
+      "Q2": "Qu'est-ce que le nouveau cœur et le nouvel esprit signifient ?",
+      "Q3": "Où as-tu besoin d'un nouveau départ intérieur ?",
+      "Q4": "Quelle prière de transformation offriras-tu ?"
+    },
+    "S240": {
+      "Q1": "Quelles images de vallée et d'os secs t'ont touché ?",
+      "Q2": "Que dit cela sur la puissance de Dieu de redonner vie ?",
+      "Q3": "Où as-tu besoin de résurrection dans ta vie ?",
+      "Q4": "Quel pas de foi vers le renouveau feras-tu ?"
+    },
+    "S241": {
+      "Q1": "Quels détails du temple et de l'adoration sont décrits ?",
+      "Q2": "Que suggèrent-ils sur la présence de Dieu avec son peuple ?",
+      "Q3": "Comment l'adoration façonne-t-elle ta semaine à l'école ?",
+      "Q4": "Quel moment d'adoration consacreras-tu cette semaine ?"
+    },
+    "S242": {
+      "Q1": "Quels rôles et rythmes remplissent cette vision ?",
+      "Q2": "Qu'enseignent les temps sacrés sur la vie communautaire ?",
+      "Q3": "Quel rythme pourrait bien façonner ta semaine ?",
+      "Q4": "Quel temps garderas-tu pour Dieu cette semaine ?"
+    },
+    "S243": {
+      "Q1": "Quelles images de vie nouvelle t'ont marqué ?",
+      "Q2": "Que montrent-elles sur la présence de Dieu avec son peuple ?",
+      "Q3": "Où désires-tu voir la guérison couler ?",
+      "Q4": "Quel pas feras-tu vers cette guérison ?"
+    },
+    "S244": {
+      "Q1": "Quelles pressions testent Daniel et ses amis ?",
+      "Q2": "Quels choix les gardent fidèles à Babylone ?",
+      "Q3": "Où as-tu besoin de résolution dans un environnement difficile ?",
+      "Q4": "Quelle pratique fidèle garderas-tu cette semaine ?"
+    },
+    "S245": {
+      "Q1": "Quels sauvetages et humiliations sont enregistrés ici ?",
+      "Q2": "Que révèlent-ils sur la souveraineté de Dieu ?",
+      "Q3": "Où as-tu besoin de courage pour rester ferme ?",
+      "Q4": "Quel pas audacieux mais respectueux feras-tu ?"
+    },
+    "S246": {
+      "Q1": "Quels avertissements apparaissent au festin royal ?",
+      "Q2": "Que montre le témoignage de Daniel sous la menace ?",
+      "Q3": "Où l'intégrité pourrait-elle te coûter quelque chose ?",
+      "Q4": "Quel choix feras-tu pour rester fidèle ?"
+    },
+    "S247": {
+      "Q1": "Quelles visions ou thèmes se démarquent pour toi ?",
+      "Q2": "Qu'enseignent-ils sur le règne final de Dieu ?",
+      "Q3": "Où as-tu besoin d'endurance et d'espoir ?",
+      "Q4": "Quelle pratique t'aidera à endurer cette semaine ?"
+    },
+    "S248": {
+      "Q1": "Quels aperçus sont donnés sur les conflits futurs ?",
+      "Q2": "Que dit cela sur les batailles spirituelles que nous ne voyons pas ?",
+      "Q3": "Où te sens-tu dépassé ou anxieux ?",
+      "Q4": "Quelle prière garderas-tu dans ces moments ?"
+    },
+    "S249": {
+      "Q1": "Quels signes d'amour constant apparaissent ici ?",
+      "Q2": "Que coûte l'infidélité dans cette histoire ?",
+      "Q3": "Où retournes-tu encore à des amours moindres ?",
+      "Q4": "Quel retour vers Dieu feras-tu aujourd'hui ?"
+    },
+    "S250": {
+      "Q1": "Quels appels au retour traversent cette section ?",
+      "Q2": "Que promet Dieu aux repentants ?",
+      "Q3": "Où as-tu besoin de revenir à la maison vers Dieu ?",
+      "Q4": "Quel pas pratique feras-tu aujourd'hui ?"
+    },
+    "S251": {
+      "Q1": "Quelles images décrivent le Jour du Seigneur ?",
+      "Q2": "Quelles réponses sont invitées du peuple ?",
+      "Q3": "Où as-tu besoin d'un retour de tout cœur vers Dieu ?",
+      "Q4": "Quel acte de repentance pratiqueras-tu maintenant ?"
+    },
+    "S252": {
+      "Q1": "Quelles injustices sont dénoncées ici ?",
+      "Q2": "Qu'exige Dieu au lieu d'une adoration vide ?",
+      "Q3": "Où peux-tu faire le bien pour quelqu'un négligé ?",
+      "Q4": "Quelle action juste entreprendras-tu cette semaine ?"
+    },
+    "S253": {
+      "Q1": "Quelles visions Amos reçoit-il et partage-t-il ?",
+      "Q2": "Quel espoir reste après le jugement dans ce livre ?",
+      "Q3": "Où as-tu besoin à la fois de vérité et d'espoir aujourd'hui ?",
+      "Q4": "Quel pas feras-tu pour chercher les deux ensemble ?"
+    },
+    "S254": {
+      "Q1": "Pourquoi Édom est-il jugé dans ce livre ?",
+      "Q2": "Quel avertissement y a-t-il sur l'orgueil et la moquerie ?",
+      "Q3": "Où es-tu tenté de célébrer les chutes des autres ?",
+      "Q4": "Quelle compassion humble montreras-tu à la place ?"
+    },
+    "S255": {
+      "Q1": "Qu'est-ce qui te surprend dans l'histoire de Jonas ?",
+      "Q2": "Que révèle la miséricorde de Dieu envers Ninive ?",
+      "Q3": "À qui est-il difficile pour toi de montrer de la miséricorde ?",
+      "Q4": "Quel pas miséricordieux feras-tu cette semaine ?"
+    },
+    "S256": {
+      "Q1": "Quelles accusations et espoirs apparaissent dans Michée ?",
+      "Q2": "Qu'exige Dieu de son peuple ?",
+      "Q3": "Où peux-tu pratiquer la justice et aimer la miséricorde maintenant ?",
+      "Q4": "Quel pas humble feras-tu cette semaine ?"
+    },
+    "S257": {
+      "Q1": "Quelles lamentations et promesses sont côte à côte ?",
+      "Q2": "Quel espoir Michée tient-il pour l'avenir ?",
+      "Q3": "Où as-tu besoin de ce genre d'espoir aujourd'hui ?",
+      "Q4": "Quelle prière d'espoir prieras-tu cette semaine ?"
+    },
+    "S258": {
+      "Q1": "Quelle image de la justice de Dieu vois-tu ?",
+      "Q2": "Quel réconfort est offert aux opprimés ?",
+      "Q3": "Où désires-tu que Dieu remette les choses en ordre ?",
+      "Q4": "Quelle confiance fidèle pratiqueras-tu aujourd'hui ?"
+    },
+    "S259": {
+      "Q1": "Quelles questions Habacuc apporte-t-il à Dieu ?",
+      "Q2": "Quelles réponses ou tensions demeurent dans ce livre ?",
+      "Q3": "Où choisiras-tu la foi quand les réponses tardent ?",
+      "Q4": "Quelle pratique t'aidera à te réjouir dans l'attente ?"
+    },
+    "S260": {
+      "Q1": "Quels avertissements et chants apparaissent dans ce livre ?",
+      "Q2": "Quel espoir est offert aux humbles qui cherchent Dieu ?",
+      "Q3": "Où as-tu besoin d'humilité et de courage ensemble ?",
+      "Q4": "Quel pas de recherche feras-tu cette semaine ?"
+    },
+    "S261": {
+      "Q1": "Quelles priorités Aggée confronte-t-il ?",
+      "Q2": "Quelle promesse Dieu donne-t-il aux reconstructeurs ?",
+      "Q3": "Où as-tu retardé un bon travail que tu devrais faire ?",
+      "Q4": "Quel premier pas feras-tu pour reconstruire ?"
+    },
+    "S262": {
+      "Q1": "Quelles visions encouragent les rapatriés à construire ?",
+      "Q2": "Que disent-elles sur la purification et la puissance de Dieu ?",
+      "Q3": "Où as-tu besoin d'encouragement frais pour servir ?",
+      "Q4": "Quel acte de service feras-tu cette semaine ?"
+    },
+    "S263": {
+      "Q1": "Quelles questions sur le jeûne sont abordées ?",
+      "Q2": "Quel genre de communauté Dieu promet-il ?",
+      "Q3": "Où peux-tu pratiquer la vérité et la paix maintenant ?",
+      "Q4": "Quel choix de pacification feras-tu aujourd'hui ?"
+    },
+    "S264": {
+      "Q1": "Que disent ces chapitres sur le Roi à venir ?",
+      "Q2": "Quelles images de salut et de deuil apparaissent ?",
+      "Q3": "Où accueilles-tu le règne doux de Jésus ?",
+      "Q4": "Quel pas d'allégeance feras-tu cette semaine ?"
+    },
+    "S265": {
+      "Q1": "Quelles questions Dieu soulève-t-il avec son peuple ?",
+      "Q2": "Quelles questions d'adoration et de justice sont corrigées ?",
+      "Q3": "Où as-tu besoin d'un cœur frais dans l'adoration ?",
+      "Q4": "Quel changement feras-tu avant la semaine prochaine ?"
+    },
+    "S266": {
+      "Q1": "Quels débuts du royaume vois-tu ?",
+      "Q2": "Qu'annonce Jésus et dans quoi invite-t-il les gens ?",
+      "Q3": "Où as-tu besoin de te repentir et de le suivre ?",
+      "Q4": "Quel premier pas d'obéissance feras-tu ?"
+    },
+    "S267": {
+      "Q1": "Quels enseignements du Sermon t'ont le plus frappé ?",
+      "Q2": "Quelle image de justice Jésus donne-t-il ?",
+      "Q3": "Où as-tu besoin de vivre cela à l'école ?",
+      "Q4": "Quelle pratique commenceras-tu cette semaine ?"
+    },
+    "S268": {
+      "Q1": "Quels signes et réponses marquent le ministère de Jésus ici ?",
+      "Q2": "Qu'apprends-tu sur la foi et l'autorité ?",
+      "Q3": "Où as-tu besoin de faire confiance à l'autorité de Jésus maintenant ?",
+      "Q4": "Quel acte de confiance feras-tu cette semaine ?"
+    },
+    "S269": {
+      "Q1": "Quelles questions et paraboles se démarquent pour toi ?",
+      "Q2": "Que révèlent-elles sur la croissance du royaume ?",
+      "Q3": "Où vois-tu de petits débuts avec un grand potentiel ?",
+      "Q4": "Quelle graine fidèle planteras-tu cette semaine ?"
+    },
+    "S270": {
+      "Q1": "Quels conflits et confessions apparaissent dans cette section ?",
+      "Q2": "Qu'apprends-tu sur la foi et l'opposition ?",
+      "Q3": "Où est-il difficile de suivre Jésus en ce moment ?",
+      "Q4": "Quel pas feras-tu pour le suivre quand même ?"
+    },
+    "S271": {
+      "Q1": "Quelles valeurs ou pratiques Jésus enseigne-t-il ici ?",
+      "Q2": "Qu'enseignent-elles sur le pardon et l'humilité ?",
+      "Q3": "Où as-tu besoin de ces valeurs dans la vie scolaire ?",
+      "Q4": "Quel pas feras-tu pour les pratiquer ?"
+    },
+    "S272": {
+      "Q1": "Quelles scènes ou rencontres t'ont marqué ?",
+      "Q2": "Que montrent-elles sur le coût et les priorités ?",
+      "Q3": "Où Jésus te demande-t-il de lui faire confiance ?",
+      "Q4": "Quel pas d'obéissance feras-tu ?"
+    },
+    "S273": {
+      "Q1": "Quelles réponses à Jésus apparaissent dans ce passage ?",
+      "Q2": "Que révèle cela sur son autorité ?",
+      "Q3": "Où accueilleras-tu son autorité cette semaine ?",
+      "Q4": "Quel acte d'honneur lui offriras-tu ?"
+    },
+    "S274": {
+      "Q1": "Quels avertissements et espoirs t'ont marqué ?",
+      "Q2": "Qu'enseignent-ils sur la préparation et la fidélité ?",
+      "Q3": "Où te sens-tu non préparé ou distrait ?",
+      "Q4": "Quelle habitude de vigilance commenceras-tu ?"
+    },
+    "S275": {
+      "Q1": "Quels moments t'ont le plus ému dans cette lecture ?",
+      "Q2": "Que montrent-ils sur l'amour et la trahison ?",
+      "Q3": "Où te sens-tu brisé par cette histoire ?",
+      "Q4": "Quelle réponse de gratitude apporteras-tu ?"
+    },
+    "S276": {
+      "Q1": "Quels détails de la croix et de la tombe t'ont touché ?",
+      "Q2": "Que révèlent-ils sur l'amour et la victoire de Dieu ?",
+      "Q3": "Comment cette victoire façonne-t-elle ta semaine ?",
+      "Q4": "Quelle vie de résurrection vivras-tu cette semaine ?"
+    },
+    "S277": {
+      "Q1": "Quels débuts remarques-tu dans cet évangile ?",
+      "Q2": "Que dit Jean sur qui est Jésus ?",
+      "Q3": "Où as-tu besoin de le rencontrer à nouveau ?",
+      "Q4": "Quel pas de foi feras-tu vers lui ?"
+    },
+    "S278": {
+      "Q1": "Quels signes et conversations se démarquent pour toi ?",
+      "Q2": "Qu'enseignent-ils sur la soif et la satisfaction ?",
+      "Q3": "Où cherches-tu la satisfaction en dehors de Jésus ?",
+      "Q4": "Comment viendras-tu à lui cette semaine ?"
+    },
+    "S279": {
+      "Q1": "Quels conflits grandissants remarques-tu ?",
+      "Q2": "Que revendique Jésus sur lui-même ici ?",
+      "Q3": "Où as-tu besoin de croire ses paroles ?",
+      "Q4": "Quel pas de confiance feras-tu aujourd'hui ?"
+    },
+    "S280": {
+      "Q1": "Quelles rencontres et guérisons t'ont frappé ?",
+      "Q2": "Que révèlent-elles sur Jésus comme lumière et berger ?",
+      "Q3": "Où as-tu besoin qu'il te guide maintenant ?",
+      "Q4": "Quelle voix suivras-tu cette semaine ?"
+    },
+    "S281": {
+      "Q1": "Quels signes de vie et de gloire apparaissent ?",
+      "Q2": "Que montrent-ils sur la puissance et l'amour de Jésus ?",
+      "Q3": "Où as-tu besoin de croire qu'il peut redonner vie ?",
+      "Q4": "Quelle prière de confiance offriras-tu ?"
+    },
+    "S282": {
+      "Q1": "Quels moments de service et d'enseignement se démarquent ?",
+      "Q2": "Que dit Jésus sur le fait de rester avec lui ?",
+      "Q3": "Où as-tu besoin de rester connecté à lui ?",
+      "Q4": "Quelle pratique t'aidera à demeurer cette semaine ?"
+    },
+    "S283": {
+      "Q1": "Quelles promesses et prières te marquent ?",
+      "Q2": "Que dit Jésus sur l'Esprit et le courage ?",
+      "Q3": "Où as-tu besoin de ces promesses maintenant ?",
+      "Q4": "Quelle demande apporteras-tu au Père ?"
+    },
+    "S284": {
+      "Q1": "Quels moments de la passion t'ont touché le plus ?",
+      "Q2": "Qu'accomplissent la croix et les paroles finales ?",
+      "Q3": "Comment cette mort change-t-elle ta vie ?",
+      "Q4": "Quelle réponse d'adoration offriras-tu ?"
+    },
+    "S285": {
+      "Q1": "Quelles scènes de résurrection et rencontres apparaissent ?",
+      "Q2": "Que révèlent-elles sur Jésus vivant ?",
+      "Q3": "Où as-tu besoin de rencontrer le Christ ressuscité ?",
+      "Q4": "Quel témoignage partageras-tu cette semaine ?"
+    },
+    "S286": {
+      "Q1": "Quels détails de l'ascension et de l'attente se démarquent ?",
+      "Q2": "Que promet Jésus avant de partir ?",
+      "Q3": "Où as-tu besoin de puissance pour témoigner ?",
+      "Q4": "Quel pas de témoin feras-tu cette semaine ?"
+    },
+    "S287": {
+      "Q1": "Quels signes de l'Esprit et de croissance remarques-tu ?",
+      "Q2": "Qu'enseignent-ils sur la communauté et le témoignage ?",
+      "Q3": "Où peux-tu rejoindre le travail de l'Esprit ?",
+      "Q4": "Quelle action audacieuse prendras-tu ?"
+    },
+    "S288": {
+      "Q1": "Quels défis et réponses façonnent l'église primitive ?",
+      "Q2": "Que montrent-ils sur la persévérance et la prière ?",
+      "Q3": "Où fais-tu face à l'opposition pour ta foi ?",
+      "Q4": "Quelle prière courageuse offriras-tu ?"
+    },
+    "S289": {
+      "Q1": "Quelles tensions et jugements apparaissent ici ?",
+      "Q2": "Qu'apprends-tu sur la sainteté et la communauté ?",
+      "Q3": "Où as-tu besoin d'honnêteté dans ta marche ?",
+      "Q4": "Quel pas d'intégrité feras-tu aujourd'hui ?"
+    },
+    "S290": {
+      "Q1": "Quels récits de martyre et de témoignage se démarquent ?",
+      "Q2": "Que révèlent-ils sur la foi sous pression ?",
+      "Q3": "Où as-tu besoin de courage pour parler ?",
+      "Q4": "Quel témoignage donneras-tu cette semaine ?"
+    },
+    "S291": {
+      "Q1": "Quelles percées et persécutions sont enregistrées ?",
+      "Q2": "Comment l'évangile se répand-il malgré l'opposition ?",
+      "Q3": "Où vois-tu Dieu utiliser les difficultés pour le bien ?",
+      "Q4": "Quelle histoire de fidélité partageras-tu ?"
+    },
+    "S292": {
+      "Q1": "Quelle parabole ou guérison est restée avec toi ?",
+      "Q2": "Quelle vérité sur le royaume as-tu remarquée ?",
+      "Q3": "Où vois-tu cette vérité à l'école ?",
+      "Q4": "Quel petit acte la vivra ?"
+    },
+    "S293": {
+      "Q1": "Quelles habitudes de foi Jésus recommande-t-il ?",
+      "Q2": "Quels obstacles avertit-il ici ?",
+      "Q3": "Quelle habitude as-tu le plus besoin maintenant ?",
+      "Q4": "Quel pas feras-tu pour la développer ?"
+    },
+    "S294": {
+      "Q1": "Que remarques-tu sur la miséricorde et la justice ?",
+      "Q2": "Que cherche Jésus dans les cœurs ici ?",
+      "Q3": "Où as-tu besoin d'un cœur frais aujourd'hui ?",
+      "Q4": "Quelle prière feras-tu cette semaine ?"
+    },
+    "S295": {
+      "Q1": "Quelles réponses à Jésus apparaissent dans ce chapitre ?",
+      "Q2": "Que défie son autorité chez les gens ?",
+      "Q3": "Où Jésus défie-t-il ton confort ?",
+      "Q4": "Quel pas d'obéissance feras-tu ?"
+    },
+    "S296": {
+      "Q1": "Quels avertissements et prières ont été manqués ici ?",
+      "Q2": "Qu'apprends-tu sur la faiblesse et la grâce ?",
+      "Q3": "Où as-tu besoin de vigilance dans la tentation ?",
+      "Q4": "Quelle garde garderas-tu cette semaine ?"
+    },
+    "S297": {
+      "Q1": "Qu'est-ce qui te touche le plus dans ce récit ?",
+      "Q2": "À quoi la résurrection t'appelle-t-elle ?",
+      "Q3": "Où vivras-tu différemment parce qu'il est ressuscité ?",
+      "Q4": "Quel témoignage partageras-tu bientôt ?"
+    },
+    "S298": {
+      "Q1": "Quels titres et images décrivent Jésus ici ?",
+      "Q2": "Quelles réponses font les premiers disciples ?",
+      "Q3": "Où as-tu besoin de « venir et voir » à nouveau ?",
+      "Q4": "Quel pas feras-tu vers Jésus ?"
+    },
+    "S299": {
+      "Q1": "Quels signes et conversations se sont démarqués ici ?",
+      "Q2": "Que révèlent-ils sur la vie nouvelle en Jésus ?",
+      "Q3": "Où as-tu besoin de transformation aujourd'hui ?",
+      "Q4": "Quelle demande lui apporteras-tu ?"
+    },
+    "S300": {
+      "Q1": "Quels schémas relient ces signes ensemble ?",
+      "Q2": "Que disent-ils sur la faim, la peur et la foi ?",
+      "Q3": "Où as-tu faim ou peur maintenant ?",
+      "Q4": "Quel pas de confiance feras-tu ?"
+    },
+    "S301": {
+      "Q1": "Quels débats ou revendications sur Jésus surgissent ?",
+      "Q2": "Que révèle Jésus sur lui-même ici ?",
+      "Q3": "Où as-tu besoin de prendre position sur Jésus ?",
+      "Q4": "Quelle confession feras-tu cette semaine ?"
+    },
+    "S302": {
+      "Q1": "Quels changements dans la vie de la personne guérie ?",
+      "Q2": "Que révèlent les réactions des leaders dans cette histoire ?",
+      "Q3": "Où crains-tu les opinions des autres maintenant ?",
+      "Q4": "Quel choix fidèle feras-tu quand même ?"
+    },
+    "S303": {
+      "Q1": "Quelles émotions entourent ce signe et cette histoire ?",
+      "Q2": "Que montre Jésus sur la vie et la mort ?",
+      "Q3": "Où as-tu besoin de son réconfort ou de sa puissance ?",
+      "Q4": "Quelle prière lui demanderas-tu d'exaucer ?"
+    },
+    "S304": {
+      "Q1": "Quel acte de service se démarque pour toi ?",
+      "Q2": "Qu'enseigne Jésus sur l'amour et l'identité ?",
+      "Q3": "Où peux-tu servir sans être remarqué ?",
+      "Q4": "Quel acte simple feras-tu cette semaine ?"
+    },
+    "S305": {
+      "Q1": "Quelles images de demeurer et d'unité parlent ici ?",
+      "Q2": "À quoi ressemble la fécondité dans ce passage ?",
+      "Q3": "Où as-tu besoin de rester en Jésus cette semaine ?",
+      "Q4": "Quelle pratique t'aidera à demeurer ?"
+    },
+    "S306": {
+      "Q1": "Quelles injustices et accomplissements apparaissent ici ?",
+      "Q2": "Que signifie le sacrifice de Jésus pour toi ?",
+      "Q3": "Où as-tu besoin de te reposer dans son œuvre achevée ?",
+      "Q4": "Quelle réponse de gratitude offriras-tu ?"
+    },
+    "S307": {
+      "Q1": "Quelles preuves et rencontres sont enregistrées ici ?",
+      "Q2": "Quelle mission Jésus donne-t-il à ses disciples ?",
+      "Q3": "Où peux-tu être témoin cette semaine ?",
+      "Q4": "Quel prochain pas feras-tu aujourd'hui ?"
+    },
+    "S308": {
+      "Q1": "Que se passe-t-il quand l'Esprit vient ici ?",
+      "Q2": "Que signifie cela pour la peur et l'audace ?",
+      "Q3": "Où as-tu besoin de courage donné par l'Esprit maintenant ?",
+      "Q4": "Quelle prière prieras-tu pour la puissance ?"
+    },
+    "S309": {
+      "Q1": "Quelles tensions montent alors que l'église grandit ?",
+      "Q2": "Comment les croyants répondent-ils sous pression ici ?",
+      "Q3": "Où as-tu besoin de courage pour obéir à Dieu ?",
+      "Q4": "Quel pas audacieux feras-tu cette semaine ?"
+    },
+    "S310": {
+      "Q1": "Quels ministères se multiplient dans cette section ?",
+      "Q2": "Qu'apprends-tu du témoignage d'Étienne ?",
+      "Q3": "Où peux-tu servir malgré l'opposition ?",
+      "Q4": "Quel acte stable continueras-tu ?"
+    },
+    "S311": {
+      "Q1": "Quels changements dans la vie et la direction de Saul ?",
+      "Q2": "Que montre cela sur la grâce et l'appel ?",
+      "Q3": "Où Dieu pourrait-il te retourner ?",
+      "Q4": "Quel pas feras-tu dans cette nouvelle direction ?"
+    },
+    "S312": {
+      "Q1": "Quelles barrières sont franchies dans cette histoire ?",
+      "Q2": "Que montre Dieu sur l'inclusion ici ?",
+      "Q3": "Qui est en dehors de ton cercle habituel maintenant ?",
+      "Q4": "Quel pas d'accueil feras-tu ?"
+    },
+    "S313": {
+      "Q1": "Quels schémas de prédication et de réponse apparaissent ?",
+      "Q2": "Qu'est-ce qui garde l'équipe concentrée au milieu du refus ?",
+      "Q3": "Où as-tu besoin d'endurance pour servir ?",
+      "Q4": "Quelle pratique t'aidera à continuer ?"
+    },
+    "S314": {
+      "Q1": "Quel problème l'église résout-elle ici ?",
+      "Q2": "Que dit la décision sur la grâce ?",
+      "Q3": "Où ajoutes-tu des fardeaux que Dieu n'ajoute pas ?",
+      "Q4": "Quel pas libérateur feras-tu ?"
+    },
+    "S315": {
+      "Q1": "Quelles nouvelles portes et détours apparaissent ici ?",
+      "Q2": "À quoi ressemble la guidance en mouvement ?",
+      "Q3": "Où as-tu besoin de guidance maintenant ?",
+      "Q4": "Quel pas feras-tu avec la lumière que tu as ?"
+    },
+    "S316": {
+      "Q1": "Quelles croissances et conflits marquent ce voyage ?",
+      "Q2": "Que remarques-tu sur l'enseignement et le changement ?",
+      "Q3": "Où as-tu besoin d'enseignement plus profond ou de repentance ?",
+      "Q4": "Quel pas feras-tu pour grandir ?"
+    },
+    "S317": {
+      "Q1": "Quels événements mènent à l'arrestation de Paul ici ?",
+      "Q2": "À quoi ressemble le courage dans sa défense ?",
+      "Q3": "Où pourrais-tu dire la vérité sous pression ?",
+      "Q4": "Quelles paroles prépareras-tu dans la prière ?"
+    },
+    "S318": {
+      "Q1": "Quelles audiences et appels se produisent ici ?",
+      "Q2": "Que modélise Paul en témoignage et raison ?",
+      "Q3": "Où as-tu besoin de mots doux et clairs maintenant ?",
+      "Q4": "Quelle réponse respectueuse donneras-tu ?"
+    },
+    "S319": {
+      "Q1": "Quelles crises et sauvetages se produisent en route ?",
+      "Q2": "À quoi ressemble le leadership dans la tempête ?",
+      "Q3": "Où ton groupe traverse-t-il une tempête ?",
+      "Q4": "Quel pas stabilisant feras-tu ?"
+    },
+    "S320": {
+      "Q1": "Quel problème avec le péché est décrit ici ?",
+      "Q2": "Que signifie cela pour chaque personne ?",
+      "Q3": "Où vois-tu cela dans ton monde maintenant ?",
+      "Q4": "Quel pas honnête vers Dieu feras-tu ?"
+    },
+    "S321": {
+      "Q1": "Quelle bonne nouvelle est annoncée dans ces versets ?",
+      "Q2": "Que fait la foi que la loi ne peut pas faire ?",
+      "Q3": "Où essaies-tu de gagner ce que Dieu donne ?",
+      "Q4": "Quel pas de confiance feras-tu aujourd'hui ?"
+    },
+    "S322": {
+      "Q1": "Que change quand nous vivons par l'Esprit ?",
+      "Q2": "Quel espoir est donné pour notre lutte ici ?",
+      "Q3": "Où as-tu besoin de l'aide de l'Esprit maintenant ?",
+      "Q4": "Quelle prière prieras-tu chaque jour cette semaine ?"
+    },
+    "S323": {
+      "Q1": "Quelle histoire de miséricorde se déroule dans ces chapitres ?",
+      "Q2": "Que dit cela sur le plan et le peuple de Dieu ?",
+      "Q3": "Où as-tu besoin d'humilité dans l'histoire de Dieu ?",
+      "Q4": "Quelle réponse d'adoration apporteras-tu ?"
+    },
+    "S324": {
+      "Q1": "Qu'est-ce qui marque une vie transformée dans ce texte ?",
+      "Q2": "À quoi ressemble l'amour en pratique ici ?",
+      "Q3": "Où peux-tu offrir ce genre d'amour à l'école ?",
+      "Q4": "Quel acte d'amour choisiras-tu ?"
+    },
+    "S325": {
+      "Q1": "Quelles relations et travail d'équipe remarques-tu ici ?",
+      "Q2": "Que révèlent ces salutations sur l'église ?",
+      "Q3": "Qui t'aide à suivre Jésus fidèlement maintenant ?",
+      "Q4": "Comment les remercieras-tu ou les soutiendras-tu cette semaine ?"
+    },
+    "S326": {
+      "Q1": "Quels problèmes sont abordés dans cette église ?",
+      "Q2": "Sur quoi repose la vraie unité ici ?",
+      "Q3": "Où as-tu besoin de mettre de côté l'orgueil aujourd'hui ?",
+      "Q4": "Quel pas construira l'unité cette semaine ?"
+    },
+    "S327": {
+      "Q1": "Quelles directives sont offertes pour la pureté ici ?",
+      "Q2": "Quels principes se démarquent pour l'honneur et le soin ?",
+      "Q3": "Où as-tu besoin de sagesse dans les relations maintenant ?",
+      "Q4": "Quelle limite garderas-tu cette semaine ?"
+    },
+    "S328": {
+      "Q1": "Qu'enseigne Paul sur la liberté et l'amour ?",
+      "Q2": "Comment la liberté devrait-elle être utilisée avec les autres ?",
+      "Q3": "Où as-tu besoin de maîtrise de soi pour le bien de quelqu'un ?",
+      "Q4": "Quel choix feras-tu par amour ?"
+    },
+    "S329": {
+      "Q1": "Qu'apprends-tu sur l'amour et l'adoration ici ?",
+      "Q2": "Quel ordre et but guident l'église ?",
+      "Q3": "Où peux-tu édifier les autres quand tu te réunis ?",
+      "Q4": "Quelle parole d'encouragement diras-tu ?"
+    },
+    "S330": {
+      "Q1": "Quel espoir la résurrection assure-t-elle ici ?",
+      "Q2": "Comment cela façonne-t-il le travail et le don ?",
+      "Q3": "Où as-tu besoin de perspective de résurrection maintenant ?",
+      "Q4": "Quel acte généreux planifieras-tu ?"
+    },
+    "S331": {
+      "Q1": "Quelles épreuves et réconforts sont nommés ici ?",
+      "Q2": "À quoi ressemble le ministère à travers la faiblesse ?",
+      "Q3": "Où as-tu besoin de réconfort pour continuer à servir ?",
+      "Q4": "Quel pas feras-tu en dépendance de Dieu ?"
+    },
+    "S332": {
+      "Q1": "Quels trésors dans des vases d'argile vois-tu ?",
+      "Q2": "Que change la grâce dans les relations ?",
+      "Q3": "Où as-tu besoin de pardonner ou de réconcilier ?",
+      "Q4": "Quel mouvement vers la grâce feras-tu ?"
+    },
+    "S333": {
+      "Q1": "Quels exemples de don se démarquent ici ?",
+      "Q2": "Quels principes guident le don joyeux ?",
+      "Q3": "Où peux-tu partager pour répondre à un besoin maintenant ?",
+      "Q4": "Quel don prépareras-tu cette semaine ?"
+    },
+    "S334": {
+      "Q1": "Quelles marques distinguent les vrais serviteurs des faux ?",
+      "Q2": "Quels avertissements Paul donne-t-il à l'église ?",
+      "Q3": "Où les apparences te trompent-elles aujourd'hui ?",
+      "Q4": "Quel test utiliseras-tu avant de faire confiance à une voix ?"
+    },
+    "S335": {
+      "Q1": "Quelle histoire Paul raconte-t-il de son appel ?",
+      "Q2": "Que montre cela sur la grâce comparée au mérite ?",
+      "Q3": "Où te reposes-tu sur l'approbation plus que sur la grâce ?",
+      "Q4": "Quelle vérité garderas-tu cette semaine ?"
+    },
+    "S336": {
+      "Q1": "Quel est le cœur de l'évangile ici ?",
+      "Q2": "Quel fruit devrait suivre la foi en Christ ?",
+      "Q3": "Où veux-tu voir ce fruit grandir ?",
+      "Q4": "Quel pas feras-tu pour marcher par l'Esprit ?"
+    },
+    "S337": {
+      "Q1": "Quelles bénédictions en Christ sont énumérées ici ?",
+      "Q2": "Que signifie l'adoption dans la famille de Dieu ?",
+      "Q3": "Où oublies-tu ta vraie identité maintenant ?",
+      "Q4": "Quel rappel porteras-tu cette semaine ?"
+    },
+    "S338": {
+      "Q1": "Quelles pratiques marquent une famille d'église saine ?",
+      "Q2": "Quelles vieilles voies doivent être abandonnées ici ?",
+      "Q3": "Où as-tu besoin de renouveau dans la parole ou les habitudes ?",
+      "Q4": "Quelle nouvelle voie revêtiras-tu cette semaine ?"
+    },
+    "S339": {
+      "Q1": "Quels thèmes de joie et d'unité apparaissent ici ?",
+      "Q2": "Quelles pratiques combattent l'anxiété et la division ?",
+      "Q3": "Où peux-tu choisir la joie dans ta routine ?",
+      "Q4": "Quelle habitude t'aidera à te réjouir quotidiennement ?"
+    },
+    "S340": {
+      "Q1": "Que dit Paul sur la suprématie de Jésus ?",
+      "Q2": "Que change quand Christ est notre centre ?",
+      "Q3": "Où es-tu tiré hors du centre maintenant ?",
+      "Q4": "Quel pas feras-tu pour garder Christ au centre ?"
+    },
+    "S341": {
+      "Q1": "Quels espoirs et commandements façonnent l'attente ici ?",
+      "Q2": "À quoi ressemble la vie sainte dans ce texte ?",
+      "Q3": "Où as-tu besoin d'espoir pour la persévérance ?",
+      "Q4": "Quel pas t'aidera à rester alerte spirituellement ?"
+    },
+    "S342": {
+      "Q1": "Quelles confusions sur le retour de Jésus sont corrigées ?",
+      "Q2": "Quelle stabilité Paul demande-t-il ici ?",
+      "Q3": "Où les rumeurs ébranlent-elles ta foi maintenant ?",
+      "Q4": "Quelle vérité d'ancrage répéteras-tu ?"
+    },
+    "S343": {
+      "Q1": "Quelles instructions Paul donne-t-il à Timothée ici ?",
+      "Q2": "Quel exemple les leaders devraient-ils donner maintenant ?",
+      "Q3": "Où peux-tu être fidèle avec de petites choses ?",
+      "Q4": "Quel pas feras-tu pour servir régulièrement ?"
+    },
+    "S344": {
+      "Q1": "Quels charges et réconforts se démarquent ici ?",
+      "Q2": "Qu'implique finir la course ?",
+      "Q3": "Où as-tu besoin d'endurance dans l'épreuve aujourd'hui ?",
+      "Q4": "Quel pas t'aidera à bien finir ?"
+    },
+    "S345": {
+      "Q1": "Quelles vérités sur le salut sont soulignées ici ?",
+      "Q2": "À quoi la grâce nous forme-t-elle maintenant ?",
+      "Q3": "Où as-tu besoin de grâce pour changer des habitudes ?",
+      "Q4": "À quelle bonne œuvre te consacreras-tu cette semaine ?"
+    },
+    "S346": {
+      "Q1": "Quelles demandes Paul fait-il à Philémon ?",
+      "Q2": "À quoi ressemble la réconciliation de l'évangile ici ?",
+      "Q3": "Où as-tu besoin de réparer une relation maintenant ?",
+      "Q4": "Quel premier pas feras-tu ?"
+    },
+    "S347": {
+      "Q1": "Quelles comparaisons élèvent Jésus dans cette section ?",
+      "Q2": "Quels avertissements nous pressent d'écouter Jésus ?",
+      "Q3": "Où as-tu dérivé de sa voix maintenant ?",
+      "Q4": "Quelle réponse de foi feras-tu aujourd'hui ?"
+    },
+    "S348": {
+      "Q1": "Quel type de prêtre Jésus est-il montré être ?",
+      "Q2": "Quel espoir vient de son intercession ici ?",
+      "Q3": "Où as-tu besoin de son aide maintenant ?",
+      "Q4": "Quelle prière apporteras-tu avec confiance ?"
+    },
+    "S349": {
+      "Q1": "Qu'est-ce qui rend la nouvelle alliance meilleure que l'ancienne ?",
+      "Q2": "Qu'accomplit le sacrifice du Christ ?",
+      "Q3": "Où portes-tu encore la culpabilité ou la honte ?",
+      "Q4": "Dans quelle vérité te reposeras-tu cette semaine ?"
+    },
+    "S350": {
+      "Q1": "Quels exemples de foi t'inspirent ici ?",
+      "Q2": "Qu'exige courir la course maintenant ?",
+      "Q3": "Quel poids ou péché te ralentit ?",
+      "Q4": "Que mettras-tu de côté cette semaine ?"
+    },
+    "S351": {
+      "Q1": "Quels contrastes marquent l'ancienne et la nouvelle voie ?",
+      "Q2": "Quelles pratiques d'amour et de sainteté sont exhortées ?",
+      "Q3": "Où as-tu besoin de poursuivre la paix et la pureté ?",
+      "Q4": "Quel pas feras-tu aujourd'hui ?"
+    },
+    "S352": {
+      "Q1": "Quelles connexions entre foi et œuvres apparaissent ici ?",
+      "Q2": "Qu'apprends-tu sur la parole et la sagesse ?",
+      "Q3": "Où as-tu besoin de mettre la foi en action ?",
+      "Q4": "Quelle œuvre d'amour feras-tu cette semaine ?"
+    },
+    "S353": {
+      "Q1": "Quel encouragement pour la souffrance vois-tu ici ?",
+      "Q2": "Quelle image d'espoir ancre les croyants ?",
+      "Q3": "Où as-tu besoin de courage pour faire le bien maintenant ?",
+      "Q4": "Quelle réponse douce donneras-tu cette semaine ?"
+    },
+    "S354": {
+      "Q1": "Quels avertissements sur le faux enseignement sont donnés ?",
+      "Q2": "Quel espoir pointe vers la patience de Dieu ?",
+      "Q3": "Où as-tu besoin de diligence et d'espoir ensemble ?",
+      "Q4": "Quel pas t'aidera à grandir en grâce ?"
+    },
+    "S355": {
+      "Q1": "Quels tests de vérité et d'amour sont donnés ici ?",
+      "Q2": "À quoi ressemble marcher dans la lumière ?",
+      "Q3": "Où as-tu besoin d'assurance ou de repentance maintenant ?",
+      "Q4": "Quel pas feras-tu vers la lumière ?"
+    },
+    "S356": {
+      "Q1": "Quel danger Jean avertit-il ici ?",
+      "Q2": "À quoi ressemble l'amour fidèle maintenant ?",
+      "Q3": "Où as-tu besoin de garder ton cœur ou ta maison ?",
+      "Q4": "Quelle limite fixeras-tu cette semaine ?"
+    },
+    "S357": {
+      "Q1": "Quel problème Jean aborde-t-il dans cette lettre ?",
+      "Q2": "À quoi ressemble la vraie hospitalité ?",
+      "Q3": "Qui pourrais-tu accueillir ou soutenir cette semaine ?",
+      "Q4": "Quel acte d'hospitalité feras-tu ?"
+    },
+    "S358": {
+      "Q1": "Quelles menaces pour la foi sont soulignées ici ?",
+      "Q2": "En quoi les croyants doivent-ils se fortifier ?",
+      "Q3": "Où as-tu besoin de miséricorde et de vigilance maintenant ?",
+      "Q4": "Quel pas t'aidera à bien combattre ?"
+    },
+    "S359": {
+      "Q1": "Quelles forces et faiblesses sont nommées ici ?",
+      "Q2": "Quels appels à se repentir ou à endurer se démarquent ?",
+      "Q3": "Quel message te parle le plus maintenant ?",
+      "Q4": "Quelle réponse feras-tu cette semaine ?"
+    },
+    "S360": {
+      "Q1": "Quelles visions et cris remarques-tu ici ?",
+      "Q2": "Quel espoir reçoivent ceux qui sont scellés ?",
+      "Q3": "Où as-tu besoin d'endurance dans l'épreuve maintenant ?",
+      "Q4": "Quelle prière te gardera stable ?"
+    },
+    "S361": {
+      "Q1": "Quels avertissements et jugements se déroulent ici ?",
+      "Q2": "Quelle réponse Dieu cherche-t-il des gens ?",
+      "Q3": "Où as-tu besoin de te détourner du compromis ?",
+      "Q4": "Quel pas de repentance feras-tu ?"
+    },
+    "S362": {
+      "Q1": "Quels symboles de conflit et d'espoir apparaissent ici ?",
+      "Q2": "Qu'enseignent-ils sur l'endurance fidèle ?",
+      "Q3": "Où te sens-tu épuisé dans ce combat ?",
+      "Q4": "Quelle pratique renouvellera ta force ?"
+    },
+    "S363": {
+      "Q1": "Quelles scènes de jugement remplissent cette lecture ?",
+      "Q2": "Que révèlent-elles sur la justice de Dieu ?",
+      "Q3": "Où désires-tu la justice finale maintenant ?",
+      "Q4": "Quelle confiance garderas-tu en attendant ?"
+    },
+    "S364": {
+      "Q1": "Quels contrastes apparaissent entre Babylone et l'Agneau ?",
+      "Q2": "Quels avertissements et appels à sortir sont donnés ?",
+      "Q3": "Où es-tu attiré par des habitudes comme celles de Babylone ?",
+      "Q4": "Quelle rupture feras-tu cette semaine ?"
+    },
+    "S365": {
+      "Q1": "Quelles images de la nouvelle création te touchent ?",
+      "Q2": "Quelles promesses ancrent l'espoir pour l'avenir ?",
+      "Q3": "Où as-tu besoin de cet espoir aujourd'hui ?",
+      "Q4": "Quel pas t'aidera à vivre comme citoyen de la nouvelle cité ?"
+    }
+  }
+}

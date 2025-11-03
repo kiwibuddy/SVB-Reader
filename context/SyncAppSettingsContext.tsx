@@ -4,13 +4,15 @@ import { type ColorScheme } from './types';
 import { syncSettingsHelpers, setSetting } from '@/services/sync-settings-manager';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import i18next from 'i18next';
+import { bibleLoader } from '@/services/BibleLoader';
+import logger from '@/utils/logger';
 
 // ============================================================================
 // SYNCHRONOUS APP SETTINGS CONTEXT - ZERO ASYNC OPERATIONS
 // ============================================================================
 
-// MVP: Only English supported for launch
-export type SupportedLanguage = 'en';
+// Supported languages: English and French
+export type SupportedLanguage = 'en' | 'fr';
 
 export interface SyncAppSettingsContextType {
   fontSize: FontSize;
@@ -168,11 +170,27 @@ export const SyncAppSettingsProvider: React.FC<{ children: React.ReactNode }> = 
   };
   
   const setLanguage = async (newLanguage: SupportedLanguage) => {
+    console.log('[SyncAppSettings] Setting language to:', newLanguage);
     setLanguageState(newLanguage);
+    console.log('[SyncAppSettings] State updated');
     
     // Background operations
     await setSetting('language', newLanguage);
+    console.log('[SyncAppSettings] Saved to storage');
     await i18next.changeLanguage(newLanguage);
+    console.log('[SyncAppSettings] i18next changed');
+    
+    // Switch Bible language
+    try {
+      const result = await bibleLoader.switchLanguage(newLanguage);
+      if (result.success) {
+        logger.info(`✅ Bible switched to ${newLanguage}`);
+      } else if (result.needsDownload) {
+        logger.warn(`⚠️ ${newLanguage} Bible not downloaded yet`);
+      }
+    } catch (error) {
+      logger.error('❌ Failed to switch Bible language:', error);
+    }
   };
   
   // ============================================================================

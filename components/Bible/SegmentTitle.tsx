@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Text, View, StyleSheet } from "react-native";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SegmentTitleType {
   title: string;
@@ -12,8 +13,45 @@ interface SegmentTitleType {
 const dualBookSegments = ["S115", "S096"];
 
 export default function SegmentTitle({segmentId}: {segmentId: string}) {
-  const { colors } = useAppSettings();
-  const { title, book, ref } = SegmentTitles[segmentId as keyof typeof SegmentTitles] as SegmentTitleType;
+  const { colors, language } = useAppSettings();
+  const { t } = useTranslation();
+  
+  // Get localized segment title based on current language
+  const localizedData = useMemo(() => {
+    if (language === 'fr') {
+      // Try to get French title and book names from FRA-UI.json
+      try {
+        const fraUI = require('@/assets/data/FRA-UI.json');
+        const frenchTitle = fraUI.Titles?.[segmentId];
+        if (frenchTitle) {
+          // Get English data for structure
+          const englishData = SegmentTitles[segmentId as keyof typeof SegmentTitles] as SegmentTitleType;
+          
+          // Translate book names if available
+          let localizedBooks = englishData.book;
+          if (fraUI.bookNames) {
+            localizedBooks = englishData.book.map((bookName: string) => {
+              // bookNames structure: { "GEN": { "bookName": "Genèse", "Abbreviation Translation": "Gn" } }
+              const frenchBook = fraUI.bookNames[bookName];
+              return frenchBook?.bookName || bookName;
+            });
+          }
+          
+          return {
+            title: frenchTitle,
+            book: localizedBooks,
+            ref: englishData.ref // Keep reference as is (it's mostly numbers/abbreviations)
+          };
+        }
+      } catch (error) {
+        // Fall back to English if French not available
+      }
+    }
+    // Default to English
+    return SegmentTitles[segmentId as keyof typeof SegmentTitles] as SegmentTitleType;
+  }, [segmentId, language]);
+  
+  const { title, book, ref } = localizedData;
   const isDualBook = dualBookSegments.includes(segmentId);
   const isIntroduction = segmentId.startsWith('I');
   

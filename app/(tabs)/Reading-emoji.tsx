@@ -127,10 +127,10 @@ const ReadingEmoji = () => {
   // Get color for source color filter
   const getSourceColorDisplay = (color: string): SourceColorDisplay => {
     const colorMap: { [key: string]: SourceColorDisplay } = {
-      'black': { bg: '#2C2C2E', text: 'Narrator' },
-      'red': { bg: '#FF3B30', text: 'God/Jesus' },
-      'green': { bg: '#30D158', text: 'Main Speaker' },
-      'blue': { bg: '#007AFF', text: 'Other Speakers' }
+      'black': { bg: '#2C2C2E', text: t('UI.filters.narrator') },
+      'red': { bg: '#FF3B30', text: t('UI.filters.godJesus') },
+      'green': { bg: '#30D158', text: t('UI.filters.mainSpeaker') },
+      'blue': { bg: '#007AFF', text: t('UI.filters.otherSpeakers') }
     }
     return colorMap[color] || { bg: '#8E8E93', text: color }
   }
@@ -1006,7 +1006,7 @@ const ReadingEmoji = () => {
       {filteredReactions.length === 0 && !isLoading && (
         <View style={styles.emptyStateContainer}>
           <Text style={styles.emptyStateText}>
-            {selectedEmoji ? `No ${selectedEmoji} reactions found` : "No reactions found"}
+            {selectedEmoji ? t('UI.emojiPage.noEmojiReactions', { emoji: selectedEmoji }) : t('UI.emojiPage.noReactions')}
           </Text>
         </View>
       )}
@@ -1179,10 +1179,10 @@ const ReadingEmoji = () => {
     >
       <View style={styles.filterPanelContent}>
         <View style={styles.filterPanelHeader}>
-          <Text style={styles.filterPanelTitle}>Filter Reactions</Text>
+          <Text style={styles.filterPanelTitle}>{t('UI.filters.filterReactions')}</Text>
           <View style={styles.filterPanelHeaderButtons}>
             <TouchableOpacity style={styles.clearAllButton} onPress={clearAllFilters}>
-              <Text style={styles.clearAllText}>Clear All</Text>
+              <Text style={styles.clearAllText}>{t('UI.filters.clearAll')}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.closeFilterButton} 
@@ -1197,7 +1197,7 @@ const ReadingEmoji = () => {
         <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
           {/* Has Notes Filter */}
           <View style={styles.filterSection}>
-            <Text style={styles.filterSectionTitle}>Content</Text>
+            <Text style={styles.filterSectionTitle}>{t('UI.filters.content')}</Text>
             <TouchableOpacity
               style={styles.filterOption}
               onPress={() => setActiveFilters(prev => ({ ...prev, hasNotes: !prev.hasNotes }))}
@@ -1212,14 +1212,14 @@ const ReadingEmoji = () => {
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Ionicons name="document-text" size={18} color="#FFB347" />
-                <Text style={styles.filterOptionText}>Has Notes</Text>
+                <Text style={styles.filterOptionText}>{t('UI.filters.hasNotes')}</Text>
               </View>
             </TouchableOpacity>
           </View>
 
           {/* Testament Filter */}
           <View style={styles.filterSection}>
-            <Text style={styles.filterSectionTitle}>Testament</Text>
+            <Text style={styles.filterSectionTitle}>{t('UI.filters.testament')}</Text>
             {getFilterOptions.testament.map(testament => (
               <TouchableOpacity
                 key={testament}
@@ -1234,7 +1234,9 @@ const ReadingEmoji = () => {
                     <Ionicons name="checkmark" size={14} color="white" />
                   )}
                 </View>
-                <Text style={styles.filterOptionText}>{testament}</Text>
+                <Text style={styles.filterOptionText}>
+                  {testament === 'Old Testament' ? t('UI.filters.oldTestament') : t('UI.filters.newTestament')}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -1265,7 +1267,7 @@ const ReadingEmoji = () => {
 
           {/* Speaker Type Filter */}
           <View style={styles.filterSection}>
-            <Text style={styles.filterSectionTitle}>Speaker Type</Text>
+            <Text style={styles.filterSectionTitle}>{t('UI.filters.speakerType')}</Text>
             {getAllSpeakerTypes().map(({ color, display }) => (
               <TouchableOpacity
                 key={color}
@@ -1290,7 +1292,7 @@ const ReadingEmoji = () => {
 
           {/* Speaker Filter */}
           <View style={styles.filterSection}>
-            <Text style={styles.filterSectionTitle}>Speaker</Text>
+            <Text style={styles.filterSectionTitle}>{t('UI.filters.speaker')}</Text>
             {getFilterOptions.sourceName.length > 0 ? (
               getFilterOptions.sourceName.map(sourceName => (
                 <TouchableOpacity
@@ -1311,7 +1313,7 @@ const ReadingEmoji = () => {
               ))
             ) : (
               <Text style={[styles.filterOptionText, { color: colors.secondary, fontStyle: 'italic' }]}>
-                No speakers available
+                {t('UI.filters.noSpeakersAvailable')}
               </Text>
             )}
           </View>
@@ -1322,7 +1324,7 @@ const ReadingEmoji = () => {
           style={styles.applyButton}
           onPress={toggleFilterPanel}
         >
-          <Text style={styles.applyButtonText}>Apply Filters</Text>
+          <Text style={styles.applyButtonText}>{t('UI.filters.applyFilters')}</Text>
         </TouchableOpacity>
       </View>
     </Modal>

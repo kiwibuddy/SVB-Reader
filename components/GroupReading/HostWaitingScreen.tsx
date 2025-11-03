@@ -14,11 +14,11 @@ import {
   Animated,
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useGroupReading } from '@/context/GroupReadingContext';
 import { Role, Participant, SegmentType, BibleType } from '@/types';
 import RoleProgressBar from '@/components/RoleProgressBar';
-import BibleData from "@/assets/data/newBibleNLT1.json";
+import { bibleLoader } from '@/services/BibleLoader';
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import Books from "@/assets/data/BookChapterList.json";
 import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
@@ -42,9 +42,6 @@ interface HostWaitingScreenProps {
   onEndSession: () => void;
   onShowQR: () => void;
 }
-
-// Type assertion for Bible data
-const Bible: any = BibleData;
 
 const ROLE_COLORS: Record<Role, string> = {
   narrator: '#8E8E93',
@@ -77,10 +74,15 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
   onEndSession,
   onShowQR,
 }) => {
-  const { colors } = useAppSettings();
+  const { colors, language } = useSyncAppSettings();
   const { currentSession } = useGroupReading();
   const [isStarting, setIsStarting] = useState(false);
   const [slideAnim] = useState(new Animated.Value(screenHeight));
+
+  // Load Bible dynamically based on current language
+  const Bible = useMemo(() => {
+    return bibleLoader.getCurrentBible();
+  }, [language]); // Re-load when language changes
 
   // Animation for fullscreen slide up
   useEffect(() => {
@@ -98,7 +100,7 @@ const HostWaitingScreen: React.FC<HostWaitingScreenProps> = ({
   const segmentData = useMemo(() => {
     if (!storyId) return null;
     return Bible[storyId];
-  }, [storyId]);
+  }, [storyId, Bible]);
 
   // Get segment title data
   const segmentTitleData = useMemo(() => {

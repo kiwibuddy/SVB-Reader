@@ -16,9 +16,11 @@ import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
 import { Role } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function RoleSelectionScreen() {
   const { colors } = useSyncAppSettings();
+  const { t } = useTranslation();
   const router = useRouter();
   const { joinSessionFromQR } = useGroupReading();
   
@@ -336,7 +338,7 @@ export default function RoleSelectionScreen() {
           style={styles.textInput}
           value={userName}
           onChangeText={setUserName}
-          placeholder="Enter your name"
+          placeholder={t('UI.groupReading.enterYourName')}
           placeholderTextColor={colors.text + '80'}
           maxLength={20}
         />

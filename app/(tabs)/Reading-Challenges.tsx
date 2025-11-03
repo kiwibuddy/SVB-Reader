@@ -43,8 +43,8 @@ import {
 } from "@/api/sqlite";
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import { useGroupReading } from '@/context/GroupReadingContext';
-import BibleData from '@/assets/data/newBibleNLT1.json';
 import ChronologicalView from '@/components/navigation/ChronologicalView';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Type the reading plans data properly
 interface ReadingPlansData {
@@ -351,6 +351,7 @@ const ChallengesScreen = () => {
   // Removed activeChallenges, challenge management dependencies - now using pure SQLite data loading
 
   const router = useRouter();
+  const { t } = useTranslation();
   const params = useLocalSearchParams();
   const { expandedChallenge, completedSegment, timestamp } = params;
   
@@ -366,7 +367,7 @@ const ChallengesScreen = () => {
   }, []);
   
   const isLargeScreen = screenWidth >= 768;
-  const { colors } = useSyncAppSettings();
+  const { colors, language } = useSyncAppSettings();
   const { currentSession, stopSession } = useGroupReading();
   const styles = createStyles(isLargeScreen, colors);
 
@@ -765,7 +766,9 @@ const ChallengesScreen = () => {
                   styles.challengeTitle,
                   { color: CHALLENGE_STYLES[challenge.title as keyof typeof CHALLENGE_STYLES]?.titleColor || colors.text }
                 ]}>
-                  {challenge.title}
+                  {language === 'fr' && t(`UI.plans.${challenge.id}.title`) !== `UI.plans.${challenge.id}.title` 
+                    ? t(`UI.plans.${challenge.id}.title`) 
+                    : challenge.title}
                 </Text>
                 <Text style={styles.segmentCount}>
                   {segmentCount} {segmentCount === 1 ? 'story' : 'stories'}
@@ -1314,9 +1317,9 @@ const ChallengesScreen = () => {
   // Memoize the ListHeaderComponent
   const ListHeaderComponent = useCallback(() => (
     <View style={styles.welcomeSection}>
-      <Text style={styles.welcomeTitle}>Reading Challenges</Text>
+      <Text style={styles.welcomeTitle}>{t('UI.challengePage.title')}</Text>
       <Text style={styles.welcomeText}>
-        Welcome to Bible Reading Challenges, where you can find focused reading challenges to help you dive deep into specific themes and books of the Bible.
+        {t('UI.challengePage.subtitle')}
       </Text>
     </View>
   ), [styles.welcomeSection, styles.welcomeTitle, styles.welcomeText]);

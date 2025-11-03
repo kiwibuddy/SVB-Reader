@@ -1,0 +1,51 @@
+📝 HOW TO EXPORT QUESTIONS FROM YOUR APP
+==========================================
+
+Add this button to any screen (e.g., About screen or Home screen):
+
+1. Import the export function:
+   import { exportQuestionsForTranslation } from '@/scripts/export-questions-from-db';
+
+2. Add a button:
+   <TouchableOpacity 
+     onPress={async () => {
+       try {
+         await exportQuestionsForTranslation();
+         Alert.alert('Success', 'Questions exported! Check console for file location.');
+       } catch (error) {
+         Alert.alert('Error', 'Failed to export questions');
+       }
+     }}
+     style={{ padding: 20, backgroundColor: '#007AFF', margin: 20 }}
+   >
+     <Text style={{ color: 'white', fontWeight: 'bold' }}>
+       Export Questions for Translation
+     </Text>
+   </TouchableOpacity>
+
+3. Run the app and press the button
+
+4. Files will be saved to your device and automatically shared
+
+5. You'll get 3 JSON files:
+   - school-questions-english.json
+   - family-questions-english.json  
+   - smallgroup-questions-english.json
+
+==========================================
+
+ALTERNATIVE: Quick export via console
+==========================================
+
+If the above doesn't work, add this to any screen and check console:
+
+const exportQuick = async () => {
+  const db = await databaseManager.getSafeDatabase();
+  const questions = await db.getAllAsync(
+    `SELECT * FROM questions WHERE audienceType = 'school' ORDER BY segmentID, questionSet`
+  );
+  console.log('SCHOOL QUESTIONS:', JSON.stringify(questions, null, 2));
+};
+
+Then copy the console output.
+

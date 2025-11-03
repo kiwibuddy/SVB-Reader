@@ -3,7 +3,7 @@ import logger from '@/utils/logger';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar, Dimensions } from 'react-native';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
-import BibleData from "@/assets/data/newBibleNLT1.json"
+import { bibleLoader } from '@/services/BibleLoader';
 import readingPlansData from "@/assets/data/ReadingPlansChallenges.json";
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, usePathname, useLocalSearchParams } from "expo-router";
@@ -20,11 +20,7 @@ import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { startReadingSession, updateReadingSession } from '@/api/sqlite';
 import { isLargeScreen, isLandscape, responsivePadding, spacing } from '@/constants/sizes';
 
-
-const Bible: any = BibleData; // Use any for flexible typing
-// Development-only logging removed for production
-
-const segIds = Object.keys(Bible);
+// Helper function moved outside component but Bible loading moved inside
 
 // Helper function to find verse location in Bible content
 const findVerseLocation = (segmentData: any, targetChapter: number, targetVerse: number) => {
@@ -180,13 +176,60 @@ const createStyles = (colors: any, isLargeScreen: boolean, isLandscape: boolean)
 export default function BibleScreen() {
   const { currentSession } = useGroupReading();
   const inGroupReading = !!currentSession && currentSession.status === 'reading';
-  const { colors } = useSyncAppSettings();
+  const { colors, language } = useSyncAppSettings();
   const { updateSegmentId, state } = useSQLiteGlobalContext();
   const router = useRouter();
   const params = useLocalSearchParams();
   const { planId, challengeId, verse, chapter } = params;
   const flatListRef = useRef<ScrollView>(null);
   const { isVisible } = useBottomNavAnimation();
+  
+  // Load Bible dynamically based on current language
+  const Bible = useMemo(() => {
+    try {
+      // Pass language explicitly to ensure we get the right Bible
+      const bible = bibleLoader.getCurrentBible(language);
+      
+      if (!bible || typeof bible !== 'object') {
+        logger.error('❌ Invalid Bible data returned', { 
+          bible: typeof bible, 
+          hasBible: !!bible,
+          isArray: Array.isArray(bible)
+        });
+        return null;
+      }
+      
+      // Log Bible structure for debugging
+      const keys = Object.keys(bible);
+      logger.info(`📖 Bible loaded for ${language}:`, {
+        type: typeof bible,
+        isArray: Array.isArray(bible),
+        keysCount: keys.length,
+        firstKeys: keys.slice(0, 10),
+        hasError: 'error' in bible,
+        sampleKey: keys[0],
+        sampleValue: keys[0] && bible[keys[0]] ? typeof bible[keys[0]] : 'undefined'
+      });
+      
+      // If Bible has an "error" key, it's invalid
+      if ('error' in bible) {
+        logger.error('❌ Bible object contains error key:', bible.error);
+        return null;
+      }
+      
+      return bible;
+    } catch (error) {
+      logger.error('❌ Error loading Bible:', error);
+      return null;
+    }
+  }, [language, bibleLoadingKey]); // Re-load when language changes OR when Bible finishes loading
+  
+  const segIds = useMemo(() => {
+    if (!Bible || typeof Bible !== 'object') {
+      return [];
+    }
+    return Object.keys(Bible);
+  }, [Bible]);
   
   // Option 2: Memoize with useEffect
   const [screenDimensions, setScreenDimensions] = useState(() => {
@@ -222,18 +265,72 @@ export default function BibleScreen() {
 
   // Get segment data
   const segmentData = useMemo(() => {
-    if (!segID) return undefined;
-    const data = Bible[segID];
+    if (!segID) {
+      logger.warn('⚠️ No segment ID provided');
+      return undefined;
+    }
+    if (!Bible || typeof Bible !== 'object') {
+      logger.warn('⚠️ Bible not loaded yet', { Bible: typeof Bible, hasBible: !!Bible });
+      return undefined;
+    }
+    
+    // Try different segment ID formats
+    let data = Bible[segID];
+    
+    // If not found, try with language prefix (e.g., "ENG-NLT-S002")
+    if (!data && segID.includes('-')) {
+      const cleanSegId = segID.split('-').pop() || segID;
+      data = Bible[cleanSegId];
+      logger.info(`🔄 Tried clean segment ID: ${cleanSegId}`);
+    }
+    
+    // If still not found, try uppercase/lowercase variations
+    if (!data) {
+      data = Bible[segID.toUpperCase()] || Bible[segID.toLowerCase()];
+    }
+    
     logger.info(`📚 [BibleScreen] Segment data for ${segID}:`, {
       hasData: !!data,
       hasContent: !!data?.content,
       hasChildren: !!data?.children,
       contentType: data?.content ? typeof data.content : 'none',
       childrenType: data?.children ? typeof data.children : 'none',
-      availableKeys: data ? Object.keys(data) : []
+      availableKeys: data ? Object.keys(data).slice(0, 5) : [],
+      bibleKeys: Bible ? Object.keys(Bible).slice(0, 10) : [],
+      bibleSize: Bible ? Object.keys(Bible).length : 0
     });
+    
     return data;
-  }, [segID]);
+  }, [segID, Bible]); // Include Bible in dependencies
+
+  // State to track when Bible is loaded
+  const [bibleLoadingKey, setBibleLoadingKey] = useState(0);
+
+  // Ensure Bible is loaded when language changes
+  useEffect(() => {
+    const ensureBibleLoaded = async () => {
+      try {
+        // Check if Bible for current language is available
+        const isAvailable = await bibleLoader.isBibleAvailable(language);
+        if (!isAvailable && language !== 'en') {
+          logger.warn(`⚠️ ${language} Bible not available, will use English`);
+          return;
+        }
+        
+        // Preload the Bible to ensure it's cached
+        const loaded = await bibleLoader.preloadBible(language);
+        if (loaded) {
+          logger.info(`✅ Bible preloaded for ${language}, triggering re-render`);
+          // Trigger a re-render by updating the key
+          setBibleLoadingKey(prev => prev + 1);
+        }
+      } catch (error) {
+        logger.error(`❌ Failed to ensure Bible loaded:`, error);
+      }
+    };
+    
+    ensureBibleLoaded();
+  }, [language]);
 
   // Update segment ID when it changes
   useEffect(() => {
@@ -368,10 +465,51 @@ export default function BibleScreen() {
   }, [segID, planId, challengeId, state.language, state.version]);
 
   // Show loading state if data isn't ready
-  if (!segID || !segmentData) {
+  if (!segID) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <Text style={styles.loadingText}>Loading...</Text>
+        <Text style={styles.loadingText}>Loading segment...</Text>
+      </View>
+    );
+  }
+  
+  if (!Bible) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Text style={styles.loadingText}>Loading Bible...</Text>
+      </View>
+    );
+  }
+  
+  if (!segmentData) {
+    // Enhanced error logging
+    const availableSegments = Array.isArray(segIds) ? segIds.slice(0, 10).join(', ') : 'none';
+    const bibleType = Bible ? typeof Bible : 'null';
+    const bibleKeys = Bible && typeof Bible === 'object' ? Object.keys(Bible).slice(0, 5).join(', ') : 'none';
+    const bibleSize = Bible && typeof Bible === 'object' ? Object.keys(Bible).length : 0;
+    
+    logger.error(`❌ Segment ${segID} not found in Bible.`, {
+      segID,
+      language,
+      bibleType,
+      bibleSize,
+      bibleKeys,
+      availableSegments,
+      segIdsLength: segIds.length,
+      hasBible: !!Bible
+    });
+    
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Text style={styles.loadingText}>Segment not found</Text>
+        <Text style={[styles.loadingText, { fontSize: 14, marginTop: 10, color: colors.secondary }]}>
+          Segment "{segID}" not found in {language.toUpperCase()} Bible.
+        </Text>
+        {bibleSize > 0 && (
+          <Text style={[styles.loadingText, { fontSize: 12, marginTop: 5, color: colors.secondary }]}>
+            Bible loaded with {bibleSize} segments
+          </Text>
+        )}
       </View>
     );
   }

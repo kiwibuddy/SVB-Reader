@@ -8,7 +8,6 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-
     "description": "SourceView Together: Group Bible Reading App - Transform your Bible study with friends! Join up to 4 people for interactive group Bible reading using our unique speech bubble format. Features role-based reading, real-time emoji reactions, reading plans, challenges, and progress tracking. Perfect for small groups, families, and Bible study communities. Experience Scripture like never before with collaborative reading sessions.",
     "primaryColor": "#FF5733",
     "splash": {
@@ -50,7 +49,7 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-      "plugins": [
+    "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
@@ -68,15 +67,15 @@
           "version": "latest"
         }
       ],
-        [
-          "expo-camera",
-          {
-            "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-            "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
-          }
-        ],
-
-      "expo-video"
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
+        }
+      ],
+      "expo-video",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true

@@ -11,7 +11,7 @@ import { settingsHelpers } from '@/services/settings-manager';
 const AppSettingsContext = createContext<AppSettingsContextType | undefined>(undefined);
 
 // MVP: Only English supported for launch
-export type SupportedLanguage = 'en'; // | 'fr' | 'de'; // Will re-add in v2
+export type SupportedLanguage = 'en' | 'fr'; // German support - coming in future version
 
 export interface AppSettingsContextType {
   fontSize: FontSize;
@@ -162,9 +162,17 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, []);
 
   const handleSetLanguage = async (newLanguage: SupportedLanguage) => {
+    console.log('[AppSettings] Setting language to:', newLanguage);
+    try {
     setLanguage(newLanguage);
+      console.log('[AppSettings] State updated to:', newLanguage);
     await settingsHelpers.setLanguage(newLanguage);
+      console.log('[AppSettings] Saved to storage:', newLanguage);
     await i18next.changeLanguage(newLanguage);
+      console.log('[AppSettings] i18next changed to:', newLanguage);
+    } catch (error) {
+      console.error('[AppSettings] Error setting language:', error);
+    }
   };
 
   return (
