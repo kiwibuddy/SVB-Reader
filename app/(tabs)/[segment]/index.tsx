@@ -184,6 +184,9 @@ export default function BibleScreen() {
   const flatListRef = useRef<ScrollView>(null);
   const { isVisible } = useBottomNavAnimation();
   
+  // State to track when Bible is loaded (moved before useMemo to fix TS error)
+  const [bibleLoadingKey, setBibleLoadingKey] = useState(0);
+  
   // Load Bible dynamically based on current language
   const Bible = useMemo(() => {
     try {
@@ -302,9 +305,6 @@ export default function BibleScreen() {
     
     return data;
   }, [segID, Bible]); // Include Bible in dependencies
-
-  // State to track when Bible is loaded
-  const [bibleLoadingKey, setBibleLoadingKey] = useState(0);
 
   // Ensure Bible is loaded when language changes
   useEffect(() => {

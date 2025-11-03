@@ -459,7 +459,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
                       </Text>
                     </View>
                     <TouchableOpacity 
-                      style={[modalStyles.downloadButton, { backgroundColor: colors.tint }]}
+                      style={[modalStyles.downloadButton, { backgroundColor: colors.primary }]}
                       onPress={() => setShowBibleDownloadModal(true)}
                     >
                       <Ionicons name="download-outline" size={18} color="#FFFFFF" />

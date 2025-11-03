@@ -101,8 +101,9 @@ function AppContent() {
                 {
                   text: 'Télécharger',
                   onPress: async () => {
-                    // Switch to detected language
-                    await setLanguage(detection.deviceLanguage);
+                    // Switch to detected language (only 'en' or 'fr' are supported for UI)
+                    const uiLanguage = detection.deviceLanguage === 'fr' ? 'fr' : 'en';
+                    await setLanguage(uiLanguage as 'en' | 'fr');
                     setShowBibleDownload(true);
                     languageDetectionService.markLanguageDetectionShown();
                     languageDetectionService.markFirstLaunchComplete();

@@ -39,3 +39,6 @@ assets/data/FRA-Bible.json
 # Metadata file (temporary, already uploaded to Firebase)
 metadata.json
 
+# Large development documentation files
+docs/development/cursor_plan_for_adding_french_language.md
+

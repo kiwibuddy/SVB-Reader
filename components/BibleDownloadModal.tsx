@@ -9,8 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/Colors';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { bibleStorageManager, SupportedBibleLanguage } from '@/services/BibleStorageManager';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -32,8 +31,7 @@ export default function BibleDownloadModal({
   onDownloadComplete,
 }: BibleDownloadModalProps) {
   const { t } = useTranslation();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const { colors } = useSyncAppSettings();
 
   const [isDownloading, setIsDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -131,7 +129,7 @@ export default function BibleDownloadModal({
         <View style={[styles.modal, { backgroundColor: colors.background }]}>
           {/* Header */}
           <View style={styles.header}>
-            <Ionicons name="cloud-download-outline" size={48} color={colors.tint} />
+            <Ionicons name="cloud-download-outline" size={48} color={colors.primary} />
             <Text style={[styles.title, { color: colors.text }]}>
               {t('UI.bibleDownload.downloadBible')}
             </Text>
@@ -165,7 +163,7 @@ export default function BibleDownloadModal({
                 <Text style={[styles.progressText, { color: colors.text }]}>
                   {t('UI.bibleDownload.downloading')}...
                 </Text>
-                <Text style={[styles.progressPercent, { color: colors.tint }]}>
+                <Text style={[styles.progressPercent, { color: colors.primary }]}>
                   {progress.toFixed(0)}%
                 </Text>
               </View>
@@ -174,7 +172,7 @@ export default function BibleDownloadModal({
                 <View
                   style={[
                     styles.progressBar,
-                    { backgroundColor: colors.tint, width: `${progress}%` },
+                    { backgroundColor: colors.primary, width: `${progress}%` },
                   ]}
                 />
               </View>
@@ -199,7 +197,7 @@ export default function BibleDownloadModal({
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.button, styles.downloadButton, { backgroundColor: colors.tint }]}
+                  style={[styles.button, styles.downloadButton, { backgroundColor: colors.primary }]}
                   onPress={handleDownload}
                 >
                   <Ionicons name="download-outline" size={20} color="#FFFFFF" />
