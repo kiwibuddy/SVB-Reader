@@ -9,8 +9,31 @@ import { bibleStorageManager, SupportedBibleLanguage } from './BibleStorageManag
 import logger from '@/utils/logger';
 import i18next from 'i18next';
 
-// Import English Bible (always bundled)
-import EnglishBible from '@/assets/data/newBibleNLT1.json';
+// Lazy load English Bible to prevent crashes if JSON import fails
+let EnglishBible: any = null;
+let englishBibleLoadError: Error | null = null;
+
+function loadEnglishBible(): any {
+  if (EnglishBible) {
+    return EnglishBible;
+  }
+  
+  if (englishBibleLoadError) {
+    logger.error('❌ English Bible failed to load previously:', englishBibleLoadError);
+    return null;
+  }
+  
+  try {
+    // Dynamic import to prevent crashes if file is missing
+    EnglishBible = require('@/assets/data/newBibleNLT1.json');
+    logger.info('✅ English Bible loaded successfully');
+    return EnglishBible;
+  } catch (error) {
+    englishBibleLoadError = error instanceof Error ? error : new Error(String(error));
+    logger.error('❌ Failed to load English Bible:', error);
+    return null;
+  }
+}
 
 /**
  * Singleton Bible loader that caches loaded Bibles in memory
@@ -21,8 +44,15 @@ class BibleLoader {
   private currentLanguage: SupportedBibleLanguage = 'en';
 
   private constructor() {
-    // Cache English Bible immediately
-    this.cachedBibles.set('en', EnglishBible);
+    // Lazy load English Bible - don't crash if it fails to load
+    try {
+      const bible = loadEnglishBible();
+      if (bible) {
+        this.cachedBibles.set('en', bible);
+      }
+    } catch (error) {
+      logger.error('❌ Failed to initialize English Bible in constructor:', error);
+    }
   }
 
   public static getInstance(): BibleLoader {
@@ -54,7 +84,8 @@ class BibleLoader {
         if (keys.length === 1 && keys[0] === 'error') {
           logger.error(`❌ Cached Bible for ${normalizedLanguage} is corrupted, clearing cache`);
           this.cachedBibles.delete(normalizedLanguage);
-          return EnglishBible;
+          const englishBible = loadEnglishBible() || {};
+        return englishBible;
         }
       }
       
@@ -74,20 +105,23 @@ class BibleLoader {
       // For English, always return immediately
       if (normalizedLanguage === 'en') {
         this.currentLanguage = 'en';
-        return EnglishBible;
+        const englishBible = loadEnglishBible() || {};
+        return englishBible;
       }
       
       // For other languages, try to load synchronously if cached, otherwise return English as fallback
       // Note: This is a synchronous method, so we can't await async loading
       // The async loading should happen via switchLanguage() which is called in setLanguage
       logger.warn(`⚠️ Bible for ${normalizedLanguage} not cached yet, returning English as fallback`);
-      return EnglishBible;
+      const englishBible = loadEnglishBible() || {};
+      return englishBible;
     }
     
     const bible = this.cachedBibles.get(this.currentLanguage);
     if (!bible) {
       logger.warn(`⚠️ Bible not loaded for ${this.currentLanguage}, falling back to English`);
-      return EnglishBible;
+      const englishBible = loadEnglishBible() || {};
+      return englishBible;
     }
     
     // Validate Bible structure before returning
@@ -96,7 +130,8 @@ class BibleLoader {
       if (keys.length === 1 && keys[0] === 'error') {
         logger.error(`❌ Bible for ${this.currentLanguage} is corrupted, clearing cache`);
         this.cachedBibles.delete(this.currentLanguage);
-        return EnglishBible;
+        const englishBible = loadEnglishBible() || {};
+        return englishBible;
       }
     }
     
@@ -115,8 +150,12 @@ class BibleLoader {
 
     // English is always bundled
     if (language === 'en') {
-      this.cachedBibles.set('en', EnglishBible);
-      return EnglishBible;
+      const bible = loadEnglishBible();
+      if (bible) {
+        this.cachedBibles.set('en', bible);
+        return bible;
+      }
+      return null;
     }
 
     // Try to load from storage
@@ -126,13 +165,15 @@ class BibleLoader {
       
       if (!bible) {
         logger.warn(`⚠️ ${language} Bible not found, using English as fallback`);
-        return EnglishBible;
+        const englishBible = loadEnglishBible();
+        return englishBible || {};
       }
       
       // Validate Bible structure - should be an object with segment IDs as keys
       if (typeof bible !== 'object' || Array.isArray(bible)) {
         logger.error(`❌ Invalid Bible structure: expected object, got ${typeof bible}`);
-        return EnglishBible;
+        const englishBible = loadEnglishBible() || {};
+        return englishBible;
       }
       
       // Check if Bible has an error key (indicates corrupted file)
@@ -140,21 +181,24 @@ class BibleLoader {
         logger.error(`❌ Bible file contains error key:`, bible.error);
         // Clear the corrupted cache
         this.cachedBibles.delete(language);
-        return EnglishBible;
+        const englishBible = loadEnglishBible() || {};
+        return englishBible;
       }
       
       // Validate that Bible has segment keys (should have many keys like S001, S002, etc.)
       const keys = Object.keys(bible);
       if (keys.length === 0) {
         logger.error(`❌ Bible has no segment keys`);
-        return EnglishBible;
+        const englishBible = loadEnglishBible() || {};
+        return englishBible;
       }
       
       // If only one key and it's "error", the file is corrupted
       if (keys.length === 1 && keys[0] === 'error') {
         logger.error(`❌ Bible file appears to be corrupted (only has "error" key)`);
         this.cachedBibles.delete(language);
-        return EnglishBible;
+        const englishBible = loadEnglishBible() || {};
+        return englishBible;
       }
       
       // Cache in memory for fast access
@@ -165,7 +209,8 @@ class BibleLoader {
       logger.error(`❌ Error loading ${language} Bible:`, error);
       // Clear cache on error
       this.cachedBibles.delete(language);
-      return EnglishBible;
+      const englishBible = loadEnglishBible() || {};
+      return englishBible;
     }
   }
 
@@ -196,7 +241,8 @@ class BibleLoader {
     // Load the Bible
     const bible = await this.getBible(language);
     
-    if (bible && bible !== EnglishBible) {
+    const englishBible = loadEnglishBible();
+    if (bible && bible !== englishBible) {
       this.currentLanguage = language;
       logger.info(`✅ Successfully switched to ${language} Bible`);
       return { success: true, needsDownload: false };
@@ -221,7 +267,8 @@ class BibleLoader {
   public async preloadBible(language: SupportedBibleLanguage): Promise<boolean> {
     try {
       const bible = await this.getBible(language);
-      return bible !== EnglishBible || language === 'en';
+      const englishBible = loadEnglishBible();
+      return bible !== englishBible || language === 'en';
     } catch (error) {
       logger.error(`❌ Failed to preload ${language} Bible:`, error);
       return false;
@@ -239,7 +286,10 @@ class BibleLoader {
     } else {
       // Clear all except English
       this.cachedBibles.clear();
-      this.cachedBibles.set('en', EnglishBible);
+      const englishBible = loadEnglishBible();
+      if (englishBible) {
+        this.cachedBibles.set('en', englishBible);
+      }
       logger.info('🗑️ Cleared all Bible caches (except English)');
     }
   }
@@ -252,8 +302,26 @@ class BibleLoader {
   }
 }
 
-// Export singleton instance
-export const bibleLoader = BibleLoader.getInstance();
+// Lazy singleton - don't create instance until first use
+let bibleLoaderInstance: BibleLoader | null = null;
+
+function getBibleLoaderInstance(): BibleLoader {
+  if (!bibleLoaderInstance) {
+    bibleLoaderInstance = BibleLoader.getInstance();
+  }
+  return bibleLoaderInstance;
+}
+
+// Export lazy singleton accessor
+export const bibleLoader = {
+  getCurrentBible: (language?: SupportedBibleLanguage) => getBibleLoaderInstance().getCurrentBible(language),
+  getBible: (language: SupportedBibleLanguage) => getBibleLoaderInstance().getBible(language),
+  switchLanguage: (language: SupportedBibleLanguage) => getBibleLoaderInstance().switchLanguage(language),
+  isBibleAvailable: (language: SupportedBibleLanguage) => getBibleLoaderInstance().isBibleAvailable(language),
+  preloadBible: (language: SupportedBibleLanguage) => getBibleLoaderInstance().preloadBible(language),
+  clearCache: (language?: SupportedBibleLanguage) => getBibleLoaderInstance().clearCache(language),
+  getCurrentLanguage: () => getBibleLoaderInstance().getCurrentLanguage(),
+};
 
 // Export default for backwards compatibility
 export default bibleLoader;

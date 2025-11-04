@@ -244,8 +244,13 @@ export class BibleStorageManager {
    */
   async loadBible(language: SupportedBibleLanguage): Promise<any | null> {
     if (language === 'en') {
-      // Load bundled English Bible
-      return require('@/assets/data/newBibleNLT1.json');
+      // Load bundled English Bible - use lazy loading to prevent crashes
+      try {
+        return require('@/assets/data/newBibleNLT1.json');
+      } catch (error) {
+        logger.error('❌ Failed to load bundled English Bible:', error);
+        return null;
+      }
     }
 
     try {

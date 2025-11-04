@@ -18,7 +18,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sourceview.together",
-      "buildNumber": "18",
+      "buildNumber": "19",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -40,7 +40,7 @@
         "android.permission.ACCESS_NETWORK_STATE"
       ],
       "package": "com.sourceview.together",
-      "versionCode": 18,
+      "versionCode": 19,
       "allowBackup": true,
       "icon": "./assets/images/icon.png"
     },
