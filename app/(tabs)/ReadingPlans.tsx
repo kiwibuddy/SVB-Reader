@@ -23,6 +23,7 @@ import Accordion, { AccordionItem, accordionColor } from "@/components/navigatio
 import Books from "@/assets/data/BookChapterList.json";
 import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import ChronologicalView from '@/components/navigation/ChronologicalView';
+import FRA_UI from '@/assets/data/FRA-UI.json';
 
 import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -629,6 +630,39 @@ const ReadingPlansScreen = () => {
     }, [])
   );
 
+  // Handle navigation parameters for expanding plans/challenges after completion
+  useEffect(() => {
+    if (expandedPlan && timestamp) {
+      logger.info('📍 Expanding plan after completion:', expandedPlan);
+      setExpandedPlanId(expandedPlan as string);
+      
+      if (completedSegment) {
+        setLastCompletedSegment(completedSegment as string);
+        
+        // Scroll to the completed segment after a brief delay
+        setTimeout(() => {
+          if (scrollViewRef.current) {
+            scrollViewRef.current.scrollToEnd({ animated: true });
+          }
+        }, 500);
+      }
+    } else if (expandedChallenge && timestamp) {
+      logger.info('📍 Expanding challenge after completion:', expandedChallenge);
+      setExpandedPlanId(expandedChallenge as string);
+      
+      if (completedSegment) {
+        setLastCompletedSegment(completedSegment as string);
+        
+        // Scroll to the completed segment after a brief delay
+        setTimeout(() => {
+          if (scrollViewRef.current) {
+            scrollViewRef.current.scrollToEnd({ animated: true });
+          }
+        }, 500);
+      }
+    }
+  }, [expandedPlan, expandedChallenge, completedSegment, timestamp]);
+
   // Plan management functions
   const startPlanAction = async (planId: string, type: 'plan' | 'challenge') => {
     try {
@@ -791,12 +825,12 @@ const ReadingPlansScreen = () => {
   const handleSegmentSelect = useCallback((segmentId: string) => {
     if (!segmentId || !expandedPlanId) return;
     
-    const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
-    if (!segmentData) return;
+    const translatedInfo = getTranslatedSegmentInfo(segmentId);
+    if (!translatedInfo) return;
     
     setSelectedSegmentId(segmentId);
-    setSelectedSegmentTitle(segmentData.title);
-    setSelectedSegmentRef((segmentData as any).ref || '');
+    setSelectedSegmentTitle(translatedInfo.title);
+    setSelectedSegmentRef(translatedInfo.fullReference);
     
     // Set plan context based on expanded plan type
     const plan = organizedPlans.active.find(p => p.id === expandedPlanId) || 
@@ -808,7 +842,41 @@ const ReadingPlansScreen = () => {
     }
     
     setShowReadingModeModal(true);
-  }, [expandedPlanId, organizedPlans]);
+  }, [expandedPlanId, organizedPlans, language]);
+
+  // Helper function to get translated segment title and book name
+  const getTranslatedSegmentInfo = (segmentId: string) => {
+    const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+    if (!segmentData) return null;
+
+    let title = segmentData.title || 'Unknown Story';
+    let bookName = segmentData.book?.[0] || '';
+    const reference = (segmentData as any).ref || '';
+
+    // Translate title if in French mode
+    if (language === 'fr') {
+      const frenchTitle = (FRA_UI.Titles as any)[segmentId];
+      if (frenchTitle) {
+        title = frenchTitle;
+      }
+
+      // Translate book name if in French mode
+      if (bookName) {
+        const bookCodeUpper = bookName.toUpperCase();
+        const frenchBook = (FRA_UI.bookNames as any)[bookCodeUpper];
+        if (frenchBook && frenchBook.bookName) {
+          bookName = frenchBook.bookName;
+        }
+      }
+    }
+
+    return {
+      title,
+      bookName,
+      reference,
+      fullReference: reference ? `${bookName} ${reference}` : bookName
+    };
+  };
 
   // Helper function to get first story in plan/challenge
   const getFirstStoryInPlan = (planId: string, type: 'plan' | 'challenge') => {
@@ -828,16 +896,14 @@ const ReadingPlansScreen = () => {
     const firstStorySegment = allSegments.find(s => !s.startsWith('I'));
     
     if (firstStorySegment) {
-      const segmentData = SegmentTitles[firstStorySegment as keyof typeof SegmentTitles];
-      if (segmentData) {
-        const bookName = segmentData.book?.[0] || '';
-        const reference = (segmentData as any).ref || '';
+      const translatedInfo = getTranslatedSegmentInfo(firstStorySegment);
+      if (translatedInfo) {
         return {
           segmentId: firstStorySegment,
-          title: segmentData.title || 'Unknown Story',
-          book: bookName,
-          reference: reference,
-          fullReference: reference ? `${bookName} ${reference}` : bookName
+          title: translatedInfo.title,
+          book: translatedInfo.bookName,
+          reference: translatedInfo.reference,
+          fullReference: translatedInfo.fullReference
         };
       }
     }
@@ -853,9 +919,14 @@ const ReadingPlansScreen = () => {
   // Handle plan start button press  
   const handleStartPlanPress = (plan: UnifiedPlan) => {
     const firstStory = getFirstStoryInPlan(plan.id, plan.type);
+    // Get translated plan title
+    const translatedPlanTitle = language === 'fr' && t(`UI.plans.${plan.id}.title`) !== `UI.plans.${plan.id}.title`
+      ? t(`UI.plans.${plan.id}.title`)
+      : plan.title;
+    
     setStartConfirmationData({
       planId: plan.id,
-      planTitle: plan.title,
+      planTitle: translatedPlanTitle,
       planType: plan.type,
       firstStory: firstStory
     });
@@ -1093,11 +1164,11 @@ const ReadingPlansScreen = () => {
                 ? t(`UI.plans.${item.id}.title`)
                 : item.title}
             </Text>
-            {item.shortDescription && (
+            {(item.shortDescription || (language === 'fr' && t(`UI.plans.${item.id}.description`) !== `UI.plans.${item.id}.description`)) && (
               <Text style={styles.planDescription}>
                 {language === 'fr' && t(`UI.plans.${item.id}.description`) !== `UI.plans.${item.id}.description`
                   ? t(`UI.plans.${item.id}.description`)
-                  : item.shortDescription}
+                  : item.shortDescription || item.description}
               </Text>
             )}
             <Text style={styles.planSubtitle}>
@@ -1299,8 +1370,9 @@ const ReadingPlansScreen = () => {
       
       if (startConfirmationData.firstStory) {
         setSelectedSegmentId(startConfirmationData.firstStory.segmentId);
+        // Use translated title and reference from firstStory (already translated in getFirstStoryInPlan)
         setSelectedSegmentTitle(startConfirmationData.firstStory.title);
-        setSelectedSegmentRef(startConfirmationData.firstStory.reference);
+        setSelectedSegmentRef(startConfirmationData.firstStory.fullReference);
         setSelectedPlanId(startConfirmationData.planId);
         setSelectedPlanType(startConfirmationData.planType);
         setShowReadingModeModal(true);
@@ -1346,16 +1418,16 @@ const ReadingPlansScreen = () => {
       >
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>Reading Plans</Text>
+          <Text style={styles.welcomeTitle}>{t('UI.planPage.title')}</Text>
           <Text style={styles.welcomeText}>
-            Welcome to the Bible Reading Plans and Challenges screen, where you can find personalized reading plans and spiritual challenges designed to deepen your understanding of Scripture and transform your faith.
+            {t('UI.planPage.subtitle')}
           </Text>
         </View>
 
         {/* Active Plans Section */}
         {organizedPlans.active.length > 0 && (
           <View style={styles.activePlansSection}>
-            <Text style={styles.sectionTitle}>Active Plans</Text>
+            <Text style={styles.sectionTitle}>{t('UI.planPage.activePlans')}</Text>
             {organizedPlans.active.map((plan, index) => (
               <View key={plan.id}>
                 {renderActivePlanItem({ 
@@ -1371,7 +1443,7 @@ const ReadingPlansScreen = () => {
         {/* Available Plans Section */}
         <View style={styles.availablePlansSection}>
           <View style={styles.availablePlansHeader}>
-            <Text style={styles.sectionTitle}>Available Plans</Text>
+            <Text style={styles.sectionTitle}>{t('UI.planPage.availablePlans')}</Text>
             
             {/* Scroll Indicators */}
             <View style={styles.scrollIndicators}>
@@ -1516,7 +1588,7 @@ const ReadingPlansScreen = () => {
                   textAlign: 'center',
                   fontWeight: '500',
                 }}>
-                  Cancel
+                  {t('UI.alerts.cancel')}
                 </Text>
               </TouchableOpacity>
 
@@ -1534,7 +1606,7 @@ const ReadingPlansScreen = () => {
                   textAlign: 'center',
                   fontWeight: '600',
                 }}>
-                  Start {startConfirmationData.planType === 'plan' ? 'Plan' : 'Challenge'}
+                  {startConfirmationData.planType === 'plan' ? t('UI.startConfirmation.startPlan') : t('UI.startConfirmation.startChallenge')}
                 </Text>
               </TouchableOpacity>
             </View>

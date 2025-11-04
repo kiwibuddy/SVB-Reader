@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import ChronologicalSegmentItem from './ChronologicalSegmentItem';
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import ChronologicalMappings from '@/assets/data/ChronologicalMappings.json';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 import Books from '@/assets/data/BookChapterList.json';
@@ -26,6 +27,7 @@ const ChronologicalView: React.FC<ChronologicalViewProps> = ({
   planId
 }) => {
   const { colors } = useAppSettings();
+  const { t, language } = useTranslation();
 
   const styles = StyleSheet.create({
     container: {
@@ -95,10 +97,14 @@ const ChronologicalView: React.FC<ChronologicalViewProps> = ({
           <View key={phaseName}>
             <View style={[styles.phaseHeader, { backgroundColor: phase.color + '15' }]}>
               <Text style={[styles.phaseTitle, { color: phase.color }]}>
-                {phaseName}
+                {language === 'fr' && t(`UI.chronologicalPhases.${chronologicalMapping}.${phaseName}.title`) !== `UI.chronologicalPhases.${chronologicalMapping}.${phaseName}.title`
+                  ? t(`UI.chronologicalPhases.${chronologicalMapping}.${phaseName}.title`)
+                  : phaseName}
               </Text>
               <Text style={styles.phaseDescription}>
-                {phase.description}
+                {language === 'fr' && t(`UI.chronologicalPhases.${chronologicalMapping}.${phaseName}.description`) !== `UI.chronologicalPhases.${chronologicalMapping}.${phaseName}.description`
+                  ? t(`UI.chronologicalPhases.${chronologicalMapping}.${phaseName}.description`)
+                  : phase.description}
               </Text>
             </View>
             

@@ -209,6 +209,9 @@
       "chooseEmoji": "Choose an Emoji"
     },
     "planPage": {
+      "title": "Reading Plans",
+      "subtitle": "Welcome to the Bible Reading Plans and Challenges screen, where you can find personalized reading plans and spiritual challenges designed to deepen your understanding of Scripture and transform your faith.",
+      "activePlans": "Active Plans",
       "availablePlans": "Available Plans",
       "progress": "Progress: {percent}%",
       "startPlan": "Start Plan",

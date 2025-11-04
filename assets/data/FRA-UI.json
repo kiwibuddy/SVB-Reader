@@ -22632,6 +22632,9 @@
       "chooseEmoji": "Choisir un Emoji"
     },
     "planPage": {
+      "title": "Plans de lecture",
+      "subtitle": "Bienvenue sur l'écran des Plans de lecture et Défis bibliques, où vous pouvez trouver des plans de lecture personnalisés et des défis spirituels conçus pour approfondir votre compréhension des Écritures et transformer votre foi.",
+      "activePlans": "Plans actifs",
       "availablePlans": "Plans disponibles",
       "progress": "Progrès : {percent}%",
       "startPlan": "Démarrer le plan",
@@ -22809,59 +22812,91 @@
     "plans": {
       "Bible1Year": {
         "title": "Bible en 1 an",
-        "description": "365 Histoires"
+        "description": "Complétez toute la Bible en un an avec ce plan de lecture complet. Parfait pour développer votre littératie biblique."
       },
       "SchoolYear1": {
         "title": "Bible scolaire en un an",
-        "description": "180 Histoires"
+        "description": "Histoires essentielles de la Bible sélectionnées pour un parcours scolaire significatif. Idéal pour les étudiants et les salles de classe."
       },
       "NT100Days": {
         "title": "Nouveau Testament en 100 jours",
-        "description": "100 Histoires"
+        "description": "Découvrez le Nouveau Testament à travers 100 histoires soigneusement sélectionnées. Excellent pour les nouveaux croyants."
       },
       "godsStory7Day": {
         "title": "L'histoire de Dieu : La Bonne Nouvelle",
-        "description": "7 Histoires - 1 Semaine"
+        "description": "Découvrez l'Évangile en sept moments clés de la rédemption. Aperçu rapide du plan de Dieu."
       },
       "oldTestamentJourney": {
         "title": "Voyage dans l'Ancien Testament",
-        "description": "57 Histoires - 11 Semaines"
+        "description": "Explorez la relation d'alliance de Dieu depuis la Création jusqu'aux prophètes. Fondamental pour comprendre le Christ."
       },
       "newTestamentJourney": {
         "title": "Voyage dans le Nouveau Testament",
-        "description": "40 Histoires - 8 Semaines"
+        "description": "Suivez Jésus et l'Église primitive à travers les livres clés du Nouveau Testament. Bâtit une base solide de discipleship."
       },
       "inTheBeginning": {
         "title": "Au commencement",
-        "description": "18 Histoires - 3 Semaines"
+        "description": "Témoignez des origines de l'humanité et des premières promesses d'alliance de Dieu. Point de départ pour l'étude biblique."
       },
       "theGospels": {
         "title": "Les Évangiles",
-        "description": "42 Histoires - 6 Semaines"
+        "description": "Parcourez la vie, le ministère, la mort et la résurrection de Jésus. Cœur de la foi chrétienne."
       },
       "paulsLetters": {
         "title": "Les lettres de Paul",
-        "description": "35 Histoires - 7 Semaines"
+        "description": "Étudiez les enseignements de l'apôtre sur la foi, la grâce et la vie chrétienne. Transformant pour la croissance spirituelle."
       },
       "womenOfTheBible": {
         "title": "Femmes de la Bible",
-        "description": "20 Histoires - 4 Semaines"
+        "description": "Rencontrez des femmes remarquables qui ont façonné l'histoire biblique. Histoires inspirantes de foi et de courage."
       },
       "davidsLife": {
         "title": "La vie de David",
-        "description": "35 Histoires - 7 Semaines"
+        "description": "Suivez le plus grand roi d'Israël du berger au trône. Leçons sur le leadership et l'adoration."
       },
       "adventJourneyChronological": {
         "title": "Voyage de l'Avent",
-        "description": "16 Histoires - 4 Semaines"
+        "description": "Préparez votre cœur pour Noël avec la prophétie et l'accomplissement. Parfait pour la période des fêtes."
       },
       "lentenReflectionChronological": {
         "title": "Réflexion du Carême",
-        "description": "21 Histoires - 3 Semaines"
+        "description": "Marchez avec Jésus à travers ses dernières semaines et sa résurrection. Significatif pour la préparation de Pâques."
       },
       "christmas12": {
         "title": "12 Jours de Noël",
-        "description": "6 Histoires - 12 Jours"
+        "description": "Célébrez la naissance du Christ avec des histoires de la nativité et des réflexions. La tradition rencontre les Écritures."
+      }
+    },
+    "chronologicalPhases": {
+      "godsStory7DayChronological": {
+        "Creation": {
+          "title": "Création",
+          "description": "Dieu crée les cieux, la terre et l'humanité à son image"
+        },
+        "The Fall": {
+          "title": "La Chute",
+          "description": "L'humanité se rebelle contre Dieu, apportant le péché et la mort dans le monde"
+        },
+        "The Promise": {
+          "title": "La Promesse",
+          "description": "Dieu fait une alliance avec Abraham, promettant la bénédiction à toutes les nations"
+        },
+        "The Law": {
+          "title": "La Loi",
+          "description": "Dieu donne Sa loi pour révéler Son caractère et le besoin de grâce de l'humanité"
+        },
+        "The Incarnation": {
+          "title": "L'Incarnation",
+          "description": "Dieu devient humain en Jésus-Christ, accomplissant Sa promesse"
+        },
+        "The Redemption": {
+          "title": "La Rédemption",
+          "description": "Jésus meurt pour nos péchés et ressuscite victorieux sur la mort"
+        },
+        "The Restoration": {
+          "title": "La Restauration",
+          "description": "Dieu crée un nouveau ciel et une nouvelle terre, restaurant toutes choses"
+        }
       }
     },
     "filters": {

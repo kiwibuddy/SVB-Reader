@@ -2978,16 +2978,16 @@ const Home = () => {
       setSelectedSegmentRef((segmentData as any).ref || '');
       setShowReadingModeModal(true);
     } else {
-      // If no next segment, go to the plan page
-      router.push("/Plan");
+      // If no next segment, go to the reading plans page
+      router.push("/ReadingPlans");
     }
   };
 
   const handleActiveChallengesContinue = async (challengeId: string) => {
     const challengeProgress = challengeProgresses[challengeId];
     if (!challengeProgress?.nextSegmentId) {
-      // If no next segment, go to the challenges page
-      router.push("/Reading-Challenges");
+      // If no next segment, go to the reading plans page
+      router.push("/ReadingPlans");
       return;
     }
     

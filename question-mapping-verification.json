@@ -1,0 +1,578 @@
+{
+  "english": {
+    "identicalAcrossAudiences": [
+      {
+        "segmentId": "S322",
+        "book": "Rom",
+        "ref": "6:1-8:39",
+        "title": "God's Children Adopted by the Spirit",
+        "question": "What changes when we live by the Spirit?"
+      },
+      {
+        "segmentId": "S328",
+        "book": "1Co",
+        "ref": "8:1-11:1",
+        "title": "Regarding Freedom & Self-control",
+        "question": "What does Paul teach about freedom and love?"
+      },
+      {
+        "segmentId": "S329",
+        "book": "1Co",
+        "ref": "11:2-14:40",
+        "title": "Regarding Love & Worship",
+        "question": "What do you learn about love and worship here?"
+      },
+      {
+        "segmentId": "S336",
+        "book": "Gal",
+        "ref": "3:1-6:18",
+        "title": "Foundation & Fruit of the Gospel",
+        "question": "What is the core of the gospel here?"
+      },
+      {
+        "segmentId": "S338",
+        "book": "Eph",
+        "ref": "4:1-6:24",
+        "title": "Living as God's Family",
+        "question": "What practices mark a healthy church family?"
+      },
+      {
+        "segmentId": "S340",
+        "book": "Col",
+        "ref": "1:1-4:18",
+        "title": "Fully God & Fully Human",
+        "question": "What does Paul say about Jesus’ supremacy?"
+      },
+      {
+        "segmentId": "S341",
+        "book": "1Th",
+        "ref": "1:1-5:28",
+        "title": "Live Holy Awaiting His Return",
+        "question": "What hopes and commands shape waiting here?"
+      },
+      {
+        "segmentId": "S364",
+        "book": "Rev",
+        "ref": "17:1-20:3",
+        "title": "The Sinful City is Fallen",
+        "question": "What contrasts appear between Babylon and the Lamb?"
+      }
+    ],
+    "bookMismatches": [
+      {
+        "segmentId": "S010",
+        "book": "Gen",
+        "ref": "25:27-28:9",
+        "title": "Jacob Deceives Isaac & Steals the Blessing",
+        "audience": "smallgroup",
+        "question": "What motives and methods are used to secure the blessing?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S018",
+        "book": "Gen",
+        "ref": "47:27-50:26",
+        "title": "The Last Days of Jacob & Joseph",
+        "audience": "smallgroup",
+        "question": "What themes of blessing, memory, and legacy appear?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S023",
+        "book": "Exo",
+        "ref": "13:17-15:21",
+        "title": "Israelites Leave Egypt & Cross the Red Sea",
+        "audience": "smallgroup",
+        "question": "Which choices and emotions define the crisis and crossing?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S026",
+        "book": "Exo",
+        "ref": "20:22-23:33",
+        "title": "Covenantal Laws",
+        "audience": "smallgroup",
+        "question": "What values for community life are emphasized?",
+        "wrongBooks": [
+          "1Co"
+        ]
+      },
+      {
+        "segmentId": "S038",
+        "book": "Lev",
+        "ref": "16:1-17:16",
+        "title": "Atonement & Purification",
+        "audience": "smallgroup",
+        "question": "What images communicate atonement and cleansing?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S064",
+        "book": "Deu",
+        "ref": "22:13-26:19",
+        "title": "Covenantal Laws 4",
+        "audience": "smallgroup",
+        "question": "What repeated themes paint a picture of community life?",
+        "wrongBooks": [
+          "1Co"
+        ]
+      },
+      {
+        "segmentId": "S068",
+        "book": "Deu",
+        "ref": "33:1-34:12",
+        "title": "Moses' Blessing & Death",
+        "audience": "smallgroup",
+        "question": "What blessings and farewells are given?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S070",
+        "book": "Jos",
+        "ref": "5:2-6:27",
+        "title": "Victory at Jericho",
+        "audience": "smallgroup",
+        "question": "What acts of trust mark the strategy and march?",
+        "wrongBooks": [
+          "Act"
+        ]
+      },
+      {
+        "segmentId": "S112",
+        "book": "1Ki",
+        "ref": "16:29-18:46",
+        "title": "Elijah the Prophet & Ahab of Israel 1",
+        "audience": "smallgroup",
+        "question": "What confrontations and faith moments strike you?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S143",
+        "book": "2Ch",
+        "ref": "32:1-33:25",
+        "title": "Hezekiah (Part 2), Manasseh & Amnon of Judah",
+        "audience": "smallgroup",
+        "question": "What swings between faith and evil do you notice?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S168",
+        "book": "Psa",
+        "ref": "65:1-72:20",
+        "title": "Book 2: Songs of Conflict & Salvation 3",
+        "audience": "smallgroup",
+        "question": "What pictures of creation and blessing caught your eye?",
+        "wrongBooks": [
+          "Rom",
+          "Gen"
+        ]
+      },
+      {
+        "segmentId": "S179",
+        "book": "Psa",
+        "ref": "146:1-150:6",
+        "title": "Book 5: The Final Hallel",
+        "audience": "smallgroup",
+        "question": "What reasons to praise fill these closing psalms?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S207",
+        "book": "Jer",
+        "ref": "4:3-6:30",
+        "title": "Shall I Not Punish? Judah Must Be Punished!",
+        "audience": "smallgroup",
+        "question": "What sins and warnings are identified?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S216",
+        "book": "Jer",
+        "ref": "32:1-33:26",
+        "title": "Covenantal Hope Inspires Jeremiah to Buy a Field",
+        "audience": "smallgroup",
+        "question": "What act of faith does Jeremiah take and why?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S224",
+        "book": "Jer",
+        "ref": "52:1-34",
+        "title": "Jerusalem Falls!",
+        "audience": "smallgroup",
+        "question": "What closing notes end Jeremiah’s book?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S228",
+        "book": "Eze",
+        "ref": "3:16-7:27",
+        "title": "The Coming Destruction Dramatized",
+        "audience": "smallgroup",
+        "question": "What sign‑acts does Ezekiel perform and why?",
+        "wrongBooks": [
+          "Act"
+        ]
+      },
+      {
+        "segmentId": "S231",
+        "book": "Eze",
+        "ref": "15:1-16:63",
+        "title": "The Worthless Vine & the Faithless Wife",
+        "audience": "smallgroup",
+        "question": "What metaphors describe unfaithfulness?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S234",
+        "book": "Eze",
+        "ref": "22:1-24:27",
+        "title": "Allegory of Oholah & Oholibah",
+        "audience": "smallgroup",
+        "question": "What hard images confront unfaithfulness here?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S283",
+        "book": "Mar",
+        "ref": "14:1-14:72",
+        "title": "Betrayed, Arrested & Denied",
+        "audience": "smallgroup",
+        "question": "Which failures and faithfulness do you notice?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S288",
+        "book": "Luk",
+        "ref": "7:1-8:56",
+        "title": "Power, Miracles & Faith",
+        "audience": "smallgroup",
+        "question": "What links do you see between faith and healing?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S293",
+        "book": "Luk",
+        "ref": "16:1-17:10",
+        "title": "More Teaching on True Discipleship",
+        "audience": "smallgroup",
+        "question": "What habits of faith are commended?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S305",
+        "book": "Joh",
+        "ref": "15:1-17:26",
+        "title": "Last Supper: Fruitfulness & Unity",
+        "audience": "smallgroup",
+        "question": "What images of abiding and unity speak to you?",
+        "wrongBooks": [
+          "1Co"
+        ]
+      },
+      {
+        "segmentId": "S322",
+        "book": "Rom",
+        "ref": "6:1-8:39",
+        "title": "God's Children Adopted by the Spirit",
+        "audience": "smallgroup",
+        "question": "What changes when we live by the Spirit?",
+        "wrongBooks": [
+          "Act"
+        ]
+      },
+      {
+        "segmentId": "S326",
+        "book": "1Co",
+        "ref": "1:1-4:21",
+        "title": "Regarding Unity",
+        "audience": "smallgroup",
+        "question": "What problems are addressed in this church?",
+        "wrongBooks": [
+          "Act"
+        ]
+      },
+      {
+        "segmentId": "S337",
+        "book": "Eph",
+        "ref": "1:1-3:21",
+        "title": "Adopted into God's Family",
+        "audience": "smallgroup",
+        "question": "What blessings in Christ are listed?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S338",
+        "book": "Eph",
+        "ref": "4:1-6:24",
+        "title": "Living as God's Family",
+        "audience": "smallgroup",
+        "question": "What practices mark a healthy church family?",
+        "wrongBooks": [
+          "Act"
+        ]
+      },
+      {
+        "segmentId": "S339",
+        "book": "Php",
+        "ref": "1:1-4:23",
+        "title": "Rejoice!",
+        "audience": "smallgroup",
+        "question": "What themes of joy and unity appear?",
+        "wrongBooks": [
+          "1Co"
+        ]
+      },
+      {
+        "segmentId": "S350",
+        "book": "Heb",
+        "ref": "10:19-12:13",
+        "title": "Better Than All Heroes of the Faith",
+        "audience": "smallgroup",
+        "question": "What examples of faith inspire you?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S352",
+        "book": "Jam",
+        "ref": "1:1-5:20",
+        "title": "Faith Works",
+        "audience": "smallgroup",
+        "question": "What links between faith and works appear?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S358",
+        "book": "Jud",
+        "ref": "1:1-1:25",
+        "title": "Holy Faith",
+        "audience": "smallgroup",
+        "question": "What threats to the faith are highlighted?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S365",
+        "book": "Rev",
+        "ref": "20:4-22:21",
+        "title": "The Holy City is Coming",
+        "audience": "smallgroup",
+        "question": "What images of the new creation move you?",
+        "wrongBooks": [
+          "Gen"
+        ]
+      }
+    ]
+  },
+  "french": {
+    "identicalAcrossAudiences": [
+      {
+        "segmentId": "S185",
+        "book": "Pro",
+        "ref": "25:1-29:27",
+        "title": "The Proverbs of Solomon 3",
+        "question": "Que valorisent le plus ces proverbes ?"
+      },
+      {
+        "segmentId": "S194",
+        "book": "Isa",
+        "ref": "18:1-23:18",
+        "title": "Prophecies for Ethiopia, Egypt, Babylon, Edom, Arabia, Judah & Tyre",
+        "question": "Quels schémas se répètent à travers ces prophéties ?"
+      },
+      {
+        "segmentId": "S197",
+        "book": "Isa",
+        "ref": "31:1-35:10",
+        "title": "Coming Judgment & Salvation 3",
+        "question": "Quel espoir futur est décrit ici ?"
+      },
+      {
+        "segmentId": "S202",
+        "book": "Isa",
+        "ref": "49:1-52:12",
+        "title": "Two Servant Songs",
+        "question": "Quels rôles du Serviteur sont mis en évidence ?"
+      },
+      {
+        "segmentId": "S204",
+        "book": "Isa",
+        "ref": "58:1-62:12",
+        "title": "Preparing for God's Reign & Salvation",
+        "question": "Quel genre de jeûne et de justice Dieu désire-t-il ?"
+      },
+      {
+        "segmentId": "S205",
+        "book": "Isa",
+        "ref": "63:1-66:24",
+        "title": "Coming Judgment & Salvation 3",
+        "question": "Quelles images de jugement et de renouveau apparaissent ?"
+      },
+      {
+        "segmentId": "S322",
+        "book": "Rom",
+        "ref": "6:1-8:39",
+        "title": "God's Children Adopted by the Spirit",
+        "question": "Que change quand nous vivons par l'Esprit ?"
+      },
+      {
+        "segmentId": "S324",
+        "book": "Rom",
+        "ref": "12:1-15:13",
+        "title": "Fruit of Transformational Grace",
+        "question": "Qu'est-ce qui marque une vie transformée dans ce texte ?"
+      }
+    ],
+    "bookMismatches": [
+      {
+        "segmentId": "S070",
+        "book": "Jos",
+        "ref": "5:2-6:27",
+        "title": "Victory at Jericho",
+        "audience": "smallgroup",
+        "question": "Quels actes de confiance remarquez-vous dans cette histoire ?",
+        "wrongBooks": [
+          "Act"
+        ]
+      },
+      {
+        "segmentId": "S112",
+        "book": "1Ki",
+        "ref": "16:29-18:46",
+        "title": "Elijah the Prophet & Ahab of Israel 1",
+        "audience": "smallgroup",
+        "question": "Quelles confrontations et moments de foi se démarquent ?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S143",
+        "book": "2Ch",
+        "ref": "32:1-33:25",
+        "title": "Hezekiah (Part 2), Manasseh & Amnon of Judah",
+        "audience": "smallgroup",
+        "question": "Quels balancements entre foi et mal apparaissent ici ?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S168",
+        "book": "Psa",
+        "ref": "65:1-72:20",
+        "title": "Book 2: Songs of Conflict & Salvation 3",
+        "audience": "smallgroup",
+        "question": "Quelles images de la création et de la bénédiction ont attiré votre attention ?",
+        "wrongBooks": [
+          "Gen"
+        ]
+      },
+      {
+        "segmentId": "S207",
+        "book": "Jer",
+        "ref": "4:3-6:30",
+        "title": "Shall I Not Punish? Judah Must Be Punished!",
+        "audience": "smallgroup",
+        "question": "Quels péchés sont nommés dans cette section ?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S216",
+        "book": "Jer",
+        "ref": "32:1-33:26",
+        "title": "Covenantal Hope Inspires Jeremiah to Buy a Field",
+        "audience": "smallgroup",
+        "question": "Quelle action Jérémie prend-il par foi ?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S228",
+        "book": "Eze",
+        "ref": "3:16-7:27",
+        "title": "The Coming Destruction Dramatized",
+        "audience": "smallgroup",
+        "question": "Quels actes symboliques Ézéchiel accomplit-il et pourquoi ?",
+        "wrongBooks": [
+          "Act"
+        ]
+      },
+      {
+        "segmentId": "S322",
+        "book": "Rom",
+        "ref": "6:1-8:39",
+        "title": "God's Children Adopted by the Spirit",
+        "audience": "smallgroup",
+        "question": "Que change quand nous vivons par l'Esprit ?",
+        "wrongBooks": [
+          "Act"
+        ]
+      },
+      {
+        "segmentId": "S351",
+        "book": "Heb",
+        "ref": "12:14-13:25",
+        "title": "Jesus' Way is Better",
+        "audience": "smallgroup",
+        "question": "Quels moments de grâce dans l'Écriture vous ont le plus touché ?",
+        "wrongBooks": [
+          "Rom"
+        ]
+      },
+      {
+        "segmentId": "S362",
+        "book": "Rev",
+        "ref": "11:19-14:20",
+        "title": "Endurance Amidst Hardship",
+        "audience": "smallgroup",
+        "question": "Quelles pratiques spirituelles ont été modélisées dans l'Écriture ?",
+        "wrongBooks": [
+          "Act"
+        ]
+      }
+    ]
+  }
+}

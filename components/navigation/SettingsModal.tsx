@@ -49,7 +49,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
   const [isFrenchBibleDownloaded, setIsFrenchBibleDownloaded] = useState(false);
   const [showBibleDownloadModal, setShowBibleDownloadModal] = useState(false);
   const [checkingDownload, setCheckingDownload] = useState(false);
-  const [frenchBibleSize, setFrenchBibleSize] = useState(52073208); // Default to new size
+  const [frenchBibleSize, setFrenchBibleSize] = useState(52073208); // Default to new size (49.7 MB)
+  const [downloadedFrenchBibleSize, setDownloadedFrenchBibleSize] = useState<number | null>(null); // Actual downloaded file size
 
   // Supported languages: English and French
   const languages: { label: string; value: SupportedLanguage }[] = [
@@ -69,14 +70,38 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
       const isDownloaded = await bibleStorageManager.isBibleDownloaded('fr');
       setIsFrenchBibleDownloaded(isDownloaded);
       
-      // Fetch metadata to get actual file size
+      // Fetch metadata to get expected file size
       const metadata = await bibleStorageManager.getBibleMetadata('fr');
       if (metadata) {
         setFrenchBibleSize(metadata.files.bible.size);
       }
       
+      // If Bible is downloaded, get the actual file size
+      if (isDownloaded) {
+        try {
+          const actualSize = await bibleStorageManager.getBibleSize('fr');
+          if (actualSize > 0) {
+            setDownloadedFrenchBibleSize(actualSize);
+          } else {
+            // If getBibleSize returns 0, fall back to metadata size
+            setDownloadedFrenchBibleSize(metadata?.files.bible.size || null);
+          }
+        } catch (error) {
+          console.error('Failed to get downloaded Bible size:', error);
+          // Fall back to metadata size if we can't get actual size
+          setDownloadedFrenchBibleSize(metadata?.files.bible.size || null);
+        }
+      } else {
+        setDownloadedFrenchBibleSize(null);
+      }
+      
       setCheckingDownload(false);
     }
+  };
+
+  // Helper function to format file size (matches BibleDownloadModal)
+  const formatFileSize = (bytes: number): string => {
+    return (bytes / 1024 / 1024).toFixed(1);
   };
 
   // Handle language change - only one can be active at a time
@@ -90,11 +115,31 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
       setIsFrenchBibleDownloaded(isDownloaded);
       
       if (!isDownloaded) {
+        // Fetch metadata to get actual file size
+        let actualFileSize = frenchBibleSize; // Use cached size if available
+        try {
+          const metadata = await bibleStorageManager.getBibleMetadata('fr');
+          if (metadata) {
+            actualFileSize = metadata.files.bible.size;
+            setFrenchBibleSize(actualFileSize); // Cache it for future use
+          }
+        } catch (error) {
+          console.error('Failed to fetch Bible metadata:', error);
+          // Fall back to cached size if fetch fails
+        }
+
+        // Build alert message with actual file size
+        const fileSizeMB = formatFileSize(actualFileSize);
+        // Use selectedLang to determine message language (since we just switched to French)
+        const message = selectedLang === 'fr' 
+          ? `La Bible française est requise pour lire en français. Voulez-vous la télécharger maintenant ? (${fileSizeMB} Mo)`
+          : `French Bible is required to read in French. Would you like to download it now? (${fileSizeMB} MB)`;
+
         // Prompt user to download French Bible
         setTimeout(() => {
           Alert.alert(
             t('UI.bibleDownload.downloadBible'),
-            t('UI.bibleDownload.frenchBibleRequired'),
+            message,
             [
               {
                 text: t('UI.alerts.cancel'),
@@ -127,7 +172,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
             const success = await bibleStorageManager.deleteBible('fr');
             if (success) {
               setIsFrenchBibleDownloaded(false);
+              setDownloadedFrenchBibleSize(null);
               Alert.alert(t('UI.alerts.success'), t('UI.bibleDownload.bibleDeleted'));
+              // Refresh download status
+              await checkBibleDownloadStatus();
             }
           },
         },
@@ -437,7 +485,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
                     <View style={[modalStyles.downloadStatus, { backgroundColor: colors.card }]}>
                       <Ionicons name="checkmark-circle" size={20} color="#34C759" />
                       <Text style={[modalStyles.downloadStatusText, { color: colors.text }]}>
-                        {t('UI.bibleDownload.downloaded')} (16.4 MB)
+                        {t('UI.bibleDownload.downloaded')} ({downloadedFrenchBibleSize ? formatFileSize(downloadedFrenchBibleSize) : formatFileSize(frenchBibleSize)} MB)
                       </Text>
                     </View>
                     <TouchableOpacity 
@@ -511,9 +559,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
         languageDisplay="Français"
         fileSize={frenchBibleSize} // Dynamically fetched from metadata
         onClose={() => setShowBibleDownloadModal(false)}
-        onDownloadComplete={() => {
+        onDownloadComplete={async () => {
           setIsFrenchBibleDownloaded(true);
           setShowBibleDownloadModal(false);
+          // Refresh download status to get actual file size
+          await checkBibleDownloadStatus();
         }}
       />
     </Modal>

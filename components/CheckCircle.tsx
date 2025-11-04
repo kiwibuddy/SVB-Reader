@@ -443,7 +443,7 @@ export default function CheckCircle({
         // Navigate back to the source screen with context-aware parameters
         if (params.planId || planId) {
           router.push({
-            pathname: '/(tabs)/Plan',
+            pathname: '/(tabs)/ReadingPlans',
             params: { 
               expandedPlan: planId || params.planId,
               completedSegment: segmentId,
@@ -452,7 +452,7 @@ export default function CheckCircle({
           });
         } else if (params.challengeId || challengeId) {
           router.push({
-            pathname: '/(tabs)/Reading-Challenges',
+            pathname: '/(tabs)/ReadingPlans',
             params: { 
               expandedChallenge: challengeId || params.challengeId,
               completedSegment: segmentId,
@@ -634,7 +634,7 @@ export default function CheckCircle({
                 // Context-aware navigation after joiner completion
                 if (params.planId || planId) {
                   router.push({
-                    pathname: '/(tabs)/Plan',
+                    pathname: '/(tabs)/ReadingPlans',
                     params: { 
                       expandedPlan: planId || params.planId,
                       completedSegment: segmentId,
@@ -643,7 +643,7 @@ export default function CheckCircle({
                   });
                 } else if (params.challengeId || challengeId) {
                   router.push({
-                    pathname: '/(tabs)/Reading-Challenges',
+                    pathname: '/(tabs)/ReadingPlans',
                     params: { 
                       expandedChallenge: challengeId || params.challengeId,
                       completedSegment: segmentId,

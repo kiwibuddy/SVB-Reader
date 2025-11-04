@@ -23,12 +23,14 @@ import { languageDetectionService } from '@/services/LanguageDetectionService';
 import { bibleStorageManager } from '@/services/BibleStorageManager';
 import BibleDownloadModal from '@/components/BibleDownloadModal';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
   const { isDarkMode, colors, language, setLanguage } = useSyncAppSettings();
+  const { t } = useTranslation();
   const [dbReady, setDbReady] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
   const [showBibleDownload, setShowBibleDownload] = useState(false);
@@ -37,13 +39,13 @@ function AppContent() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        logger.error('[INIT] Starting app initialization...');
+        logger.info('[INIT] Starting app initialization...');
         const result = await initializeAppSystems();
-        logger.error('[INIT] initializeAppSystems completed:', result.success);
+        logger.info('[INIT] initializeAppSystems completed:', result.success);
         
         if (result.success) {
           setDbReady(true);
-          logger.error('[INIT] Database ready, checking updates...');
+          logger.info('[INIT] Database ready, checking updates...');
           checkForUpdates();
           checkDeviceLanguage();
         } else {
@@ -187,11 +189,14 @@ function AppContent() {
               visible={showBibleDownload}
               language={detectedLanguage}
               languageDisplay={languageDetectionService.getLanguageDisplayName(detectedLanguage)}
-              fileSize={17245238}
+              fileSize={52073208} // Updated to correct size: 49.7 MB (was 16.4 MB)
               onClose={() => setShowBibleDownload(false)}
               onDownloadComplete={() => {
                 setShowBibleDownload(false);
-                Alert.alert('Success!', 'Bible downloaded successfully!');
+                Alert.alert(
+                  t('UI.alerts.success'),
+                  `${languageDetectionService.getLanguageDisplayName(detectedLanguage)} ${t('UI.alerts.bibleDownloaded')}`
+                );
               }}
             />
           )}

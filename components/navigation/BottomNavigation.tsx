@@ -39,8 +39,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
                        pathname === '/Home' || 
                        pathname === '/Navigation' || 
                        pathname === '/Reading-emoji' || 
-                       pathname === '/Reading-Challenges' || 
-                       pathname === '/Plan' || 
+                       pathname === '/ReadingPlans' || 
                        pathname === '/Achievements';
     
     // Show on segment pages

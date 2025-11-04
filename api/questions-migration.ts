@@ -69,13 +69,17 @@ export async function migrateQuestionsToDatabase(): Promise<MigrationResult> {
     }
 
     // Check if questions already exist in database first
-    // This avoids Metro trying to bundle non-existent JSON files
     const existingQuestions = await db.getFirstAsync<{ count: number }>(
       'SELECT COUNT(*) as count FROM questions LIMIT 1'
     );
     
     if (existingQuestions && existingQuestions.count > 0) {
       logger.info('✅ Questions already exist in database, skipping migration');
+      // Mark as migrated even if we didn't run migration (questions already there)
+      await db.runAsync(
+        `INSERT OR REPLACE INTO app_state (key, value, lastUpdated) 
+         VALUES ('questions_migrated_v1', 'true', datetime('now'))`
+      );
       return {
         success: true,
         totalInserted: 0,
@@ -83,17 +87,89 @@ export async function migrateQuestionsToDatabase(): Promise<MigrationResult> {
       };
     }
     
-    // IMPORTANT: Question JSON files are NOT in the bundle (they're in exported-questions/)
-    // Since questions are already migrated to SQLite in production builds,
-    // we skip the JSON import entirely to avoid Metro bundling errors.
-    // If questions don't exist in DB, the migration will fail gracefully.
-    logger.error('[CRASH] Questions migration attempted but JSON files not bundled');
-    logger.error('[CRASH] This is expected - questions should already be in SQLite');
-    return {
-      success: false,
-      totalInserted: 0,
-      error: 'Question JSON files not bundled (questions should already be in SQLite)'
-    };
+    // Import questions from bundled JSON files
+    logger.info('📦 Loading questions from bundled JSON files...');
+    
+    let totalInserted = 0;
+    
+    try {
+      // Import School Questions Set 1
+      // @ts-ignore - Metro will bundle this JSON
+      const schoolQuestions1 = require('@/assets/data/SchoolQuestions.json').SchoolQuestions as QuestionSet;
+      // Import School Questions Set 2
+      // @ts-ignore - Metro will bundle this JSON
+      const schoolQuestions2 = require('@/assets/data/SchoolQuestionsSet2.json').SchoolQuestionsSet2 as QuestionSet;
+      
+      // Import Family Questions Set 1
+      // @ts-ignore - Metro will bundle this JSON
+      const familyQuestions1 = require('@/assets/data/FamilyQuestions.json').FamilyQuestions as QuestionSet;
+      // Import Family Questions Set 2
+      // @ts-ignore - Metro will bundle this JSON
+      const familyQuestions2 = require('@/assets/data/FamilyQuestionsSet2.json').FamilyQuestionsSet2 as QuestionSet;
+      
+      // Import SmallGroup Questions Set 1
+      // @ts-ignore - Metro will bundle this JSON
+      const smallGroupQuestions1 = require('@/assets/data/SmallGroupQuestions.json').SmallGroupQuestions as QuestionSet;
+      // Import SmallGroup Questions Set 2
+      // @ts-ignore - Metro will bundle this JSON
+      const smallGroupQuestions2 = require('@/assets/data/SmallGroupQuestionsSet2.json').SmallGroupQuestionsSet2 as QuestionSet;
+      
+      logger.info(`✅ Loaded question files: School(${Object.keys(schoolQuestions1).length} segments), Family(${Object.keys(familyQuestions1).length} segments), SmallGroup(${Object.keys(smallGroupQuestions1).length} segments)`);
+      
+      // Insert all questions into database
+      const insertQuestions = async (questions: QuestionSet, audienceType: 'school' | 'family' | 'smallgroup', questionSet: 1 | 2) => {
+        let inserted = 0;
+        for (const [segmentId, questionData] of Object.entries(questions)) {
+          try {
+            await db.runAsync(
+              `INSERT OR REPLACE INTO questions (segmentID, audienceType, questionSet, Q1, Q2, Q3, Q4)
+               VALUES (?, ?, ?, ?, ?, ?, ?)`,
+              segmentId,
+              audienceType,
+              questionSet,
+              questionData.Q1 || null,
+              questionData.Q2 || null,
+              questionData.Q3 || null,
+              questionData.Q4 || null
+            );
+            inserted++;
+          } catch (error) {
+            logger.error(`Error inserting question ${segmentId}/${audienceType}/set${questionSet}:`, error);
+          }
+        }
+        return inserted;
+      };
+      
+      // Insert all question sets
+      totalInserted += await insertQuestions(schoolQuestions1, 'school', 1);
+      totalInserted += await insertQuestions(schoolQuestions2, 'school', 2);
+      totalInserted += await insertQuestions(familyQuestions1, 'family', 1);
+      totalInserted += await insertQuestions(familyQuestions2, 'family', 2);
+      totalInserted += await insertQuestions(smallGroupQuestions1, 'smallgroup', 1);
+      totalInserted += await insertQuestions(smallGroupQuestions2, 'smallgroup', 2);
+      
+      // Mark migration as complete
+      await db.runAsync(
+        `INSERT OR REPLACE INTO app_state (key, value, lastUpdated) 
+         VALUES ('questions_migrated_v1', 'true', datetime('now'))`
+      );
+      
+      logger.info(`✅ Migration complete! Inserted ${totalInserted} question rows`);
+      
+      return {
+        success: true,
+        totalInserted,
+        migratedAt: new Date().toISOString()
+      };
+      
+    } catch (importError) {
+      logger.error('❌ Error importing questions from JSON files:', importError);
+      return {
+        success: false,
+        totalInserted,
+        error: importError instanceof Error ? importError.message : 'Failed to import questions'
+      };
+    }
 
   } catch (error) {
     logger.error('❌ Questions migration failed:', error);

@@ -31,6 +31,22 @@ export async function getQuestionsForSegment(
       return [];
     }
 
+    // Debug: Check what exists for this segment
+    const allForSegment = await db.getAllAsync<{ audienceType: string; questionSet: number }>(
+      `SELECT DISTINCT audienceType, questionSet 
+       FROM questions 
+       WHERE segmentID = ?
+       ORDER BY audienceType, questionSet`,
+      segmentId
+    );
+
+    if (allForSegment.length === 0) {
+      logger.warn(`No questions found for segment ${segmentId} (checked all audiences and sets)`);
+      return [];
+    }
+
+    logger.info(`🔍 Found questions for ${segmentId}: ${allForSegment.map(r => `${r.audienceType}/set${r.questionSet}`).join(', ')}`);
+
     const result = await db.getFirstAsync<QuestionData>(
       `SELECT Q1, Q2, Q3, Q4 
        FROM questions 
@@ -41,7 +57,7 @@ export async function getQuestionsForSegment(
     );
 
     if (!result) {
-      logger.warn(`No questions found for segment ${segmentId}, audience ${audienceType}, set ${questionSet}`);
+      logger.warn(`No questions found for segment ${segmentId}, audience ${audienceType}, set ${questionSet}. Available: ${allForSegment.map(r => `${r.audienceType}/set${r.questionSet}`).join(', ')}`);
       return [];
     }
 
@@ -49,6 +65,10 @@ export async function getQuestionsForSegment(
     const questions = [result.Q1, result.Q2, result.Q3, result.Q4].filter(
       (q): q is string => q !== null && q !== undefined && q.trim() !== ''
     );
+
+    if (questions.length === 0) {
+      logger.warn(`Questions found for ${segmentId}/${audienceType}/set${questionSet} but all fields are null/empty`);
+    }
 
     return questions;
 
@@ -160,6 +180,52 @@ export async function hasQuestionsData(): Promise<boolean> {
 
   } catch (error) {
     logger.error('Error checking questions data:', error);
+    return false;
+  }
+}
+
+/**
+ * Manually insert a question into the database
+ * Useful for fixing missing questions or adding new ones
+ */
+export async function insertQuestion(
+  segmentId: string,
+  audienceType: AudienceType,
+  questionSet: QuestionSetNumber,
+  questions: string[]
+): Promise<boolean> {
+  try {
+    const db = await databaseManager.getSafeDatabase();
+    if (!db) {
+      logger.error('Database not available for question insert');
+      return false;
+    }
+
+    // Ensure we have exactly 4 questions (pad with null if needed)
+    const [Q1, Q2, Q3, Q4] = [
+      questions[0] || null,
+      questions[1] || null,
+      questions[2] || null,
+      questions[3] || null
+    ];
+
+    await db.runAsync(
+      `INSERT OR REPLACE INTO questions (segmentID, audienceType, questionSet, Q1, Q2, Q3, Q4)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      segmentId,
+      audienceType,
+      questionSet,
+      Q1,
+      Q2,
+      Q3,
+      Q4
+    );
+
+    logger.info(`✅ Inserted question for ${segmentId}/${audienceType}/set${questionSet}`);
+    return true;
+
+  } catch (error) {
+    logger.error(`Error inserting question for ${segmentId}/${audienceType}/set${questionSet}:`, error);
     return false;
   }
 }

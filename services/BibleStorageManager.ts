@@ -214,7 +214,7 @@ export class BibleStorageManager {
         throw new Error('Downloaded file is empty (0 bytes)');
       }
 
-      // If file is suspiciously small (less than 1 MB for a 16 MB file), it's probably an error
+      // If file is suspiciously small (less than 1 MB for a file expected to be >10 MB), it's probably an error
       if (actualSize < 1024 * 1024 && expectedSize > 10 * 1024 * 1024) {
         await FileSystem.deleteAsync(filePath, { idempotent: true });
         throw new Error(`Downloaded file is too small (${(actualSize / 1024).toFixed(2)} KB). Expected ${(expectedSize / 1024 / 1024).toFixed(2)} MB. This might be an error response.`);
