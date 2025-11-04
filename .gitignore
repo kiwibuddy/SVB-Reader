@@ -19,9 +19,8 @@ android/build/
 *.aab
 
 # Large data files that should not be in OTA updates
-# Note: These files are critical for app functionality but excluded from git
-# to prevent unnecessary re-uploads in OTA updates
-assets/data/newBibleNLT1.json
+# Note: FRA-Bible.json is excluded as it's downloaded on-demand from Firebase
+# newBibleNLT1.json is included in the bundle (required for app functionality)
 
 # Logs and temporary files
 *.log
