@@ -9,9 +9,19 @@ import { bibleStorageManager, SupportedBibleLanguage } from './BibleStorageManag
 import logger from '@/utils/logger';
 import i18next from 'i18next';
 
-// Lazy load English Bible to prevent crashes if JSON import fails
+// Static import - Metro bundler will include this in the bundle
+// Using try-catch wrapper to handle gracefully if file is missing
 let EnglishBible: any = null;
 let englishBibleLoadError: Error | null = null;
+
+// Load English Bible at module level so Metro can bundle it
+try {
+  // @ts-ignore - Metro will handle this JSON import
+  EnglishBible = require('@/assets/data/newBibleNLT1.json');
+} catch (error) {
+  englishBibleLoadError = error instanceof Error ? error : new Error(String(error));
+  logger.error('[CRASH] Failed to load English Bible at module level:', error);
+}
 
 function loadEnglishBible(): any {
   if (EnglishBible) {
@@ -23,16 +33,9 @@ function loadEnglishBible(): any {
     return null;
   }
   
-  try {
-    // Dynamic import to prevent crashes if file is missing
-    EnglishBible = require('@/assets/data/newBibleNLT1.json');
-    logger.info('✅ English Bible loaded successfully');
-    return EnglishBible;
-  } catch (error) {
-    englishBibleLoadError = error instanceof Error ? error : new Error(String(error));
-    logger.error('❌ Failed to load English Bible:', error);
-    return null;
-  }
+  // Should not reach here if module-level import worked
+  logger.error('[CRASH] English Bible not loaded and no error recorded');
+  return null;
 }
 
 /**

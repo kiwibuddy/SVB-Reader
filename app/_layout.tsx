@@ -22,6 +22,7 @@ import '../config/i18n'; // Import this to initialize i18next
 import { languageDetectionService } from '@/services/LanguageDetectionService';
 import { bibleStorageManager } from '@/services/BibleStorageManager';
 import BibleDownloadModal from '@/components/BibleDownloadModal';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -36,18 +37,25 @@ function AppContent() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        logger.error('[INIT] Starting app initialization...');
         const result = await initializeAppSystems();
+        logger.error('[INIT] initializeAppSystems completed:', result.success);
         
         if (result.success) {
           setDbReady(true);
+          logger.error('[INIT] Database ready, checking updates...');
           checkForUpdates();
           checkDeviceLanguage();
         } else {
-          logger.error('Database initialization failed:', result.error);
+          logger.error('[CRASH] Database initialization failed:', result.error);
           setDbReady(true);
         }
       } catch (error) {
-        logger.error('Critical initialization error:', error);
+        logger.error('[CRASH] Critical initialization error:', error);
+        logger.error('[CRASH] Error details:', JSON.stringify(error, null, 2));
+        if (error instanceof Error) {
+          logger.error('[CRASH] Error stack:', error.stack);
+        }
         setDbReady(true);
       }
     };
@@ -215,8 +223,10 @@ export default function RootLayout() {
   }
 
   return (
-    <SyncAppSettingsProvider>
-      <AppContent />
-    </SyncAppSettingsProvider>
+    <ErrorBoundary>
+      <SyncAppSettingsProvider>
+        <AppContent />
+      </SyncAppSettingsProvider>
+    </ErrorBoundary>
   );
 }

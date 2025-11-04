@@ -61,86 +61,39 @@ export async function migrateQuestionsToDatabase(): Promise<MigrationResult> {
       };
     }
 
-    logger.info('🔄 Starting questions migration to SQLite...');
+    logger.info('🔄 Starting questions migration check...');
 
     const db = await databaseManager.getSafeDatabase();
     if (!db) {
       throw new Error('Database not available');
     }
 
-    // Import question data from JSON files (only when needed)
-    logger.info('📥 Importing question JSON files...');
-    const SchoolQuestions = require('@/assets/data/SchoolQuestions.json');
-    const FamilyQuestions = require('@/assets/data/FamilyQuestions.json');
-    const SmallGroupQuestions = require('@/assets/data/SmallGroupQuestions.json');
-    const SchoolQuestionsSet2 = require('@/assets/data/SchoolQuestionsSet2.json');
-    const FamilyQuestionsSet2 = require('@/assets/data/FamilyQuestionsSet2.json');
-    const SmallGroupQuestionsSet2 = require('@/assets/data/SmallGroupQuestionsSet2.json');
-    logger.info('✅ JSON files imported');
-
-    // Prepare data structure
-    const questionSets = [
-      { data: SchoolQuestions.SchoolQuestions, audience: 'school', set: 1 },
-      { data: FamilyQuestions.FamilyQuestions, audience: 'family', set: 1 },
-      { data: SmallGroupQuestions.SmallGroupQuestions, audience: 'smallgroup', set: 1 },
-      { data: SchoolQuestionsSet2.SchoolQuestionsSet2, audience: 'school', set: 2 },
-      { data: FamilyQuestionsSet2.FamilyQuestionsSet2, audience: 'family', set: 2 },
-      { data: SmallGroupQuestionsSet2.SmallGroupQuestionsSet2, audience: 'smallgroup', set: 2 }
-    ];
-
-    let totalInserted = 0;
-
-    // Begin transaction for atomic operation
-    await db.execAsync('BEGIN TRANSACTION');
-
-    try {
-      for (const { data, audience, set } of questionSets) {
-        logger.info(`  Migrating ${audience} questions set ${set}...`);
-        
-        for (const [segmentId, questions] of Object.entries(data as QuestionSet)) {
-          const q = questions;
-          
-          // Insert questions for this segment
-          await db.runAsync(
-            `INSERT OR REPLACE INTO questions (segmentID, audienceType, questionSet, Q1, Q2, Q3, Q4)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            segmentId,
-            audience,
-            set,
-            q.Q1 || null,
-            q.Q2 || null,
-            q.Q3 || null,
-            q.Q4 || null
-          );
-          
-          totalInserted++;
-        }
-      }
-
-      // Mark migration as complete in app_state
-      const currentDate = new Date().toISOString();
-      await db.runAsync(
-        `INSERT OR REPLACE INTO app_state (key, value, lastUpdated)
-         VALUES ('questions_migrated_v1', 'true', ?)`,
-        currentDate
-      );
-
-      // Commit transaction
-      await db.execAsync('COMMIT');
-
-      logger.info(`✅ Questions migration complete! Inserted ${totalInserted} question sets`);
-
+    // Check if questions already exist in database first
+    // This avoids Metro trying to bundle non-existent JSON files
+    const existingQuestions = await db.getFirstAsync<{ count: number }>(
+      'SELECT COUNT(*) as count FROM questions LIMIT 1'
+    );
+    
+    if (existingQuestions && existingQuestions.count > 0) {
+      logger.info('✅ Questions already exist in database, skipping migration');
       return {
         success: true,
-        totalInserted,
-        migratedAt: currentDate
+        totalInserted: 0,
+        error: 'Questions already migrated'
       };
-
-    } catch (error) {
-      // Rollback on error
-      await db.execAsync('ROLLBACK');
-      throw error;
     }
+    
+    // IMPORTANT: Question JSON files are NOT in the bundle (they're in exported-questions/)
+    // Since questions are already migrated to SQLite in production builds,
+    // we skip the JSON import entirely to avoid Metro bundling errors.
+    // If questions don't exist in DB, the migration will fail gracefully.
+    logger.error('[CRASH] Questions migration attempted but JSON files not bundled');
+    logger.error('[CRASH] This is expected - questions should already be in SQLite');
+    return {
+      success: false,
+      totalInserted: 0,
+      error: 'Question JSON files not bundled (questions should already be in SQLite)'
+    };
 
   } catch (error) {
     logger.error('❌ Questions migration failed:', error);

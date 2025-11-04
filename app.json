@@ -9,6 +9,24 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "description": "SourceView Together: Group Bible Reading App - Transform your Bible study with friends! Join up to 4 people for interactive group Bible reading using our unique speech bubble format. Features role-based reading, real-time emoji reactions, reading plans, challenges, and progress tracking. Perfect for small groups, families, and Bible study communities. Experience Scripture like never before with collaborative reading sessions.",
+    "keywords": [
+      "bible",
+      "bible study",
+      "bible reading",
+      "group bible study",
+      "christian app",
+      "scripture",
+      "bible app",
+      "reading plans",
+      "bible reading app",
+      "sourceview",
+      "together",
+      "group reading",
+      "family bible study",
+      "small group",
+      "religion",
+      "faith"
+    ],
     "primaryColor": "#FF5733",
     "splash": {
       "image": "./assets/images/splash-icon.png",
@@ -27,7 +45,9 @@
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes for joining group reading sessions.",
         "CFBundleDisplayName": "SourceView Together",
         "CFBundleName": "SourceView Together"
-      }
+      },
+      "privacyPolicy": "https://raw.githubusercontent.com/kiwibuddy/sourceview-together/main/PRIVACY_POLICY.md",
+      "supportURL": "mailto:sourceviewbible@gmail.com?subject=SourceView%20Together%20Support"
     },
     "android": {
       "adaptiveIcon": {

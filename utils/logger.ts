@@ -17,27 +17,31 @@ export const logger = {
   },
 
   /**
-   * Log warning messages (only in development)
+   * Log warning messages (ALWAYS logs in production for debugging)
    */
   warn: (...args: any[]) => {
-    if (isDevelopment) {
-      // Use setTimeout to avoid text rendering issues in React Native
-      setTimeout(() => console.warn('[WARN]', ...args), 0);
-    }
+    // ALWAYS log warnings - even in production - so they appear in crash logs
+    console.warn('[WARN]', ...args);
   },
 
   /**
-   * Log error messages (only in development)
-   * In production, you could replace this with crash reporting service
+   * Log error messages (ALWAYS logs in production for crash debugging)
+   * In production, logs are captured by system crash logs
    */
   error: (...args: any[]) => {
-    if (isDevelopment) {
-      // Use setTimeout to avoid text rendering issues in React Native
-      setTimeout(() => console.error('[ERROR]', ...args), 0);
-    } else {
-      // In production, you might want to send to crash reporting service
-      // Example: crashlytics().recordError(new Error(args.join(' ')));
-    }
+    // ALWAYS log errors - even in production - so they appear in crash logs
+    const errorString = args.map(arg => {
+      if (arg instanceof Error) {
+        return `${arg.message}\n${arg.stack}`;
+      }
+      return String(arg);
+    }).join(' ');
+    
+    // Use console.error which appears in crash logs
+    console.error('[ERROR]', ...args);
+    
+    // Also log to crash reporting service if available
+    // Example: crashlytics().recordError(new Error(errorString));
   },
 
   /**

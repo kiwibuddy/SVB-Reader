@@ -20,4 +20,7 @@ config.resolver.blockList = [
   /node_modules\/sqlite3\/.*/,
 ];
 
+// Ensure JSON files are properly resolved
+config.resolver.assetExts = [...config.resolver.assetExts, 'json'];
+
 module.exports = config;
