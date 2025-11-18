@@ -26,6 +26,7 @@ export class QuestionsLoader {
 
   /**
    * Get questions for a specific segment and language
+   * Loads from separate questions file (new format) or falls back to Bible file (old format)
    */
   async getQuestions(
     segmentId: string,
@@ -44,27 +45,44 @@ export class QuestionsLoader {
         return questions?.[segmentId] || null;
       }
 
-      // Load questions from downloaded Bible file
-      const filePath = `${this.bibleDirectory}${language}.json`;
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      // Try loading from separate questions file first (new format)
+      const questionsPath = `${this.bibleDirectory}${language}-questions.json`;
+      const questionsFileInfo = await FileSystem.getInfoAsync(questionsPath);
       
-      if (!fileInfo.exists) {
-        logger.warn(`⚠️ ${language} Bible file not found at ${filePath}`);
-        return null;
+      if (questionsFileInfo.exists) {
+        logger.info(`📖 Loading questions from ${language} questions file...`);
+        const content = await FileSystem.readAsStringAsync(questionsPath);
+        const parsedData = JSON.parse(content);
+
+        // Handle unified structure: { metadata: {...}, questions: { S001: {...} } }
+        if (parsedData.questions) {
+          logger.info(`✅ Found questions for ${Object.keys(parsedData.questions).length} segments in ${language} questions file`);
+          this.questionsCache.set(cacheKey, parsedData.questions);
+          return parsedData.questions[segmentId] || null;
+        }
+
+        logger.warn(`⚠️ Questions file exists but missing questions section`);
       }
 
-      logger.info(`📖 Loading questions from ${language} Bible file...`);
-      const content = await FileSystem.readAsStringAsync(filePath);
-      const parsedData = JSON.parse(content);
+      // Fallback: Try loading from Bible file (old format - backward compatibility)
+      const biblePath = `${this.bibleDirectory}${language}.json`;
+      const bibleFileInfo = await FileSystem.getInfoAsync(biblePath);
+      
+      if (bibleFileInfo.exists) {
+        logger.info(`📖 Loading questions from ${language} Bible file (fallback - old format)...`);
+        const content = await FileSystem.readAsStringAsync(biblePath);
+        const parsedData = JSON.parse(content);
 
-      // Check if this Bible has questions
-      if (parsedData.questions) {
-        logger.info(`✅ Found questions for ${Object.keys(parsedData.questions).length} segments in ${language} Bible`);
-        this.questionsCache.set(cacheKey, parsedData.questions);
-        return parsedData.questions[segmentId] || null;
+        // Check if this Bible has questions (old format)
+        if (parsedData.questions) {
+          logger.info(`✅ Found questions for ${Object.keys(parsedData.questions).length} segments in ${language} Bible (deprecated)`);
+          logger.warn(`⚠️ Using deprecated format: questions embedded in Bible file. Please update to separate questions file.`);
+          this.questionsCache.set(cacheKey, parsedData.questions);
+          return parsedData.questions[segmentId] || null;
+        }
       }
 
-      logger.warn(`⚠️ No questions section found in ${language} Bible`);
+      logger.warn(`⚠️ No questions file found for ${language}`);
       return null;
     } catch (error) {
       logger.error(`❌ Failed to load questions for ${segmentId} in ${language}:`, error);
@@ -79,23 +97,40 @@ export class QuestionsLoader {
     try {
       if (language === 'en') return true; // English has SQLite questions
 
-      const filePath = `${this.bibleDirectory}${language}.json`;
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
-      
-      if (!fileInfo.exists) {
-        return false;
-      }
-
       // Check if cached
       if (this.questionsCache.has(language)) {
         return true;
       }
 
-      // Check file structure
-      const content = await FileSystem.readAsStringAsync(filePath);
-      const parsedData = JSON.parse(content);
+      // Check separate questions file first (new format)
+      const questionsPath = `${this.bibleDirectory}${language}-questions.json`;
+      const questionsFileInfo = await FileSystem.getInfoAsync(questionsPath);
       
-      return !!parsedData.questions;
+      if (questionsFileInfo.exists) {
+        try {
+          const content = await FileSystem.readAsStringAsync(questionsPath);
+          const parsedData = JSON.parse(content);
+          return !!parsedData.questions;
+        } catch (error) {
+          logger.warn(`⚠️ Error reading questions file:`, error);
+        }
+      }
+
+      // Fallback: Check Bible file (old format)
+      const biblePath = `${this.bibleDirectory}${language}.json`;
+      const bibleFileInfo = await FileSystem.getInfoAsync(biblePath);
+      
+      if (bibleFileInfo.exists) {
+        try {
+          const content = await FileSystem.readAsStringAsync(biblePath);
+          const parsedData = JSON.parse(content);
+          return !!parsedData.questions;
+        } catch (error) {
+          logger.warn(`⚠️ Error reading Bible file:`, error);
+        }
+      }
+
+      return false;
     } catch (error) {
       logger.error(`❌ Error checking questions for ${language}:`, error);
       return false;
@@ -122,21 +157,36 @@ export class QuestionsLoader {
     try {
       if (language === 'en') return true;
 
-      const filePath = `${this.bibleDirectory}${language}.json`;
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
+      // Try separate questions file first (new format)
+      const questionsPath = `${this.bibleDirectory}${language}-questions.json`;
+      const questionsFileInfo = await FileSystem.getInfoAsync(questionsPath);
       
-      if (!fileInfo.exists) {
-        return false;
+      if (questionsFileInfo.exists) {
+        logger.info(`📥 Preloading questions for ${language} from questions file...`);
+        const content = await FileSystem.readAsStringAsync(questionsPath);
+        const parsedData = JSON.parse(content);
+
+        if (parsedData.questions) {
+          this.questionsCache.set(language, parsedData.questions);
+          logger.info(`✅ Preloaded ${Object.keys(parsedData.questions).length} segment questions for ${language}`);
+          return true;
+        }
       }
 
-      logger.info(`📥 Preloading questions for ${language}...`);
-      const content = await FileSystem.readAsStringAsync(filePath);
-      const parsedData = JSON.parse(content);
+      // Fallback: Try Bible file (old format)
+      const biblePath = `${this.bibleDirectory}${language}.json`;
+      const bibleFileInfo = await FileSystem.getInfoAsync(biblePath);
+      
+      if (bibleFileInfo.exists) {
+        logger.info(`📥 Preloading questions for ${language} from Bible file (fallback)...`);
+        const content = await FileSystem.readAsStringAsync(biblePath);
+        const parsedData = JSON.parse(content);
 
-      if (parsedData.questions) {
-        this.questionsCache.set(language, parsedData.questions);
-        logger.info(`✅ Preloaded ${Object.keys(parsedData.questions).length} segment questions for ${language}`);
-        return true;
+        if (parsedData.questions) {
+          this.questionsCache.set(language, parsedData.questions);
+          logger.info(`✅ Preloaded ${Object.keys(parsedData.questions).length} segment questions for ${language} (deprecated format)`);
+          return true;
+        }
       }
 
       return false;

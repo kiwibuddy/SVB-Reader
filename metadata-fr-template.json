@@ -1,0 +1,23 @@
+{
+  "language": "fr",
+  "languageDisplay": "Français",
+  "version": "1.0.0",
+  "lastUpdated": "2025-11-06",
+  "files": {
+    "bible": {
+      "name": "FRA-Bible.json",
+      "size": 51667229,
+      "url": "REPLACE_WITH_FIREBASE_URL_AFTER_UPLOAD",
+      "description": "French Bible segments (427 segments)"
+    },
+    "questions": {
+      "name": "Questions-FR.json",
+      "size": 396680,
+      "url": "https://firebasestorage.googleapis.com/v0/b/sourceview-together.firebasestorage.app/o/Bible%2Ffr%2FQuestions-FR.json?alt=media&token=4c8655ce-ca20-4420-b194-0afe1cfb1e17",
+      "description": "French questions for School, Family, Small Group (365 segments)"
+    }
+  },
+  "totalSize": 52063909,
+  "description": "French Bible and Questions for SourceView Together"
+}
+

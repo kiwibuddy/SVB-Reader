@@ -15,6 +15,12 @@ interface BibleMetadata {
       url: string;
       description: string;
     };
+    questions?: {
+      name: string;
+      size: number;
+      url: string;
+      description: string;
+    };
   };
   totalSize: number;
   description: string;
@@ -24,6 +30,7 @@ interface DownloadProgress {
   bytesDownloaded: number;
   totalBytes: number;
   progress: number; // 0-1
+  fileType?: 'bible' | 'questions'; // Track which file is downloading
 }
 
 export class BibleStorageManager {
@@ -33,7 +40,7 @@ export class BibleStorageManager {
   // Firebase Storage URLs
   private static readonly METADATA_URLS: Record<SupportedBibleLanguage, string> = {
     en: '', // English is bundled
-    fr: 'https://firebasestorage.googleapis.com/v0/b/sourceview-together.firebasestorage.app/o/Bible%2Ffr%2Fmetadata.json?alt=media&token=3a8817b1-ab2d-41ae-b29e-36f82eace571',
+    fr: 'https://firebasestorage.googleapis.com/v0/b/sourceview-together.firebasestorage.app/o/Bible%2Ffr%2Fmetadata.json?alt=media&token=62ba764e-f83b-4df3-b19f-cc3cf3a6467f',
     es: '', // Future
     pt: '', // Future
   };
@@ -66,15 +73,33 @@ export class BibleStorageManager {
   }
 
   /**
-   * Check if a Bible is downloaded
+   * Check if a Bible is downloaded (both Bible and Questions files if questions exist)
    */
   async isBibleDownloaded(language: SupportedBibleLanguage): Promise<boolean> {
     if (language === 'en') return true; // English is bundled
     
     try {
-      const filePath = `${this.bibleDirectory}${language}.json`;
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
-      return fileInfo.exists;
+      const biblePath = `${this.bibleDirectory}${language}.json`;
+      const bibleInfo = await FileSystem.getInfoAsync(biblePath);
+      
+      if (!bibleInfo.exists) {
+        return false;
+      }
+
+      // Check if questions file exists (new format)
+      const questionsPath = `${this.bibleDirectory}${language}-questions.json`;
+      const questionsInfo = await FileSystem.getInfoAsync(questionsPath);
+      
+      // If metadata indicates questions should exist, check for questions file
+      // Otherwise, Bible-only is acceptable (backward compatibility)
+      const metadata = await this.getBibleMetadata(language);
+      if (metadata?.files.questions) {
+        // New format requires both files
+        return questionsInfo.exists;
+      }
+      
+      // Old format or no questions metadata - Bible file alone is sufficient
+      return true;
     } catch (error) {
       logger.error(`❌ Error checking if ${language} Bible exists:`, error);
       return false;
@@ -105,7 +130,7 @@ export class BibleStorageManager {
   }
 
   /**
-   * Download a Bible with progress tracking
+   * Download a Bible (and Questions file if available) with progress tracking
    */
   async downloadBible(
     language: SupportedBibleLanguage,
@@ -119,121 +144,104 @@ export class BibleStorageManager {
     try {
       await this.initialize();
 
-      // Get metadata to get download URL
+      // Get metadata to get download URLs
       const metadata = await this.getBibleMetadata(language);
       if (!metadata) {
         throw new Error(`Failed to get metadata for ${language}`);
       }
 
-      const downloadUrl = metadata.files.bible.url;
-      const totalSize = metadata.files.bible.size;
-      const filePath = `${this.bibleDirectory}${language}.json`;
+      // Download Bible file
+      const bibleUrl = metadata.files.bible.url;
+      const bibleSize = metadata.files.bible.size;
+      const biblePath = `${this.bibleDirectory}${language}.json`;
 
-      logger.info(`📥 Starting download of ${language} Bible (${(totalSize / 1024 / 1024).toFixed(2)} MB)`);
+      logger.info(`📥 Starting download of ${language} Bible (${(bibleSize / 1024 / 1024).toFixed(2)} MB)`);
 
-      // Download with progress
-      const downloadResumable = FileSystem.createDownloadResumable(
-        downloadUrl,
-        filePath,
+      // Download Bible with progress
+      const bibleDownloadResumable = FileSystem.createDownloadResumable(
+        bibleUrl,
+        biblePath,
         {},
         (downloadProgress) => {
           const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
           onProgress?.({
             bytesDownloaded: downloadProgress.totalBytesWritten,
             totalBytes: downloadProgress.totalBytesExpectedToWrite,
-            progress: progress,
+            progress: progress * 0.95, // Bible is ~95% of total size
+            fileType: 'bible'
           });
         }
       );
 
-      const result = await downloadResumable.downloadAsync();
+      const bibleResult = await bibleDownloadResumable.downloadAsync();
       
-      if (!result) {
-        throw new Error('Download failed - no result returned');
+      if (!bibleResult || bibleResult.status !== 200) {
+        throw new Error(`Bible download failed with status ${bibleResult?.status || 'unknown'}`);
       }
 
-      // Check HTTP status code
-      if (result.status !== 200) {
-        // Read the error response
-        const errorContent = await FileSystem.readAsStringAsync(filePath);
-        let errorMessage = `Download failed with HTTP ${result.status}`;
-        
-        try {
-          const errorJson = JSON.parse(errorContent);
-          if (errorJson.error || errorJson.code) {
-            errorMessage = `Firebase Storage error: ${errorJson.error?.message || errorJson.message || `Code ${errorJson.code || result.status}`}`;
-            logger.error(`❌ Download error response:`, errorJson);
+      // Verify Bible file
+      const bibleFileInfo = await FileSystem.getInfoAsync(biblePath);
+      if (!bibleFileInfo.exists || bibleFileInfo.size === 0) {
+        throw new Error('Bible download completed but file not found or empty');
+      }
+
+      logger.info(`✅ ${language} Bible downloaded successfully (${(bibleFileInfo.size / 1024 / 1024).toFixed(2)} MB)`);
+
+      // Download Questions file if available
+      let questionsDownloaded = false;
+      if (metadata.files.questions) {
+        const questionsUrl = metadata.files.questions.url;
+        const questionsSize = metadata.files.questions.size;
+        const questionsPath = `${this.bibleDirectory}${language}-questions.json`;
+
+        logger.info(`📥 Starting download of ${language} Questions (${(questionsSize / 1024 / 1024).toFixed(2)} MB)`);
+
+        const questionsDownloadResumable = FileSystem.createDownloadResumable(
+          questionsUrl,
+          questionsPath,
+          {},
+          (downloadProgress) => {
+            const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
+            // Combine with Bible progress (Bible: 95%, Questions: 5%)
+            const combinedProgress = 0.95 + (progress * 0.05);
+            onProgress?.({
+              bytesDownloaded: bibleFileInfo.size + downloadProgress.totalBytesWritten,
+              totalBytes: bibleSize + questionsSize,
+              progress: combinedProgress,
+              fileType: 'questions'
+            });
           }
-        } catch (e) {
-          // Not JSON, use raw content
-          errorMessage = `Download failed: ${errorContent.substring(0, 200)}`;
-        }
+        );
+
+        const questionsResult = await questionsDownloadResumable.downloadAsync();
         
-        // Clean up error file
-        await FileSystem.deleteAsync(filePath, { idempotent: true });
-        throw new Error(errorMessage);
-      }
-
-      // Verify file was downloaded
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
-      if (!fileInfo.exists) {
-        throw new Error('Download completed but file not found');
-      }
-
-      // Get file size first
-      const actualSize = fileInfo.size || 0;
-
-      // Read first 1KB to check if it's an error JSON response (instead of reading entire 16MB file)
-      // Only check if file is suspiciously small
-      if (actualSize < 1024) {
-        const fileContentPreview = await FileSystem.readAsStringAsync(filePath);
-        
-        // Check if it's an error JSON response
-        try {
-          const parsed = JSON.parse(fileContentPreview);
-          if (parsed.error || parsed.code === 403 || parsed.code === 404) {
-            const errorMsg = parsed.error?.message || parsed.message || `Firebase error: ${parsed.code}`;
-            logger.error(`❌ Downloaded file contains error:`, parsed);
-            await FileSystem.deleteAsync(filePath, { idempotent: true });
-            throw new Error(`Download failed: ${errorMsg}`);
+        if (questionsResult && questionsResult.status === 200) {
+          const questionsFileInfo = await FileSystem.getInfoAsync(questionsPath);
+          if (questionsFileInfo.exists && questionsFileInfo.size > 0) {
+            questionsDownloaded = true;
+            logger.info(`✅ ${language} Questions downloaded successfully (${(questionsFileInfo.size / 1024).toFixed(2)} KB)`);
+          } else {
+            logger.warn(`⚠️ Questions download completed but file not found or empty`);
           }
-        } catch (parseError) {
-          // If parsing fails on small file, it's probably corrupted
-          await FileSystem.deleteAsync(filePath, { idempotent: true });
-          throw new Error('Downloaded file appears to be corrupted or empty');
+        } else {
+          logger.warn(`⚠️ Questions download failed with status ${questionsResult?.status || 'unknown'}`);
         }
       }
 
-      // Validate file size (should be close to expected size)
-      const expectedSize = totalSize;
-      const sizeDifference = Math.abs(actualSize - expectedSize);
-      const sizeDifferencePercent = (sizeDifference / expectedSize) * 100;
-
-      if (actualSize === 0) {
-        await FileSystem.deleteAsync(filePath, { idempotent: true });
-        throw new Error('Downloaded file is empty (0 bytes)');
-      }
-
-      // If file is suspiciously small (less than 1 MB for a file expected to be >10 MB), it's probably an error
-      if (actualSize < 1024 * 1024 && expectedSize > 10 * 1024 * 1024) {
-        await FileSystem.deleteAsync(filePath, { idempotent: true });
-        throw new Error(`Downloaded file is too small (${(actualSize / 1024).toFixed(2)} KB). Expected ${(expectedSize / 1024 / 1024).toFixed(2)} MB. This might be an error response.`);
-      }
-
-      // Warn if size is significantly different (more than 10% difference)
-      if (sizeDifferencePercent > 10) {
-        logger.warn(`⚠️ File size mismatch: expected ${(expectedSize / 1024 / 1024).toFixed(2)} MB, got ${(actualSize / 1024 / 1024).toFixed(2)} MB`);
-      }
-
-      logger.info(`✅ ${language} Bible downloaded successfully (${(actualSize / 1024 / 1024).toFixed(2)} MB)`);
-      
       // Save metadata locally
       await this.saveMetadata(language, metadata);
+      
+      // Final progress update
+      onProgress?.({
+        bytesDownloaded: bibleFileInfo.size + (questionsDownloaded ? (await FileSystem.getInfoAsync(`${this.bibleDirectory}${language}-questions.json`)).size || 0 : 0),
+        totalBytes: bibleSize + (metadata.files.questions?.size || 0),
+        progress: 1.0
+      });
       
       return true;
     } catch (error) {
       logger.error(`❌ Failed to download ${language} Bible:`, error);
-      // Clean up partial download
+      // Clean up partial downloads
       await this.deleteBible(language);
       return false;
     }
@@ -309,7 +317,14 @@ export class BibleStorageManager {
         logger.info(`✅ ${language} Bible has integrated questions structure`);
         logger.info(`   • Segments: ${Object.keys(bibleData.segments).length}`);
         logger.info(`   • Questions: ${Object.keys(bibleData.questions).length}`);
+        logger.warn(`⚠️ Bible file contains questions section. Questions should be in separate file.`);
         // Return only segments for Bible reading; questions are accessed separately via QuestionsLoader
+        return bibleData.segments;
+      }
+      
+      // Handle Bible-only structure (new format - questions in separate file)
+      if ('segments' in bibleData && !('questions' in bibleData)) {
+        logger.info(`✅ ${language} Bible has segments-only structure (questions in separate file)`);
         return bibleData.segments;
       }
       
@@ -322,7 +337,7 @@ export class BibleStorageManager {
   }
 
   /**
-   * Delete a downloaded Bible to free up space
+   * Delete a downloaded Bible (and Questions file if exists) to free up space
    */
   async deleteBible(language: SupportedBibleLanguage): Promise<boolean> {
     if (language === 'en') {
@@ -331,13 +346,20 @@ export class BibleStorageManager {
     }
 
     try {
-      const filePath = `${this.bibleDirectory}${language}.json`;
+      const biblePath = `${this.bibleDirectory}${language}.json`;
+      const questionsPath = `${this.bibleDirectory}${language}-questions.json`;
       const metadataPath = `${this.bibleDirectory}${language}-metadata.json`;
       
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
-      if (fileInfo.exists) {
-        await FileSystem.deleteAsync(filePath);
+      const bibleInfo = await FileSystem.getInfoAsync(biblePath);
+      if (bibleInfo.exists) {
+        await FileSystem.deleteAsync(biblePath);
         logger.info(`🗑️ Deleted ${language} Bible`);
+      }
+
+      const questionsInfo = await FileSystem.getInfoAsync(questionsPath);
+      if (questionsInfo.exists) {
+        await FileSystem.deleteAsync(questionsPath);
+        logger.info(`🗑️ Deleted ${language} Questions`);
       }
 
       const metadataInfo = await FileSystem.getInfoAsync(metadataPath);
@@ -353,15 +375,28 @@ export class BibleStorageManager {
   }
 
   /**
-   * Get the size of a downloaded Bible
+   * Get the size of a downloaded Bible (includes Questions file if exists)
    */
   async getBibleSize(language: SupportedBibleLanguage): Promise<number> {
     if (language === 'en') return 0; // Bundled
 
     try {
-      const filePath = `${this.bibleDirectory}${language}.json`;
-      const fileInfo = await FileSystem.getInfoAsync(filePath);
-      return fileInfo.exists && fileInfo.size ? fileInfo.size : 0;
+      const biblePath = `${this.bibleDirectory}${language}.json`;
+      const questionsPath = `${this.bibleDirectory}${language}-questions.json`;
+      
+      let totalSize = 0;
+      
+      const bibleInfo = await FileSystem.getInfoAsync(biblePath);
+      if (bibleInfo.exists && bibleInfo.size) {
+        totalSize += bibleInfo.size;
+      }
+      
+      const questionsInfo = await FileSystem.getInfoAsync(questionsPath);
+      if (questionsInfo.exists && questionsInfo.size) {
+        totalSize += questionsInfo.size;
+      }
+      
+      return totalSize;
     } catch (error) {
       logger.error(`❌ Failed to get ${language} Bible size:`, error);
       return 0;

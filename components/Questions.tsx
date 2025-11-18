@@ -4,8 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
-import { getQuestionsForSegment, hasQuestionsData, type AudienceType } from '@/api/question-functions';
-import { questionsLoader } from '@/services/QuestionsLoader';
+import { getQuestionsUnified, hasQuestionsData, type AudienceType } from '@/api/question-functions';
 import logger from '@/utils/logger';
 import FRA_UI from '@/assets/data/FRA-UI.json';
 
@@ -55,28 +54,11 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
   const loadQuestions = async () => {
     setIsLoading(true);
     try {
-      let fetchedQuestions: string[] = [];
-
-      // Load questions based on language
-      if (language === 'fr') {
-        // For French, load from downloaded Bible file
-        logger.info(`📖 Loading French questions for ${segmentId}, audience: ${selectedAudience}, set: ${currentSet}`);
-        const segmentQuestions = await questionsLoader.getQuestions(segmentId, 'fr');
-        
-        if (segmentQuestions) {
-          // Get questions for the selected audience and set
-          const audienceQuestions = segmentQuestions[selectedAudience];
-          const setKey = currentSet === 1 ? 'set1' : 'set2';
-          fetchedQuestions = audienceQuestions[setKey] || [];
-          logger.info(`✅ Loaded ${fetchedQuestions.length} French questions`);
-        } else {
-          logger.warn(`⚠️ No French questions found for ${segmentId}`);
-        }
-      } else {
-        // For English, load from SQLite database
-        logger.info(`📖 Loading English questions for ${segmentId}, audience: ${selectedAudience}, set: ${currentSet}`);
-        
-        // Check if questions data exists in database (handles migration in progress)
+      // Use unified API that handles both English (SQLite) and French (QuestionsLoader)
+      logger.info(`📖 Loading questions for ${segmentId}, audience: ${selectedAudience}, set: ${currentSet}, language: ${language}`);
+      
+      // For English, check if questions data exists in database (handles migration in progress)
+      if (language === 'en') {
         const dataExists = await hasQuestionsData();
         if (!dataExists && retryCountRef.current < 5) {
           setQuestions([]);
@@ -87,16 +69,17 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
           setTimeout(() => loadQuestions(), 2000);
           return;
         }
-
-        // Fetch questions from SQLite database
-        fetchedQuestions = await getQuestionsForSegment(
-          segmentId,
-          selectedAudience,
-          currentSet
-        );
-        logger.info(`✅ Loaded ${fetchedQuestions.length} English questions`);
       }
+
+      // Fetch questions using unified API
+      const fetchedQuestions = await getQuestionsUnified(
+        segmentId,
+        selectedAudience,
+        currentSet,
+        language
+      );
       
+      logger.info(`✅ Loaded ${fetchedQuestions.length} questions for ${language}`);
       setQuestions(fetchedQuestions);
     } catch (error) {
       logger.error('Error loading questions:', error);
@@ -129,8 +112,20 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
   };
 
   const handleRefreshQuestions = () => {
-    // Toggle between set 1 and set 2
-    setCurrentSet(prev => prev === 1 ? 2 : 1);
+    // Toggle between set 1 and set 2 - simple and reliable
+    setCurrentSet(prev => {
+      const newSet = prev === 1 ? 2 : 1;
+      logger.info(`🔄 Toggling question set from ${prev} to ${newSet}`);
+      return newSet;
+    });
+    
+    // Simple fade animation without blocking
+    fadeAnim.setValue(0.5);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   };
 
   const styles = StyleSheet.create({
@@ -219,15 +214,18 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
     refreshButton: {
       alignSelf: 'center',
       marginTop: 16,
-      padding: 8,
-      borderRadius: 20,
+      padding: 12,
+      paddingHorizontal: 24,
+      borderRadius: 24,
       alignItems: 'center',
       justifyContent: 'center',
-      borderWidth: 1,
+      borderWidth: 2,
       borderColor: AUDIENCE_CONFIG[selectedAudience].color,
       backgroundColor: AUDIENCE_CONFIG[selectedAudience].backgroundColor,
-      minWidth: 40,
-      minHeight: 40,
+      minWidth: 100,
+      minHeight: 44,
+      flexDirection: 'row',
+      gap: 8,
     },
   });
 
@@ -303,17 +301,24 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
               </View>
             ))}
             
-            {/* Refresh Button inside the card */}
-            <Pressable
-              style={styles.refreshButton}
-              onPress={handleRefreshQuestions}
-            >
-              <MaterialIcons 
-                name="autorenew" 
-                size={20} 
-                color={AUDIENCE_CONFIG[selectedAudience].color} 
-              />
-            </Pressable>
+            {/* Refresh Button */}
+            <View style={{ alignItems: 'center', justifyContent: 'center', marginTop: 16 }}>
+              <Pressable
+                style={styles.refreshButton}
+                onPress={handleRefreshQuestions}
+                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                android_ripple={{ color: AUDIENCE_CONFIG[selectedAudience].color, borderless: false }}
+              >
+                <MaterialIcons 
+                  name="autorenew" 
+                  size={20} 
+                  color={AUDIENCE_CONFIG[selectedAudience].color} 
+                />
+                <Text style={{ fontSize: 13, color: AUDIENCE_CONFIG[selectedAudience].color, fontWeight: '600', marginLeft: 4 }}>
+                  {t('UI.home.changeSet')}
+                </Text>
+              </Pressable>
+            </View>
           </>
         ) : (
           <View style={styles.emptyState}>

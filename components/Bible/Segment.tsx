@@ -652,6 +652,8 @@ const styles = StyleSheet.create({
           </View>
         </View>
 
+        {/* Audio Controls removed - now in navigation bar */}
+
         {/* Render blocks directly */}
         {memoizedContent.map((item, index) => {
           const { sourceName } = item.source || {};

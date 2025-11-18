@@ -78,9 +78,16 @@ async function runSchemaMigrations(): Promise<void> {
     }
 
     // Migrate questions from JSON to SQLite (one-time migration) - run in background to not block startup
+    // But if version changed, wait for it to complete
     migrateQuestionsToDatabase().then((questionsResult) => {
-      if (questionsResult.success && questionsResult.totalInserted > 0) {
-        logger.info(`Questions migrated: ${questionsResult.totalInserted} sets`);
+      if (questionsResult.success) {
+        if (questionsResult.totalInserted > 0) {
+          logger.info(`Questions migrated: ${questionsResult.totalInserted} sets`);
+        } else if (questionsResult.error === 'Already migrated') {
+          logger.info('Questions already up to date');
+        }
+      } else {
+        logger.error('Questions migration failed:', questionsResult.error);
       }
     }).catch(error => {
       logger.error('Questions migration error:', error);

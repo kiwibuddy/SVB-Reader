@@ -677,7 +677,7 @@ export default function BibleScreen() {
 
             {nextSegId && (
               <TouchableOpacity
-                style={styles.navigationButton}
+                style={[styles.navigationButton, { marginLeft: 'auto' }]}
                 onPress={() => handleNavigation(nextSegId)}
               >
                 <Ionicons name="chevron-forward" size={isLargeScreen ? 28 : 24} color={colors.secondary} />

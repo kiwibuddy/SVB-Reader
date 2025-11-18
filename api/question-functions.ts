@@ -1,5 +1,7 @@
 import logger from '@/utils/logger';
 import { databaseManager } from './database-manager';
+import { questionsLoader } from '@/services/QuestionsLoader';
+import { SupportedBibleLanguage } from '@/services/BibleStorageManager';
 
 // ============================================================================
 // QUESTIONS API - SQLite Database Access
@@ -231,7 +233,49 @@ export async function insertQuestion(
 }
 
 /**
- * Get total count of questions in database
+ * Unified function to get questions for any language
+ * Handles English (SQLite) and other languages (QuestionsLoader) transparently
+ */
+export async function getQuestionsUnified(
+  segmentId: string,
+  audienceType: AudienceType,
+  questionSet: QuestionSetNumber,
+  language: SupportedBibleLanguage = 'en'
+): Promise<string[]> {
+  try {
+    // English uses SQLite database
+    if (language === 'en') {
+      return await getQuestionsForSegment(segmentId, audienceType, questionSet);
+    }
+    
+    // Other languages use QuestionsLoader (from downloaded files)
+    const segmentQuestions = await questionsLoader.getQuestions(segmentId, language);
+    if (!segmentQuestions) {
+      logger.warn(`No questions found for ${segmentId} in ${language}`);
+      return [];
+    }
+    
+    // Extract questions for the requested audience and set
+    const audienceQuestions = segmentQuestions[audienceType];
+    if (!audienceQuestions) {
+      logger.warn(`No questions found for ${segmentId}/${audienceType} in ${language}`);
+      return [];
+    }
+    
+    const setKey = questionSet === 1 ? 'set1' : 'set2';
+    const questions = audienceQuestions[setKey] || [];
+    
+    // Filter out empty strings
+    return questions.filter(q => q && q.trim() !== '');
+    
+  } catch (error) {
+    logger.error(`Error getting unified questions for ${segmentId}/${audienceType}/set${questionSet} in ${language}:`, error);
+    return [];
+  }
+}
+
+/**
+ * Get migration statistics
  */
 export async function getQuestionsCount(): Promise<{
   total: number;
