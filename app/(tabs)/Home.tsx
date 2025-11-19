@@ -1265,7 +1265,7 @@ const StreakCard = ({
       <View style={localStyles.streakStatus}>
         <Reanimated.View style={[localStyles.streakStatusDot, animatedStatusStyle]} />
         <Text style={localStyles.streakStatusText}>
-          {isTodayComplete ? "Today's reading complete" : "Start reading to build your streak!"}
+          {isTodayComplete ? t('UI.home.todaysReadingComplete') : t('UI.home.startReadingToBuildStreak')}
         </Text>
       </View>
     </View>
@@ -3578,7 +3578,10 @@ const Home = () => {
               const challengeData = ReadingPlansChallenges.challenges.find((c: any) => c.id === challenge.challengeId);
               if (!challengeData) return null;
               const progressData = challengeProgresses[id];
-              const challengeColor = getChallengeCategoryColor(challengeData);
+              const isChristmasChallenge = challenge.challengeId === 'christmas7';
+              // Use green for Christmas challenge, otherwise use category color
+              const challengeColor = isChristmasChallenge ? '#228B22' : getChallengeCategoryColor(challengeData);
+              
               return (
                 <View key={id} style={styles.activeReadingCard}>
                   <View style={styles.activeReadingContent}>

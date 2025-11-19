@@ -1132,8 +1132,13 @@ const ReadingPlansScreen = () => {
     );
   };
 
-  // Helper function to get plan title color based on category
+  // Helper function to get plan title color based on category or plan-specific
   const getPlanTitleColor = (item: UnifiedPlan) => {
+    // Check for plan-specific color first (for special seasonal plans)
+    const specificColor = getPlanSpecificColor(item.id);
+    if (specificColor) return specificColor;
+    
+    // Otherwise use category color
     const storyCount = getStoryCount(item);
     const category = categorizePlan(storyCount);
     return getCategoryColor(category);
@@ -1275,6 +1280,22 @@ const ReadingPlansScreen = () => {
         return '#E91E63'; // Pink
       default:
         return colors.text;
+    }
+  };
+
+  // Get plan-specific color (for special plans like Christmas)
+  const getPlanSpecificColor = (planId: string) => {
+    switch (planId) {
+      case 'christmas7':
+        return '#C41E3A'; // Christmas red
+      case 'christmas12':
+        return '#228B22'; // Christmas green
+      case 'adventJourneyChronological':
+        return '#8B4513'; // Advent brown
+      case 'lentenReflectionChronological':
+        return '#800080'; // Lenten purple
+      default:
+        return null; // Use category color
     }
   };
 

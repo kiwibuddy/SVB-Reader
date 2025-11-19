@@ -22494,7 +22494,9 @@
       "completion": "Achèvement",
       "todaysReading": "Lecture du jour",
       "planCompleted": "Plan terminé !",
-      "challengeCompleted": "Défi terminé !"
+      "challengeCompleted": "Défi terminé !",
+      "todaysReadingComplete": "Lecture du jour terminée",
+      "startReadingToBuildStreak": "Commencez à lire pour construire votre série !"
     },
     "about": {
       "title": "À propos",
@@ -22669,6 +22671,10 @@
       "viewVersePrompt": "Voulez-vous voir ce verset dans {reference} ?",
       "cancel": "Annuler",
       "go": "Aller",
+      "noReactions": "Aucune réaction pour le moment. Commencez à lire et réagissez aux versets que vous aimez !",
+      "noEmojiReactions": "Aucune réaction {emoji} pour le moment",
+      "filter": "Filtrer",
+      "longPressHint": "Appuyez longuement pour aller au passage",
       "emojiTypes": {
         "love": "Amour",
         "agree": "D'accord",
@@ -22869,6 +22875,10 @@
       "christmas12": {
         "title": "12 Jours de Noël",
         "description": "Célébrez la naissance du Christ avec des histoires de la nativité et des réflexions. La tradition rencontre les Écritures."
+      },
+      "christmas7": {
+        "title": "🎄 7 Jours de l'Histoire de Noël 🌟",
+        "description": "Vivez l'histoire de Noël d'une manière nouvelle à travers la prophétie, la promesse et la naissance de Jésus. Parfait pour la semaine précédant Noël."
       }
     },
     "chronologicalPhases": {
@@ -22900,6 +22910,20 @@
         "The Restoration": {
           "title": "La Restauration",
           "description": "Dieu crée un nouveau ciel et une nouvelle terre, restaurant toutes choses"
+        }
+      },
+      "christmas7Chronological": {
+        "Ancient Promises": {
+          "title": "Promesses Anciennes",
+          "description": "Promesses prophétiques du Messie à venir, prononcées des siècles avant le Christ"
+        },
+        "Divine Announcements": {
+          "title": "Annonces Divines",
+          "description": "Les anges de Dieu annoncent l'accomplissement des promesses anciennes"
+        },
+        "The Nativity": {
+          "title": "La Nativité",
+          "description": "Le Messie tant attendu naît à Bethléem"
         }
       }
     },
@@ -22987,7 +23011,14 @@
       "othersCanNowJoin": "D'autres peuvent maintenant rejoindre",
       "showsTheSpeakingParts": "Affiche les parties parlantes de cette histoire : Gris (Narrateur), Rouge (Dieu), Vert (Personnage principal), Bleu (Autres voix).",
       "joinGroup": "Rejoindre le groupe",
-      "waitingForReaders": "En attente de lecteurs..."
+      "waitingForReaders": "En attente de lecteurs...",
+      "availableRoles": "Rôles disponibles",
+      "host": "Hôte",
+      "narratorRoleDescription": "Lit les parties narratives",
+      "godRoleDescription": "Lit le dialogue de Dieu",
+      "mainCharacterRoleDescription": "Lit le dialogue du personnage principal",
+      "otherVoicesRoleDescription": "Lit le dialogue des autres personnages",
+      "yourReadingRole": "Votre rôle de lecture"
     },
     "qrScanner": {
       "title": "Scanner le code QR",
@@ -23008,6 +23039,11 @@
       "yourFirstStoryWillBe": "Votre première histoire sera :",
       "startChallenge": "Démarrer le défi",
       "startPlan": "Démarrer le plan"
+    },
+    "noteActions": {
+      "edit": "Modifier",
+      "copy": "Copier",
+      "delete": "Supprimer"
     },
     "bibleDownload": {
       "downloadBible": "Télécharger la Bible",

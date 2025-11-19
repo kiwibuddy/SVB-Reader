@@ -2037,6 +2037,27 @@
         }
       },
       "shortDescription": "Celebrate Christ's birth with nativity stories and reflections. Tradition meets scripture."
+    },
+    {
+      "id": "christmas7",
+      "title": "🎄 7 Days of Christmas Story 🌟",
+      "description": "7 Stories - 1 Week",
+      "image": "island",
+      "longDescription": "Journey through the Christmas story chronologically in just seven days. Begin with the ancient prophecies of Isaiah, move through the angelic announcements, and finish with the birth of Jesus on Christmas Eve and Christmas Day. Designed for families, youth, and small groups reading together.",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "christmas7Chronological",
+      "segments": {
+        "Isa": {
+          "segments": ["S191", "S192"]
+        },
+        "Luk": {
+          "segments": ["S285", "S286", "S287", "S288"]
+        },
+        "Mat": {
+          "segments": ["S266"]
+        }
+      },
+      "shortDescription": "Experience the Christmas story in a fresh way through prophecy, promise, and Jesus' birth. Perfect for the week before Christmas."
     }
   ]
 }

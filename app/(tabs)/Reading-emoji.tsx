@@ -997,7 +997,7 @@ const ReadingEmoji = () => {
               styles.filterButtonText, 
               getActiveFilterCount() > 0 && styles.filterButtonTextActive
             ]}>
-              Filter
+              {t('UI.emojiPage.filter')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -1011,7 +1011,7 @@ const ReadingEmoji = () => {
         </View>
       )}
 
-      {filteredReactions.length > 0 && <Text style={styles.longPressHint}>Long press to jump to passage</Text>}
+      {filteredReactions.length > 0 && <Text style={styles.longPressHint}>{t('UI.emojiPage.longPressHint')}</Text>}
     </>
   )
 

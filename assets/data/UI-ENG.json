@@ -71,7 +71,9 @@
       "completion": "Completion",
       "planCompleted": "Plan Completed!",
       "challengeCompleted": "Challenge Completed!",
-      "todaysReading": "Today's Reading"
+      "todaysReading": "Today's Reading",
+      "todaysReadingComplete": "Today's reading complete",
+      "startReadingToBuildStreak": "Start reading to build your streak!"
     },
     "about": {
       "title": "About",
@@ -246,6 +248,10 @@
       "viewVersePrompt": "Would you like to view this verse in {reference}?",
       "cancel": "Cancel",
       "go": "Go",
+      "noReactions": "No reactions yet. Start reading and react to verses you love!",
+      "noEmojiReactions": "No {emoji} reactions yet",
+      "filter": "Filter",
+      "longPressHint": "Long press to jump to passage",
       "emojiTypes": {
         "love": "Love",
         "agree": "Agree",
@@ -453,7 +459,14 @@
       "othersCanNowJoin": "Others can now join",
       "showsTheSpeakingParts": "Shows the speaking parts in this story: Gray (Narrator), Red (God), Green (Main Character), Blue (Other Voices).",
       "joinGroup": "Join Group",
-      "waitingForReaders": "Waiting for readers..."
+      "waitingForReaders": "Waiting for readers...",
+      "availableRoles": "Available Roles",
+      "host": "Host",
+      "narratorRoleDescription": "Reads the narrative portions",
+      "godRoleDescription": "Reads God's dialogue",
+      "mainCharacterRoleDescription": "Reads main character dialogue",
+      "otherVoicesRoleDescription": "Reads other character dialogue",
+      "yourReadingRole": "Your reading role"
     },
     "qrScanner": {
       "title": "Scan QR Code",
@@ -553,6 +566,11 @@
         "title": "12 Days of Christmas",
         "description": "6 Stories - 12 Days"
       }
+    },
+    "noteActions": {
+      "edit": "Edit",
+      "copy": "Copy",
+      "delete": "Delete"
     },
     "bibleDownload": {
       "downloadBible": "Download Bible",

@@ -272,7 +272,7 @@ const NoteModal: React.FC<NoteModalProps> = ({
               >
                 <Ionicons name="create-outline" size={20} color="#007AFF" />
                 <Text style={[styles.actionButtonText, { color: '#007AFF' }]}>
-                  Edit
+                  {t('UI.noteActions.edit')}
                 </Text>
               </TouchableOpacity>
 
@@ -285,7 +285,7 @@ const NoteModal: React.FC<NoteModalProps> = ({
               >
                 <Ionicons name="share-outline" size={20} color="#30D158" />
                 <Text style={[styles.actionButtonText, { color: '#30D158' }]}>
-                  Copy
+                  {t('UI.noteActions.copy')}
                 </Text>
               </TouchableOpacity>
 
@@ -298,7 +298,7 @@ const NoteModal: React.FC<NoteModalProps> = ({
               >
                 <Ionicons name="trash-outline" size={20} color="#FF3B30" />
                 <Text style={[styles.actionButtonText, { color: '#FF3B30' }]}>
-                  Delete
+                  {t('UI.noteActions.delete')}
                 </Text>
               </TouchableOpacity>
             </View>

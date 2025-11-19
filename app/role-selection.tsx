@@ -288,17 +288,17 @@ export default function RoleSelectionScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
-        <Text style={styles.title}>Join Group Reading</Text>
-        <Text style={styles.subtitle}>Select your reading role</Text>
+        <Text style={styles.title}>{t('UI.landing.joinGroupReading')}</Text>
+        <Text style={styles.subtitle}>{t('UI.groupReading.selectYourReadingRole')}</Text>
       </View>
 
       <View style={styles.storyInfo}>
         <Text style={styles.storyTitle}>{storyTitle}</Text>
         <Text style={styles.storyReference}>{scriptureReference}</Text>
-        <Text style={styles.hostInfo}>Host: {hostUserName}</Text>
+        <Text style={styles.hostInfo}>{t('UI.groupReading.host')}: {hostUserName}</Text>
       </View>
 
-      <Text style={styles.sectionTitle}>Available Roles</Text>
+      <Text style={styles.sectionTitle}>{t('UI.groupReading.availableRoles')}</Text>
       <View style={styles.roleGrid}>
         {availableRoles.map((role) => (
           <TouchableOpacity
@@ -323,17 +323,17 @@ export default function RoleSelectionScreen() {
               <Text style={styles.roleName}>{getRoleDisplayName(role)}</Text>
             </View>
             <Text style={styles.roleDescription}>
-              {role === 'narrator' && 'Reads the narrative portions'}
-              {role === 'god' && 'Reads God\'s dialogue'}
-              {role === 'main_character' && 'Reads main character dialogue'}
-              {role === 'other_voices' && 'Reads other character dialogue'}
+              {role === 'narrator' && t('UI.groupReading.narratorRoleDescription')}
+              {role === 'god' && t('UI.groupReading.godRoleDescription')}
+              {role === 'main_character' && t('UI.groupReading.mainCharacterRoleDescription')}
+              {role === 'other_voices' && t('UI.groupReading.otherVoicesRoleDescription')}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Your Name</Text>
+        <Text style={styles.inputLabel}>{t('UI.groupReading.yourName')}</Text>
         <TextInput
           style={styles.textInput}
           value={userName}

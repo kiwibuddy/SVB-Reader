@@ -2988,5 +2988,75 @@
         "color": "#00BCD4"
       }
     }
+  },
+  "christmas7Chronological": {
+    "title": "7 Days of Christmas Story",
+    "description": "7 Stories - 1 Week",
+    "longDescription": "This short chronological Christmas reading plan begins with Isaiah's promises and leads families through the angelic announcements and the birth of Jesus on Christmas Eve and Christmas Day.",
+    "segments": [
+      {
+        "segmentId": "S191",
+        "book": "Isa",
+        "title": "The Promise of Immanuel",
+        "ref": "7:10-16",
+        "phase": "Ancient Promises"
+      },
+      {
+        "segmentId": "S192",
+        "book": "Isa",
+        "title": "A Child is Born",
+        "ref": "9:1-7",
+        "phase": "Ancient Promises"
+      },
+      {
+        "segmentId": "S285",
+        "book": "Luk",
+        "title": "The Birth of John the Baptist Foretold",
+        "ref": "1:5-25",
+        "phase": "Divine Announcements"
+      },
+      {
+        "segmentId": "S286",
+        "book": "Luk",
+        "title": "The Birth of Jesus Foretold",
+        "ref": "1:26-38",
+        "phase": "Divine Announcements"
+      },
+      {
+        "segmentId": "S287",
+        "book": "Luk",
+        "title": "Mary Visits Elizabeth",
+        "ref": "1:39-56",
+        "phase": "Divine Announcements"
+      },
+      {
+        "segmentId": "S288",
+        "book": "Luk",
+        "title": "The Birth of Jesus",
+        "ref": "2:1-20",
+        "phase": "The Nativity"
+      },
+      {
+        "segmentId": "S266",
+        "book": "Mat",
+        "title": "The Birth of Jesus",
+        "ref": "1:18-2:23",
+        "phase": "The Nativity"
+      }
+    ],
+    "phases": {
+      "Ancient Promises": {
+        "description": "Prophetic promises of the coming Messiah spoken centuries before Christ",
+        "color": "#C41E3A"
+      },
+      "Divine Announcements": {
+        "description": "God's angels announce the fulfillment of ancient promises",
+        "color": "#FFD700"
+      },
+      "The Nativity": {
+        "description": "The long-awaited Messiah is born in Bethlehem",
+        "color": "#228B22"
+      }
+    }
   }
 }
