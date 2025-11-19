@@ -48,9 +48,9 @@ class AnalyticsService {
         captureDeepLinks: false, // Don't track deep links
         enableSessionReplay: false, // Don't record sessions
         
-        // Performance
-        flushAt: 20, // Batch events before sending
-        flushInterval: 30, // Send batch every 30 seconds
+        // Performance - send immediately for testing
+        flushAt: 1, // Send events immediately for testing
+        flushInterval: 1, // Send events every 1 second
         
         // Debug in development only
         debug: __DEV__,
@@ -92,7 +92,10 @@ class AnalyticsService {
         platform: Platform.OS,
       });
 
-      logger.info('Analytics enabled');
+      // Force flush the opt-in event
+      await this.posthog.flush();
+
+      logger.info('✅ Analytics enabled and opt-in event sent to PostHog');
     } catch (error) {
       logger.error('Failed to enable analytics:', error);
     }
@@ -148,7 +151,10 @@ class AnalyticsService {
       this.posthog.capture(eventName, enrichedProperties);
       
       if (__DEV__) {
-        logger.info(`Analytics event: ${eventName}`, enrichedProperties);
+        logger.info(`📊 Analytics event captured: ${eventName}`, enrichedProperties);
+        // Force flush in dev mode for immediate testing
+        await this.posthog.flush();
+        logger.info(`📤 Analytics event flushed to PostHog`);
       }
     } catch (error) {
       logger.error('Failed to track event:', error);
