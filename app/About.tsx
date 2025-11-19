@@ -795,6 +795,26 @@ const About = () => {
             <AnalyticsSettings colors={colors} isDarkMode={colors.background === '#000000'} />
           </View>
 
+          {/* Analytics Debug Button (Testing) */}
+          <View style={{ paddingHorizontal: 20, marginTop: 10 }}>
+            <Pressable
+              style={{
+                backgroundColor: '#FF9800',
+                padding: 16,
+                borderRadius: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onPress={() => router.push('/analytics-debug' as any)}
+            >
+              <Ionicons name="bug" size={20} color="#FFF" style={{ marginRight: 8 }} />
+              <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '600' }}>
+                🧪 Analytics Debug
+              </Text>
+            </Pressable>
+          </View>
+
           {/* Legal Section */}
           <View style={styles.legalSection}>
             <Text style={styles.legalHeading}>{t('UI.about.legalInfo')}</Text>
