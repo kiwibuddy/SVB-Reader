@@ -106,7 +106,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
 
   // Handle language change - only one can be active at a time
   const handleLanguageToggle = async (selectedLang: SupportedLanguage) => {
-    console.log('Language toggle:', selectedLang);
     await setLanguage(selectedLang);
     
     // Check if French Bible is downloaded when switching to French
@@ -437,7 +436,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
                 <View style={modalStyles.languageList}>
                   {languages.map((lang, index) => {
                     const isActive = language === lang.value;
-                    console.log(`Language ${lang.value}: isActive=${isActive}, current=${language}`);
                     
                     return (
                       <View 
@@ -456,7 +454,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
                         <Switch
                           value={isActive}
                           onValueChange={async (isOn) => {
-                            console.log(`Toggle ${lang.value}: isOn=${isOn}, current=${language}`);
                             if (isOn && !isActive) {
                               await handleLanguageToggle(lang.value);
                             }

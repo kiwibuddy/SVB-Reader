@@ -232,8 +232,14 @@ export class BibleStorageManager {
       await this.saveMetadata(language, metadata);
       
       // Final progress update
+      let questionsSize = 0;
+      if (questionsDownloaded) {
+        const questionsFileInfo = await FileSystem.getInfoAsync(`${this.bibleDirectory}${language}-questions.json`);
+        questionsSize = questionsFileInfo.exists ? questionsFileInfo.size : 0;
+      }
+      
       onProgress?.({
-        bytesDownloaded: bibleFileInfo.size + (questionsDownloaded ? (await FileSystem.getInfoAsync(`${this.bibleDirectory}${language}-questions.json`)).size || 0 : 0),
+        bytesDownloaded: bibleFileInfo.size + questionsSize,
         totalBytes: bibleSize + (metadata.files.questions?.size || 0),
         progress: 1.0
       });

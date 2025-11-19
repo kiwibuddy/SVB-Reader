@@ -21,6 +21,7 @@ import { memo } from "react";
 import { getSegmentCompletionStatus } from "@/api/sqlite";
 import { ANIMATION } from '@/services/animation';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -68,6 +69,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   // Removed completedSegments, activePlan, activeChallenges dependencies - now using pure SQLite
 
   const { colors } = useAppSettings();
+  const { t } = useTranslation();
 
   const { scrollReset, showCourtesy } = useLocalSearchParams();
 

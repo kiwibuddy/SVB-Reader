@@ -26,8 +26,8 @@ const ChronologicalView: React.FC<ChronologicalViewProps> = ({
   context,
   planId
 }) => {
-  const { colors } = useAppSettings();
-  const { t, language } = useTranslation();
+  const { colors, language } = useAppSettings();
+  const { t } = useTranslation();
 
   const styles = StyleSheet.create({
     container: {

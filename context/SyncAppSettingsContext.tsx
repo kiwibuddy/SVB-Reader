@@ -170,15 +170,11 @@ export const SyncAppSettingsProvider: React.FC<{ children: React.ReactNode }> = 
   };
   
   const setLanguage = async (newLanguage: SupportedLanguage) => {
-    console.log('[SyncAppSettings] Setting language to:', newLanguage);
     setLanguageState(newLanguage);
-    console.log('[SyncAppSettings] State updated');
     
     // Background operations
     await setSetting('language', newLanguage);
-    console.log('[SyncAppSettings] Saved to storage');
     await i18next.changeLanguage(newLanguage);
-    console.log('[SyncAppSettings] i18next changed');
     
     // Switch Bible language
     try {

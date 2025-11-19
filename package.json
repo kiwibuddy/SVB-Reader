@@ -1,7 +1,7 @@
 {
   "name": "sourceview-together",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "1.2.1",
   "scripts": {
     "start": "npx expo start",
     "start:dev": "npx expo start --dev-client --clear",

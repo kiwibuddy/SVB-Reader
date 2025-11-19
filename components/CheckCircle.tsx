@@ -834,7 +834,7 @@ export default function CheckCircle({
                         };
                 
                         router.push({
-                          pathname: '/(tabs)/Plan',
+                          pathname: '/(tabs)/ReadingPlans',
                           params: navigationParams
                         });
                       } else if (completionContext === 'challenge' && contextChallengeId) {
@@ -846,7 +846,7 @@ export default function CheckCircle({
                         };
                 
                         router.push({
-                          pathname: '/(tabs)/Reading-Challenges',
+                          pathname: '/(tabs)/ReadingPlans',
                           params: navigationParams
                         });
                       } else if (completionContext === 'today') {

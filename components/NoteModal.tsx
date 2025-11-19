@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import NoteInput from './NoteInput';
 
 // Dynamically import expo-clipboard to prevent crash if module isn't available
@@ -45,6 +46,7 @@ const NoteModal: React.FC<NoteModalProps> = ({
   onDelete,
 }) => {
   const { colors, isDarkMode } = useAppSettings();
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const scaleAnim = useRef(new Animated.Value(0)).current;

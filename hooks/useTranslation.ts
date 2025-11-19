@@ -9,12 +9,9 @@ export const useTranslation = () => {
 
   // Force re-render when language changes
   useEffect(() => {
-    console.log('[useTranslation] Language changed to:', language);
-    console.log('[useTranslation] i18next current language:', i18next.language);
-  if (i18next.language !== language) {
-      console.log('[useTranslation] Changing i18next language to:', language);
-    i18next.changeLanguage(language);
-  }
+    if (i18next.language !== language) {
+      i18next.changeLanguage(language);
+    }
   }, [language]);
 
   return { t };

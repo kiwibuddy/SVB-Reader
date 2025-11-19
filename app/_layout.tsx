@@ -5,7 +5,7 @@ import { SQLiteGlobalProvider } from '@/context/SQLiteGlobalContext';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import React, { useState, useEffect, useCallback, useMemo, useRef, useContext, useReducer, useLayoutEffect, useImperativeHandle, useDebugValue } from 'react';
+import React, { useState, useEffect } from 'react';
 // Removed duplicate logger import
 import 'react-native-reanimated';
 import { BottomNavProvider } from '@/context/BottomNavContext';
@@ -15,12 +15,10 @@ import { initializeAppSystems } from '@/services/app-startup-manager';
 import { GroupReadingProvider } from '@/context/GroupReadingContext';
 import { View, Text, Alert } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { initializeDatabaseWithDiagnostics } from '@/api/database-initialization';
 import * as Updates from 'expo-updates';
 import { SimpleLoadingScreen } from '@/components/SimpleLoadingScreen';
 import '../config/i18n'; // Import this to initialize i18next
 import { languageDetectionService } from '@/services/LanguageDetectionService';
-import { bibleStorageManager } from '@/services/BibleStorageManager';
 import BibleDownloadModal from '@/components/BibleDownloadModal';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -29,10 +27,10 @@ import { useTranslation } from '@/hooks/useTranslation';
 SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
-  const { isDarkMode, colors, language, setLanguage } = useSyncAppSettings();
+  const { isDarkMode, colors, setLanguage } = useSyncAppSettings();
   const { t } = useTranslation();
   const [dbReady, setDbReady] = useState(false);
-  const [dbError, setDbError] = useState<string | null>(null);
+  const [dbError] = useState<string | null>(null);
   const [showBibleDownload, setShowBibleDownload] = useState(false);
   const [detectedLanguage, setDetectedLanguage] = useState<'fr' | 'es' | 'pt' | null>(null);
   
