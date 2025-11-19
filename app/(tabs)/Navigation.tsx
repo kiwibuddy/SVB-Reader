@@ -36,6 +36,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useGroupReading } from '@/context/GroupReadingContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import FRA_UI from '@/assets/data/FRA-UI.json';
+import { trackFeature } from '@/services/analytics';
 
 
 export type SegmentKey = keyof typeof SegmentTitles;
@@ -1081,6 +1082,12 @@ const Navigation = () => {
 
   // Filter management functions
   const toggleFilter = (category: keyof typeof activeFilters, value: string) => {
+    // Track filter usage
+    trackFeature('navigation_filter_used', {
+      filter_category: category,
+      filter_value: value,
+    });
+    
     setActiveFilters(prev => {
       const newFilters = { ...prev }
       const currentValues = newFilters[category]

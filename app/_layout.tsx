@@ -22,6 +22,8 @@ import { languageDetectionService } from '@/services/LanguageDetectionService';
 import BibleDownloadModal from '@/components/BibleDownloadModal';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useTranslation } from '@/hooks/useTranslation';
+import { analytics } from '@/services/analytics';
+import AnalyticsConsentDialog from '@/components/AnalyticsConsentDialog';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -38,6 +40,11 @@ function AppContent() {
     const initializeApp = async () => {
       try {
         logger.info('[INIT] Starting app initialization...');
+        
+        // Initialize analytics (privacy-first, opt-out by default)
+        await analytics.initialize();
+        logger.info('[INIT] Analytics service initialized');
+        
         const result = await initializeAppSystems();
         logger.info('[INIT] initializeAppSystems completed:', result.success);
         
@@ -198,6 +205,9 @@ function AppContent() {
               }}
             />
           )}
+          
+          {/* Analytics consent dialog (shown once on first launch) */}
+          <AnalyticsConsentDialog />
         </View>
       </ThemeProvider>
     </GestureHandlerRootView>

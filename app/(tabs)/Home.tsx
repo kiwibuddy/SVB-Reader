@@ -48,6 +48,7 @@ import {
 import logger from '@/utils/logger';
 import { databaseManager } from '@/api/database-manager';
 import { getColors, getBubbleTextColorSafe } from '@/scripts/getColors';
+import { trackScreen, trackFeature } from '@/services/analytics';
 import Reanimated, {
   useSharedValue,
   useAnimatedStyle,
@@ -2519,6 +2520,13 @@ const Home = () => {
     initInsights();
   }, []);
 
+  // Track screen view when focused
+  useFocusEffect(
+    React.useCallback(() => {
+      trackScreen('Home');
+    }, [])
+  );
+
   // Handle refresh with error handling
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -3032,6 +3040,12 @@ const Home = () => {
   // Reading Mode Modal Handlers
   const handleIndividualReading = async () => {
     setShowReadingModeModal(false);
+    
+    // Track navigation from home to story
+    trackFeature('navigate_from_home', {
+      segment_id: selectedSegmentId,
+      source: 'home_screen'
+    });
     
     // Clear any existing group session when starting individual reading
     if (currentSession) {

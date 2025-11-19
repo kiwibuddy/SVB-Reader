@@ -1,22 +1,38 @@
 # Privacy Policy for SourceView Together
 
 **Effective Date:** December 2024  
-**Last Updated:** December 2024
+**Last Updated:** November 19, 2025  
+**Version:** 2.0 (Added Anonymous Analytics)
 
 ## Overview
 
 SourceView Together ("we," "our," or "the app") is a Bible reading application designed to enhance your scripture study experience through individual and group reading features. We are committed to protecting your privacy and being transparent about our data practices.
 
-## Information We Do NOT Collect
+## Anonymous Analytics Data (Optional)
 
-**We do not collect, store, or transmit any personal information to external servers.** This includes:
-- ❌ Personal names or contact information
-- ❌ Email addresses or phone numbers
-- ❌ User accounts or login credentials
-- ❌ Location data beyond device permissions
-- ❌ Usage analytics to external services
-- ❌ Device identifiers for tracking purposes
-- ❌ Any data that could identify you personally
+**Updated November 2025:** To improve the app and understand which features are most valuable, we collect anonymous usage analytics through PostHog with your consent.
+
+### What We Collect (With Your Permission):
+- ✅ Feature usage (which features are used, how often)
+- ✅ Reading plan popularity (anonymized counts)
+- ✅ Session duration and frequency
+- ✅ App version and device type (for compatibility)
+- ✅ Error and crash reports (to fix bugs)
+
+### What We Do NOT Collect:
+- ❌ Your name, email, or any personal information
+- ❌ Your reading content or specific Bible passages read
+- ❌ Your device identifier or advertising ID (IDFA/AAID)
+- ❌ Your location
+- ❌ Your reading progress details
+- ❌ Your notes or emoji reactions
+- ❌ Any data that can identify you personally
+
+### Your Control:
+- **Analytics is opt-in** - You must give consent before any data is collected
+- **Easy opt-out** - You can disable analytics anytime in Settings
+- **No impact on app** - Opting out does not affect any app functionality
+- **Local data stays local** - All your reading progress, emojis, and notes remain private on your device regardless of analytics setting
 
 ## Information Stored Locally on Your Device
 
@@ -66,13 +82,24 @@ SourceView Together stores the following information **only on your device** usi
   - App updates through official app stores
   - Bible content downloads (if needed)
 
-### No External Data Transmission
-- We do not operate servers that collect user data
-- We do not use analytics services that track user behavior
-- We do not integrate with social media platforms for data collection
-- We do not use advertising networks that collect personal information
+### Limited External Data Transmission
+- **Analytics Only (With Consent):** If you opt-in, anonymous usage data is sent to PostHog for analytics
+- **No Personal Data Servers:** We do not operate servers that collect personal information
+- **No Social Media Tracking:** We do not integrate with social media platforms for data collection
+- **No Advertising:** We do not use advertising networks that collect personal information
+- **No Data Selling:** We never sell your data to third parties
 
 ## Third-Party Services
+
+### PostHog Analytics (Optional, With Consent)
+If you opt-in to analytics, we use PostHog to collect anonymous usage data:
+- **Purpose:** Understand feature usage and improve the app
+- **Data Collected:** Only anonymous events (feature usage, session duration, app version)
+- **Privacy-First:** PostHog is a privacy-focused analytics platform
+- **No Personal Data:** PostHog does not receive any personally identifiable information
+- **Your Control:** You can opt-out anytime in Settings
+- **Data Retention:** Analytics data is retained for 90 days, then deleted
+- **Learn More:** https://posthog.com/privacy
 
 ### Expo Platform
 SourceView Together is built using Expo, which may collect anonymous technical data for app functionality:

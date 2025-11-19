@@ -50,6 +50,7 @@ import {
 } from "@/api/sqlite";
 import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import { useGroupReading } from '@/context/GroupReadingContext';
+import { analytics, trackReadingPlan, trackScreen } from '@/services/analytics';
 
 // Type definitions
 interface ReadingPlansData {
@@ -438,6 +439,13 @@ const ReadingPlansScreen = () => {
   // Books array for indexing
   const booksArray = Object.keys(Books);
 
+  // Track screen view when focused
+  useFocusEffect(
+    useCallback(() => {
+      trackScreen('Reading Plans');
+    }, [])
+  );
+
   // Calculate story count for a plan/challenge
   const getStoryCount = (item: UnifiedPlan): number => {
     if (!item.segments) return 0;
@@ -673,6 +681,9 @@ const ReadingPlansScreen = () => {
       }
       await loadActiveData();
       await loadAllProgress();
+      
+      // Track analytics
+      await trackReadingPlan('started', planId, type);
     } catch (error) {
       logger.error(`Error starting ${type}:`, error);
     }
@@ -687,6 +698,9 @@ const ReadingPlansScreen = () => {
       }
       await loadActiveData();
       await loadAllProgress();
+      
+      // Track analytics
+      await trackReadingPlan('paused', planId, type);
     } catch (error) {
       logger.error(`Error pausing ${type}:`, error);
     }
@@ -701,6 +715,9 @@ const ReadingPlansScreen = () => {
       }
       await loadActiveData();
       await loadAllProgress();
+      
+      // Track analytics
+      await trackReadingPlan('resumed', planId, type);
     } catch (error) {
       logger.error(`Error resuming ${type}:`, error);
     }
@@ -715,6 +732,9 @@ const ReadingPlansScreen = () => {
       }
       await loadActiveData();
       await loadAllProgress();
+      
+      // Track analytics (completed or abandoned)
+      await trackReadingPlan('completed', planId, type);
     } catch (error) {
       logger.error(`Error ending ${type}:`, error);
     }

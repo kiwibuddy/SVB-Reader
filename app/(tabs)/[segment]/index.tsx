@@ -19,6 +19,7 @@ import StickyHeader from '@/components/StickyHeader';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { startReadingSession, updateReadingSession } from '@/api/sqlite';
 import { isLargeScreen, isLandscape, responsivePadding, spacing } from '@/constants/sizes';
+import { analytics } from '@/services/analytics';
 
 // Helper function moved outside component but Bible loading moved inside
 
@@ -336,6 +337,11 @@ export default function BibleScreen() {
   useEffect(() => {
     if (segID) {
       updateSegmentId(segID);
+      
+      // Track story start
+      analytics.trackEvent('story_started', {
+        segment_id: segID,
+      });
     }
   }, [segID, updateSegmentId]);
 
@@ -535,6 +541,19 @@ export default function BibleScreen() {
 
   const handleScroll = (event: any) => {
     const currentOffset = event.nativeEvent.contentOffset.y;
+    const contentHeight = event.nativeEvent.contentSize.height;
+    const scrollViewHeight = event.nativeEvent.layoutMeasurement.height;
+    
+    // Calculate scroll progress percentage
+    const scrollProgress = Math.min(100, Math.max(0, (currentOffset / (contentHeight - scrollViewHeight)) * 100));
+    
+    // Track story completion when user scrolls to bottom (90% or more)
+    if (scrollProgress >= 90 && segID) {
+      analytics.trackEvent('story_completed', {
+        segment_id: segID,
+        scroll_progress: Math.round(scrollProgress),
+      });
+    }
     
     // Use the global bottom navigation scroll handler for coordinated animations
     if ((global as any)?.handleBottomNavScroll) {

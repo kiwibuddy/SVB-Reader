@@ -9,6 +9,7 @@ import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { addEmoji, deleteEmoji, getEmoji } from '@/api/sqlite';
 import EmojiPicker from './EmojiPicker';
 import NoteInput from './NoteInput';
+import { trackFeature } from '@/services/analytics';
 
 interface EmojiHandlerProps {
   block: BibleBlock;
@@ -267,6 +268,9 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         
         // Update context to trigger re-renders
         updateEmojiActions(state.emojiActions + 1);
+        
+        // Track analytics
+        trackFeature('emoji_added', { segment_id: state.segmentId });
       }
     } catch (error) {
       logger.error('🔍 [EmojiHandler] Error adding emoji:', error);

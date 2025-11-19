@@ -7,6 +7,7 @@ import { useFontSize } from '@/context/FontSizeContext';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { clearFirstLaunchFlag } from '@/hooks/useFirstLaunch';
 import { useTranslation } from '@/hooks/useTranslation';
+import AnalyticsSettings from '@/components/AnalyticsSettings';
 
 const About = () => {
   const router = useRouter();
@@ -787,6 +788,11 @@ const About = () => {
             >
               <Text style={styles.subtleLinkText}>{t('UI.about.nlt')}</Text>
             </Pressable>
+          </View>
+
+          {/* Analytics Settings */}
+          <View style={{ paddingHorizontal: 20 }}>
+            <AnalyticsSettings colors={colors} isDarkMode={colors.background === '#000000'} />
           </View>
 
           {/* Legal Section */}

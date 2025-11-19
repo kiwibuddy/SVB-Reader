@@ -31,7 +31,7 @@ import { LinearGradient } from "expo-linear-gradient"
 import { BlurView } from "expo-blur"
 import NoteModal from "@/components/NoteModal"
 import { updateNoteText, deleteNote } from "@/api/note-functions"
-
+import { trackFeature } from '@/services/analytics';
 
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 import Books from '@/assets/data/BookChapterList.json';
@@ -459,6 +459,12 @@ const ReadingEmoji = () => {
 
   // Toggle filter option
   const toggleFilter = (category: keyof ActiveFilters, value: string) => {
+    // Track filter usage
+    trackFeature('emoji_filter_used', {
+      filter_category: category,
+      filter_value: value,
+    });
+    
     setActiveFilters(prev => {
       const newFilters = { ...prev }
       const currentValues = newFilters[category]

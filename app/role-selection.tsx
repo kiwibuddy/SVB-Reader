@@ -17,6 +17,7 @@ import { Role } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { analytics } from '@/services/analytics';
 
 export default function RoleSelectionScreen() {
   const { colors } = useSyncAppSettings();
@@ -64,6 +65,12 @@ export default function RoleSelectionScreen() {
 
   const handleRoleSelection = (role: Role) => {
     setSelectedRole(role);
+    
+    // Track role selection
+    analytics.trackEvent('reading_role_selected', {
+      role: role,
+      story_id: storyId,
+    });
   };
 
   const handleJoinSession = async () => {

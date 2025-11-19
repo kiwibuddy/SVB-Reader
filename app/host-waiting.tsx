@@ -4,6 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import HostWaitingScreen from '@/components/GroupReading/HostWaitingScreen';
 import { useGroupReading } from '@/context/GroupReadingContext';
 import { useRouter } from 'expo-router';
+import { trackGroupReading } from '@/services/analytics';
 
 export default function HostWaitingPage() {
   const { sessionId, storyTitle, scriptureReference, storyColorData } = useLocalSearchParams();
@@ -21,6 +22,14 @@ export default function HostWaitingPage() {
   const handleStartReading = () => {
     // Mark session as reading and navigate to the story screen
     startReading();
+    
+    // Track analytics
+    const participantCount = currentSession?.participants ? Object.keys(currentSession.participants).length : 1;
+    trackGroupReading('started', {
+      participant_count: participantCount,
+      story_id: currentSession?.storyId,
+    });
+    
     const segId = currentSession?.storyId;
     if (segId) {
       router.push({
