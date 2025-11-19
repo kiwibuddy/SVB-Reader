@@ -30,6 +30,13 @@ export default function AnalyticsDebug() {
     info.push(`📊 Analytics Enabled: ${analytics.isAnalyticsEnabled() ? 'YES ✅' : 'NO ❌'}`);
     info.push(`📊 PostHog Initialized: ${(analytics as any).isInitialized ? 'YES ✅' : 'NO ❌'}`);
     info.push(`📊 PostHog Instance: ${(analytics as any).posthog ? 'EXISTS ✅' : 'NULL ❌'}`);
+    
+    // Show initialization error if any
+    const initError = (analytics as any).initializationError;
+    if (initError) {
+      info.push(`❌ INIT ERROR: ${initError}`);
+    }
+    
     info.push(`🔑 API Key: phc_AgWByS9hf...HYZUV`);
     info.push(`🌐 Host: https://us.i.posthog.com`);
     info.push(`📱 Platform: ${Constants.platform?.ios ? 'iOS' : 'Android'}`);

@@ -28,6 +28,7 @@ class AnalyticsService {
   public posthog: PostHog | null = null;
   public isInitialized: boolean = false;
   private isEnabled: boolean = false;
+  public initializationError: string | null = null;
 
   /**
    * Initialize PostHog with privacy-first settings
@@ -39,28 +40,31 @@ class AnalyticsService {
     }
 
     try {
-      // Initialize PostHog
-      this.posthog = await PostHog.initAsync(POSTHOG_API_KEY, {
+      logger.info('🔄 Starting PostHog initialization...');
+      logger.info(`📍 API Key: ${POSTHOG_API_KEY.substring(0, 15)}...`);
+      logger.info(`📍 Host: ${POSTHOG_HOST}`);
+      
+      // Initialize PostHog (using constructor, not initAsync)
+      this.posthog = new PostHog(POSTHOG_API_KEY, {
         host: POSTHOG_HOST,
         
-        // Privacy-first configuration
-        captureApplicationLifecycleEvents: false, // Don't auto-track lifecycle
-        captureDeepLinks: false, // Don't track deep links
-        enableSessionReplay: false, // Don't record sessions
-        
         // Performance - send immediately for testing
-        flushAt: 1, // Send events immediately for testing
+        flushAt: 1, // Send events immediately
         flushInterval: 1, // Send events every 1 second
-        
-        // Debug in development only
-        debug: __DEV__,
       });
+
+      if (!this.posthog) {
+        throw new Error('PostHog.initAsync returned null');
+      }
+
+      logger.info('✅ PostHog SDK created successfully');
 
       // Start opted out by default - user must consent
       this.posthog.optOut();
       
       this.isInitialized = true;
-      logger.info('Analytics service initialized');
+      this.initializationError = null;
+      logger.info('✅ Analytics service initialized successfully');
 
       // Check if user has previously consented
       const hasConsented = await this.getConsent();
@@ -68,7 +72,10 @@ class AnalyticsService {
         await this.enable();
       }
     } catch (error) {
-      logger.error('Failed to initialize analytics:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.initializationError = errorMessage;
+      logger.error('❌ Failed to initialize analytics:', error);
+      logger.error('❌ Error details:', errorMessage);
     }
   }
 
@@ -88,7 +95,7 @@ class AnalyticsService {
       
       // Track that user opted in
       this.posthog.capture('analytics_opted_in', {
-        app_version: Constants.expoConfig?.version,
+        app_version: Constants.expoConfig?.version || 'unknown',
         platform: Platform.OS,
       });
 
@@ -143,9 +150,9 @@ class AnalyticsService {
       // Add standard properties to all events
       const enrichedProperties = {
         ...properties,
-        app_version: Constants.expoConfig?.version,
+        app_version: Constants.expoConfig?.version || 'unknown',
         platform: Platform.OS,
-        device_type: Platform.isPad ? 'tablet' : 'phone',
+        device_type: Platform.OS === 'ios' && (Platform as any).isPad ? 'tablet' : 'phone',
       };
 
       this.posthog.capture(eventName, enrichedProperties);
