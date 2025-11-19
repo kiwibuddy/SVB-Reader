@@ -28,6 +28,8 @@ export default function AnalyticsDebug() {
     info.push(`📊 Consent Given: ${consentValue === 'true' ? 'YES ✅' : 'NO ❌'}`);
     info.push(`📊 Consent Asked: ${consentAsked === 'true' ? 'YES' : 'NO'}`);
     info.push(`📊 Analytics Enabled: ${analytics.isAnalyticsEnabled() ? 'YES ✅' : 'NO ❌'}`);
+    info.push(`📊 PostHog Initialized: ${(analytics as any).isInitialized ? 'YES ✅' : 'NO ❌'}`);
+    info.push(`📊 PostHog Instance: ${(analytics as any).posthog ? 'EXISTS ✅' : 'NULL ❌'}`);
     info.push(`🔑 API Key: phc_AgWByS9hf...HYZUV`);
     info.push(`🌐 Host: https://us.i.posthog.com`);
     info.push(`📱 Platform: ${Constants.platform?.ios ? 'iOS' : 'Android'}`);
@@ -39,6 +41,14 @@ export default function AnalyticsDebug() {
     const newInfo = [...debugInfo];
     newInfo.push(`\n🧪 Testing event...`);
     setDebugInfo(newInfo);
+    
+    // Check if analytics is enabled before sending
+    if (!analytics.isAnalyticsEnabled()) {
+      newInfo.push(`❌ Analytics is DISABLED - event will NOT be sent`);
+      newInfo.push(`⚠️ Tap "Enable Analytics" button first!`);
+      setDebugInfo(newInfo);
+      return;
+    }
     
     try {
       await analytics.trackEvent('debug_test_event', {
@@ -61,9 +71,30 @@ export default function AnalyticsDebug() {
     setDebugInfo(newInfo);
     
     try {
+      // Force initialize if not already done
+      if (!(analytics as any).isInitialized) {
+        newInfo.push(`⚠️ Analytics not initialized, initializing now...`);
+        await analytics.initialize();
+      }
+      
       await analytics.enable();
+      
+      // Wait a bit for AsyncStorage to save
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Reload debug info
       await loadDebugInfo();
-      newInfo.push(`✅ Analytics enabled!`);
+      
+      // Check if it actually worked
+      const consentValue = await AsyncStorage.getItem('analytics_consent');
+      if (consentValue === 'true' && analytics.isAnalyticsEnabled()) {
+        newInfo.push(`✅ Analytics enabled successfully!`);
+        newInfo.push(`📤 You can now send test events!`);
+      } else {
+        newInfo.push(`❌ Analytics enable failed!`);
+        newInfo.push(`   Consent in storage: ${consentValue}`);
+        newInfo.push(`   isEnabled: ${analytics.isAnalyticsEnabled()}`);
+      }
     } catch (error) {
       newInfo.push(`❌ Error enabling: ${error}`);
     }

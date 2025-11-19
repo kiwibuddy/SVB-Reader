@@ -25,8 +25,8 @@ export interface AnalyticsEvent {
 }
 
 class AnalyticsService {
-  private posthog: PostHog | null = null;
-  private isInitialized: boolean = false;
+  public posthog: PostHog | null = null;
+  public isInitialized: boolean = false;
   private isEnabled: boolean = false;
 
   /**
