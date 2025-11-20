@@ -186,6 +186,9 @@ export default function BibleScreen() {
   const flatListRef = useRef<ScrollView>(null);
   const { isVisible } = useBottomNavAnimation();
   
+  // Track story completion - only fire once per story
+  const storyCompletionTracked = useRef(false);
+  
   // State to track when Bible is loaded (moved before useMemo to fix TS error)
   const [bibleLoadingKey, setBibleLoadingKey] = useState(0);
   
@@ -338,6 +341,9 @@ export default function BibleScreen() {
   useEffect(() => {
     if (segID) {
       updateSegmentId(segID);
+      
+      // Reset story completion tracking for new story
+      storyCompletionTracked.current = false;
       
       // Get story title from segment titles data
       const segmentInfo = (segmentTitles as any)[segID];
@@ -553,8 +559,10 @@ export default function BibleScreen() {
     // Calculate scroll progress percentage
     const scrollProgress = Math.min(100, Math.max(0, (currentOffset / (contentHeight - scrollViewHeight)) * 100));
     
-    // Track story completion when user scrolls to bottom (90% or more)
-    if (scrollProgress >= 90 && segID) {
+    // Track story completion when user scrolls to bottom (90% or more) - only once per story
+    if (scrollProgress >= 90 && segID && !storyCompletionTracked.current) {
+      storyCompletionTracked.current = true;
+      
       const segmentInfo = (segmentTitles as any)[segID];
       const storyTitle = segmentInfo?.title || segID;
       
