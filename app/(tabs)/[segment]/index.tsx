@@ -20,6 +20,7 @@ import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { startReadingSession, updateReadingSession } from '@/api/sqlite';
 import { isLargeScreen, isLandscape, responsivePadding, spacing } from '@/constants/sizes';
 import { analytics } from '@/services/analytics';
+import segmentTitles from '@/assets/data/SegmentTitles.json';
 
 // Helper function moved outside component but Bible loading moved inside
 
@@ -338,9 +339,14 @@ export default function BibleScreen() {
     if (segID) {
       updateSegmentId(segID);
       
-      // Track story start
+      // Get story title from segment titles data
+      const segmentInfo = (segmentTitles as any)[segID];
+      const storyTitle = segmentInfo?.title || segID;
+      
+      // Track story start with title
       analytics.trackEvent('story_started', {
         segment_id: segID,
+        story_title: storyTitle,
       });
     }
   }, [segID, updateSegmentId]);
@@ -549,8 +555,12 @@ export default function BibleScreen() {
     
     // Track story completion when user scrolls to bottom (90% or more)
     if (scrollProgress >= 90 && segID) {
+      const segmentInfo = (segmentTitles as any)[segID];
+      const storyTitle = segmentInfo?.title || segID;
+      
       analytics.trackEvent('story_completed', {
         segment_id: segID,
+        story_title: storyTitle,
         scroll_progress: Math.round(scrollProgress),
       });
     }

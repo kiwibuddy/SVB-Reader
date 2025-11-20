@@ -682,8 +682,15 @@ const ReadingPlansScreen = () => {
       await loadActiveData();
       await loadAllProgress();
       
-      // Track analytics
-      await trackReadingPlan('started', planId, type);
+      // Get plan/challenge name for analytics
+      const planName = type === 'plan' 
+        ? readingPlansData.plans?.find((p: any) => p.id === planId)?.title 
+        : readingPlansData.challenges?.find((c: any) => c.id === planId)?.title;
+      
+      // Track analytics with plan name
+      await trackReadingPlan('started', planId, type, {
+        plan_name: planName || planId
+      });
     } catch (error) {
       logger.error(`Error starting ${type}:`, error);
     }
@@ -699,8 +706,15 @@ const ReadingPlansScreen = () => {
       await loadActiveData();
       await loadAllProgress();
       
-      // Track analytics
-      await trackReadingPlan('paused', planId, type);
+      // Get plan/challenge name for analytics
+      const planName = type === 'plan' 
+        ? readingPlansData.plans?.find((p: any) => p.id === planId)?.title 
+        : readingPlansData.challenges?.find((c: any) => c.id === planId)?.title;
+      
+      // Track analytics with plan name
+      await trackReadingPlan('paused', planId, type, {
+        plan_name: planName || planId
+      });
     } catch (error) {
       logger.error(`Error pausing ${type}:`, error);
     }
@@ -716,8 +730,15 @@ const ReadingPlansScreen = () => {
       await loadActiveData();
       await loadAllProgress();
       
-      // Track analytics
-      await trackReadingPlan('resumed', planId, type);
+      // Get plan/challenge name for analytics
+      const planName = type === 'plan' 
+        ? readingPlansData.plans?.find((p: any) => p.id === planId)?.title 
+        : readingPlansData.challenges?.find((c: any) => c.id === planId)?.title;
+      
+      // Track analytics with plan name
+      await trackReadingPlan('resumed', planId, type, {
+        plan_name: planName || planId
+      });
     } catch (error) {
       logger.error(`Error resuming ${type}:`, error);
     }
@@ -733,8 +754,15 @@ const ReadingPlansScreen = () => {
       await loadActiveData();
       await loadAllProgress();
       
-      // Track analytics (completed or abandoned)
-      await trackReadingPlan('completed', planId, type);
+      // Get plan/challenge name for analytics
+      const planName = type === 'plan' 
+        ? readingPlansData.plans?.find((p: any) => p.id === planId)?.title 
+        : readingPlansData.challenges?.find((c: any) => c.id === planId)?.title;
+      
+      // Track analytics (completed or abandoned) with plan name
+      await trackReadingPlan('completed', planId, type, {
+        plan_name: planName || planId
+      });
     } catch (error) {
       logger.error(`Error ending ${type}:`, error);
     }
