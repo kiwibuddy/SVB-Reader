@@ -9,7 +9,7 @@ import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { addEmoji, deleteEmoji, getEmoji } from '@/api/sqlite';
 import EmojiPicker from './EmojiPicker';
 import NoteInput from './NoteInput';
-import { trackFeature } from '@/services/analytics';
+import { analytics } from '@/services/analytics';
 
 interface EmojiHandlerProps {
   block: BibleBlock;
@@ -270,7 +270,11 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         updateEmojiActions(state.emojiActions + 1);
         
         // Track analytics
-        trackFeature('emoji_added', { segment_id: state.segmentId });
+        analytics.trackEvent('emoji_added', { 
+          segment_id: state.segmentId,
+          emoji: emoji,
+          block_id: blockId 
+        });
       }
     } catch (error) {
       logger.error('🔍 [EmojiHandler] Error adding emoji:', error);
@@ -322,6 +326,13 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
                   
                   // Update context to trigger re-renders
                   updateEmojiActions(state.emojiActions + 1);
+                  
+                  // Track analytics
+                  analytics.trackEvent('emoji_deleted', {
+                    segment_id: state.segmentId,
+                    emoji: existingEmoji,
+                    block_id: blockId,
+                  });
                 }
               } catch (error) {
                 logger.error('🔍 [EmojiHandler] Error deleting emoji:', error);

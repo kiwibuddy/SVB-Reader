@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { analytics } from '@/services/analytics';
 import Constants from 'expo-constants';
@@ -10,6 +10,13 @@ export default function AnalyticsDebug() {
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const [consent, setConsent] = useState<boolean | null>(null);
   const [apiKey, setApiKey] = useState<string>('');
+
+  // Track screen view when focused
+  useFocusEffect(
+    React.useCallback(() => {
+      analytics.trackScreen('Analytics Debug');
+    }, [])
+  );
 
   useEffect(() => {
     loadDebugInfo();

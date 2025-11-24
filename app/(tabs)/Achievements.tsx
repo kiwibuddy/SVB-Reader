@@ -38,6 +38,7 @@ import {
 import { imageMap } from '@/components/navigation/NavBook';
 import { databaseManager } from '@/api/database-manager';
 import { useTranslation } from '@/hooks/useTranslation';
+import { analytics } from '@/services/analytics';
 
 
 // Enhanced Types
@@ -167,6 +168,9 @@ const Achievements = () => {
   // Auto-refresh when returning to Achievements screen
   useFocusEffect(
     React.useCallback(() => {
+      // Track screen view
+      analytics.trackScreen('Achievements');
+      
       const refreshStats = async () => {
         // Add a small delay to ensure database writes are complete
         await new Promise(resolve => setTimeout(resolve, 100));

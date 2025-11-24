@@ -1,8 +1,9 @@
 import React from 'react';
 import logger from '@/utils/logger';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useGroupReading } from '@/context/GroupReadingContext';
 import JoinGroupScreen from '@/components/GroupReading/JoinGroupScreen';
+import { analytics } from '@/services/analytics';
 
 export default function JoinGroupRoute() {
   const router = useRouter();
@@ -14,6 +15,13 @@ export default function JoinGroupRoute() {
   const storyTitle = params.storyTitle as string;
   const scriptureReference = params.scriptureReference as string;
   const hostUserName = params.hostUserName as string;
+
+  // Track screen view when focused
+  useFocusEffect(
+    React.useCallback(() => {
+      analytics.trackScreen('Join Group', { session_id: sessionId });
+    }, [sessionId])
+  );
 
   const handleJoinGroup = async (role: any, userName: string) => {
     try {

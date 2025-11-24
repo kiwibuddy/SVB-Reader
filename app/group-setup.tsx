@@ -1,15 +1,23 @@
 import React from 'react';
 import logger from '@/utils/logger';
 import { View, StyleSheet } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import GroupSetupScreen from '@/components/GroupReading/GroupSetupScreen';
 import { useGroupReading } from '@/context/GroupReadingContext';
 import { Role } from '@/types';
+import { analytics } from '@/services/analytics';
 
 export default function GroupSetupPage() {
   const { storyId, storyTitle, scriptureReference, planId, challengeId } = useLocalSearchParams();
   const { startHostSession } = useGroupReading();
   const router = useRouter();
+
+  // Track screen view when focused
+  useFocusEffect(
+    React.useCallback(() => {
+      analytics.trackScreen('Group Setup', { story_id: storyId });
+    }, [storyId])
+  );
 
   const handleStartBroadcasting = async (role: Role, userName: string) => {
     try {

@@ -6,7 +6,7 @@ import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { bibleLoader } from '@/services/BibleLoader';
 import readingPlansData from "@/assets/data/ReadingPlansChallenges.json";
 import { FontAwesome } from '@expo/vector-icons';
-import { useRouter, usePathname, useLocalSearchParams } from "expo-router";
+import { useRouter, usePathname, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { Animated } from 'react-native';
 import { useBottomNavAnimation } from '@/context/BottomNavContext';
 import Segment from '@/components/Bible/Segment';
@@ -336,6 +336,21 @@ export default function BibleScreen() {
     
     ensureBibleLoaded();
   }, [language]);
+
+  // Track screen view when focused
+  useFocusEffect(
+    React.useCallback(() => {
+      if (segID) {
+        const segmentInfo = (segmentTitles as any)[segID];
+        const storyTitle = segmentInfo?.title || segID;
+        
+        analytics.trackScreen('Story', {
+          segment_id: segID,
+          story_title: storyTitle,
+        });
+      }
+    }, [segID])
+  );
 
   // Update segment ID when it changes
   useEffect(() => {

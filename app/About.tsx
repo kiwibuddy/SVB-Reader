@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useFontSize } from '@/context/FontSizeContext';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { clearFirstLaunchFlag } from '@/hooks/useFirstLaunch';
 import { useTranslation } from '@/hooks/useTranslation';
 import AnalyticsSettings from '@/components/AnalyticsSettings';
+import { analytics } from '@/services/analytics';
 
 const About = () => {
   const router = useRouter();
@@ -18,6 +19,13 @@ const About = () => {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showCopyrightModal, setShowCopyrightModal] = useState(false);
   const [showNLTModal, setShowNLTModal] = useState(false);
+
+  // Track screen view when focused
+  useFocusEffect(
+    React.useCallback(() => {
+      analytics.trackScreen('About');
+    }, [])
+  );
 
   const handleResetOnboarding = async () => {
     try {

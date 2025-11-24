@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
-import { trackFeature } from '@/services/analytics';
+import { analytics } from '@/services/analytics';
 
 interface NoteInputProps {
   initialValue?: string;
@@ -76,9 +76,11 @@ const NoteInput: React.FC<NoteInputProps> = ({
     }
 
     // Track note creation/editing
-    trackFeature(isEditing ? 'note_edited' : 'note_created', {
-      note_length: trimmedNote.length,
-    });
+    if (isEditing) {
+      analytics.trackEvent('note_edited', { note_length: trimmedNote.length });
+    } else {
+      analytics.trackEvent('note_created', { note_length: trimmedNote.length });
+    }
 
     setIsSaving(true);
     

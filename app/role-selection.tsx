@@ -10,7 +10,7 @@ import {
   TextInput,
   ActivityIndicator
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { useGroupReading } from '@/context/GroupReadingContext';
 import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
 import { Role } from '@/types';
@@ -41,6 +41,13 @@ export default function RoleSelectionScreen() {
   const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [sessionData, setSessionData] = useState<any>(null);
+
+  // Track screen view when focused
+  useFocusEffect(
+    React.useCallback(() => {
+      analytics.trackScreen('Role Selection', { story_id: storyId });
+    }, [storyId])
+  );
 
   useEffect(() => {
     if (qrCodeData) {

@@ -1,7 +1,8 @@
 import React from 'react';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useGroupReading } from '@/context/GroupReadingContext';
 import QRCodeShareScreen from '@/components/GroupReading/QRCodeShareScreen';
+import { analytics } from '@/services/analytics';
 
 export default function QRShareRoute() {
   const router = useRouter();
@@ -13,6 +14,13 @@ export default function QRShareRoute() {
   const hostUserName = params.hostUserName as string;
   const hostRole = params.hostRole as string | undefined;
   const qrCodeData = params.qrCodeData as string;
+
+  // Track screen view when focused
+  useFocusEffect(
+    React.useCallback(() => {
+      analytics.trackScreen('QR Share', { session_id: sessionId });
+    }, [sessionId])
+  );
 
   const handleClose = () => {
     router.back();

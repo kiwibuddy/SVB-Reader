@@ -16,7 +16,7 @@ import {
   Modal,
   ScrollView,
 } from "react-native"
-import { useRouter } from "expo-router"
+import { useRouter, useFocusEffect } from "expo-router"
 import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext"
 import { useSyncAppSettings } from "@/context/SyncAppSettingsContext"
 import { useTranslation } from "@/hooks/useTranslation"
@@ -31,7 +31,7 @@ import { LinearGradient } from "expo-linear-gradient"
 import { BlurView } from "expo-blur"
 import NoteModal from "@/components/NoteModal"
 import { updateNoteText, deleteNote } from "@/api/note-functions"
-import { trackFeature } from '@/services/analytics';
+import { analytics } from '@/services/analytics';
 
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 import Books from '@/assets/data/BookChapterList.json';
@@ -123,6 +123,13 @@ const ReadingEmoji = () => {
   const modalOpacityAnim = useRef(new Animated.Value(0)).current
   const filterPanelAnim = useRef(new Animated.Value(-300)).current
   const filterOpacityAnim = useRef(new Animated.Value(0)).current
+
+  // Track screen view when focused
+  useFocusEffect(
+    React.useCallback(() => {
+      analytics.trackScreen('Emoji & Reactions');
+    }, [])
+  );
 
   // Get color for source color filter
   const getSourceColorDisplay = (color: string): SourceColorDisplay => {
@@ -459,12 +466,6 @@ const ReadingEmoji = () => {
 
   // Toggle filter option
   const toggleFilter = (category: keyof ActiveFilters, value: string) => {
-    // Track filter usage
-    trackFeature('emoji_filter_used', {
-      filter_category: category,
-      filter_value: value,
-    });
-    
     setActiveFilters(prev => {
       const newFilters = { ...prev }
       const currentValues = newFilters[category]
@@ -472,14 +473,30 @@ const ReadingEmoji = () => {
       // Handle boolean filters differently
       if (category === 'hasNotes') {
         newFilters[category] = !currentValues as boolean
+        
+        // Track filter usage
+        analytics.trackEvent('emoji_filter_used', {
+          filter_category: category,
+          filter_value: 'has_notes_toggle',
+          is_active: !currentValues,
+        });
       } else {
         // Handle array filters
         const arrayValues = currentValues as string[]
-        if (arrayValues.includes(value)) {
+        const isActive = arrayValues.includes(value);
+        
+        if (isActive) {
           newFilters[category] = arrayValues.filter((v: string) => v !== value) as any
         } else {
           newFilters[category] = [...arrayValues, value] as any
         }
+        
+        // Track filter usage
+        analytics.trackEvent('emoji_filter_used', {
+          filter_category: category,
+          filter_value: value,
+          is_active: !isActive,
+        });
       }
       
       return newFilters

@@ -13,7 +13,7 @@ import { FontSizeProvider } from '@/context/FontSizeContext';
 import { SyncAppSettingsProvider, useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { initializeAppSystems } from '@/services/app-startup-manager';
 import { GroupReadingProvider } from '@/context/GroupReadingContext';
-import { View, Text, Alert } from 'react-native';
+import { View, Text, Alert, AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Updates from 'expo-updates';
 import { SimpleLoadingScreen } from '@/components/SimpleLoadingScreen';
@@ -44,6 +44,11 @@ function AppContent() {
         // Initialize analytics (privacy-first, opt-out by default)
         await analytics.initialize();
         logger.info('[INIT] Analytics service initialized');
+        
+        // Track app opened (only sent if user has consented)
+        await analytics.trackEvent('app_opened', {
+          launch_time: new Date().toISOString(),
+        });
         
         const result = await initializeAppSystems();
         logger.info('[INIT] initializeAppSystems completed:', result.success);
@@ -135,6 +140,22 @@ function AppContent() {
     
     initializeApp();
   }, [setLanguage]);
+
+  // Track when app returns from background
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        // App has come to the foreground
+        analytics.trackEvent('app_foregrounded', {
+          timestamp: new Date().toISOString(),
+        });
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
   
   if (dbError) {
     return (

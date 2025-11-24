@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import HostWaitingScreen from '@/components/GroupReading/HostWaitingScreen';
 import { useGroupReading } from '@/context/GroupReadingContext';
 import { useRouter } from 'expo-router';
-import { trackGroupReading } from '@/services/analytics';
+import { analytics, trackGroupReading } from '@/services/analytics';
 
 export default function HostWaitingPage() {
   const { sessionId, storyTitle, scriptureReference, storyColorData } = useLocalSearchParams();
@@ -18,6 +18,13 @@ export default function HostWaitingPage() {
     green: 0,
     blue: 0,
   };
+
+  // Track screen view when focused
+  useFocusEffect(
+    React.useCallback(() => {
+      analytics.trackScreen('Host Waiting', { session_id: sessionId });
+    }, [sessionId])
+  );
 
   const handleStartReading = () => {
     // Mark session as reading and navigate to the story screen
