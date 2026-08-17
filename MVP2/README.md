@@ -13,6 +13,7 @@ Assembled 17 August 2026 against `Nov-New-Build-` @ `f07b650`.
 | [`02-DEV-SETUP.md`](02-DEV-SETUP.md) | Getting the project running again in Cursor — install, run, test, build. |
 | [`03-DESIGN-DIRECTION.md`](03-DESIGN-DIRECTION.md) | The chosen design direction, the data behind it, and the decisions still open. |
 | [`04-PRD-AND-ROADMAP.md`](04-PRD-AND-ROADMAP.md) | **The product spec and phased build plan.** Scope, screen-by-screen acceptance criteria, estimates, risks, and the decision register. |
+| [`05-GROUP-READING.md`](05-GROUP-READING.md) | How group reading works without coordination software. Resolves the biggest open decision. |
 | [`audit/maintenance-audit.html`](audit/maintenance-audit.html) | Full maintenance audit. Open in a browser. |
 | [`mockups/`](mockups/) | Design mockups. Open in a browser — no build step. |
 
@@ -59,9 +60,12 @@ Step 5    Test on real hardware, both platforms             2 days
 Then five build phases, 19-25 working days — see
 [`04-PRD-AND-ROADMAP.md`](04-PRD-AND-ROADMAP.md) §8.
 
-**Three decisions are unresolved and block estimation:** whether group reading
-stays, the division titles, and whether to promote figures out of the blue
-source group. All three are in the decision register.
+**Group reading is resolved:** it stays, but the QR and host/join machinery goes
+— the four colours already are the mechanism. See
+[`05-GROUP-READING.md`](05-GROUP-READING.md).
+
+**Two decisions still open:** the division titles, and whether to promote figures
+out of the blue source group. Both block Phase 1 only.
 
 Do not start design work before step 5. A redesign landing on top of an
 unbuildable app means every failure has two possible causes.

@@ -1,7 +1,8 @@
 # MVP2 — Product requirements and build roadmap
 
-Status: **draft for your review.** Three decisions inside are marked
-**UNRESOLVED** and block estimation. Everything else is specified.
+Status: **draft for your review.** D1 (group reading) is now **resolved** — see
+[`05-GROUP-READING.md`](05-GROUP-READING.md). Two decisions remain UNRESOLVED
+(D2, D3) and block Phase 1 only.
 
 Written 17 August 2026 against `main` @ `41c432b` (= v1.2.1 build 20).
 
@@ -45,7 +46,7 @@ Read from the codebase, not from memory.
 | `(tabs)/Achievements.tsx` | Badges | → folded into **You L1** as the year |
 | `(tabs)/Home.tsx` | Landing | → removed; Read becomes the landing tab |
 | `About.tsx` | About | → moved under You L2 |
-| `group-setup`, `host-waiting`, `join-group`, `qr-info`, `qr-share`, `role-selection` | Group reading via QR | → **UNRESOLVED, see D1** |
+| `group-setup`, `host-waiting`, `join-group`, `qr-info`, `qr-share`, `role-selection` | Group reading via QR | → **deleted.** Coordination machinery removed; group reading stays as an implicit affordance. See `05-GROUP-READING.md` |
 
 **Supporting code that stays:** `services/BibleLoader.ts`,
 `BibleStorageManager.ts`, `QuestionsLoader.ts`, `LanguageDetectionService.ts`,
@@ -71,34 +72,29 @@ voices, see who they spoke with, and read their longest exchange.*
 
 ---
 
-## 4. The three decisions that block estimation
+## 4. Decisions
 
-### D1 — Group reading: keep, cut, or defer? **UNRESOLVED**
+### D1 — Group reading — **RESOLVED**
 
-This is the biggest decision in the document and I will not make it for you.
+Group reading is core and stays. The *coordination software* goes: QR codes,
+host/join handshakes, role selection, and the choice between "group read" and
+"individual read". The four ink colours already are the mechanism — four voices,
+four readers, coordinated between humans in a room.
 
-- **Footprint:** 23 files reference `GroupReading` or `QRCode` — 6 dedicated
-  routes, `components/QRCodeScanner.tsx`, `services/QRCodeGenerator.ts`,
-  `services/QRCodeDiscoveryManager.ts`, `context/GroupReadingContext.tsx`, plus
-  hooks into Home, Navigation, ReadingPlans and the reader itself.
-- **The tension:** `APP_DESCRIPTION.md` positions the app squarely at
-  *"churches, families, and small groups"*. Group reading is not a side feature
-  — it is a third of the stated value proposition, and it is in the App Store
-  listing copy and the camera permission string.
-- **Earlier in this project** the working assumption was that QR group mode
-  would be removed, and that the achievement badges tied to it would become
-  unearnable. **That assumption deserves a second look now that the footprint is
-  measured.**
+The app never asks "alone or together?" Read it alone and it is a beautiful
+Bible app; read it with three others and the colours have already done the work.
 
-| Option | Cost | Consequence |
-| --- | --- | --- |
-| **Keep and restyle** | +5–8 days | Group flows need the new visual system. Largest scope. |
-| **Keep as-is, unstyled** | +1 day | Group screens look like the old app. Visibly inconsistent, but honest and cheap. |
-| **Cut** | +3–4 days removal work | Simplifies everything downstream, but contradicts the store listing and orphans the group badges. Needs a marketing decision, not just an engineering one. |
+Replaced by: onboarding that teaches the four colours once, an expandable **call
+sheet** on each story naming its cast (the data already exists — this is what
+replaces role selection), and a **read-aloud mode** entered from inside a story.
 
-**My recommendation: keep as-is and unstyled for MVP2**, ship the redesign
-around it, and decide its future with usage data. Cutting a headline feature
-during a redesign means you cannot tell which change caused a drop.
+Removes 6 routes, 2 services, 1 context, 1 component, and both `expo-camera` and
+`react-native-qrcode-svg` — **so the app stops requesting camera permission
+entirely.** Verified: nothing outside the QR flow uses the camera.
+
+Cost 6–9 days, against 5–8 to restyle the group routes. Roughly cost-neutral,
+materially simpler app. Full specification in
+[`05-GROUP-READING.md`](05-GROUP-READING.md).
 
 ### D2 — Division titles **UNRESOLVED**
 
@@ -136,6 +132,10 @@ whether to promote a set of figures to green, and if so, which.**
 | S10 | You L1 (year) + L2 (settings) | Absorbs Achievements |
 | S11 | Appearance control: Light / Dark / Auto | Light is the shipped default |
 | S12 | French parity across all new screens | Non-negotiable; localisation already exists |
+| S13 | Remove group coordination machinery | 6 routes, 2 services, 1 context, camera permission |
+| S14 | Onboarding — four screens, teaches the colours | Builds on `hooks/useFirstLaunch.ts` |
+| S15 | Call sheet — expandable cast per story | Replaces role selection; data already present |
+| S16 | Read-aloud mode | Entered from inside a story, never a home-screen mode |
 
 ### Deferred to MVP3
 
@@ -276,11 +276,14 @@ sprint and a panic.
 
 *Exit criteria: a build accepted by both stores on SDK 57.*
 
-### Phase 1 — Foundation (3–4 days)
+### Phase 1 — Foundation (5–7 days)
 
 - S1 design tokens, light + dark, in `constants/Colors.ts`
 - S9 conversation precompute script
 - Divisions model (needs D2)
+- **S13 remove group coordination machinery** — do this early; it deletes code
+  every later phase would otherwise have to work around, and it removes two
+  native dependencies
 - Rewrite the Cursor rules file for RN 0.86 + Reanimated 4
 
 *Exit criteria: tokens drive one existing screen; precompute JSON committed.*
@@ -289,6 +292,7 @@ sprint and a panic.
 
 - S2 Read L1 thread
 - S3 Read L2 bubble reader
+- **S15 call sheet** — expand the word-split bar into the named cast
 - S12 French parity on both
 
 These two screens are 60% of the perceived redesign and every later screen
@@ -305,12 +309,14 @@ real hardware.*
 
 *Exit criteria: any of 774 voices is reachable in under three taps.*
 
-### Phase 4 — Reuse (3–4 days)
+### Phase 4 — Reuse and first-run (7–9 days)
 
 - S7 Plan L1 + L2 (thread component reused)
 - S8 Saved L1 + L2 (turn component reused)
 - S10 You L1 + L2, absorbing Achievements
 - S11 appearance control
+- **S14 onboarding**, four screens, both languages
+- **S16 read-aloud mode**
 
 *Exit criteria: all five tabs, both levels, no screens on the old system except
 whatever D1 leaves behind.*
@@ -322,7 +328,8 @@ whatever D1 leaves behind.*
 - Accessibility: text sizing, contrast in both modes, screen reader on the reader
 - Store assets and listing copy — **update if D1 changes group reading**
 
-**Total after v1.3.0 ships: 19–25 working days**, plus whatever D1 adds.
+**Total after v1.3.0 ships: 25–33 working days.** D1 is now included rather than
+outstanding.
 
 ---
 
@@ -333,7 +340,8 @@ whatever D1 leaves behind.*
 | API 36 deadline missed | **High** | File the extension now |
 | The redesign lands on an unstable SDK 57 base | High | Phase 0 exit criteria are strict; do not overlap |
 | Database migration loses user reactions | High | Phase 5 explicitly tests it; audit never covered the DB layer |
-| Group-mode decision reversed mid-build | Medium | Settle D1 before Phase 2 |
+| Existing group state in SQLite crashes the migration | High | Read and ignore; do not assume tables are absent. Test against a real pre-MVP2 database in Phase 5 |
+| Store listing still describes QR group sessions | Medium | Update copy and screenshots in the same release |
 | Left/right bubble split reads as theological claim | Medium | It *is* one. Confirm intent before Phase 2. |
 | Thread performance on low-end Android | Medium | SVG path per screen, not per row; profile in Phase 2 |
 | 25 MB of JSON parsed at startup | Medium | Pre-existing. Deferred to MVP3, but it will feel worse alongside a faster-looking UI. |
@@ -344,7 +352,7 @@ whatever D1 leaves behind.*
 
 | ID | Decision | Owner | Blocks |
 | --- | --- | --- | --- |
-| **D1** | Group reading: keep / restyle / cut | You | Phase 2 onward, and the estimate |
+| ~~D1~~ | ~~Group reading~~ | **Resolved** | Machinery removed, behaviour kept |
 | **D2** | Division titles | You | Phase 1 |
 | **D3** | Promote figures from blue to green | You | Phase 1 |
 | D4 | Confirm the left/right bubble split | You | Phase 2 |
@@ -361,3 +369,6 @@ whatever D1 leaves behind.*
 4. Light and dark both ship, light as default, one token set driving both.
 5. Full parity in French.
 6. No existing user loses a saved reaction or note in the upgrade.
+7. The app requests no camera permission.
+8. Nowhere does the app ask the user to choose between reading alone and reading
+   together.
