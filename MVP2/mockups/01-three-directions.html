@@ -1,0 +1,895 @@
+<title>SVB — Three Directions</title>
+<style>
+/* ============ SHELL TOKENS (theme-aware) ============ */
+:root{
+  --sh-bg:#F1F2EF;
+  --sh-panel:#FFFFFF;
+  --sh-ink:#15171A;
+  --sh-ink-2:#4C5157;
+  --sh-ink-3:#7C838B;
+  --sh-rule:#D5D8D2;
+  --sh-mark:#B33A22;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --sh-bg:#0F1113;
+    --sh-panel:#16191C;
+    --sh-ink:#E8EAE6;
+    --sh-ink-2:#A8AEB3;
+    --sh-ink-3:#767C82;
+    --sh-rule:#2A2E32;
+    --sh-mark:#E0603F;
+  }
+}
+:root[data-theme="dark"]{
+  --sh-bg:#0F1113;
+  --sh-panel:#16191C;
+  --sh-ink:#E8EAE6;
+  --sh-ink-2:#A8AEB3;
+  --sh-ink-3:#767C82;
+  --sh-rule:#2A2E32;
+  --sh-mark:#E0603F;
+}
+
+/* ============ STAGE TOKENS (fixed in both themes — these are the product palettes) ============ */
+:root{
+  /* 01 RUBRIC */
+  --r-page:#FFFFFF; --r-ink:#14161A; --r-rule:#DCDCD6; --r-quiet:#8B8F92;
+  --r-red:#C8241B; --r-blue:#1B3FA0; --r-green:#0B6B4F; --r-black:#14161A;
+
+  /* 02 CAST */
+  --c-field:#6B1220; --c-bone:#F2EAE0; --c-bone-2:#C9B7A6; --c-ink:#140A0C;
+  --c-divine:#A81E12; --c-principal:#14513B; --c-chorus:#1B2E6B; --c-narr:#2A2B31;
+
+  /* 03 THREAD */
+  --t-void:#070B12; --t-surface:#0E1622; --t-bone:#E9EDF2; --t-mute:#78859A;
+  --t-red:#FF5A45; --t-blue:#6BA9FF; --t-green:#46D9A0; --t-grey:#AEBACB;
+}
+
+/* ============ TYPE ROLES ============ */
+:root{
+  --swiss:"Helvetica Neue",Helvetica,"Nimbus Sans",Arial,sans-serif;
+  --swiss-c:"Avenir Next Condensed","HelveticaNeue-CondensedBold","Arial Narrow",var(--swiss);
+  --didone:Didot,"Bodoni 72","Bodoni MT","Playfair Display","Times New Roman",Georgia,serif;
+  --book:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --geo:Futura,"Avenir Next",Avenir,"Century Gothic",var(--swiss);
+  --mono:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace;
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--sh-bg);
+  color:var(--sh-ink);
+  font-family:var(--swiss);
+  -webkit-font-smoothing:antialiased;
+  line-height:1.5;
+}
+h1,h2,h3,h4,p,ul,ol,figure{margin:0;}
+a{color:inherit;}
+:focus-visible{outline:2px solid var(--sh-mark);outline-offset:3px;}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+.stack{display:flex;flex-direction:column;}
+
+/* ============ MASTHEAD ============ */
+.mast{padding:72px 0 40px;border-bottom:1px solid var(--sh-rule);}
+.eyebrow{
+  font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--sh-ink-3);font-weight:600;
+}
+.mast h1{
+  font-size:clamp(38px,6.4vw,76px);line-height:.95;letter-spacing:-.035em;
+  font-weight:700;margin-top:18px;text-wrap:balance;max-width:16ch;
+}
+.mast .sub{
+  margin-top:22px;max-width:62ch;font-size:17px;line-height:1.62;color:var(--sh-ink-2);
+}
+.mast .sub strong{color:var(--sh-ink);font-weight:600;}
+
+.diag{
+  margin-top:44px;display:grid;gap:1px;background:var(--sh-rule);
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));border:1px solid var(--sh-rule);
+}
+.diag > div{background:var(--sh-panel);padding:20px 22px 24px;}
+.diag dt{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--sh-mark);font-weight:700;}
+.diag dd{margin:9px 0 0;font-size:14.5px;line-height:1.55;color:var(--sh-ink-2);}
+
+/* ============ SPINE (shared building blocks) ============ */
+.spine{padding:52px 0 60px;border-bottom:1px solid var(--sh-rule);}
+.spine h2{font-size:13px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;}
+.spine .lede{margin-top:14px;max-width:64ch;font-size:16px;line-height:1.6;color:var(--sh-ink-2);}
+.inks{display:flex;flex-wrap:wrap;gap:0;margin-top:28px;border:1px solid var(--sh-rule);}
+.ink{
+  flex:1 1 180px;padding:16px 18px 18px;border-right:1px solid var(--sh-rule);
+  background:var(--sh-panel);
+}
+.ink:last-child{border-right:0;}
+.ink .sw{width:22px;height:22px;border-radius:50%;}
+.ink .nm{margin-top:11px;font-size:14px;font-weight:700;}
+.ink .ct{font-size:12.5px;color:var(--sh-ink-3);margin-top:3px;font-variant-numeric:tabular-nums;}
+
+/* ============ STAGE SCAFFOLD ============ */
+.stage{padding:76px 0 84px;}
+.stage-head{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-end;justify-content:space-between;}
+.stage-num{font-family:var(--mono);font-size:12px;letter-spacing:.14em;opacity:.6;}
+.stage-name{font-size:clamp(34px,5.2vw,60px);line-height:.94;letter-spacing:-.03em;font-weight:700;margin-top:10px;}
+.stage-tag{font-size:15.5px;line-height:1.6;max-width:52ch;opacity:.82;}
+
+.meta{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:26px;margin-top:38px;padding-top:24px;
+}
+.meta h4{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;opacity:.55;font-weight:700;}
+.meta p{margin-top:9px;font-size:14px;line-height:1.55;opacity:.9;}
+.chips{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap;}
+.chip{width:26px;height:26px;}
+
+.screens{
+  display:flex;gap:26px;margin-top:52px;overflow-x:auto;padding-bottom:14px;
+  scroll-snap-type:x proximity;
+}
+.screens::-webkit-scrollbar{height:8px;}
+.screens::-webkit-scrollbar-thumb{background:currentColor;opacity:.2;border-radius:4px;}
+.scr{flex:0 0 auto;scroll-snap-align:start;width:288px;}
+.scr figcaption{margin-top:14px;font-size:12.5px;line-height:1.5;opacity:.72;}
+.scr figcaption b{display:block;font-size:11px;letter-spacing:.15em;text-transform:uppercase;opacity:.65;margin-bottom:4px;}
+
+.phone{
+  width:288px;height:592px;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.risk{
+  margin-top:52px;padding:22px 24px 24px;max-width:74ch;
+  border-left:3px solid currentColor;
+}
+.risk h4{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;opacity:.6;}
+.risk p{margin-top:10px;font-size:15px;line-height:1.62;}
+
+/* status bar shared geometry, colored per stage */
+.sb{display:flex;justify-content:space-between;align-items:center;padding:11px 18px 4px;font-size:10.5px;font-variant-numeric:tabular-nums;letter-spacing:.02em;}
+.sb .dots{display:flex;gap:3px;align-items:center;}
+.sb .dots i{width:3px;height:3px;border-radius:50%;background:currentColor;display:block;}
+
+/* =========================================================
+   01 — RUBRIC
+   ========================================================= */
+#rubric{background:var(--r-page);color:var(--r-ink);}
+#rubric .stage-name{font-family:var(--swiss);letter-spacing:-.045em;}
+#rubric .meta{border-top:2px solid var(--r-ink);}
+#rubric .risk{border-color:var(--r-red);}
+#rubric .stage-tag{max-width:46ch;}
+.r-phone{background:var(--r-page);color:var(--r-ink);border:1px solid var(--r-ink);font-family:var(--swiss);}
+.r-lab{font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;}
+.r-hair{height:1px;background:var(--r-rule);}
+.r-rule2{height:2px;background:var(--r-ink);}
+
+.r-head{padding:6px 18px 10px;display:flex;justify-content:space-between;align-items:baseline;}
+.r-head .t{font-size:9px;letter-spacing:.22em;text-transform:uppercase;font-weight:700;}
+.r-head .n{font-family:var(--mono);font-size:9px;opacity:.5;}
+
+.r-body{flex:1;overflow:hidden;}
+.r-row{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:11px 18px 12px;border-bottom:1px solid var(--r-rule);}
+.r-row .idx{font-family:var(--mono);font-size:10px;padding-top:3px;color:var(--r-quiet);}
+.r-row .ttl{font-size:17px;font-weight:700;letter-spacing:-.025em;line-height:1.12;}
+.r-row .ref{font-size:10px;color:var(--r-quiet);margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:.03em;}
+.r-row .vox{margin-top:7px;font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;font-weight:700;display:flex;flex-wrap:wrap;gap:0 7px;}
+.r-row.on{background:var(--r-ink);color:var(--r-page);}
+.r-row.on .idx,.r-row.on .ref{color:rgba(255,255,255,.62);}
+.r-row.on .vox .k{color:#fff;}
+.k-red{color:var(--r-red);} .k-blue{color:var(--r-blue);} .k-green{color:var(--r-green);} .k-black{color:var(--r-black);}
+
+/* reader */
+.r-read{padding:0 0 0 0;flex:1;overflow:hidden;}
+.r-seg{display:grid;grid-template-columns:62px 1fr;border-bottom:1px solid var(--r-rule);}
+.r-seg .src{
+  padding:12px 8px 14px 18px;font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+  font-weight:700;text-align:right;border-right:1px solid var(--r-rule);line-height:1.35;
+}
+.r-seg .txt{padding:12px 18px 14px 12px;font-family:var(--book);font-size:14.5px;line-height:1.5;}
+.r-seg .txt sup{font-family:var(--swiss);font-size:8px;font-weight:700;color:var(--r-quiet);vertical-align:super;margin-right:2px;}
+.r-cap{float:left;font-family:var(--book);font-size:52px;line-height:.78;margin:2px 7px 0 0;font-weight:400;}
+.r-drawn{stroke-dasharray:220;stroke-dashoffset:220;}
+.is-in .r-drawn{animation:draw 1.5s cubic-bezier(.6,0,.2,1) forwards;}
+@keyframes draw{to{stroke-dashoffset:0;}}
+
+/* voice sheet */
+.r-vox-h{padding:16px 18px 14px;}
+.r-vox-h .nm{font-size:38px;font-weight:700;letter-spacing:-.045em;line-height:.9;}
+.r-vox-h .rl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;margin-top:9px;color:var(--r-red);}
+.r-fig{display:grid;grid-template-columns:1fr 1fr;border-top:2px solid var(--r-ink);border-bottom:1px solid var(--r-rule);}
+.r-fig div{padding:11px 18px 13px;}
+.r-fig div+div{border-left:1px solid var(--r-rule);}
+.r-fig .v{font-size:23px;font-weight:700;letter-spacing:-.035em;font-variant-numeric:tabular-nums;}
+.r-fig .l{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--r-quiet);font-weight:700;margin-top:3px;}
+.r-bars{padding:13px 18px 0;}
+.r-bar{display:grid;grid-template-columns:56px 1fr 34px;gap:9px;align-items:center;padding:5px 0;}
+.r-bar .bk{font-size:10.5px;font-weight:700;letter-spacing:-.01em;}
+.r-bar .tr{height:7px;background:var(--r-rule);}
+.r-bar .fl{height:7px;background:var(--r-red);transform-origin:left;transform:scaleX(0);}
+.is-in .r-bar .fl{animation:grow .9s cubic-bezier(.2,.8,.2,1) forwards;}
+@keyframes grow{to{transform:scaleX(1);}}
+.r-bar .ct{font-family:var(--mono);font-size:9.5px;text-align:right;color:var(--r-quiet);}
+
+/* year grid */
+.r-year{padding:14px 18px 0;}
+.r-grid{display:grid;grid-template-columns:repeat(19,1fr);gap:2.5px;}
+.r-grid i{aspect-ratio:1;background:var(--r-rule);display:block;}
+.r-grid i.f{background:var(--r-ink);}
+.r-grid i.r{background:var(--r-red);}
+.r-grid i.t{outline:1px solid var(--r-ink);background:var(--r-page);}
+
+.r-tab{display:flex;border-top:2px solid var(--r-ink);}
+.r-tab span{
+  flex:1;text-align:center;padding:11px 0 15px;font-size:8.5px;letter-spacing:.13em;
+  text-transform:uppercase;font-weight:700;color:var(--r-quiet);position:relative;
+}
+.r-tab span.on{color:var(--r-ink);}
+.r-tab span.on::after{content:"";position:absolute;left:26%;right:26%;top:0;height:3px;background:var(--r-red);}
+
+/* =========================================================
+   02 — CAST
+   ========================================================= */
+#cast{background:var(--c-field);color:var(--c-bone);}
+#cast .stage-name{font-family:var(--didone);font-weight:400;letter-spacing:-.015em;font-size:clamp(42px,7vw,84px);}
+#cast .meta{border-top:1px solid rgba(242,234,224,.28);}
+#cast .risk{border-color:var(--c-bone-2);}
+#cast .stage-num,#cast .meta h4{color:var(--c-bone-2);opacity:1;}
+.c-phone{background:var(--c-bone);color:var(--c-ink);font-family:var(--swiss-c);}
+.c-cond{font-family:var(--swiss-c);letter-spacing:.06em;text-transform:uppercase;font-weight:600;}
+
+.c-head{padding:4px 16px 12px;display:flex;justify-content:space-between;align-items:baseline;}
+.c-head .t{font-family:var(--didone);font-size:19px;letter-spacing:-.01em;}
+.c-head .n{font-size:9px;letter-spacing:.16em;text-transform:uppercase;opacity:.5;}
+
+.c-story{padding:13px 16px 14px;border-top:1px solid rgba(20,10,12,.13);position:relative;}
+.c-story .fl{position:absolute;left:0;top:0;bottom:0;width:5px;}
+.c-story h5{font-family:var(--didone);font-size:22px;line-height:1.02;letter-spacing:-.015em;font-weight:400;}
+.c-story .mt{display:flex;gap:9px;margin-top:7px;font-size:9px;letter-spacing:.13em;text-transform:uppercase;opacity:.55;}
+.c-story .vv{margin-top:9px;display:flex;gap:4px;height:4px;}
+.c-story .vv i{display:block;height:4px;}
+
+/* cast reader */
+.c-read{flex:1;overflow:hidden;}
+.c-turn{display:grid;grid-template-columns:20px 1fr;}
+.c-turn .band{width:20px;}
+.c-turn .wrapt{padding:11px 16px 13px 12px;}
+.c-turn .who{font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;}
+.c-turn .said{font-family:var(--book);font-size:14.5px;line-height:1.5;margin-top:5px;}
+.c-turn .said sup{font-family:var(--swiss-c);font-size:8px;opacity:.45;margin-right:2px;}
+.c-turn.q .said{font-family:var(--didone);font-size:19px;line-height:1.24;}
+
+/* cast portrait field */
+.c-field{flex:1;background:var(--c-divine);color:var(--c-bone);position:relative;overflow:hidden;padding:16px;display:flex;flex-direction:column;justify-content:space-between;}
+.c-field .rl{font-size:9px;letter-spacing:.24em;text-transform:uppercase;opacity:.75;}
+.c-field .big{
+  font-family:var(--didone);font-weight:400;font-size:104px;line-height:.8;letter-spacing:-.035em;
+  margin-left:-6px;
+}
+.c-tab-data{display:grid;grid-template-columns:1fr 1fr;gap:1px 0;font-size:10px;}
+.c-tab-data div{padding:7px 0;border-top:1px solid rgba(242,234,224,.3);}
+.c-tab-data .l{letter-spacing:.14em;text-transform:uppercase;opacity:.6;font-size:8.5px;}
+.c-tab-data .v{font-size:16px;font-variant-numeric:tabular-nums;letter-spacing:.01em;margin-top:2px;}
+.c-ribbon{display:flex;gap:1px;height:26px;align-items:flex-end;margin-top:12px;}
+.c-ribbon i{flex:1;background:rgba(242,234,224,.22);height:5px;}
+.c-ribbon i.a{background:var(--c-bone);height:26px;}
+.c-ribbon i.b{background:rgba(242,234,224,.62);height:15px;}
+
+/* cast year */
+.c-year{flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:9px;}
+.c-band{display:flex;height:34px;}
+.c-band i{display:block;height:100%;}
+.c-yl{display:flex;justify-content:space-between;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.5;}
+.c-big-n{font-family:var(--didone);font-size:56px;line-height:.86;letter-spacing:-.03em;}
+
+.c-tab{display:flex;background:var(--c-ink);color:var(--c-bone);}
+.c-tab span{flex:1;text-align:center;padding:12px 0 16px;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;opacity:.45;}
+.c-tab span.on{opacity:1;}
+
+/* =========================================================
+   03 — THREAD
+   ========================================================= */
+#thread{background:var(--t-void);color:var(--t-bone);}
+#thread .stage-name{font-family:var(--geo);font-weight:500;letter-spacing:-.02em;}
+#thread .meta{border-top:1px solid rgba(233,237,242,.16);}
+#thread .risk{border-color:var(--t-green);}
+#thread .stage-num,#thread .meta h4{color:var(--t-mute);opacity:1;}
+.t-phone{background:var(--t-void);color:var(--t-bone);font-family:var(--geo);border:1px solid rgba(233,237,242,.14);}
+.t-lab{font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--t-mute);}
+
+.t-head{padding:4px 18px 14px;}
+.t-head .n{font-size:34px;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1;}
+.t-head .n em{font-style:normal;color:var(--t-mute);font-size:15px;letter-spacing:0;}
+
+.t-canvas{flex:1;position:relative;overflow:hidden;}
+.t-canvas svg{position:absolute;inset:0;width:100%;height:100%;}
+.t-node{position:absolute;left:64px;right:16px;}
+.t-node .ti{font-size:15px;letter-spacing:-.01em;line-height:1.15;}
+.t-node .rf{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--t-mute);margin-top:3px;}
+.t-node.dim{opacity:.4;}
+.t-bead{position:absolute;width:9px;height:9px;border-radius:50%;left:36px;transform:translate(-50%,-50%);}
+
+.t-draw{stroke-dasharray:1400;stroke-dashoffset:1400;}
+.is-in .t-draw{animation:draw2 2.2s cubic-bezier(.5,0,.15,1) forwards;}
+@keyframes draw2{to{stroke-dashoffset:0;}}
+
+.t-read{flex:1;display:grid;grid-template-columns:30px 1fr;overflow:hidden;}
+.t-gutter{position:relative;}
+.t-gutter .seg{position:absolute;left:15px;width:2px;transform:translateX(-50%);}
+.t-turns{padding:2px 18px 0 6px;}
+.t-turn{padding:10px 0 12px;}
+.t-turn .who{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;}
+.t-turn .said{font-family:var(--book);font-size:14px;line-height:1.52;margin-top:5px;color:var(--t-bone);}
+.t-turn.off .said{color:var(--t-mute);}
+
+.t-stats{display:grid;grid-template-columns:1fr 1fr;padding:0 18px 12px;gap:12px;}
+.t-stats .v{font-size:26px;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+.t-stats .l{font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--t-mute);margin-top:2px;}
+
+.t-tab{display:flex;padding:0 10px;border-top:1px solid rgba(233,237,242,.12);}
+.t-tab span{flex:1;text-align:center;padding:12px 0 16px;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--t-mute);position:relative;}
+.t-tab span.on{color:var(--t-bone);}
+.t-tab span.on::before{content:"";position:absolute;top:-1px;left:30%;right:30%;height:2px;background:var(--t-green);}
+
+/* ============ CLOSER ============ */
+.closer{padding:70px 0 96px;}
+.closer h2{font-size:clamp(26px,3.6vw,40px);letter-spacing:-.03em;line-height:1.04;max-width:20ch;font-weight:700;}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;background:var(--sh-rule);border:1px solid var(--sh-rule);margin-top:36px;}
+.cols > div{background:var(--sh-panel);padding:20px 22px 24px;}
+.cols h5{font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;}
+.cols ul{margin-top:12px;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:9px;}
+.cols li{font-size:14px;line-height:1.5;color:var(--sh-ink-2);padding-left:15px;position:relative;}
+.cols li::before{content:"";position:absolute;left:0;top:9px;width:6px;height:1px;background:var(--sh-ink-3);}
+.ask{margin-top:40px;border-top:2px solid var(--sh-ink);padding-top:22px;max-width:70ch;}
+.ask p{font-size:15.5px;line-height:1.62;color:var(--sh-ink-2);}
+.ask p+p{margin-top:12px;}
+.ask b{color:var(--sh-ink);}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important;transition:none !important;}
+  .r-drawn,.t-draw{stroke-dashoffset:0 !important;}
+  .r-bar .fl{transform:scaleX(1) !important;}
+}
+@media (max-width:640px){
+  .wrap{padding:0 18px;}
+  .mast{padding:48px 0 32px;}
+  .stage{padding:56px 0 62px;}
+}
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div class="eyebrow">Source View Bible · Design directions · 10 August 2026</div>
+    <h1>Three ways to look like nothing else on the shelf.</h1>
+    <p class="sub">You were right about the last round. It was competent and it was anonymous — soft cards, a gradient, a lavender-adjacent accent, an icon set anyone could have bought. That is the house style of every app shipped in the last eighteen months, and it buries <strong>the one thing your app has that no other Bible app has</strong>.</p>
+    <p class="sub" style="margin-top:14px;">Your database already attributes <strong>every single word of scripture to the voice that spoke it</strong> — 780 distinct sources, colour-coded four ways, with word counts per story. The Narrator has 668,470 words. God has 279,815. Jesus has 82,433. Adam has 25. That is not a feature to put on a settings screen. That is the entire visual identity, and all three directions below are built out of it rather than decorated on top of it.</p>
+
+    <div class="diag">
+      <div><dt>What was wrong</dt><dd>Generic surface treatment. Cards, radii and shadows doing the work that typography and structure should do. Nothing on screen was specific to scripture, let alone to your scripture.</dd></div>
+      <div><dt>What stays</dt><dd>The skeleton you approved. Five tabs, story list → story → react &amp; note, cast, search, plans, saved, progress, you. Not one route changes.</dd></div>
+      <div><dt>What changes</dt><dd>The material. Each direction commits to one idea hard enough that a screenshot is recognisable at thumbnail size with the name cropped off.</dd></div>
+    </div>
+  </header>
+
+  <section class="spine">
+    <h2>The four inks — common to all three</h2>
+    <p class="lede">Straight from <code style="font-family:var(--mono);font-size:13px;">newBibleNLT1.json</code>. Every direction uses these same four and adds no fifth decorative colour. The difference is what each one does with them.</p>
+    <div class="inks">
+      <div class="ink"><div class="sw" style="background:#14161A;"></div><div class="nm">Narration</div><div class="ct">4 sources · 668,470 words</div></div>
+      <div class="ink"><div class="sw" style="background:#C8241B;"></div><div class="nm">Divine voice</div><div class="ct">5 sources · 279,815 words</div></div>
+      <div class="ink"><div class="sw" style="background:#0B6B4F;"></div><div class="nm">Named principals</div><div class="ct">90 sources · Abraham, Moses, David…</div></div>
+      <div class="ink"><div class="sw" style="background:#1B3FA0;"></div><div class="nm">Everyone else</div><div class="ct">681 sources · down to a single blind beggar</div></div>
+    </div>
+  </section>
+</div>
+
+<!-- ================= 01 RUBRIC ================= -->
+<section class="stage" id="rubric">
+  <div class="wrap">
+    <div class="stage-head">
+      <div>
+        <div class="stage-num">DIRECTION 01</div>
+        <h2 class="stage-name">Rubric</h2>
+      </div>
+      <p class="stage-tag">The printed page, taken seriously. No cards, no corners, no shadows, no icons. Scripture has been set in type for five hundred years and it has never needed a rounded rectangle.</p>
+    </div>
+
+    <div class="meta">
+      <div><h4>Ground</h4><p>True white. Not cream, not off-white — the white of a page that has just come off press.</p>
+        <div class="chips"><i class="chip" style="background:#fff;outline:1px solid var(--r-rule);"></i><i class="chip" style="background:var(--r-ink);"></i><i class="chip" style="background:var(--r-red);"></i><i class="chip" style="background:var(--r-green);"></i><i class="chip" style="background:var(--r-blue);"></i></div>
+      </div>
+      <div><h4>Type</h4><p>Helvetica Neue set tight and large for titles and every label; Iowan Old Style for scripture itself. Two faces, no third.</p></div>
+      <div><h4>Structure</h4><p>Hairline rules only. A 62px source rail runs the full height of the reader — speakers live in the margin, in their ink, in small caps.</p></div>
+      <div><h4>Motion</h4><p>Almost none, and therefore felt. The drop cap draws itself in stroke by stroke. Tab underline slides. That is the whole budget.</p></div>
+    </div>
+
+    <div class="screens">
+      <figure class="scr">
+        <div class="phone r-phone">
+          <div class="sb"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="r-head"><span class="t">Genesis</span><span class="n">001–018 / 365</span></div>
+          <div class="r-rule2"></div>
+          <div class="r-body">
+            <div class="r-row on">
+              <span class="idx">001</span>
+              <div><div class="ttl">God Creates</div><div class="ref">Gen 1:1–2:25 · 1,285 words</div>
+                <div class="vox"><span class="k">Narrator 910</span><span class="k">God 350</span><span class="k">Adam 25</span></div></div>
+            </div>
+            <div class="r-row">
+              <span class="idx">002</span>
+              <div><div class="ttl">People Sin</div><div class="ref">Gen 3:1–5:32</div>
+                <div class="vox"><span class="k-black">Narrator</span><span class="k-red">God</span><span class="k-blue">Satan</span><span class="k-blue">Eve</span></div></div>
+            </div>
+            <div class="r-row">
+              <span class="idx">003</span>
+              <div><div class="ttl">The Flood</div><div class="ref">Gen 6:1–9:29</div>
+                <div class="vox"><span class="k-black">Narrator</span><span class="k-red">God</span><span class="k-green">Noah</span></div></div>
+            </div>
+            <div class="r-row">
+              <span class="idx">004</span>
+              <div><div class="ttl">The Tower</div><div class="ref">Gen 10:1–11:32</div>
+                <div class="vox"><span class="k-black">Narrator</span><span class="k-red">God</span><span class="k-blue">The People</span></div></div>
+            </div>
+            <div class="r-row">
+              <span class="idx">005</span>
+              <div><div class="ttl">Abraham Obeys God&#8217;s Call</div><div class="ref">Gen 12:1–14:24</div>
+                <div class="vox"><span class="k-black">Narrator</span><span class="k-red">God</span><span class="k-green">Abraham</span></div></div>
+            </div>
+          </div>
+          <div class="r-tab"><span class="on">Read</span><span>Voices</span><span>Plan</span><span>Year</span><span>You</span></div>
+        </div>
+        <figcaption><b>Stories</b>A numbered index, because 365 sequential stories genuinely are a sequence. The voices in each story are listed in their own ink — you can read the cast before you open it.</figcaption>
+      </figure>
+
+      <figure class="scr">
+        <div class="phone r-phone">
+          <div class="sb"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="r-head"><span class="t">001 · God Creates</span><span class="n">Gen 1</span></div>
+          <div class="r-rule2"></div>
+          <div class="r-read">
+            <div class="r-seg">
+              <div class="src" style="color:var(--r-black);">The<br>Narrator</div>
+              <div class="txt">
+                <svg class="r-cap" width="42" height="46" viewBox="0 0 42 46" aria-hidden="true"><path class="r-drawn" d="M8 6 h26 M21 6 v34 M8 40 h26" stroke="#14161A" stroke-width="3.4" fill="none" stroke-linecap="square"/></svg>
+                <sup>1</sup>n the beginning God created the heavens and the earth. <sup>2</sup>The earth was formless and empty, and darkness covered the deep waters.
+              </div>
+            </div>
+            <div class="r-seg">
+              <div class="src" style="color:var(--r-red);">God</div>
+              <div class="txt" style="color:var(--r-red);"><sup style="color:var(--r-red);opacity:.6;">3</sup>Let there be light.</div>
+            </div>
+            <div class="r-seg">
+              <div class="src" style="color:var(--r-black);">The<br>Narrator</div>
+              <div class="txt">And there was light. <sup>4</sup>And God saw that the light was good. Then he separated the light from the darkness.</div>
+            </div>
+            <div class="r-seg">
+              <div class="src" style="color:var(--r-red);">God</div>
+              <div class="txt" style="color:var(--r-red);"><sup style="color:var(--r-red);opacity:.6;">26</sup>Let us make human beings in our image, to be like us.</div>
+            </div>
+            <div class="r-seg">
+              <div class="src" style="color:var(--r-blue);">Adam</div>
+              <div class="txt" style="color:var(--r-blue);"><sup style="color:var(--r-blue);opacity:.6;">23</sup>At last! This one is bone from my bone, and flesh from my flesh!</div>
+            </div>
+          </div>
+          <div class="r-tab"><span class="on">Read</span><span>Voices</span><span>Plan</span><span>Year</span><span>You</span></div>
+        </div>
+        <figcaption><b>Inside a story</b>No bubbles. The speaker is set in the margin rail and the scripture takes their ink — which is what a red-letter Bible has always done, extended to all 780 voices. Your note and reaction attach in that same rail.</figcaption>
+      </figure>
+
+      <figure class="scr">
+        <div class="phone r-phone">
+          <div class="sb"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="r-head"><span class="t">Voices</span><span class="n">005 / 780</span></div>
+          <div class="r-rule2"></div>
+          <div class="r-vox-h">
+            <div class="nm">Jesus</div>
+            <div class="rl">Divine voice</div>
+          </div>
+          <div class="r-fig">
+            <div><div class="v">82,433</div><div class="l">Words spoken</div></div>
+            <div><div class="v">71</div><div class="l">Stories</div></div>
+          </div>
+          <div class="r-bars">
+            <div class="r-bar"><span class="bk">Matthew</span><span class="tr"><span class="fl" style="width:100%;animation-delay:.05s;"></span></span><span class="ct">168</span></div>
+            <div class="r-bar"><span class="bk">Mark</span><span class="tr"><span class="fl" style="width:93%;animation-delay:.1s;"></span></span><span class="ct">156</span></div>
+            <div class="r-bar"><span class="bk">Luke</span><span class="tr"><span class="fl" style="width:88%;animation-delay:.15s;"></span></span><span class="ct">148</span></div>
+            <div class="r-bar"><span class="bk">John</span><span class="tr"><span class="fl" style="width:74%;animation-delay:.2s;"></span></span><span class="ct">124</span></div>
+            <div class="r-bar"><span class="bk">Acts</span><span class="tr"><span class="fl" style="width:11%;animation-delay:.25s;"></span></span><span class="ct">18</span></div>
+            <div class="r-bar"><span class="bk">Revelation</span><span class="tr"><span class="fl" style="width:9%;animation-delay:.3s;"></span></span><span class="ct">15</span></div>
+          </div>
+          <div class="r-hair" style="margin:12px 18px 0;"></div>
+          <div style="padding:11px 18px 0;">
+            <div class="r-lab" style="color:var(--r-quiet);">Most repeated</div>
+            <div style="font-family:var(--book);font-size:14px;line-height:1.6;margin-top:6px;">father <span style="color:var(--r-quiet);">44</span> · kingdom <span style="color:var(--r-quiet);">38</span> · truth <span style="color:var(--r-quiet);">31</span> · heaven <span style="color:var(--r-quiet);">29</span></div>
+          </div>
+          <div class="r-tab"><span>Read</span><span class="on">Voices</span><span>Plan</span><span>Year</span><span>You</span></div>
+        </div>
+        <figcaption><b>Cast</b>A specimen sheet, not a profile card. Word count is the headline number because word count is what your data actually knows — and it makes Adam&#8217;s 25 words land.</figcaption>
+      </figure>
+
+      <figure class="scr">
+        <div class="phone r-phone">
+          <div class="sb"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="r-head"><span class="t">Your year</span><span class="n">2026</span></div>
+          <div class="r-rule2"></div>
+          <div class="r-fig" style="border-top:0;">
+            <div><div class="v">148</div><div class="l">Stories read</div></div>
+            <div><div class="v">31</div><div class="l">Day streak</div></div>
+          </div>
+          <div class="r-year">
+            <div class="r-grid" id="yearGrid"></div>
+            <div style="display:flex;justify-content:space-between;margin-top:10px;">
+              <span class="r-lab" style="color:var(--r-quiet);">Genesis</span>
+              <span class="r-lab" style="color:var(--r-quiet);">Revelation</span>
+            </div>
+            <div class="r-hair" style="margin:14px 0 12px;"></div>
+            <div class="r-lab" style="color:var(--r-quiet);">Next</div>
+            <div style="font-size:17px;font-weight:700;letter-spacing:-.025em;margin-top:5px;">149 · Solomon Builds the Temple</div>
+            <div style="font-size:10px;color:var(--r-quiet);margin-top:3px;">1 Kings 5:1–8:66 · 12 min</div>
+          </div>
+          <div class="r-tab"><span>Read</span><span>Voices</span><span>Plan</span><span class="on">Year</span><span>You</span></div>
+        </div>
+        <figcaption><b>Progress</b>365 cells, one per story, in reading order. Red cells are the ones where God speaks. Your year has a shape, and the shape is true.</figcaption>
+      </figure>
+    </div>
+
+    <div class="risk">
+      <h4>The risk I&#8217;m taking here</h4>
+      <p>Removing the chat bubbles. They were the WhatsApp anchor and they are comfortable, but they cap the app at &ldquo;messaging app for the Bible&rdquo; forever. Rubric bets that the margin rail reads faster, scales to 780 speakers without a tail-and-avatar problem, and looks like a hundred-pound object rather than a free download. If you want the bubbles kept, they belong in Direction 02 — where they earn their place.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 02 CAST ================= -->
+<section class="stage" id="cast">
+  <div class="wrap">
+    <div class="stage-head">
+      <div>
+        <div class="stage-num">DIRECTION 02</div>
+        <h2 class="stage-name">Cast</h2>
+      </div>
+      <p class="stage-tag">Scripture as an ensemble. Every voice owns a colour field, and the app changes colour depending on who is talking. Closer to a Criterion sleeve or an opera programme than to an app.</p>
+    </div>
+
+    <div class="meta">
+      <div><h4>Ground</h4><p>Oxblood for the shell, bone for the page, and a saturated field per voice. Colour is identity here, never decoration.</p>
+        <div class="chips"><i class="chip" style="background:var(--c-field);"></i><i class="chip" style="background:var(--c-bone);"></i><i class="chip" style="background:var(--c-divine);"></i><i class="chip" style="background:var(--c-principal);"></i><i class="chip" style="background:var(--c-chorus);"></i></div>
+      </div>
+      <div><h4>Type</h4><p>Didot at poster scale for names and titles, deliberately cropped by the frame edge. Avenir Next Condensed in small caps for all data. Iowan for scripture.</p></div>
+      <div><h4>Structure</h4><p>Full-bleed fields. The reader keeps a 20px colour band down the left of each turn instead of a bubble — the same information, a tenth of the furniture.</p></div>
+      <div><h4>Motion</h4><p>The field cross-dissolves as you scroll between speakers, so the whole screen breathes in the colour of whoever holds the floor. One effect, used everywhere.</p></div>
+    </div>
+
+    <div class="screens">
+      <figure class="scr">
+        <div class="phone c-phone">
+          <div class="sb"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="c-head"><span class="t">Genesis</span><span class="n">18 stories</span></div>
+          <div style="flex:1;overflow:hidden;">
+            <div class="c-story"><span class="fl" style="background:var(--c-divine);"></span>
+              <h5>God Creates</h5>
+              <div class="mt"><span>Gen 1:1–2:25</span><span>1,285 w</span></div>
+              <div class="vv"><i style="background:var(--c-narr);flex:71"></i><i style="background:var(--c-divine);flex:27"></i><i style="background:var(--c-chorus);flex:2"></i></div>
+            </div>
+            <div class="c-story"><span class="fl" style="background:var(--c-chorus);"></span>
+              <h5>People Sin</h5>
+              <div class="mt"><span>Gen 3:1–5:32</span><span>1,914 w</span></div>
+              <div class="vv"><i style="background:var(--c-narr);flex:58"></i><i style="background:var(--c-divine);flex:22"></i><i style="background:var(--c-chorus);flex:20"></i></div>
+            </div>
+            <div class="c-story"><span class="fl" style="background:var(--c-principal);"></span>
+              <h5>The Flood</h5>
+              <div class="mt"><span>Gen 6:1–9:29</span><span>2,266 w</span></div>
+              <div class="vv"><i style="background:var(--c-narr);flex:64"></i><i style="background:var(--c-divine);flex:30"></i><i style="background:var(--c-principal);flex:6"></i></div>
+            </div>
+            <div class="c-story"><span class="fl" style="background:var(--c-narr);"></span>
+              <h5>The Tower</h5>
+              <div class="mt"><span>Gen 10:1–11:32</span><span>1,102 w</span></div>
+              <div class="vv"><i style="background:var(--c-narr);flex:82"></i><i style="background:var(--c-divine);flex:11"></i><i style="background:var(--c-chorus);flex:7"></i></div>
+            </div>
+            <div class="c-story"><span class="fl" style="background:var(--c-principal);"></span>
+              <h5>Abraham Obeys</h5>
+              <div class="mt"><span>Gen 12:1–14:24</span><span>1,640 w</span></div>
+              <div class="vv"><i style="background:var(--c-narr);flex:70"></i><i style="background:var(--c-divine);flex:18"></i><i style="background:var(--c-principal);flex:12"></i></div>
+            </div>
+          </div>
+          <div class="c-tab"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Year</span><span>You</span></div>
+        </div>
+        <figcaption><b>Stories</b>Each row carries a voice-mix bar — the literal proportion of narration, divine speech and human speech in that story, from your <code style="font-family:var(--mono);font-size:11px;">colors</code> object. No two stories look alike, because no two stories are.</figcaption>
+      </figure>
+
+      <figure class="scr">
+        <div class="phone c-phone">
+          <div class="sb"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="c-head"><span class="t">God Creates</span><span class="n">1 / 365</span></div>
+          <div class="c-read">
+            <div class="c-turn"><span class="band" style="background:var(--c-narr);"></span>
+              <div class="wrapt"><div class="who" style="color:var(--c-narr);">The Narrator</div>
+                <div class="said"><sup>1</sup>In the beginning God created the heavens and the earth. The earth was formless and empty.</div></div>
+            </div>
+            <div class="c-turn q" style="background:rgba(168,30,18,.07);"><span class="band" style="background:var(--c-divine);"></span>
+              <div class="wrapt"><div class="who" style="color:var(--c-divine);">God</div>
+                <div class="said" style="color:var(--c-divine);">Let there be light.</div></div>
+            </div>
+            <div class="c-turn"><span class="band" style="background:var(--c-narr);"></span>
+              <div class="wrapt"><div class="who" style="color:var(--c-narr);">The Narrator</div>
+                <div class="said">And there was light. And God saw that the light was good.</div></div>
+            </div>
+            <div class="c-turn q" style="background:rgba(168,30,18,.07);"><span class="band" style="background:var(--c-divine);"></span>
+              <div class="wrapt"><div class="who" style="color:var(--c-divine);">God</div>
+                <div class="said" style="color:var(--c-divine);">Let us make human beings in our image.</div></div>
+            </div>
+            <div class="c-turn q" style="background:rgba(27,46,107,.07);"><span class="band" style="background:var(--c-chorus);"></span>
+              <div class="wrapt"><div class="who" style="color:var(--c-chorus);">Adam</div>
+                <div class="said" style="color:var(--c-chorus);">At last! Bone from my bone.</div></div>
+            </div>
+          </div>
+          <div class="c-tab"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Year</span><span>You</span></div>
+        </div>
+        <figcaption><b>Inside a story</b>The bubble survives, stripped to a colour band and a tinted field. Spoken lines are set in Didot at 19px so speech physically reads louder than narration.</figcaption>
+      </figure>
+
+      <figure class="scr">
+        <div class="phone c-phone">
+          <div class="sb" style="color:var(--c-bone);background:var(--c-divine);"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="c-field">
+            <div>
+              <div class="rl">Divine voice · 002 of 780</div>
+              <div class="big">Jesus</div>
+            </div>
+            <div>
+              <div class="c-ribbon">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                <i class="b"></i><i class="a"></i><i class="a"></i><i class="b"></i><i class="a"></i><i class="a"></i><i class="a"></i><i class="b"></i><i class="a"></i><i class="a"></i><i class="b"></i><i class="a"></i>
+              </div>
+              <div class="rl" style="margin-top:7px;">Where he appears across 365 stories</div>
+              <div class="c-tab-data" style="margin-top:14px;">
+                <div><div class="l">Words</div><div class="v">82,433</div></div>
+                <div><div class="l">Stories</div><div class="v">71</div></div>
+                <div><div class="l">First</div><div class="v">294</div></div>
+                <div><div class="l">Last</div><div class="v">365</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="c-tab"><span>Read</span><span class="on">Cast</span><span>Plan</span><span>Year</span><span>You</span></div>
+        </div>
+        <figcaption><b>Cast</b>A full-bleed field, the name cropped by the frame, and a ribbon showing exactly where in the 365 this voice is heard. The screenshot that sells the app.</figcaption>
+      </figure>
+
+      <figure class="scr">
+        <div class="phone c-phone">
+          <div class="sb"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="c-head"><span class="t">Your year</span><span class="n">2026</span></div>
+          <div class="c-year">
+            <div>
+              <div class="c-big-n">148<span style="font-family:var(--swiss-c);font-size:13px;letter-spacing:.14em;"> / 365</span></div>
+              <div class="rl c-cond" style="font-size:9px;opacity:.55;margin-top:4px;">Stories read · 31 day streak</div>
+            </div>
+            <div style="margin-top:4px;">
+              <div class="c-yl"><span>Who you&#8217;ve heard</span><span>By words</span></div>
+              <div class="c-band" style="margin-top:7px;">
+                <i style="background:var(--c-narr);width:62%"></i><i style="background:var(--c-divine);width:24%"></i><i style="background:var(--c-principal);width:9%"></i><i style="background:var(--c-chorus);width:5%"></i>
+              </div>
+              <div class="c-yl" style="margin-top:7px;"><span>Narrator 62%</span><span>God 24%</span></div>
+            </div>
+            <div style="border-top:1px solid rgba(20,10,12,.15);padding-top:11px;margin-top:4px;">
+              <div class="rl c-cond" style="font-size:9px;opacity:.55;">Voices met this year</div>
+              <div class="c-big-n" style="font-size:40px;margin-top:2px;">214</div>
+              <div style="font-size:11px;opacity:.6;margin-top:3px;">566 still to meet</div>
+            </div>
+          </div>
+          <div class="c-tab"><span>Read</span><span>Cast</span><span>Plan</span><span class="on">Year</span><span>You</span></div>
+        </div>
+        <figcaption><b>Progress</b>Progress measured in voices met, not badges earned. It replaces the achievements that stop being winnable when group mode goes, and it can never be gamed.</figcaption>
+      </figure>
+    </div>
+
+    <div class="risk">
+      <h4>The risk I&#8217;m taking here</h4>
+      <p>An oxblood-and-bone Bible app is a strong flavour, and a saturated field behind a character&#8217;s name will read as irreverent to some of your audience — particularly the red field behind Jesus. That is a real objection and you should test it before I build it. The upside is that no competitor can copy it without looking like they copied it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 03 THREAD ================= -->
+<section class="stage" id="thread">
+  <div class="wrap">
+    <div class="stage-head">
+      <div>
+        <div class="stage-num">DIRECTION 03</div>
+        <h2 class="stage-name">Thread</h2>
+      </div>
+      <p class="stage-tag">One continuous line runs through the entire app and never disappears. It is the spine of the story list; it becomes the margin of the reader; it coils into your year. Every transition is that one line changing shape.</p>
+    </div>
+
+    <div class="meta">
+      <div><h4>Ground</h4><p>Blue-black, near lightless, so the line is the only thing emitting. Everything else is set in bone at low weight.</p>
+        <div class="chips"><i class="chip" style="background:var(--t-void);outline:1px solid rgba(233,237,242,.2);"></i><i class="chip" style="background:var(--t-bone);"></i><i class="chip" style="background:var(--t-red);"></i><i class="chip" style="background:var(--t-green);"></i><i class="chip" style="background:var(--t-blue);"></i></div>
+      </div>
+      <div><h4>Type</h4><p>Futura / Avenir for numerals and labels — geometric, quiet, no personality of its own so the line keeps all of it. Iowan for scripture.</p></div>
+      <div><h4>Structure</h4><p>A 30px gutter reserved on every screen for the thread. Content sits to its right. Nothing else has a border.</p></div>
+      <div><h4>Motion</h4><p>The whole direction is one shared SVG path that never unmounts. Reanimated interpolates between path states on navigation, so the line visibly travels from list to reader to year. Everything else fades.</p></div>
+    </div>
+
+    <div class="screens">
+      <figure class="scr">
+        <div class="phone t-phone">
+          <div class="sb"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="t-head"><div class="t-lab">Genesis</div><div class="n">005<em> / 365</em></div></div>
+          <div class="t-canvas">
+            <svg viewBox="0 0 288 420" preserveAspectRatio="none" aria-hidden="true">
+              <path class="t-draw" d="M36 0 C36 60, 36 60, 36 96 C36 132, 36 132, 36 180 C36 228, 36 228, 36 264 C36 312, 36 312, 36 348 L36 420"
+                    stroke="var(--t-grey)" stroke-width="1.5" fill="none" opacity=".45"/>
+            </svg>
+            <span class="t-bead" style="top:24px;background:var(--t-grey);"></span>
+            <div class="t-node" style="top:12px;"><div class="ti">God Creates</div><div class="rf">Gen 1:1 · read</div></div>
+
+            <span class="t-bead" style="top:96px;background:var(--t-blue);"></span>
+            <div class="t-node" style="top:84px;"><div class="ti">People Sin</div><div class="rf">Gen 3:1 · read</div></div>
+
+            <span class="t-bead" style="top:180px;width:15px;height:15px;background:var(--t-green);box-shadow:0 0 22px 4px rgba(70,217,160,.5);"></span>
+            <div class="t-node" style="top:164px;"><div class="ti" style="font-size:20px;">The Flood</div><div class="rf" style="color:var(--t-green);">Gen 6:1–9:29 · continue</div></div>
+
+            <span class="t-bead" style="top:264px;background:rgba(174,186,203,.35);"></span>
+            <div class="t-node dim" style="top:252px;"><div class="ti">The Tower</div><div class="rf">Gen 10:1</div></div>
+
+            <span class="t-bead" style="top:348px;background:rgba(174,186,203,.35);"></span>
+            <div class="t-node dim" style="top:336px;"><div class="ti">Abraham Obeys</div><div class="rf">Gen 12:1</div></div>
+          </div>
+          <div class="t-tab"><span class="on">Read</span><span>Voices</span><span>Plan</span><span>Year</span><span>You</span></div>
+        </div>
+        <figcaption><b>Stories</b>The list is the thread. Beads take the ink of the loudest voice in that story, and swell at the one you&#8217;re on. Read stories stay lit; unread ones sit at 35%.</figcaption>
+      </figure>
+
+      <figure class="scr">
+        <div class="phone t-phone">
+          <div class="sb"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="t-head" style="padding-bottom:8px;"><div class="t-lab">003 · The Flood</div></div>
+          <div class="t-read">
+            <div class="t-gutter">
+              <span class="seg" style="top:8px;height:86px;background:var(--t-grey);"></span>
+              <span class="seg" style="top:98px;height:52px;background:var(--t-red);box-shadow:0 0 14px 1px rgba(255,90,69,.55);"></span>
+              <span class="seg" style="top:154px;height:74px;background:var(--t-grey);"></span>
+              <span class="seg" style="top:232px;height:60px;background:var(--t-red);box-shadow:0 0 14px 1px rgba(255,90,69,.55);"></span>
+              <span class="seg" style="top:296px;height:56px;background:var(--t-green);"></span>
+            </div>
+            <div class="t-turns">
+              <div class="t-turn off"><div class="who" style="color:var(--t-grey);">The Narrator</div>
+                <div class="said">Noah was a righteous man, the only blameless person living on earth at the time.</div></div>
+              <div class="t-turn"><div class="who" style="color:var(--t-red);">God</div>
+                <div class="said" style="color:var(--t-red);">Build a large boat from cypress wood.</div></div>
+              <div class="t-turn off"><div class="who" style="color:var(--t-grey);">The Narrator</div>
+                <div class="said">So Noah did everything exactly as God had commanded him.</div></div>
+              <div class="t-turn"><div class="who" style="color:var(--t-red);">God</div>
+                <div class="said" style="color:var(--t-red);">I have placed my rainbow in the clouds.</div></div>
+              <div class="t-turn off"><div class="who" style="color:var(--t-green);">Noah</div>
+                <div class="said">Blessed be the Lord, the God of Shem.</div></div>
+            </div>
+          </div>
+          <div class="t-tab"><span class="on">Read</span><span>Voices</span><span>Plan</span><span>Year</span><span>You</span></div>
+        </div>
+        <figcaption><b>Inside a story</b>The thread has become the margin, and it changes colour at every handover — so you can see the shape of the conversation in your peripheral vision without reading a word.</figcaption>
+      </figure>
+
+      <figure class="scr">
+        <div class="phone t-phone">
+          <div class="sb"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="t-head"><div class="t-lab">Divine voice</div><div class="n" style="font-size:30px;">Jesus</div></div>
+          <div class="t-stats">
+            <div><div class="v">82,433</div><div class="l">Words</div></div>
+            <div><div class="v">71</div><div class="l">Stories</div></div>
+          </div>
+          <div class="t-canvas">
+            <svg viewBox="0 0 288 300" preserveAspectRatio="none" aria-hidden="true">
+              <path class="t-draw" d="M24 292 C24 240, 80 250, 96 208 C112 166, 60 150, 92 116 C124 82, 190 96, 214 66 C238 36, 250 24, 264 8"
+                    stroke="var(--t-red)" stroke-width="2" fill="none"/>
+              <path d="M24 292 C40 250, 96 262, 118 224 C140 186, 96 164, 128 132" stroke="var(--t-grey)" stroke-width="1" fill="none" opacity=".28"/>
+            </svg>
+            <div style="position:absolute;left:18px;bottom:14px;" class="t-lab">Story 294 · Matthew</div>
+            <div style="position:absolute;right:16px;top:8px;text-align:right;" class="t-lab">Story 365 · Revelation</div>
+            <div style="position:absolute;left:100px;top:118px;" class="t-lab">Crosses Peter&#8217;s thread ×31</div>
+          </div>
+          <div class="t-tab"><span>Read</span><span class="on">Voices</span><span>Plan</span><span>Year</span><span>You</span></div>
+        </div>
+        <figcaption><b>Cast</b>A voice is a path through the 365, drawn from where they first speak to where they last do. Faint threads behind are the people they share scenes with — tap one to follow it instead.</figcaption>
+      </figure>
+
+      <figure class="scr">
+        <div class="phone t-phone">
+          <div class="sb"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+          <div class="t-head"><div class="t-lab">Your year</div><div class="n">148<em> / 365</em></div></div>
+          <div class="t-canvas">
+            <svg viewBox="0 0 288 340" aria-hidden="true">
+              <g fill="none" stroke-linecap="round">
+                <circle cx="144" cy="164" r="132" stroke="rgba(174,186,203,.13)" stroke-width="1"/>
+                <circle cx="144" cy="164" r="106" stroke="rgba(174,186,203,.13)" stroke-width="1"/>
+                <circle cx="144" cy="164" r="80" stroke="rgba(174,186,203,.13)" stroke-width="1"/>
+                <path class="t-draw" d="M144 32 A132 132 0 0 1 268 208 A132 132 0 0 1 60 250 A106 106 0 0 1 84 96 A106 106 0 0 1 244 140 A80 80 0 0 1 128 236"
+                      stroke="var(--t-green)" stroke-width="2.4"/>
+              </g>
+              <circle cx="128" cy="236" r="6" fill="var(--t-green)"/>
+              <circle cx="128" cy="236" r="13" fill="none" stroke="var(--t-green)" stroke-width="1" opacity=".4"/>
+            </svg>
+            <div style="position:absolute;left:0;right:0;top:142px;text-align:center;">
+              <div style="font-size:40px;letter-spacing:-.03em;font-variant-numeric:tabular-nums;">31</div>
+              <div class="t-lab" style="margin-top:2px;">day streak</div>
+            </div>
+          </div>
+          <div style="padding:0 18px 12px;display:flex;justify-content:space-between;">
+            <div><div class="t-lab">Next</div><div style="font-size:14px;margin-top:3px;">Solomon Builds the Temple</div></div>
+            <div style="text-align:right;"><div class="t-lab">Est.</div><div style="font-size:14px;margin-top:3px;">12 min</div></div>
+          </div>
+          <div class="t-tab"><span>Read</span><span>Voices</span><span>Plan</span><span class="on">Year</span><span>You</span></div>
+        </div>
+        <figcaption><b>Progress</b>The same thread, coiled. 365 stories spiral inward and the year closes when the line reaches the centre. No badges, no confetti — the line simply gets longer, and you can see it.</figcaption>
+      </figure>
+    </div>
+
+    <div class="risk">
+      <h4>The risk I&#8217;m taking here</h4>
+      <p>This one is the most expensive to build and the only one where the wow depends entirely on execution quality. A shared, morphing SVG path across navigation is real engineering — Reanimated 3 and react-native-svg are already in your dependencies, so it is possible, but budget roughly two weeks for the transition layer alone before any screen work. If that budget is not there, pick 01 or 02; a half-built Thread is worse than either.</p>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <section class="closer">
+    <h2>All three hold the skeleton you already approved.</h2>
+    <div class="cols">
+      <div>
+        <h5>Unchanged in all three</h5>
+        <ul>
+          <li>Five tabs: Read, Cast, Plan, Year, You</li>
+          <li>Story list → story → react &amp; note</li>
+          <li>Search and browse by book, chapter, voice</li>
+          <li>Plans: Bible in 1 Year and the challenge sets</li>
+          <li>Saved passages and personal notes</li>
+          <li>Every existing route in <code style="font-family:var(--mono);font-size:11px;">app/(tabs)</code></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Fixed in all three</h5>
+        <ul>
+          <li>Group-mode badges are retired with QR; progress becomes voices met, which survives the removal</li>
+          <li>Monograms vs plain dots stops being a question — 01 uses type, 02 uses colour fields, 03 uses beads</li>
+          <li>Icon dependency drops to near zero, which cuts the asset work substantially</li>
+        </ul>
+      </div>
+      <div>
+        <h5>Still on the clock</h5>
+        <ul>
+          <li>Android API 36 by 31 August — that is a build-config task and none of these directions touch it</li>
+          <li>Do the API bump first; start design work on the chosen direction alongside it</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ask">
+      <p><b>What I need from you.</b> Pick one, or tell me which parts of which to graft together — Rubric&#8217;s reader inside Cast&#8217;s shell is a legitimate fourth answer. Then I will build the chosen direction as a working Expo screen set on the branch, not more mockups.</p>
+      <p><b>On Higgsfield:</b> your account is on the free plan with zero credits and no unlimited allowance, so it cannot generate anything today. It would be worth topping up for exactly one job — original portrait art for the 90 named principals in Direction 02, which is the only place in any of these three where a bought or generated image would beat pure type and colour. Everything else here is vector, type and motion, which means it ships as code with no asset pipeline.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var g = document.getElementById('yearGrid');
+  if (g) {
+    var frag = document.createDocumentFragment();
+    var read = 148;
+    for (var i = 0; i < 365; i++) {
+      var cell = document.createElement('i');
+      if (i < read) { cell.className = (i % 7 === 2 || i % 11 === 5) ? 'r' : 'f'; }
+      else if (i === read) { cell.className = 't'; }
+      frag.appendChild(cell);
+    }
+    g.appendChild(frag);
+  }
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll('.phone').forEach(function(p){ io.observe(p); });
+})();
+</script>

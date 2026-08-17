@@ -1,0 +1,496 @@
+<title>SourceView Together — Maintenance Audit</title>
+<style>
+  :root {
+    --ground:   #EEF1F3;
+    --paper:    #FFFFFF;
+    --ink:      #14181C;
+    --muted:    #58656F;
+    --faint:    #8494A0;
+    --rule:     #D3DBE0;
+    --rule-soft:#E4EAEE;
+    --accent:   #0E6B84;
+    --accent-bg:#DCEBF0;
+    --crit:     #A62430;
+    --crit-bg:  #F6DFE1;
+    --warn:     #8A5A08;
+    --warn-bg:  #F6E8D2;
+    --note:     #2C6A52;
+    --note-bg:  #DDEDE5;
+
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:#0E1216; --paper:#161C21; --ink:#E3E9ED; --muted:#9AA8B2; --faint:#6E7E89;
+      --rule:#2A343B; --rule-soft:#212A30; --accent:#5FB6CE; --accent-bg:#12323C;
+      --crit:#E8858E; --crit-bg:#3A1D21; --warn:#DDA94F; --warn-bg:#362818;
+      --note:#6FBF9B; --note-bg:#163025;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:#0E1216; --paper:#161C21; --ink:#E3E9ED; --muted:#9AA8B2; --faint:#6E7E89;
+    --rule:#2A343B; --rule-soft:#212A30; --accent:#5FB6CE; --accent-bg:#12323C;
+    --crit:#E8858E; --crit-bg:#3A1D21; --warn:#DDA94F; --warn-bg:#362818;
+    --note:#6FBF9B; --note-bg:#163025;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground); color: var(--ink);
+    font-family: var(--serif); font-size: 17px; line-height: 1.6;
+    margin: 0; padding: 0 20px 96px; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; }
+
+  .masthead { padding: 56px 0 28px; border-bottom: 2px solid var(--ink); display: flex; flex-direction: column; gap: 14px; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 0; }
+  h1 { font-family: var(--sans); font-weight: 800; font-size: clamp(30px,5.2vw,44px); letter-spacing: -.025em; line-height: 1.08; text-wrap: balance; margin: 0; }
+  .standfirst { font-size: 19px; color: var(--muted); margin: 0; max-width: 62ch; }
+  .meta { font-family: var(--mono); font-size: 12px; color: var(--faint); display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 4px; }
+
+  .correction { background: var(--warn-bg); border-left: 3px solid var(--warn); padding: 18px 22px; margin: 32px 0 40px; }
+  .correction p { margin: 0; font-size: 16px; color: var(--ink); }
+  .correction .lab { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--warn); display: block; margin-bottom: 7px; }
+
+  .drift { display: grid; grid-template-columns: repeat(auto-fit,minmax(155px,1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 0 0 44px; }
+  .drift-cell { background: var(--paper); padding: 16px 18px; display: flex; flex-direction: column; gap: 5px; }
+  .drift-label { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: var(--faint); }
+  .drift-value { font-family: var(--mono); font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .drift-value .to { color: var(--faint); font-weight: 400; }
+  .drift-value.bad { color: var(--crit); }
+  .drift-value.good { color: var(--note); }
+  .drift-note { font-family: var(--sans); font-size: 12px; color: var(--muted); }
+
+  .verdict { background: var(--crit-bg); border: 1px solid var(--crit); padding: 24px 26px; margin: 0 0 52px; display: flex; flex-direction: column; gap: 10px; }
+  .verdict h2 { font-family: var(--sans); font-weight: 750; font-size: 21px; letter-spacing: -.015em; color: var(--crit); margin: 0; line-height: 1.25; }
+  .verdict p { margin: 0; font-size: 16.5px; color: var(--ink); }
+
+  section { margin: 0 0 52px; }
+  h2.sec { font-family: var(--sans); font-weight: 750; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); margin: 0 0 6px; padding-bottom: 10px; border-bottom: 1px solid var(--ink); }
+  .sec-blurb { font-size: 15.5px; color: var(--muted); margin: 14px 0 22px; max-width: 64ch; }
+
+  .ledger { border-top: 1px solid var(--rule); }
+  .item { display: grid; grid-template-columns: 58px 1fr; gap: 0 18px; padding: 20px 0; border-bottom: 1px solid var(--rule-soft); }
+  .id { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--faint); padding-top: 3px; letter-spacing: .04em; }
+  .item-body { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+  .item h3 { font-family: var(--sans); font-weight: 700; font-size: 17px; letter-spacing: -.01em; margin: 0; line-height: 1.35; text-wrap: balance; }
+  .item p { margin: 0; font-size: 16px; color: var(--muted); }
+  .item p strong { color: var(--ink); font-weight: 600; }
+
+  .chip { display: inline-block; font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; padding: 3px 7px; border: 1px solid currentColor; }
+  .chip.crit { color: var(--crit); background: var(--crit-bg); }
+  .chip.warn { color: var(--warn); background: var(--warn-bg); }
+  .chip.note { color: var(--note); background: var(--note-bg); }
+  .chip.info { color: var(--accent); background: var(--accent-bg); }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+
+  code, .loc { font-family: var(--mono); font-size: .86em; background: var(--accent-bg); color: var(--accent); padding: 1px 5px; border-radius: 2px; word-break: break-word; }
+  .loc { background: none; color: var(--faint); padding: 0; }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--rule); background: var(--paper); }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; }
+  th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--rule-soft); font-family: var(--mono); font-size: 13.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  th { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); border-bottom: 1px solid var(--rule); font-weight: 600; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.pkg { color: var(--ink); }
+  td.have { color: var(--muted); }
+  td.want { color: var(--ink); font-weight: 600; }
+  td.gap { font-family: var(--sans); font-size: 12.5px; white-space: normal; }
+  td.gap.crit { color: var(--crit); }
+  td.gap.warn { color: var(--warn); }
+  td.gap.ok { color: var(--note); }
+
+  ol.plan { list-style: none; counter-reset: step; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+  ol.plan > li { counter-increment: step; display: grid; grid-template-columns: 58px 1fr; gap: 0 18px; padding: 20px 0; border-bottom: 1px solid var(--rule-soft); }
+  ol.plan > li::before { content: counter(step,decimal-leading-zero); font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent); padding-top: 2px; }
+  .step-body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .step-body h3 { font-family: var(--sans); font-weight: 700; font-size: 17px; margin: 0; letter-spacing: -.01em; line-height: 1.35; }
+  .step-body p { margin: 0; font-size: 16px; color: var(--muted); }
+  pre { font-family: var(--mono); font-size: 13px; line-height: 1.65; background: var(--paper); border: 1px solid var(--rule); padding: 12px 14px; margin: 2px 0 0; overflow-x: auto; color: var(--ink); }
+
+  .unchecked { background: var(--paper); border: 1px solid var(--rule); padding: 22px 26px; }
+  .unchecked ul { margin: 12px 0 0; padding-left: 20px; }
+  .unchecked li { font-size: 16px; color: var(--muted); margin-bottom: 7px; }
+  .unchecked li::marker { color: var(--faint); }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule); font-family: var(--mono); font-size: 11.5px; color: var(--faint); line-height: 1.7; }
+
+  @media (max-width: 560px) {
+    body { font-size: 16px; }
+    .item, ol.plan > li { grid-template-columns: 1fr; gap: 8px; }
+    .id, ol.plan > li::before { padding-top: 0; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Maintenance audit · Expo SDK 53 · revision 2</p>
+    <h1>Both app stores have closed their doors on this build — and the Android one closes for good in 23 days.</h1>
+    <p class="standfirst">SourceView Together v1.2.1, audited against <code>Nov-New-Build-</code>. Two hard store blocks, one upgrade decision that governs everything else, and the single finding I most expected to hurt turning out to be free.</p>
+    <p class="meta">
+      <span>kiwibuddy/SVB-Reader</span>
+      <span>branch Nov-New-Build-</span>
+      <span>f07b650 · 19 Nov 2025</span>
+      <span>audited 8 Aug 2026</span>
+    </p>
+  </header>
+
+  <div class="correction">
+    <span class="lab">Supersedes revision 1</span>
+    <p>The first version of this report audited <code>main</code>, which is a dead 19-month-old snapshot of the pre-rebrand app — 156 commits behind, still called SVB-Youth, bundle ID <code>"y"</code>, no French. Those findings were about code you don't ship and have been discarded. Everything below is the real app.</p>
+  </div>
+
+  <div class="drift">
+    <div class="drift-cell">
+      <span class="drift-label">Expo SDK</span>
+      <span class="drift-value">53 <span class="to">→</span> 57</span>
+      <span class="drift-note">Four majors behind</span>
+    </div>
+    <div class="drift-cell">
+      <span class="drift-label">iOS submission</span>
+      <span class="drift-value bad">Blocked</span>
+      <span class="drift-note">Since 28 Apr 2026</span>
+    </div>
+    <div class="drift-cell">
+      <span class="drift-label">Play update gate</span>
+      <span class="drift-value bad">23 days</span>
+      <span class="drift-note">API 36 by 31 Aug</span>
+    </div>
+    <div class="drift-cell">
+      <span class="drift-label">New Architecture</span>
+      <span class="drift-value good">On</span>
+      <span class="drift-note">Already migrated</span>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <h2>You are locked out of both stores, for two unrelated reasons, and only one of them has a deadline you can still get ahead of.</h2>
+    <p><strong>iOS:</strong> since 28 April 2026 App Store Connect has required builds compiled against the iOS 26 SDK. Expo SDK 53 cannot do that — SDK 54 is the floor. <strong>Android:</strong> the app targets API 34, so it already stopped reaching new users on modern devices in August 2025, and from <strong>31 August 2026 — 23 days from now</strong> — Google Play will reject any update that doesn't target API 36. Both roads lead to the same place: get to SDK 57.</p>
+  </div>
+
+  <section>
+    <h2 class="sec">Where the app actually stands</h2>
+    <p class="sec-blurb">Read against the ecosystem as of today. The dependency manifest on this branch is in genuinely good shape — the problems are concentrated in build configuration, not in packages.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>What</th><th>Current</th><th>Needed</th><th>Consequence</th></tr></thead>
+        <tbody>
+          <tr><td class="pkg">expo</td><td class="have">~53.0.23</td><td class="want">57.0.11</td><td class="gap crit">Below the iOS 26 SDK floor</td></tr>
+          <tr><td class="pkg">react-native</td><td class="have">0.79.6</td><td class="want">0.86.2</td><td class="gap warn">Carried by the SDK bump</td></tr>
+          <tr><td class="pkg">android targetSdk</td><td class="have">34</td><td class="want">36</td><td class="gap crit">Play update gate, 31 Aug</td></tr>
+          <tr><td class="pkg">ios deploymentTarget</td><td class="have">15.1</td><td class="want">verify</td><td class="gap warn">Confirm against SDK 57</td></tr>
+          <tr><td class="pkg">react-native-reanimated</td><td class="have">~3.17.4</td><td class="want">4.x</td><td class="gap warn">Needs react-native-worklets</td></tr>
+          <tr><td class="pkg">expo-av</td><td class="have">~15.1.7</td><td class="want">delete</td><td class="gap ok">Unused — free removal</td></tr>
+          <tr><td class="pkg">New Architecture</td><td class="have">enabled</td><td class="want">enabled</td><td class="gap ok">Nothing to do</td></tr>
+          <tr><td class="pkg">React</td><td class="have">19.0.0</td><td class="want">19.2</td><td class="gap ok">Minor, carried by SDK</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Blocking — stops a release</h2>
+    <div class="ledger">
+
+      <div class="item">
+        <div class="id">B1</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip crit">iOS blocker</span><span class="chip info">Deadline passed</span></div>
+          <h3>SDK 53 cannot compile against the iOS 26 SDK</h3>
+          <p>Apple's minimum-SDK rule took effect <strong>28 April 2026</strong>: every iOS upload must be built with the iOS 26 SDK (Xcode 26) or later. This raises the <em>build</em> SDK only — your <code>deploymentTarget</code> of 15.1 can stay, so no users get dropped. Expo SDK 54 was the first release to build on that toolchain. There is no partial fix and no extension available.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">B2</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip crit">Android blocker</span><span class="chip warn">23 days</span></div>
+          <h3>The app targets API 34, and Google Play's next gate is API 36</h3>
+          <p><span class="loc">app.json:91</span> — <code>expo-build-properties</code> pins <code>targetSdkVersion: 34</code> and <code>compileSdkVersion: 34</code>, which is a deliberate downgrade from SDK 53's own default of 35. Two consequences, one already active. Since <strong>31 August 2025</strong>, apps below API 35 stop being discoverable to new users on newer Android devices — existing installs keep working, but your Play listing has likely been invisible to a growing share of new users for a year. And from <strong>31 August 2026</strong>, Play rejects any update below API 36 outright. An extension to 1 November 2026 can be requested if you need it.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">The decision that governs the upgrade</h2>
+    <p class="sec-blurb">This is the item to settle before touching a version number. It is the main thing that changed between revision 1 of this report and this one.</p>
+    <div class="ledger">
+      <div class="item">
+        <div class="id">D1</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip crit">Decide first</span></div>
+          <h3>The native projects are committed, so this is no longer a managed Expo app</h3>
+          <p><code>ios/SourceViewTogether.xcodeproj</code>, a <code>Podfile</code>, and a full <code>android/</code> Gradle project are all in git. That means <code>npx expo install</code> alone will not upgrade you — the native projects hold their own copies of the build settings and won't move on their own. You have two routes, and they differ enormously in cost:</p>
+          <p><strong>Return to managed (recommended).</strong> Delete <code>ios/</code> and <code>android/</code> and let <code>expo prebuild</code> regenerate them from <code>app.json</code> on every build. Every future SDK upgrade becomes a one-line version bump. Viable only if the native projects contain no hand-edits — they look prebuild-generated, but that must be verified before deleting anything.</p>
+          <p><strong>Stay bare.</strong> Hand-migrate the Xcode project, Podfile, Gradle files and manifests across four SDK versions. This is the expensive path and buys you nothing unless you have native customisations worth keeping.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Breaks on upgrade</h2>
+    <div class="ledger">
+
+      <div class="item">
+        <div class="id">U1</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip warn">Visual regression</span></div>
+          <h3>Android edge-to-edge is explicitly switched off, and SDK 54 removes the switch</h3>
+          <p><span class="loc">android/gradle.properties:59</span> sets <code>expo.edgeToEdgeEnabled=false</code>. SDK 54 makes edge-to-edge mandatory and deletes that opt-out, so content will draw beneath the system bars whether or not the layouts expect it. Screens that currently assume the system reserves that space will shift. This is the most likely source of visible breakage after the bump.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">U2</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip warn">Needs work</span></div>
+          <h3>Reanimated 4 moves its core into a separate package</h3>
+          <p>v4 is New-Arch-only — which you already satisfy — but relocates its runtime into <code>react-native-worklets</code>, installed alongside and registered in the Babel config. Configuration work rather than rewriting animations.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">U3</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip warn">Visual regression</span><span class="chip info">Needs a device</span></div>
+          <h3>Liquid Glass re-skins system chrome as soon as you build on iOS 26</h3>
+          <p>Compiling against the iOS 26 SDK opts you into the new material for navigation bars, tab bars and sheets — not deferrable. This app uses a custom header and a <code>BlurView</code> tab background, which interact with it directly. A simulator understates this; budget a pass on real hardware.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">U4</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip warn">Deprecated API</span></div>
+          <h3>One screen still imports SafeAreaView from react-native</h3>
+          <p><span class="loc">app/(tabs)/[segment]/index.tsx:4</span> — deprecated since RN 0.81 and scheduled for removal. <code>react-native-safe-area-context</code> 5.4.0 is already a dependency and used correctly elsewhere, so this is a one-line change.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Resolved — expected problems that aren't</h2>
+    <p class="sec-blurb">Worth stating explicitly, because these are the findings that usually make an upgrade of this size look frightening, and this branch has already dealt with all of them.</p>
+    <div class="ledger">
+
+      <div class="item">
+        <div class="id">R1</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip note">Free</span></div>
+          <h3>expo-av is dead weight, not a migration</h3>
+          <p>The SDK 55 removal of <code>expo-av</code> is normally the headline cost of this upgrade. Here, <strong>nothing imports it</strong> — no <code>Video</code>, no <code>Audio.Sound</code>, anywhere in the app. It sits in <code>package.json</code> and in the <code>plugins</code> array purely as residue, and so does <code>expo-video</code>. Delete both dependencies and both plugin entries; there is no migration to perform.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">R2</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip note">Already done</span></div>
+          <h3>New Architecture is on everywhere</h3>
+          <p><code>newArchEnabled: true</code> in <span class="loc">app.json</span> and <code>newArchEnabled=true</code> in <span class="loc">android/gradle.properties:38</span>, with Hermes enabled. The legacy architecture was dropped in SDK 55, and that would have been the single most expensive item on this list.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">R3</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip note">Already done</span></div>
+          <h3>The dependency manifest is clean</h3>
+          <p>No deprecated <code>@types/react-native</code>, no legacy <code>expo-cli</code>, no committed <code>dist/</code>, and <code>expo-haptics</code> properly declared — all of which are wrong on <code>main</code> and right here. React 19.0.0 and RN 0.79.6 are correctly matched to SDK 53.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Latent</h2>
+    <div class="ledger">
+
+      <div class="item">
+        <div class="id">L1</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip crit">Ambiguous state</span></div>
+          <h3>Three files disagree about which build you shipped</h3>
+          <p><code>app.json</code> says version 1.2.1 / <strong>build 20</strong> / versionCode 20. But <span class="loc">ios/SourceViewTogether/Info.plist</span> says <strong>19</strong>, and <span class="loc">android/app/build.gradle:95</span> says <code>versionCode 19</code>. With native directories committed and <code>eas.json</code> set to <code>appVersionSource: "local"</code>, <strong>the native values win</strong> — so the commit labelled "Testflight v1.2.1 (Build 20)" most likely produced a binary stamped 19. Check what TestFlight actually received before assuming your build numbers are where you think they are.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">L2</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip warn">Fragile</span></div>
+          <h3>Three packages are imported but never declared</h3>
+          <p><code>@react-navigation/bottom-tabs</code>, <code>@react-navigation/elements</code>, and <code>expo-file-system</code> — the last used in earnest by <span class="loc">services/BibleStorageManager.ts</span> and <span class="loc">services/QuestionsLoader.ts</span>, both core to loading Bible content. They resolve today only via hoisting. Declare them <em>before</em> upgrading, so a real break is distinguishable from a resolution artefact.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">L3</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip note">Dead code</span></div>
+          <h3>A commented-out import references a package Expo has removed</h3>
+          <p><span class="loc">app/(tabs)/Home.tsx:17</span> still carries <code>// import { BarCodeScanner } from 'expo-barcode-scanner'</code>. The package was removed from Expo, and QR scanning has correctly moved to <code>expo-camera</code>. Harmless, but it will read as a live dependency to the next person who greps for it.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">L4</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip warn">OTA risk</span></div>
+          <h3>runtimeVersion is a hardcoded string</h3>
+          <p><code>runtimeVersion: "1.2.1"</code> with updates set to <code>ON_LOAD</code>. Because it is pinned rather than derived by policy, it will not move when you change native code — and an over-the-air update built against SDK 57 delivered to a binary built on SDK 53 crashes on launch. This <em>must</em> be changed as part of the upgrade, not after it.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Hygiene</h2>
+    <div class="ledger">
+
+      <div class="item">
+        <div class="id">H1</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip warn">Repo weight</span></div>
+          <h3>100 MB of source Bibles live at the repo root</h3>
+          <p><code>FRA-Bible.json</code> (50 MB) and <code>FRA-Bible-with-questions.json</code> (50 MB) are committed at top level and imported by no application code — they are inputs to the scripts in <code>scripts/</code>, not app assets. Every clone pays for them forever. Move them out of git, or into a release asset.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">H2</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip warn">App size</span></div>
+          <h3>25 MB of JSON ships inside the binary</h3>
+          <p><code>assets/data/</code> totals 25 MB, dominated by <code>newBibleNLT1.json</code> (15 MB) and <code>verseIndex.json</code> (6.4 MB), parsed as JSON at runtime. That is real download size and real startup cost on low-end devices. You already have <code>expo-sqlite</code> and a substantial database layer — moving the bulk text there would pay off on both counts, though it is a project rather than a fix.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">H3</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip note">Cruft</span></div>
+          <h3>Backups and build output are tracked</h3>
+          <p><code>backup_code/</code>, <code>dist-android/</code>, <code>api/sqlite.ts.backup</code>, and a committed <code>sourceview.db</code>. None should be in version control; the <code>.backup</code> file in particular shadows the real module in searches.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">H4</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip note">Config</span></div>
+          <h3>The URL scheme is still the template default</h3>
+          <p><code>scheme: "myapp"</code>. Deep links resolve as <code>myapp://</code> — unbranded, and liable to collide with any other app that also never changed it. Worth fixing while you are in <code>app.json</code> anyway.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">H5</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip note">Docs</span></div>
+          <h3>The release notes are dated a year early</h3>
+          <p><code>RELEASE_NOTES_1.2.1.md</code> reads "Release Date: January 2025", but the commits behind that build run October–November 2025. Worth correcting — a wrong date in the one document you'd consult later is how a repo becomes hard to trust.</p>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">H6</div>
+        <div class="item-body">
+          <div class="chips"><span class="chip warn">Process</span></div>
+          <h3>main is 156 commits behind the app</h3>
+          <p>Every branch in the repo except this one sits on the abandoned pre-rebrand codebase, and <code>main</code> is among them. It is why this report had to be written twice. Merge <code>Nov-New-Build-</code> into <code>main</code> so the default branch is the app again.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Recommended order</h2>
+    <p class="sec-blurb">Steps 1–3 are safe on SDK 53 and should be verified working before any version changes — go into the upgrade with a clean baseline so the first red build means something. Step 2 is the fork in the road.</p>
+    <ol class="plan">
+
+      <li>
+        <div class="step-body">
+          <h3>Reconcile versions and the manifest</h3>
+          <p>Settle the 19-vs-20 discrepancy against what TestFlight actually holds, declare the three undeclared packages, drop <code>expo-av</code> and <code>expo-video</code> from both dependencies and plugins, and delete the dead barcode-scanner comment. <span class="loc">L1, L2, L3, R1</span></p>
+          <pre>npx expo install @react-navigation/bottom-tabs \
+  @react-navigation/elements expo-file-system
+npm uninstall expo-av expo-video   # nothing imports either</pre>
+        </div>
+      </li>
+
+      <li>
+        <div class="step-body">
+          <h3>Decide managed vs bare — then commit to it</h3>
+          <p>Diff <code>ios/</code> and <code>android/</code> against a fresh <code>expo prebuild --clean</code> on SDK 53. If nothing meaningful differs, delete both directories and return to managed; every later step gets dramatically cheaper. If real hand-edits exist, document them now, because you will be re-applying them by hand. <span class="loc">D1</span></p>
+        </div>
+      </li>
+
+      <li>
+        <div class="step-body">
+          <h3>Merge the branch back into main</h3>
+          <p><code>Nov-New-Build-</code> is a strict descendant of <code>main</code>, so this is a fast-forward with no conflicts. Do it before the upgrade, so the SDK work has an ordinary branch to land on. <span class="loc">H6</span></p>
+        </div>
+      </li>
+
+      <li>
+        <div class="step-body">
+          <h3>Upgrade to SDK 57</h3>
+          <p>Straight across rather than one SDK at a time. SDK 56→57 and RN 0.85→0.86 carry no breaking changes, so the real work sits at the 53→54 and 54→55 boundaries regardless of how many steps you take getting there. Raise <code>targetSdkVersion</code> and <code>compileSdkVersion</code> to 36 in the same pass. <span class="loc">B1, B2</span></p>
+          <pre>npx expo install expo@^57.0.0
+npx expo install --fix
+npx expo-doctor</pre>
+        </div>
+      </li>
+
+      <li>
+        <div class="step-body">
+          <h3>Clear the fallout</h3>
+          <p>Add <code>react-native-worklets</code> and update Babel for Reanimated 4; rework layouts for mandatory Android edge-to-edge; move the last <code>SafeAreaView</code> import across; set <code>runtimeVersion</code> deliberately before any build that could receive an OTA update. Expect this step, not step 4, to consume the time. <span class="loc">U1, U2, U4, L4</span></p>
+        </div>
+      </li>
+
+      <li>
+        <div class="step-body">
+          <h3>Build and test on real hardware, both platforms</h3>
+          <p>An iOS 26 device for Liquid Glass against the custom header and blurred tab bar, and an Android 16 device for edge-to-edge. Walk the full reading flow in both English and French — the localisation is the newest and least-exercised code in the app. <span class="loc">U1, U3</span></p>
+        </div>
+      </li>
+
+    </ol>
+  </section>
+
+  <section>
+    <h2 class="sec">What this review did not cover</h2>
+    <div class="unchecked">
+      <p style="margin:0;color:var(--muted);font-size:16px">Static review of committed source only — nothing was installed, compiled, or run. Still open:</p>
+      <ul>
+        <li>Whether the app builds today. No <code>npm install</code>, no type check, no bundle — a compile will likely surface more than this list.</li>
+        <li>Whether <code>ios/</code> and <code>android/</code> contain hand-edits. This is the step-2 decision and it needs a real prebuild diff to answer.</li>
+        <li>What TestFlight actually holds, and whether the live App Store listing matches <code>com.sourceview.together</code>. Both need the consoles.</li>
+        <li>The database layer — seven modules including migrations — and how it behaves across an app update with an existing user database.</li>
+        <li>Correctness of the French translations. I confirmed the plumbing is wired up, not that the content is right.</li>
+        <li>Apple's privacy-manifest requirements for your dependency set once you are building on SDK 57.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    Sources — Apple, <a href="https://developer.apple.com/news/?id=ueeok6yw">Upcoming SDK minimum requirements</a> · Google, <a href="https://developer.android.com/google/play/requirements/target-sdk">Target API level requirements</a> · Expo <a href="https://expo.dev/changelog/sdk-54">SDK 54</a>, <a href="https://expo.dev/changelog/sdk-55">SDK 55</a>, <a href="https://expo.dev/changelog/sdk-57">SDK 57</a> changelogs · React Native, <a href="https://reactnative.dev/docs/0.81/safeareaview">SafeAreaView</a>. Version data read live from the npm registry. Audited at f07b650, 8 Aug 2026.
+  </footer>
+
+</div>

@@ -1,0 +1,558 @@
+<title>SourceView Together — Full Redesign, Option D</title>
+<style>
+  :root{
+    --ground:#EDEBE6; --paper:#FCFBF9; --ink:#131316; --muted:#63605A; --faint:#928E86;
+    --rule:#D9D5CD; --rule-soft:#E6E3DC; --accent:#8A5A08; --accent-bg:#F4E9D6;
+    --red:#9B2226; --green:#20603F; --blue:#2C4470; --nar:#4A4843;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --ground:#141312; --paper:#1D1C1A; --ink:#EBE8E3; --muted:#A29E96; --faint:#78746D;
+    --rule:#302E2B; --rule-soft:#262421; --accent:#D9A44F; --accent-bg:#2E2718;
+    --red:#E8898D; --green:#6FBF95; --blue:#8FADE0; --nar:#A5A19A;
+  }}
+  :root[data-theme="dark"]{
+    --ground:#141312; --paper:#1D1C1A; --ink:#EBE8E3; --muted:#A29E96; --faint:#78746D;
+    --rule:#302E2B; --rule-soft:#262421; --accent:#D9A44F; --accent-bg:#2E2718;
+    --red:#E8898D; --green:#6FBF95; --blue:#8FADE0; --nar:#A5A19A;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--ground);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.62;margin:0;padding:0 20px 100px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto}
+  .narrow{max-width:64ch}
+
+  .masthead{padding:60px 0 30px;border-bottom:2px solid var(--ink);display:flex;flex-direction:column;gap:15px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin:0}
+  h1{font-family:var(--sans);font-weight:800;font-size:clamp(30px,5.4vw,46px);letter-spacing:-.03em;line-height:1.06;text-wrap:balance;margin:0}
+  .standfirst{font-size:19.5px;color:var(--muted);margin:0;max-width:60ch}
+  .meta{font-family:var(--mono);font-size:12px;color:var(--faint);display:flex;flex-wrap:wrap;gap:6px 18px}
+
+  section{margin:0 0 56px}
+  h2.sec{font-family:var(--sans);font-weight:750;font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 18px;padding-bottom:10px;border-bottom:1px solid var(--ink)}
+  p{margin:0 0 15px}
+  strong{font-weight:600}
+  code{font-family:var(--mono);font-size:.85em;background:var(--accent-bg);color:var(--accent);padding:1px 5px;border-radius:2px}
+
+  /* screen block: phone + notes */
+  .blk{display:grid;grid-template-columns:300px 1fr;gap:34px;padding:34px 0;border-top:1px solid var(--rule);align-items:start}
+  .blk:first-of-type{border-top:none}
+  .bnum{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--faint);margin-bottom:5px}
+  .btitle{font-family:var(--sans);font-weight:800;font-size:27px;letter-spacing:-.03em;margin:0 0 8px;line-height:1.1}
+  .bintro{font-size:17px;color:var(--muted);margin:0 0 20px;max-width:56ch}
+  .nb{margin-bottom:18px}
+  .nbh{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;margin:0 0 9px;padding-bottom:6px;border-bottom:1px solid var(--rule-soft)}
+  .nbh.p{color:var(--accent)}.nbh.b{color:var(--green)}.nbh.n{color:var(--blue)}
+  .nb ul{margin:0;padding-left:18px}
+  .nb li{font-family:var(--sans);font-size:15px;color:var(--muted);margin-bottom:7px;line-height:1.5}
+  .nb li b{color:var(--ink);font-weight:640}
+  .nb li::marker{color:var(--faint)}
+
+  /* phone */
+  .ph{width:300px;height:640px;border-radius:38px;overflow:hidden;position:relative;display:flex;flex-direction:column;
+      font-family:var(--sans);background:#F4F3F0;color:#111113;border:1px solid rgba(0,0,0,.15);
+      box-shadow:0 1px 2px rgba(0,0,0,.12),0 14px 34px rgba(0,0,0,.17);position:sticky;top:24px}
+  :root[data-theme="dark"] .ph,:root:not([data-theme="light"]) .ph{border-color:rgba(255,255,255,.18)}
+  .sb{height:36px;flex:0 0 36px;display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 24px;font-size:12.5px;font-weight:650}
+  .bat{width:19px;height:10px;border-radius:2.5px;position:relative;border:1.2px solid currentColor;opacity:.9;display:inline-block}
+  .bat::after{content:"";position:absolute;inset:1.5px;right:5px;background:currentColor;border-radius:1px}
+  .hd{padding:4px 17px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .hd h4{font-size:26px;font-weight:800;letter-spacing:-.03em;margin:0}
+  .ico{width:31px;height:31px;border-radius:50%;background:#E8E6E1;display:flex;align-items:center;justify-content:center;font-size:13px;color:#3A3A3E;flex:0 0 31px}
+  .bd{flex:1 1 auto;overflow:hidden;padding:0 15px}
+  .tb{flex:0 0 auto;height:60px;display:flex;align-items:center;justify-content:space-around;padding:0 6px 8px;background:#F4F3F0;border-top:1px solid #E2DFD9}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9.5px;font-weight:600;color:#A5A29B}
+  .tab.on{color:#111113}
+  .tab .g{font-size:18px;line-height:1}
+
+  .cont{background:#111113;color:#fff;border-radius:15px;padding:13px 14px;margin-bottom:15px}
+  .cl{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.58);font-weight:700;margin-bottom:4px}
+  .ct{font-size:18px;font-weight:750;letter-spacing:-.02em}
+  .cs{font-size:12px;color:rgba(255,255,255,.6);margin:2px 0 10px}
+  .barw{height:3px;background:rgba(255,255,255,.22);border-radius:2px}.barw i{display:block;height:100%;background:#fff;border-radius:2px}
+  .gl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#9B978F;font-weight:700;margin:2px 0 8px}
+
+  .r{display:flex;gap:11px;align-items:center;padding:9px 0;border-bottom:1px solid #E6E3DD}
+  .r:last-child{border:none}
+  .clu{display:flex;align-items:center;flex:0 0 auto}
+  .ca{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:750;color:#fff;border:2px solid #F4F3F0;margin-left:-9px}
+  .ca:first-child{margin-left:0}
+  .co{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:#E2DFD9;color:#6E6A63;border:2px solid #F4F3F0;margin-left:-9px}
+  .rm{flex:1;min-width:0}
+  .rt{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+  .rn{font-size:15px;font-weight:660;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rw{font-size:11px;color:#9B978F;flex:0 0 auto}
+  .rs{font-size:12px;color:#78756E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+
+  .rh{padding:2px 16px 11px;border-bottom:1px solid #E6E3DD}
+  .rhtop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .rhh{font-size:18px;font-weight:780;letter-spacing:-.025em}
+  .rhr{font-size:11.5px;color:#8B8880;margin-top:1px}
+  .aa{font-size:14px;font-weight:700;color:#55524C;flex:0 0 auto;padding-top:2px}
+  .cst{display:flex;gap:6px;margin-top:10px;align-items:center;flex-wrap:wrap}
+  .w{font-size:10px;font-weight:660;padding:4px 9px;border-radius:20px;display:flex;gap:5px;align-items:center}
+  .w i{width:6px;height:6px;border-radius:50%;display:block;font-style:normal}
+  .w.n{background:#E8E6E1;color:#4A4843}.w.g{background:#F8E3E3;color:#9B2226}
+  .w.p{background:#E1F0E6;color:#20603F}.w.o{background:#E2E8F5;color:#2C4470}
+  .seeall{font-size:10.5px;font-weight:700;color:#8A5A08}
+
+  .cv{padding:13px 15px;display:flex;flex-direction:column;gap:10px;flex:1 1 auto;overflow:hidden}
+  .m{max-width:88%;display:flex;flex-direction:column;gap:3px}
+  .mn{font-size:10px;font-weight:750;letter-spacing:.04em}
+  .bu{padding:8px 11px;border-radius:14px;font-size:13px;line-height:1.46;font-family:var(--serif)}
+  .m.nar{max-width:100%}.m.nar .bu{background:#E8E6E1;color:#3A3833;border-radius:10px}
+  .m.god .mn{color:#9B2226}.m.god .bu{background:#F8E3E3;color:#7E1D21;border-bottom-left-radius:4px}
+  .m.oth .mn{color:#2C4470}.m.oth .bu{background:#E2E8F5;color:#22355A;border-bottom-left-radius:4px}
+  .m.pro{align-self:flex-end;align-items:flex-end}.m.pro .mn{color:#20603F}
+  .m.pro .bu{background:#E1F0E6;color:#194D33;border-bottom-right-radius:4px}
+  .mk{display:inline-flex;gap:5px;align-items:center;background:#FCFBF9;border:1px solid #DFDCD5;border-radius:20px;padding:2px 8px;font-size:11px;color:#55524C;font-weight:600;align-self:flex-start;margin-top:2px}
+  .rfoot{flex:0 0 auto;padding:10px 15px 13px;border-top:1px solid #E2DFD9;display:flex;gap:9px;align-items:center;background:#F4F3F0}
+  .ptxt{font-size:11px;color:#8B8880;margin-bottom:4px;font-weight:550}
+  .pbar{height:3px;background:#E2DFD9;border-radius:2px}.pbar i{display:block;height:100%;background:#111113;border-radius:2px}
+  .cta{background:#111113;color:#fff;font-size:12.5px;font-weight:700;padding:9px 15px;border-radius:20px;flex:0 0 auto}
+
+  /* sheet overlay */
+  .dim{position:absolute;inset:0;background:rgba(20,18,16,.42)}
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:#FCFBF9;border-radius:20px 20px 0 0;padding:16px 17px 22px;box-shadow:0 -6px 26px rgba(0,0,0,.16)}
+  .grab{width:34px;height:4px;border-radius:2px;background:#DAD6CE;margin:0 auto 15px}
+  .emrow{display:flex;justify-content:space-between;gap:6px;margin-bottom:15px}
+  .em{flex:1;aspect-ratio:1;border-radius:13px;background:#F1EFEA;display:flex;align-items:center;justify-content:center;font-size:21px;position:relative}
+  .em.on{background:#F8E3E3;box-shadow:inset 0 0 0 1.5px #9B2226}
+  .em .bdg{position:absolute;top:-3px;right:-3px;width:15px;height:15px;border-radius:50%;background:#8A5A08;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #FCFBF9}
+  .nfield{background:#F1EFEA;border-radius:12px;padding:11px 12px;font-family:var(--serif);font-size:13px;color:#3A3833;line-height:1.5;min-height:74px}
+  .nmeta{display:flex;justify-content:space-between;font-size:11px;color:#928E86;margin-top:9px;font-family:var(--sans)}
+  .nsave{background:#111113;color:#fff;font-size:12.5px;font-weight:700;padding:7px 15px;border-radius:18px}
+
+  /* cast */
+  .csh{padding:2px 16px 10px;text-align:center;border-bottom:1px solid #E6E3DD;position:relative}
+  .csh .bk{position:absolute;left:16px;top:2px;font-size:17px;color:#55524C}
+  .csh h5{font-size:17px;font-weight:780;margin:0;letter-spacing:-.02em}
+  .csh .sub{font-size:11.5px;color:#8B8880;margin-top:1px}
+  .seg{display:flex;background:#E8E6E1;border-radius:9px;padding:2px;margin:12px 0 4px}
+  .seg span{flex:1;text-align:center;font-size:12px;font-weight:650;padding:6px;border-radius:7px;color:#6E6A63}
+  .seg span.on{background:#FCFBF9;color:#111113}
+  .csec{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#9B978F;font-weight:700;margin:14px 0 6px}
+  .cr{display:flex;gap:11px;align-items:center;padding:8px 0;border-bottom:1px solid #E6E3DD}
+  .cr:last-child{border:none}
+  .cra{width:36px;height:36px;border-radius:50%;flex:0 0 36px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:750;color:#fff}
+  .crn{font-size:14.5px;font-weight:640;letter-spacing:-.01em}
+  .crs{font-size:11.5px;color:#8B8880;margin-top:1px}
+
+  /* browse / search / plans / saved / progress */
+  .sr{background:#E8E6E1;border-radius:11px;padding:9px 12px;font-size:13px;color:#8B8880;display:flex;gap:8px;align-items:center;margin-bottom:12px}
+  .chips{display:flex;gap:6px;margin-bottom:13px;flex-wrap:wrap}
+  .cp{font-size:11.5px;font-weight:650;padding:6px 11px;border-radius:18px;background:#E8E6E1;color:#6E6A63}
+  .cp.on{background:#111113;color:#fff}
+  .ring{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:750}
+  .ring span{background:#F4F3F0;width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .card{border:1px solid #E4E1DA;border-radius:14px;padding:12px 13px;margin-bottom:10px;background:#FCFBF9}
+  .card.act{background:#111113;color:#fff;border-color:#111113}
+  .cdt{font-size:15.5px;font-weight:720;letter-spacing:-.02em}
+  .cds{font-size:11.5px;color:#84817A;margin-top:2px}
+  .card.act .cds{color:rgba(255,255,255,.62)}
+  .today{background:rgba(255,255,255,.1);border-radius:10px;padding:9px 10px;margin-top:11px}
+  .today .tl{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.55);font-weight:700}
+  .today .tt{font-size:13.5px;font-weight:680;margin-top:2px}
+  .save{border:1px solid #E4E1DA;border-radius:12px;padding:10px 12px;margin-bottom:9px;background:#FCFBF9}
+  .sq{font-family:var(--serif);font-size:13px;line-height:1.45;color:#2B2A27}
+  .snote{font-family:var(--serif);font-size:12px;line-height:1.45;color:#5E5B55;background:#F1EFEA;border-radius:8px;padding:7px 9px;margin-top:7px;font-style:italic}
+  .sm{font-size:11px;color:#918E87;margin-top:7px;display:flex;gap:6px;align-items:center}
+  .stat{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+  .st{border:1px solid #E4E1DA;border-radius:13px;padding:11px 12px;background:#FCFBF9}
+  .stn{font-size:23px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .stl{font-size:10.5px;color:#84817A;margin-top:1px}
+  .streak{background:#F4E9D6;border:1px solid #E4D2AE;border-radius:14px;padding:12px 13px;margin-bottom:13px;display:flex;gap:11px;align-items:center}
+  .streak .fl{font-size:26px}
+  .bg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .bgi{aspect-ratio:1;border-radius:12px;background:#F1EFEA;display:flex;align-items:center;justify-content:center;font-size:19px;border:1px solid #E4E1DA}
+  .bgi.lk{opacity:.34}
+  .prow{display:flex;gap:11px;align-items:center;padding:10px 0;border-bottom:1px solid #E6E3DD}
+  .prow:last-child{border:none}
+  .pic{width:34px;height:34px;border-radius:10px;flex:0 0 34px;background:#E8E6E1;display:flex;align-items:center;justify-content:center;font-size:15px}
+  .pn{font-size:14.5px;font-weight:640}
+  .ps{font-size:11.5px;color:#8B8880;margin-top:1px}
+  .chev{color:#B5B1A9;font-size:15px}
+
+  .close{background:var(--paper);border:1px solid var(--ink);padding:24px 28px;margin-top:10px}
+  .close h3{font-family:var(--sans);font-weight:800;font-size:20px;letter-spacing:-.02em;margin:0 0 12px}
+  .close p{margin:0 0 12px;font-size:16.5px}
+  .close p:last-child{margin:0}
+
+  footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--rule);font-family:var(--mono);font-size:11.5px;color:var(--faint);line-height:1.75}
+  @media (max-width:800px){.blk{grid-template-columns:1fr;gap:22px}.ph{position:static}}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">Full redesign · Option D · light default, dark variant</p>
+  <h1>Nine screens, the whole app.</h1>
+  <p class="standfirst">Option A's paper and speech bubbles with Option C's cast intelligence, built out across every surface — including what a lifelong Bible reader would refuse to give up, and what a premium app in 2026 is expected to do.</p>
+  <p class="meta"><span>365 stories</span><span>66 book intros</span><span>90 speakers</span><span>4 tabs</span></p>
+</header>
+
+<section style="margin-top:36px">
+  <div class="narrow">
+    <p>Two audiences have to survive the same redesign. A 14-year-old who has never opened a Bible needs the app to be obvious in the first ten seconds. A 55-year-old small-group leader needs notes, references, search and reading plans to still be there, and to be better than what they had. <strong>Most of the tension resolves by placing things, not by cutting them</strong> — the beginner's path is the default surface, and the depth sits one tap behind it.</p>
+  </div>
+</section>
+
+<!-- ═══ 1 ═══ -->
+<div class="blk">
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>▪▪▪ ≋ <span class="bat"></span></span></div>
+    <div class="hd"><h4>Stories</h4><div class="ico">⌕</div></div>
+    <div class="bd">
+      <div class="cont"><div class="cl">Continue</div><div class="ct">The Flood</div><div class="cs">Genesis 6:1–9:29 · 4 min left</div><div class="barw"><i style="width:62%"></i></div></div>
+      <div class="gl">Beginnings &amp; Rescue</div>
+      <div class="r"><div class="clu"><span class="ca" style="background:#9B2226">G</span></div>
+        <div class="rm"><div class="rt"><span class="rn">God Creates</span><span class="rw">6 min</span></div><div class="rs">God · Genesis 1–2</div></div></div>
+      <div class="r"><div class="clu"><span class="ca" style="background:#9B2226">G</span><span class="ca" style="background:#2C4470">A</span><span class="ca" style="background:#2C4470">E</span><span class="co">+1</span></div>
+        <div class="rm"><div class="rt"><span class="rn">People Sin</span><span class="rw">8 min</span></div><div class="rs">God, Adam, Eve +1 · Genesis 3–5</div></div></div>
+      <div class="r"><div class="clu"><span class="ca" style="background:#9B2226">G</span><span class="ca" style="background:#2C4470">N</span></div>
+        <div class="rm"><div class="rt"><span class="rn">The Flood</span><span class="rw">10 min</span></div><div class="rs">God, Noah · Genesis 6–9</div></div></div>
+      <div class="r"><div class="clu"><span class="ca" style="background:#E8E6E1;color:#6E6A63;font-size:11px">Gn</span></div>
+        <div class="rm"><div class="rt"><span class="rn">The Family Line</span><span class="rw">4 min</span></div><div class="rs">Narration only · Genesis 10</div></div></div>
+      <div class="r"><div class="clu"><span class="ca" style="background:#9B2226">G</span><span class="ca" style="background:#20603F">A</span></div>
+        <div class="rm"><div class="rt"><span class="rn">Abraham Obeys God's Call</span><span class="rw">8 min</span></div><div class="rs">God, Abraham · Genesis 11–14</div></div></div>
+    </div>
+    <div class="tb"><div class="tab on"><span class="g">◍</span>Stories</div><div class="tab"><span class="g">◈</span>Plans</div><div class="tab"><span class="g">☆</span>Saved</div><div class="tab"><span class="g">◐</span>You</div></div>
+  </div>
+  <div>
+    <div class="bnum">Screen 01</div>
+    <h3 class="btitle">Stories</h3>
+    <p class="bintro">The entire home screen. One resume card, then stories grouped into narrative acts using canonical book boundaries. Replaces both the old Home and Navigation tabs — 5,500 lines becoming one list.</p>
+    <div class="nb"><h4 class="nbh p">Premium behaviours to adopt</h4><ul>
+      <li><b>Resume before browse.</b> The Continue card is the only dark element on the screen and always sits first. Spotify, Netflix and Duolingo all open this way because the most likely action is "carry on".</li>
+      <li><b>Honest time estimates on every row.</b> "10 min" converts far better than "Genesis 6–9", and the data already exists unused.</li>
+      <li><b>No empty dashboard on first launch.</b> A new user sees "God Creates · 6 min" as the top row, not a plan picker.</li>
+      <li><b>Search is an icon, not a tab.</b> Finding a specific passage is a deliberate act; it shouldn't consume a quarter of the tab bar.</li>
+    </ul></div>
+    <div class="nb"><h4 class="nbh b">What Bible readers still need</h4><ul>
+      <li><b>The reference stays visible.</b> "Genesis 6–9" sits in the subtitle beside the speakers. A story title alone would be unusable for anyone preparing a study.</li>
+      <li><b>Book grouping is preserved</b> under the arc names, so the canonical order is intact and nothing has been re-sequenced.</li>
+      <li><b>Narration-only stories keep their place</b> in the sequence with a neutral book monogram — genealogies and law don't vanish because nobody speaks in them.</li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- ═══ 2 ═══ -->
+<div class="blk">
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>▪▪▪ ≋ <span class="bat"></span></span></div>
+    <div class="rh">
+      <div class="rhtop"><div><div class="rhh">‹ The Flood</div><div class="rhr">Genesis 6:1–9:29 · 10 min</div></div><div class="aa">Aa</div></div>
+      <div class="cst"><span class="w n"><i style="background:#4A4843"></i>Narrator</span><span class="w g"><i style="background:#9B2226"></i>God</span><span class="w o"><i style="background:#2C4470"></i>Noah</span><span class="seeall">See all ›</span></div>
+    </div>
+    <div class="cv">
+      <div class="m nar"><div class="bu">The Lord observed the extent of human wickedness, and saw that everything they imagined was consistently evil.</div></div>
+      <div class="m god"><div class="mn">GOD</div><div class="bu">I will wipe this human race I have created from the face of the earth.</div>
+        <span class="mk">🤔 <span>📝</span></span></div>
+      <div class="m nar"><div class="bu">But Noah found favour with the Lord.</div></div>
+      <div class="m god"><div class="mn">GOD</div><div class="bu">Build a large boat from cypress wood and waterproof it with tar, inside and out.</div></div>
+      <div class="m oth"><div class="mn">NOAH</div><div class="bu">So Noah did everything exactly as God had commanded him.</div></div>
+    </div>
+    <div class="rfoot"><div style="flex:1"><div class="ptxt">62% · 4 min left</div><div class="pbar"><i style="width:62%"></i></div></div><div class="cta">Done</div></div>
+  </div>
+  <div>
+    <div class="bnum">Screen 02</div>
+    <h3 class="btitle">Inside a story</h3>
+    <p class="bintro">Unchanged from Option A. Bubbles, colour-coded speakers, and nothing else between the reader and the text. No avatars, no cards, no furniture.</p>
+    <div class="nb"><h4 class="nbh p">Premium behaviours to adopt</h4><ul>
+      <li><b>Chrome that gets out of the way.</b> Header and footer should fade on scroll down and return on scroll up — the standard reading-app behaviour.</li>
+      <li><b>Honest progress, not a page count.</b> "62% · 4 min left" respects the reader's time in a way "verse 14 of 62" doesn't.</li>
+      <li><b>A haptic tap on Done.</b> Small, cheap, and the single most satisfying moment in the loop.</li>
+      <li><b>Aa in the header.</b> Text size is a first-class control in every serious reading app, one tap from the text it changes.</li>
+    </ul></div>
+    <div class="nb"><h4 class="nbh b">What Bible readers still need</h4><ul>
+      <li><b>Chapter and verse never disappear.</b> The full reference sits under the title, and long-pressing any bubble should surface its specific verse range.</li>
+      <li><b>Notes and reactions show inline.</b> The 🤔 📝 marker on God's speech is your existing behaviour, preserved exactly — the reader can see at a glance where they've been.</li>
+      <li><b>Text size persists</b> across sessions and stories. Non-negotiable for older users, and currently the most common accessibility complaint in Bible apps.</li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- ═══ 3 ═══ -->
+<div class="blk">
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>▪▪▪ ≋ <span class="bat"></span></span></div>
+    <div class="rh"><div class="rhtop"><div><div class="rhh">‹ The Flood</div><div class="rhr">Genesis 6:1–9:29 · 10 min</div></div><div class="aa">Aa</div></div></div>
+    <div class="cv" style="padding-bottom:0">
+      <div class="m nar"><div class="bu">The Lord observed the extent of human wickedness, and saw that everything they imagined was consistently evil.</div></div>
+      <div class="m god"><div class="mn">GOD</div><div class="bu" style="box-shadow:0 0 0 2px #9B2226">I will wipe this human race I have created from the face of the earth.</div></div>
+    </div>
+    <div class="dim"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="emrow">
+        <div class="em">❤️</div><div class="em">👍</div><div class="em on">🤔</div><div class="em">🙏</div>
+        <div class="em">📝<span class="bdg">1</span></div>
+      </div>
+      <div class="nfield">The hardest verse I've read so far. How do I hold this next to "God is love"? Ask Sam on Thursday.</div>
+      <div class="nmeta"><span>98 / 500</span><span class="nsave">Save</span></div>
+    </div>
+  </div>
+  <div>
+    <div class="bnum">Screen 03</div>
+    <h3 class="btitle">React &amp; note</h3>
+    <p class="bintro">Long-press any bubble. Four reactions and a note in one sheet — your existing feature, restaged so it reads as the WhatsApp gesture a teenager already knows.</p>
+    <div class="nb"><h4 class="nbh p">Premium behaviours to adopt</h4><ul>
+      <li><b>One gesture, no mode switch.</b> Long-press does everything. No "annotate mode", no toolbar — the pattern is already muscle memory from every messaging app.</li>
+      <li><b>The badge on the note icon</b> shows a note already exists, so the reader never loses work they forgot about.</li>
+      <li><b>Live character count</b> with colour feedback near the limit, as you've already built.</li>
+      <li><b>Dismiss saves.</b> Swiping the sheet down should keep the draft, not discard it.</li>
+    </ul></div>
+    <div class="nb"><h4 class="nbh b">What Bible readers still need</h4><ul>
+      <li><b>The note is anchored to the passage</b>, not filed in a separate journal. This is the thing your own docs correctly identify as the difference from every other app, and it's worth protecting.</li>
+      <li><b>Reactions and notes are independent.</b> Removing an emoji keeps the note — already true in your implementation, and worth never breaking.</li>
+      <li><b>Notes need to leave the app.</b> Export or share for study prep is the top request from small-group leaders, and the reason people trust an app with real thinking.</li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- ═══ 4 ═══ -->
+<div class="blk">
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>▪▪▪ ≋ <span class="bat"></span></span></div>
+    <div class="csh"><span class="bk">‹</span><h5>Cast</h5><div class="sub">Seven Seals · 19 speakers</div></div>
+    <div class="bd">
+      <div class="seg"><span class="on">All</span><span>Speaking most</span></div>
+      <div class="csec">God speaks</div>
+      <div class="cr"><span class="cra" style="background:#9B2226">G</span><div class="rm"><div class="crn">God</div><div class="crs">23 words · also in 223 stories</div></div><span class="chev">›</span></div>
+      <div class="cr"><span class="cra" style="background:#9B2226">J</span><div class="rm"><div class="crn">Jesus</div><div class="crs">13 words · also in 61 stories</div></div><span class="chev">›</span></div>
+      <div class="csec">Main character</div>
+      <div class="cr"><span class="cra" style="background:#20603F">J</span><div class="rm"><div class="crn">John the Disciple</div><div class="crs">7 words · also in 10 stories</div></div><span class="chev">›</span></div>
+      <div class="csec">Other voices · 16</div>
+      <div class="cr"><span class="cra" style="background:#2C4470">O</span><div class="rm"><div class="crn">One of the 24 Elders</div><div class="crs">145 words</div></div></div>
+      <div class="cr"><span class="cra" style="background:#2C4470">F</span><div class="rm"><div class="crn">Four Living Beings &amp; 24 Elders</div><div class="crs">56 words</div></div></div>
+      <div class="cr"><span class="cra" style="background:#2C4470">A</span><div class="rm"><div class="crn">All People</div><div class="crs">39 words</div></div></div>
+    </div>
+    <div class="tb"><div class="tab on"><span class="g">◍</span>Stories</div><div class="tab"><span class="g">◈</span>Plans</div><div class="tab"><span class="g">☆</span>Saved</div><div class="tab"><span class="g">◐</span>You</div></div>
+  </div>
+  <div>
+    <div class="bnum">Screen 04</div>
+    <h3 class="btitle">Cast</h3>
+    <p class="bintro">Behind <em>See all</em>. Grouped by role rather than alphabetically, so the theological hierarchy organises the list. Handles the 19-speaker worst case without compromising the header.</p>
+    <div class="nb"><h4 class="nbh p">Premium behaviours to adopt</h4><ul>
+      <li><b>Depth on demand.</b> The header shows three; everything else waits behind one tap. Nothing is lost and nothing is in the way.</li>
+      <li><b>Each speaker is a link, not a label.</b> Tapping God should open every story God speaks in — the doorway to character journeys as a paid feature later.</li>
+      <li><b>"Also in 223 stories"</b> turns a flat list into an invitation. That number is the most interesting thing on the screen.</li>
+    </ul></div>
+    <div class="nb"><h4 class="nbh n">Why this is your moat</h4><ul>
+      <li>No mainstream Bible app can answer <b>"show me everything Jesus said"</b> as a first-class query. You have the data and nobody else has bothered to structure it.</li>
+      <li>Word counts make the shape of a passage visible — that an Elder speaks 145 words in Revelation while Jesus speaks 13 is a genuine study insight surfaced by design, not commentary.</li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- ═══ 5 ═══ -->
+<div class="blk">
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>▪▪▪ ≋ <span class="bat"></span></span></div>
+    <div class="hd"><h4>Search</h4><div class="ico">✕</div></div>
+    <div class="bd">
+      <div class="sr"><span>⌕</span><span>Books, stories, people</span></div>
+      <div class="chips"><span class="cp on">Books</span><span class="cp">People</span><span class="cp">Themes</span></div>
+      <div class="gl">Beginnings &amp; Rescue · 68 stories</div>
+      <div class="r"><div class="ring" style="background:conic-gradient(#111113 43%,#E4E1DA 0)"><span>43%</span></div>
+        <div class="rm"><div class="rn">Genesis</div><div class="rs">18 stories · Moses</div></div><span class="chev">›</span></div>
+      <div class="r"><div class="ring" style="background:conic-gradient(#111113 12%,#E4E1DA 0)"><span>12%</span></div>
+        <div class="rm"><div class="rn">Exodus</div><div class="rs">14 stories · Moses</div></div><span class="chev">›</span></div>
+      <div class="r"><div class="ring" style="background:conic-gradient(#111113 0%,#E4E1DA 0)"><span style="color:#B0ADA6">0%</span></div>
+        <div class="rm"><div class="rn">Leviticus</div><div class="rs">6 stories · Moses</div></div><span class="chev">›</span></div>
+      <div class="gl" style="margin-top:14px">The Kings</div>
+      <div class="r"><div class="ring" style="background:conic-gradient(#111113 22%,#E4E1DA 0)"><span>22%</span></div>
+        <div class="rm"><div class="rn">1 Samuel</div><div class="rs">11 stories · David</div></div><span class="chev">›</span></div>
+      <div class="r"><div class="ring" style="background:conic-gradient(#111113 8%,#E4E1DA 0)"><span>8%</span></div>
+        <div class="rm"><div class="rn">Psalms</div><div class="rs">18 stories · David</div></div><span class="chev">›</span></div>
+    </div>
+    <div class="tb"><div class="tab on"><span class="g">◍</span>Stories</div><div class="tab"><span class="g">◈</span>Plans</div><div class="tab"><span class="g">☆</span>Saved</div><div class="tab"><span class="g">◐</span>You</div></div>
+  </div>
+  <div>
+    <div class="bnum">Screen 05</div>
+    <h3 class="btitle">Search &amp; browse</h3>
+    <p class="bintro">One search across books, people and themes. Books stay canonically ordered inside the arc groups, each with a completion ring.</p>
+    <div class="nb"><h4 class="nbh p">Premium behaviours to adopt</h4><ul>
+      <li><b>One field, scoped by chips</b> — not three separate search screens. The chips filter results live rather than gating the query.</li>
+      <li><b>Recent searches and recently read</b> above the fold before anything is typed. An empty search screen is a wasted screen.</li>
+      <li><b>Completion rings</b> give a reason to return to a book that's 43% done — progress is the strongest re-engagement hook you have that isn't a notification.</li>
+    </ul></div>
+    <div class="nb"><h4 class="nbh b">What Bible readers still need</h4><ul>
+      <li><b>Jump straight to a reference.</b> Typing "John 3" or "Gen 1:1" must land on the right story. This is the single most-used interaction in every Bible app and it has to be exact.</li>
+      <li><b>Full-text search of Scripture</b>, not just titles. Expected as standard, and the one thing on this screen that's real engineering work.</li>
+      <li><b>Book order preserved</b> inside the friendly group names, so someone who knows the Bible can navigate by memory.</li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- ═══ 6 ═══ -->
+<div class="blk">
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>▪▪▪ ≋ <span class="bat"></span></span></div>
+    <div class="hd"><h4>Plans</h4><div class="ico">⌕</div></div>
+    <div class="bd">
+      <div class="gl">Your plan</div>
+      <div class="card act">
+        <div class="cdt">Bible in 1 Year</div>
+        <div class="cds">Day 34 of 365 · 9% complete</div>
+        <div class="barw" style="margin-top:10px"><i style="width:9%"></i></div>
+        <div class="today"><div class="tl">Today</div><div class="tt">The Tower · 5 min</div></div>
+      </div>
+      <div class="gl" style="margin-top:15px">Shorter journeys</div>
+      <div class="card"><div class="cdt">New Testament in 100 Days</div><div class="cds">100 stories · about 12 min a day</div></div>
+      <div class="card"><div class="cdt">Bible in 1 School Year</div><div class="cds">Sept–May · built for classrooms</div></div>
+      <div class="card"><div class="cdt">Gospel Highlights</div><div class="cds">14 stories · two weeks</div></div>
+      <div class="card"><div class="cdt">David's Journey</div><div class="cds">39 stories · shepherd to king</div></div>
+    </div>
+    <div class="tb"><div class="tab"><span class="g">◍</span>Stories</div><div class="tab on"><span class="g">◈</span>Plans</div><div class="tab"><span class="g">☆</span>Saved</div><div class="tab"><span class="g">◐</span>You</div></div>
+  </div>
+  <div>
+    <div class="bnum">Screen 06</div>
+    <h3 class="btitle">Plans</h3>
+    <p class="bintro">One active plan in ink, everything else quiet. Deliberately not chat-shaped — a plan is a commitment, and showing eleven at once is how you get none chosen.</p>
+    <div class="nb"><h4 class="nbh p">Premium behaviours to adopt</h4><ul>
+      <li><b>Today's reading inside the active card.</b> The plan tab should answer "what am I reading today?" without a tap, and feed the Continue card on screen 1.</li>
+      <li><b>One active plan at a time.</b> Multiple concurrent plans is the feature that quietly guarantees failure at all of them.</li>
+      <li><b>Sorted by commitment, shortest first</b> among the inactive. "Two weeks" is a far easier yes than "one year".</li>
+    </ul></div>
+    <div class="nb"><h4 class="nbh b">What Bible readers still need</h4><ul>
+      <li><b>Catch-up without guilt.</b> Missing four days must not produce four red marks. Offer "shift my plan forward" rather than a backlog — your own docs already commit to this and it's the right call.</li>
+      <li><b>Pause and switch freely</b>, with progress preserved on the paused plan.</li>
+      <li><b>Seasonal plans surfaced in season.</b> Advent in November, Lent in February. A dated plan shown in July is noise.</li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- ═══ 7 ═══ -->
+<div class="blk">
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>▪▪▪ ≋ <span class="bat"></span></span></div>
+    <div class="hd"><h4>Saved</h4><div class="ico">⌕</div></div>
+    <div class="bd">
+      <div class="chips"><span class="cp on">All 47</span><span class="cp">❤️ 18</span><span class="cp">🤔 12</span><span class="cp">🙏 6</span><span class="cp">📝 9</span></div>
+      <div class="save">
+        <div class="sq">“I will wipe this human race I have created from the face of the earth.”</div>
+        <div class="snote">The hardest verse I've read so far. How do I hold this next to “God is love”?</div>
+        <div class="sm">🤔 📝 <span style="color:#9B2226;font-weight:700">GOD</span> · The Flood · Gen 6</div>
+      </div>
+      <div class="save">
+        <div class="sq">“For God so loved the world that he gave his one and only Son.”</div>
+        <div class="sm">❤️ <span style="color:#9B2226;font-weight:700">JESUS</span> · Nicodemus Visits Jesus · John 3</div>
+      </div>
+      <div class="save">
+        <div class="sq">“The Lord is my shepherd; I have all that I need.”</div>
+        <div class="sm">🙏 <span style="color:#20603F;font-weight:700">DAVID</span> · Psalms of Trust · Ps 23</div>
+      </div>
+    </div>
+    <div class="tb"><div class="tab"><span class="g">◍</span>Stories</div><div class="tab"><span class="g">◈</span>Plans</div><div class="tab on"><span class="g">☆</span>Saved</div><div class="tab"><span class="g">◐</span>You</div></div>
+  </div>
+  <div>
+    <div class="bnum">Screen 07</div>
+    <h3 class="btitle">Saved</h3>
+    <p class="bintro">The old Reactions tab, renamed to something a 14-year-old would guess. Notes appear inline beneath the passage that prompted them, so the two features finally read as one.</p>
+    <div class="nb"><h4 class="nbh p">Premium behaviours to adopt</h4><ul>
+      <li><b>Counts on the filter chips.</b> "❤️ 18" tells you what you have before you tap; a bare emoji doesn't.</li>
+      <li><b>Notes are a filter, not a separate tab.</b> 📝 sits alongside the reactions because the reader thinks of them as the same act.</li>
+      <li><b>Every entry keeps its speaker and source</b>, so a saved line reads as "who said this to me" rather than a floating quotation.</li>
+    </ul></div>
+    <div class="nb"><h4 class="nbh b">What Bible readers still need</h4><ul>
+      <li><b>Export.</b> Small-group leaders will want their notes out — as text, for a lesson. This is the feature that converts a curious user into a committed one.</li>
+      <li><b>Search within saved items</b>, and filter by book or speaker as well as by emoji.</li>
+      <li><b>Tap to return to the passage</b> in full context. A saved verse must always be one tap from where it lives.</li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- ═══ 8 ═══ -->
+<div class="blk">
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>▪▪▪ ≋ <span class="bat"></span></span></div>
+    <div class="hd"><h4>Progress</h4><div class="ico">↗</div></div>
+    <div class="bd">
+      <div class="streak"><span class="fl">🔥</span><div><div style="font-size:17px;font-weight:750;letter-spacing:-.02em">12 day streak</div><div style="font-size:11.5px;color:#8A7247">Longest so far: 21 days</div></div></div>
+      <div class="stat">
+        <div class="st"><div class="stn">47</div><div class="stl">of 365 stories</div></div>
+        <div class="st"><div class="stn">6</div><div class="stl">books started</div></div>
+        <div class="st"><div class="stn">9 h</div><div class="stl">time reading</div></div>
+        <div class="st"><div class="stn">47</div><div class="stl">saved moments</div></div>
+      </div>
+      <div class="gl">Badges · 14 of 62</div>
+      <div class="bg">
+        <div class="bgi">📖</div><div class="bgi">🔥</div><div class="bgi">❤️</div><div class="bgi">🎯</div>
+        <div class="bgi">🌱</div><div class="bgi">🕊️</div><div class="bgi lk">🏆</div><div class="bgi lk">👑</div>
+      </div>
+      <div class="gl" style="margin-top:14px">Next up</div>
+      <div class="r" style="border:none;padding-top:2px"><div class="pic">📖</div>
+        <div class="rm"><div class="pn">Genesis complete</div><div class="ps">10 of 18 stories read</div></div></div>
+    </div>
+    <div class="tb"><div class="tab"><span class="g">◍</span>Stories</div><div class="tab"><span class="g">◈</span>Plans</div><div class="tab"><span class="g">☆</span>Saved</div><div class="tab on"><span class="g">◐</span>You</div></div>
+  </div>
+  <div>
+    <div class="bnum">Screen 08</div>
+    <h3 class="btitle">Progress</h3>
+    <p class="bintro">Your Achievements screen, reframed. Stats lead, badges follow — because "47 of 365 stories" motivates far more reliably than a wall of trophies, most of them locked.</p>
+    <div class="nb"><h4 class="nbh p">Premium behaviours to adopt</h4><ul>
+      <li><b>Stats above badges.</b> Real numbers about real reading are the durable motivator; badges are seasoning. Your current screen is 1,964 lines and inverts this.</li>
+      <li><b>One "next up" target,</b> not sixty-two. "Genesis complete · 10 of 18" is achievable; a grid of locked trophies is noise.</li>
+      <li><b>A gentle streak.</b> Show it, celebrate it, but never punish breaking it — no lost-streak modals. Duolingo's guilt mechanics are the wrong model for Scripture.</li>
+      <li><b>Time reading</b> is the most quietly compelling number here and nobody in this category shows it.</li>
+    </ul></div>
+    <div class="nb"><h4 class="nbh n">One thing to resolve</h4><ul>
+      <li>Your badge set includes <b>group-mode achievements</b> — "Complete 1 story in group mode", "Complete 10 stories in group mode". With QR sessions removed, these become unearnable. Either retire them, or redefine group reading as "read a story someone else read this week", which needs no session infrastructure at all.</li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- ═══ 9 ═══ -->
+<div class="blk">
+  <div class="ph">
+    <div class="sb"><span>9:41</span><span>▪▪▪ ≋ <span class="bat"></span></span></div>
+    <div class="hd"><h4>You</h4><div class="ico">⚙</div></div>
+    <div class="bd">
+      <div class="gl">Reading</div>
+      <div class="prow"><div class="pic">Aa</div><div class="rm"><div class="pn">Text size</div><div class="ps">Medium</div></div><span class="chev">›</span></div>
+      <div class="prow"><div class="pic">◐</div><div class="rm"><div class="pn">Appearance</div><div class="ps">Light · follows system</div></div><span class="chev">›</span></div>
+      <div class="prow"><div class="pic">🌍</div><div class="rm"><div class="pn">Language</div><div class="ps">English · Français available</div></div><span class="chev">›</span></div>
+      <div class="prow"><div class="pic">🔔</div><div class="rm"><div class="pn">Daily reminder</div><div class="ps">Off</div></div><span class="chev">›</span></div>
+      <div class="gl" style="margin-top:14px">Your reading</div>
+      <div class="prow"><div class="pic">🏆</div><div class="rm"><div class="pn">Progress &amp; badges</div><div class="ps">47 stories · 12 day streak</div></div><span class="chev">›</span></div>
+      <div class="prow"><div class="pic">↗</div><div class="rm"><div class="pn">Export notes</div><div class="ps">9 notes · 47 saved</div></div><span class="chev">›</span></div>
+      <div class="gl" style="margin-top:14px">More</div>
+      <div class="prow"><div class="pic">✦</div><div class="rm"><div class="pn">Unlock everything</div><div class="ps">All plans, questions, context</div></div><span class="chev">›</span></div>
+    </div>
+    <div class="tb"><div class="tab"><span class="g">◍</span>Stories</div><div class="tab"><span class="g">◈</span>Plans</div><div class="tab"><span class="g">☆</span>Saved</div><div class="tab on"><span class="g">◐</span>You</div></div>
+  </div>
+  <div>
+    <div class="bnum">Screen 09</div>
+    <h3 class="btitle">You</h3>
+    <p class="bintro">Where Achievements, settings, language and the paid upgrade live. Absorbs an entire tab's worth of the old app without adding a screen anyone has to visit.</p>
+    <div class="nb"><h4 class="nbh p">Premium behaviours to adopt</h4><ul>
+      <li><b>Appearance defaults to following the system,</b> with a manual override. Light is the default look; dark is there for anyone whose phone is.</li>
+      <li><b>Reminders off by default.</b> Opt-in, single daily nudge, chosen time. A Bible app that nags loses the argument it's trying to win.</li>
+      <li><b>One upgrade row, phrased as what you get</b> — not a locked-feature gauntlet scattered through the app.</li>
+    </ul></div>
+    <div class="nb"><h4 class="nbh b">What Bible readers still need</h4><ul>
+      <li><b>Language switching is prominent</b>, not buried. You've built full French; it should be two taps from anywhere.</li>
+      <li><b>Export sits with the user's own content</b>, where they'd look for it, rather than in a settings sub-menu.</li>
+      <li><b>Room for translations.</b> You ship NLT today; the moment a second English translation exists, it belongs directly under Language.</li>
+    </ul></div>
+  </div>
+</div>
+
+<section style="margin-top:20px">
+  <h2 class="sec">Cutting across all nine</h2>
+  <div class="close">
+    <h3>Four things that decide whether this reads as premium.</h3>
+    <p><strong>Only one dark element per screen.</strong> The Continue card, the active plan, the Done button. When everything is quiet, the one loud thing is unambiguous — this is most of what separates a considered app from a busy one, and it costs nothing.</p>
+    <p><strong>Nothing gets between the reader and Scripture.</strong> No avatars in the reading view, no cards around bubbles, no persistent toolbar. Every piece of chrome earns its place or leaves. The whole redesign is really this rule applied nine times.</p>
+    <p><strong>Depth is one tap behind, never on the surface.</strong> The cast sheet, verse references, notes, export, character journeys — all present, none competing with the beginner's path. This is how both audiences get served by one design rather than two.</p>
+    <p><strong>Motion is where the money shows.</strong> Chrome fading on scroll, the sheet springing up on long-press, a haptic on Done, the Continue card cross-fading to the next story. Four small animations, and they're the difference between "clean" and "expensive".</p>
+  </div>
+</section>
+
+<footer>
+  Screens are static HTML, not app builds. Story titles, references, reading times, speaker names, colours and word counts are real data from <code>SegmentTitles.json</code>, <code>SegmentReadingTimes.json</code> and <code>newBibleNLT1.json</code>. Notes and badge behaviour follow <code>docs/features/NOTES_FEATURE_SUMMARY.md</code> and <code>app/(tabs)/Achievements.tsx</code> as built. Book grouping uses canonical boundaries with narrative-arc naming, as agreed. Light is the default; the dark variant is specified in the Option D document.
+</footer>
+
+</div>
