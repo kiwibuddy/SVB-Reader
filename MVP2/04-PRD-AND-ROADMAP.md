@@ -4,7 +4,7 @@ Status: **draft for your review.** D1 (group reading) is now **resolved** — se
 [`05-GROUP-READING.md`](05-GROUP-READING.md). Two decisions remain UNRESOLVED
 (D2, D3) and block Phase 1 only.
 
-Written 17 August 2026 against `main` @ `41c432b` (= v1.2.1 build 20).
+Written 17 August 2026 against the app at `f07b650` (v1.2.1 build 20).
 
 Companion documents: [`01-CRITICAL-PATH.md`](01-CRITICAL-PATH.md) for the store
 blockers, [`03-DESIGN-DIRECTION.md`](03-DESIGN-DIRECTION.md) for the visual
@@ -88,13 +88,20 @@ Replaced by: onboarding that teaches the four colours once, an expandable **call
 sheet** on each story naming its cast (the data already exists — this is what
 replaces role selection), and a **read-aloud mode** entered from inside a story.
 
-Removes 6 routes, 2 services, 1 context, 1 component, and both `expo-camera` and
-`react-native-qrcode-svg` — **so the app stops requesting camera permission
-entirely.** Verified: nothing outside the QR flow uses the camera.
+**Removes 29 files** — 6 routes, all 8 screens in `components/GroupReading/`,
+2 services, 1 context, the QR scanner, plus modifications to 11 more — and both
+`expo-camera` and `react-native-qrcode-svg`, **so the app stops requesting camera
+permission entirely.** Verified: nothing outside the QR flow uses the camera.
 
-Cost 6–9 days, against 5–8 to restyle the group routes. Roughly cost-neutral,
-materially simpler app. Full specification in
-[`05-GROUP-READING.md`](05-GROUP-READING.md).
+Cost **11.5–15 days**, against 5–8 to restyle the group routes. More than
+restyling, but it leaves a materially simpler app, removes two native
+dependencies before the SDK upgrade, and rescues the call sheet from behind the
+mode gate.
+
+Rationale in [`05-GROUP-READING.md`](05-GROUP-READING.md); full file-by-file
+inventory, database impact and completion redesign in
+[`06-COMPLETION-AND-REMOVAL.md`](06-COMPLETION-AND-REMOVAL.md), **which is
+authoritative for scope and cost.**
 
 ### D2 — Division titles **UNRESOLVED**
 

@@ -138,7 +138,13 @@ watch how people actually read, decide later.
 | Read-aloud mode | 1.5–2 |
 | **Total** | **6–9** |
 
+> **Superseded.** This estimate missed the eight screens in
+> `components/GroupReading/` and the `CheckCircle.tsx` rebuild. The real figure
+> is **11.5–15 days** — see
+> [`06-COMPLETION-AND-REMOVAL.md`](06-COMPLETION-AND-REMOVAL.md) §7, which is
+> authoritative.
+
 Against the 5–8 days that restyling the six group routes would have cost, this
-is roughly cost-neutral and leaves a materially simpler app — one navigation
+costs more but leaves a materially simpler app — one navigation
 path, one fewer permission, two fewer native dependencies, and no mode selector
 standing between a person and the text.

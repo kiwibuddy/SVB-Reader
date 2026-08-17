@@ -18,6 +18,11 @@ Assembled 17 August 2026 against `Nov-New-Build-` @ `f07b650`.
 | [`audit/maintenance-audit.html`](audit/maintenance-audit.html) | Full maintenance audit. Open in a browser. |
 | [`mockups/`](mockups/) | Design mockups. Open in a browser — no build step. |
 
+**Authoritative figures** live in `03-DESIGN-DIRECTION.md` (data) and
+`06-COMPLETION-AND-REMOVAL.md` (removal scope and cost). `mockups/01-three-directions.html`
+predates two data corrections and is kept only as a record of the exploration —
+its word counts are wrong. See the banner at the top of that file.
+
 ## The one thing to know first
 
 **You have been working from the wrong branch.**
@@ -58,7 +63,7 @@ Step 5    Test on real hardware, both platforms             2 days
           Ship a compliant 1.3.0. Only then start MVP2 design work.
 ```
 
-Then five build phases, 19-25 working days — see
+Then five build phases, **30-39 working days** — see
 [`04-PRD-AND-ROADMAP.md`](04-PRD-AND-ROADMAP.md) §8.
 
 **Group reading is resolved:** it stays, but the QR and host/join machinery goes

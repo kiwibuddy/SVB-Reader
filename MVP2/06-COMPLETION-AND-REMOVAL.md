@@ -257,7 +257,7 @@ belong in onboarding screen 2 and the call sheet.
 | Read-aloud mode (S16) | 1.5–2 |
 | **Total** | **11.5–15** |
 
-Up from the 6–9 estimated in `05-GROUP-READING.md`, because the
+Up from the 6–9 first estimated in `05-GROUP-READING.md`, because the
 `components/GroupReading/` directory and the `CheckCircle` rebuild were not
 counted. **Phase 1 should absorb the deletions; Phase 4 the onboarding and
 read-aloud mode.**
