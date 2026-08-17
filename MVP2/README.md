@@ -12,6 +12,7 @@ Assembled 17 August 2026 against `Nov-New-Build-` @ `f07b650`.
 | [`01-CRITICAL-PATH.md`](01-CRITICAL-PATH.md) | **Start here.** The store blockers, in the order they must be done. Nothing else ships until this is clear. |
 | [`02-DEV-SETUP.md`](02-DEV-SETUP.md) | Getting the project running again in Cursor — install, run, test, build. |
 | [`03-DESIGN-DIRECTION.md`](03-DESIGN-DIRECTION.md) | The chosen design direction, the data behind it, and the decisions still open. |
+| [`04-PRD-AND-ROADMAP.md`](04-PRD-AND-ROADMAP.md) | **The product spec and phased build plan.** Scope, screen-by-screen acceptance criteria, estimates, risks, and the decision register. |
 | [`audit/maintenance-audit.html`](audit/maintenance-audit.html) | Full maintenance audit. Open in a browser. |
 | [`mockups/`](mockups/) | Design mockups. Open in a browser — no build step. |
 
@@ -54,6 +55,13 @@ Step 5    Test on real hardware, both platforms             2 days
 --------------------------------------------------------------------
           Ship a compliant 1.3.0. Only then start MVP2 design work.
 ```
+
+Then five build phases, 19-25 working days — see
+[`04-PRD-AND-ROADMAP.md`](04-PRD-AND-ROADMAP.md) §8.
+
+**Three decisions are unresolved and block estimation:** whether group reading
+stays, the division titles, and whether to promote figures out of the blue
+source group. All three are in the decision register.
 
 Do not start design work before step 5. A redesign landing on top of an
 unbuildable app means every failure has two possible causes.
