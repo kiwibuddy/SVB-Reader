@@ -14,6 +14,7 @@ Assembled 17 August 2026 against `Nov-New-Build-` @ `f07b650`.
 | [`03-DESIGN-DIRECTION.md`](03-DESIGN-DIRECTION.md) | The chosen design direction, the data behind it, and the decisions still open. |
 | [`04-PRD-AND-ROADMAP.md`](04-PRD-AND-ROADMAP.md) | **The product spec and phased build plan.** Scope, screen-by-screen acceptance criteria, estimates, risks, and the decision register. |
 | [`05-GROUP-READING.md`](05-GROUP-READING.md) | How group reading works without coordination software. Resolves the biggest open decision. |
+| [`06-COMPLETION-AND-REMOVAL.md`](06-COMPLETION-AND-REMOVAL.md) | Everything the QR removal touches — 29 files, 2 tables, 30 translation keys — and what story completion becomes. |
 | [`audit/maintenance-audit.html`](audit/maintenance-audit.html) | Full maintenance audit. Open in a browser. |
 | [`mockups/`](mockups/) | Design mockups. Open in a browser — no build step. |
 

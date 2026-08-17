@@ -132,9 +132,11 @@ whether to promote a set of figures to green, and if so, which.**
 | S10 | You L1 (year) + L2 (settings) | Absorbs Achievements |
 | S11 | Appearance control: Light / Dark / Auto | Light is the shipped default |
 | S12 | French parity across all new screens | Non-negotiable; localisation already exists |
-| S13 | Remove group coordination machinery | 6 routes, 2 services, 1 context, camera permission |
+| S13 | Remove group coordination machinery | **29 files** incl. all 8 of `components/GroupReading/`, 2 DB tables, camera permission. See `06-COMPLETION-AND-REMOVAL.md` |
+| S13b | Rebuild `CheckCircle.tsx` | 1,064 → ~250 lines; completion stops being a mode machine |
+| S13c | Completion reveals voices met | Replaces the group achievement badge |
 | S14 | Onboarding — four screens, teaches the colours | Builds on `hooks/useFirstLaunch.ts` |
-| S15 | Call sheet — expandable cast per story | Replaces role selection; data already present |
+| S15 | Call sheet — expandable cast per story | **Logic already exists** behind the QR gate (`storyRoleDistribution`); relocate it. ~0.5 days |
 | S16 | Read-aloud mode | Entered from inside a story, never a home-screen mode |
 
 ### Deferred to MVP3
@@ -328,8 +330,9 @@ whatever D1 leaves behind.*
 - Accessibility: text sizing, contrast in both modes, screen reader on the reader
 - Store assets and listing copy — **update if D1 changes group reading**
 
-**Total after v1.3.0 ships: 25–33 working days.** D1 is now included rather than
-outstanding.
+**Total after v1.3.0 ships: 30–39 working days.** Revised upward: the
+`components/GroupReading/` directory (8 screens) and the `CheckCircle` rebuild
+were not in the earlier figure. See `06-COMPLETION-AND-REMOVAL.md` §7.
 
 ---
 
@@ -340,7 +343,8 @@ outstanding.
 | API 36 deadline missed | **High** | File the extension now |
 | The redesign lands on an unstable SDK 57 base | High | Phase 0 exit criteria are strict; do not overlap |
 | Database migration loses user reactions | High | Phase 5 explicitly tests it; audit never covered the DB layer |
-| Existing group state in SQLite crashes the migration | High | Read and ignore; do not assume tables are absent. Test against a real pre-MVP2 database in Phase 5 |
+| `CheckCircle` rebuild breaks plan/challenge completion navigation | **High** | It routes differently for four contexts; test all four before deleting the old file |
+| Existing group state in SQLite crashes the migration | Medium | Read and ignore; do not assume tables are absent or present. Do not drop the tables in the same release as the code |
 | Store listing still describes QR group sessions | Medium | Update copy and screenshots in the same release |
 | Left/right bubble split reads as theological claim | Medium | It *is* one. Confirm intent before Phase 2. |
 | Thread performance on low-end Android | Medium | SVG path per screen, not per row; profile in Phase 2 |
