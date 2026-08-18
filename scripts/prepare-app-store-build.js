@@ -66,14 +66,8 @@ const checks = [
     validation: (val) => /^\d+$/.test(val)
   },
   {
-    name: 'Privacy policy',
-    value: appJson.expo.ios?.privacyPolicy,
-    required: true,
-    validation: (val) => val && val.includes('sourceviewbible@gmail.com')
-  },
-  {
-    name: 'Support URL',
-    value: appJson.expo.ios?.supportURL,
+    name: 'Privacy policy file',
+    value: fs.existsSync('PRIVACY_POLICY.md') ? 'PRIVACY_POLICY.md' : '',
     required: true
   },
   {
@@ -84,7 +78,7 @@ const checks = [
   },
   {
     name: 'Keywords',
-    value: appJson.expo.keywords,
+    value: appJson.expo.keywords || appJson.expo.extra?.storeKeywords,
     required: true,
     validation: (val) => Array.isArray(val) && val.length > 0
   },

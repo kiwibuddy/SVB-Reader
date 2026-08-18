@@ -14,7 +14,6 @@ import {
   RefreshControl,
   Alert
 } from "react-native";
-// import { BarCodeScanner } from 'expo-barcode-scanner';
 import ReadingPlansChallenges from "../../assets/data/ReadingPlansChallenges.json";
 import DailyStoryMap from '../../assets/data/DailyStoryMap.json';
 import { getDayOfYear } from 'date-fns';
