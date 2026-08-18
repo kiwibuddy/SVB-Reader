@@ -15,8 +15,12 @@ Assembled 17 August 2026 against `Nov-New-Build-` @ `f07b650`.
 | [`04-PRD-AND-ROADMAP.md`](04-PRD-AND-ROADMAP.md) | **The product spec and phased build plan.** Scope, screen-by-screen acceptance criteria, estimates, risks, and the decision register. |
 | [`05-GROUP-READING.md`](05-GROUP-READING.md) | How group reading works without coordination software. Resolves the biggest open decision. |
 | [`06-COMPLETION-AND-REMOVAL.md`](06-COMPLETION-AND-REMOVAL.md) | Everything the QR removal touches — 29 files, 2 tables, 30 translation keys — and what story completion becomes. |
+| [`07-BUILD-REVIEW.md`](07-BUILD-REVIEW.md) | **Current punch list.** Device testing 19 Aug: what is built, what is broken, and the revised remaining work. |
 | [`audit/maintenance-audit.html`](audit/maintenance-audit.html) | Full maintenance audit. Open in a browser. |
 | [`mockups/`](mockups/) | Design mockups. Open in a browser — no build step. |
+
+**Current state of the build** is in `07-BUILD-REVIEW.md` — start there if you
+are picking up work.
 
 **Authoritative figures** live in `03-DESIGN-DIRECTION.md` (data) and
 `06-COMPLETION-AND-REMOVAL.md` (removal scope and cost). `mockups/01-three-directions.html`

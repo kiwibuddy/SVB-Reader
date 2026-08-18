@@ -1,6 +1,10 @@
 # MVP2 — Product requirements and build roadmap
 
-Status: **draft for your review.** D1 (group reading) is now **resolved** — see
+Status: **superseded in part by [`07-BUILD-REVIEW.md`](07-BUILD-REVIEW.md)**
+(19 Aug device testing), which carries the current phase state and remaining
+work. Scope and specifications here still stand.
+
+Original status: **draft for your review.** D1 (group reading) is now **resolved** — see
 [`05-GROUP-READING.md`](05-GROUP-READING.md). Two decisions remain UNRESOLVED
 (D2, D3) and block Phase 1 only.
 
@@ -145,6 +149,8 @@ whether to promote a set of figures to green, and if so, which.**
 | S14 | Onboarding — four screens, teaches the colours | Builds on `hooks/useFirstLaunch.ts` |
 | S15 | Call sheet — expandable cast per story | **Logic already exists** behind the QR gate (`storyRoleDistribution`); relocate it. ~0.5 days |
 | S16 | Read-aloud mode | Entered from inside a story, never a home-screen mode |
+| S17 | **Conversation navigation** | Tap a name in "spoke with" → every exchange between those two voices, in canonical order. Floating ‹ › become previous/next *exchange*. Added 19 Aug. |
+| S18 | **Spoken vs written split** | Epistles are correspondence, not dialogue. Grey in Cast, separate counts, excluded from exchange data. Added 19 Aug. |
 
 ### Deferred to MVP3
 
