@@ -25,13 +25,12 @@ import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import { Ionicons } from '@expo/vector-icons';
 import { parseReference } from '@/utils/parseReference';
 import { findSegmentId } from '@/utils/referenceMapping';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import SearchResults from '@/components/navigation/SearchResults';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { getSegmentCompletionStatus } from "@/api/sqlite";
 import { databaseManager } from "@/api/database-manager";
 import TopSpeakersData from '@/assets/data/TopSpeakers.json';
-import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from '@/hooks/useTranslation';
 
 

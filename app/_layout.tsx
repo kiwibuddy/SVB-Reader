@@ -1,9 +1,8 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import logger from '@/utils/logger';
 import { StatusBar } from "expo-status-bar";
 import { SQLiteGlobalProvider } from '@/context/SQLiteGlobalContext';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useState, useEffect } from 'react';
 // Removed duplicate logger import

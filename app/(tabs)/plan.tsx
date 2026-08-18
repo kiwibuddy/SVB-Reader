@@ -1,8 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
 import readingPlansData from '@/assets/data/ReadingPlansChallenges.json';
 import { ThreadColors } from '@/constants/Colors';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';

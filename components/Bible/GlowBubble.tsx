@@ -141,7 +141,7 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetV
   const nameAlign = isLeftVoice(color) ? "left" : "right";
 
   return (
-    <View key={bIndex} style={{ position: 'relative', alignItems: sideAlign, paddingLeft: 30, paddingRight: 14 }}>
+    <View key={bIndex} style={{ position: 'relative', alignItems: sideAlign, paddingHorizontal: 14 }}>
       <EmojiHandler
         block={block}
         blockIndex={bIndex}

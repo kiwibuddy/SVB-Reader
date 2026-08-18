@@ -22,7 +22,7 @@ import { ANIMATION } from '@/services/animation';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from '@/hooks/useTranslation';
 import * as Speech from 'expo-speech';
-import { ThreadColors, inkHex } from '@/constants/Colors';
+import { ThreadColors } from '@/constants/Colors';
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -696,32 +696,26 @@ const styles = StyleSheet.create({
           </View>
         </View>
 
-        <View style={{ position: 'relative' }}>
-          <View style={{ position: 'absolute', left: 13, top: 8, bottom: 8, width: 1.5, backgroundColor: threadPalette.thread }} />
-          {memoizedContent.map((item, index) => {
+        {memoizedContent.map((item, index) => {
           const { sourceName } = item.source || {};
-          const showSourceName = index === 0 || 
+          const showSourceName = index === 0 ||
             memoizedContent[index - 1].source?.sourceName !== sourceName;
 
           const isGlowing = shouldBlockGlow(item.source?.color || 'black', index);
-          const ink = inkHex(item.source?.color || 'black', threadPalette);
 
           return (
-            <View key={`${item.source?.sourceName || 'unknown'}-${index}`} style={{ position: 'relative' }}>
-              <View style={{ position: 'absolute', left: 10, top: 18, width: 7, height: 7, borderRadius: 4, backgroundColor: ink, zIndex: 2 }} />
-              <BibleBlockComponent
-                block={item}
-                bIndex={index}
-                hasTail={showSourceName}
-                isGlowing={isGlowing}
-                onLongPress={handleLongPress}
-                targetVerse={targetVerse}
-                targetChapter={targetChapter}
-              />
-            </View>
+            <BibleBlockComponent
+              key={`${item.source?.sourceName || 'unknown'}-${index}`}
+              block={item}
+              bIndex={index}
+              hasTail={showSourceName}
+              isGlowing={isGlowing}
+              onLongPress={handleLongPress}
+              targetVerse={targetVerse}
+              targetChapter={targetChapter}
+            />
           );
         })}
-        </View>
       </ScrollView>
       {/* Courtesy popup overlay - COMMENTED OUT FOR NOW
       {showCourtesyPopup && currentSession && (

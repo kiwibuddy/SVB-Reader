@@ -14,7 +14,7 @@ import {
   Animated
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from 'expo-router';
 import logger from '@/utils/logger';
 
 // Import the reading plans and challenges data

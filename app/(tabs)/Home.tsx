@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { View } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from 'expo-router';
 import ThreadList from '@/components/thread/ThreadList';
 import { getCompletedStoryIds } from '@/utils/threadProgress';
 import { getLastReadSegment } from '@/api/sqlite';

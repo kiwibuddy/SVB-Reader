@@ -1,8 +1,7 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
 import readingPlansData from '@/assets/data/ReadingPlansChallenges.json';
 import ThreadList from '@/components/thread/ThreadList';
 import { getCompletedStoryIds } from '@/utils/threadProgress';
