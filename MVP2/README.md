@@ -9,14 +9,23 @@ Assembled 17 August 2026 against `Nov-New-Build-` @ `f07b650`.
 
 | File | What it is |
 | --- | --- |
-| [`01-CRITICAL-PATH.md`](01-CRITICAL-PATH.md) | **Start here.** The store blockers, in the order they must be done. Nothing else ships until this is clear. |
+| [`08-BUILD-QUEUE.md`](08-BUILD-QUEUE.md) | **START HERE. The one ordered list — work top to bottom.** Everything else is reference. |
+| [`09-IMPLEMENTATION-SPEC.md`](09-IMPLEMENTATION-SPEC.md) | **How to build it well** — motion system, the thread path algorithm, per-item technique, definition of done. Read alongside the queue. |
+| [`10-UX-AUDIT.md`](10-UX-AUDIT.md) | Ten plain user stories, gaps against other Bible apps, and four content files shipping unused. |
+| [`11-ONBOARDING.md`](11-ONBOARDING.md) | Onboarding spec — copy, layout, motion, French. It carries the whole group-reading protocol. |
+| [`01-CRITICAL-PATH.md`](01-CRITICAL-PATH.md) | The store blockers. **Phase 0 complete as of 19 Aug** — kept as the record of what was done. Formerly: The store blockers, in the order they must be done. Nothing else ships until this is clear. |
 | [`02-DEV-SETUP.md`](02-DEV-SETUP.md) | Getting the project running again in Cursor — install, run, test, build. |
 | [`03-DESIGN-DIRECTION.md`](03-DESIGN-DIRECTION.md) | The chosen design direction, the data behind it, and the decisions still open. |
 | [`04-PRD-AND-ROADMAP.md`](04-PRD-AND-ROADMAP.md) | **The product spec and phased build plan.** Scope, screen-by-screen acceptance criteria, estimates, risks, and the decision register. |
 | [`05-GROUP-READING.md`](05-GROUP-READING.md) | How group reading works without coordination software. Resolves the biggest open decision. |
 | [`06-COMPLETION-AND-REMOVAL.md`](06-COMPLETION-AND-REMOVAL.md) | Everything the QR removal touches — 29 files, 2 tables, 30 translation keys — and what story completion becomes. |
+| [`07-BUILD-REVIEW.md`](07-BUILD-REVIEW.md) | **Current punch list.** Device testing 19 Aug: what is built, what is broken, and the revised remaining work. |
 | [`audit/maintenance-audit.html`](audit/maintenance-audit.html) | Full maintenance audit. Open in a browser. |
-| [`mockups/`](mockups/) | Design mockups. Open in a browser — no build step. |
+| [`12-MOCKUP-DELTA.md`](12-MOCKUP-DELTA.md) | What `02-thread-built-out.html` no longer shows. Read before building from the mockup. |
+| [`mockups/`](mockups/) | Design mockups. Open in a browser — no build step. `02` is partly superseded; see `12`. |
+
+**Current state of the build** is in `07-BUILD-REVIEW.md` — start there if you
+are picking up work.
 
 **Authoritative figures** live in `03-DESIGN-DIRECTION.md` (data) and
 `06-COMPLETION-AND-REMOVAL.md` (removal scope and cost). `mockups/01-three-directions.html`
@@ -63,8 +72,10 @@ Step 5    Test on real hardware, both platforms             2 days
           Ship a compliant 1.3.0. Only then start MVP2 design work.
 ```
 
-Then five build phases, **30-39 working days** — see
-[`04-PRD-AND-ROADMAP.md`](04-PRD-AND-ROADMAP.md) §8.
+**Phase 0 shipped.** SDK 57, RN 0.86.2, managed workflow, group machinery gone.
+Remaining build work is **31.5–36.5 days** — see
+[`08-BUILD-QUEUE.md`](08-BUILD-QUEUE.md), which is authoritative for order and
+estimate.
 
 **Group reading is resolved:** it stays, but the QR and host/join machinery goes
 — the four colours already are the mechanism. See
@@ -73,5 +84,5 @@ Then five build phases, **30-39 working days** — see
 **Two decisions still open:** the division titles, and whether to promote figures
 out of the blue source group. Both block Phase 1 only.
 
-Do not start design work before step 5. A redesign landing on top of an
-unbuildable app means every failure has two possible causes.
+*(Historic: design work did begin before Phase 0 finished, which cost some
+debugging time. Phase 0 is now done and the point is moot.)*
