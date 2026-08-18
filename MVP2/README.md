@@ -10,6 +10,7 @@ Assembled 17 August 2026 against `Nov-New-Build-` @ `f07b650`.
 | File | What it is |
 | --- | --- |
 | [`08-BUILD-QUEUE.md`](08-BUILD-QUEUE.md) | **START HERE. The one ordered list — work top to bottom.** Everything else is reference. |
+| [`09-IMPLEMENTATION-SPEC.md`](09-IMPLEMENTATION-SPEC.md) | **How to build it well** — motion system, the thread path algorithm, per-item technique, definition of done. Read alongside the queue. |
 | [`01-CRITICAL-PATH.md`](01-CRITICAL-PATH.md) | The store blockers. **Phase 0 complete as of 19 Aug** — kept as the record of what was done. Formerly: The store blockers, in the order they must be done. Nothing else ships until this is clear. |
 | [`02-DEV-SETUP.md`](02-DEV-SETUP.md) | Getting the project running again in Cursor — install, run, test, build. |
 | [`03-DESIGN-DIRECTION.md`](03-DESIGN-DIRECTION.md) | The chosen design direction, the data behind it, and the decisions still open. |

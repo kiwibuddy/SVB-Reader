@@ -9,8 +9,12 @@ Current: `store-compliance-130` @ `8565195`. Updated 19 August 2026.
 managed workflow, react-navigation and camera removed, group machinery gone,
 `CheckCircle` rebuilt. D5 resolved as managed.
 
-Detail for every item is in [`07-BUILD-REVIEW.md`](07-BUILD-REVIEW.md);
-section references are given.
+Why each item exists: [`07-BUILD-REVIEW.md`](07-BUILD-REVIEW.md), referenced by
+section below.
+
+**How to build each item well, and the motion spec:**
+[`09-IMPLEMENTATION-SPEC.md`](09-IMPLEMENTATION-SPEC.md). Build its motion token
+file (`constants/Motion.ts`) *before* starting A1 — every item references it.
 
 ---
 
