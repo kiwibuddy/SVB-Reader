@@ -30,12 +30,9 @@ import SearchResults from '@/components/navigation/SearchResults';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { getSegmentCompletionStatus } from "@/api/sqlite";
 import { databaseManager } from "@/api/database-manager";
-import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import TopSpeakersData from '@/assets/data/TopSpeakers.json';
 import { useFocusEffect } from '@react-navigation/native';
-import { useGroupReading } from '@/context/GroupReadingContext';
 import { useTranslation } from '@/hooks/useTranslation';
-import FRA_UI from '@/assets/data/FRA-UI.json';
 
 
 export type SegmentKey = keyof typeof SegmentTitles;
@@ -656,7 +653,6 @@ const Navigation = () => {
   const isLargeScreen = screenWidth >= 768;
   const { colors, language } = useSyncAppSettings();
   const { t } = useTranslation();
-  const { currentSession, stopSession } = useGroupReading();
   const styles = createStyles(isLargeScreen, colors);
 
   // Define Old and New Testament books
@@ -668,12 +664,6 @@ const Navigation = () => {
 
 
   const [refreshing, setRefreshing] = useState(false);
-  
-  // Reading Mode Modal State
-  const [showReadingModeModal, setShowReadingModeModal] = useState(false);
-  const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
-  const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
-  const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
 
   // Add search-related state variables
   const [targetVerse, setTargetVerse] = useState<number | null>(null);
@@ -1243,104 +1233,39 @@ const Navigation = () => {
     }
   };
 
-  // Handle segment selection - show ReadingModeModal for stories, direct navigation for introductions
+  // Handle segment selection — open the story directly
   const handleSegmentSelect = (segmentId: string) => {
     if (!segmentId) {
       return;
     }
     const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
     if (segmentData) {
-      // Check if this is an introduction segment
-      if (segmentId.startsWith('I')) {
-        // For introduction segments, navigate directly without showing modal
-        // Use current language and version from state, or fallback to defaults
-        const langCode = state.language?.toUpperCase() || language.toUpperCase() || 'ENG';
-        const version = state.version?.toUpperCase() || 'NLT';
-        const segmentPrefix = `${langCode}-${version}`;
-        
-        router.push({
-          pathname: "/[segment]",
-          params: {
-            segment: `${segmentPrefix}-${segmentId}`,
-            book: segmentData.book[0] || '',
-            context: 'main'
-          }
-        });
-      } else {
-        // For story segments, show the reading mode modal
-        setSelectedSegmentId(segmentId);
-        
-        // Translate title if in French mode
-        let title = segmentData.title;
-        if (language === 'fr') {
-          const frenchTitle = (FRA_UI.Titles as any)[segmentId];
-          if (frenchTitle) {
-            title = frenchTitle;
+      const langCode = state.language?.toUpperCase() || language.toUpperCase() || 'ENG';
+      const version = state.version?.toUpperCase() || 'NLT';
+      const segmentPrefix = `${langCode}-${version}`;
+      const params: any = {
+        segment: `${segmentPrefix}-${segmentId}`,
+        book: segmentData.book[0] || '',
+        context: 'main',
+        freshStart: Date.now().toString()
+      };
+
+      if (targetVerse) {
+        params.verse = targetVerse.toString();
+        if (searchQuery && showSearch) {
+          const parsedRef = parseReferenceEnhanced(searchQuery);
+          if (parsedRef?.chapter) {
+            params.chapter = parsedRef.chapter.toString();
           }
         }
-        
-        setSelectedSegmentTitle(title);
-        setSelectedSegmentRef(segmentData.ref || '');
-        setShowReadingModeModal(true);
       }
-    }
-  };
 
-  // Reading Mode Modal Handlers
-  const handleIndividualReading = async () => {
-    setShowReadingModeModal(false);
-    
-    // Clear any existing group session when starting individual reading
-    if (currentSession) {
-      await stopSession();
+      updateSegmentId(`${segmentPrefix}-${segmentId}`);
+      router.push({
+        pathname: "/[segment]",
+        params
+      });
     }
-    
-    // Use current language and version from state, or fallback to defaults
-    const langCode = state.language?.toUpperCase() || language.toUpperCase() || 'ENG';
-    const version = state.version?.toUpperCase() || 'NLT';
-    const segmentPrefix = `${langCode}-${version}`;
-    
-    await updateSegmentId(`${segmentPrefix}-${selectedSegmentId}`);
-    const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
-    
-    const params: any = {
-      segment: `${segmentPrefix}-${selectedSegmentId}`,
-      book: segment?.book[0] || '',
-      freshStart: Date.now().toString() // Force fresh start from reading mode modal
-    };
-    
-    // Add verse navigation if we have a target verse
-    if (targetVerse) {
-      params.verse = targetVerse.toString();
-      // Also add chapter information if we have a parsed reference
-      if (searchQuery && showSearch) {
-        const parsedRef = parseReferenceEnhanced(searchQuery);
-        if (parsedRef?.chapter) {
-          params.chapter = parsedRef.chapter.toString();
-        }
-      }
-    }
-    
-    router.push({
-      pathname: "/[segment]",
-      params
-    });
-  };
-
-  const handleGroupReading = () => {
-    setShowReadingModeModal(false);
-    router.push({
-      pathname: '/group-setup' as any,
-      params: {
-        storyId: selectedSegmentId,
-        storyTitle: selectedSegmentTitle,
-        scriptureReference: selectedSegmentRef,
-      }
-    });
-  };
-
-  const handleCancelModal = () => {
-    setShowReadingModeModal(false);
   };
 
   // Update handleSearchFocus to just focus/blur the input
@@ -1559,17 +1484,6 @@ const Navigation = () => {
           />
         </View>
       </TouchableWithoutFeedback>
-      <ReadingModeModal
-        visible={showReadingModeModal && !!selectedSegmentId}
-        storyTitle={selectedSegmentTitle}
-        scriptureReference={selectedSegmentRef}
-        storyId={selectedSegmentId || ''}
-        onIndividual={handleIndividualReading}
-        onGroup={handleGroupReading}
-        onCancel={handleCancelModal}
-        // Add context information for context-aware navigation
-        context="main"
-      />
       
       {/* Premium Filter Panel */}
       <Modal

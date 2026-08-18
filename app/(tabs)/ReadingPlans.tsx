@@ -48,8 +48,6 @@ import {
   resumeChallenge,
   endChallenge
 } from "@/api/sqlite";
-import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
-import { useGroupReading } from '@/context/GroupReadingContext';
 
 // Type definitions
 interface ReadingPlansData {
@@ -382,7 +380,6 @@ const ReadingPlansScreen = () => {
   const isLargeScreen = screenWidth >= 768;
   const { colors, isDarkMode, language } = useSyncAppSettings();
   const { t } = useTranslation();
-  const { currentSession, stopSession } = useGroupReading();
   const styles = createStyles(isLargeScreen, colors, isDarkMode);
 
   // State management
@@ -396,11 +393,7 @@ const ReadingPlansScreen = () => {
   const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null);
   const [lastCompletedSegment, setLastCompletedSegment] = useState<string | null>(null);
   
-  // Reading Mode Modal State
-  const [showReadingModeModal, setShowReadingModeModal] = useState(false);
   const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
-  const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
-  const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
   const [selectedPlanId, setSelectedPlanId] = useState<string>('');
   const [selectedPlanType, setSelectedPlanType] = useState<'plan' | 'challenge'>('plan');
 
@@ -821,7 +814,7 @@ const ReadingPlansScreen = () => {
     }
   }, []);
 
-  // Handle segment selection (this will trigger reading mode modal)
+  // Handle segment selection — open the story directly
   const handleSegmentSelect = useCallback((segmentId: string) => {
     if (!segmentId || !expandedPlanId) return;
     
@@ -829,10 +822,7 @@ const ReadingPlansScreen = () => {
     if (!translatedInfo) return;
     
     setSelectedSegmentId(segmentId);
-    setSelectedSegmentTitle(translatedInfo.title);
-    setSelectedSegmentRef(translatedInfo.fullReference);
     
-    // Set plan context based on expanded plan type
     const plan = organizedPlans.active.find(p => p.id === expandedPlanId) || 
                  Object.values(organizedPlans.categorized).flat().find(p => p.id === expandedPlanId);
     
@@ -840,9 +830,29 @@ const ReadingPlansScreen = () => {
       setSelectedPlanId(plan.id);
       setSelectedPlanType(plan.type);
     }
-    
-    setShowReadingModeModal(true);
-  }, [expandedPlanId, organizedPlans, language]);
+
+    const planType = plan?.type || selectedPlanType;
+    const planId = plan?.id || selectedPlanId;
+    const segment = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+    const routeParams: any = {
+      segment: `ENG-NLT-${segmentId}`,
+      book: segment?.book[0] || '',
+      context: planType,
+      freshStart: Date.now().toString()
+    };
+
+    if (planType === 'plan') {
+      routeParams.planId = planId;
+    } else {
+      routeParams.challengeId = planId;
+    }
+
+    updateSegmentId(`ENG-NLT-${segmentId}`);
+    router.push({
+      pathname: "/[segment]",
+      params: routeParams
+    });
+  }, [expandedPlanId, organizedPlans, language, selectedPlanType, selectedPlanId]);
 
   // Helper function to get translated segment title and book name
   const getTranslatedSegmentInfo = (segmentId: string) => {
@@ -1324,61 +1334,6 @@ const ReadingPlansScreen = () => {
     );
   };
 
-  // Reading Mode Modal Handlers
-  const handleIndividualReading = async () => {
-    setShowReadingModeModal(false);
-    
-    if (currentSession) {
-      await stopSession();
-    }
-    
-    await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
-    const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
-    
-    const routeParams: any = {
-      segment: `ENG-NLT-${selectedSegmentId}`,
-      book: segment?.book[0] || '',
-      context: selectedPlanType,
-      freshStart: Date.now().toString()
-    };
-
-    if (selectedPlanType === 'plan') {
-      routeParams.planId = selectedPlanId;
-    } else {
-      routeParams.challengeId = selectedPlanId;
-    }
-
-    router.push({
-      pathname: "/[segment]",
-      params: routeParams
-    });
-  };
-
-  const handleGroupReading = () => {
-    setShowReadingModeModal(false);
-    
-    const routeParams: any = {
-      storyId: selectedSegmentId,
-      storyTitle: selectedSegmentTitle,
-      scriptureReference: selectedSegmentRef,
-    };
-
-    if (selectedPlanType === 'plan') {
-      routeParams.planId = selectedPlanId;
-    } else {
-      routeParams.challengeId = selectedPlanId;
-    }
-
-    router.push({
-      pathname: '/group-setup' as any,
-      params: routeParams
-    });
-  };
-
-  const handleCancelModal = () => {
-    setShowReadingModeModal(false);
-  };
-
   // Start Confirmation Modal Handlers
   const handleConfirmStartPlan = async () => {
     if (!startConfirmationData) return;
@@ -1390,13 +1345,30 @@ const ReadingPlansScreen = () => {
       await startPlanAction(startConfirmationData.planId, startConfirmationData.planType);
       
       if (startConfirmationData.firstStory) {
-        setSelectedSegmentId(startConfirmationData.firstStory.segmentId);
-        // Use translated title and reference from firstStory (already translated in getFirstStoryInPlan)
-        setSelectedSegmentTitle(startConfirmationData.firstStory.title);
-        setSelectedSegmentRef(startConfirmationData.firstStory.fullReference);
+        const segmentId = startConfirmationData.firstStory.segmentId;
+        setSelectedSegmentId(segmentId);
         setSelectedPlanId(startConfirmationData.planId);
         setSelectedPlanType(startConfirmationData.planType);
-        setShowReadingModeModal(true);
+
+        const segment = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+        const routeParams: any = {
+          segment: `ENG-NLT-${segmentId}`,
+          book: segment?.book[0] || '',
+          context: startConfirmationData.planType,
+          freshStart: Date.now().toString()
+        };
+
+        if (startConfirmationData.planType === 'plan') {
+          routeParams.planId = startConfirmationData.planId;
+        } else {
+          routeParams.challengeId = startConfirmationData.planId;
+        }
+
+        await updateSegmentId(`ENG-NLT-${segmentId}`);
+        router.push({
+          pathname: "/[segment]",
+          params: routeParams
+        });
       }
     } finally {
       setLoadingStates(prev => ({ ...prev, [startConfirmationData.planId]: null }));
@@ -1504,20 +1476,6 @@ const ReadingPlansScreen = () => {
           </View>
         </View>
       </ScrollView>
-
-      {/* Reading Mode Modal */}
-      <ReadingModeModal
-        visible={showReadingModeModal && !!selectedSegmentId}
-        storyTitle={selectedSegmentTitle}
-        scriptureReference={selectedSegmentRef}
-        storyId={selectedSegmentId || ''}
-        onIndividual={handleIndividualReading}
-        onGroup={handleGroupReading}
-        onCancel={handleCancelModal}
-        context={selectedPlanType}
-        planId={selectedPlanType === 'plan' ? selectedPlanId : ''}
-        challengeId={selectedPlanType === 'challenge' ? selectedPlanId : ''}
-      />
 
       {/* Start Confirmation Modal */}
       {showStartConfirmationModal && startConfirmationData && (

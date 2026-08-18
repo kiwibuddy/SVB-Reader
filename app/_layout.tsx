@@ -12,7 +12,6 @@ import { BottomNavProvider } from '@/context/BottomNavContext';
 import { FontSizeProvider } from '@/context/FontSizeContext';
 import { SyncAppSettingsProvider, useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { initializeAppSystems } from '@/services/app-startup-manager';
-import { GroupReadingProvider } from '@/context/GroupReadingContext';
 import { View, Text, Alert } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Updates from 'expo-updates';
@@ -160,25 +159,23 @@ function AppContent() {
       <ThemeProvider value={isDarkMode ? DarkTheme : DefaultTheme}>
         <View style={{ flex: 1, backgroundColor: colors.background }}>
           <FontSizeProvider>
-            <GroupReadingProvider>
-              <SQLiteGlobalProvider>
-                <BottomNavProvider>
-                  <StatusBar 
-                    style={isDarkMode ? "light" : "dark"}
-                    backgroundColor={colors.background}
-                  />
-                  <Stack
-                    screenOptions={{
-                      headerShown: false,
-                      contentStyle: { backgroundColor: colors.background },
-                    }}
-                  >
-                    <Stack.Screen name="(tabs)" />
-                    <Stack.Screen name="+not-found" />
-                  </Stack>
-                </BottomNavProvider>
-              </SQLiteGlobalProvider>
-            </GroupReadingProvider>
+            <SQLiteGlobalProvider>
+              <BottomNavProvider>
+                <StatusBar 
+                  style={isDarkMode ? "light" : "dark"}
+                  backgroundColor={colors.background}
+                />
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: colors.background },
+                  }}
+                >
+                  <Stack.Screen name="(tabs)" />
+                  <Stack.Screen name="+not-found" />
+                </Stack>
+              </BottomNavProvider>
+            </SQLiteGlobalProvider>
           </FontSizeProvider>
           
           {/* Auto-detected language Bible download modal */}

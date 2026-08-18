@@ -24,7 +24,6 @@
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSCameraUsageDescription": "This app uses the camera to scan QR codes for joining group reading sessions.",
         "CFBundleDisplayName": "SourceView Together",
         "CFBundleName": "SourceView Together"
       }
@@ -35,7 +34,6 @@
         "backgroundColor": "#808080"
       },
       "permissions": [
-        "android.permission.CAMERA",
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE"
       ],
@@ -76,13 +74,6 @@
         "expo-sqlite",
         {
           "version": "latest"
-        }
-      ],
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
         }
       ],
       "expo-localization"

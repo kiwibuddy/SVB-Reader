@@ -14,7 +14,6 @@ import SegmentTitle from "./SegmentTitle";
 import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import CelebrationPopup from "./CelebrationPopup";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useGroupReading } from '@/context/GroupReadingContext';
 import CheckCircle from "@/components/CheckCircle";
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { memo } from "react";
@@ -65,8 +64,8 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     state,
     updateSegmentId,
   } = useSQLiteGlobalContext();
-  const { currentRole, currentSession } = useGroupReading();
-  // Removed completedSegments, activePlan, activeChallenges dependencies - now using pure SQLite
+  const currentRole = null;
+  const currentSession = null;
 
   const { colors } = useAppSettings();
   const { t } = useTranslation();
@@ -243,7 +242,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return result;
   }, [memoizedContent]);
 
-  // Preselect reader role from GroupReadingContext when available
+  // Preselect reader role when a role is assigned
   useEffect(() => {
     if (!currentRole) return;
     const roleToColor: Record<string, string> = {

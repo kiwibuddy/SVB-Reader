@@ -11,8 +11,7 @@ import {
   Dimensions,
   Platform,
   TouchableOpacity,
-  RefreshControl,
-  Alert
+  RefreshControl
 } from "react-native";
 import ReadingPlansChallenges from "../../assets/data/ReadingPlansChallenges.json";
 import DailyStoryMap from '../../assets/data/DailyStoryMap.json';
@@ -27,7 +26,6 @@ import { useFontSize } from '@/context/FontSizeContext';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { type ColorScheme } from '@/context/types';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useGroupReading } from '@/context/GroupReadingContext';
 import { getFullBookName } from '@/utils/bookNameMapping';
 import { 
   getStoryInsights, 
@@ -56,10 +54,7 @@ import Reanimated, {
   Easing,
 } from 'react-native-reanimated';
 import SegmentTitlesData from '../../assets/data/SegmentTitles.json';
-import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import { bibleLoader } from '@/services/BibleLoader';
-import { qrCodeDiscoveryManager } from '@/services/QRCodeDiscoveryManager';
-import QRCodeScanner from '@/components/QRCodeScanner';
 import FRA_UI from '@/assets/data/FRA-UI.json';
 
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
@@ -2592,31 +2587,6 @@ const Home = () => {
   // Add state for active plan and challenges from SQLite
   const [activePlan, setActivePlan] = useState<any | null>(null);
   const [activeChallenges, setActiveChallenges] = useState<Record<string, any>>({});
-  
-  // Group Reading Context
-  const { 
-    currentSession, 
-    joinSession,
-    setUserName,
-    currentUserName,
-    stopSession,
-  } = useGroupReading();
-
-
-  
-  const [dismissedGroups, setDismissedGroups] = useState<Set<string>>(new Set());
-  
-  // Reading Mode Modal State
-  const [showReadingModeModal, setShowReadingModeModal] = useState(false);
-  
-  // QR Code Scanner State
-  const [scanned, setScanned] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
-
-
-  const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
-  const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
-  const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
 
   // Add useEffect to fetch streak data
   useEffect(() => {
@@ -2915,69 +2885,74 @@ const Home = () => {
     // Implementation of handleScroll function
   };
 
+  const navigateToStory = async (segmentId: string) => {
+    if (!segmentId) {
+      return;
+    }
+    await updateSegmentId(`ENG-NLT-${segmentId}`);
+    const segment = SegmentTitles[segmentId as keyof typeof SegmentTitles];
+
+    let contextParams: any = {
+      segment: `ENG-NLT-${segmentId}`,
+      book: segment?.book[0] || ''
+    };
+
+    const today = new Date();
+    const dayOfYear = getDayOfYear(today);
+    const dailyStoryMap = DailyStoryMap as string[];
+    const dailySegmentId = dailyStoryMap && dailyStoryMap.length > 0 ? dailyStoryMap[(dayOfYear - 1) % dailyStoryMap.length] : null;
+
+    if (segmentId === dailySegmentId && dailySegmentId) {
+      contextParams.context = 'today';
+    } else if (activePlan && planProgress?.nextSegmentId === segmentId) {
+      contextParams.planId = activePlan.planId;
+      contextParams.context = 'plan';
+    } else if (Object.keys(activeChallenges).length > 0) {
+      for (const [challengeId] of Object.entries(activeChallenges)) {
+        const challengeProgress = challengeProgresses[challengeId];
+        if (challengeProgress?.nextSegmentId === segmentId) {
+          contextParams.challengeId = challengeId;
+          contextParams.context = 'challenge';
+          break;
+        }
+      }
+    }
+
+    router.push({
+      pathname: "/[segment]",
+      params: {
+        ...contextParams,
+        freshStart: Date.now().toString()
+      }
+    });
+
+    setTimeout(() => {
+      setRefreshTrigger(prev => prev + 1);
+    }, 2000);
+  };
+
   const handleContinueReading = async (segmentId?: string) => {
     let segmentToRead = segmentId || state.lastReadSegment;
     if (!segmentToRead) {
       segmentToRead = 'S001';
       await updateLastReadSegment('S001');
     }
-    const segmentData = SegmentTitles[segmentToRead as keyof typeof SegmentTitles];
-    if (segmentData && segmentToRead) {
-      setSelectedSegmentId(segmentToRead);
-      
-      // Translate title if in French mode
-      let title = segmentData.title;
-      if (language === 'fr') {
-        const frenchTitle = (FRA_UI.Titles as any)[segmentToRead];
-        if (frenchTitle) title = frenchTitle;
-      }
-      
-      setSelectedSegmentTitle(title);
-      setSelectedSegmentRef((segmentData as any).ref || '');
-      setShowReadingModeModal(true);
-    }
+    await navigateToStory(segmentToRead);
   };
 
   const handleComplete = async () => {
-    // Show reading mode modal for the current segment
     if (state.lastReadSegment) {
-      const segment = SegmentTitles[state.lastReadSegment as keyof typeof SegmentTitles];
-      if (segment) {
-        setSelectedSegmentId(state.lastReadSegment);
-        
-        // Translate title if in French mode
-        let title = segment.title;
-        if (language === 'fr') {
-          const frenchTitle = (FRA_UI.Titles as any)[state.lastReadSegment];
-          if (frenchTitle) title = frenchTitle;
-        }
-        
-        setSelectedSegmentTitle(title);
-        setSelectedSegmentRef((segment as any).ref || '');
-        setShowReadingModeModal(true);
-      }
+      await navigateToStory(state.lastReadSegment);
     }
   };
 
   const handleActivePlanContinue = async () => {
     if (!activePlan || !planProgress?.nextSegmentId) return;
-    
+
     const segmentData = SegmentTitles[planProgress.nextSegmentId as keyof typeof SegmentTitles];
     if (segmentData) {
-      setSelectedSegmentId(planProgress.nextSegmentId);
-      
-      // Translate title if in French mode
-      let title = segmentData.title;
-      if (language === 'fr') {
-        const frenchTitle = (FRA_UI.Titles as any)[planProgress.nextSegmentId];
-        if (frenchTitle) title = frenchTitle;
-      }
-      
-      setSelectedSegmentTitle(title);
-      setSelectedSegmentRef((segmentData as any).ref || '');
-      setShowReadingModeModal(true);
+      await navigateToStory(planProgress.nextSegmentId);
     } else {
-      // If no next segment, go to the reading plans page
       router.push("/ReadingPlans");
     }
   };
@@ -2985,231 +2960,15 @@ const Home = () => {
   const handleActiveChallengesContinue = async (challengeId: string) => {
     const challengeProgress = challengeProgresses[challengeId];
     if (!challengeProgress?.nextSegmentId) {
-      // If no next segment, go to the reading plans page
       router.push("/ReadingPlans");
       return;
     }
-    
+
     const segmentData = SegmentTitles[challengeProgress.nextSegmentId as keyof typeof SegmentTitles];
     if (segmentData) {
-      setSelectedSegmentId(challengeProgress.nextSegmentId);
-      
-      // Translate title if in French mode
-      let title = segmentData.title;
-      if (language === 'fr') {
-        const frenchTitle = (FRA_UI.Titles as any)[challengeProgress.nextSegmentId];
-        if (frenchTitle) title = frenchTitle;
-      }
-      
-      setSelectedSegmentTitle(title);
-      setSelectedSegmentRef((segmentData as any).ref || '');
-      setShowReadingModeModal(true);
+      await navigateToStory(challengeProgress.nextSegmentId);
     }
   };
-
-  // Group Reading Handlers
-  const handleJoinGroup = async (sessionId: string) => {
-    // TODO: Parse session from QR code data
-    logger.info('🔍 Joining session via QR code:', sessionId);
-    
-    router.push({
-      pathname: '/join-group' as any,
-      params: { 
-        sessionId: sessionId,
-        storyId: 'S001',
-        storyTitle: 'God Creates',
-        scriptureReference: 'Genesis 1:1-2:25',
-        hostUserName: 'QR Host'
-      }
-    });
-  };
-
-  const handleDismissGroup = (sessionId: string) => {
-    setDismissedGroups(prev => new Set(Array.from(prev).concat(sessionId)));
-  };
-
-  // Reading Mode Modal Handlers
-  const handleIndividualReading = async () => {
-    setShowReadingModeModal(false);
-    
-    // Clear any existing group session when starting individual reading
-    if (currentSession) {
-      await stopSession();
-    }
-    
-    await updateSegmentId(`ENG-NLT-${selectedSegmentId}`);
-    const segment = SegmentTitles[selectedSegmentId as keyof typeof SegmentTitles];
-    
-    // Determine context based on how we got here
-    let contextParams: any = {
-      segment: `ENG-NLT-${selectedSegmentId}`,
-      book: segment?.book[0] || ''
-    };
-    
-    // Check if this is today's reading
-    const today = new Date();
-    const dayOfYear = getDayOfYear(today);
-    const dailyStoryMap = DailyStoryMap as string[];
-    const dailySegmentId = dailyStoryMap && dailyStoryMap.length > 0 ? dailyStoryMap[(dayOfYear - 1) % dailyStoryMap.length] : null;
-    
-    if (selectedSegmentId === dailySegmentId && dailySegmentId) {
-      contextParams.context = 'today';
-    }
-    // If we have an active plan and this segment is part of that plan, pass plan context
-    else if (activePlan && planProgress?.nextSegmentId === selectedSegmentId) {
-      contextParams.planId = activePlan.planId;
-      contextParams.context = 'plan';
-    }
-    // If we have active challenges and this segment is part of any challenge, pass challenge context
-    else if (Object.keys(activeChallenges).length > 0) {
-      for (const [challengeId] of Object.entries(activeChallenges)) {
-        const challengeProgress = challengeProgresses[challengeId];
-        if (challengeProgress?.nextSegmentId === selectedSegmentId) {
-          contextParams.challengeId = challengeId;
-          contextParams.context = 'challenge';
-          break;
-        }
-      }
-    }
-    
-    router.push({
-      pathname: "/[segment]",
-      params: {
-        ...contextParams,
-        freshStart: Date.now().toString() // Force fresh start from reading mode modal
-      }
-    });
-    
-    // Add listener for when user returns from reading to refresh streak
-    setTimeout(() => {
-      
-      setRefreshTrigger(prev => prev + 1);
-    }, 2000);
-  };
-
-  const handleGroupReading = () => {
-    setShowReadingModeModal(false);
-    router.push({
-      pathname: '/group-setup' as any,
-      params: {
-        storyId: selectedSegmentId,
-        storyTitle: selectedSegmentTitle,
-        scriptureReference: selectedSegmentRef,
-      }
-    });
-  };
-
-  const handleCancelModal = () => {
-    setShowReadingModeModal(false);
-  };
-
-  // QR Code Scanner Functions
-  const requestCameraPermission = async () => {
-    try {
-      logger.info('🔍 Requesting camera permission for QR scanning...');
-      // For now, just show the scanner - it will handle permissions internally
-      setShowScanner(true);
-      setScanned(false);
-      return true;
-    } catch (error) {
-      logger.error('🔴 Error requesting camera permission:', error);
-      return false;
-    }
-  };
-
-  const handleScanQRCode = async () => {
-    try {
-      setShowScanner(true);
-      setScanned(false);
-    } catch (error) {
-      logger.error('🔴 Error with QR scanner:', error);
-      Alert.alert(t('UI.alerts.error'), t('UI.alerts.qrScannerUnavailable'));
-    }
-  };
-
-  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
-    try {
-      logger.info('🔍 QR Code scanned:', { type, data: data.substring(0, 50) + '...' });
-      setScanned(true);
-      
-      // Parse QR code data
-      const session = qrCodeDiscoveryManager.parseSessionFromQRCode(data);
-      
-      if (session) {
-        logger.info('✅ Valid session QR code detected');
-        // Navigate to role selection screen with session data
-        router.push({
-          pathname: '/role-selection' as any,
-          params: {
-            qrCodeData: data,
-            sessionId: session.id,
-            storyId: session.storyId,
-            storyTitle: session.storyTitle,
-            scriptureReference: session.scriptureReference,
-            hostUserName: session.hostUserName,
-            hostRole: session.participants[0].role
-          }
-        });
-      } else {
-        // Check if it's a completion QR code
-        const completionData = qrCodeDiscoveryManager.parseCompletionFromQRCode(data);
-        
-        if (completionData) {
-          logger.info('✅ Valid completion QR code detected');
-          // Handle completion QR code
-          Alert.alert(
-            t('UI.alerts.storyCompletion'),
-            t('UI.alerts.storyCompletionMessage'),
-            [
-              { text: t('UI.alerts.cancel'), style: 'cancel' },
-              { 
-                text: t('UI.alerts.markComplete'), 
-                onPress: () => handleCompletionQRCode(completionData)
-              }
-            ]
-          );
-        } else {
-          logger.info('🔴 Invalid QR code format');
-          Alert.alert(
-            t('UI.alerts.invalidQRCode'),
-            t('UI.alerts.invalidQRMessage'),
-            [{ text: t('UI.alerts.ok') }]
-          );
-        }
-      }
-      
-      setShowScanner(false);
-    } catch (error) {
-      logger.error('🔴 Error processing scanned QR code:', error);
-      Alert.alert(t('UI.alerts.error'), t('UI.alerts.failedToProcessQR'));
-      setShowScanner(false);
-    }
-  };
-
-  const handleCompletionQRCode = async (completionData: any) => {
-    try {
-      logger.info('✅ Processing completion QR code:', completionData);
-      
-      // TODO: Implement completion tracking
-      // This will be implemented in Phase 5
-      Alert.alert(
-        'Completion Tracking',
-        'Story completion tracking will be available in the next phase.',
-        [{ text: 'OK' }]
-      );
-    } catch (error) {
-      logger.error('🔴 Error processing completion QR code:', error);
-      Alert.alert('Error', 'Failed to process completion QR code');
-    }
-  };
-
-  const handleCloseScanner = () => {
-    setShowScanner(false);
-    setScanned(false);
-  };
-
-  // TODO: Replace with QR code-based group discovery
-  const visibleNearbyGroups: any[] = [];
 
   const combinedStyles: SectionStyles = {
     ...styles,
@@ -3281,39 +3040,11 @@ const Home = () => {
       : ['transparent', 'rgba(0,0,0,0.7)'];
   }; */
 
-  // Handle segment selection - show ReadingModeModal for stories, direct navigation for introductions
-  const handleSegmentSelect = (segmentId: string) => {
+  const handleSegmentSelect = async (segmentId: string) => {
     if (!segmentId) {
       return;
     }
-    const segmentData = SegmentTitles[segmentId as keyof typeof SegmentTitles];
-    if (segmentData) {
-      // Check if this is an introduction segment
-      if (segmentId.startsWith('I')) {
-        // For introduction segments, navigate directly without showing modal
-        router.push({
-          pathname: "/[segment]",
-          params: {
-            segment: `ENG-NLT-${segmentId}`,
-            book: segmentData.book[0] || ''
-          }
-        });
-      } else {
-        // For story segments, show the reading mode modal
-        setSelectedSegmentId(segmentId);
-        
-        // Translate title if in French mode
-        let title = segmentData.title;
-        if (language === 'fr') {
-          const frenchTitle = (FRA_UI.Titles as any)[segmentId];
-          if (frenchTitle) title = frenchTitle;
-        }
-        
-        setSelectedSegmentTitle(title);
-        setSelectedSegmentRef((segmentData as any).ref || '');
-        setShowReadingModeModal(true);
-      }
-    }
+    await navigateToStory(segmentId);
   };
 
   // Helper to get full book name from code
@@ -3498,21 +3229,6 @@ const Home = () => {
             </View>
           </Pressable>
           
-          {/* QR Code Group Reading Card */}
-          <View style={[styles.continueReading, { backgroundColor: '#42A5F5' }]}>
-            <View style={styles.readingInfo}>
-              <Text style={[styles.readingTitle, { color: '#FFFFFF' }]}>{t('UI.landing.joinGroupReading')}</Text>
-              <Text style={[styles.readingSubtitle, { color: 'rgba(255, 255, 255, 0.9)' }]}>
-                {t('UI.landing.scanQRCode')}
-              </Text>
-            </View>
-            <TouchableOpacity 
-              style={styles.qrScanButton}
-              onPress={handleScanQRCode}
-            >
-              <Ionicons name="qr-code-outline" size={32} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
         </View>
 
         {/* Today's Stories Section */}
@@ -3620,71 +3336,6 @@ const Home = () => {
         <View style={{ height: 80 }} />
       </ScrollView>
 
-      <ReadingModeModal
-        visible={showReadingModeModal && !!selectedSegmentId}
-        storyTitle={selectedSegmentTitle}
-        scriptureReference={selectedSegmentRef}
-        storyId={selectedSegmentId || ''}
-        onIndividual={handleIndividualReading}
-        onGroup={handleGroupReading}
-        onCancel={handleCancelModal}
-        // Add context information for context-aware navigation
-        context={(() => {
-          // Check if this is today's reading
-          const today = new Date();
-          const dayOfYear = getDayOfYear(today);
-          const dailyStoryMap = DailyStoryMap as string[];
-          const dailySegmentId = dailyStoryMap && dailyStoryMap.length > 0 ? dailyStoryMap[(dayOfYear - 1) % dailyStoryMap.length] : null;
-          
-          if (selectedSegmentId === dailySegmentId && dailySegmentId) {
-            return 'today';
-          }
-          // If we have an active plan and this segment is part of that plan, pass plan context
-          else if (activePlan && planProgress?.nextSegmentId === selectedSegmentId) {
-            return 'plan';
-          }
-          // If we have active challenges and this segment is part of any challenge, pass challenge context
-          else if (Object.keys(activeChallenges).length > 0) {
-            for (const [challengeId] of Object.entries(activeChallenges)) {
-              const challengeProgress = challengeProgresses[challengeId];
-              if (challengeProgress?.nextSegmentId === selectedSegmentId) {
-                return 'challenge';
-              }
-            }
-          }
-          return 'main';
-        })()}
-        planId={(() => {
-          if (activePlan && planProgress?.nextSegmentId === selectedSegmentId) {
-            return activePlan.planId;
-          }
-          return undefined;
-        })()}
-        challengeId={(() => {
-          if (Object.keys(activeChallenges).length > 0) {
-            for (const [challengeId] of Object.entries(activeChallenges)) {
-              const challengeProgress = challengeProgresses[challengeId];
-              if (challengeProgress?.nextSegmentId === selectedSegmentId) {
-                return challengeId;
-              }
-            }
-          }
-          return undefined;
-        })()}
-      />
-
-      {/* QR Code Scanner Modal - migrated to expo-camera via `components/QRCodeScanner.tsx` */}
-      {showScanner && (
-        <View style={styles.scannerContainer}>
-          <QRCodeScanner
-            title={t('UI.qrScanner.title')}
-            onClose={handleCloseScanner}
-            onQRCodeScanned={(data: string) => {
-              handleBarCodeScanned({ type: 'qr', data });
-            }}
-          />
-        </View>
-      )}
     </View>
   );
 };
