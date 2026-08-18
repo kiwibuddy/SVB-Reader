@@ -58,7 +58,6 @@ Treat every hard-coded coordinate in that file as illustration only.
 - **The reader's bubble layout** — Narrator and God left, everyone else right,
   asymmetric corner radius, no tails, speaker label above, the mix bar under the
   title. C1–C3 are corrections *toward* the mockup, not away from it.
-- **The gutter thread** in the reader, with a speaker dot in each ink.
 - **Saved**, both levels — unchanged by anything since.
 - **You L1** — name, stats, flat year thread with division ticks, single settings
   row. Only the path generation changes.

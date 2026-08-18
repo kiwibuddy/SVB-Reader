@@ -305,9 +305,14 @@ eighth.
 <Animated.View entering={FadeInDown.duration(DUR.base).delay(Math.min(i, STAGGER.max) * STAGGER.turn)}>
 ```
 
-**C4 · Gutter thread.** Same builder, one x-depth, 30px gutter. Speaker dots are
-`marks` in each speaker's ink. Draw it once on story open at `DUR.base` — slower
-than that and it competes with the text.
+**C4 · Remove the gutter thread and the speaker dots** (reversed 19 August). The
+reader has no thread. Delete the gutter `Svg`, delete the `.spk` dots, and drop
+the turn's reserved left padding so bubbles run the full column — worth 18px of
+width per bubble.
+
+The thread builder is still used by Read L1, Plan L2 and You; only the reader
+loses it. That also removes the one place a generated path would have had to
+track a scrolling, variable-height list, so B1 gets simpler too.
 
 **C7 · Call sheet.** Collapsed it's the mix bar; expanded it lists the cast.
 Animate with `LinearTransition.duration(DUR.base)` on the container — do **not**

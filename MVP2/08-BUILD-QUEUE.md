@@ -52,7 +52,7 @@ Apply B1 to `YearThread.tsx` too — the broken dashes on **You** are the same b
 | C1 | Typography: bubble `max-width: 84%`, body 15–16px at Medium, line-height ~1.45 | 5.1 |
 | C2 | Speaker label spacing — gap above a label must exceed the gap below it | 5.2 |
 | C3 | Remove bubble tails; asymmetric corner radius instead (16px / 5px nearest the gutter) | 5.3 |
-| C4 | Add the gutter thread — same generated path, 30px gutter, speaker dot in ink | 5.4 |
+| C4 | **Remove the gutter thread and the speaker dots.** The reader carries no thread. Reclaim the 32px left padding so bubbles gain width | 5.4 |
 | C5 | Confirm left/right alternation on a four-ink story — use `S008` | 5.5 |
 | C6 | Story header shows the book: `Gen 15:1–18:15` | 5.8 |
 | C7 | Call sheet expands to named cast with word counts | 5.9 |

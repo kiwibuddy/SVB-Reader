@@ -124,15 +124,12 @@ figure.s figcaption em{font-style:normal;color:var(--warn);font-weight:600}
 .csheet .hint{border-top:1px solid var(--p-hair);padding:7px 11px;font-size:10px;color:var(--p-mute);font-style:italic}
 
 .rdr{position:relative;padding:8px 0 0}
-.rdr>svg{position:absolute;left:0;top:0;width:34px;height:100%;overflow:visible;pointer-events:none}
-.turn{position:relative;padding:11px 14px 0 32px}
+.turn{position:relative;padding:11px 14px 0}
 .turn .who{font-size:8.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--c);font-weight:600;margin-bottom:4px}
-.turn .spk{position:absolute;left:14px;top:16px;width:7px;height:7px;border-radius:50%;background:var(--c);transform:translateX(-50%);border:2.5px solid var(--p-bg)}
 .bub{max-width:84%;padding:9px 12px 10px;font-family:var(--book);font-size:13.5px;line-height:1.45;border-radius:16px}
 .turn.l .bub{margin-right:auto;border-top-left-radius:5px}
 .turn.r .bub{margin-left:auto;border-top-right-radius:5px}
 .turn.r .who{text-align:right}
-.turn.r .spk{left:auto;right:14px;transform:translateX(50%)}
 .b-narr{background:var(--p-surf);border:1px solid var(--p-hair);color:var(--p-ink)}
 .b-div{background:var(--p-divf);color:var(--p-div);border:1px solid color-mix(in srgb,var(--p-div) 26%,transparent)}
 .b-prin{background:var(--p-prinf);color:var(--p-prin);border:1px solid color-mix(in srgb,var(--p-prin) 26%,transparent)}
@@ -234,7 +231,7 @@ figure.s figcaption em{font-style:normal;color:var(--warn);font-weight:600}
 <header class="mast">
   <div class="eyebrow">Source View Bible · MVP2 screens · 19 August 2026</div>
   <h1>The screens that changed, and the ones that never existed.</h1>
-  <p class="lede">Supersedes <code>02-thread-built-out.html</code> for everything below. Seventeen screens covering the three-level thread, the call sheet, reference search, the rebuilt Cast, conversation navigation, sharing, onboarding and the completion moment.</p>
+  <p class="lede">Supersedes <code>02-thread-built-out.html</code> for everything below. Seventeen screens covering the three-level thread, the call sheet, reference search, the rebuilt Cast, conversation navigation, sharing, onboarding and the completion moment. <b>The reader carries no thread and no speaker dots</b> — it is for reading, not navigating.</p>
   <p class="note"><b>The threads on this page are drawn by the same algorithm the app should use</b> — a <code>buildThread()</code> function generating each path from row offsets, not hand-authored coordinates. That was the bug in the last mockup: its fixed path went into the app verbatim and truncated after four rows. View source; the function is ~20 lines and mirrors <code>09-IMPLEMENTATION-SPEC.md</code> §2.</p>
 </header>
 
@@ -342,15 +339,15 @@ figure.s figcaption em{font-style:normal;color:var(--warn);font-weight:600}
           <span class="cnt">6 voices ⌄</span>
         </div>
       </div>
-      <div class="body"><div class="rdr" data-gutter>
-        <div class="turn l" style="--c:var(--p-narr)"><span class="spk"></span><div class="who">The Narrator</div><div class="bub b-narr"><sup>1</sup>Some time later, God tested Abraham&#8217;s faith.</div></div>
-        <div class="turn l" style="--c:var(--p-div)"><span class="spk"></span><div class="who">God</div><div class="bub b-div">Abraham!</div></div>
-        <div class="turn r" style="--c:var(--p-prin)"><span class="spk"></span><div class="who">Abraham</div><div class="bub b-prin">Yes, here I am!</div></div>
-        <div class="turn l" style="--c:var(--p-div)"><span class="spk"></span><div class="who">God</div><div class="bub b-div"><sup>2</sup>Take your son, your only son — yes, Isaac, whom you love so much — and go to the land of Moriah.</div></div>
-        <div class="turn r" style="--c:var(--p-prin)"><span class="spk"></span><div class="who">Isaac</div><div class="bub b-prin"><sup>7</sup>We have the fire and the wood, but where is the sheep?</div><div class="rx"><span>🙏 4</span></div></div>
+      <div class="body"><div class="rdr">
+        <div class="turn l" style="--c:var(--p-narr)"><div class="who">The Narrator</div><div class="bub b-narr"><sup>1</sup>Some time later, God tested Abraham&#8217;s faith.</div></div>
+        <div class="turn l" style="--c:var(--p-div)"><div class="who">God</div><div class="bub b-div">Abraham!</div></div>
+        <div class="turn r" style="--c:var(--p-prin)"><div class="who">Abraham</div><div class="bub b-prin">Yes, here I am!</div></div>
+        <div class="turn l" style="--c:var(--p-div)"><div class="who">God</div><div class="bub b-div"><sup>2</sup>Take your son, your only son — yes, Isaac, whom you love so much — and go to the land of Moriah.</div></div>
+        <div class="turn r" style="--c:var(--p-prin)"><div class="who">Isaac</div><div class="bub b-prin"><sup>7</sup>We have the fire and the wood, but where is the sheep?</div><div class="rx"><span>🙏 4</span></div></div>
       </div></div>
       <div class="tabs"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
-    </div><figcaption><b>Reading</b>Bubbles at 84% width, 13.5px body — the current build runs roughly 20px in a 60% bubble, which is why text breaks over five lines. No tails: the corner nearest the gutter is squared instead. The gutter thread runs unbroken with a dot in each speaker's ink.</figcaption></figure>
+    </div><figcaption><b>Reading</b>Bubbles at 84% width, 13.5px body — the current build runs roughly 20px in a 60% bubble, which is why text breaks over five lines. No tails: the corner nearest the thread side is squared instead. <em>No gutter line and no speaker dots</em> — the name in its ink is identification enough, and the bubbles gain 18px of width.</figcaption></figure>
 
     <figure class="s"><div class="ph light">
       <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
@@ -371,9 +368,9 @@ figure.s figcaption em{font-style:normal;color:var(--warn);font-weight:600}
         </div>
         <div class="hint">Reading together? Tap a voice to follow it.</div>
       </div>
-      <div class="body"><div class="rdr" data-gutter>
-        <div class="turn l" style="--c:var(--p-narr)"><span class="spk"></span><div class="who">The Narrator</div><div class="bub b-narr"><sup>1</sup>Some time later, God tested Abraham&#8217;s faith.</div></div>
-        <div class="turn l" style="--c:var(--p-div)"><span class="spk"></span><div class="who">God</div><div class="bub b-div">Abraham!</div></div>
+      <div class="body"><div class="rdr">
+        <div class="turn l" style="--c:var(--p-narr)"><div class="who">The Narrator</div><div class="bub b-narr"><sup>1</sup>Some time later, God tested Abraham&#8217;s faith.</div></div>
+        <div class="turn l" style="--c:var(--p-div)"><div class="who">God</div><div class="bub b-div">Abraham!</div></div>
       </div></div>
       <div class="tabs"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
     </div><figcaption><b>Call sheet open</b>This replaces role selection. Four people glance and know who reads what — no host, no codes. <em>The old "Select Your Reading Role:" heading is gone</em>; the swatches live here, optional, and tapping one dims the other inks rather than starting a mode.</figcaption></figure>
@@ -384,7 +381,7 @@ figure.s figcaption em{font-style:normal;color:var(--warn);font-weight:600}
       <div class="rhead"><div class="t">Abraham&#8217;s Faith Tested</div><div class="m">008 · Gen 22:2</div></div>
       <div class="body">
         <div class="rdr" style="opacity:.32">
-          <div class="turn l" style="--c:var(--p-narr)"><span class="spk"></span><div class="who">The Narrator</div><div class="bub b-narr">Some time later, God tested Abraham&#8217;s faith.</div></div>
+          <div class="turn l" style="--c:var(--p-narr)"><div class="who">The Narrator</div><div class="bub b-narr">Some time later, God tested Abraham&#8217;s faith.</div></div>
         </div>
         <div style="padding:10px 14px 0">
           <div class="bub b-div" style="max-width:none;box-shadow:0 0 0 2px var(--p-div);border-top-left-radius:5px"><sup>2</sup>Take your son, your only son — yes, Isaac, whom you love so much.</div>
@@ -426,8 +423,8 @@ figure.s figcaption em{font-style:normal;color:var(--warn);font-weight:600}
       <div class="rhead"><div class="t">The Flood</div><div class="m">003 · Gen 6:1–9:29</div></div>
       <div class="body">
         <div class="rdr" style="opacity:.3">
-          <div class="turn l" style="--c:var(--p-div)"><span class="spk"></span><div class="who">God</div><div class="bub b-div">I have placed my rainbow in the clouds.</div></div>
-          <div class="turn r" style="--c:var(--p-chor)"><span class="spk"></span><div class="who">Noah</div><div class="bub b-chor">Blessed be the Lord, the God of Shem.</div></div>
+          <div class="turn l" style="--c:var(--p-div)"><div class="who">God</div><div class="bub b-div">I have placed my rainbow in the clouds.</div></div>
+          <div class="turn r" style="--c:var(--p-chor)"><div class="who">Noah</div><div class="bub b-chor">Blessed be the Lord, the God of Shem.</div></div>
         </div>
         <div class="done">
           <div class="tick">✓</div>
@@ -523,11 +520,11 @@ figure.s figcaption em{font-style:normal;color:var(--warn);font-weight:600}
         <div style="display:flex;align-items:center;gap:8px"><span class="dot" style="background:var(--p-prin)"></span><span style="font-size:16px;font-weight:600">Abraham</span><span style="color:var(--p-mute)">↔</span><span class="dot" style="background:var(--p-div)"></span><span style="font-size:16px;font-weight:600">God</span></div>
         <div class="lab" style="margin-top:4px">Exchange 3 of 12 · Sodom &amp; Gomorrah</div>
       </div>
-      <div class="body"><div class="rdr" data-gutter>
-        <div class="turn r" style="--c:var(--p-prin)"><span class="spk"></span><div class="who">Abraham</div><div class="bub b-prin">Will you sweep away both the righteous and the wicked?</div></div>
-        <div class="turn l" style="--c:var(--p-div)"><span class="spk"></span><div class="who">God</div><div class="bub b-div">If I find fifty righteous people in Sodom, I will spare the entire city.</div></div>
-        <div class="turn r" style="--c:var(--p-prin)"><span class="spk"></span><div class="who">Abraham</div><div class="bub b-prin">Suppose there are only forty-five?</div></div>
-        <div class="turn l" style="--c:var(--p-div)"><span class="spk"></span><div class="who">God</div><div class="bub b-div">I will not destroy it if I find forty-five.</div></div>
+      <div class="body"><div class="rdr">
+        <div class="turn r" style="--c:var(--p-prin)"><div class="who">Abraham</div><div class="bub b-prin">Will you sweep away both the righteous and the wicked?</div></div>
+        <div class="turn l" style="--c:var(--p-div)"><div class="who">God</div><div class="bub b-div">If I find fifty righteous people in Sodom, I will spare the entire city.</div></div>
+        <div class="turn r" style="--c:var(--p-prin)"><div class="who">Abraham</div><div class="bub b-prin">Suppose there are only forty-five?</div></div>
+        <div class="turn l" style="--c:var(--p-div)"><div class="who">God</div><div class="bub b-div">I will not destroy it if I find forty-five.</div></div>
       </div></div>
       <div style="display:flex;justify-content:space-between;padding:8px 16px 10px;border-top:1px solid var(--p-hair)">
         <span style="font-size:11px;color:var(--p-mute);letter-spacing:.12em;text-transform:uppercase">‹ Exchange</span>
@@ -712,14 +709,14 @@ figure.s figcaption em{font-style:normal;color:var(--warn);font-weight:600}
       <div class="csheet">
         <div class="top"><div class="mix"><i style="background:var(--p-narr);flex:1191"></i><i style="background:var(--p-div);flex:315"></i><i style="background:var(--p-prin);flex:269"></i><i style="background:var(--p-chor);flex:392"></i></div><span class="cnt">6 voices ⌄</span></div>
       </div>
-      <div class="body"><div class="rdr" data-gutter>
-        <div class="turn l" style="--c:var(--p-narr)"><span class="spk"></span><div class="who">The Narrator</div><div class="bub b-narr"><sup>1</sup>Some time later, God tested Abraham&#8217;s faith.</div></div>
-        <div class="turn l" style="--c:var(--p-div)"><span class="spk"></span><div class="who">God</div><div class="bub b-div">Abraham!</div></div>
-        <div class="turn r" style="--c:var(--p-prin)"><span class="spk"></span><div class="who">Abraham</div><div class="bub b-prin">Yes, here I am!</div></div>
-        <div class="turn r" style="--c:var(--p-chor)"><span class="spk"></span><div class="who">Sarah</div><div class="bub b-chor"><sup>6</sup>God has brought me laughter.</div></div>
+      <div class="body"><div class="rdr">
+        <div class="turn l" style="--c:var(--p-narr)"><div class="who">The Narrator</div><div class="bub b-narr"><sup>1</sup>Some time later, God tested Abraham&#8217;s faith.</div></div>
+        <div class="turn l" style="--c:var(--p-div)"><div class="who">God</div><div class="bub b-div">Abraham!</div></div>
+        <div class="turn r" style="--c:var(--p-prin)"><div class="who">Abraham</div><div class="bub b-prin">Yes, here I am!</div></div>
+        <div class="turn r" style="--c:var(--p-chor)"><div class="who">Sarah</div><div class="bub b-chor"><sup>6</sup>God has brought me laughter.</div></div>
       </div></div>
       <div class="tabs"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
-    </div><figcaption><b>Reader · dark</b>Bubble fills drop to near-black tints so the text carries the colour rather than the panel. Nothing glares at 6am.</figcaption></figure>
+    </div><figcaption><b>Reader · dark</b>Bubble fills drop to near-black tints so the text carries the colour rather than the panel. The reader is now the one screen with no thread — it is the place to read, not to navigate.</figcaption></figure>
   </div>
 </section>
 
@@ -779,15 +776,5 @@ figure.s figcaption em{font-style:normal;color:var(--warn);font-weight:600}
     function rowTop(rs,i){ var y=0; for(var k=0;k<i;k++) y+=rs[k].height; return y; }
   });
 
-  // reader gutter — one depth, gentle wander
-  document.querySelectorAll('.rdr[data-gutter]').forEach(function(r){
-    var ns='http://www.w3.org/2000/svg';
-    var svg=document.createElementNS(ns,'svg');
-    svg.setAttribute('viewBox','0 0 34 460'); svg.setAttribute('preserveAspectRatio','none');
-    var p=document.createElementNS(ns,'path');
-    p.setAttribute('d','M14 -8 C11 40 17 70 14 108 C11 146 17 176 14 214 C11 252 17 282 14 320 C11 358 17 392 14 460');
-    p.setAttribute('fill','none'); p.setAttribute('stroke','var(--p-thread)'); p.setAttribute('stroke-width','1.5');
-    svg.appendChild(p); r.insertBefore(svg, r.firstChild);
-  });
 })();
 </script>

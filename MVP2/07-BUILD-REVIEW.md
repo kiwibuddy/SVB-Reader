@@ -350,12 +350,21 @@ asymmetric corner radius instead (16px everywhere, 5px on the corner nearest the
 gutter), so the bubble points at the thread without a tail. Tails read as
 generic messaging UI, which is the thing we moved away from.
 
-### 5.4 The gutter thread is missing
+### 5.4 No gutter thread, and no speaker dots — decided 19 August
 
-The continuous line down the left gutter is absent. It is what ties the reader to
-the rest of the app, and it was the answer to "can the thread carry into reading
-mode". Same generated-path approach as Read L1, in a 30px gutter, with the
-speaker dot sitting on it in each speaker's ink.
+Earlier revisions of this document specified a continuous line down the left
+gutter. **That is reversed.** The reader carries no thread at all, and the
+speaker dots go with it — they only existed to sit on the line, and standalone
+they read as orphaned markers.
+
+The speaker name, set in that voice's ink above each bubble, is identification
+enough. It always was.
+
+Two things follow. The turn's 32px left padding was reserved for the gutter and
+should be reclaimed, so **every bubble gains 18px of width** — which helps the
+oversized-text problem in 5.1 at the same time. And the reader becomes the one
+screen in the app with no thread on it, which is right: the thread is for
+navigating, and the reader is for reading.
 
 ### 5.5 Bubbles are not alternating
 
