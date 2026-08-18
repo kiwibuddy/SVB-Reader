@@ -114,6 +114,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 12,
+    maxWidth: '90%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -123,6 +124,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 14,
     fontWeight: '600',
+    textAlign: 'center',
   },
 });
 

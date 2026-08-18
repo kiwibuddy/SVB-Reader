@@ -431,6 +431,11 @@
       "downloadFailed": "Download failed. Please try again.",
       "tryAgain": "Try Again"
     },
+    "completion": {
+      "storyComplete": "{{title}} complete.",
+      "metVoiceFirstTime": "You met {{name}} for the first time.",
+      "voicesCount": "{{met}} of {{total}} voices."
+    },
     "groupReading": {
       "startReadingTogether": "Start Reading Together",
       "showQRCode": "Show QR Code",

@@ -22983,6 +22983,11 @@
       "downloadFailed": "Échec du téléchargement. Veuillez réessayer.",
       "tryAgain": "Réessayer"
     },
+    "completion": {
+      "storyComplete": "{{title}} terminée.",
+      "metVoiceFirstTime": "Vous avez rencontré {{name}} pour la première fois.",
+      "voicesCount": "{{met}} voix sur {{total}}."
+    },
     "groupReading": {
       "startReadingTogether": "Commencer la lecture ensemble",
       "showQRCode": "Afficher le code QR",
