@@ -2,23 +2,17 @@
   "expo": {
     "name": "SourceView Together",
     "slug": "SVB-Youth",
-    "version": "1.2.1",
+    "version": "1.3.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "description": "SourceView Together: Group Bible Reading App - Transform your Bible study with friends! Join up to 4 people for interactive group Bible reading using our unique speech bubble format. Features role-based reading, real-time emoji reactions, reading plans, challenges, and progress tracking. Perfect for small groups, families, and Bible study communities. Experience Scripture like never before with collaborative reading sessions.",
     "primaryColor": "#FF5733",
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#808080"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sourceview.together",
-      "buildNumber": "20",
+      "buildNumber": "21",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -38,7 +32,7 @@
         "android.permission.ACCESS_NETWORK_STATE"
       ],
       "package": "com.sourceview.together",
-      "versionCode": 20,
+      "versionCode": 21,
       "allowBackup": true,
       "icon": "./assets/images/icon.png"
     },
@@ -62,11 +56,11 @@
         "expo-build-properties",
         {
           "android": {
-            "targetSdkVersion": 34,
-            "compileSdkVersion": 34
+            "targetSdkVersion": 36,
+            "compileSdkVersion": 36
           },
           "ios": {
-            "deploymentTarget": "15.1"
+            "deploymentTarget": "16.4"
           }
         }
       ],
@@ -109,7 +103,9 @@
       ]
     },
     "owner": "kiwibuddy",
-    "runtimeVersion": "1.2.1",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
