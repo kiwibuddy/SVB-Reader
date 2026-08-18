@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "description": "SourceView Together: Group Bible Reading App - Transform your Bible study with friends! Join up to 4 people for interactive group Bible reading using our unique speech bubble format. Features role-based reading, real-time emoji reactions, reading plans, challenges, and progress tracking. Perfect for small groups, families, and Bible study communities. Experience Scripture like never before with collaborative reading sessions.",
+    "description": "SourceView Together is a Bible you read by voice. Every word is attributed to who spoke it — 774 voices across 365 stories. Read alone or together using the four ink colours. No camera, no QR codes.",
     "primaryColor": "#FF5733",
     "ios": {
       "supportsTablet": true,

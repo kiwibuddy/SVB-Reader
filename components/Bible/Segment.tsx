@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BibleBlockComponent from './BibleBlock';
 import { BibleBlock, SegmentType } from "@/types";
 import RoleProgressBar from "../RoleProgressBar";
+import CallSheet from "@/components/thread/CallSheet";
 import ChartLegend from "../ChartLegend";
 import { MaterialIcons } from '@expo/vector-icons'; // Example icon library
 import { splitContentIntoReaderParts } from "@/scripts/splitContentIntoReaderParts";
@@ -20,6 +21,8 @@ import { getSegmentCompletionStatus } from "@/api/sqlite";
 import { ANIMATION } from '@/services/animation';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from '@/hooks/useTranslation';
+import * as Speech from 'expo-speech';
+import { ThreadColors, inkHex } from '@/constants/Colors';
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -66,7 +69,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const currentRole = null;
   const currentSession = null;
 
-  const { colors } = useAppSettings();
+  const { colors, isDarkMode } = useAppSettings();
   const { t } = useTranslation();
 
   const { scrollReset, showCourtesy } = useLocalSearchParams();
@@ -79,6 +82,8 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   } | null>(null);
   const [showCourtesyPopup, setShowCourtesyPopup] = useState(!!currentSession);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const threadPalette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
   const courtesyAnim = useRef(new Animated.Value(0));
   const courtesyDismissedRef = useRef(false);
 
@@ -127,6 +132,39 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       setSelectedReaderPosition(null);
     }
   }, [segID, currentSession]);
+
+  useEffect(() => {
+    return () => {
+      Speech.stop();
+    };
+  }, []);
+
+  const toggleReadAloud = useCallback(() => {
+    if (isSpeaking) {
+      Speech.stop();
+      setIsSpeaking(false);
+      return;
+    }
+    const collect = (node: any): string => {
+      if (!node) return '';
+      if (typeof node === 'string') return node;
+      if (Array.isArray(node)) return node.map(collect).join(' ');
+      if (node.note) return '';
+      return `${node.text || ''} ${collect(node.children)}`;
+    };
+    const script = (segmentData?.content || [])
+      .map((block) => {
+        const who = block?.source?.sourceName || '';
+        return `${who}. ${collect(block)}`;
+      })
+      .join('. ');
+    setIsSpeaking(true);
+    Speech.speak(script, {
+      onDone: () => setIsSpeaking(false),
+      onStopped: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false),
+    });
+  }, [isSpeaking, segmentData?.content]);
 
   const dismissCourtesy = useCallback(() => {
     courtesyDismissedRef.current = true;
@@ -599,6 +637,11 @@ const styles = StyleSheet.create({
         scrollEnabled={true}
       >
         <SegmentTitle segmentId={segID} />
+        <Pressable onPress={toggleReadAloud} style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+          <Text style={{ color: threadPalette.acc, fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase' }}>
+            {isSpeaking ? t('UI.thread.stopReading') : t('UI.thread.readAloud')}
+          </Text>
+        </Pressable>
         <View style={{
           paddingHorizontal: 16,
           paddingTop: 20,
@@ -649,32 +692,36 @@ const styles = StyleSheet.create({
               colorData={colorData}
               height={4}
             />
+            <CallSheet sources={segmentData?.sources || {}} />
           </View>
         </View>
 
-        {/* Audio Controls removed - now in navigation bar */}
-
-        {/* Render blocks directly */}
-        {memoizedContent.map((item, index) => {
+        <View style={{ position: 'relative' }}>
+          <View style={{ position: 'absolute', left: 13, top: 8, bottom: 8, width: 1.5, backgroundColor: threadPalette.thread }} />
+          {memoizedContent.map((item, index) => {
           const { sourceName } = item.source || {};
           const showSourceName = index === 0 || 
             memoizedContent[index - 1].source?.sourceName !== sourceName;
 
           const isGlowing = shouldBlockGlow(item.source?.color || 'black', index);
+          const ink = inkHex(item.source?.color || 'black', threadPalette);
 
           return (
-            <BibleBlockComponent
-              key={`${item.source?.sourceName || 'unknown'}-${index}`}
-              block={item}
-              bIndex={index}
-              hasTail={showSourceName}
-              isGlowing={isGlowing}
-              onLongPress={handleLongPress}
-              targetVerse={targetVerse}
-              targetChapter={targetChapter}
-            />
+            <View key={`${item.source?.sourceName || 'unknown'}-${index}`} style={{ position: 'relative' }}>
+              <View style={{ position: 'absolute', left: 10, top: 18, width: 7, height: 7, borderRadius: 4, backgroundColor: ink, zIndex: 2 }} />
+              <BibleBlockComponent
+                block={item}
+                bIndex={index}
+                hasTail={showSourceName}
+                isGlowing={isGlowing}
+                onLongPress={handleLongPress}
+                targetVerse={targetVerse}
+                targetChapter={targetChapter}
+              />
+            </View>
           );
         })}
+        </View>
       </ScrollView>
       {/* Courtesy popup overlay - COMMENTED OUT FOR NOW
       {showCourtesyPopup && currentSession && (

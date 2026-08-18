@@ -6,12 +6,8 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import i18next from 'i18next';
 import { bibleLoader } from '@/services/BibleLoader';
 import logger from '@/utils/logger';
+import { ThreadColors } from '@/constants/Colors';
 
-// ============================================================================
-// SYNCHRONOUS APP SETTINGS CONTEXT - ZERO ASYNC OPERATIONS
-// ============================================================================
-
-// Supported languages: English and French
 export type SupportedLanguage = 'en' | 'fr';
 
 export interface SyncAppSettingsContextType {
@@ -28,35 +24,35 @@ export interface SyncAppSettingsContextType {
 }
 
 const lightColors: ColorScheme = {
-  background: '#FFFFFF',
-  text: '#000000',
-  primary: '#FF5733',
-  secondary: '#666666',
+  background: ThreadColors.light.bg,
+  text: ThreadColors.light.ink,
+  primary: ThreadColors.light.acc,
+  secondary: ThreadColors.light.mute,
   bubbles: {
-    default: '#F5F5F5',
-    red: '#FFE5E5',
-    blue: '#E5F1FF',
-    green: '#E5FFE5',
-    black: '#F5F5F5',
+    default: ThreadColors.light.surf,
+    red: ThreadColors.light.divFill,
+    blue: ThreadColors.light.chorFill,
+    green: ThreadColors.light.prinFill,
+    black: ThreadColors.light.surf,
   },
-  card: '#FFFFFF',
-  border: '#E5E5E5',
+  card: ThreadColors.light.surf,
+  border: ThreadColors.light.hair,
 };
 
 const darkColors: ColorScheme = {
-  background: '#121212',
-  text: '#FFFFFF',
-  primary: '#FF7B5C',
-  secondary: '#A0A0A0',
+  background: ThreadColors.dark.bg,
+  text: ThreadColors.dark.ink,
+  primary: ThreadColors.dark.acc,
+  secondary: ThreadColors.dark.mute,
   bubbles: {
-    default: '#2A2A2A',
-    red: '#4A2A2A',
-    blue: '#2A2A4A',
-    green: '#2A4A2A',
-    black: '#2A2A2A',
+    default: ThreadColors.dark.surf,
+    red: ThreadColors.dark.divFill,
+    blue: ThreadColors.dark.chorFill,
+    green: ThreadColors.dark.prinFill,
+    black: ThreadColors.dark.surf,
   },
-  card: '#1E1E1E',
-  border: '#333333',
+  card: ThreadColors.dark.surf,
+  border: ThreadColors.dark.hair,
 };
 
 // Font size configurations

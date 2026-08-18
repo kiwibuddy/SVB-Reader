@@ -6,6 +6,7 @@ import SourceNameComponent from "./SourceName";
 import BibleInlineComponent from "./Inline";
 import EmojiHandler from "@/components/EmojiHandler";
 import { useAppSettings } from "@/context/AppSettingsContext";
+import { isLeftVoice } from "@/utils/ink";
 
 interface BibleBlockProps {
   block: BibleBlock;
@@ -135,17 +136,19 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetV
     }
   };
 
-  const tailAlignment = color !== "black" ? { left: 15 } : { right: 15 };
+  const tailAlignment = isLeftVoice(color) ? { left: 15 } : { right: 15 };
+  const sideAlign = isLeftVoice(color) ? "flex-start" : "flex-end";
+  const nameAlign = isLeftVoice(color) ? "left" : "right";
 
   return (
-    <View key={bIndex} style={{ position: 'relative' }}>
+    <View key={bIndex} style={{ position: 'relative', alignItems: sideAlign, paddingLeft: 30, paddingRight: 14 }}>
       <EmojiHandler
         block={block}
         blockIndex={bIndex}
         hasTail={hasTail}
         onLongPress={onLongPress}
       >
-        {hasTail && <SourceNameComponent sourceName={sourceName} align={color !== "black" ? "left" : "right"} />}
+        {hasTail && <SourceNameComponent sourceName={sourceName} align={nameAlign} />}
         <Animated.View
           style={[
             styles.bubble,
@@ -210,10 +213,11 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetV
 // Define styles
 const styles = StyleSheet.create({
   bubble: {
-    borderRadius: 10,
+    borderRadius: 16,
     padding: 10,
-    position: "relative", // CRITICAL: Supports absolute positioning of emojis
-    margin: 10,
+    position: "relative",
+    marginVertical: 4,
+    maxWidth: "84%",
     ...Platform.select({
       web: {
         boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',

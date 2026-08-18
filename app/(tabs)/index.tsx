@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useFirstLaunch } from '@/hooks/useFirstLaunch';
+import { useTranslation } from '@/hooks/useTranslation';
 import logger from '@/utils/logger';
 
 
@@ -20,6 +21,7 @@ const { width: screenWidth } = Dimensions.get('window');
 
 const IndexScreen = () => {
   const router = useRouter();
+  const { t } = useTranslation();
   const flatListRef = useRef<FlatList>(null);
   
   // First launch detection
@@ -36,50 +38,37 @@ const IndexScreen = () => {
   const onboardingData = [
     {
       id: 1,
-      title: "365 Bible Stories",
-      description: "The entire Bible broken into natural story breaks. Each story is perfect for reading with friends and comes with discussion questions to apply to your lives.",
-      icon: "📖",
-      backgroundColor: "#7B68EE"
-    },
-    {
-      id: 2,
-      title: "Group Reading",
-      description: "Gather 4 friends to each read a different part of the story aloud together. Switch reading parts to gain new insights!",
-      icon: "👥",
-      backgroundColor: "#00C851",
+      titleKey: "UI.thread.onboardingColorsTitle",
+      descriptionKey: "UI.thread.onboardingColorsBody",
+      icon: "🎨",
+      backgroundColor: "#0E6B4C",
       buttons: [
-        { color: "#fdc1c1", text: "Red", subtitle: "God" },
-        { color: "#b9f8b9", text: "Green", subtitle: "Main Character" },
-        { color: "#8EE3FF", text: "Blue", subtitle: "Other Voices" },
-        { color: "#808080", text: "Gray", subtitle: "Narrator" }
+        { color: "#3A4550", text: "Narrator", subtitle: "Left" },
+        { color: "#C0261A", text: "God", subtitle: "Left" },
+        { color: "#0E6B4C", text: "Principals", subtitle: "Right" },
+        { color: "#1D46A8", text: "Everyone else", subtitle: "Right" }
       ]
     },
     {
+      id: 2,
+      titleKey: "UI.thread.onboardingVoicesTitle",
+      descriptionKey: "UI.thread.onboardingVoicesBody",
+      icon: "🎙️",
+      backgroundColor: "#B4231A"
+    },
+    {
       id: 3,
-      title: "A New Text-Style Bible",
-      description: "",
-      icon: "💬",
-      backgroundColor: "#42A5F5",
-      chatExample: {
-        speaker1: "Jesus",
-        message1: "Who do you say that I am?",
-        speaker2: "Peter",
-        message2: "You are the Christ, the Son of the living God."
-      }
+      titleKey: "UI.thread.onboardingThreadTitle",
+      descriptionKey: "UI.thread.onboardingThreadBody",
+      icon: "🧵",
+      backgroundColor: "#0E6B4C"
     },
     {
       id: 4,
-      title: "React & Reflect",
-      description: "Mark verses that speak to you: ❤️ to memorize, 👍 to share, 🤔 to study deeper, 🙏 to turn into prayer. Each reaction guides you through specific spiritual practices to help you reflect and apply Scripture to your daily life.",
-      icon: "😊",
-      backgroundColor: "#E91E63"
-    },
-    {
-      id: 5,
-      title: "Achievements & Streaks",
-      description: "Track your reading journey with achievement badges, daily streaks, and progress milestones. Unlock rewards as you dive deeper into Scripture.",
-      icon: "🏆",
-      backgroundColor: "#FF9800"
+      titleKey: "UI.thread.onboardingSavedTitle",
+      descriptionKey: "UI.thread.onboardingSavedBody",
+      icon: "🔖",
+      backgroundColor: "#1D46A8"
     }
   ];
 
@@ -161,9 +150,9 @@ const IndexScreen = () => {
                 <Text style={styles.iconText}>{item.icon}</Text>
               </View>
               
-              <Text style={styles.cardTitle}>{item.title}</Text>
+              <Text style={styles.cardTitle}>{t(item.titleKey)}</Text>
               
-              {item.id === 2 && item.buttons && (
+              {item.id === 1 && item.buttons && (
                 <View style={styles.buttonGrid}>
                   <View style={styles.buttonRow}>
                     <View style={[styles.roleButton, { backgroundColor: item.buttons[0].color }]}>
@@ -197,8 +186,8 @@ const IndexScreen = () => {
                 </View>
               )}
               
-              {item.description && (
-                <Text style={styles.cardDescription}>{item.description}</Text>
+              {item.descriptionKey && (
+                <Text style={styles.cardDescription}>{t(item.descriptionKey)}</Text>
               )}
             </View>
           </View>
