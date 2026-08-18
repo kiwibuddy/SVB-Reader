@@ -21,7 +21,8 @@ Assembled 17 August 2026 against `Nov-New-Build-` @ `f07b650`.
 | [`06-COMPLETION-AND-REMOVAL.md`](06-COMPLETION-AND-REMOVAL.md) | Everything the QR removal touches — 29 files, 2 tables, 30 translation keys — and what story completion becomes. |
 | [`07-BUILD-REVIEW.md`](07-BUILD-REVIEW.md) | **Current punch list.** Device testing 19 Aug: what is built, what is broken, and the revised remaining work. |
 | [`audit/maintenance-audit.html`](audit/maintenance-audit.html) | Full maintenance audit. Open in a browser. |
-| [`mockups/`](mockups/) | Design mockups. Open in a browser — no build step. |
+| [`12-MOCKUP-DELTA.md`](12-MOCKUP-DELTA.md) | What `02-thread-built-out.html` no longer shows. Read before building from the mockup. |
+| [`mockups/`](mockups/) | Design mockups. Open in a browser — no build step. `02` is partly superseded; see `12`. |
 
 **Current state of the build** is in `07-BUILD-REVIEW.md` — start there if you
 are picking up work.
