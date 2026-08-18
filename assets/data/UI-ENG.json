@@ -27,8 +27,6 @@
       "getStarted": "Get Started",
       "readingPlans": "Reading Plans",
       "chooseYourPlans": "Choose your Bible reading plans",
-      "joinGroupReading": "Join Group Reading",
-      "scanQRCode": "Scan QR code to join a story group",
       "todaysStories": "Today's Stories"
     },
     "home": {
@@ -354,7 +352,10 @@
       "oldTestamentMaster": "Old Testament Master",
       "newTestamentMaster": "New Testament Master",
       "title": "Achievements",
-      "subtitle": "Track your Bible reading progress and celebrate your milestones"
+      "subtitle": "Track your Bible reading progress and celebrate your milestones",
+      "voicesMet": "Voices Met",
+      "voicesMet10": "Meet 10 of 774 voices",
+      "voicesMet100": "Meet 100 of 774 voices"
     },
     "search": {
       "title": "Story Finder",
@@ -374,16 +375,6 @@
         "newTestament": "New Testament"
       },
       "storiesRead": "{count} of {total} stories read"
-    },
-    "readingMode": {
-      "title": "Choose Reading Mode",
-      "readAlone": "Read Alone",
-      "readAloneDescription": "Read the story individually at your own pace",
-      "startIndividualReading": "Start Individual Reading",
-      "readWithOthers": "Read with Others",
-      "readWithOthersDescription": "Join or create a group reading session",
-      "startGroupReading": "Start Group Reading",
-      "cancel": "Cancel"
     },
     "dayStreak": "Day Streak",
     "storiesRead": "Stories Read",
@@ -418,12 +409,6 @@
       "endReadingPlan": "End Reading Plan?",
       "endReadingChallenge": "End Reading Challenge?",
       "endConfirmation": "Are you sure you want to end \"{title}\"? This will delete all progress and cannot be undone.",
-      "qrScannerUnavailable": "QR scanner is currently unavailable",
-      "storyCompletion": "Story Completion",
-      "storyCompletionMessage": "This QR code is for marking a story as complete in group reading mode.",
-      "invalidQRCode": "Invalid QR Code",
-      "invalidQRMessage": "This QR code is not recognized. Please scan a valid SourceView Together group reading QR code.",
-      "failedToProcessQR": "Failed to process QR code",
       "startPlan": "Start Plan",
       "readNext": "Read Next",
       "markComplete": "Mark Complete",
@@ -437,53 +422,7 @@
       "voicesCount": "{{met}} of {{total}} voices."
     },
     "groupReading": {
-      "startReadingTogether": "Start Reading Together",
-      "showQRCode": "Show QR Code",
-      "shareQRCode": "Share QR Code",
-      "stopBroadcasting": "Stop Broadcasting",
-      "endSession": "End Session",
-      "enterYourName": "Enter your name",
-      "startGroupReading": "Start Group Reading",
-      "yourName": "Your Name",
-      "selectYourReadingRole": "Select Your Reading Role",
-      "generateQRCode": "Generate QR Code",
-      "narrator": "Narrator",
-      "narratorDescription": "Read the story text and scene descriptions",
-      "god": "God",
-      "godDescription": "Voice of God and divine characters",
-      "mainCharacter": "Main Character",
-      "mainCharacterDescription": "Main character dialogue and thoughts",
-      "otherVoices": "Other Voices",
-      "otherVoicesDescription": "Supporting characters and crowd voices",
-      "estimatedReadingTime": "minutes estimated reading time",
-      "sessionId": "Session ID",
-      "readers": "Readers",
-      "storyRoleDistribution": "Story role distribution:",
-      "readingRolesForThisStory": "Reading roles for this story:",
-      "readersCount": "Readers ({count} of 4)",
-      "othersCanNowJoin": "Others can now join",
-      "showsTheSpeakingParts": "Shows the speaking parts in this story: Gray (Narrator), Red (God), Green (Main Character), Blue (Other Voices).",
-      "joinGroup": "Join Group",
-      "waitingForReaders": "Waiting for readers...",
-      "availableRoles": "Available Roles",
-      "host": "Host",
-      "narratorRoleDescription": "Reads the narrative portions",
-      "godRoleDescription": "Reads God's dialogue",
-      "mainCharacterRoleDescription": "Reads main character dialogue",
-      "otherVoicesRoleDescription": "Reads other character dialogue",
-      "yourReadingRole": "Your reading role"
-    },
-    "qrScanner": {
-      "title": "Scan QR Code",
-      "positionCode": "Position the QR code within the frame",
-      "holdSteady": "Hold steady and align the code inside the box",
-      "increaseBrightness": "Increase screen brightness if scanning fails"
-    },
-    "cameraPermission": {
-      "title": "Camera Permission Required",
-      "message": "To scan QR codes, please grant camera permission in your device settings.",
-      "allowAccess": "Allow Camera Access",
-      "close": "Close"
+      "selectYourReadingRole": "Select Your Reading Role"
     },
     "startConfirmation": {
       "title": "Start Reading Challenge",

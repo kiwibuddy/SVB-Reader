@@ -197,60 +197,22 @@ export async function markSegmentComplete(
   }
 }
 
-// Record a group-mode completion for analytics/achievements
+// Group tables remain in the schema this release but nothing writes to them.
 export async function recordGroupCompletion(
-  segmentID: string,
-  sessionId: string,
-  storyId: string,
-  userRole: string,
-  isHost: boolean
+  _segmentID: string,
+  _sessionId: string,
+  _storyId: string,
+  _userRole: string,
+  _isHost: boolean
 ): Promise<void> {
-  try {
-    const db = databaseManager.getDatabase();
-    const currentDate = new Date().toISOString();
-    
-    // Record group participation
-    await db.runAsync(
-      `INSERT INTO group_segment_completion (segmentID, sessionId, storyId, userRole, isHost, completedAt)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      segmentID, sessionId, storyId, userRole, isHost ? 1 : 0, currentDate
-    );
-    
-    // Also increment global read count for group completions
-    await db.runAsync(`
-      INSERT OR REPLACE INTO segment_read_count (
-        segmentID,
-        totalReads,
-        lastReadDate
-      ) VALUES (
-        ?,
-        COALESCE((SELECT totalReads FROM segment_read_count WHERE segmentID = ?), 0) + 1,
-        ?
-      )
-    `, segmentID, segmentID, currentDate);
-    
-  } catch (error) {
-    logger.error('Error recording group completion:', error);
-  }
+  return;
 }
 
-// Count how many joiners (non-host) have recorded a completion for a given session/story
 export async function getGroupJoinerCompletionCount(
-  sessionId: string,
-  storyId: string
+  _sessionId: string,
+  _storyId: string
 ): Promise<number> {
-  try {
-    const db = databaseManager.getDatabase();
-    const result = await db.getFirstAsync<{ count: number }>(
-      `SELECT COUNT(*) as count FROM group_segment_completion WHERE sessionId = ? AND storyId = ? AND isHost = 0`,
-      sessionId,
-      storyId
-    );
-    return result?.count || 0;
-  } catch (error) {
-    logger.error('Error counting group joiner completions:', error);
-    return 0;
-  }
+  return 0;
 }
 
 export const getSegmentCompletionStatus = async (

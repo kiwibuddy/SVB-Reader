@@ -608,7 +608,7 @@ const styles = StyleSheet.create({
           {/* Role Selection Section - Full Width */}
           <View style={styles.readerSection}>
             <Text style={styles.readerText}>
-              {currentSession ? t('UI.groupReading.yourReadingRole') : t('UI.groupReading.selectYourReadingRole') + ':'}
+              {t('UI.groupReading.selectYourReadingRole') + ':'}
             </Text>
             {/* Remove separate badge; title above communicates selection */}
             <View style={styles.iconContainer}>

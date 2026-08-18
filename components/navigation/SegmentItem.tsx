@@ -17,7 +17,6 @@ import { Ionicons } from '@expo/vector-icons';
 import CelebrationPopup from "@/components/CelebrationPopup";
 import { getCheckColor } from '@/scripts/getCheckColors';
 import { markSegmentComplete, getSegmentCompletionStatus } from "@/api/sqlite";
-import { databaseManager } from '@/api/database-manager';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 
 interface ColorData {
@@ -169,16 +168,12 @@ const SegmentItem: React.FC<SegmentItemProps> = React.memo(({
         )}
       </View>
       {!isIntroduction && (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          {/* Show group completion badge if any group completion exists for this segment */}
-          <GroupCompletionBadge segmentId={segment.id} />
-          <Ionicons 
-            name={completionStatus.isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'} 
-            size={20} 
-            color={completionStatus.isCompleted ? '#4CAF50' : '#CCCCCC'} 
-            style={styles.checkIcon} 
-          />
-        </View>
+        <Ionicons 
+          name={completionStatus.isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'} 
+          size={20} 
+          color={completionStatus.isCompleted ? '#4CAF50' : '#CCCCCC'} 
+          style={styles.checkIcon} 
+        />
       )}
     </TouchableOpacity>
   );
@@ -188,43 +183,3 @@ SegmentItem.displayName = 'SegmentItem';
 
 export default SegmentItem;
 
-// Inline lightweight badge that shows if a segment has any group completions
-const GroupCompletionBadge: React.FC<{ segmentId: string }> = ({ segmentId }) => {
-  const { colors } = useSyncAppSettings();
-  const [hasGroupCompletion, setHasGroupCompletion] = useState<boolean>(false);
-
-  const loadGroupCompletion = useCallback(async () => {
-    try {
-      const db = databaseManager.getDatabase();
-      const row = await db.getFirstAsync<{ count: number }>(
-        'SELECT COUNT(*) as count FROM group_segment_completion WHERE segmentID = ?',
-        [segmentId]
-      );
-      setHasGroupCompletion((row?.count || 0) > 0);
-    } catch (error) {
-      logger.error('Error loading group completion status:', error);
-    }
-  }, [segmentId]);
-
-  useEffect(() => {
-    loadGroupCompletion();
-  }, [loadGroupCompletion]);
-
-  // Refresh when the component comes back into focus to catch new completions
-  React.useEffect(() => {
-    const focusListener = () => {
-      loadGroupCompletion();
-    };
-    
-    // Listen for focus events if available
-    if (typeof window !== 'undefined' && window.addEventListener) {
-      window.addEventListener('focus', focusListener);
-      return () => window.removeEventListener('focus', focusListener);
-    }
-  }, [loadGroupCompletion]);
-
-  if (!hasGroupCompletion) return null;
-  return (
-    <Ionicons name="people-circle" size={20} color={'#42A5F5'} style={{ marginRight: 2 }} />
-  );
-};

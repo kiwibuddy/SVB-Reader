@@ -38,6 +38,7 @@ import {
 import { imageMap } from '@/components/navigation/NavBook';
 import { databaseManager } from '@/api/database-manager';
 import { useTranslation } from '@/hooks/useTranslation';
+import { getVoicesMetCount } from '@/utils/voicesMet';
 
 
 // Enhanced Types
@@ -125,7 +126,7 @@ const Achievements = () => {
     planCompletions: 0,
     challengeCompletions: 0,
   });
-  const [groupCompletions, setGroupCompletions] = useState(0);
+  const [voicesMet, setVoicesMet] = useState(0);
   const [info, setInfo] = useState<{ title: string; description: string } | null>(null);
   
   // More state hooks that need to be moved
@@ -351,8 +352,7 @@ const Achievements = () => {
 
         try {
           const db = databaseManager.getDatabase();
-          const row = await db.getFirstAsync<{ count: number }>('SELECT COUNT(*) as count FROM group_segment_completion');
-          setGroupCompletions(row?.count || 0);
+          setVoicesMet(await getVoicesMetCount());
           // Plan / Challenge completions
           const planRow = await db.getFirstAsync<{ count: number }>(
             "SELECT COUNT(*) as count FROM segment_completion WHERE completionType = 'plan'"
@@ -447,26 +447,26 @@ const Achievements = () => {
   // Database-driven achievement definitions
   const generateAchievements = (): Achievement[] => [
     {
-      id: 'group_reader_1',
-      title: 'Group Reader',
-      description: 'Complete 1 story in group mode',
-      icon: 'people-circle-outline',
-      color: '#42A5F5',
-      progress: Math.min(groupCompletions, 1),
-      total: 1,
-      category: 'engagement',
-      achieved: groupCompletions >= 1
-    },
-    {
-      id: 'group_reader_10',
-      title: 'Group Enthusiast',
-      description: 'Complete 10 stories in group mode',
-      icon: 'people-outline',
-      color: '#42A5F5',
-      progress: Math.min(groupCompletions, 10),
+      id: 'voices_met_10',
+      title: t('UI.achievements.voicesMet'),
+      description: t('UI.achievements.voicesMet10'),
+      icon: 'chatbubbles-outline',
+      color: '#007AFF',
+      progress: Math.min(voicesMet, 10),
       total: 10,
       category: 'engagement',
-      achieved: groupCompletions >= 10
+      achieved: voicesMet >= 10
+    },
+    {
+      id: 'voices_met_100',
+      title: t('UI.achievements.voicesMet'),
+      description: t('UI.achievements.voicesMet100'),
+      icon: 'people-outline',
+      color: '#007AFF',
+      progress: Math.min(voicesMet, 100),
+      total: 100,
+      category: 'engagement',
+      achieved: voicesMet >= 100
     },
     // Reading Milestones
     {

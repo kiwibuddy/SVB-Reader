@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo, useRef, useContext, u
 import logger from '@/utils/logger';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { databaseManager } from '@/api/database-manager';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 
 interface ChronologicalSegmentItemProps {
@@ -145,8 +144,7 @@ const ChronologicalSegmentItem: React.FC<ChronologicalSegmentItemProps> = ({
         <Text style={styles.phaseText}>{phase}</Text>
       </View>
 
-      <View style={[styles.checkContainer, { flexDirection: 'row', alignItems: 'center', gap: 6 }]}>
-        <GroupCompletionBadge segmentId={segmentId} />
+      <View style={styles.checkContainer}>
         <Ionicons 
           name={isCompleted ? 'checkmark-circle' : 'checkmark-circle-outline'} 
           size={24} 
@@ -157,41 +155,4 @@ const ChronologicalSegmentItem: React.FC<ChronologicalSegmentItemProps> = ({
   );
 };
 
-export default ChronologicalSegmentItem; 
-
-const GroupCompletionBadge: React.FC<{ segmentId: string }> = ({ segmentId }) => {
-  const [hasGroupCompletion, setHasGroupCompletion] = React.useState<boolean>(false);
-  
-  const loadGroupCompletion = React.useCallback(async () => {
-    try {
-      const db = databaseManager.getDatabase();
-      const row = await db.getFirstAsync<{ count: number }>(
-        'SELECT COUNT(*) as count FROM group_segment_completion WHERE segmentID = ?',
-        [segmentId]
-      );
-      setHasGroupCompletion((row?.count || 0) > 0);
-    } catch (error) {
-      logger.error('Error loading group completion status:', error);
-    }
-  }, [segmentId]);
-
-  React.useEffect(() => {
-    loadGroupCompletion();
-  }, [loadGroupCompletion]);
-
-  // Refresh when the component comes back into focus to catch new completions
-  React.useEffect(() => {
-    const focusListener = () => {
-      loadGroupCompletion();
-    };
-    
-    // Listen for focus events if available
-    if (typeof window !== 'undefined' && window.addEventListener) {
-      window.addEventListener('focus', focusListener);
-      return () => window.removeEventListener('focus', focusListener);
-    }
-  }, [loadGroupCompletion]);
-
-  if (!hasGroupCompletion) return null;
-  return <Ionicons name="people-circle" size={20} color={'#42A5F5'} style={{ marginRight: 2 }} />;
-};
+export default ChronologicalSegmentItem;

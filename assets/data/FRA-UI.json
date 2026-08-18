@@ -22450,8 +22450,6 @@
       "getStarted": "Commencer",
       "readingPlans": "Plans de lecture",
       "chooseYourPlans": "Choisissez vos plans de lecture biblique",
-      "joinGroupReading": "Rejoindre la lecture en groupe",
-      "scanQRCode": "Scanner le code QR pour rejoindre un groupe d'histoires",
       "todaysStories": "Histoires du jour"
     },
     "home": {
@@ -22777,7 +22775,10 @@
       "oldTestamentBooks": "Livres de l'Ancien Testament",
       "newTestamentBooks": "Livres du Nouveau Testament",
       "oldTestamentMaster": "Maître de l'Ancien Testament",
-      "newTestamentMaster": "Maître du Nouveau Testament"
+      "newTestamentMaster": "Maître du Nouveau Testament",
+      "voicesMet": "Voix rencontrées",
+      "voicesMet10": "Rencontrer 10 des 774 voix",
+      "voicesMet100": "Rencontrer 100 des 774 voix"
     },
     "search": {
       "placeholder": "Rechercher des histoires...",
@@ -22797,16 +22798,6 @@
         "newTestament": "Nouveau Testament"
       },
       "storiesRead": "{count} histoires lues sur {total}"
-    },
-    "readingMode": {
-      "title": "Choisir le mode de lecture",
-      "readAlone": "Lire seul",
-      "readAloneDescription": "Lire l'histoire individuellement à votre rythme",
-      "startIndividualReading": "Démarrer la lecture individuelle",
-      "readWithOthers": "Lire avec d'autres",
-      "readWithOthersDescription": "Rejoindre ou créer une session de lecture en groupe",
-      "startGroupReading": "Démarrer la lecture en groupe",
-      "cancel": "Annuler"
     },
     "dayStreak": "Série de jours",
     "storiesRead": "Histoires lues",
@@ -22970,12 +22961,6 @@
       "endReadingPlan": "Terminer le plan de lecture ?",
       "endReadingChallenge": "Terminer le défi de lecture ?",
       "endConfirmation": "Êtes-vous sûr de vouloir terminer \"{title}\" ? Cela supprimera toute la progression et ne peut pas être annulé.",
-      "qrScannerUnavailable": "Le scanner QR n'est actuellement pas disponible",
-      "storyCompletion": "Achèvement de l'histoire",
-      "storyCompletionMessage": "Ce code QR sert à marquer une histoire comme terminée en mode de lecture en groupe.",
-      "invalidQRCode": "Code QR invalide",
-      "invalidQRMessage": "Ce code QR n'est pas reconnu. Veuillez scanner un code QR valide de SourceView Together.",
-      "failedToProcessQR": "Échec du traitement du code QR",
       "startPlan": "Démarrer le plan",
       "readNext": "Lire suivant",
       "markComplete": "Marquer comme terminé",
@@ -22989,53 +22974,7 @@
       "voicesCount": "{{met}} voix sur {{total}}."
     },
     "groupReading": {
-      "startReadingTogether": "Commencer la lecture ensemble",
-      "showQRCode": "Afficher le code QR",
-      "shareQRCode": "Partager le code QR",
-      "stopBroadcasting": "Arrêter la diffusion",
-      "endSession": "Terminer la session",
-      "enterYourName": "Entrez votre nom",
-      "startGroupReading": "Démarrer la lecture en groupe",
-      "yourName": "Votre nom",
-      "selectYourReadingRole": "Sélectionnez votre rôle de lecture",
-      "generateQRCode": "Générer le code QR",
-      "narrator": "Narrateur",
-      "narratorDescription": "Lire le texte de l'histoire et les descriptions de scène",
-      "god": "Dieu",
-      "godDescription": "Voix de Dieu et des personnages divins",
-      "mainCharacter": "Personnage principal",
-      "mainCharacterDescription": "Dialogue et pensées du personnage principal",
-      "otherVoices": "Autres voix",
-      "otherVoicesDescription": "Personnages secondaires et voix de foule",
-      "estimatedReadingTime": "minutes de temps de lecture estimé",
-      "sessionId": "ID de session",
-      "readers": "Lecteurs",
-      "storyRoleDistribution": "Répartition des rôles de l'histoire :",
-      "readingRolesForThisStory": "Rôles de lecture pour cette histoire :",
-      "readersCount": "Lecteurs ({count} sur 4)",
-      "othersCanNowJoin": "D'autres peuvent maintenant rejoindre",
-      "showsTheSpeakingParts": "Affiche les parties parlantes de cette histoire : Gris (Narrateur), Rouge (Dieu), Vert (Personnage principal), Bleu (Autres voix).",
-      "joinGroup": "Rejoindre le groupe",
-      "waitingForReaders": "En attente de lecteurs...",
-      "availableRoles": "Rôles disponibles",
-      "host": "Hôte",
-      "narratorRoleDescription": "Lit les parties narratives",
-      "godRoleDescription": "Lit le dialogue de Dieu",
-      "mainCharacterRoleDescription": "Lit le dialogue du personnage principal",
-      "otherVoicesRoleDescription": "Lit le dialogue des autres personnages",
-      "yourReadingRole": "Votre rôle de lecture"
-    },
-    "qrScanner": {
-      "title": "Scanner le code QR",
-      "positionCode": "Positionnez le code QR dans le cadre",
-      "holdSteady": "Tenez fermement et alignez le code dans la boîte",
-      "increaseBrightness": "Augmentez la luminosité de l'écran si la lecture échoue"
-    },
-    "cameraPermission": {
-      "title": "Autorisation de caméra requise",
-      "message": "Pour scanner les codes QR, veuillez accorder l'autorisation de la caméra dans les paramètres de votre appareil.",
-      "allowAccess": "Autoriser l'accès à la caméra",
-      "close": "Fermer"
+      "selectYourReadingRole": "Sélectionnez votre rôle de lecture"
     },
     "startConfirmation": {
       "title": "Démarrer le défi de lecture",
