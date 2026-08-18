@@ -28,9 +28,9 @@ the localisation all stay. What changes is the navigation model, the visual
 system, and the addition of a Cast tab that makes the attribution data
 explorable for the first time.
 
-**MVP2 does not begin until v1.3.0 ships** — a store-compliant build on Expo SDK
-57. See `01-CRITICAL-PATH.md`. Starting design work before that means every
-failure has two possible causes.
+~~**MVP2 does not begin until v1.3.0 ships**~~ — **Phase 0 completed 19 August**:
+Expo SDK 57, RN 0.86.2, managed workflow. See
+[`08-BUILD-QUEUE.md`](08-BUILD-QUEUE.md) for what remains.
 
 ---
 
@@ -282,9 +282,10 @@ not cover the database layer, and users have reactions worth preserving.
 Estimates assume one developer working with AI assistance, and are working days.
 They are rough — treat the ordering as firm and the numbers as indicative.
 
-### Phase 0 — Compliance (blocking everything)
+### Phase 0 — Compliance — **COMPLETE, 19 August 2026**
 
-**Ship v1.3.0.** See `01-CRITICAL-PATH.md` steps 0–5. **9–12 days.**
+**Done.** Expo 57.0.14 · RN 0.86.2 · Reanimated 4.5.1 + worklets · managed
+workflow · react-navigation and camera removed. Kept below as the record.
 Android API 36 gate is **31 August 2026**. File for the 1 November extension
 this week regardless — it costs nothing and it is the difference between a
 sprint and a panic.
@@ -343,7 +344,8 @@ whatever D1 leaves behind.*
 - Accessibility: text sizing, contrast in both modes, screen reader on the reader
 - Store assets and listing copy — **update if D1 changes group reading**
 
-**Total after v1.3.0 ships: 30–39 working days.** Revised upward: the
+~~**Total after v1.3.0 ships: 30–39 working days.**~~ **Superseded — see
+[`08-BUILD-QUEUE.md`](08-BUILD-QUEUE.md): 31.5–36.5 days remaining.** Original note: Revised upward: the
 `components/GroupReading/` directory (8 screens) and the `CheckCircle` rebuild
 were not in the earlier figure. See `06-COMPLETION-AND-REMOVAL.md` §7.
 
@@ -373,7 +375,7 @@ were not in the earlier figure. See `06-COMPLETION-AND-REMOVAL.md` §7.
 | **D2** | Division titles | You | Phase 1 |
 | **D3** | Promote figures from blue to green | You | Phase 1 |
 | D4 | Confirm the left/right bubble split | You | Phase 2 |
-| D5 | Managed vs bare native projects | You | Phase 0 step 2 |
+| ~~D5~~ | ~~Managed vs bare~~ | **Resolved — managed** | Native dirs removed in `cbc9959` |
 | D6 | Request the API 36 extension | You | This week |
 
 ---

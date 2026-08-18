@@ -1,5 +1,8 @@
 # Build review — device testing, 19 August 2026
 
+> **For the ordered work list see [`08-BUILD-QUEUE.md`](08-BUILD-QUEUE.md).**
+> This document is the diagnosis and the specifications behind it.
+
 First run of the MVP2 build on device. This is a punch list, a set of design
 decisions taken from your notes, and a revised plan for what remains.
 
