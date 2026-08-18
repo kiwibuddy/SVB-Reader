@@ -147,6 +147,7 @@ claims vertical space at all.
 | P0-6 | You L1 missing; settings shown in its place | Screen not built |
 | P0-7 | Filter pills render as full-height bars | RC3 — missing `alignItems` |
 | P0-8 | `gen 4:3` finds nothing | No reference parsing — see §4.4 |
+| P0-9 | Keyboard cannot be swiped away | `ScrollView` sets no keyboard props — §4.6 |
 
 **On P0-4:** your data is fine. `theGospels` holds **46 segments** (42 stories +
 4 book intros). `Bible1Year` holds 431 (365 + 66 intros). The app is showing 10,
@@ -269,6 +270,51 @@ Result row should read as a reference, not a story: **Genesis 4:3 — "The Flood
 
 This belongs in the **Read** search where you hit it, and the same parser serves
 the Cast search for free.
+
+### 4.5 Search results should expand, not leave the page
+
+A voice row currently jumps straight out of Read into the Cast card
+(`ThreadList.tsx:147`, `router.push('/cast/…')`). Searching "david" and being
+thrown to a different tab is the wrong outcome when what you wanted was *which
+stories does he speak in*.
+
+**Make a search result behave exactly like a book in the thread: tap to expand
+in place.**
+
+- Tap **David** → the row expands inline to his 34 stories, indented on the
+  thread the same way a book's stories are
+- Tap a story → navigate to it
+- The data is already on the row — `voice.storyIds` is right there, so this needs
+  no new query
+- Keep a small affordance on the row to open the full Cast card, for when that
+  *is* what you wanted — a chevron, not the whole row
+
+This unifies the interaction model. Everything on Read expands to its stories:
+a division to its books, a book to its stories, and now **a voice to the stories
+it speaks in**. Search results become branches of the thread rather than a
+separate list that behaves differently.
+
+**Book rows in search results are not tappable at all** — they render as a plain
+`View`, not a `Pressable` (`ThreadList.tsx:168`). Same treatment: expand to the
+book's stories.
+
+### 4.6 The keyboard gets stuck
+
+`ThreadList.tsx:139` — the results `ScrollView` sets neither keyboard prop, so
+there is nothing to dismiss the keyboard by swiping:
+
+```diff
+  <ScrollView
+    contentContainerStyle={styles.list}
+    showsVerticalScrollIndicator={false}
++   keyboardDismissMode="on-drag"
++   keyboardShouldPersistTaps="handled"
+  >
+```
+
+`on-drag` makes the swipe dismiss it. `handled` matters just as much: without it
+the first tap on a result is swallowed by the dismiss gesture and people have to
+tap twice. Apply the same pair to the Cast search scroller.
 
 ---
 
@@ -515,6 +561,8 @@ Everything currently on that screen belongs in L2.
 | R3 | Bead masking, continue card | 1 |
 | R3b | **RC3 pill alignment** — one line in each of two files | 0.1 |
 | R3c | **Reference search** — parser, alias table, `verseIndex` wiring | 1.5–2 |
+| R3d | **Expandable search results** — voice and book rows expand to stories | 0.5 |
+| R3e | **Keyboard props** on both search scrollers | 0.1 |
 | R4 | Reader typography, labels, tails, alternation, bottom inset | 1.5 |
 | R5 | Gutter thread in the reader | 1 |
 | R6 | Call sheet expansion + swatches moved into it, role heading removed | 1 |
@@ -529,7 +577,7 @@ Everything currently on that screen belongs in L2.
 | R15 | Onboarding (S14) | 2–3 |
 | R16 | French parity across everything new | 2 |
 | R17 | Migration testing, both platforms, real hardware | 3 |
-| | **Total** | **24–31** |
+| | **Total** | **25–32** |
 
 Down from 30–39: Phase 0 is complete, `CheckCircle` was already rebuilt, and the
 pill and reference-search fixes turned out far smaller than the screenshots
