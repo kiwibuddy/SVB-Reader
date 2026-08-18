@@ -81,11 +81,24 @@ Apply B1 to `YearThread.tsx` too — the broken dashes on **You** are the same b
 | F2 | Saved L1 + L2 — still the old Reactions screen | 8 |
 | F3 | You L1 — name, year thread, stories/voices/streak/words, single Settings row | 9 |
 
+## H · From the UX audit — see [`10-UX-AUDIT.md`](10-UX-AUDIT.md)
+
+| # | Do | Days | § |
+| --- | --- | --- | --- |
+| H1 | **Share and copy a verse** — bubble rendered as an image with speaker, ink and reference. The biggest gap, and the one thing only this app can share | 1.5–2 | 3.2 |
+| H2 | "Today" state on the continue card — wire `DailyStoryMap.json`, currently unused | 0.5 | 3.1 |
+| H3 | Reading times on story rows and cards — wire `SegmentReadingTimes.json`, currently unused | 0.5 | 3.3 |
+| H4 | End-of-story questions card + audience preference. 900 KB of questions with no home; completes the group loop | 1.5 | 3.4 |
+| H5 | Empty states for You and Saved — three zeros is a poor welcome | 0.5 | 3.5 |
+| H6 | Decide `TopSpeakers` and `ChronologicalMappings` — rewire or delete before their screens go | 0.5 | 3.6 |
+
+Do **H2 and H3 alongside B**, H1 after C, and H4/H5 with F.
+
 ## G · Finish
 
 | # | Do | § |
 | --- | --- | --- |
-| G1 | Onboarding — four screens, teaches the colours, "one person takes each colour" | 05 §1 |
+| G1 | **Onboarding** — full spec including copy, motion and French in [`11-ONBOARDING.md`](11-ONBOARDING.md) | 11 |
 | G2 | French parity across everything new | — |
 | G3 | Migration testing against a real pre-MVP2 database; both platforms, real hardware | 06 §5 |
 | G4 | Store listing and screenshots — remove QR references, camera permission is gone | 05 |
@@ -103,10 +116,16 @@ Apply B1 to `YearThread.tsx` too — the broken dashes on **You** are the same b
 | E cast | 7.5–9 |
 | F screens | 6–7 |
 | G finish | 7–8 |
-| **Total** | **31.5–36.5** |
+| H from the UX audit | 5–5.5 |
+| **Total** | **36.5–42** |
 
-Wider than the 25–32 in `07` because that table omitted several items now
-enumerated here. Treat this as the working figure.
+Wider than the 25–32 in `07` because that table omitted several items, and wider
+again with group H from the UX audit. Treat this as the working figure.
+
+**If you have to cut,** H1 (share) and H4 (questions) are the two that change
+what the app *is* rather than how it looks — one gives it a way to spread, the
+other completes the group-reading loop this redesign started from. Cut E6, E7 or
+G4 before either of those.
 
 ---
 
