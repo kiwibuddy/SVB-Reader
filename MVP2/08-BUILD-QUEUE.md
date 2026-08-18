@@ -12,6 +12,11 @@ managed workflow, react-navigation and camera removed, group machinery gone,
 Why each item exists: [`07-BUILD-REVIEW.md`](07-BUILD-REVIEW.md), referenced by
 section below.
 
+**What each screen should look like:**
+[`mockups/03-mvp2-screens.html`](mockups/03-mvp2-screens.html) — current as of 19
+August. `02-thread-built-out.html` is the earlier pitch and is superseded for
+Read L1, Cast, Plan and everything added since.
+
 **How to build each item well, and the motion spec:**
 [`09-IMPLEMENTATION-SPEC.md`](09-IMPLEMENTATION-SPEC.md). Build its motion token
 file (`constants/Motion.ts`) *before* starting A1 — every item references it.

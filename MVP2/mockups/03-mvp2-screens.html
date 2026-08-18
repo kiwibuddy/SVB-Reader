@@ -1,0 +1,793 @@
+<title>SVB — MVP2 screens</title>
+<style>
+:root{
+  --bg:#F1F3F0; --panel:#FFFFFF; --ink:#12171A; --ink2:#4B555C; --ink3:#78848B;
+  --hair:#D9DFD9; --mark:#0E6B4C; --warn:#A8471C;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1013; --panel:#151A1E; --ink:#E7EBE8; --ink2:#A5AEB3; --ink3:#78848B;
+  --hair:#262D32; --mark:#46D9A0; --warn:#E08A5F;
+}}
+:root[data-theme="dark"]{
+  --bg:#0D1013; --panel:#151A1E; --ink:#E7EBE8; --ink2:#A5AEB3; --ink3:#78848B;
+  --hair:#262D32; --mark:#46D9A0; --warn:#E08A5F;
+}
+:root{
+  --pl-bg:#F3F5F2; --pl-surf:#FFFFFF; --pl-ink:#101619; --pl-mute:#5E6B70; --pl-hair:#DFE5E0;
+  --pl-narr:#3A4550; --pl-div:#C0261A; --pl-prin:#0E6B4C; --pl-chor:#1D46A8; --pl-acc:#0E6B4C;
+  --pl-divf:#FBEDEB; --pl-prinf:#E9F4EF; --pl-chorf:#EBEFFA; --pl-writ:#7A8288; --pl-writf:#F0F2F1;
+  --pd-bg:#080D13; --pd-surf:#121B25; --pd-ink:#E9EDF2; --pd-mute:#7A8798; --pd-hair:#1E2833;
+  --pd-narr:#AEBACB; --pd-div:#FF5A45; --pd-prin:#46D9A0; --pd-chor:#6BA9FF; --pd-acc:#46D9A0;
+  --pd-divf:#251217; --pd-prinf:#0D2620; --pd-chorf:#111C31; --pd-writ:#8C97A3; --pd-writf:#161E27;
+  --geo:Futura,"Avenir Next",Avenir,"Century Gothic","Helvetica Neue",sans-serif;
+  --book:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --didone:Didot,"Bodoni 72","Bodoni MT","Playfair Display",Georgia,serif;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--geo);line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,h5,p,figure{margin:0}
+.wrap{max-width:1300px;margin:0 auto;padding:0 26px}
+:focus-visible{outline:2px solid var(--mark);outline-offset:3px}
+code{font-family:var(--mono);font-size:.85em;background:color-mix(in srgb,var(--ink) 7%,transparent);padding:1px 5px;border-radius:3px}
+.eyebrow{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.mast{padding:60px 0 32px}
+.mast h1{font-size:clamp(32px,5vw,54px);line-height:1;letter-spacing:-.03em;margin-top:14px;max-width:20ch;text-wrap:balance}
+.lede{margin-top:18px;max-width:66ch;font-size:16.5px;line-height:1.62;color:var(--ink2)}
+.lede b{color:var(--ink)}
+.note{margin-top:14px;max-width:68ch;font-size:15px;line-height:1.6;color:var(--ink2)}
+.sec{padding:40px 0;border-top:1px solid var(--hair)}
+.sec>h2{font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
+.sec>h2 span{color:var(--mark)}
+.pair{display:flex;gap:26px;margin-top:24px;overflow-x:auto;padding-bottom:14px}
+.pair::-webkit-scrollbar{height:8px}
+.pair::-webkit-scrollbar-thumb{background:var(--ink3);border-radius:4px}
+figure.s{flex:0 0 auto;width:288px}
+figure.s figcaption{margin-top:12px;font-size:12.5px;line-height:1.5;color:var(--ink2)}
+figure.s figcaption b{display:block;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mark);margin-bottom:4px}
+figure.s figcaption em{font-style:normal;color:var(--warn);font-weight:600}
+
+/* phone */
+.ph{width:288px;height:628px;overflow:hidden;display:flex;flex-direction:column;position:relative;
+  border-radius:30px;font-family:var(--geo);background:var(--p-bg);color:var(--p-ink);border:1px solid var(--p-hair)}
+.ph.light{--p-bg:var(--pl-bg);--p-surf:var(--pl-surf);--p-ink:var(--pl-ink);--p-mute:var(--pl-mute);--p-hair:var(--pl-hair);
+  --p-narr:var(--pl-narr);--p-div:var(--pl-div);--p-prin:var(--pl-prin);--p-chor:var(--pl-chor);--p-acc:var(--pl-acc);
+  --p-divf:var(--pl-divf);--p-prinf:var(--pl-prinf);--p-chorf:var(--pl-chorf);--p-writ:var(--pl-writ);--p-writf:var(--pl-writf);--p-thread:#B4C0B8}
+.ph.dark{--p-bg:var(--pd-bg);--p-surf:var(--pd-surf);--p-ink:var(--pd-ink);--p-mute:var(--pd-mute);--p-hair:var(--pd-hair);
+  --p-narr:var(--pd-narr);--p-div:var(--pd-div);--p-prin:var(--pd-prin);--p-chor:var(--pd-chor);--p-acc:var(--pd-acc);
+  --p-divf:var(--pd-divf);--p-prinf:var(--pd-prinf);--p-chorf:var(--pd-chorf);--p-writ:var(--pd-writ);--p-writf:var(--pd-writf);--p-thread:#2C3742}
+.st{display:flex;justify-content:space-between;padding:10px 18px 2px;font-size:10px;font-variant-numeric:tabular-nums}
+.st i{width:3px;height:3px;border-radius:50%;background:currentColor;display:inline-block;margin-left:2px}
+.lab{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--p-mute)}
+.body{flex:1;overflow:hidden;position:relative}
+.back{padding:2px 14px 6px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--p-mute)}
+
+/* continue card */
+.cont{margin:6px 14px 0;background:var(--p-surf);border:1px solid var(--p-acc);border-radius:16px;padding:11px 13px;display:flex;align-items:center;gap:10px}
+.cont .txt{flex:1;min-width:0}
+.cont .k{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--p-acc);font-weight:600}
+.cont .t{font-size:15px;font-weight:600;letter-spacing:-.01em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cont .m{font-size:10px;color:var(--p-mute);margin-top:1px}
+.cont .go{width:30px;height:30px;border-radius:50%;background:var(--p-acc);color:var(--p-bg);display:flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 auto}
+
+.srch{margin:8px 14px 0;background:var(--p-surf);border:1px solid var(--p-hair);border-radius:16px;padding:8px 12px;display:flex;gap:8px;align-items:center;font-size:12px;color:var(--p-mute)}
+.srch .mag{width:11px;height:11px;border:1.6px solid var(--p-mute);border-radius:50%;position:relative;flex:0 0 auto}
+.srch .mag::after{content:"";position:absolute;right:-4px;bottom:-3px;width:5px;height:1.6px;background:var(--p-mute);transform:rotate(45deg)}
+.scope{display:flex;gap:6px;padding:9px 14px 4px;align-items:flex-start;overflow:hidden}
+.scope span{font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;border-radius:11px;border:1px solid var(--p-hair);color:var(--p-mute);white-space:nowrap;flex:0 0 auto}
+.scope span.on{background:var(--p-ink);color:var(--p-bg);border-color:var(--p-ink)}
+
+/* ink pills — speech-bubble shaped */
+.inks{display:flex;gap:6px;padding:9px 14px 6px;align-items:flex-start;overflow:hidden}
+.inks span{font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;border:1px solid;border-radius:12px;border-top-left-radius:4px;white-space:nowrap;flex:0 0 auto;background:var(--f);color:var(--c);border-color:color-mix(in srgb,var(--c) 34%,transparent)}
+.inks span.on{background:var(--c);color:var(--p-bg);border-color:var(--c)}
+
+/* thread */
+.tl{position:relative;height:100%}
+.tl>svg{position:absolute;left:0;top:0;width:100%;overflow:visible;pointer-events:none}
+.tl .items{position:relative}
+.dh{position:relative;height:46px;padding:0 14px 0 54px;display:flex;flex-direction:column;justify-content:center}
+.dh.bk{padding-left:76px;height:44px}
+.dh .t{font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+.dh.bk .t{font-size:13.5px;font-weight:500}
+.dh .o{font-size:8.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--p-mute);margin-top:2px}
+.dh .c{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--p-mute);font-variant-numeric:tabular-nums}
+.nd{position:relative;height:44px;padding:0 14px 0 96px;display:flex;flex-direction:column;justify-content:center}
+.nd .ti{font-size:13.5px;line-height:1.2}
+.nd .rf{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--p-mute);margin-top:2px}
+.nd.done .ti{color:var(--p-mute)}
+.nd.now{height:58px}
+.nd.now .ti{font-size:17px;font-weight:600}
+.nd.now .rf{color:var(--p-acc)}
+.nd.next .ti,.nd.next .rf{opacity:.5}
+.mk{position:absolute;transform:translate(-50%,-50%);border:3px solid var(--p-bg)}
+.mk.knot{width:13px;height:13px;border-radius:4px;transform:translate(-50%,-50%) rotate(45deg);background:var(--p-bg);box-shadow:0 0 0 1.5px var(--p-thread)}
+.mk.knot.on{background:var(--p-acc);box-shadow:0 0 0 1.5px var(--p-acc)}
+.mk.bead{width:9px;height:9px;border-radius:50%;background:var(--p-thread)}
+.mk.bead.big{width:15px;height:15px;background:var(--p-acc);box-shadow:0 0 0 5px color-mix(in srgb,var(--p-acc) 16%,transparent)}
+.mk.bead.hollow{background:var(--p-bg);box-shadow:0 0 0 1.5px var(--p-thread)}
+
+/* reader */
+.rhead{padding:2px 14px 6px}
+.rhead .t{font-size:16px;font-weight:600;letter-spacing:-.015em;line-height:1.15}
+.rhead .m{font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--p-mute);margin-top:3px}
+.csheet{margin:8px 14px 0;border:1px solid var(--p-hair);border-radius:12px;background:var(--p-surf);overflow:hidden}
+.csheet .top{padding:8px 11px;display:flex;align-items:center;gap:9px}
+.mix{display:flex;height:4px;gap:1px;border-radius:2px;overflow:hidden;flex:1}
+.mix i{display:block}
+.csheet .cnt{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--p-mute)}
+.csheet .cast{border-top:1px solid var(--p-hair);padding:8px 11px 10px;display:flex;flex-direction:column;gap:5px}
+.csheet .cr{display:flex;align-items:center;gap:7px;font-size:11.5px}
+.csheet .cr .sw{width:13px;height:13px;border-radius:5px;border-top-left-radius:2px;border:1px solid;flex:0 0 auto}
+.csheet .cr .n{flex:1;color:var(--p-ink)}
+.csheet .cr .w{font-variant-numeric:tabular-nums;color:var(--p-mute);font-size:10px}
+.csheet .hint{border-top:1px solid var(--p-hair);padding:7px 11px;font-size:10px;color:var(--p-mute);font-style:italic}
+
+.rdr{position:relative;padding:8px 0 0}
+.rdr>svg{position:absolute;left:0;top:0;width:34px;height:100%;overflow:visible;pointer-events:none}
+.turn{position:relative;padding:11px 14px 0 32px}
+.turn .who{font-size:8.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--c);font-weight:600;margin-bottom:4px}
+.turn .spk{position:absolute;left:14px;top:16px;width:7px;height:7px;border-radius:50%;background:var(--c);transform:translateX(-50%);border:2.5px solid var(--p-bg)}
+.bub{max-width:84%;padding:9px 12px 10px;font-family:var(--book);font-size:13.5px;line-height:1.45;border-radius:16px}
+.turn.l .bub{margin-right:auto;border-top-left-radius:5px}
+.turn.r .bub{margin-left:auto;border-top-right-radius:5px}
+.turn.r .who{text-align:right}
+.turn.r .spk{left:auto;right:14px;transform:translateX(50%)}
+.b-narr{background:var(--p-surf);border:1px solid var(--p-hair);color:var(--p-ink)}
+.b-div{background:var(--p-divf);color:var(--p-div);border:1px solid color-mix(in srgb,var(--p-div) 26%,transparent)}
+.b-prin{background:var(--p-prinf);color:var(--p-prin);border:1px solid color-mix(in srgb,var(--p-prin) 26%,transparent)}
+.b-chor{background:var(--p-chorf);color:var(--p-chor);border:1px solid color-mix(in srgb,var(--p-chor) 26%,transparent)}
+.bub sup{font-family:var(--geo);font-size:8px;opacity:.5;margin-right:2px}
+.rx{display:flex;gap:4px;margin-top:6px}
+.turn.r .rx{justify-content:flex-end}
+.rx span{background:var(--p-surf);border:1px solid var(--p-hair);border-radius:9px;padding:2px 7px;font-size:9.5px;color:var(--p-mute)}
+
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--p-surf);border-top:1px solid var(--p-hair);border-radius:18px 18px 0 0;padding:14px}
+.sheet .grab{width:32px;height:3px;border-radius:2px;background:var(--p-hair);margin:0 auto 12px}
+.emoji{display:flex;justify-content:space-between;margin-bottom:11px}
+.emoji span{width:36px;height:36px;border-radius:50%;background:var(--p-bg);border:1px solid var(--p-hair);display:flex;align-items:center;justify-content:center;font-size:17px}
+.emoji span.on{border-color:var(--p-acc);background:color-mix(in srgb,var(--p-acc) 12%,transparent)}
+.acts{display:flex;gap:8px;margin-bottom:11px}
+.acts span{flex:1;text-align:center;padding:9px;border:1px solid var(--p-hair);border-radius:11px;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--p-ink)}
+.field{border:1px solid var(--p-hair);border-radius:12px;padding:10px 12px;font-family:var(--book);font-size:13px;color:var(--p-mute);min-height:52px}
+
+/* rows */
+.row{padding:11px 14px;border-bottom:1px solid var(--p-hair);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.row .a{font-size:14px}
+.row .b{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--p-mute);margin-top:2px}
+.row .r{font-size:10px;color:var(--p-mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.row.sub{padding-left:34px;background:color-mix(in srgb,var(--p-ink) 3%,transparent)}
+.dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.dot.sq{border-radius:4px;border-top-left-radius:1px}
+.card{margin:9px 14px;background:var(--p-surf);border:1px solid var(--p-hair);border-radius:16px;padding:12px}
+.card .h{font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+.card .s{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--p-mute);margin-top:3px}
+.card .d{font-size:11.5px;color:var(--p-mute);margin-top:6px;line-height:1.4}
+.prog{height:4px;border-radius:3px;background:var(--p-hair);margin-top:9px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--p-acc)}
+.tag{display:inline-block;font-size:8px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--p-hair);border-radius:8px;padding:2px 6px;color:var(--p-mute);margin-top:7px}
+.big{font-size:30px;letter-spacing:-.035em;font-variant-numeric:tabular-nums;line-height:1}
+.big em{font-style:normal;font-size:13px;color:var(--p-mute)}
+.tabs{display:flex;padding:0 8px;border-top:1px solid var(--p-hair);background:var(--p-bg)}
+.tabs span{flex:1;text-align:center;padding:11px 0 15px;font-size:8px;letter-spacing:.15em;text-transform:uppercase;color:var(--p-mute);position:relative}
+.tabs span.on{color:var(--p-ink);font-weight:600}
+.tabs span.on::before{content:"";position:absolute;top:-1px;left:28%;right:28%;height:2px;background:var(--p-acc)}
+
+/* cast card */
+.cast{flex:1;background:var(--cf);color:#F2EAE0;padding:15px;display:flex;flex-direction:column;overflow:hidden}
+.cast .rl{font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;opacity:.78}
+.cast .nm{font-family:var(--didone);font-size:58px;line-height:.86;letter-spacing:-.03em;margin:2px 0 0 -3px}
+.cast .nm.sm{font-size:42px}
+.cast .sent{font-size:12px;opacity:.9;margin-top:8px;line-height:1.4}
+.bkt{display:flex;gap:3px;height:34px;align-items:flex-end;margin-top:12px}
+.bkt i{flex:1;background:rgba(242,234,224,.22);border-radius:1px}
+.bkt .lb{display:flex;justify-content:space-between;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.6;margin-top:4px}
+.spoke{margin-top:12px}
+.spoke .r{display:flex;align-items:center;gap:7px;padding:5px 0;border-top:1px solid rgba(242,234,224,.2);font-size:11.5px}
+.spoke .r .n{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spoke .r .bar{width:44px;height:3px;background:rgba(242,234,224,.25)}
+.spoke .r .bar i{display:block;height:3px;background:#F2EAE0}
+.spoke .r .c{font-variant-numeric:tabular-nums;opacity:.75;font-size:10px;width:22px;text-align:right}
+.spoke .r .ch{opacity:.6;font-size:11px}
+.pull{margin-top:10px;padding-top:9px;border-top:1px solid rgba(242,234,224,.28);font-family:var(--book);font-size:12.5px;line-height:1.4}
+.pull b{font-family:var(--geo);font-size:8px;letter-spacing:.15em;text-transform:uppercase;opacity:.62;display:block;margin-bottom:3px;font-weight:400}
+.bks{display:flex;flex-wrap:wrap;gap:4px;margin-top:9px}
+.bks span{font-size:9px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(242,234,224,.35);border-radius:7px;padding:2px 6px;opacity:.9}
+
+/* onboarding */
+.ob{flex:1;padding:16px 18px;display:flex;flex-direction:column}
+.ob .skip{text-align:right;font-size:11px;color:var(--p-mute);letter-spacing:.1em;text-transform:uppercase}
+.ob h4{font-size:27px;line-height:1.06;letter-spacing:-.025em;font-weight:600;margin-top:20px}
+.ob p{font-size:14.5px;line-height:1.5;color:var(--p-mute);margin-top:10px}
+.ob .demo{flex:1;margin-top:18px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.ob .dots{display:flex;gap:5px;justify-content:center;margin-bottom:12px}
+.ob .dots i{width:6px;height:6px;border-radius:3px;background:var(--p-hair)}
+.ob .dots i.on{width:16px;background:var(--p-ink)}
+.ob .cta{background:var(--p-ink);color:var(--p-bg);border-radius:13px;text-align:center;padding:13px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+.leg{display:flex;align-items:center;gap:9px;font-size:12px}
+.leg .sw{width:15px;height:15px;border-radius:6px;border-top-left-radius:2px}
+.leg .d{color:var(--p-mute);font-size:11px}
+
+/* completion */
+.done{position:absolute;left:14px;right:14px;bottom:14px;background:var(--p-surf);border:1px solid var(--p-hair);border-radius:18px;padding:15px;text-align:center}
+.done .tick{width:42px;height:42px;border-radius:50%;background:var(--p-acc);color:var(--p-bg);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.done h5{font-size:17px;font-weight:600;letter-spacing:-.015em}
+.done .met{font-family:var(--book);font-size:14px;margin-top:7px;line-height:1.4}
+.done .met b{color:var(--p-chor)}
+.done .cnt{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--p-mute);margin-top:8px}
+
+/* share card */
+.shr{background:#0E1A16;color:#F0F4F1;border-radius:16px;padding:18px;margin:14px}
+.shr .who{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#FF7A66;font-weight:600}
+.shr .q{font-family:var(--book);font-size:16px;line-height:1.42;margin-top:9px;color:#FFC9BE}
+.shr .ref{font-size:10px;letter-spacing:.13em;text-transform:uppercase;opacity:.65;margin-top:12px}
+.shr .brand{font-size:9px;letter-spacing:.2em;text-transform:uppercase;opacity:.45;margin-top:14px;border-top:1px solid rgba(240,244,241,.15);padding-top:9px}
+
+.closer{padding:40px 0 76px;border-top:1px solid var(--hair)}
+.closer h2{font-size:clamp(22px,3vw,30px);letter-spacing:-.025em;line-height:1.1;max-width:24ch}
+.closer p{margin-top:14px;max-width:68ch;font-size:15px;line-height:1.6;color:var(--ink2)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+@media (max-width:640px){.wrap{padding:0 16px}}
+</style>
+
+<div class="wrap">
+<header class="mast">
+  <div class="eyebrow">Source View Bible · MVP2 screens · 19 August 2026</div>
+  <h1>The screens that changed, and the ones that never existed.</h1>
+  <p class="lede">Supersedes <code>02-thread-built-out.html</code> for everything below. Seventeen screens covering the three-level thread, the call sheet, reference search, the rebuilt Cast, conversation navigation, sharing, onboarding and the completion moment.</p>
+  <p class="note"><b>The threads on this page are drawn by the same algorithm the app should use</b> — a <code>buildThread()</code> function generating each path from row offsets, not hand-authored coordinates. That was the bug in the last mockup: its fixed path went into the app verbatim and truncated after four rows. View source; the function is ~20 lines and mirrors <code>09-IMPLEMENTATION-SPEC.md</code> §2.</p>
+</header>
+
+<!-- ============ READ L1 ============ -->
+<section class="sec">
+  <h2>01 · Read — the thread, now <span>three levels</span></h2>
+  <p class="note">Division → Book → Story. The line bows out at each level and returns, so the indent covers the <b>whole</b> set at any depth. Beads mask the line rather than sitting on it.</p>
+  <div class="pair">
+
+    <figure class="s"><div class="ph light">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="cont"><div class="txt"><div class="k">Today</div><div class="t">The Flood</div><div class="m">Gen 6:1–9:29 · 9 min</div></div><div class="go">▶</div></div>
+      <div class="srch"><span class="mag"></span><span>Search voices, books, stories</span></div>
+      <div class="body"><div class="tl" data-thread="collapsed">
+        <div class="items">
+          <div class="dh"><span class="mk knot on" data-mk="0"></span><span class="t">The Beginning</span><span class="o">Genesis – Deuteronomy</span><span class="c">18 / 68</span></div>
+          <div class="dh"><span class="mk knot" data-mk="0"></span><span class="t">The Land</span><span class="o">Joshua – Esther</span><span class="c">86</span></div>
+          <div class="dh"><span class="mk knot" data-mk="0"></span><span class="t">The Songs</span><span class="o">Job – Song of Songs</span><span class="c">35</span></div>
+          <div class="dh"><span class="mk knot" data-mk="0"></span><span class="t">The Warnings</span><span class="o">Isaiah – Daniel</span><span class="c">59</span></div>
+          <div class="dh"><span class="mk knot" data-mk="0"></span><span class="t">The Messengers</span><span class="o">Hosea – Malachi</span><span class="c">17</span></div>
+          <div class="dh"><span class="mk knot" data-mk="0"></span><span class="t">The Life</span><span class="o">Matthew – John</span><span class="c">42</span></div>
+          <div class="dh"><span class="mk knot" data-mk="0"></span><span class="t">The Church Begins</span><span class="o">Acts</span><span class="c">12</span></div>
+          <div class="dh"><span class="mk knot" data-mk="0"></span><span class="t">The Letters</span><span class="o">Romans – Philemon</span><span class="c">27</span></div>
+          <div class="dh"><span class="mk knot" data-mk="0"></span><span class="t">Letters to Everyone</span><span class="o">Hebrews – Jude</span><span class="c">12</span></div>
+          <div class="dh"><span class="mk knot" data-mk="0"></span><span class="t">The End</span><span class="o">Revelation</span><span class="c">7</span></div>
+        </div>
+      </div></div>
+      <div class="tabs"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>Collapsed · the whole canon</b>Ten rows, no scrolling. The continue card sits above the search bar and shows <b>Today</b> when nothing is in progress, <b>Continue</b> mid-story, or the plan's next reading. It scrolls away; search stays pinned.</figcaption></figure>
+
+    <figure class="s"><div class="ph light">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="srch"><span class="mag"></span><span>Search voices, books, stories</span></div>
+      <div class="body"><div class="tl" data-thread="expanded">
+        <div class="items">
+          <div class="dh"><span class="mk knot on" data-mk="0"></span><span class="t">The Beginning</span><span class="o">Genesis – Deuteronomy</span><span class="c">18 / 68</span></div>
+          <div class="dh bk"><span class="mk bead" data-mk="1"></span><span class="t">Genesis</span><span class="c">18</span></div>
+          <div class="nd done"><span class="mk bead" data-mk="2"></span><div class="ti">God Creates</div><div class="rf">1:1–2:25 · 6 min · read</div></div>
+          <div class="nd done"><span class="mk bead" data-mk="2" style="background:var(--p-chor)"></span><div class="ti">People Sin</div><div class="rf">3:1–5:32 · 8 min · read</div></div>
+          <div class="nd now"><span class="mk bead big" data-mk="2"></span><div class="ti">The Flood</div><div class="rf">6:1–9:29 · 9 min · continue</div></div>
+          <div class="nd next"><span class="mk bead hollow" data-mk="2"></span><div class="ti">The Tower</div><div class="rf">10:1–11:32 · 5 min</div></div>
+          <div class="nd next"><span class="mk bead hollow" data-mk="2"></span><div class="ti">Abraham Obeys</div><div class="rf">12:1–14:24 · 7 min</div></div>
+          <div class="dh bk"><span class="mk bead hollow" data-mk="1"></span><span class="t">Exodus</span><span class="c">14</span></div>
+          <div class="dh bk"><span class="mk bead hollow" data-mk="1"></span><span class="t">Leviticus</span><span class="c">11</span></div>
+          <div class="dh"><span class="mk knot" data-mk="0"></span><span class="t">The Land</span><span class="o">Joshua – Esther</span><span class="c">86</span></div>
+        </div>
+      </div></div>
+      <div class="tabs"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>Three levels open</b>Genesis expanded inside The Beginning. <em>The indent runs the full length of the book</em> and returns for Exodus — the thing the current build gets wrong. Reading times come from <code>SegmentReadingTimes.json</code>, which currently ships unused.</figcaption></figure>
+
+  </div>
+</section>
+
+<!-- ============ SEARCH ============ -->
+<section class="sec">
+  <h2>02 · Search — <span>references and expansion</span></h2>
+  <div class="pair">
+
+    <figure class="s"><div class="ph light">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="srch" style="border-color:var(--p-acc)"><span class="mag" style="border-color:var(--p-ink)"></span><span style="color:var(--p-ink)">gen 4:3</span></div>
+      <div class="scope"><span class="on">All</span><span>Voices</span><span>Books</span><span>Stories</span><span>Words</span></div>
+      <div class="body">
+        <div class="lab" style="padding:11px 14px 5px">Reference</div>
+        <div class="row" style="border-left:3px solid var(--p-acc)"><div style="flex:1"><div class="a">Genesis 4:3</div><div class="b">People Sin · story 002</div></div><span class="r">open ›</span></div>
+        <div style="padding:9px 14px 0;font-family:var(--book);font-size:12.5px;color:var(--p-mute);line-height:1.4">“When it was time for the harvest, Cain presented some of his crops as a gift to the <span style="color:var(--p-ink)">Lord</span>.”</div>
+        <div class="lab" style="padding:14px 14px 5px">Books · 1</div>
+        <div class="row"><div style="flex:1"><div class="a">Genesis</div><div class="b">The Beginning</div></div><span class="r">18 stories</span></div>
+      </div>
+      <div class="tabs"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>Reference search</b><code>gen 4:3</code>, <code>Genesis 4:3</code>, <code>Gn 4.3</code> all resolve. One lookup in <code>verseIndex.json</code> — 24,935 entries already in the app and read by nothing. The entry carries a position, so opening it lands <b>on the verse</b>, not the top of the story.</figcaption></figure>
+
+    <figure class="s"><div class="ph light">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="srch" style="border-color:var(--p-acc)"><span class="mag" style="border-color:var(--p-ink)"></span><span style="color:var(--p-ink)">david</span></div>
+      <div class="scope"><span>All</span><span class="on">Voices</span><span>Books</span><span>Stories</span><span>Words</span></div>
+      <div class="body">
+        <div class="lab" style="padding:11px 14px 5px">Voices · 2</div>
+        <div class="row" style="background:color-mix(in srgb,var(--p-prin) 7%,transparent)"><span class="dot" style="background:var(--p-prin)"></span><div style="flex:1"><div class="a">David</div><div class="b">Main character · 34 stories</div></div><span class="r">29,139 w ⌄</span></div>
+        <div class="row sub"><div style="flex:1"><div class="a" style="font-size:13px">David & Goliath</div><div class="b">1 Sa 17:1 · 7 min</div></div><span class="r">089</span></div>
+        <div class="row sub"><div style="flex:1"><div class="a" style="font-size:13px">David Spares Saul</div><div class="b">1 Sa 24:1 · 6 min</div></div><span class="r">092</span></div>
+        <div class="row sub"><div style="flex:1"><div class="a" style="font-size:13px">David Becomes King</div><div class="b">2 Sa 2:1 · 8 min</div></div><span class="r">097</span></div>
+        <div class="row sub"><div style="flex:1"><div class="a" style="font-size:13px">David & Bathsheba</div><div class="b">2 Sa 11:1 · 9 min</div></div><span class="r">101</span></div>
+        <div style="padding:8px 14px;font-size:10px;color:var(--p-mute);letter-spacing:.1em;text-transform:uppercase">+ 30 more · open cast card ›</div>
+        <div class="row"><span class="dot" style="background:var(--p-chor)"></span><div style="flex:1"><div class="a">David's Men</div><div class="b">Supporting cast · 4 stories</div></div><span class="r">211 w</span></div>
+      </div>
+      <div class="tabs"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>A voice expands in place</b>Tapping David unfolds his 34 stories on the thread rather than throwing you into the Cast tab. Everything on Read expands to its stories — a division to books, a book to stories, a voice to where it speaks. The chevron on the right opens the full card.</figcaption></figure>
+
+  </div>
+</section>
+
+<!-- ============ READER ============ -->
+<section class="sec">
+  <h2>03 · The reader — <span>call sheet, gutter thread, share</span></h2>
+  <div class="pair">
+
+    <figure class="s"><div class="ph light">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="back">‹ Genesis</div>
+      <div class="rhead"><div class="t">Abraham&#8217;s Faith Tested</div><div class="m">008 · Gen 21:1–23:20 · 2,167 w · 11 min</div></div>
+      <div class="csheet">
+        <div class="top">
+          <div class="mix"><i style="background:var(--p-narr);flex:1191"></i><i style="background:var(--p-div);flex:315"></i><i style="background:var(--p-prin);flex:269"></i><i style="background:var(--p-chor);flex:392"></i></div>
+          <span class="cnt">6 voices ⌄</span>
+        </div>
+      </div>
+      <div class="body"><div class="rdr" data-gutter>
+        <div class="turn l" style="--c:var(--p-narr)"><span class="spk"></span><div class="who">The Narrator</div><div class="bub b-narr"><sup>1</sup>Some time later, God tested Abraham&#8217;s faith.</div></div>
+        <div class="turn l" style="--c:var(--p-div)"><span class="spk"></span><div class="who">God</div><div class="bub b-div">Abraham!</div></div>
+        <div class="turn r" style="--c:var(--p-prin)"><span class="spk"></span><div class="who">Abraham</div><div class="bub b-prin">Yes, here I am!</div></div>
+        <div class="turn l" style="--c:var(--p-div)"><span class="spk"></span><div class="who">God</div><div class="bub b-div"><sup>2</sup>Take your son, your only son — yes, Isaac, whom you love so much — and go to the land of Moriah.</div></div>
+        <div class="turn r" style="--c:var(--p-prin)"><span class="spk"></span><div class="who">Isaac</div><div class="bub b-prin"><sup>7</sup>We have the fire and the wood, but where is the sheep?</div><div class="rx"><span>🙏 4</span></div></div>
+      </div></div>
+      <div class="tabs"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>Reading</b>Bubbles at 84% width, 13.5px body — the current build runs roughly 20px in a 60% bubble, which is why text breaks over five lines. No tails: the corner nearest the gutter is squared instead. The gutter thread runs unbroken with a dot in each speaker's ink.</figcaption></figure>
+
+    <figure class="s"><div class="ph light">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="back">‹ Genesis</div>
+      <div class="rhead"><div class="t">Abraham&#8217;s Faith Tested</div><div class="m">008 · Gen 21:1–23:20 · 2,167 w · 11 min</div></div>
+      <div class="csheet">
+        <div class="top">
+          <div class="mix"><i style="background:var(--p-narr);flex:1191"></i><i style="background:var(--p-div);flex:315"></i><i style="background:var(--p-prin);flex:269"></i><i style="background:var(--p-chor);flex:392"></i></div>
+          <span class="cnt">6 voices ⌃</span>
+        </div>
+        <div class="cast">
+          <div class="cr"><span class="sw" style="background:var(--p-surf);border-color:var(--p-narr)"></span><span class="n">The Narrator</span><span class="w">1,191</span></div>
+          <div class="cr"><span class="sw" style="background:var(--p-divf);border-color:var(--p-div)"></span><span class="n">God</span><span class="w">315</span></div>
+          <div class="cr"><span class="sw" style="background:var(--p-prinf);border-color:var(--p-prin)"></span><span class="n">Abraham</span><span class="w">252</span></div>
+          <div class="cr"><span class="sw" style="background:var(--p-chorf);border-color:var(--p-chor)"></span><span class="n">Sarah</span><span class="w">62</span></div>
+          <div class="cr"><span class="sw" style="background:var(--p-prinf);border-color:var(--p-prin)"></span><span class="n">Isaac</span><span class="w">17</span></div>
+          <div class="cr"><span class="sw" style="background:var(--p-chorf);border-color:var(--p-chor)"></span><span class="n">Hagar</span><span class="w">8</span></div>
+        </div>
+        <div class="hint">Reading together? Tap a voice to follow it.</div>
+      </div>
+      <div class="body"><div class="rdr" data-gutter>
+        <div class="turn l" style="--c:var(--p-narr)"><span class="spk"></span><div class="who">The Narrator</div><div class="bub b-narr"><sup>1</sup>Some time later, God tested Abraham&#8217;s faith.</div></div>
+        <div class="turn l" style="--c:var(--p-div)"><span class="spk"></span><div class="who">God</div><div class="bub b-div">Abraham!</div></div>
+      </div></div>
+      <div class="tabs"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>Call sheet open</b>This replaces role selection. Four people glance and know who reads what — no host, no codes. <em>The old "Select Your Reading Role:" heading is gone</em>; the swatches live here, optional, and tapping one dims the other inks rather than starting a mode.</figcaption></figure>
+
+    <figure class="s"><div class="ph light">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="back">‹ Genesis</div>
+      <div class="rhead"><div class="t">Abraham&#8217;s Faith Tested</div><div class="m">008 · Gen 22:2</div></div>
+      <div class="body">
+        <div class="rdr" style="opacity:.32">
+          <div class="turn l" style="--c:var(--p-narr)"><span class="spk"></span><div class="who">The Narrator</div><div class="bub b-narr">Some time later, God tested Abraham&#8217;s faith.</div></div>
+        </div>
+        <div style="padding:10px 14px 0">
+          <div class="bub b-div" style="max-width:none;box-shadow:0 0 0 2px var(--p-div);border-top-left-radius:5px"><sup>2</sup>Take your son, your only son — yes, Isaac, whom you love so much.</div>
+        </div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="emoji"><span class="on">🙏</span><span>❤️</span><span>😮</span><span>😢</span><span>💡</span><span>❓</span></div>
+          <div class="acts"><span>Share</span><span>Copy</span><span>Note</span></div>
+          <div class="field">The hardest sentence in Genesis. God names the cost out loud before asking.</div>
+        </div>
+      </div>
+      <div class="tabs"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>React, note — and now share</b>Share and Copy sit beside the reactions. There is currently no way to share anything from the app, which is both the main way Bible apps spread and the one thing this app can do that no competitor can.</figcaption></figure>
+
+    <figure class="s"><div class="ph light">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="back">‹ Share</div>
+      <div class="shr">
+        <div class="who">God · to Abraham</div>
+        <div class="q">“Take your son, your only son — yes, Isaac, whom you love so much.”</div>
+        <div class="ref">Genesis 22:2 · NLT</div>
+        <div class="brand">SourceView · who said what, all through the Bible</div>
+      </div>
+      <div style="padding:0 14px"><div class="lab">Preview</div><div style="font-size:12px;color:var(--p-mute);margin-top:6px;line-height:1.45">Rendered as an image with the speaker's ink. Every share says who said it — which is the whole product in one card.</div></div>
+      <div class="body"></div>
+      <div class="tabs"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>The shared card</b>Speaker, their ink, the words, the reference. Unmistakable in a group chat and impossible for a chapter-and-verse app to imitate.</figcaption></figure>
+
+  </div>
+</section>
+
+<!-- ============ COMPLETION ============ -->
+<section class="sec">
+  <h2>04 · Finishing a story — <span>voices met</span></h2>
+  <div class="pair">
+    <figure class="s"><div class="ph light">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="back">‹ Genesis</div>
+      <div class="rhead"><div class="t">The Flood</div><div class="m">003 · Gen 6:1–9:29</div></div>
+      <div class="body">
+        <div class="rdr" style="opacity:.3">
+          <div class="turn l" style="--c:var(--p-div)"><span class="spk"></span><div class="who">God</div><div class="bub b-div">I have placed my rainbow in the clouds.</div></div>
+          <div class="turn r" style="--c:var(--p-chor)"><span class="spk"></span><div class="who">Noah</div><div class="bub b-chor">Blessed be the Lord, the God of Shem.</div></div>
+        </div>
+        <div class="done">
+          <div class="tick">✓</div>
+          <h5>The Flood</h5>
+          <div class="met">You met <b>Noah</b> for the first time.</div>
+          <div class="cnt">215 of 774 voices</div>
+          <div style="border-top:1px solid var(--p-hair);margin-top:12px;padding-top:11px;display:flex;justify-content:space-between;align-items:center">
+            <div style="text-align:left"><div class="lab">Talk about it</div><div style="font-size:12.5px;margin-top:2px">4 questions ›</div></div>
+            <div style="font-size:11px;color:var(--p-acc);letter-spacing:.12em;text-transform:uppercase">Next ›</div>
+          </div>
+        </div>
+      </div>
+      <div class="tabs"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>Completion</b>One tap, no QR, no camera. The celebration reveals which voices you have now heard — ungameable, works alone or in a group, and pulls people toward Cast. Below it, the questions that currently ship with no home: ~900 KB of written content and the natural next thing a group of four does.</figcaption></figure>
+  </div>
+</section>
+
+<!-- ============ CAST ============ -->
+<section class="sec">
+  <h2>05 · Cast — <span>rebuilt</span></h2>
+  <div class="pair">
+
+    <figure class="s"><div class="ph light">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="srch"><span class="mag"></span><span>Search 774 voices</span></div>
+      <div class="inks">
+        <span class="on" style="--c:var(--pl-prin);--f:var(--pl-prinf)">Main</span>
+        <span style="--c:var(--pl-chor);--f:var(--pl-chorf)">Supporting</span>
+        <span style="--c:var(--pl-div);--f:var(--pl-divf)">Divine</span>
+        <span style="--c:var(--pl-narr);--f:var(--pl-surf)">All</span>
+      </div>
+      <div class="body">
+        <div class="row"><span class="dot" style="background:var(--p-div)"></span><div style="flex:1"><div class="a">God</div><div class="b">Divine · 186 stories</div></div><span class="r">140,659 w</span></div>
+        <div class="row"><span class="dot" style="background:var(--p-div)"></span><div style="flex:1"><div class="a">Jesus</div><div class="b">Divine · 47 stories</div></div><span class="r">41,239 w</span></div>
+        <div class="row"><span class="dot" style="background:var(--p-prin)"></span><div style="flex:1"><div class="a">Moses</div><div class="b">Main character · 33 stories</div></div><span class="r">30,310 w</span></div>
+        <div class="row"><span class="dot" style="background:var(--p-prin)"></span><div style="flex:1"><div class="a">David</div><div class="b">Main character · 34 stories</div></div><span class="r">29,139 w</span></div>
+        <div class="row"><span class="dot sq" style="background:var(--p-writ)"></span><div style="flex:1"><div class="a">Paul</div><div class="b">Written · 13 letters</div></div><span class="r">7,090 w</span></div>
+        <div class="row"><span class="dot" style="background:var(--p-prin)"></span><div style="flex:1"><div class="a">Abraham</div><div class="b">Main character · 5 stories</div></div><span class="r">943 w</span></div>
+        <div class="row"><span class="dot" style="background:var(--p-chor)"></span><div style="flex:1"><div class="a">Ruth</div><div class="b">Supporting cast · 1 story</div></div><span class="r">200 w</span></div>
+        <div class="row"><span class="dot" style="background:var(--p-chor)"></span><div style="flex:1"><div class="a">Sarah</div><div class="b">Supporting cast · 2 stories</div></div><span class="r">137 w</span></div>
+      </div>
+      <div class="tabs"><span>Read</span><span class="on">Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>Browse</b><em>Sorted by words, narration excluded entirely.</em> The build currently sorts alphabetically, so it opens on "24 Elders, 30 Men of Timnah, 40 Sworn Assassins" — this opens on God, Jesus, Moses, David. Pills are speech-bubble shaped, ordered Main · Supporting · Divine · All. Paul is grey and square-cornered: <b>written, not spoken</b>.</figcaption></figure>
+
+    <figure class="s"><div class="ph light">
+      <div class="st" style="color:#F2EAE0;background:#0B5138;padding-bottom:5px"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="cast" style="--cf:#0B5138">
+        <div class="rl">Main character</div>
+        <div class="nm">Abraham</div>
+        <div class="sent">943 words across 38 turns, in 5 of the 365 stories.</div>
+        <div class="bks"><span>Genesis</span></div>
+        <div class="bkt">
+          <i style="height:34px;background:#F2EAE0"></i><i style="height:3px"></i><i style="height:3px"></i><i style="height:3px"></i><i style="height:3px"></i><i style="height:3px"></i><i style="height:3px"></i><i style="height:3px"></i><i style="height:3px"></i><i style="height:3px"></i>
+        </div>
+        <div class="lb" style="display:flex;justify-content:space-between;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.6;margin-top:4px"><span>Beginning</span><span>End</span></div>
+        <div class="spoke">
+          <div class="rl" style="margin-bottom:2px">Spoke with</div>
+          <div class="r"><span class="n">God</span><span class="bar"><i style="width:100%"></i></span><span class="c">32</span><span class="ch">›</span></div>
+          <div class="r"><span class="n">Abimelech</span><span class="bar"><i style="width:16%"></i></span><span class="c">5</span><span class="ch">›</span></div>
+          <div class="r"><span class="n">Isaac</span><span class="bar"><i style="width:13%"></i></span><span class="c">4</span><span class="ch">›</span></div>
+        </div>
+        <div class="pull"><b>Longest exchange</b>8 turns with God — Sodom &amp; Gomorrah</div>
+      </div>
+      <div class="tabs"><span>Read</span><span class="on">Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>The card</b>Numbers now read as a sentence. <em>Ten division buckets replace the 365-hairline ribbon</em> you couldn't identify — one tall bar says Abraham is confined to Genesis, instantly. Books listed. Every "spoke with" row is tappable.</figcaption></figure>
+
+    <figure class="s"><div class="ph light">
+      <div class="st" style="color:#F2EAE0;background:#8E1A12;padding-bottom:5px"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="cast" style="--cf:#8E1A12">
+        <div class="rl">Divine voice</div>
+        <div class="nm sm">God</div>
+        <div class="sent">140,659 words across 1,155 turns, in 186 of the 365 stories.</div>
+        <div class="bkt">
+          <i style="height:30px;background:#F2EAE0"></i><i style="height:22px;background:#F2EAE0"></i><i style="height:9px"></i><i style="height:34px;background:#F2EAE0"></i><i style="height:14px"></i><i style="height:7px"></i><i style="height:4px"></i><i style="height:3px"></i><i style="height:3px"></i><i style="height:11px"></i>
+        </div>
+        <div class="lb" style="display:flex;justify-content:space-between;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.6;margin-top:4px"><span>Beginning</span><span>Warnings</span><span>End</span></div>
+        <div class="spoke">
+          <div class="rl" style="margin-bottom:2px">Spoke with, by era</div>
+          <div class="r"><span class="n" style="opacity:.65;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase">The Beginning</span></div>
+          <div class="r" style="border-top:0"><span class="n">Moses</span><span class="bar"><i style="width:100%"></i></span><span class="c">82</span><span class="ch">›</span></div>
+          <div class="r" style="border-top:0"><span class="n">Abraham</span><span class="bar"><i style="width:39%"></i></span><span class="c">32</span><span class="ch">›</span></div>
+          <div class="r"><span class="n" style="opacity:.65;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase">The Warnings</span></div>
+          <div class="r" style="border-top:0"><span class="n">Jeremiah</span><span class="bar"><i style="width:72%"></i></span><span class="c">59</span><span class="ch">›</span></div>
+        </div>
+      </div>
+      <div class="tabs"><span>Read</span><span class="on">Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>The large-voice variant</b>God speaks in 186 stories to dozens of people — a flat top-four list tells you nothing. Above ~40 stories the card reorganises <b>by era</b>: buckets first, then interlocutors grouped by division. Same for Jesus.</figcaption></figure>
+
+    <figure class="s"><div class="ph light">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="back">‹ Abraham</div>
+      <div style="padding:0 14px 8px">
+        <div style="display:flex;align-items:center;gap:8px"><span class="dot" style="background:var(--p-prin)"></span><span style="font-size:16px;font-weight:600">Abraham</span><span style="color:var(--p-mute)">↔</span><span class="dot" style="background:var(--p-div)"></span><span style="font-size:16px;font-weight:600">God</span></div>
+        <div class="lab" style="margin-top:4px">Exchange 3 of 12 · Sodom &amp; Gomorrah</div>
+      </div>
+      <div class="body"><div class="rdr" data-gutter>
+        <div class="turn r" style="--c:var(--p-prin)"><span class="spk"></span><div class="who">Abraham</div><div class="bub b-prin">Will you sweep away both the righteous and the wicked?</div></div>
+        <div class="turn l" style="--c:var(--p-div)"><span class="spk"></span><div class="who">God</div><div class="bub b-div">If I find fifty righteous people in Sodom, I will spare the entire city.</div></div>
+        <div class="turn r" style="--c:var(--p-prin)"><span class="spk"></span><div class="who">Abraham</div><div class="bub b-prin">Suppose there are only forty-five?</div></div>
+        <div class="turn l" style="--c:var(--p-div)"><span class="spk"></span><div class="who">God</div><div class="bub b-div">I will not destroy it if I find forty-five.</div></div>
+      </div></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 16px 10px;border-top:1px solid var(--p-hair)">
+        <span style="font-size:11px;color:var(--p-mute);letter-spacing:.12em;text-transform:uppercase">‹ Exchange</span>
+        <span style="font-size:11px;color:var(--p-acc);letter-spacing:.12em;text-transform:uppercase">Exchange ›</span>
+      </div>
+      <div class="tabs"><span>Read</span><span class="on">Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>Conversation navigation</b>Tapping "God" on Abraham's card opens every exchange between the two, in canonical order. <em>The arrows step through exchanges, not stories</em> — a new axis through scripture that nothing else has. This is the eight-turn haggle over Sodom, readable as one conversation for the first time.</figcaption></figure>
+
+  </div>
+</section>
+
+<!-- ============ PLAN / YOU ============ -->
+<section class="sec">
+  <h2>06 · Plan and You</h2>
+  <div class="pair">
+
+    <figure class="s"><div class="ph light">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="lab" style="padding:9px 14px 0">Reading plans</div>
+      <div class="body">
+        <div class="card" style="border-color:var(--p-acc)">
+          <div class="h">Bible in 1 Year</div><div class="s">148 of 365 · 31 day streak</div>
+          <div class="prog"><i style="width:40.5%"></i></div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--p-mute)"><span>Next · 149 Solomon Builds the Temple</span><span>on pace</span></div>
+        </div>
+        <div class="card"><div class="h">Bible in 1 School Year</div><div class="s">180 stories · 9 months</div><div class="d">The whole story, paced to a school calendar with breaks built in.</div></div>
+        <div class="card"><div class="h">New Testament in 100 Days</div><div class="s">127 stories · 3 months</div><div class="d">Matthew to Revelation at a steady pace. A good first plan.</div></div>
+        <div class="lab" style="padding:12px 14px 4px">Challenges · 12</div>
+        <div class="card"><div class="h">The Gospels</div><div class="s">42 stories</div><div class="d">Jesus' life, ministry, death and resurrection. Heart of the Christian faith.</div><span class="tag">Chronological</span></div>
+        <div class="card"><div class="h">Women of the Bible</div><div class="s">22 stories</div><div class="d">The women whose choices shape the whole narrative.</div><span class="tag">Thematic</span></div>
+      </div>
+      <div class="tabs"><span>Read</span><span>Cast</span><span class="on">Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>Plan</b><em>Three plans, not one</em> — full year, school year, 100 days — then the twelve challenges. The <code>longDescription</code> and <code>chronologicalOrder</code> fields already in your data are used again; the current build shows neither.</figcaption></figure>
+
+    <figure class="s"><div class="ph light">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div style="padding:9px 14px 0"><div style="font-size:19px;letter-spacing:-.02em">Nathaniel</div><div class="lab" style="margin-top:2px">Your year · 2026</div></div>
+      <div class="body">
+        <div style="padding:14px 14px 0;display:flex;align-items:flex-end;justify-content:space-between">
+          <div><div class="big" style="font-size:38px">148<em> / 365</em></div><div class="lab" style="margin-top:3px">Stories read</div></div>
+          <div style="text-align:right"><div class="big">31</div><div class="lab" style="margin-top:3px">Day streak</div></div>
+        </div>
+        <svg viewBox="0 0 260 96" style="width:calc(100% - 28px);margin:16px 14px 0;height:96px" aria-hidden="true">
+          <path d="M4 64 C34 40 56 78 88 58 C120 38 140 74 172 54 C204 34 226 66 256 44" fill="none" stroke="var(--p-hair)" stroke-width="2.5" pathLength="100"/>
+          <path d="M4 64 C34 40 56 78 88 58 C120 38 140 74 172 54 C204 34 226 66 256 44" fill="none" stroke="var(--p-acc)" stroke-width="2.5" pathLength="100" stroke-dasharray="40.5 100"/>
+          <circle cx="108" cy="53" r="4.5" fill="var(--p-acc)"/><circle cx="108" cy="53" r="10" fill="none" stroke="var(--p-acc)" stroke-width="1" opacity=".45"/>
+          <g stroke="var(--p-hair)" stroke-width="1"><line x1="52" y1="72" x2="52" y2="80"/><line x1="108" y1="66" x2="108" y2="80"/><line x1="150" y1="70" x2="150" y2="80"/><line x1="196" y1="58" x2="196" y2="80"/></g>
+          <g font-family="Futura, Avenir Next, sans-serif" font-size="6.5" letter-spacing="1" fill="var(--p-mute)"><text x="4" y="90">BEGINNING</text><text x="92" y="90">LAND</text><text x="150" y="90">SONGS</text><text x="196" y="90">GOSPELS</text></g>
+        </svg>
+        <div style="display:flex;justify-content:space-between;padding:14px 14px 10px;border-top:1px solid var(--p-hair);margin-top:14px">
+          <div><div class="lab">Voices met</div><div style="font-size:18px;margin-top:2px">214<span style="font-size:11px;color:var(--p-mute)"> / 774</span></div></div>
+          <div style="text-align:right"><div class="lab">Words read</div><div style="font-size:18px;margin-top:2px">302k</div></div>
+        </div>
+        <div class="row"><div style="flex:1"><div class="a">Settings</div><div class="b">Appearance · reading · account</div></div><span class="r">›</span></div>
+      </div>
+      <div class="tabs"><span>Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span class="on">You</span></div>
+    </div><figcaption><b>You</b>Unchanged from the last mockup and still right — the year laid flat across the canon. The build currently shows the settings screen here instead, and the line renders as broken dashes because of the same hard-coded path.</figcaption></figure>
+
+    <figure class="s"><div class="ph light">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div style="padding:9px 14px 0"><div style="font-size:19px;letter-spacing:-.02em">Nathaniel</div><div class="lab" style="margin-top:2px">Your year · 2026</div></div>
+      <div class="body" style="display:flex;flex-direction:column;justify-content:center;padding:0 20px 60px;text-align:center">
+        <div style="font-family:var(--book);font-size:19px;line-height:1.4">365 stories.<br>774 voices.<br>747,039 words.</div>
+        <div style="font-size:13px;color:var(--p-mute);margin-top:14px;line-height:1.5">None of them read yet. Start with <b style="color:var(--p-ink)">The Flood</b> — 9 minutes.</div>
+        <div style="margin:18px auto 0;background:var(--p-ink);color:var(--p-bg);border-radius:13px;padding:12px 22px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;display:inline-block">Start reading</div>
+      </div>
+      <div class="tabs"><span>Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span class="on">You</span></div>
+    </div><figcaption><b>You · empty state</b>The build currently shows <code>0 / 365</code>, <code>0 / 774</code>, <code>0</code> — three zeros as a welcome. Before any progress exists, say what is <b>ahead</b> instead. Counters appear after the first story.</figcaption></figure>
+
+  </div>
+</section>
+
+<!-- ============ ONBOARDING ============ -->
+<section class="sec">
+  <h2>07 · Onboarding — <span>four screens, taught once</span></h2>
+  <p class="note">These carry the entire group-reading protocol. Six routes, two services and a QR scanner were deleted in favour of <b>one sentence on screen 3</b>. Every demonstration renders live components with real data, so there is nothing to commission and nothing to go stale.</p>
+  <div class="pair">
+
+    <figure class="s"><div class="ph light"><div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="ob">
+        <div class="skip">Skip</div>
+        <h4>The Bible, told as 365 stories</h4>
+        <p>Not chapters and verses. Stories with beginnings and endings — one a day for a year, or whenever you like.</p>
+        <div class="demo">
+          <div style="border:1px solid var(--p-hair);border-radius:14px;padding:12px;background:var(--p-surf)">
+            <div style="font-size:14px;font-weight:600">God Creates</div><div style="font-size:10px;color:var(--p-mute);margin-top:2px">Gen 1:1–2:25 · 6 min</div>
+            <div style="height:1px;background:var(--p-hair);margin:9px 0"></div>
+            <div style="font-size:14px;font-weight:600">People Sin</div><div style="font-size:10px;color:var(--p-mute);margin-top:2px">Gen 3:1–5:32 · 8 min</div>
+            <div style="height:1px;background:var(--p-hair);margin:9px 0"></div>
+            <div style="font-size:14px;font-weight:600">The Flood</div><div style="font-size:10px;color:var(--p-mute);margin-top:2px">Gen 6:1–9:29 · 9 min</div>
+          </div>
+        </div>
+        <div class="dots"><i class="on"></i><i></i><i></i><i></i></div>
+        <div class="cta">Next</div>
+      </div></div><figcaption><b>1 · The shape of it</b>Reframes what the app is before any mechanic appears.</figcaption></figure>
+
+    <figure class="s"><div class="ph light"><div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="ob">
+        <div class="skip">Skip</div>
+        <h4>Everyone has a voice</h4>
+        <p>Every word is coloured by who said it.</p>
+        <div class="demo" style="justify-content:flex-start;gap:6px">
+          <div class="bub b-narr" style="max-width:92%;font-size:12px;border-top-left-radius:5px">Some time later, God tested Abraham&#8217;s faith.</div>
+          <div class="bub b-div" style="max-width:70%;font-size:12px;border-top-left-radius:5px">Abraham!</div>
+          <div class="bub b-prin" style="max-width:70%;margin-left:auto;font-size:12px;border-top-right-radius:5px">Yes, here I am!</div>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:7px">
+            <div class="leg"><span class="sw" style="background:var(--p-surf);border:1px solid var(--p-narr)"></span><span>Narrator</span><span class="d">tells the story</span></div>
+            <div class="leg"><span class="sw" style="background:var(--p-divf);border:1px solid var(--p-div)"></span><span>God</span><span class="d">God, Jesus, the Spirit</span></div>
+            <div class="leg"><span class="sw" style="background:var(--p-prinf);border:1px solid var(--p-prin)"></span><span>Main characters</span></div>
+            <div class="leg"><span class="sw" style="background:var(--p-chorf);border:1px solid var(--p-chor)"></span><span>Everyone else</span></div>
+          </div>
+        </div>
+        <div class="dots"><i></i><i class="on"></i><i></i><i></i></div>
+        <div class="cta">Next</div>
+      </div></div><figcaption><b>2 · The four colours</b>A real exchange from story 008, bubbles arriving one at a time. "Everyone else — down to a single blind beggar" is the line that makes people curious about Cast.</figcaption></figure>
+
+    <figure class="s"><div class="ph light"><div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="ob">
+        <div class="skip">Skip</div>
+        <h4>Read it with three friends</h4>
+        <p>One person takes each colour and you read it out loud together. That&#8217;s it — no setup, no codes. Works just as well on your own.</p>
+        <div class="demo">
+          <div style="border:1px solid var(--p-hair);border-radius:14px;padding:12px;background:var(--p-surf)">
+            <div style="font-size:13.5px;font-weight:600">Abraham&#8217;s Faith Tested</div>
+            <div class="mix" style="margin-top:9px"><i style="background:var(--p-narr);flex:1191"></i><i style="background:var(--p-div);flex:315"></i><i style="background:var(--p-prin);flex:269"></i><i style="background:var(--p-chor);flex:392"></i></div>
+            <div style="display:flex;gap:6px;margin-top:12px;justify-content:center">
+              <span style="width:34px;height:34px;border-radius:50%;background:var(--p-surf);border:1.5px solid var(--p-narr)"></span>
+              <span style="width:34px;height:34px;border-radius:50%;background:var(--p-divf);border:1.5px solid var(--p-div)"></span>
+              <span style="width:34px;height:34px;border-radius:50%;background:var(--p-prinf);border:1.5px solid var(--p-prin)"></span>
+              <span style="width:34px;height:34px;border-radius:50%;background:var(--p-chorf);border:1.5px solid var(--p-chor)"></span>
+            </div>
+            <div style="font-size:10px;color:var(--p-mute);text-align:center;margin-top:9px">Four voices · four readers</div>
+          </div>
+        </div>
+        <div class="dots"><i></i><i></i><i class="on"></i><i></i></div>
+        <div class="cta">Next</div>
+      </div></div><figcaption><b>3 · The one that matters</b><em>This screen replaces six deleted routes, two services and a QR scanner.</em> The last sentence works as hard as the first — a solo reader must not feel they're missing the real version.</figcaption></figure>
+
+    <figure class="s"><div class="ph light"><div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="ob">
+        <div class="skip">Skip</div>
+        <h4>Keep what stays with you</h4>
+        <p>Press and hold any verse to react, add a note, or send it to someone. It&#8217;s saved to that verse, so you&#8217;ll find it again.</p>
+        <div class="demo">
+          <div class="bub b-div" style="max-width:100%;font-size:12.5px;border-top-left-radius:5px">Take your son, your only son — yes, Isaac, whom you love so much.</div>
+          <div class="rx" style="margin-top:7px"><span>🙏</span><span>❤️</span><span style="font-family:var(--book);font-style:italic">The hardest sentence…</span></div>
+        </div>
+        <div class="dots"><i></i><i></i><i></i><i class="on"></i></div>
+        <div class="cta" style="background:var(--p-acc)">Start reading</div>
+      </div></div><figcaption><b>4 · Make it yours</b>"Start reading" opens <b>today's story</b>, not the list. Ending onboarding on a list is ending it on another decision.</figcaption></figure>
+
+  </div>
+</section>
+
+<!-- ============ DARK ============ -->
+<section class="sec">
+  <h2>08 · Dark — <span>same markup, one class</span></h2>
+  <div class="pair">
+    <figure class="s"><div class="ph dark">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="cont"><div class="txt"><div class="k">Continue</div><div class="t">The Flood</div><div class="m">Gen 6:1–9:29 · 4 min left</div></div><div class="go">▶</div></div>
+      <div class="srch"><span class="mag"></span><span>Search voices, books, stories</span></div>
+      <div class="body"><div class="tl" data-thread="expanded-dark">
+        <div class="items">
+          <div class="dh"><span class="mk knot on" data-mk="0"></span><span class="t">The Beginning</span><span class="o">Genesis – Deuteronomy</span><span class="c">18 / 68</span></div>
+          <div class="dh bk"><span class="mk bead" data-mk="1"></span><span class="t">Genesis</span><span class="c">18</span></div>
+          <div class="nd done"><span class="mk bead" data-mk="2"></span><div class="ti">God Creates</div><div class="rf">1:1–2:25 · read</div></div>
+          <div class="nd done"><span class="mk bead" data-mk="2" style="background:var(--p-chor)"></span><div class="ti">People Sin</div><div class="rf">3:1–5:32 · read</div></div>
+          <div class="nd now"><span class="mk bead big" data-mk="2"></span><div class="ti">The Flood</div><div class="rf">6:1–9:29 · continue</div></div>
+          <div class="nd next"><span class="mk bead hollow" data-mk="2"></span><div class="ti">The Tower</div><div class="rf">10:1–11:32</div></div>
+          <div class="dh bk"><span class="mk bead hollow" data-mk="1"></span><span class="t">Exodus</span><span class="c">14</span></div>
+          <div class="dh"><span class="mk knot" data-mk="0"></span><span class="t">The Land</span><span class="o">Joshua – Esther</span><span class="c">86</span></div>
+        </div>
+      </div></div>
+      <div class="tabs"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>Read · dark</b>The active bead is the only thing that glows. Beads mask the thread in both modes — the ring takes the background colour, so it works from tokens without a second rule.</figcaption></figure>
+
+    <figure class="s"><div class="ph dark">
+      <div class="st"><span>9:41</span><span><i></i><i></i><i></i></span></div>
+      <div class="back">‹ Genesis</div>
+      <div class="rhead"><div class="t">Abraham&#8217;s Faith Tested</div><div class="m">008 · Gen 21:1–23:20 · 2,167 w</div></div>
+      <div class="csheet">
+        <div class="top"><div class="mix"><i style="background:var(--p-narr);flex:1191"></i><i style="background:var(--p-div);flex:315"></i><i style="background:var(--p-prin);flex:269"></i><i style="background:var(--p-chor);flex:392"></i></div><span class="cnt">6 voices ⌄</span></div>
+      </div>
+      <div class="body"><div class="rdr" data-gutter>
+        <div class="turn l" style="--c:var(--p-narr)"><span class="spk"></span><div class="who">The Narrator</div><div class="bub b-narr"><sup>1</sup>Some time later, God tested Abraham&#8217;s faith.</div></div>
+        <div class="turn l" style="--c:var(--p-div)"><span class="spk"></span><div class="who">God</div><div class="bub b-div">Abraham!</div></div>
+        <div class="turn r" style="--c:var(--p-prin)"><span class="spk"></span><div class="who">Abraham</div><div class="bub b-prin">Yes, here I am!</div></div>
+        <div class="turn r" style="--c:var(--p-chor)"><span class="spk"></span><div class="who">Sarah</div><div class="bub b-chor"><sup>6</sup>God has brought me laughter.</div></div>
+      </div></div>
+      <div class="tabs"><span class="on">Read</span><span>Cast</span><span>Plan</span><span>Saved</span><span>You</span></div>
+    </div><figcaption><b>Reader · dark</b>Bubble fills drop to near-black tints so the text carries the colour rather than the panel. Nothing glares at 6am.</figcaption></figure>
+  </div>
+</section>
+
+<section class="closer">
+  <h2>Build from this, not from the August 10 mockup.</h2>
+  <p>Palette, type and the reader's bubble geometry are unchanged and still correct there. Everything else on this page supersedes it: three levels instead of two, ink filters instead of search scopes, division buckets instead of the hairline ribbon, three plans instead of one, and eight screens that never existed.</p>
+  <p><b>And the threads here are generated, not drawn.</b> A 20-line <code>buildThread()</code> in this page's source produces every path from its row offsets — the same function <code>09-IMPLEMENTATION-SPEC.md</code> §2 specifies for the app. Copy the approach, never the coordinates.</p>
+</section>
+</div>
+
+<script>
+// Mirrors 09-IMPLEMENTATION-SPEC.md §2 — the algorithm the app should use.
+// Paths are generated from row offsets, never hand-authored.
+(function(){
+  var DEPTH_X = [30, 52, 74], BOW = 18;
+
+  function buildThread(rows){
+    var y = 0, marks = rows.map(function(r){
+      var m = { x: DEPTH_X[r.depth], y: y + r.height/2 };
+      y += r.height; return m;
+    });
+    if(!marks.length) return { d:'', marks:[], height:0 };
+    var d = 'M ' + marks[0].x + ' 0', prev = { x: marks[0].x, y: 0 };
+    marks.forEach(function(m){
+      if(m.x === prev.x){ d += ' L ' + m.x + ' ' + m.y; }
+      else { d += ' C ' + prev.x + ' ' + (prev.y+BOW) + ' ' + m.x + ' ' + (m.y-BOW) + ' ' + m.x + ' ' + m.y; }
+      prev = m;
+    });
+    d += ' L ' + prev.x + ' ' + y;
+    return { d:d, marks:marks, height:y };
+  }
+
+  document.querySelectorAll('.tl').forEach(function(tl){
+    var items = Array.from(tl.querySelector('.items').children);
+    var rows = items.map(function(el){
+      var depth = el.classList.contains('dh') ? (el.classList.contains('bk') ? 1 : 0) : 2;
+      return { depth: depth, height: el.classList.contains('now') ? 58
+                                   : el.classList.contains('bk') ? 44
+                                   : el.classList.contains('dh') ? 46 : 44 };
+    });
+    var t = buildThread(rows);
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns,'svg');
+    svg.setAttribute('viewBox','0 0 288 ' + t.height);
+    svg.setAttribute('height', t.height);
+    svg.setAttribute('preserveAspectRatio','none');
+    var p = document.createElementNS(ns,'path');
+    p.setAttribute('d', t.d); p.setAttribute('fill','none');
+    p.setAttribute('stroke','var(--p-thread)'); p.setAttribute('stroke-width','1.5');
+    svg.appendChild(p); tl.insertBefore(svg, tl.firstChild);
+    // place every mark from the same source of truth
+    items.forEach(function(el,i){
+      var mk = el.querySelector('.mk'); if(!mk) return;
+      mk.style.left = t.marks[i].x + 'px';
+      mk.style.top  = (t.marks[i].y - rowTop(rows,i)) + 'px';
+    });
+    function rowTop(rs,i){ var y=0; for(var k=0;k<i;k++) y+=rs[k].height; return y; }
+  });
+
+  // reader gutter — one depth, gentle wander
+  document.querySelectorAll('.rdr[data-gutter]').forEach(function(r){
+    var ns='http://www.w3.org/2000/svg';
+    var svg=document.createElementNS(ns,'svg');
+    svg.setAttribute('viewBox','0 0 34 460'); svg.setAttribute('preserveAspectRatio','none');
+    var p=document.createElementNS(ns,'path');
+    p.setAttribute('d','M14 -8 C11 40 17 70 14 108 C11 146 17 176 14 214 C11 252 17 282 14 320 C11 358 17 392 14 460');
+    p.setAttribute('fill','none'); p.setAttribute('stroke','var(--p-thread)'); p.setAttribute('stroke-width','1.5');
+    svg.appendChild(p); r.insertBefore(svg, r.firstChild);
+  });
+})();
+</script>
