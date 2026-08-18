@@ -8,6 +8,7 @@ import { getCompletedStoryIds } from '@/utils/threadProgress';
 import { ThreadColors } from '@/constants/Colors';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { getSegmentReadingTime, formatReadingMinutes } from '@/utils/readingTime';
 
 function storyIdsFromSegments(segments: Record<string, { segments?: string[] } | undefined> | undefined): string[] {
   return Object.values(segments || {})
@@ -29,6 +30,10 @@ const PlanDetail = () => {
     readingPlansData.challenges.find((challenge) => challenge.id === id);
 
   const storyFilter = useMemo(() => storyIdsFromSegments(item?.segments || {}), [item]);
+  const minutes = useMemo(
+    () => storyFilter.reduce((sum, id) => sum + getSegmentReadingTime(id), 0),
+    [storyFilter]
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -58,6 +63,11 @@ const PlanDetail = () => {
         </Text>
       </Pressable>
       <Text style={[styles.title, { color: palette.ink }]}>{item.title}</Text>
+      {minutes > 0 && (
+        <Text style={[styles.meta, { color: palette.mute }]}>
+          {storyFilter.length} {t('UI.thread.stories')} · {formatReadingMinutes(minutes)}
+        </Text>
+      )}
       <ThreadList completedIds={completedIds} storyFilter={storyFilter} hideSearch />
     </View>
   );
@@ -65,7 +75,8 @@ const PlanDetail = () => {
 
 const styles = StyleSheet.create({
   back: { paddingHorizontal: 14, paddingTop: 4, paddingBottom: 6 },
-  title: { fontSize: 22, fontWeight: '600', paddingHorizontal: 14, paddingBottom: 8, letterSpacing: -0.4 },
+  title: { fontSize: 22, fontWeight: '600', paddingHorizontal: 14, paddingBottom: 2, letterSpacing: -0.4 },
+  meta: { fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', paddingHorizontal: 14, paddingBottom: 8 },
 });
 
 export default PlanDetail;

@@ -15,3 +15,9 @@ export function localizeStoryTitle(segmentId: string, englishTitle: string, lang
 export function formatCount(n: number): string {
   return n.toLocaleString();
 }
+
+export function localizeBookName(bookId: string, englishName: string, language: string): string {
+  if (!language.startsWith('fr')) return englishName;
+  const books = (FRA_UI as { bookNames?: Record<string, { bookName?: string }> }).bookNames;
+  return books?.[bookId.toUpperCase()]?.bookName || englishName;
+}

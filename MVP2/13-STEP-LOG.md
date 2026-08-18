@@ -34,3 +34,19 @@ Append-only. One entry per save point. Numbered 13 because `12-MOCKUP-DELTA.md` 
 
 ---
 
+## mvp2-B · 2026-08-19
+
+**Tag:** `mvp2-B`  
+**Commands:** `npx tsc --noEmit`, grep `@react-navigation/` and hard-coded `M30` path
+
+| Check | Result |
+| --- | --- |
+| tsc | **pass** |
+| expo lint | **deferred** — same pre-existing SettingsModal class as mvp2-A |
+| `@react-navigation/` imports | **clean** |
+| hard-coded thread `d=` | **clean** in app code — `buildThread` / `buildYearSparkline` only |
+
+**This step:** B1 generated thread + YearThread sparkline; B2 division → book → story; B3 beads mask with `palette.bg` ring; B4 continue card fades with scroll, search pinned; H2 Today / Continue / plan day from `DailyStoryMap`; H3 reading times on rows, continue card, plan detail.
+
+---
+
