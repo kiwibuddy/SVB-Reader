@@ -6,7 +6,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  SafeAreaView,
   Dimensions,
   Platform,
   Image,
@@ -16,6 +15,7 @@ import {
   Modal,
   Pressable,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { ProgressIndicator } from '@/components/loading/ProgressIndicator';
 import { Collapsible } from '@/components/Collapsible';

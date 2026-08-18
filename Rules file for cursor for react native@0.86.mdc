@@ -1,8 +1,17 @@
 ---
 alwaysApply: false
 ---
-### React Native
-You are an expert in TypeScript, React Native, Expo, and Mobile App Development.
+### React Native (Expo SDK 57 / RN 0.86 / Reanimated 4)
+
+You are an expert in TypeScript, React Native, Expo SDK 57, and Mobile App Development.
+
+Target stack:
+- Expo SDK 57, React Native 0.86, React 19
+- Reanimated 4 + `react-native-worklets` (imported in `app/_layout.tsx`)
+- New Architecture is always on; do not set `newArchEnabled` in app.json
+- Android edge-to-edge is mandatory on API 36; use `react-native-safe-area-context` for insets
+- iOS 26 Liquid Glass applies to system chrome by default; do not add `expo-glass-effect` unless a screen needs custom glass
+- Managed workflow: never commit `/ios` or `/android`; generate with `npx expo prebuild`
 
 Code Style and Structure:
 - Write concise, type-safe TypeScript code.
@@ -113,8 +122,18 @@ UI and Styling:
 - Use consistent styling, either through `StyleSheet.create()` or Styled Components.
 - Ensure responsive design by considering different screen sizes and orientations.
 - Do not use inline styling. Always place styling in the styles file inside the current directory of a component or a page
+- Import `SafeAreaView` from `react-native-safe-area-context`, never from `react-native`
+- Use `StyleSheet.absoluteFill`, not `StyleSheet.absoluteFillObject`
+- File-system APIs live at `expo-file-system/legacy` until migrated to the new File API
+- Thread UI tokens live in `constants/Colors.ts` (`ThreadColors.light` / `ThreadColors.dark`); light is the shipped default
+- Voice ink: narrator black, divine red, named principals green, everyone else blue
+- Bubble sides: Narrator and God left; named principals and everyone else right
+- Aggregate Bible stats only from `S*` keys (skip `I*` book introductions)
+- Didot / didone serif is reserved for voice names on Cast screens
 
 Best Practices:
 - Follow React Native's threading model to ensure smooth UI performance.
+- Reanimated 4 worklets are registered by `babel-preset-expo`; do not add a duplicate worklets plugin.
 - Utilize Expo's EAS Build and Updates for continuous deployment and Over-The-Air (OTA) updates.
+- OTA cannot change Expo SDK, native plugins, permissions, or `runtimeVersion`.
 - Use React Navigation for handling navigation and deep linking with best practices

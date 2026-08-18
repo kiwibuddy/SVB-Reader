@@ -7,10 +7,6 @@ import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { isLargeScreen, isLandscape } from '@/constants/sizes';
 
-declare global {
-  let handleBottomNavScroll: ((event: any) => void) | undefined;
-}
-
 interface BottomNavigationProps {
   isHome?: boolean;
 }
@@ -130,13 +126,13 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     if (isHome) return;
     
     // You can expose the handleScroll function to other components
-    if (global) {
-      (global as any).handleBottomNavScroll = handleScroll;
+    if (globalThis) {
+      (globalThis as any).handleBottomNavScroll = handleScroll;
     }
 
     return () => {
-      if (global) {
-        delete (global as any).handleBottomNavScroll;
+      if (globalThis) {
+        delete (globalThis as any).handleBottomNavScroll;
       }
     };
   }, [isHome, handleScroll]);

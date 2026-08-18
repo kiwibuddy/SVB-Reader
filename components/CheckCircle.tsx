@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   confettiLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,

@@ -1,7 +1,7 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import logger from '@/utils/logger';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar, Dimensions } from 'react-native';
+import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, StatusBar, Dimensions } from 'react-native';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { bibleLoader } from '@/services/BibleLoader';
 import readingPlansData from "@/assets/data/ReadingPlansChallenges.json";
@@ -534,8 +534,8 @@ export default function BibleScreen() {
     const currentOffset = event.nativeEvent.contentOffset.y;
     
     // Use the global bottom navigation scroll handler for coordinated animations
-    if ((global as any)?.handleBottomNavScroll) {
-      (global as any).handleBottomNavScroll(event);
+    if ((globalThis as any)?.handleBottomNavScroll) {
+      (globalThis as any).handleBottomNavScroll(event);
     }
     
     // Coordinate navigation arrows with bottom navigation using iOS-style behavior

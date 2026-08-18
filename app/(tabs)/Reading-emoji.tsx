@@ -9,13 +9,13 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
-  SafeAreaView,
   Dimensions,
   Platform,
   Animated,
   Modal,
   ScrollView,
 } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext"
 import { useSyncAppSettings } from "@/context/SyncAppSettingsContext"

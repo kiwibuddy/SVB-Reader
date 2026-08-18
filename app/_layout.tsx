@@ -8,6 +8,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import React, { useState, useEffect } from 'react';
 // Removed duplicate logger import
 import 'react-native-reanimated';
+import 'react-native-worklets';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BottomNavProvider } from '@/context/BottomNavContext';
 import { FontSizeProvider } from '@/context/FontSizeContext';
 import { SyncAppSettingsProvider, useSyncAppSettings } from '@/context/SyncAppSettingsContext';
@@ -156,15 +158,13 @@ function AppContent() {
   
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
       <ThemeProvider value={isDarkMode ? DarkTheme : DefaultTheme}>
         <View style={{ flex: 1, backgroundColor: colors.background }}>
           <FontSizeProvider>
             <SQLiteGlobalProvider>
               <BottomNavProvider>
-                <StatusBar 
-                  style={isDarkMode ? "light" : "dark"}
-                  backgroundColor={colors.background}
-                />
+                <StatusBar style={isDarkMode ? "light" : "dark"} />
                 <Stack
                   screenOptions={{
                     headerShown: false,
@@ -197,6 +197,7 @@ function AppContent() {
           )}
         </View>
       </ThemeProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
