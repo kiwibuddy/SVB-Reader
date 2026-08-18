@@ -33,7 +33,6 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     // Always show on main tab screens (regardless of parameters)
     const isTabScreen = pathname.includes('/(tabs)/') || 
                        pathname === '/Home' || 
-                       pathname === '/Navigation' || 
                        pathname === '/Reading-emoji' || 
                        pathname === '/ReadingPlans' || 
                        pathname === '/Achievements' ||

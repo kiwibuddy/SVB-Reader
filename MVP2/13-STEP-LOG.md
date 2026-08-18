@@ -18,3 +18,19 @@ Append-only. One entry per save point. Numbered 13 because `12-MOCKUP-DELTA.md` 
 
 ---
 
+## mvp2-A · 2026-08-19
+
+**Tag:** `mvp2-A`  
+**Commands:** `npx tsc --noEmit`, `npx expo lint`, grep `@react-navigation/` and `/(tabs)/Navigation`
+
+| Check | Result |
+| --- | --- |
+| tsc | **pass** after in-step fix: `NavBook.tsx` indexed `SegmentTitles` with `String(segment)` after extracting `SegmentKey` to `types/bibleNav.ts`. |
+| expo lint | **deferred** — 76 errors / 220 warnings, same pre-existing `SettingsModal` refs class. ThreadList exhaustive-deps warning not blocking. |
+| `@react-navigation/` imports | **clean** |
+| `/(tabs)/Navigation` | **clean** — `Navigation.tsx` and `TopSpeakers.json` deleted |
+
+**This step:** A1 FilterChip + pill scroller alignment; A2 CheckCircle routes + delete Navigation; A3 keyboard dismiss on ThreadList/Cast; A4 plan detail inside tabs; A5 all three plans with `id.startsWith('S')`; A6 reader `paddingBottom: insets.bottom + 88`; H6 TopSpeakers deleted with Navigation.
+
+---
+

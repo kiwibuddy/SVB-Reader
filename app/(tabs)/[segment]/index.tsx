@@ -7,6 +7,7 @@ import { bibleLoader } from '@/services/BibleLoader';
 import readingPlansData from "@/assets/data/ReadingPlansChallenges.json";
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, usePathname, useLocalSearchParams } from "expo-router";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Animated } from 'react-native';
 import { useBottomNavAnimation } from '@/context/BottomNavContext';
 import Segment from '@/components/Bible/Segment';
@@ -176,6 +177,7 @@ export default function BibleScreen() {
   const { colors, language } = useSyncAppSettings();
   const { updateSegmentId, state } = useSQLiteGlobalContext();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const { planId, challengeId, verse, chapter } = params;
   const flatListRef = useRef<ScrollView>(null);
@@ -624,7 +626,7 @@ export default function BibleScreen() {
         style={styles.screenContainer}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[styles.contentContainer, { paddingBottom: insets.bottom + 88 }]}
         showsVerticalScrollIndicator={false}
       >
         {renderHeader()}

@@ -28,7 +28,6 @@ export default function TabLayout() {
         <Tabs.Screen name="Reading-emoji" options={{ title: "Saved" }} />
         <Tabs.Screen name="you" options={{ title: "You" }} />
         <Tabs.Screen name="[segment]" options={{ href: null }} />
-        <Tabs.Screen name="Navigation" options={{ href: null }} />
         <Tabs.Screen name="ReadingPlans" options={{ href: null }} />
         <Tabs.Screen name="Achievements" options={{ href: null }} />
       </Tabs>

@@ -21,6 +21,8 @@ import { ConversationsFile } from '@/types/conversations';
 import { bibleLoader } from '@/services/BibleLoader';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { FilterChip } from '@/components/thread/FilterChip';
+import { hapticImpactLight } from '@/utils/haptics';
 
 type Scope = 'all' | 'voices' | 'books' | 'stories' | 'words';
 
@@ -94,6 +96,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
   }, [language, q, searching]);
 
   const openStory = (id: string) => {
+    void hapticImpactLight();
     router.push(`/${id}`);
   };
 
@@ -118,25 +121,29 @@ const ThreadList: React.FC<ThreadListProps> = ({
         </View>
       )}
       {searching && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scopes}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scopes}
+          style={styles.scopeScroll}
+        >
           {scopes.map((item) => (
-            <Pressable
+            <FilterChip
               key={item}
+              label={t(`UI.thread.scope${item.charAt(0).toUpperCase()}${item.slice(1)}`)}
+              selected={scope === item}
               onPress={() => setScope(item)}
-              style={[
-                styles.chip,
-                { borderColor: palette.hair },
-                scope === item && { backgroundColor: palette.ink, borderColor: palette.ink },
-              ]}
-            >
-              <Text style={[styles.chipText, { color: scope === item ? palette.bg : palette.mute }]}>
-                {t(`UI.thread.scope${item.charAt(0).toUpperCase()}${item.slice(1)}`)}
-              </Text>
-            </Pressable>
+              palette={palette}
+            />
           ))}
         </ScrollView>
       )}
-      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
+      >
         {searching ? (
           <View>
             {showVoices && searchResults.voices.length > 0 && (
@@ -286,9 +293,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   searchInput: { fontSize: 15, padding: 0 },
-  scopes: { paddingHorizontal: 14, paddingTop: 10, gap: 6 },
-  chip: { borderWidth: 1, borderRadius: 11, paddingHorizontal: 9, paddingVertical: 4, marginRight: 6 },
-  chipText: { fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase' },
+  scopeScroll: { flexGrow: 0 },
+  scopes: { alignItems: 'flex-start', paddingHorizontal: 14, paddingTop: 10, gap: 6 },
   list: { paddingBottom: 120 },
   threadWrap: { position: 'relative', paddingTop: 8 },
   division: { height: 46, paddingLeft: 54, paddingRight: 14, flexDirection: 'row', alignItems: 'center' },

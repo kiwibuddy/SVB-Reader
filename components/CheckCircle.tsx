@@ -158,7 +158,7 @@ export default function CheckCircle({
   const navigateAfterComplete = () => {
     if (params.planId || planId) {
       router.push({
-        pathname: '/(tabs)/ReadingPlans',
+        pathname: '/(tabs)/plan',
         params: {
           expandedPlan: planId || params.planId,
           completedSegment: segmentId,
@@ -170,7 +170,7 @@ export default function CheckCircle({
 
     if (params.challengeId || challengeId) {
       router.push({
-        pathname: '/(tabs)/ReadingPlans',
+        pathname: '/(tabs)/plan',
         params: {
           expandedChallenge: challengeId || params.challengeId,
           completedSegment: segmentId,
@@ -181,7 +181,7 @@ export default function CheckCircle({
     }
 
     router.push({
-      pathname: '/(tabs)/Navigation',
+      pathname: '/(tabs)/Home',
       params: {
         expandedBook: segmentId.substring(1, 4),
         completedSegment: segmentId,

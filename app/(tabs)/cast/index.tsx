@@ -9,6 +9,7 @@ import { localizeVoiceName, formatCount } from '@/utils/localize';
 import { inkLabel, Ink } from '@/utils/ink';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { FilterChip } from '@/components/thread/FilterChip';
 
 const conv = conversations as ConversationsFile;
 const FILTERS: Array<Ink | 'all'> = ['all', 'black', 'red', 'green', 'blue'];
@@ -46,24 +47,27 @@ const CastIndex = () => {
           autoCapitalize="none"
         />
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filters}
+        style={styles.filterScroll}
+      >
         {FILTERS.map((item) => (
-          <Pressable
+          <FilterChip
             key={item}
+            label={item === 'all' ? t('UI.thread.scopeAll') : inkLabel(item, lang)}
+            selected={filter === item}
             onPress={() => setFilter(item)}
-            style={[
-              styles.chip,
-              { borderColor: palette.hair },
-              filter === item && { backgroundColor: palette.ink, borderColor: palette.ink },
-            ]}
-          >
-            <Text style={[styles.chipText, { color: filter === item ? palette.bg : palette.mute }]}>
-              {item === 'all' ? t('UI.thread.scopeAll') : inkLabel(item, lang)}
-            </Text>
-          </Pressable>
+            palette={palette}
+          />
         ))}
       </ScrollView>
-      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 120 }}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
+      >
         {voices.map((voice) => (
           <Pressable
             key={voice.name}
@@ -89,9 +93,8 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   search: { margin: 14, borderWidth: 1, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 8 },
   input: { fontSize: 15, padding: 0 },
-  filters: { paddingHorizontal: 14, paddingBottom: 8, gap: 6 },
-  chip: { borderWidth: 1, borderRadius: 11, paddingHorizontal: 9, paddingVertical: 4, marginRight: 6 },
-  chipText: { fontSize: 9, letterSpacing: 1.1, textTransform: 'uppercase' },
+  filterScroll: { flexGrow: 0 },
+  filters: { alignItems: 'flex-start', paddingHorizontal: 14, paddingBottom: 8, gap: 6 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   dot: { width: 8, height: 8, borderRadius: 4 },
   name: { fontSize: 16 },

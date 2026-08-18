@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,14 +20,12 @@ const PlanScreen = () => {
   const { t } = useTranslation();
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
-  const [planDone, setPlanDone] = useState(0);
+  const [planDoneById, setPlanDoneById] = useState<Record<string, number>>({});
   const [streak, setStreak] = useState(0);
   const [challengeProgress, setChallengeProgress] = useState<Record<string, number>>({});
 
   const plans = readingPlansData.plans;
   const challenges = readingPlansData.challenges;
-  const activePlan = plans.find((plan) => plan.id === activePlanId) || plans[0];
-  const planStories = useMemo(() => storyIdsFromSegments(activePlan?.segments || {}), [activePlan]);
 
   useFocusEffect(
     useCallback(() => {
@@ -43,10 +41,14 @@ const PlanScreen = () => {
         setActivePlanId(planId);
         setStreak(streakValue || 0);
         try {
-          const progress = await getPlanProgress(planId);
-          setPlanDone(progress?.completedSegments || 0);
+          const nextPlans: Record<string, number> = {};
+          for (const planItem of plans) {
+            const progress = await getPlanProgress(planItem.id);
+            nextPlans[planItem.id] = progress?.completedSegments || 0;
+          }
+          setPlanDoneById(nextPlans);
         } catch {
-          setPlanDone(0);
+          setPlanDoneById({});
         }
         const next: Record<string, number> = {};
         for (const challenge of challenges) {
@@ -71,18 +73,26 @@ const PlanScreen = () => {
     <SafeAreaView style={[styles.root, { backgroundColor: palette.bg }]} edges={['top']}>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         <Text style={[styles.lab, { color: palette.mute }]}>{t('UI.thread.yourPlan')}</Text>
-        <Pressable
-          onPress={() => router.push(`/plan/${activePlan.id}`)}
-          style={[styles.card, { backgroundColor: palette.surf, borderColor: palette.acc }]}
-        >
-          <Text style={[styles.cardTitle, { color: palette.ink }]}>{activePlan.title}</Text>
-          <Text style={[styles.cardMeta, { color: palette.mute }]}>
-            {planDone} {t('UI.thread.of')} {planStories.length} · {streak}d {t('UI.thread.streak')}
-          </Text>
-          <View style={[styles.prog, { backgroundColor: palette.hair }]}>
-            <View style={[styles.progFill, { width: `${Math.round((planDone / Math.max(planStories.length, 1)) * 100)}%`, backgroundColor: palette.acc }]} />
-          </View>
-        </Pressable>
+        {plans.map((plan) => {
+          const stories = storyIdsFromSegments(plan.segments || {});
+          const done = planDoneById[plan.id] || 0;
+          const active = plan.id === activePlanId;
+          return (
+            <Pressable
+              key={plan.id}
+              onPress={() => router.push(`/plan/${plan.id}`)}
+              style={[styles.card, { backgroundColor: palette.surf, borderColor: active ? palette.acc : palette.hair }]}
+            >
+              <Text style={[styles.cardTitle, { color: palette.ink }]}>{plan.title}</Text>
+              <Text style={[styles.cardMeta, { color: palette.mute }]}>
+                {done} {t('UI.thread.of')} {stories.length} · {streak}d {t('UI.thread.streak')}
+              </Text>
+              <View style={[styles.prog, { backgroundColor: palette.hair }]}>
+                <View style={[styles.progFill, { width: `${Math.round((done / Math.max(stories.length, 1)) * 100)}%`, backgroundColor: palette.acc }]} />
+              </View>
+            </Pressable>
+          );
+        })}
         <Text style={[styles.lab, { color: palette.mute }]}>{t('UI.thread.challenges')}</Text>
         {challenges.map((challenge) => (
           <Pressable
