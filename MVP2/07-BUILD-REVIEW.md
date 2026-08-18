@@ -3,20 +3,41 @@
 First run of the MVP2 build on device. This is a punch list, a set of design
 decisions taken from your notes, and a revised plan for what remains.
 
-**Basis of this review:** the five screenshots and
-[`mockups/02-thread-built-out.html`](mockups/02-thread-built-out.html). **Your
-working copy is not pushed** — `origin/main` is still at `85b96ed`, documents
-only. Causes marked *(inferred)* below are read from the screenshots, not the
-code. Push the branch and I can confirm them properly.
+**Basis of this review:** the screenshots plus the code on
+`store-compliance-130` @ `8565195`. Every cause below is now confirmed at file
+and line — nothing here is inferred.
+
+**Revision 2, 19 August:** updated after reading the branch. One diagnosis was
+wrong and is corrected in §2.
 
 ---
 
 ## 1. Where the build actually is
 
-Further than the roadmap assumed, and out of the planned order. The five tabs
-exist, the reader renders attributed bubbles, Cast lists all 774, the call sheet
-is on the story header, and read-aloud is wired. That is most of Phases 2–4,
-built before Phase 0 finished.
+### Phase 0 is done
+
+Confirmed on the branch. This is the hard part and it is behind you:
+
+| | |
+| --- | --- |
+| `expo` | **57.0.14** — was 53 |
+| `react-native` | **0.86.2** — was 0.79.6 |
+| `expo-router` | **57.0.14** |
+| `react-native-reanimated` | **4.5.1** + `react-native-worklets` 0.10.1 |
+| `@react-navigation/*` | **gone** — the bundling error is resolved |
+| `expo-camera`, `react-native-qrcode-svg` | **gone** |
+| Native `ios/` `android/` | **gone — managed workflow** (resolves D5) |
+| `.nvmrc` | 22.13.1 |
+| Group/QR screens, services, context | **all removed** |
+| Group tables | no longer written |
+| `CheckCircle.tsx` | **rebuilt, 1,064 → 316 lines** |
+
+D5 is resolved as **managed**, which was the recommendation. Every future SDK
+upgrade is now a version bump rather than a native migration.
+
+### The screens
+
+Further than the roadmap assumed, and out of the planned order.
 
 | Item | Planned phase | State |
 | --- | --- | --- |
@@ -44,14 +65,18 @@ finish the SDK 57 upgrade before adding any more screens.
 
 ## 2. Two root causes explain most of the visual defects
 
-### RC1 — The SVG paths are hard-coded. This is my fault.
+### RC1 — The SVG path is hard-coded. Confirmed. This is my fault.
 
-The mockup draws the thread with a fixed `d` attribute authored by hand for
-exactly ten rows:
+`components/thread/ThreadList.tsx:198` — my mockup path, copied verbatim:
 
 ```
-d="M30 -6 L30 30 C30 46 52 40 52 58 L52 262 C52 282 30 274 30 296 …"
+d="M30 0 L30 24 C30 46 52 40 52 58 L52 240 C52 260 30 252 30 280 C30 340 32 400 30 1200"
 ```
+
+`L52 240` holds the indent at x=52 from y≈58 to y≈240 — **about four rows at
+44px each.** That is precisely the "indent covers only four stories" bug, and
+`30 1200` then runs the spine to a fixed 1200px regardless of content height,
+which is why it stops mid-Exodus.
 
 Those coordinates describe one specific layout. They cannot survive real data,
 which is why the Genesis indent covers only the first four stories and then the
@@ -68,15 +93,45 @@ including the new three-level hierarchy below.
 Treat this as the single most important piece of work remaining on Read L1. Do
 not patch the fixed path.
 
-### RC2 — `CheckCircle.tsx` has not been rebuilt
+### RC2 — Three stale route names in `CheckCircle`
 
-You reported that completing a story returns you to the old story-finder screen.
-That is S13b outstanding: the old completion control still runs its old
-context-aware `router.push` calls into routes that the redesign has replaced.
-This was logged as the highest new risk in
-[`06-COMPLETION-AND-REMOVAL.md`](06-COMPLETION-AND-REMOVAL.md) §9 — it routes
-four different ways depending on completion context, and all four still point at
-the old navigation.
+**I got this wrong first time.** `CheckCircle.tsx` *has* been rebuilt — 316
+lines, one-tap completion, voices-met celebration, commit `cf1e5e9`. The bug is
+much smaller than a rebuild: three `router.push` calls still name routes the
+redesign replaced.
+
+| Line | Pushes to | Should be |
+| --- | --- | --- |
+| 160 | `/(tabs)/ReadingPlans` | `/(tabs)/plan` |
+| 172 | `/(tabs)/ReadingPlans` | `/(tabs)/plan` |
+| 183 | `/(tabs)/Navigation` | `/(tabs)/index` |
+
+Line 183 is the one you hit — `/(tabs)/Navigation` **is** the old story finder,
+still present as a route. A three-line fix, not a rebuild.
+
+### RC3 — The pills stretch because the scroller has no cross-axis alignment
+
+Both pill bugs — the tall vertical bars on Read search, and Cast pills going
+"big and out of shape" — are one cause in two files.
+
+| File | Line | |
+| --- | --- | --- |
+| `components/thread/ThreadList.tsx` | 121 / style `scopes` | `{ paddingHorizontal: 14, paddingTop: 10, gap: 6 }` |
+| `app/(tabs)/cast/index.tsx` | 49 / style `filters` | `{ paddingHorizontal: 14, paddingBottom: 8, gap: 6 }` |
+
+Both are the `contentContainerStyle` of a horizontal `ScrollView`, and **neither
+sets `alignItems`.** React Native defaults the cross axis to `stretch`, so each
+chip grows to the scroller's full height — which is why they become full-height
+columns exactly when the results list is empty and the scroller has room to
+expand.
+
+```diff
+- scopes: { paddingHorizontal: 14, paddingTop: 10, gap: 6 },
++ scopes: { paddingHorizontal: 14, paddingTop: 10, gap: 6, alignItems: 'flex-start' },
+```
+
+One line in each file. Add `flexGrow: 0` on the ScrollView itself so it never
+claims vertical space at all.
 
 ---
 
@@ -86,10 +141,12 @@ the old navigation.
 | --- | --- | --- |
 | P0-1 | Thread line stops after ~4 stories | RC1 hard-coded path |
 | P0-2 | Completion returns to old story-finder | RC2 CheckCircle not rebuilt |
-| P0-3 | Plan detail loses the tab bar entirely | Route rendered outside the `(tabs)` stack *(inferred)* |
+| P0-3 | Plan detail loses the tab bar entirely | `app/plan/[id].tsx` sits outside the `(tabs)` group — move it to `app/(tabs)/plan/[id].tsx` |
 | P0-4 | "The Gospels" shows 10 stories | Wiring, not data — see below |
 | P0-5 | Reader text overlapped by floating ‹ › buttons | No bottom inset on the scroll container |
 | P0-6 | You L1 missing; settings shown in its place | Screen not built |
+| P0-7 | Filter pills render as full-height bars | RC3 — missing `alignItems` |
+| P0-8 | `gen 4:3` finds nothing | No reference parsing — see §4.4 |
 
 **On P0-4:** your data is fine. `theGospels` holds **46 segments** (42 stories +
 4 book intros). `Bible1Year` holds 431 (365 + 66 intros). The app is showing 10,
@@ -157,6 +214,61 @@ to continue.
 
 Only ever one card. If both a plan and an unfinished story exist, the unfinished
 story wins — finishing beats starting.
+
+### 4.4 Scripture reference search — and the 6.6 MB file nothing reads
+
+`gen 4:3` returns nothing because there is no reference parsing.
+`ThreadList.tsx:65–85` lowercases the query and runs `.includes()` against voice
+names, book names, story titles and `info.ref`. A story's `ref` is `"3:1-5:32"`
+— the book code is not in that string, so no combination of book and verse can
+ever match.
+
+**The fix is far smaller than it looks, because the index already exists.**
+
+`assets/data/verseIndex.json` is **6.6 MB, 24,935 entries**, keyed by full book
+name:
+
+```json
+"Genesis-1-3": { "segmentId": "S001", "blockIndex": 0, "position": 80,
+                 "book": "Genesis", "chapter": 1, "verse": 3,
+                 "segmentTitle": "God Creates" }
+```
+
+**Nothing in the app reads it.** It ships inside the binary and is never
+imported — 6.6 MB of dead weight today, and the entire feature tomorrow.
+
+So reference lookup is: normalise → one dictionary hit → navigate. And because
+each entry carries `blockIndex` and `position`, you can scroll **to the exact
+verse**, not merely open the story.
+
+**The only real work is book-name aliasing.** `BookChapterList.json` already
+gives four forms per book — the key (`Gen`), `bookName` (`Genesis`), `FCBH` and
+`YV` (`GEN`). Add a hand-written alias table for the rest:
+
+- `Gn` `Ge` → Genesis · `Ps` `Psalm` `Psalms` → Psalms · `Mt` `Matt` → Matthew
+- `Song` `Song of Solomon` `SoS` `Cant` → Song of Songs
+- `1 Cor` `1Cor` `1Co` `I Corinthians` → 1 Corinthians (roman numerals, no space)
+- `Rev` `Rv` `Apoc` → Revelation
+
+**Watch the ambiguous prefixes** — these need either longest-match or showing
+both results rather than guessing:
+
+| Input | Could be |
+| --- | --- |
+| `Phil` | Philippians / Philemon |
+| `Jud` | Jude / Judges |
+| `Jo` `Joh` | John / Job / Joel / Jonah / Joshua |
+| `Ma` | Matthew / Mark / Malachi |
+
+Separators to accept: `:` `.` and a space (`Gen 4:3`, `Gen 4.3`, `Gen 4 3`),
+optional space after the book (`gen4:3`), ranges on `-` and `–`, and a
+chapter-only form (`Gen 4`) resolving to the segment containing verse 1.
+
+Result row should read as a reference, not a story: **Genesis 4:3 — "The Flood"
+· story 003**, and tapping it opens the story scrolled to that verse.
+
+This belongs in the **Read** search where you hit it, and the same parser serves
+the Cast search for free.
 
 ---
 
@@ -397,14 +509,16 @@ Everything currently on that screen belongs in L2.
 
 | # | Item | Days |
 | --- | --- | --- |
-| **Finish Phase 0** — SDK 57, react-navigation imports, Reanimated 4, edge-to-edge | | **4–6** |
+| ~~Phase 0~~ | ~~SDK 57, Reanimated 4, managed workflow~~ | **done** |
 | R1 | Generated thread paths (RC1) — Read L1, Plan L2, You L1 | 2–3 |
 | R2 | Three-level hierarchy, division → book → story | 1.5–2 |
 | R3 | Bead masking, continue card | 1 |
+| R3b | **RC3 pill alignment** — one line in each of two files | 0.1 |
+| R3c | **Reference search** — parser, alias table, `verseIndex` wiring | 1.5–2 |
 | R4 | Reader typography, labels, tails, alternation, bottom inset | 1.5 |
 | R5 | Gutter thread in the reader | 1 |
 | R6 | Call sheet expansion + swatches moved into it, role heading removed | 1 |
-| R7 | Rebuild `CheckCircle` (S13b) + post-completion navigation (RC2) | 2–3 |
+| R7 | **RC2 — three stale route names in `CheckCircle`** | 0.2 |
 | R8 | Cast sort, exclusions, pill shape and sizing, terminology | 1.5 |
 | R9 | Spoken vs written derivation | 1–1.5 |
 | R10 | Cast card: books, division buckets, large-voice layout | 2 |
@@ -415,15 +529,17 @@ Everything currently on that screen belongs in L2.
 | R15 | Onboarding (S14) | 2–3 |
 | R16 | French parity across everything new | 2 |
 | R17 | Migration testing, both platforms, real hardware | 3 |
-| | **Total after Phase 0** | **28–36** |
+| | **Total** | **24–31** |
 
-Roughly in line with the 30–39 previously estimated, with S17 added and some
-screens already partly built.
+Down from 30–39: Phase 0 is complete, `CheckCircle` was already rebuilt, and the
+pill and reference-search fixes turned out far smaller than the screenshots
+suggested.
 
 ### Order
 
-1. **Finish Phase 0.** Stop adding screens until the SDK migration is done.
-2. **R1 then R7** — the two root causes. Almost every visual defect is downstream
+1. **R3b, R7, P0-3** — three trivial fixes, under a day together, that clear
+   four of the eight P0 defects.
+2. **R1** — the generated path, which unblocks Read L1, Plan L2 and You L1. Almost every visual defect is downstream
    of one of them.
 3. **R2–R6** — Read, which is the app.
 4. **R8–R11** — Cast, which is the differentiator.
