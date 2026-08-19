@@ -24,14 +24,14 @@ export function inkLabel(color: Ink, lang: 'en' | 'fr'): string {
   const en = {
     black: 'Narration',
     red: 'Divine voice',
-    green: 'Named principal',
-    blue: 'Everyone else',
+    green: 'Main character',
+    blue: 'Supporting cast',
   };
   const fr = {
     black: 'Narration',
     red: 'Voix divine',
-    green: 'Personnage nommé',
-    blue: 'Tous les autres',
+    green: 'Personnage principal',
+    blue: 'Seconds rôles',
   };
   return (lang === 'fr' ? fr : en)[color];
 }

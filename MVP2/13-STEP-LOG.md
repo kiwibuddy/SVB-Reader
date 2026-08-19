@@ -83,3 +83,20 @@ Append-only. One entry per save point. Numbered 13 because `12-MOCKUP-DELTA.md` 
 
 ---
 
+## mvp2-E · 2026-08-19
+
+**Tag:** `mvp2-E`  
+**Commands:** `npx tsc --noEmit`
+
+| Check | Result |
+| --- | --- |
+| tsc | **pass** |
+| expo lint | **deferred** — pre-existing |
+| `@react-navigation/` | **clean** |
+| H6 ChronologicalMappings | **deferred to F** — still imported by `ChronologicalView.tsx`. TopSpeakers already deleted in A. |
+| E6 / E7 | **cut** — era card and exchange pager, per plan cut order. |
+
+**This step:** Cast sorts by words, hides four narration sources, speech-bubble pills Main/Supporting/Divine/All, renamed groups, written epistle authors grey, card sentence + books + ten growing division buckets.
+
+---
+

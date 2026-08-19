@@ -5,7 +5,7 @@ import logger from '@/utils/logger';
 
 export const TOTAL_VOICES = 774;
 
-const NARRATION = new Set(['The Narrator', 'The Compiler', 'The Preacher', 'The Choir']);
+export const NARRATION_VOICES = new Set(['The Narrator', 'The Compiler', 'The Preacher', 'The Choir']);
 
 export interface VoicesMetCelebration {
   title: string;
@@ -73,7 +73,7 @@ export async function getVoicesMetCelebration(segmentId: string): Promise<Voices
     }
 
     const firstTime = thisSources.filter((name) => !previous.has(name));
-    const firstVoice = firstTime.find((name) => !NARRATION.has(name)) || firstTime[0] || null;
+    const firstVoice = firstTime.find((name) => !NARRATION_VOICES.has(name)) || firstTime[0] || null;
 
     const met = new Set(previous);
     thisSources.forEach((name) => met.add(name));
