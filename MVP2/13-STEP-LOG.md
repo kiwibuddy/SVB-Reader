@@ -100,3 +100,19 @@ Append-only. One entry per save point. Numbered 13 because `12-MOCKUP-DELTA.md` 
 
 ---
 
+## mvp2-F · 2026-08-19
+
+**Tag:** `mvp2-F`  
+**Commands:** `npx tsc --noEmit`
+
+| Check | Result |
+| --- | --- |
+| tsc | **pass** |
+| expo lint | **deferred** — pre-existing |
+| `@react-navigation/` | **clean** |
+| ChronologicalMappings | **deferred** — still used by hidden `ChronologicalView` / ReadingPlans |
+
+**This step:** F1 plan descriptions + chrono/thematic tags; F2 Saved L1 list; F3 You name/year/thread or empty copy; H4 Talk about it card after complete; H5 empty You/Saved.
+
+---
+

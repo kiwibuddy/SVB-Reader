@@ -72,11 +72,14 @@ const PlanScreen = () => {
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: palette.bg }]} edges={['top']}>
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-        <Text style={[styles.lab, { color: palette.mute }]}>{t('UI.thread.yourPlan')}</Text>
+        <Text style={[styles.lab, { color: palette.mute }]}>{t('UI.thread.plans')}</Text>
         {plans.map((plan) => {
           const stories = storyIdsFromSegments(plan.segments || {});
           const done = planDoneById[plan.id] || 0;
           const active = plan.id === activePlanId;
+          const body = (plan as { longDescription?: string; shortDescription?: string; description?: string }).longDescription
+            || (plan as { shortDescription?: string }).shortDescription
+            || plan.description;
           return (
             <Pressable
               key={plan.id}
@@ -87,6 +90,7 @@ const PlanScreen = () => {
               <Text style={[styles.cardMeta, { color: palette.mute }]}>
                 {done} {t('UI.thread.of')} {stories.length} · {streak}d {t('UI.thread.streak')}
               </Text>
+              {!!body && <Text style={[styles.desc, { color: palette.mute }]}>{body}</Text>}
               <View style={[styles.prog, { backgroundColor: palette.hair }]}>
                 <View style={[styles.progFill, { width: `${Math.round((done / Math.max(stories.length, 1)) * 100)}%`, backgroundColor: palette.acc }]} />
               </View>
@@ -102,6 +106,12 @@ const PlanScreen = () => {
           >
             <Text style={[styles.cardTitle, { color: palette.ink }]}>{challenge.title}</Text>
             <Text style={[styles.cardMeta, { color: palette.mute }]}>{challenge.shortDescription || challenge.description}</Text>
+            {!!challenge.longDescription && (
+              <Text style={[styles.desc, { color: palette.mute }]}>{challenge.longDescription}</Text>
+            )}
+            <Text style={[styles.tag, { color: palette.mute, borderColor: palette.hair }]}>
+              {challenge.chronologicalOrder ? t('UI.thread.chronological') : t('UI.thread.thematic')}
+            </Text>
             <View style={[styles.prog, { backgroundColor: palette.hair }]}>
               <View style={[styles.progFill, { width: `${challengeProgress[challenge.id] || 0}%`, backgroundColor: palette.divine }]} />
             </View>
@@ -118,6 +128,8 @@ const styles = StyleSheet.create({
   card: { marginHorizontal: 14, marginTop: 10, borderWidth: 1, borderRadius: 16, padding: 14 },
   cardTitle: { fontSize: 16, fontWeight: '600' },
   cardMeta: { fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', marginTop: 4 },
+  desc: { fontSize: 13, lineHeight: 18, marginTop: 8 },
+  tag: { alignSelf: 'flex-start', fontSize: 8, letterSpacing: 1.2, textTransform: 'uppercase', borderWidth: 1, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2, marginTop: 8 },
   prog: { height: 4, borderRadius: 3, overflow: 'hidden', marginTop: 10 },
   progFill: { height: '100%' },
 });

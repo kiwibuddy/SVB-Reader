@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import Animated, { useAnimatedProps } from 'react-native-reanimated';
+import Animated, { useAnimatedProps, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { DIVISIONS, storyNumber } from '@/constants/divisions';
-import { DUR } from '@/constants/Motion';
+import { DUR, timing } from '@/constants/Motion';
 import { ThreadColors } from '@/constants/Colors';
 import { useGrowOnFocus } from '@/hooks/useGrowOnFocus';
 
@@ -14,6 +14,7 @@ interface YearThreadProps {
 }
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 function buildYearSparkline(
   completedIds: Set<string>,
@@ -55,7 +56,13 @@ const YearThread: React.FC<YearThreadProps> = ({ completedIds, currentId, isDark
   const svgWidth = Math.max(width - 28, 200);
   const svgHeight = 96;
   const grow = useGrowOnFocus(DUR.epic);
+  const pulse = useSharedValue(0);
   const currentNum = currentId ? storyNumber(currentId) : null;
+
+  useEffect(() => {
+    pulse.value = 0;
+    pulse.value = withSequence(withTiming(1, timing(DUR.base)), withTiming(0, timing(DUR.slow)));
+  }, [pulse]);
 
   const spark = useMemo(
     () => buildYearSparkline(completedIds, svgWidth, svgHeight),
@@ -71,6 +78,11 @@ const YearThread: React.FC<YearThreadProps> = ({ completedIds, currentId, isDark
 
   const doneProps = useAnimatedProps(() => ({
     strokeDashoffset: spark.length * (1 - grow.value * completion),
+  }));
+
+  const haloProps = useAnimatedProps(() => ({
+    opacity: pulse.value * 0.45,
+    r: 4.5 + pulse.value * 8,
   }));
 
   const currentMark = currentNum
@@ -100,7 +112,17 @@ const YearThread: React.FC<YearThreadProps> = ({ completedIds, currentId, isDark
           animatedProps={doneProps}
         />
         {currentMark && (
-          <Circle cx={currentMark.x} cy={currentMark.y} r={4.5} fill={palette.acc} />
+          <>
+            <AnimatedCircle
+              cx={currentMark.x}
+              cy={currentMark.y}
+              fill="none"
+              stroke={palette.acc}
+              strokeWidth={1}
+              animatedProps={haloProps}
+            />
+            <Circle cx={currentMark.x} cy={currentMark.y} r={4.5} fill={palette.acc} />
+          </>
         )}
       </Svg>
     </View>

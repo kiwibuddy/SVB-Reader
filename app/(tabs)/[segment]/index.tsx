@@ -13,7 +13,7 @@ import { useBottomNavAnimation } from '@/context/BottomNavContext';
 import Segment from '@/components/Bible/Segment';
 import { SegmentType, IntroType, BibleType, isIntroType, isSegmentType } from "@/types";
 import Intro from '@/components/Bible/Intro';
-import Questions from '@/components/Questions';
+import TalkAboutCard from '@/components/thread/TalkAboutCard';
 import CheckCircle from '@/components/CheckCircle';
 import StickyHeader from '@/components/StickyHeader';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
@@ -601,7 +601,6 @@ export default function BibleScreen() {
             targetVerse={verse ? parseInt(verse as string) : undefined}
             targetChapter={chapter ? parseInt(chapter as string) : undefined}
           />
-          <Questions segmentId={segID} />
           <View style={[styles.checkCircleContainer, { flexDirection: 'row', gap: 24, justifyContent: 'center', alignItems: 'flex-end' }]}> 
             <CheckCircle 
               segmentId={segID} 
@@ -613,6 +612,7 @@ export default function BibleScreen() {
               resetVisualStateOnMount={true}
             />
           </View>
+          <TalkAboutCard segmentId={segID} />
         </>
       )}
     </View>
