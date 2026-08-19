@@ -8,7 +8,7 @@ import {
   Platform,
   Animated
 } from "react-native";
-import { SegmentKey, SegmentIds } from "@/app/(tabs)/Navigation";
+import { SegmentKey, SegmentIds } from "@/types/bibleNav";
 // Removed DonutChart import - no longer used
 import SegmentItem from "./SegmentItem";
 import { Ionicons } from '@expo/vector-icons';
@@ -384,7 +384,7 @@ const Accordion: React.FC<AccordionProps> = ({
   // Custom render function for segments with highlighting
   const renderSegment = useCallback((segment: SegmentKey, index: number) => {
     const isHighlighted = highlightedSegment === String(segment);
-    const segmentData = SegmentTitles[String(segment)];
+    const segmentData = SegmentTitles[segment];
     return (
       <SegmentItem
         key={String(segment)}

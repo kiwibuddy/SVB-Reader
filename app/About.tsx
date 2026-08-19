@@ -40,7 +40,7 @@ const About = () => {
                   [
                     {
                       text: 'Go to Onboarding Now',
-                      onPress: () => router.replace('/'),
+                      onPress: () => router.replace('/onboarding'),
                     },
                     {
                       text: 'OK',
@@ -638,6 +638,13 @@ const About = () => {
           <Text style={styles.heading1}>{t('UI.about.heading')}</Text>
           
           <Text style={styles.subtitle}>{t('UI.about.tagline')}</Text>
+
+          <Pressable
+            style={styles.subtleLinkContainer}
+            onPress={() => router.push('/onboarding?from=about')}
+          >
+            <Text style={styles.subtleLinkText}>{t('UI.onboarding.howSourceViewWorks')}</Text>
+          </Pressable>
           
           <Text style={styles.paragraph}>
             {t('UI.about.intro1')}

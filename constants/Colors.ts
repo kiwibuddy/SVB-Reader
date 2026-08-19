@@ -1,26 +1,89 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Thread palette. Light is the shipped default; dark is a designed second mode.
+ * Voice ink: narrator, divine, named principals, everyone else.
  */
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+export const ThreadColors = {
+  light: {
+    bg: '#F3F5F2',
+    surf: '#FFFFFF',
+    ink: '#101619',
+    mute: '#5E6B70',
+    hair: '#DFE5E0',
+    narr: '#3A4550',
+    divine: '#C0261A',
+    prin: '#0E6B4C',
+    chor: '#1D46A8',
+    acc: '#0E6B4C',
+    divFill: '#FBEDEB',
+    prinFill: '#E9F4EF',
+    chorFill: '#EBEFFA',
+    thread: '#B4C0B8',
+  },
+  dark: {
+    bg: '#080D13',
+    surf: '#121B25',
+    ink: '#E9EDF2',
+    mute: '#7A8798',
+    hair: '#1E2833',
+    narr: '#AEBACB',
+    divine: '#FF5A45',
+    prin: '#46D9A0',
+    chor: '#6BA9FF',
+    acc: '#46D9A0',
+    divFill: '#251217',
+    prinFill: '#0D2620',
+    chorFill: '#111C31',
+    thread: '#2C3742',
+  },
+} as const;
+
+export type ThreadPalette = { [K in keyof typeof ThreadColors.light]: string };
+
+export function inkHex(color: string, palette: ThreadPalette): string {
+  switch (color) {
+    case 'red':
+      return palette.divine;
+    case 'green':
+      return palette.prin;
+    case 'blue':
+      return palette.chor;
+    default:
+      return palette.narr;
+  }
+}
+
+export function fillHex(color: string, palette: ThreadPalette): string {
+  switch (color) {
+    case 'red':
+      return palette.divFill;
+    case 'green':
+      return palette.prinFill;
+    case 'blue':
+      return palette.chorFill;
+    default:
+      return palette.surf;
+  }
+}
+
+const tintColorLight = '#0E6B4C';
+const tintColorDark = '#46D9A0';
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
+    text: ThreadColors.light.ink,
+    background: ThreadColors.light.bg,
     tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
+    icon: ThreadColors.light.mute,
+    tabIconDefault: ThreadColors.light.mute,
     tabIconSelected: tintColorLight,
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
+    text: ThreadColors.dark.ink,
+    background: ThreadColors.dark.bg,
     tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
+    icon: ThreadColors.dark.mute,
+    tabIconDefault: ThreadColors.dark.mute,
     tabIconSelected: tintColorDark,
   },
 };

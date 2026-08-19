@@ -1,27 +1,22 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"; // Ensure useEffect is imported
 import logger from '@/utils/logger';
-import { View, Text, FlatList, ScrollView, Pressable, TouchableOpacity, StyleSheet, useWindowDimensions, Platform, Animated } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Platform, Animated } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BibleBlockComponent from './BibleBlock';
 import { BibleBlock, SegmentType } from "@/types";
-import RoleProgressBar from "../RoleProgressBar";
-import ChartLegend from "../ChartLegend";
-import { MaterialIcons } from '@expo/vector-icons'; // Example icon library
+import CallSheet from "@/components/thread/CallSheet";
 import { splitContentIntoReaderParts } from "@/scripts/splitContentIntoReaderParts";
 import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
-import { getColors } from "@/scripts/getColors";
 import SegmentTitle from "./SegmentTitle";
 import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import CelebrationPopup from "./CelebrationPopup";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useGroupReading } from '@/context/GroupReadingContext';
-import CheckCircle from "@/components/CheckCircle";
 import { useAppSettings } from '@/context/AppSettingsContext';
 import { memo } from "react";
 import { getSegmentCompletionStatus } from "@/api/sqlite";
 import { ANIMATION } from '@/services/animation';
 import * as Haptics from 'expo-haptics';
-import { useTranslation } from '@/hooks/useTranslation';
+import type { Ink } from '@/utils/ink';
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -65,20 +60,16 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     state,
     updateSegmentId,
   } = useSQLiteGlobalContext();
-  const { currentRole, currentSession } = useGroupReading();
-  // Removed completedSegments, activePlan, activeChallenges dependencies - now using pure SQLite
+  const currentRole = null;
+  const currentSession = null;
 
   const { colors } = useAppSettings();
-  const { t } = useTranslation();
 
   const { scrollReset, showCourtesy } = useLocalSearchParams();
 
   // All hooks must be called before any early returns
   const [showCelebration, setShowCelebration] = useState(false);
-  const [selectedReaderPosition, setSelectedReaderPosition] = useState<{
-    color: string;
-    position: number;
-  } | null>(null);
+  const [selectedInk, setSelectedInk] = useState<Ink | null>(null);
   const [showCourtesyPopup, setShowCourtesyPopup] = useState(!!currentSession);
   const [isCompleted, setIsCompleted] = useState(false);
   const courtesyAnim = useRef(new Animated.Value(0));
@@ -109,7 +100,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   useEffect(() => {
     if (!currentSession) {
       // ensure individual mode starts with no pre-selected role
-      setSelectedReaderPosition(null);
+      setSelectedInk(null);
     }
     const force = showCourtesy === '1';
     // Only show courtesy if not dismissed during this visit
@@ -126,7 +117,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   useEffect(() => {
     if (!currentSession) {
       // Reset reading role selection when navigating to a new story in individual mode
-      setSelectedReaderPosition(null);
+      setSelectedInk(null);
     }
   }, [segID, currentSession]);
 
@@ -172,6 +163,22 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       return splitContent;
     }
   }, [segmentData?.content, segmentData?.readers]);
+
+  const computedSources = useMemo(() => {
+    const explicit = segmentData?.sources;
+    if (explicit && Object.keys(explicit).length > 0) return explicit;
+    const acc: Record<string, { words: number; color: string }> = {};
+    for (const block of memoizedContent) {
+      const name = block.source?.sourceName;
+      const color = block.source?.color || 'black';
+      if (!name) continue;
+      if (!acc[name]) acc[name] = { words: 0, color };
+      const text = (block.children || [])
+        .map((c: any) => (typeof c === 'string' ? c : c.text || '')).join(' ');
+      acc[name].words += text.split(/\s+/).filter(Boolean).length;
+    }
+    return acc;
+  }, [segmentData?.sources, memoizedContent]);
 
   // Calculate reader roles based on actual speech bubble distribution
   const readersByColor = useMemo(() => {
@@ -243,7 +250,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return result;
   }, [memoizedContent]);
 
-  // Preselect reader role from GroupReadingContext when available
+  // Preselect reader role when a role is assigned
   useEffect(() => {
     if (!currentRole) return;
     const roleToColor: Record<string, string> = {
@@ -254,7 +261,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     };
     const color = roleToColor[currentRole];
     const positions = readersByColor[color] || [0];
-    setSelectedReaderPosition({ color, position: 0 });
+    setSelectedInk((color as Ink) || 'black');
   }, [currentRole, readersByColor]);
 
   const currentRoleLabel = useMemo(() => {
@@ -277,25 +284,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return { color, label: map[color] || 'Reader' };
   }, [memoizedContent]);
 
-  // Update shouldBlockGlow to use the new state
-  const shouldBlockGlow = useCallback((blockColor: string, blockIndex: number) => {
-    if (!selectedReaderPosition) return false;
-    
-    const { color, position } = selectedReaderPosition;
-    if (blockColor !== color) return false;
-
-    const colorPositions = readersByColor[blockColor] || [];
-    if (colorPositions.length <= 1) {
-      return position === 0;
-    }
-
-    // For multiple readers of same color - USE MEMOIZED CONTENT (the split content)
-    const blocksOfThisColor = memoizedContent.filter(item => item.source?.color === blockColor);
-    const positionInSequence = blocksOfThisColor.findIndex(item => 
-      memoizedContent.indexOf(item) === blockIndex
-    );
-    return positionInSequence % colorPositions.length === position;
-  }, [memoizedContent, readersByColor, selectedReaderPosition]);
+  const shouldBlockGlow = useCallback((_blockColor: string, _blockIndex: number) => false, []);
 
   // Update renderItem to use new glow logic
   const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
@@ -427,24 +416,10 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     }
   };
 
-  const handleReaderRoleSelect = (color: string, position: number) => {
-    setSelectedReaderPosition(prev => {
-      // If clicking the already selected role, deselect it
-      if (prev?.color === color && prev?.position === position) {
-        return null;
-      }
-      // Otherwise select this new role (deselecting any previous role)
-      return { color, position };
-    });
-  };
-
-
-
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: colors.background,
-    padding: 16,
+    padding: 0,
   },
   roleContainer: {
     backgroundColor: colors.card,
@@ -588,96 +563,34 @@ const styles = StyleSheet.create({
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        automaticallyAdjustKeyboardInsets={true}
-        scrollEventThrottle={16}
-        showsVerticalScrollIndicator={false}
-        // Add gesture handling to prevent conflicts with long press
-        onScrollBeginDrag={() => {
-          // ScrollView drag started - no logging needed in production
-        }}
-        // Disable scroll when long press is detected
-        scrollEnabled={true}
-      >
-        <SegmentTitle segmentId={segID} />
-        <View style={{
-          paddingHorizontal: 16,
-          paddingTop: 20,
-          paddingBottom: 0,
-          width: '100%',
-        }}>
-          {/* Role Selection Section - Full Width */}
-          <View style={styles.readerSection}>
-            <Text style={styles.readerText}>
-              {currentSession ? t('UI.groupReading.yourReadingRole') : t('UI.groupReading.selectYourReadingRole') + ':'}
-            </Text>
-            {/* Remove separate badge; title above communicates selection */}
-            <View style={styles.iconContainer}>
-              {/* Create reader role icons based on actual speech bubble distribution */}
-              {(() => {
-                const roleIcons: React.ReactElement[] = [];
-                
-                // Use the same logic as readersByColor to create icons
-                Object.entries(readersByColor).forEach(([color, positions]) => {
-                  positions.forEach((position) => {
-                    const isActive = selectedReaderPosition?.color === color && 
-                                    selectedReaderPosition?.position === position;
-                    const colors = getColors(color);
-                    
-                    roleIcons.push(
-                      <TouchableOpacity
-                        key={`${color}-${position}`}
-                        onPress={() => handleReaderRoleSelect(color, position)}
-                      >
-                        <MaterialIcons
-                          name={isActive ? "mark-chat-read" : "chat-bubble"}
-                          size={30}
-                          color={color === "black" ? "grey" : isActive ? colors.dark : colors.light}
-                        />
-                      </TouchableOpacity>
-                    );
-                  });
-                });
-                
-                return roleIcons;
-              })()}
-            </View>
-          </View>
-          
-          {/* Progress Bar Section - As Divider */}
-          <View style={{ marginTop: 24, marginBottom: 20, marginHorizontal: -16 }}>
-            <RoleProgressBar 
-              colorData={colorData}
-              height={4}
-            />
-          </View>
-        </View>
+      <SegmentTitle segmentId={segID} />
+      <CallSheet
+        sources={computedSources}
+        colorData={colorData}
+        selectedInk={selectedInk}
+        onSelectInk={setSelectedInk}
+      />
 
-        {/* Audio Controls removed - now in navigation bar */}
+      {memoizedContent.map((item, index) => {
+        const { sourceName } = item.source || {};
+        const showSourceName = index === 0 ||
+          memoizedContent[index - 1].source?.sourceName !== sourceName;
+        const ink = (item.source?.color || 'black') as Ink;
 
-        {/* Render blocks directly */}
-        {memoizedContent.map((item, index) => {
-          const { sourceName } = item.source || {};
-          const showSourceName = index === 0 || 
-            memoizedContent[index - 1].source?.sourceName !== sourceName;
-
-          const isGlowing = shouldBlockGlow(item.source?.color || 'black', index);
-
-          return (
-            <BibleBlockComponent
-              key={`${item.source?.sourceName || 'unknown'}-${index}`}
-              block={item}
-              bIndex={index}
-              hasTail={showSourceName}
-              isGlowing={isGlowing}
-              onLongPress={handleLongPress}
-              targetVerse={targetVerse}
-              targetChapter={targetChapter}
-            />
-          );
-        })}
-      </ScrollView>
+        return (
+          <BibleBlockComponent
+            key={`${item.source?.sourceName || 'unknown'}-${index}`}
+            block={item}
+            bIndex={index}
+            hasTail={showSourceName}
+            isGlowing={false}
+            onLongPress={handleLongPress}
+            targetVerse={targetVerse}
+            targetChapter={targetChapter}
+            dimmed={!!selectedInk && selectedInk !== ink}
+          />
+        );
+      })}
       {/* Courtesy popup overlay - COMMENTED OUT FOR NOW
       {showCourtesyPopup && currentSession && (
         <TouchableOpacity
@@ -709,7 +622,7 @@ const styles = StyleSheet.create({
             </Text>
             {firstSpeakerInfo && (
               <Text style={{ color: '#FFFFFF', fontSize: 13, textAlign: 'center', opacity: 0.95 }}>
-                {currentRole && selectedReaderPosition && firstSpeakerInfo.color === selectedReaderPosition.color
+                {currentRole && selectedInk && firstSpeakerInfo.color === selectedInk
                   ? 'You are the first reader.'
                   : `${firstSpeakerInfo.label} starts first.`}
               </Text>

@@ -10,13 +10,17 @@ interface BibleInlineProps {
   textColor: string;
   iIndex: string;
   bubbleColor?: string;
+  bodySize?: number;
+  bodyLineHeight?: number;
 }
 
 const BibleInlineComponent: React.FC<BibleInlineProps> = ({
   inline,
   textColor,
   iIndex,
-  bubbleColor = 'black'
+  bubbleColor = 'black',
+  bodySize = 16,
+  bodyLineHeight,
 }) => {
   // Always call hooks at the top level - before any conditional logic
   const { isDarkMode } = useAppSettings();
@@ -82,7 +86,7 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
   
   // For regular elements, wrap in Text component for proper inline flow
   return (
-    <Text style={[inlineStyle, {lineHeight: 36, fontSize: 20, color: textColor}]}>
+    <Text style={[inlineStyle, { lineHeight: bodyLineHeight || Math.round(bodySize * 1.45), fontSize: bodySize, color: textColor }]}>
       {renderedChildren}
     </Text>
   );

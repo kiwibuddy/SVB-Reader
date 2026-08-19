@@ -11,10 +11,13 @@ import {
   Easing,
 } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface EmojiPickerProps {
   onEmojiSelect: (emoji: string) => void;
   onNoteSelect: () => void;
+  onShare?: () => void;
+  onCopy?: () => void;
   onClose: () => void;
   position?: { x: number; y: number };
   onLayout?: (width: number, height: number) => void;
@@ -26,11 +29,14 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const EmojiPicker: React.FC<EmojiPickerProps> = ({ 
   onEmojiSelect,
   onNoteSelect,
+  onShare,
+  onCopy,
   onClose, 
   position = { x: screenWidth / 2, y: screenHeight / 2 },
   onLayout,
   existingNote
 }) => {
+  const { t } = useTranslation();
   
   const EMOJIS = useMemo(() => [
     { emoji: "❤️", label: "love", color: "#FF6B47" },
@@ -114,6 +120,20 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
             )}
           </TouchableOpacity>
         </View>
+        {(onShare || onCopy) && (
+          <View style={styles.acts}>
+            {onShare && (
+              <TouchableOpacity style={styles.act} onPress={onShare} hitSlop={8}>
+                <Text style={styles.actText}>{t('UI.thread.share')}</Text>
+              </TouchableOpacity>
+            )}
+            {onCopy && (
+              <TouchableOpacity style={styles.act} onPress={onCopy} hitSlop={8}>
+                <Text style={styles.actText}>{t('UI.thread.copy')}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
         
         {/* Close button */}
         <TouchableOpacity 
@@ -134,12 +154,11 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   pillContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    alignItems: 'stretch',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     backgroundColor: 'rgba(255, 255, 255, 0.98)',
-    borderRadius: 32,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.08)',
     shadowColor: '#000',
@@ -150,8 +169,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 15,
-    // Add backdrop blur effect
-    backdropFilter: 'blur(10px)',
   },
   emojiRow: {
     flexDirection: 'row',
@@ -220,6 +237,27 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: '#FFB347',
+  },
+  acts: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+  },
+  act: {
+    flex: 1,
+    minHeight: 44,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actText: {
+    fontSize: 10,
+    letterSpacing: 1.3,
+    textTransform: 'uppercase',
+    color: '#101619',
+    fontWeight: '600',
   },
 });
 

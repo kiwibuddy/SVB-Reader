@@ -72,7 +72,7 @@ interface BatchOperation {
 
 class BatchProcessor {
   private batch: BatchOperation[] = [];
-  private batchTimeout: NodeJS.Timeout | null = null;
+  private batchTimeout: ReturnType<typeof setTimeout> | null = null;
   private readonly batchDelay = 100; // milliseconds
 
   add(operation: BatchOperation): void {

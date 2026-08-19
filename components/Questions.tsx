@@ -5,6 +5,7 @@ import { useAppSettings } from '@/context/AppSettingsContext';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getQuestionsUnified, hasQuestionsData, type AudienceType } from '@/api/question-functions';
+import { getAppState, setAppState } from '@/api/sqlite';
 import logger from '@/utils/logger';
 import FRA_UI from '@/assets/data/FRA-UI.json';
 
@@ -32,7 +33,7 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
   const { colors } = useAppSettings();
   const { language } = useSyncAppSettings();
   const { t } = useTranslation();
-  const [selectedAudience, setSelectedAudience] = useState<AudienceType>('school');
+  const [selectedAudience, setSelectedAudience] = useState<AudienceType>('family');
   const [currentSet, setCurrentSet] = useState<1 | 2>(1);
   const [questions, setQuestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -45,6 +46,14 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
     family: t('UI.home.familyQuestions'),
     smallgroup: t('UI.home.smallGroupQuestions'),
   }), [language, t]);
+
+  useEffect(() => {
+    getAppState('questionAudience').then((value) => {
+      if (value === 'school' || value === 'family' || value === 'smallgroup') {
+        setSelectedAudience(value);
+      }
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     retryCountRef.current = 0; // Reset retry count on new query
@@ -95,6 +104,7 @@ const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
     // Update state immediately before animation
     setSelectedAudience(audience);
     setCurrentSet(1);
+    void setAppState('questionAudience', audience);
     
     // Then do the fade animation
     Animated.sequence([

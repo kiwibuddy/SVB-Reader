@@ -193,13 +193,6 @@ export async function getBookInsights(bookCode: string): Promise<BookInsights> {
       LIMIT 1
     `, ...segmentIds);
     
-    // Get group vs individual reads for the entire book
-    const groupReads = await db.getFirstAsync<{ count: number }>(`
-      SELECT COUNT(*) as count 
-      FROM group_segment_completion 
-      WHERE segmentID IN (${placeholders})
-    `, ...segmentIds);
-    
     // Calculate minimum read count (for books where all stories have been read multiple times)
     const minReadCount = await db.getFirstAsync<{ minReads: number }>(`
       SELECT MIN(COALESCE(totalReads, 0)) as minReads
@@ -209,7 +202,7 @@ export async function getBookInsights(bookCode: string): Promise<BookInsights> {
     
     const totalReads = totalAllReads?.total || 0;
     const storiesRead = readStoriesCount?.count || 0;
-    const groupReadCount = groupReads?.count || 0;
+    const groupReadCount = 0;
     // For "total reads" show the minimum read count only if ALL stories have been read
     const bookCompletionCount = (storiesRead === segmentIds.length) ? (minReadCount?.minReads || 0) : 0;
     
@@ -326,13 +319,6 @@ export async function getStoryInsights(segmentId: string): Promise<StoryInsights
       WHERE segmentID = ?
     `, [segmentId]);
     
-    // Get group vs individual reads
-    const groupReads = await db.getFirstAsync<{ count: number }>(`
-      SELECT COUNT(*) as count 
-      FROM group_segment_completion 
-      WHERE segmentID = ?
-    `, [segmentId]);
-    
     // Get plan/challenge reads
     const planReads = await db.getFirstAsync<{ count: number }>(`
       SELECT COUNT(*) as count 
@@ -347,7 +333,7 @@ export async function getStoryInsights(segmentId: string): Promise<StoryInsights
     `, [segmentId]);
     
     const totalReads = readStats?.totalReads || 0;
-    const groupReadCount = groupReads?.count || 0;
+    const groupReadCount = 0;
     
     return {
       totalReads,
@@ -518,22 +504,13 @@ export async function getUserActivityInsights(): Promise<UserActivityInsights> {
       else favoriteTimeOfDay = 'evening';
     }
     
-    // Get reading mode preference
-    const groupReads = await db.getFirstAsync<{ count: number }>(`
-      SELECT COUNT(*) as count FROM group_segment_completion
-    `);
-    
+    // Reading mode is no longer split into group vs individual
     const totalReads = await db.getFirstAsync<{ count: number }>(`
       SELECT COUNT(*) as count FROM segment_completion
     `);
     
-    let preferredReadingMode: 'group' | 'individual' | 'mixed' | null = null;
-    if (totalReads && totalReads.count > 0) {
-      const groupPercentage = ((groupReads?.count || 0) / totalReads.count) * 100;
-      if (groupPercentage > 70) preferredReadingMode = 'group';
-      else if (groupPercentage < 30) preferredReadingMode = 'individual';
-      else preferredReadingMode = 'mixed';
-    }
+    const preferredReadingMode: 'group' | 'individual' | 'mixed' | null =
+      totalReads && totalReads.count > 0 ? 'individual' : null;
     
     // Get session statistics
     const sessionStats = await db.getFirstAsync<{ 

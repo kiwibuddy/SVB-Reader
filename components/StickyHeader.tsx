@@ -24,10 +24,10 @@ const StickyHeader = () => {
         </Pressable>
         <Pressable
           style={styles.iconContainer}
-          onPress={() => router.push("/Navigation")}
+          onPress={() => router.push("/Home")}
         >
           <Ionicons
-            name={pathname === "/Navigation" ? "book" : "book-outline"}
+            name={pathname === "/Home" ? "book" : "book-outline"}
             size={24}
             color="#000000"
           />

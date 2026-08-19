@@ -1,20 +1,22 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import logger from '@/utils/logger';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, SafeAreaView, StatusBar, Dimensions } from 'react-native';
+import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, StatusBar, Dimensions } from 'react-native';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { bibleLoader } from '@/services/BibleLoader';
 import readingPlansData from "@/assets/data/ReadingPlansChallenges.json";
+import conversations from "@/assets/data/conversations.json";
+import { ConversationsFile } from "@/types/conversations";
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, usePathname, useLocalSearchParams } from "expo-router";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Animated } from 'react-native';
 import { useBottomNavAnimation } from '@/context/BottomNavContext';
 import Segment from '@/components/Bible/Segment';
 import { SegmentType, IntroType, BibleType, isIntroType, isSegmentType } from "@/types";
 import Intro from '@/components/Bible/Intro';
-import Questions from '@/components/Questions';
+import TalkAboutCard from '@/components/thread/TalkAboutCard';
 import CheckCircle from '@/components/CheckCircle';
-import { useGroupReading } from '@/context/GroupReadingContext';
 import StickyHeader from '@/components/StickyHeader';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { startReadingSession, updateReadingSession } from '@/api/sqlite';
@@ -102,7 +104,7 @@ const createStyles = (colors: any, isLargeScreen: boolean, isLandscape: boolean)
     backgroundColor: colors.background,
   },
   headerSpacer: {
-    height: 16,
+    height: 32,
   },
   buttonContainer: {
     position: "absolute",
@@ -139,8 +141,8 @@ const createStyles = (colors: any, isLargeScreen: boolean, isLandscape: boolean)
   },
   checkCircleContainer: {
     alignItems: 'center',
-    paddingTop: 16,
-    paddingBottom: isLargeScreen ? 120 : (isLandscape ? 80 : 100), // Responsive padding
+    paddingTop: 12,
+    paddingBottom: 4,
     marginTop: 0,
   },
   centered: {
@@ -151,22 +153,19 @@ const createStyles = (colors: any, isLargeScreen: boolean, isLandscape: boolean)
     color: colors.text,
   },
   navigationButton: {
-    backgroundColor: 'white',
-    width: isLargeScreen ? 52 : 44,
-    height: isLargeScreen ? 52 : 44,
-    borderRadius: isLargeScreen ? 26 : 22,
+    backgroundColor: colors.card,
+    width: isLargeScreen ? 48 : 40,
+    height: isLargeScreen ? 48 : 40,
+    borderRadius: isLargeScreen ? 24 : 20,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
   },
   contentContainer: {
     paddingBottom: spacing.md, // Responsive padding
@@ -174,13 +173,13 @@ const createStyles = (colors: any, isLargeScreen: boolean, isLandscape: boolean)
 });
 
 export default function BibleScreen() {
-  const { currentSession } = useGroupReading();
-  const inGroupReading = !!currentSession && currentSession.status === 'reading';
   const { colors, language } = useSyncAppSettings();
   const { updateSegmentId, state } = useSQLiteGlobalContext();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
-  const { planId, challengeId, verse, chapter } = params;
+  const { planId, challengeId, verse, chapter, pos, voice } = params;
+  const voiceName = Array.isArray(voice) ? voice[0] : voice;
   const flatListRef = useRef<ScrollView>(null);
   const { isVisible } = useBottomNavAnimation();
   
@@ -407,11 +406,23 @@ export default function BibleScreen() {
     }
   }, [verse, chapter, segID, segmentData]);
 
+  // Scroll to a raw position offset (from verseSearchIndex) when `pos` param is provided
+  useEffect(() => {
+    if (pos && flatListRef.current) {
+      const targetPos = parseInt(pos as string, 10);
+      if (!isNaN(targetPos) && targetPos > 0) {
+        const doScroll = () => {
+          flatListRef.current?.scrollTo({ y: Math.max(0, targetPos - 80), animated: true });
+        };
+        const t1 = setTimeout(doScroll, 400);
+        const t2 = setTimeout(doScroll, 1200);
+        return () => { clearTimeout(t1); clearTimeout(t2); };
+      }
+    }
+  }, [pos, segID]);
+
   // Clear verse highlighting when navigating to a different segment
   useEffect(() => {
-    // This effect runs when segID changes (user navigates to different segment)
-    // The verse and chapter params will be undefined in the new segment
-    // This automatically clears the highlighting in the Segment component
     logger.info(`🔄 [BibleScreen] Segment changed to ${segID}, clearing verse highlighting`);
   }, [segID]);
 
@@ -454,6 +465,22 @@ export default function BibleScreen() {
         nextSegId: currentIndex < challengeSegments.length - 1 ? `${state.language}-${state.version}-${challengeSegments[currentIndex + 1]}` : null
       };
     }
+    else if (voiceName) {
+      const conv = conversations as ConversationsFile;
+      const decoded = (() => {
+        try {
+          return decodeURIComponent(voiceName);
+        } catch {
+          return voiceName;
+        }
+      })();
+      const ids = conv.voices[decoded]?.storyIds || conv.voices[voiceName]?.storyIds || [];
+      const currentIndex = ids.indexOf(segID);
+      return {
+        prevSegId: currentIndex > 0 ? `${state.language}-${state.version}-${ids[currentIndex - 1]}` : null,
+        nextSegId: currentIndex >= 0 && currentIndex < ids.length - 1 ? `${state.language}-${state.version}-${ids[currentIndex + 1]}` : null
+      };
+    }
     else {
       // Default navigation through all segments
       const currentSegmentIndex = segIds.indexOf(segID);
@@ -462,7 +489,7 @@ export default function BibleScreen() {
         nextSegId: currentSegmentIndex < segIds.length - 1 ? `${state.language}-${state.version}-${segIds[currentSegmentIndex + 1]}` : null
       };
     }
-  }, [segID, planId, challengeId, state.language, state.version]);
+  }, [segID, planId, challengeId, voiceName, state.language, state.version]);
 
   // Show loading state if data isn't ready
   if (!segID) {
@@ -524,7 +551,8 @@ export default function BibleScreen() {
       params: {
         segment: cleanSegId,
         ...(planId ? { planId } : {}),
-        ...(challengeId ? { challengeId } : {})
+        ...(challengeId ? { challengeId } : {}),
+        ...(voiceName ? { voice: voiceName } : {})
       }
     });
     flatListRef.current?.scrollTo({
@@ -537,8 +565,8 @@ export default function BibleScreen() {
     const currentOffset = event.nativeEvent.contentOffset.y;
     
     // Use the global bottom navigation scroll handler for coordinated animations
-    if ((global as any)?.handleBottomNavScroll) {
-      (global as any).handleBottomNavScroll(event);
+    if ((globalThis as any)?.handleBottomNavScroll) {
+      (globalThis as any).handleBottomNavScroll(event);
     }
     
     // Coordinate navigation arrows with bottom navigation using iOS-style behavior
@@ -602,33 +630,18 @@ export default function BibleScreen() {
             targetVerse={verse ? parseInt(verse as string) : undefined}
             targetChapter={chapter ? parseInt(chapter as string) : undefined}
           />
-          <Questions segmentId={segID} />
           <View style={[styles.checkCircleContainer, { flexDirection: 'row', gap: 24, justifyContent: 'center', alignItems: 'flex-end' }]}> 
-            {/* Always render the normal completion button */}
             <CheckCircle 
               segmentId={segID} 
               iconSize={isLargeScreen ? 80 : 60}
               context={planId ? 'plan' : challengeId ? 'challenge' : params.context === 'today' ? 'today' : 'main'}
               planId={planId as string || undefined}
               challengeId={challengeId as string || undefined}
-              mode="normal"
               showCaption={false}
               resetVisualStateOnMount={true}
             />
-            {/* Render the group action button whenever a group session exists */}
-            {!!currentSession && (
-              <CheckCircle 
-                segmentId={segID} 
-                iconSize={isLargeScreen ? 80 : 60}
-                context={planId ? 'plan' : challengeId ? 'challenge' : params.context === 'today' ? 'today' : 'main'}
-                planId={planId as string || undefined}
-                challengeId={challengeId as string || undefined}
-                mode="group"
-                showCaption={false}
-                resetVisualStateOnMount={true}
-              />
-            )}
           </View>
+          <TalkAboutCard segmentId={segID} />
         </>
       )}
     </View>
@@ -642,7 +655,7 @@ export default function BibleScreen() {
         style={styles.screenContainer}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[styles.contentContainer, { paddingBottom: insets.bottom + (isLargeScreen ? 200 : 168) }]}
         showsVerticalScrollIndicator={false}
       >
         {renderHeader()}

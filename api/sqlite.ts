@@ -197,60 +197,22 @@ export async function markSegmentComplete(
   }
 }
 
-// Record a group-mode completion for analytics/achievements
+// Group tables remain in the schema this release but nothing writes to them.
 export async function recordGroupCompletion(
-  segmentID: string,
-  sessionId: string,
-  storyId: string,
-  userRole: string,
-  isHost: boolean
+  _segmentID: string,
+  _sessionId: string,
+  _storyId: string,
+  _userRole: string,
+  _isHost: boolean
 ): Promise<void> {
-  try {
-    const db = databaseManager.getDatabase();
-    const currentDate = new Date().toISOString();
-    
-    // Record group participation
-    await db.runAsync(
-      `INSERT INTO group_segment_completion (segmentID, sessionId, storyId, userRole, isHost, completedAt)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      segmentID, sessionId, storyId, userRole, isHost ? 1 : 0, currentDate
-    );
-    
-    // Also increment global read count for group completions
-    await db.runAsync(`
-      INSERT OR REPLACE INTO segment_read_count (
-        segmentID,
-        totalReads,
-        lastReadDate
-      ) VALUES (
-        ?,
-        COALESCE((SELECT totalReads FROM segment_read_count WHERE segmentID = ?), 0) + 1,
-        ?
-      )
-    `, segmentID, segmentID, currentDate);
-    
-  } catch (error) {
-    logger.error('Error recording group completion:', error);
-  }
+  return;
 }
 
-// Count how many joiners (non-host) have recorded a completion for a given session/story
 export async function getGroupJoinerCompletionCount(
-  sessionId: string,
-  storyId: string
+  _sessionId: string,
+  _storyId: string
 ): Promise<number> {
-  try {
-    const db = databaseManager.getDatabase();
-    const result = await db.getFirstAsync<{ count: number }>(
-      `SELECT COUNT(*) as count FROM group_segment_completion WHERE sessionId = ? AND storyId = ? AND isHost = 0`,
-      sessionId,
-      storyId
-    );
-    return result?.count || 0;
-  } catch (error) {
-    logger.error('Error counting group joiner completions:', error);
-    return 0;
-  }
+  return 0;
 }
 
 export const getSegmentCompletionStatus = async (
@@ -794,16 +756,28 @@ export async function resetSegmentCompletion(
 export async function startPlan(planID: string): Promise<void> {
   try {
     const db = databaseManager.getDatabase();
+    await db.runAsync(
+      `UPDATE plan_challenge_status
+       SET isActive = 0, isPaused = 1, lastUpdated = datetime('now')
+       WHERE itemType = 'plan' AND itemID != ? AND isCompleted = 0`,
+      planID
+    );
     await db.runAsync(`
-      INSERT OR REPLACE INTO plan_challenge_status (
+      INSERT INTO plan_challenge_status (
         itemID,
         itemType,
         isActive,
+        isPaused,
         isCompleted,
         progressPercentage,
         startDate,
         lastUpdated
-      ) VALUES (?, 'plan', 1, 0, 0, datetime('now'), datetime('now'))
+      ) VALUES (?, 'plan', 1, 0, 0, 0, datetime('now'), datetime('now'))
+      ON CONFLICT(itemID, itemType) DO UPDATE SET
+        isActive = 1,
+        isPaused = 0,
+        isCompleted = 0,
+        lastUpdated = datetime('now')
     `, planID);
   } catch (error) {
     logger.error("Error starting plan:", error);
@@ -815,7 +789,7 @@ export async function pausePlan(planID: string): Promise<void> {
     const db = databaseManager.getDatabase();
     await db.runAsync(`
       UPDATE plan_challenge_status 
-      SET isActive = 0, lastUpdated = datetime('now')
+      SET isActive = 0, isPaused = 1, lastUpdated = datetime('now')
       WHERE itemID = ? AND itemType = 'plan'
     `, planID);
   } catch (error) {
@@ -826,9 +800,15 @@ export async function pausePlan(planID: string): Promise<void> {
 export async function resumePlan(planID: string): Promise<void> {
   try {
     const db = databaseManager.getDatabase();
+    await db.runAsync(
+      `UPDATE plan_challenge_status
+       SET isActive = 0, isPaused = 1, lastUpdated = datetime('now')
+       WHERE itemType = 'plan' AND itemID != ? AND isCompleted = 0`,
+      planID
+    );
     await db.runAsync(`
       UPDATE plan_challenge_status 
-      SET isActive = 1, lastUpdated = datetime('now')
+      SET isActive = 1, isPaused = 0, lastUpdated = datetime('now')
       WHERE itemID = ? AND itemType = 'plan'
     `, planID);
   } catch (error) {
@@ -866,15 +846,21 @@ export async function startChallenge(challengeID: string): Promise<void> {
   try {
     const db = databaseManager.getDatabase();
     await db.runAsync(`
-      INSERT OR REPLACE INTO plan_challenge_status (
+      INSERT INTO plan_challenge_status (
         itemID,
         itemType,
         isActive,
+        isPaused,
         isCompleted,
         progressPercentage,
         startDate,
         lastUpdated
-      ) VALUES (?, 'challenge', 1, 0, 0, datetime('now'), datetime('now'))
+      ) VALUES (?, 'challenge', 1, 0, 0, 0, datetime('now'), datetime('now'))
+      ON CONFLICT(itemID, itemType) DO UPDATE SET
+        isActive = 1,
+        isPaused = 0,
+        isCompleted = 0,
+        lastUpdated = datetime('now')
     `, challengeID);
   } catch (error) {
     logger.error("Error starting challenge:", error);
@@ -886,7 +872,7 @@ export async function pauseChallenge(challengeID: string): Promise<void> {
     const db = databaseManager.getDatabase();
     await db.runAsync(`
       UPDATE plan_challenge_status 
-      SET isActive = 0, lastUpdated = datetime('now')
+      SET isActive = 0, isPaused = 1, lastUpdated = datetime('now')
       WHERE itemID = ? AND itemType = 'challenge'
     `, challengeID);
   } catch (error) {
@@ -899,7 +885,7 @@ export async function resumeChallenge(challengeID: string): Promise<void> {
     const db = databaseManager.getDatabase();
     await db.runAsync(`
       UPDATE plan_challenge_status 
-      SET isActive = 1, lastUpdated = datetime('now')
+      SET isActive = 1, isPaused = 0, lastUpdated = datetime('now')
       WHERE itemID = ? AND itemType = 'challenge'
     `, challengeID);
   } catch (error) {
@@ -1576,6 +1562,54 @@ export async function getActiveChallengesFromDB(): Promise<Record<string, any>> 
     logger.error('Error getting active challenges:', error);
     return {};
   }
+}
+
+export type StartedItem = {
+  id: string;
+  type: 'plan' | 'challenge';
+  isPaused: boolean;
+  isActive: boolean;
+  startDate: string | null;
+  progressPercentage: number;
+};
+
+async function getStartedItems(itemType: 'plan' | 'challenge'): Promise<StartedItem[]> {
+  try {
+    const db = await databaseManager.ensureDatabase();
+    const results = await db.getAllAsync<{
+      itemID: string;
+      itemType: 'plan' | 'challenge';
+      isActive: number;
+      isPaused: number;
+      startDate: string | null;
+      progressPercentage: number | null;
+    }>(
+      `SELECT itemID, itemType, isActive, isPaused, startDate, progressPercentage
+       FROM plan_challenge_status
+       WHERE itemType = ? AND isCompleted = 0
+       ORDER BY datetime(lastUpdated) DESC`,
+      [itemType]
+    );
+    return (results || []).map((row) => ({
+      id: row.itemID,
+      type: row.itemType,
+      isPaused: row.isPaused === 1 || row.isActive === 0,
+      isActive: row.isActive === 1,
+      startDate: row.startDate,
+      progressPercentage: row.progressPercentage || 0,
+    }));
+  } catch (error) {
+    logger.error(`Error getting started ${itemType}s:`, error);
+    return [];
+  }
+}
+
+export async function getStartedPlansFromDB(): Promise<StartedItem[]> {
+  return getStartedItems('plan');
+}
+
+export async function getStartedChallengesFromDB(): Promise<StartedItem[]> {
+  return getStartedItems('challenge');
 }
 
 // ============================================================================

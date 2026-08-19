@@ -7,10 +7,6 @@ import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { isLargeScreen, isLandscape } from '@/constants/sizes';
 
-declare global {
-  let handleBottomNavScroll: ((event: any) => void) | undefined;
-}
-
 interface BottomNavigationProps {
   isHome?: boolean;
 }
@@ -37,10 +33,11 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     // Always show on main tab screens (regardless of parameters)
     const isTabScreen = pathname.includes('/(tabs)/') || 
                        pathname === '/Home' || 
-                       pathname === '/Navigation' || 
                        pathname === '/Reading-emoji' || 
-                       pathname === '/ReadingPlans' || 
-                       pathname === '/Achievements';
+                       pathname === '/Achievements' ||
+                       pathname === '/plan' ||
+                       pathname === '/you' ||
+                       pathname.startsWith('/cast');
     
     // Show on segment pages
     const isSegmentPage = pathname.includes('segment') || 
@@ -130,13 +127,13 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     if (isHome) return;
     
     // You can expose the handleScroll function to other components
-    if (global) {
-      (global as any).handleBottomNavScroll = handleScroll;
+    if (globalThis) {
+      (globalThis as any).handleBottomNavScroll = handleScroll;
     }
 
     return () => {
-      if (global) {
-        delete (global as any).handleBottomNavScroll;
+      if (globalThis) {
+        delete (globalThis as any).handleBottomNavScroll;
       }
     };
   }, [isHome, handleScroll]);
@@ -181,7 +178,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
       textAlign: 'center',
     },
     activeText: {
-      color: '#FF5733',
+      color: colors.primary,
       fontWeight: '600',
     },
   });
@@ -209,89 +206,25 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   return (
     <Animated.View style={containerStyle}>
       <View style={styles.content}>
-        <Pressable 
-          style={styles.navItem} 
-          onPress={() => router.replace("/Home")}
-        >
-          <Ionicons 
-            name={pathname === "/Home" ? "home" : "home-outline"} 
-            size={iconSize} 
-            color={pathname === "/Home" ? colors.primary : colors.secondary} 
-          />
-          <Text style={[styles.navText, pathname === "/Home" && styles.activeText]}>
-            {t('UI.navigation.home')}
-          </Text>
+        <Pressable style={styles.navItem} onPress={() => router.replace("/Home")}>
+          <Ionicons name={pathname === "/Home" ? "book" : "book-outline"} size={iconSize} color={pathname === "/Home" ? colors.primary : colors.secondary} />
+          <Text style={[styles.navText, pathname === "/Home" && styles.activeText]}>{t('UI.tabs.read')}</Text>
         </Pressable>
-
-        <Pressable 
-          style={styles.navItem} 
-          onPress={() => router.replace("/Reading-emoji")}
-        >
-          <Ionicons 
-            name={pathname === "/Reading-emoji" ? "happy" : "happy-outline"} 
-            size={iconSize} 
-            color={pathname === "/Reading-emoji" ? colors.primary : colors.secondary} 
-          />
-          <Text style={[styles.navText, pathname === "/Reading-emoji" && styles.activeText]}>
-            {t('UI.navigation.emoji')}
-          </Text>
+        <Pressable style={styles.navItem} onPress={() => router.replace("/cast")}>
+          <Ionicons name={pathname.startsWith("/cast") ? "people" : "people-outline"} size={iconSize} color={pathname.startsWith("/cast") ? colors.primary : colors.secondary} />
+          <Text style={[styles.navText, pathname.startsWith("/cast") && styles.activeText]}>{t('UI.tabs.cast')}</Text>
         </Pressable>
-
-        <Pressable 
-          style={styles.navItem} 
-          onPress={() => router.replace("/(tabs)/Achievements")}
-        >
-          <Ionicons 
-            name={pathname === "/Achievements" ? "trophy" : "trophy-outline"} 
-            size={iconSize} 
-            color={pathname === "/Achievements" ? colors.primary : colors.secondary} 
-          />
-          <Text style={[styles.navText, pathname === "/Achievements" && styles.activeText]}>
-            {t('UI.navigation.achievements')}
-          </Text>
+        <Pressable style={styles.navItem} onPress={() => router.replace("/plan")}>
+          <Ionicons name={pathname === "/plan" || pathname.startsWith("/plan/") ? "calendar" : "calendar-outline"} size={iconSize} color={pathname.includes("plan") ? colors.primary : colors.secondary} />
+          <Text style={[styles.navText, pathname.includes("plan") && styles.activeText]}>{t('UI.tabs.plan')}</Text>
         </Pressable>
-
-        {/* MVP: Removed Plans and Challenges from bottom nav - accessible via Home screen cards */}
-        {/* <Pressable 
-          style={styles.navItem} 
-          onPress={() => router.replace("/Plan")}
-        >
-          <Ionicons 
-            name="calendar-outline" 
-            size={iconSize} 
-            color={pathname === "/Plan" ? colors.primary : colors.secondary} 
-          />
-          <Text style={[styles.navText, pathname === "/Plan" && styles.activeText]}>
-            Plans
-          </Text>
+        <Pressable style={styles.navItem} onPress={() => router.replace("/Reading-emoji")}>
+          <Ionicons name={pathname === "/Reading-emoji" ? "bookmark" : "bookmark-outline"} size={iconSize} color={pathname === "/Reading-emoji" ? colors.primary : colors.secondary} />
+          <Text style={[styles.navText, pathname === "/Reading-emoji" && styles.activeText]}>{t('UI.tabs.saved')}</Text>
         </Pressable>
-
-        <Pressable 
-          style={styles.navItem} 
-          onPress={() => router.replace("/Reading-Challenges")}
-        >
-          <Ionicons 
-            name="trophy-outline" 
-            size={iconSize} 
-            color={pathname === "/Reading-Challenges" ? colors.primary : colors.secondary} 
-          />
-          <Text style={[styles.navText, pathname === "/Reading-Challenges" && styles.activeText]}>
-            Challenges
-          </Text>
-        </Pressable> */}
-
-        <Pressable 
-          style={styles.navItem} 
-          onPress={() => router.replace("/Navigation")}
-        >
-          <Ionicons 
-            name="book-outline" 
-            size={iconSize} 
-            color={pathname === "/Navigation" ? colors.primary : colors.secondary} 
-          />
-          <Text style={[styles.navText, pathname === "/Navigation" && styles.activeText]}>
-            {t('UI.navigation.search')}
-          </Text>
+        <Pressable style={styles.navItem} onPress={() => router.replace("/you")}>
+          <Ionicons name={pathname === "/you" ? "person" : "person-outline"} size={iconSize} color={pathname === "/you" ? colors.primary : colors.secondary} />
+          <Text style={[styles.navText, pathname === "/you" && styles.activeText]}>{t('UI.tabs.you')}</Text>
         </Pressable>
       </View>
     </Animated.View>

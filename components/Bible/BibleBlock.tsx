@@ -1,5 +1,4 @@
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
 import { BibleBlock } from '@/types';
 import GlowBubble from './GlowBubble';
 
@@ -11,29 +10,31 @@ interface BibleBlockProps {
   onLongPress: (block: BibleBlock, index: number) => void;
   targetVerse?: number;
   targetChapter?: number;
+  dimmed?: boolean;
 }
 
-const BibleBlockComponent: React.FC<BibleBlockProps> = ({ 
-  block, 
-  bIndex, 
-  hasTail, 
+const BibleBlockComponent: React.FC<BibleBlockProps> = ({
+  block,
+  bIndex,
+  hasTail,
   isGlowing,
   onLongPress,
   targetVerse,
-  targetChapter
+  targetChapter,
+  dimmed,
 }) => {
   return (
-    <TouchableOpacity onLongPress={() => onLongPress(block, bIndex)}>
-      <GlowBubble
-        block={block}
-        bIndex={bIndex}
-        hasTail={hasTail}
-        isGlowing={isGlowing}
-        targetVerse={targetVerse}
-        targetChapter={targetChapter}
-      />
-    </TouchableOpacity>
+    <GlowBubble
+      block={block}
+      bIndex={bIndex}
+      hasTail={hasTail}
+      isGlowing={isGlowing}
+      onLongPress={onLongPress}
+      targetVerse={targetVerse}
+      targetChapter={targetChapter}
+      dimmed={dimmed}
+    />
   );
 };
 
-export default BibleBlockComponent; 
+export default BibleBlockComponent;

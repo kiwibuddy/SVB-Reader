@@ -1,38 +1,32 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import logger from '@/utils/logger';
 import { StatusBar } from "expo-status-bar";
 import { SQLiteGlobalProvider } from '@/context/SQLiteGlobalContext';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useState, useEffect } from 'react';
 // Removed duplicate logger import
 import 'react-native-reanimated';
+import 'react-native-worklets';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BottomNavProvider } from '@/context/BottomNavContext';
 import { FontSizeProvider } from '@/context/FontSizeContext';
 import { SyncAppSettingsProvider, useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { initializeAppSystems } from '@/services/app-startup-manager';
-import { GroupReadingProvider } from '@/context/GroupReadingContext';
-import { View, Text, Alert } from 'react-native';
+import { View, Text } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Updates from 'expo-updates';
 import { SimpleLoadingScreen } from '@/components/SimpleLoadingScreen';
 import '../config/i18n'; // Import this to initialize i18next
-import { languageDetectionService } from '@/services/LanguageDetectionService';
-import BibleDownloadModal from '@/components/BibleDownloadModal';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { useTranslation } from '@/hooks/useTranslation';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
-  const { isDarkMode, colors, setLanguage } = useSyncAppSettings();
-  const { t } = useTranslation();
+  const { isDarkMode, colors } = useSyncAppSettings();
   const [dbReady, setDbReady] = useState(false);
   const [dbError] = useState<string | null>(null);
-  const [showBibleDownload, setShowBibleDownload] = useState(false);
-  const [detectedLanguage, setDetectedLanguage] = useState<'fr' | 'es' | 'pt' | null>(null);
   
   useEffect(() => {
     const initializeApp = async () => {
@@ -45,7 +39,6 @@ function AppContent() {
           setDbReady(true);
           logger.info('[INIT] Database ready, checking updates...');
           checkForUpdates();
-          checkDeviceLanguage();
         } else {
           logger.error('[CRASH] Database initialization failed:', result.error);
           setDbReady(true);
@@ -84,50 +77,8 @@ function AppContent() {
       }
     };
 
-    const checkDeviceLanguage = async () => {
-      try {
-        const detection = await languageDetectionService.detectLanguageOnLaunch();
-        
-        if (detection.shouldPromptDownload && detection.deviceLanguage !== 'en') {
-          // Device is set to French (or other supported language) and it's first launch
-          setDetectedLanguage(detection.deviceLanguage as 'fr' | 'es' | 'pt');
-          
-          // Wait a bit for UI to settle, then show prompt
-          setTimeout(() => {
-            Alert.alert(
-              `Télécharger la Bible en ${languageDetectionService.getLanguageDisplayName(detection.deviceLanguage)}?`,
-              `Votre appareil est configuré en ${languageDetectionService.getLanguageDisplayName(detection.deviceLanguage)}. Souhaitez-vous télécharger la Bible dans cette langue?`,
-              [
-                {
-                  text: 'Non merci',
-                  style: 'cancel',
-                  onPress: () => {
-                    languageDetectionService.markLanguageDetectionShown();
-                    languageDetectionService.markFirstLaunchComplete();
-                  },
-                },
-                {
-                  text: 'Télécharger',
-                  onPress: async () => {
-                    // Switch to detected language (only 'en' or 'fr' are supported for UI)
-                    const uiLanguage = detection.deviceLanguage === 'fr' ? 'fr' : 'en';
-                    await setLanguage(uiLanguage as 'en' | 'fr');
-                    setShowBibleDownload(true);
-                    languageDetectionService.markLanguageDetectionShown();
-                    languageDetectionService.markFirstLaunchComplete();
-                  },
-                },
-              ]
-            );
-          }, 2000); // 2 second delay for smooth UX
-        }
-      } catch (error) {
-        logger.error('❌ Language detection failed:', error);
-      }
-    };
-    
     initializeApp();
-  }, [setLanguage]);
+  }, []);
   
   if (dbError) {
     return (
@@ -157,49 +108,34 @@ function AppContent() {
   
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
       <ThemeProvider value={isDarkMode ? DarkTheme : DefaultTheme}>
         <View style={{ flex: 1, backgroundColor: colors.background }}>
           <FontSizeProvider>
-            <GroupReadingProvider>
-              <SQLiteGlobalProvider>
-                <BottomNavProvider>
-                  <StatusBar 
-                    style={isDarkMode ? "light" : "dark"}
-                    backgroundColor={colors.background}
+            <SQLiteGlobalProvider>
+              <BottomNavProvider>
+                <StatusBar style={isDarkMode ? "light" : "dark"} />
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: colors.background },
+                  }}
+                >
+                  <Stack.Screen name="(tabs)" />
+                  <Stack.Screen
+                    name="onboarding"
+                    options={{ gestureEnabled: false, animation: 'fade', headerShown: false }}
                   />
-                  <Stack
-                    screenOptions={{
-                      headerShown: false,
-                      contentStyle: { backgroundColor: colors.background },
-                    }}
-                  >
-                    <Stack.Screen name="(tabs)" />
-                    <Stack.Screen name="+not-found" />
-                  </Stack>
-                </BottomNavProvider>
-              </SQLiteGlobalProvider>
-            </GroupReadingProvider>
+                  <Stack.Screen name="settings" options={{ headerShown: false, presentation: 'card' }} />
+                  <Stack.Screen name="+not-found" />
+                </Stack>
+              </BottomNavProvider>
+            </SQLiteGlobalProvider>
           </FontSizeProvider>
           
-          {/* Auto-detected language Bible download modal */}
-          {detectedLanguage && (
-            <BibleDownloadModal
-              visible={showBibleDownload}
-              language={detectedLanguage}
-              languageDisplay={languageDetectionService.getLanguageDisplayName(detectedLanguage)}
-              fileSize={52073208} // Updated to correct size: 49.7 MB (was 16.4 MB)
-              onClose={() => setShowBibleDownload(false)}
-              onDownloadComplete={() => {
-                setShowBibleDownload(false);
-                Alert.alert(
-                  t('UI.alerts.success'),
-                  `${languageDetectionService.getLanguageDisplayName(detectedLanguage)} ${t('UI.alerts.bibleDownloaded')}`
-                );
-              }}
-            />
-          )}
         </View>
       </ThemeProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }

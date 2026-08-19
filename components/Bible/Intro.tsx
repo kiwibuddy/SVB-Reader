@@ -8,8 +8,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAppSettings } from '@/context/AppSettingsContext';
 import Markdown from 'react-native-markdown-display';
 import { createStyles } from './Intro.styles';
-import { parseReference } from '@/utils/parseReference';
-import ReadingModeModal from '@/components/GroupReading/ReadingModeModal';
 import BookChapterList from '@/assets/data/BookChapterList.json';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 import readingPlansData from '@/assets/data/ReadingPlansChallenges.json';
@@ -244,12 +242,6 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData, context = 'main', p
   const { colors } = useAppSettings();
   const styles = createStyles(colors, isIPad);
 
-  // Reading Mode Modal State
-  const [showReadingModeModal, setShowReadingModeModal] = useState(false);
-  const [selectedSegmentId, setSelectedSegmentId] = useState<string>('');
-  const [selectedSegmentTitle, setSelectedSegmentTitle] = useState<string>('');
-  const [selectedSegmentRef, setSelectedSegmentRef] = useState<string>('');
-
   // Get the book code from the introduction ID (e.g., "I001" -> "001" -> get corresponding book)
   const getBookFromIntroId = (introId: string): string | null => {
     // Find the book that contains this intro segment
@@ -330,14 +322,24 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData, context = 'main', p
 
         
         if (segmentData) {
-          // Setting modal state
-          
-          setSelectedSegmentId(nextSegment);
-          setSelectedSegmentTitle(segmentData.title);
-          setSelectedSegmentRef((segmentData as any).ref || '');
-          setShowReadingModeModal(true);
-          
+          const params: any = {
+            segment: `ENG-NLT-${nextSegment}`,
+            book: bookCode || '',
+            context: context,
+            freshStart: Date.now().toString()
+          };
 
+          if (context === 'plan' && planId) {
+            params.planId = planId;
+          }
+          if (context === 'challenge' && challengeId) {
+            params.challengeId = challengeId;
+          }
+
+          router.push({
+            pathname: "/[segment]",
+            params
+          });
         } else {
           logger.error('❌ No segment data found for:', nextSegment);
         }
@@ -347,47 +349,6 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData, context = 'main', p
     } else {
       logger.error('❌ No book code found for intro:', id);
     }
-  };
-
-  // Reading Mode Modal Handlers
-  const handleIndividualReading = async () => {
-    setShowReadingModeModal(false);
-    
-    const params: any = {
-      segment: `ENG-NLT-${selectedSegmentId}`,
-      book: getBookFromIntroId(id) || '',
-      context: context,
-      freshStart: Date.now().toString()
-    };
-    
-    // Add context-specific parameters
-    if (context === 'plan' && planId) {
-      params.planId = planId;
-    }
-    if (context === 'challenge' && challengeId) {
-      params.challengeId = challengeId;
-    }
-    
-    router.push({
-      pathname: "/[segment]",
-      params
-    });
-  };
-
-  const handleGroupReading = () => {
-    setShowReadingModeModal(false);
-    router.push({
-      pathname: '/group-setup' as any,
-      params: {
-        storyId: selectedSegmentId,
-        storyTitle: selectedSegmentTitle,
-        scriptureReference: selectedSegmentRef,
-      }
-    });
-  };
-
-  const handleCancelModal = () => {
-    setShowReadingModeModal(false);
   };
 
   // Add safety check for content
@@ -454,19 +415,6 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData, context = 'main', p
           <Text style={styles.startReadingText}>Start Reading</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Reading Mode Modal */}
-      <ReadingModeModal
-        visible={showReadingModeModal && !!selectedSegmentId}
-        storyTitle={selectedSegmentTitle}
-        scriptureReference={selectedSegmentRef}
-        storyId={selectedSegmentId || ''}
-        onIndividual={handleIndividualReading}
-        onGroup={handleGroupReading}
-        onCancel={handleCancelModal}
-        // Add context information for context-aware navigation
-        context="main"
-      />
     </View>
   );
 };

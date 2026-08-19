@@ -9,6 +9,12 @@ import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { addEmoji, deleteEmoji, getEmoji } from '@/api/sqlite';
 import EmojiPicker from './EmojiPicker';
 import NoteInput from './NoteInput';
+import ShareCard from '@/components/thread/ShareCard';
+import { copyTurn, formatTurnCitation, shareTurn } from '@/utils/shareTurn';
+import { hapticImpactMedium } from '@/utils/haptics';
+import { localizeVoiceName } from '@/utils/localize';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
+import { isLeftVoice, type Ink } from '@/utils/ink';
 
 interface EmojiHandlerProps {
   block: BibleBlock;
@@ -57,6 +63,8 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   onLongPress
 }) => {
   const { state, updateSegmentId, updateEmojiActions } = useSQLiteGlobalContext();
+  const { language, isDarkMode } = useSyncAppSettings();
+  const shareCardRef = useRef<View>(null);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const [showPicker, setShowPicker] = useState(false);
   const [showNoteInput, setShowNoteInput] = useState(false);
@@ -151,17 +159,10 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     return finalPosition;
   }, [screenWidth, pickerWidth, screenHeight]);
   
-  // Color-based alignment logic
   const color = block.source?.color || 'black';
-  
-  // ONLY BLACK (narrator) on left side, ALL OTHER COLORS (red, green, blue) on right side
-  const isLeftSide = color === "black";
-  const emojiAlignment = isLeftSide ? { left: 10 } : { right: 10 };
-  
-  // Adjust top positioning based on whether bubble has tail (source name)
-  // When hasTail=true: bubble has source name above, so emoji positioned at standard height
-  // When hasTail=false: consecutive bubbles need emoji positioned higher (smaller top value)
-  const emojiTopOffset = hasTail ? 35 : -15;
+  const isLeftSide = isLeftVoice(color);
+  const emojiAlignment = isLeftSide ? { left: -6 } : { right: -6 };
+  const emojiTopOffset = 2;
 
   // CRITICAL: Load existing emoji and note when component mounts
   useEffect(() => {
@@ -181,6 +182,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         
         // Load both emoji and note from database
         const db = await import('@/api/database-manager').then(m => m.databaseManager.getDatabase());
+        if (!db) return;
         const result = await db.getFirstAsync<{ emoji: string | null; note: string | null }>(
           `SELECT emoji, note FROM emojis WHERE segmentID = ? AND blockID = ?`,
           state.segmentId,
@@ -213,6 +215,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
           if (!state.segmentId || !blockId) return;
           
           const db = await import('@/api/database-manager').then(m => m.databaseManager.getDatabase());
+          if (!db) return;
           const result = await db.getFirstAsync<{ emoji: string | null; note: string | null }>(
             `SELECT emoji, note FROM emojis WHERE segmentID = ? AND blockID = ?`,
             state.segmentId,
@@ -390,6 +393,40 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     setShowNoteInput(false);
   }, []);
 
+  const handleCopy = useCallback(async () => {
+    try {
+      await hapticImpactMedium();
+      await copyTurn(state.segmentId || '', block);
+      setShowPicker(false);
+    } catch (error) {
+      logger.error('Copy turn failed:', error);
+    }
+  }, [block, state.segmentId]);
+
+  const handleShare = useCallback(async () => {
+    try {
+      await hapticImpactMedium();
+      let imageUri: string | null = null;
+      try {
+        const { captureRef } = require('react-native-view-shot');
+        if (shareCardRef.current) {
+          imageUri = await captureRef(shareCardRef, { format: 'png', quality: 1, result: 'tmpfile' });
+        }
+      } catch (error) {
+        logger.warn('Share image capture unavailable; sharing text instead.', error);
+      }
+      await shareTurn({
+        segmentId: state.segmentId || '',
+        block,
+        speaker: localizeVoiceName(block.source?.sourceName || '', language),
+        imageUri,
+      });
+      setShowPicker(false);
+    } catch (error) {
+      logger.error('Share turn failed:', error);
+    }
+  }, [block, language, state.segmentId]);
+
   // CRITICAL: Enhanced gesture handler with comprehensive validation
   const handleGestureTrigger = useCallback((event: any, gestureType: 'doubleTap' | 'longPress') => {
     'worklet';
@@ -495,6 +532,8 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         <EmojiPicker
           onEmojiSelect={handleEmojiSelect}
           onNoteSelect={handleNoteSelect}
+          onShare={handleShare}
+          onCopy={handleCopy}
           onClose={handlePickerClose}
           position={pickerPosition}
           existingNote={existingNote}
@@ -521,6 +560,16 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
           />
         </View>
       </Modal>
+      <View style={styles.shareCardHost} pointerEvents="none">
+        <ShareCard
+          ref={shareCardRef}
+          speaker={localizeVoiceName(block.source?.sourceName || '', language)}
+          text={formatTurnCitation(state.segmentId || '', block).text}
+          citation={formatTurnCitation(state.segmentId || '', block).citation}
+          ink={(block.source?.color || 'black') as Ink}
+          isDarkMode={isDarkMode}
+        />
+      </View>
     </View>
   );
 };
@@ -528,28 +577,24 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
+    width: '100%',
+    overflow: 'visible',
   },
-  // Using the working version's styling for emoji positioning
   reactionContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    padding: 5,
-    position: "absolute",  // CRITICAL: Must be absolute
+    gap: 4,
+    position: "absolute",
     elevation: 3,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    zIndex: 100,  // CRITICAL: High z-index to appear above bubble
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.18,
+    shadowRadius: 1.5,
+    zIndex: 100,
   },
   reactionText: {
-    fontSize: 30, // Match the working version size
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    fontSize: 22,
+    lineHeight: 26,
   },
   noteIconContainer: {
     padding: 0,
@@ -561,6 +606,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  shareCardHost: {
+    position: 'absolute',
+    left: -4000,
+    top: 0,
   },
 });
 

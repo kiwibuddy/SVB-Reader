@@ -50,6 +50,12 @@ export function formatReadingTime(minutes: number): string {
   return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
 }
 
+/** Compact label used on thread rows and the continue card, e.g. "12 min". */
+export function formatReadingMinutes(minutes: number): string {
+  if (minutes <= 0) return '';
+  return `${minutes} min`;
+}
+
 /**
  * Get reading time with formatted text
  * @param segmentId - The segment ID (e.g., 'S001', 'I001')
