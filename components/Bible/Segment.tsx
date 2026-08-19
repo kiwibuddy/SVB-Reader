@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"; // Ensure useEffect is imported
 import logger from '@/utils/logger';
-import { View, Text, FlatList, ScrollView, Pressable, TouchableOpacity, StyleSheet, useWindowDimensions, Platform, Animated } from "react-native";
-import Reanimated from "react-native-reanimated";
+import { View, Text, FlatList, ScrollView, TouchableOpacity, StyleSheet, useWindowDimensions, Platform, Animated } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BibleBlockComponent from './BibleBlock';
 import { BibleBlock, SegmentType } from "@/types";
@@ -17,9 +16,6 @@ import { memo } from "react";
 import { getSegmentCompletionStatus } from "@/api/sqlite";
 import { ANIMATION } from '@/services/animation';
 import * as Haptics from 'expo-haptics';
-import { useTranslation } from '@/hooks/useTranslation';
-import * as Speech from 'expo-speech';
-import { ThreadColors } from '@/constants/Colors';
 import type { Ink } from '@/utils/ink';
 
 interface SegmentProps {
@@ -67,20 +63,15 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const currentRole = null;
   const currentSession = null;
 
-  const { colors, isDarkMode } = useAppSettings();
-  const { t } = useTranslation();
+  const { colors } = useAppSettings();
 
   const { scrollReset, showCourtesy } = useLocalSearchParams();
 
   // All hooks must be called before any early returns
   const [showCelebration, setShowCelebration] = useState(false);
   const [selectedInk, setSelectedInk] = useState<Ink | null>(null);
-  const [speakingIndex, setSpeakingIndex] = useState<number | null>(null);
-  const speakGen = useRef(0);
   const [showCourtesyPopup, setShowCourtesyPopup] = useState(!!currentSession);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const threadPalette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
   const courtesyAnim = useRef(new Animated.Value(0));
   const courtesyDismissedRef = useRef(false);
 
@@ -129,21 +120,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       setSelectedInk(null);
     }
   }, [segID, currentSession]);
-
-  useEffect(() => {
-    return () => {
-      speakGen.current += 1;
-      Speech.stop();
-    };
-  }, []);
-
-  const collectSpeech = (node: any): string => {
-    if (!node) return '';
-    if (typeof node === 'string') return node;
-    if (Array.isArray(node)) return node.map(collectSpeech).join(' ');
-    if (node.note) return '';
-    return `${node.text || ''} ${collectSpeech(node.children)}`;
-  };
 
   const dismissCourtesy = useCallback(() => {
     courtesyDismissedRef.current = true;
@@ -424,44 +400,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     }
   };
 
-  const toggleReadAloud = useCallback(() => {
-    if (isSpeaking) {
-      speakGen.current += 1;
-      Speech.stop();
-      setIsSpeaking(false);
-      setSpeakingIndex(null);
-      return;
-    }
-    const gen = speakGen.current + 1;
-    speakGen.current = gen;
-    setIsSpeaking(true);
-    const speakAt = (index: number) => {
-      if (speakGen.current !== gen) return;
-      if (index >= memoizedContent.length) {
-        setIsSpeaking(false);
-        setSpeakingIndex(null);
-        return;
-      }
-      const block = memoizedContent[index];
-      const who = block?.source?.sourceName || '';
-      setSpeakingIndex(index);
-      Speech.speak(`${who}. ${collectSpeech(block)}`, {
-        onDone: () => speakAt(index + 1),
-        onStopped: () => {
-          if (speakGen.current === gen) {
-            setIsSpeaking(false);
-            setSpeakingIndex(null);
-          }
-        },
-        onError: () => {
-          setIsSpeaking(false);
-          setSpeakingIndex(null);
-        },
-      });
-    };
-    speakAt(0);
-  }, [isSpeaking, memoizedContent]);
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -622,20 +560,13 @@ const styles = StyleSheet.create({
         // Disable scroll when long press is detected
         scrollEnabled={true}
       >
-        <Reanimated.View style={{ opacity: isSpeaking ? 0 : 1 }}>
-          <SegmentTitle segmentId={segID} />
-          <CallSheet
-            sources={segmentData?.sources || {}}
-            colorData={colorData}
-            selectedInk={selectedInk}
-            onSelectInk={setSelectedInk}
-          />
-        </Reanimated.View>
-        <Pressable onPress={toggleReadAloud} hitSlop={8} style={{ paddingHorizontal: 14, paddingVertical: 10, minHeight: 44, justifyContent: 'center' }}>
-          <Text style={{ color: threadPalette.acc, fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase' }}>
-            {isSpeaking ? t('UI.thread.stopReading') : t('UI.thread.readAloud')}
-          </Text>
-        </Pressable>
+        <SegmentTitle segmentId={segID} />
+        <CallSheet
+          sources={segmentData?.sources || {}}
+          colorData={colorData}
+          selectedInk={selectedInk}
+          onSelectInk={setSelectedInk}
+        />
 
         {memoizedContent.map((item, index) => {
           const { sourceName } = item.source || {};
@@ -654,7 +585,6 @@ const styles = StyleSheet.create({
               targetVerse={targetVerse}
               targetChapter={targetChapter}
               dimmed={!!selectedInk && selectedInk !== ink}
-              spokenDimmed={speakingIndex != null && speakingIndex !== index}
             />
           );
         })}

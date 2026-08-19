@@ -1,22 +1,31 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import logger from '@/utils/logger';
-import { View, Text, Pressable, StyleSheet, Animated, InteractionManager } from 'react-native';
+import { View, Text, Pressable, StyleSheet, InteractionManager } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { Ionicons } from '@expo/vector-icons';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withTiming,
+  withDelay,
+  interpolateColor,
+  FadeIn,
+} from 'react-native-reanimated';
+import Svg, { Circle as SvgCircle } from 'react-native-svg';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { getCheckColor } from '@/scripts/getCheckColors';
 import {
   getSegmentReadCount,
   getSegmentCompletionStatus,
   markSegmentComplete,
 } from '@/api/sqlite';
 import CompletionBanner from '@/components/Bible/CompletionBanner';
-import { ANIMATION } from '@/services/animation';
 import { getVoicesMetCelebration } from '@/utils/voicesMet';
 import { useTranslation } from '@/hooks/useTranslation';
 import FRA_UI from '@/assets/data/FRA-UI.json';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
+import { ThreadColors } from '@/constants/Colors';
+import { DUR, timing } from '@/constants/Motion';
 
 interface CheckCircleProps {
   segmentId: string;
@@ -28,9 +37,11 @@ interface CheckCircleProps {
   resetVisualStateOnMount?: boolean;
 }
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 export default function CheckCircle({
   segmentId,
-  iconSize = 32,
+  iconSize = 48,
   context = 'main',
   planId,
   challengeId,
@@ -42,107 +53,43 @@ export default function CheckCircle({
   const params = useLocalSearchParams();
   const { freshStart } = params;
   const { t } = useTranslation();
-  const { language } = useSyncAppSettings();
+  const { language, isDarkMode } = useSyncAppSettings();
+  const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
 
   const [isCompleted, setIsCompleted] = useState(false);
-  const [completionColor, setCompletionColor] = useState<string | null>(null);
   const [readCount, setReadCount] = useState(0);
-  const [showCompletionBanner, setShowCompletionBanner] = useState(false);
-  const [bannerMessage, setBannerMessage] = useState<string | undefined>(undefined);
-  const [showConfetti, setShowConfetti] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
+  const [bannerTitle, setBannerTitle] = useState('');
+  const [bannerSubtitle, setBannerSubtitle] = useState('');
+  const [bannerVoice, setBannerVoice] = useState('');
 
-  const confettiAnimations = useRef(
-    Array.from({ length: 8 }, () => ({
-      translateY: new Animated.Value(0),
-      translateX: new Animated.Value(0),
-      rotate: new Animated.Value(0),
-      opacity: new Animated.Value(1),
-      scale: new Animated.Value(1),
-    }))
-  );
+  const fill = useSharedValue(0);
+  const pulse = useSharedValue(1);
+  const ring = useSharedValue(0);
 
   useEffect(() => {
-    const initializeSegment = async () => {
+    const init = async () => {
       if (resetVisualStateOnMount) {
         setIsCompleted(false);
-        setCompletionColor(null);
+        fill.value = 0;
       }
-
       try {
         const count = await getSegmentReadCount(segmentId);
         setReadCount(count);
-      } catch (error) {
-        logger.error('Error loading read count:', error);
-      }
+      } catch {}
 
       InteractionManager.runAfterInteractions(async () => {
         try {
           const status = await getSegmentCompletionStatus(segmentId, context, planId, challengeId);
-          if (!resetVisualStateOnMount) {
-            setIsCompleted(status.isCompleted);
-            setCompletionColor(status.color);
+          if (!resetVisualStateOnMount && status.isCompleted) {
+            setIsCompleted(true);
+            fill.value = 1;
           }
-        } catch (error) {
-          logger.error('Error initializing segment completion status:', error);
-        }
+        } catch {}
       });
     };
-
-    initializeSegment();
-  }, [segmentId, context, planId, challengeId, resetVisualStateOnMount, freshStart]);
-
-  const startConfettiCelebration = (): Promise<void> => {
-    return new Promise((resolve) => {
-      setShowConfetti(true);
-      const pieces = confettiAnimations.current;
-      pieces.forEach((anim) => {
-        anim.translateY.setValue(0);
-        anim.translateX.setValue(0);
-        anim.rotate.setValue(0);
-        anim.opacity.setValue(1);
-        anim.scale.setValue(1);
-      });
-
-      const animations = pieces.map((anim, index) => {
-        const angle = (index / pieces.length) * Math.PI * 2;
-        const distance = 90 + Math.random() * 50;
-        return Animated.sequence([
-          Animated.delay(index * 20),
-          Animated.parallel([
-            Animated.timing(anim.translateX, {
-              toValue: Math.cos(angle) * distance,
-              duration: ANIMATION.duration.long,
-              easing: ANIMATION.easing.out,
-              useNativeDriver: true,
-            }),
-            Animated.timing(anim.translateY, {
-              toValue: Math.sin(angle) * distance - 70,
-              duration: ANIMATION.duration.long,
-              easing: ANIMATION.easing.out,
-              useNativeDriver: true,
-            }),
-            Animated.timing(anim.rotate, {
-              toValue: 720,
-              duration: ANIMATION.duration.xlong,
-              easing: ANIMATION.easing.linear,
-              useNativeDriver: true,
-            }),
-          ]),
-          Animated.timing(anim.opacity, {
-            toValue: 0,
-            duration: ANIMATION.duration.medium,
-            easing: ANIMATION.easing.out,
-            useNativeDriver: true,
-          }),
-        ]);
-      });
-
-      Animated.parallel(animations).start(() => {
-        InteractionManager.runAfterInteractions(() => setShowConfetti(false));
-        resolve();
-      });
-    });
-  };
+    init();
+  }, [segmentId, context, planId, challengeId, resetVisualStateOnMount, freshStart, fill]);
 
   const localizeVoice = (name: string): string => {
     if (language !== 'fr') return name;
@@ -167,7 +114,6 @@ export default function CheckCircle({
       });
       return;
     }
-
     if (params.challengeId || challengeId) {
       router.push({
         pathname: '/(tabs)/plan',
@@ -179,7 +125,6 @@ export default function CheckCircle({
       });
       return;
     }
-
     router.push({
       pathname: '/(tabs)/Home',
       params: {
@@ -191,17 +136,23 @@ export default function CheckCircle({
   };
 
   const handlePress = async () => {
-    if (isCompleted) {
-      return;
-    }
-
+    if (isCompleted) return;
     try {
       await markSegmentComplete(segmentId, context, planId, challengeId);
       await updateLastReadSegment(segmentId);
 
       setIsCompleted(true);
-      setCompletionColor(getCheckColor(null));
       setReadCount(await getSegmentReadCount(segmentId));
+
+      fill.value = withTiming(1, timing(DUR.base));
+      pulse.value = withSequence(
+        withTiming(1.15, timing(DUR.instant)),
+        withTiming(1, timing(DUR.quick))
+      );
+      ring.value = withSequence(
+        withTiming(1, timing(DUR.base)),
+        withDelay(600, withTiming(0, timing(DUR.quick)))
+      );
 
       try {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -209,69 +160,103 @@ export default function CheckCircle({
 
       const voices = await getVoicesMetCelebration(segmentId);
       const title = localizeTitle(voices.title);
-      const parts = [t('UI.completion.storyComplete', { title })];
-      if (voices.firstVoice) {
-        parts.push(t('UI.completion.metVoiceFirstTime', { name: localizeVoice(voices.firstVoice) }));
-      }
+      setBannerTitle(t('UI.completion.storyComplete', { title }));
+      const parts: string[] = [];
       parts.push(t('UI.completion.voicesCount', { met: voices.metCount, total: voices.totalVoices }));
-      setBannerMessage(parts.join(' '));
-      setShowCompletionBanner(true);
-      await startConfettiCelebration();
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      navigateAfterComplete();
+      setBannerSubtitle(parts.join(' '));
+      if (voices.firstVoice) {
+        setBannerVoice(t('UI.completion.metVoiceFirstTime', { name: localizeVoice(voices.firstVoice) }));
+      }
+      setShowBanner(true);
+
+      setTimeout(navigateAfterComplete, 3200);
     } catch (error) {
       logger.error('Error marking segment complete:', error);
     }
   };
 
-  const checkColor = isCompleted ? (completionColor || getCheckColor(null)) : '#C7C7CC';
+  const circleStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulse.value }],
+  }));
+
+  const ringStyle = useAnimatedStyle(() => ({
+    opacity: ring.value * 0.4,
+    transform: [{ scale: 1 + ring.value * 0.6 }],
+  }));
+
+  const size = iconSize;
+  const stroke = 2.5;
+  const r = (size - stroke) / 2;
+  const cx = size / 2;
 
   return (
     <View style={styles.container}>
-      <Pressable
+      {/* Expanding ring */}
+      <Animated.View
+        style={[
+          styles.ring,
+          { width: size * 2, height: size * 2, borderRadius: size, borderColor: palette.acc },
+          ringStyle,
+        ]}
+        pointerEvents="none"
+      />
+
+      <AnimatedPressable
         onPress={handlePress}
-        style={({ pressed }) => [styles.checkButton, pressed && styles.checkButtonPressed]}
-        android_ripple={{ color: 'rgba(0,0,0,0.1)', radius: 32, borderless: true }}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        style={[styles.btn, { width: size + 24, height: size + 24 }, circleStyle]}
         accessibilityRole="button"
         accessibilityLabel={isCompleted ? t('UI.completion.storyComplete', { title: segmentId }) : t('UI.alerts.markComplete')}
       >
-        <Ionicons name="checkmark-circle" size={iconSize} color={checkColor} />
-      </Pressable>
-      {showCaption && <Text style={styles.readCount}>{readCount > 0 ? `${readCount}` : ''}</Text>}
-      {showConfetti && (
-        <View pointerEvents="none" style={styles.confettiLayer}>
-          {confettiAnimations.current.map((anim, index) => (
-            <Animated.View
-              key={index}
-              style={[
-                styles.confettiPiece,
-                {
-                  backgroundColor: ['#FF9F0A', '#007AFF', '#34C759', '#FF3B30'][index % 4],
-                  transform: [
-                    { translateX: anim.translateX },
-                    { translateY: anim.translateY },
-                    {
-                      rotate: anim.rotate.interpolate({
-                        inputRange: [0, 360],
-                        outputRange: ['0deg', '360deg'],
-                      }),
-                    },
-                    { scale: anim.scale },
-                  ],
-                  opacity: anim.opacity,
-                },
-              ]}
+        <Svg width={size} height={size}>
+          {/* Track */}
+          <SvgCircle
+            cx={cx}
+            cy={cx}
+            r={r}
+            fill="none"
+            stroke={palette.hair}
+            strokeWidth={stroke}
+          />
+          {/* Completed fill */}
+          {isCompleted && (
+            <SvgCircle
+              cx={cx}
+              cy={cx}
+              r={r}
+              fill={palette.acc}
+              stroke={palette.acc}
+              strokeWidth={stroke}
             />
-          ))}
-        </View>
+          )}
+        </Svg>
+        {/* Checkmark */}
+        {isCompleted && (
+          <Animated.View entering={FadeIn.duration(DUR.instant)} style={[StyleSheet.absoluteFill, styles.checkCenter]}>
+            <Text style={styles.check}>✓</Text>
+          </Animated.View>
+        )}
+        {!isCompleted && (
+          <View style={[StyleSheet.absoluteFill, styles.checkCenter]}>
+            <Text style={[styles.label, { color: palette.mute }]}>
+              {language === 'fr' ? 'Terminé' : 'Done'}
+            </Text>
+          </View>
+        )}
+      </AnimatedPressable>
+
+      {showCaption && readCount > 1 && (
+        <Text style={[styles.readCount, { color: palette.mute }]}>
+          {readCount}×
+        </Text>
       )}
+
       <CompletionBanner
-        visible={showCompletionBanner}
-        message={bannerMessage}
-        durationMs={2800}
-        onHide={() => setShowCompletionBanner(false)}
-        backgroundColor="#007AFF"
+        visible={showBanner}
+        title={bannerTitle}
+        subtitle={bannerSubtitle}
+        voiceNote={bannerVoice}
+        durationMs={2400}
+        onHide={() => setShowBanner(false)}
       />
     </View>
   );
@@ -280,37 +265,35 @@ export default function CheckCircle({
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingVertical: 0,
+    paddingVertical: 8,
     position: 'relative',
   },
-  checkButton: {
-    padding: 20,
-    minWidth: 64,
-    minHeight: 64,
+  btn: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 32,
   },
-  checkButtonPressed: {
-    opacity: 0.6,
-    transform: [{ scale: 0.95 }],
+  checkCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  check: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  label: {
+    fontSize: 10,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    fontWeight: '600',
   },
   readCount: {
-    fontSize: 12,
-    marginTop: 8,
-    textAlign: 'center',
-    fontWeight: '500',
+    fontSize: 10,
+    letterSpacing: 0.6,
+    marginTop: 2,
   },
-  confettiLayer: {
-    ...StyleSheet.absoluteFill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 10,
-  },
-  confettiPiece: {
+  ring: {
     position: 'absolute',
-    width: 8,
-    height: 8,
-    borderRadius: 2,
+    borderWidth: 2,
   },
 });

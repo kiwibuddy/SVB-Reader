@@ -8,6 +8,7 @@
       "you": "You"
     },
     "thread": {
+      "nudge": "Tap a section to explore its stories",
       "searchPlaceholder": "Search voices, books, stories",
       "scopeAll": "All",
       "scopeVoices": "Voices",
@@ -20,8 +21,6 @@
       "today": "Today",
       "day": "Day {{n}}",
       "callSheet": "Call sheet",
-      "readAloud": "Read aloud",
-      "stopReading": "Stop",
       "spokeWith": "Spoke with",
       "longestExchange": "Longest exchange",
       "longestSpeech": "Longest single speech",
@@ -84,6 +83,7 @@
       "you": "Vous"
     },
     "thread": {
+      "nudge": "Touchez une section pour explorer ses récits",
       "searchPlaceholder": "Rechercher voix, livres, récits",
       "scopeAll": "Tout",
       "scopeVoices": "Voix",
@@ -96,8 +96,6 @@
       "today": "Aujourd’hui",
       "day": "Jour {{n}}",
       "callSheet": "Distribution",
-      "readAloud": "Lecture à voix haute",
-      "stopReading": "Arrêter",
       "spokeWith": "A parlé avec",
       "longestExchange": "Plus long échange",
       "longestSpeech": "Plus long discours",

@@ -62,7 +62,7 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
           ))}
         </Animated.View>
         <Text style={[styles.count, { color: palette.mute }]}>
-          {cast.length} {t('UI.thread.voices').toLowerCase()} {open ? '⌃' : '⌄'}
+          {cast.length} {t('UI.thread.scopeVoices').toLowerCase()} {open ? '⌃' : '⌄'}
         </Text>
       </Pressable>
       {open && (

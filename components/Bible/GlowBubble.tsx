@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
-import Animated, { FadeInDown, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { getColors, getBubbleTextColorSafe } from '@/scripts/getColors';
 import { BibleBlock } from '@/types';
 import BibleInlineComponent from './Inline';
 import EmojiHandler from '@/components/EmojiHandler';
 import { isLeftVoice } from '@/utils/ink';
-import { DUR, STAGGER, timing } from '@/constants/Motion';
+import { DUR, timing } from '@/constants/Motion';
 import { ThreadColors } from '@/constants/Colors';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { localizeVoiceName } from '@/utils/localize';
@@ -20,7 +20,6 @@ interface BibleBlockProps {
   targetVerse?: number;
   targetChapter?: number;
   dimmed?: boolean;
-  spokenDimmed?: boolean;
 }
 
 const GlowingBubble = ({
@@ -32,7 +31,6 @@ const GlowingBubble = ({
   targetVerse,
   targetChapter,
   dimmed,
-  spokenDimmed,
 }: BibleBlockProps) => {
   const { source, children } = block;
   const { color = 'black', sourceName = 'Unknown' } = source || {};
@@ -40,7 +38,6 @@ const GlowingBubble = ({
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
   const fills = getColors(color);
   const left = isLeftVoice(color);
-  const reduced = useReducedMotion();
   const ink = getBubbleTextColorSafe(color, isDarkMode);
   const bodySize = sizes.body;
   const lineHeight = Math.round(bodySize * 1.45);
@@ -63,12 +60,10 @@ const GlowingBubble = ({
   }, [children, targetVerse, targetChapter]);
 
   useEffect(() => {
-    const next = spokenDimmed ? 0.35 : dimmed ? 0.55 : 1;
-    opacity.value = withTiming(next, timing(DUR.quick));
-  }, [dimmed, opacity, spokenDimmed]);
+    opacity.value = withTiming(dimmed ? 0.55 : 1, timing(DUR.quick));
+  }, [dimmed, opacity]);
 
-  const wrapStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
-  const delay = reduced ? 0 : Math.min(bIndex, STAGGER.max) * STAGGER.turn;
+  const bubbleStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
   const radius = {
     borderRadius: 16,
     borderTopLeftRadius: left ? 5 : 16,
@@ -76,10 +71,7 @@ const GlowingBubble = ({
   };
 
   return (
-    <Animated.View
-      entering={FadeInDown.duration(DUR.base).delay(delay)}
-      style={[{ alignItems: left ? 'flex-start' : 'flex-end', paddingHorizontal: 14 }, wrapStyle]}
-    >
+    <View style={styles.row}>
       <EmojiHandler block={block} blockIndex={bIndex} hasTail={hasTail} onLongPress={onLongPress}>
         {hasTail && (
           <Text
@@ -89,14 +81,15 @@ const GlowingBubble = ({
             {localizeVoiceName(sourceName, language)}
           </Text>
         )}
-        <View
+        <Animated.View
           style={[
             styles.bubble,
             radius,
+            bubbleStyle,
             {
+              alignSelf: left ? 'flex-start' : 'flex-end',
               backgroundColor: isDarkMode ? fills.dark : fills.light,
               borderColor: color === 'black' ? palette.hair : ink,
-              maxWidth: '84%',
               borderWidth: isTargetVerse || isGlowing ? 2 : StyleSheet.hairlineWidth,
             },
           ]}
@@ -117,25 +110,32 @@ const GlowingBubble = ({
               );
             })}
           </View>
-        </View>
+        </Animated.View>
       </EmojiHandler>
-    </Animated.View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  row: {
+    position: 'relative',
+    width: '100%',
+    paddingHorizontal: 14,
+  },
   who: {
     fontSize: 9,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
     fontWeight: '600',
-    marginBottom: 4,
     marginTop: 11,
+    marginBottom: 4,
   },
   bubble: {
+    maxWidth: '84%',
     paddingVertical: 9,
     paddingHorizontal: 12,
-    marginBottom: 2,
+    marginVertical: 4,
+    position: 'relative',
     ...Platform.select({
       web: { boxShadow: 'none' },
       default: {},

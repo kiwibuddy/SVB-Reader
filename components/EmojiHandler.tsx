@@ -166,10 +166,9 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   const isLeftSide = color === "black";
   const emojiAlignment = isLeftSide ? { left: 10 } : { right: 10 };
   
-  // Adjust top positioning based on whether bubble has tail (source name)
-  // When hasTail=true: bubble has source name above, so emoji positioned at standard height
-  // When hasTail=false: consecutive bubbles need emoji positioned higher (smaller top value)
-  const emojiTopOffset = hasTail ? 35 : -15;
+  // hasTail: who label (marginTop 11 + ~9 font + marginBottom 4) + bubble marginVertical 4 = ~28px to bubble top
+  // no tail: just bubble marginVertical 4 = ~4px to bubble top
+  const emojiTopOffset = hasTail ? 24 : 0;
 
   // CRITICAL: Load existing emoji and note when component mounts
   useEffect(() => {
@@ -582,6 +581,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
+    width: '100%',
   },
   // Using the working version's styling for emoji positioning
   reactionContainer: {

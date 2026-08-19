@@ -41,7 +41,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { FilterChip } from '@/components/thread/FilterChip';
 import { hapticImpactLight, hapticSelection } from '@/utils/haptics';
 import { formatReadingMinutes, getSegmentReadingTime } from '@/utils/readingTime';
-import { resolveContinueTarget } from '@/utils/continueTarget';
+import { resolveContinueTarget, type ActiveReading } from '@/utils/continueTarget';
+import { getPlanProgress } from '@/api/sqlite';
 import { getActivePlanFromDB } from '@/api/sqlite';
 
 type Scope = 'all' | 'voices' | 'books' | 'stories' | 'words';
@@ -100,7 +101,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
   const [openBook, setOpenBook] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [scope, setScope] = useState<Scope>('all');
-  const [activePlanId, setActivePlanId] = useState<string | null>(null);
+  const [activeReading, setActiveReading] = useState<ActiveReading | null>(null);
   const seeded = useRef(false);
 
   const bible = bibleLoader.getCurrentBible();
@@ -109,13 +110,26 @@ const ThreadList: React.FC<ThreadListProps> = ({
   useEffect(() => {
     if (hideSearch) return;
     let alive = true;
-    getActivePlanFromDB()
-      .then((plan) => {
-        if (alive) setActivePlanId(plan?.planId || plan?.itemID || null);
-      })
-      .catch(() => {
-        if (alive) setActivePlanId(null);
-      });
+    (async () => {
+      try {
+        const plan = await getActivePlanFromDB();
+        if (!alive) return;
+        const planId = plan?.planId || plan?.itemID || null;
+        if (planId) {
+          const progress = await getPlanProgress(planId);
+          if (!alive) return;
+          setActiveReading({
+            id: planId,
+            type: 'plan',
+            completedIds: new Set(progress?.completedSegmentIds || []),
+          });
+        } else {
+          setActiveReading(null);
+        }
+      } catch {
+        if (alive) setActiveReading(null);
+      }
+    })();
     return () => {
       alive = false;
     };
@@ -250,15 +264,26 @@ const ThreadList: React.FC<ThreadListProps> = ({
 
   const continueTarget = hideSearch || searching
     ? null
-    : resolveContinueTarget(completedIds, currentId, activePlanId);
+    : resolveContinueTarget(completedIds, currentId, activeReading);
   const continueInfo = continueTarget
     ? titles[continueTarget.storyId]
     : null;
   const continueMinutes = continueTarget ? getSegmentReadingTime(continueTarget.storyId) : 0;
 
-  const openStory = (id: string) => {
+  const openStory = (id: string, extra?: { planId?: string; challengeId?: string }) => {
     void hapticImpactLight();
-    router.push(`/${id}`);
+    if (extra?.planId || extra?.challengeId) {
+      router.push({
+        pathname: '/[segment]',
+        params: {
+          segment: id,
+          ...(extra.planId ? { planId: extra.planId } : {}),
+          ...(extra.challengeId ? { challengeId: extra.challengeId } : {}),
+        },
+      });
+    } else {
+      router.push(`/${id}`);
+    }
   };
 
   const toggleDivision = (id: number, firstBookId?: string) => {
@@ -299,7 +324,10 @@ const ThreadList: React.FC<ThreadListProps> = ({
           style={cardStyle}
         >
           <Pressable
-            onPress={() => openStory(continueTarget.storyId)}
+            onPress={() => openStory(continueTarget.storyId, {
+              planId: continueTarget.planId,
+              challengeId: continueTarget.challengeId,
+            })}
             style={[styles.continue, { backgroundColor: palette.surf, borderColor: palette.hair }]}
           >
             <View style={{ flex: 1 }}>
@@ -315,6 +343,9 @@ const ThreadList: React.FC<ThreadListProps> = ({
             <Text style={[styles.continueGo, { color: palette.acc }]}>▶</Text>
           </Pressable>
         </Animated.View>
+      )}
+      {!hideSearch && !searching && openDivision === 0 && (
+        <Text style={[styles.nudge, { color: palette.mute }]}>{t('UI.thread.nudge')}</Text>
       )}
       {!hideSearch && (
         <View style={[styles.search, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
@@ -568,6 +599,13 @@ const styles = StyleSheet.create({
   continueTitle: { fontSize: 18, fontWeight: '600', marginTop: 2 },
   continueMeta: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', marginTop: 3 },
   continueGo: { fontSize: 14 },
+  nudge: {
+    textAlign: 'center',
+    fontSize: 13,
+    marginTop: 10,
+    marginBottom: 2,
+    paddingHorizontal: 14,
+  },
   search: {
     marginHorizontal: 14,
     marginTop: 8,
