@@ -34,7 +34,6 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     const isTabScreen = pathname.includes('/(tabs)/') || 
                        pathname === '/Home' || 
                        pathname === '/Reading-emoji' || 
-                       pathname === '/ReadingPlans' || 
                        pathname === '/Achievements' ||
                        pathname === '/plan' ||
                        pathname === '/you' ||

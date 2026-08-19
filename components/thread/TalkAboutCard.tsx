@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Pressable, Text, View, StyleSheet, ActivityIndicator } from 'react-native';
-import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { hasQuestionsData, getQuestionsUnified, type AudienceType } from '@/api/question-functions';
 import { getAppState, setAppState } from '@/api/sqlite';
 import { ThreadColors } from '@/constants/Colors';
@@ -70,8 +70,7 @@ export default function TalkAboutCard({ segmentId }: { segmentId: string }) {
   if (!hasData && !loading && questions.length === 0) return null;
 
   return (
-    <Animated.View
-      layout={LinearTransition.duration(DUR.base)}
+    <View
       style={[styles.card, { backgroundColor: palette.surf, borderColor: palette.hair }]}
     >
       {/* Header */}
@@ -137,18 +136,18 @@ export default function TalkAboutCard({ segmentId }: { segmentId: string }) {
           </Text>
         </Pressable>
       )}
-    </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
+    alignSelf: 'stretch',
     marginHorizontal: 14,
-    marginTop: 16,
+    marginTop: 12,
     marginBottom: 8,
     borderWidth: 1,
     borderRadius: 16,
-    overflow: 'hidden',
     paddingTop: 14,
   },
   kicker: {
@@ -178,7 +177,7 @@ const styles = StyleSheet.create({
   body: {
     paddingHorizontal: 14,
     paddingTop: 10,
-    paddingBottom: 6,
+    paddingBottom: 12,
   },
   questionRow: {
     flexDirection: 'row',

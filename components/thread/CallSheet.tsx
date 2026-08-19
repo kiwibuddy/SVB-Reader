@@ -8,6 +8,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useGrowOnFocus } from '@/hooks/useGrowOnFocus';
 import { DUR } from '@/constants/Motion';
 import { hapticSelection } from '@/utils/haptics';
+import { useRouter } from 'expo-router';
 import type { Ink } from '@/utils/ink';
 
 interface CallSheetProps {
@@ -25,12 +26,19 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
   const [open, setOpen] = useState(false);
   const grow = useGrowOnFocus();
+  const router = useRouter();
 
   const cast = useMemo(() => {
-    return Object.entries(sources || {})
+    const entries = Object.entries(sources || {})
       .filter(([name]) => name && name !== 'undefined')
       .sort((a, b) => (b[1].words || 0) - (a[1].words || 0));
-  }, [sources]);
+    if (entries.length > 0) return entries;
+    // Fallback: synthesize from colorData so the expanded list is never empty
+    const inkLabels: Record<string, string> = { black: 'Narrator', red: 'God', green: 'Main Character', blue: 'Other Voices' };
+    return INKS
+      .filter((ink) => (colorData?.[ink] || 0) > 0)
+      .map((ink) => [inkLabels[ink], { words: colorData?.[ink] || 0, color: ink }] as [string, { words: number; color: string }]);
+  }, [sources, colorData]);
 
   const mix = useMemo(() => {
     const total = colorData?.total || INKS.reduce((sum, ink) => sum + (colorData?.[ink] || 0), 0);
@@ -57,7 +65,7 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
           {mix.map((part) => (
             <View
               key={part.ink}
-              style={{ flex: part.value, backgroundColor: inkHex(part.ink, palette), height: 4 }}
+              style={{ flex: part.value, backgroundColor: inkHex(part.ink, palette), height: 8, borderRadius: 4 }}
             />
           ))}
         </Animated.View>
@@ -74,6 +82,10 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
               <Pressable
                 key={name}
                 onPress={() => {
+                  void hapticSelection();
+                  router.push({ pathname: '/cast/[voice]', params: { voice: name } });
+                }}
+                onLongPress={() => {
                   void hapticSelection();
                   onSelectInk?.(selectedInk === ink ? null : ink);
                 }}
@@ -102,8 +114,8 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
 
 const styles = StyleSheet.create({
   wrap: { marginHorizontal: 14, marginTop: 8, borderWidth: 1, borderRadius: 12, overflow: 'hidden' },
-  top: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 10 },
-  mix: { flex: 1, flexDirection: 'row', height: 4, borderRadius: 2, overflow: 'hidden', gap: 1 },
+  top: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 12 },
+  mix: { flex: 1, flexDirection: 'row', height: 8, borderRadius: 4, overflow: 'hidden', gap: 2 },
   count: { fontSize: 9, letterSpacing: 1.1, textTransform: 'uppercase' },
   cast: { paddingHorizontal: 12, paddingBottom: 12, gap: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 },

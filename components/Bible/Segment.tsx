@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"; // Ensure useEffect is imported
 import logger from '@/utils/logger';
-import { View, Text, FlatList, ScrollView, TouchableOpacity, StyleSheet, useWindowDimensions, Platform, Animated } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Platform, Animated } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BibleBlockComponent from './BibleBlock';
 import { BibleBlock, SegmentType } from "@/types";
@@ -163,6 +163,22 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       return splitContent;
     }
   }, [segmentData?.content, segmentData?.readers]);
+
+  const computedSources = useMemo(() => {
+    const explicit = segmentData?.sources;
+    if (explicit && Object.keys(explicit).length > 0) return explicit;
+    const acc: Record<string, { words: number; color: string }> = {};
+    for (const block of memoizedContent) {
+      const name = block.source?.sourceName;
+      const color = block.source?.color || 'black';
+      if (!name) continue;
+      if (!acc[name]) acc[name] = { words: 0, color };
+      const text = (block.children || [])
+        .map((c: any) => (typeof c === 'string' ? c : c.text || '')).join(' ');
+      acc[name].words += text.split(/\s+/).filter(Boolean).length;
+    }
+    return acc;
+  }, [segmentData?.sources, memoizedContent]);
 
   // Calculate reader roles based on actual speech bubble distribution
   const readersByColor = useMemo(() => {
@@ -402,7 +418,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: colors.background,
     padding: 0,
   },
@@ -548,47 +563,34 @@ const styles = StyleSheet.create({
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        automaticallyAdjustKeyboardInsets={true}
-        scrollEventThrottle={16}
-        showsVerticalScrollIndicator={false}
-        // Add gesture handling to prevent conflicts with long press
-        onScrollBeginDrag={() => {
-          // ScrollView drag started - no logging needed in production
-        }}
-        // Disable scroll when long press is detected
-        scrollEnabled={true}
-      >
-        <SegmentTitle segmentId={segID} />
-        <CallSheet
-          sources={segmentData?.sources || {}}
-          colorData={colorData}
-          selectedInk={selectedInk}
-          onSelectInk={setSelectedInk}
-        />
+      <SegmentTitle segmentId={segID} />
+      <CallSheet
+        sources={computedSources}
+        colorData={colorData}
+        selectedInk={selectedInk}
+        onSelectInk={setSelectedInk}
+      />
 
-        {memoizedContent.map((item, index) => {
-          const { sourceName } = item.source || {};
-          const showSourceName = index === 0 ||
-            memoizedContent[index - 1].source?.sourceName !== sourceName;
-          const ink = (item.source?.color || 'black') as Ink;
+      {memoizedContent.map((item, index) => {
+        const { sourceName } = item.source || {};
+        const showSourceName = index === 0 ||
+          memoizedContent[index - 1].source?.sourceName !== sourceName;
+        const ink = (item.source?.color || 'black') as Ink;
 
-          return (
-            <BibleBlockComponent
-              key={`${item.source?.sourceName || 'unknown'}-${index}`}
-              block={item}
-              bIndex={index}
-              hasTail={showSourceName}
-              isGlowing={false}
-              onLongPress={handleLongPress}
-              targetVerse={targetVerse}
-              targetChapter={targetChapter}
-              dimmed={!!selectedInk && selectedInk !== ink}
-            />
-          );
-        })}
-      </ScrollView>
+        return (
+          <BibleBlockComponent
+            key={`${item.source?.sourceName || 'unknown'}-${index}`}
+            block={item}
+            bIndex={index}
+            hasTail={showSourceName}
+            isGlowing={false}
+            onLongPress={handleLongPress}
+            targetVerse={targetVerse}
+            targetChapter={targetChapter}
+            dimmed={!!selectedInk && selectedInk !== ink}
+          />
+        );
+      })}
       {/* Courtesy popup overlay - COMMENTED OUT FOR NOW
       {showCourtesyPopup && currentSession && (
         <TouchableOpacity

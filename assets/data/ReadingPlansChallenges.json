@@ -3,7 +3,9 @@
     {
       "id": "Bible1Year",
       "title": "Bible in 1 year",
+      "titleFr": "La Bible en 1 an",
       "description": "365 Stories",
+      "descriptionFr": "365 récits",
       "image": "island",
       "segments": {
         "Gen": {
@@ -702,12 +704,15 @@
           ]
         }
       },
-      "shortDescription": "Complete the entire Bible in one year with this comprehensive reading plan. Perfect for building biblical literacy."
+      "shortDescription": "Complete the entire Bible in one year with this comprehensive reading plan. Perfect for building biblical literacy.",
+      "shortDescriptionFr": "Parcourez toute la Bible en un an grâce à ce plan de lecture complet. Idéal pour approfondir votre connaissance biblique."
     },
     {
       "id": "SchoolYear1",
       "title": "Bible in 1 School Year",
+      "titleFr": "La Bible en 1 année scolaire",
       "description": "180 Stories",
+      "descriptionFr": "180 récits",
       "image": "island",
       "segments": {
         "Gen": {
@@ -1007,12 +1012,15 @@
           ]
         }
       },
-      "shortDescription": "Essential Bible stories curated for a meaningful school year journey. Ideal for students and classrooms."
+      "shortDescription": "Essential Bible stories curated for a meaningful school year journey. Ideal for students and classrooms.",
+      "shortDescriptionFr": "Les récits bibliques essentiels pour une année scolaire enrichissante. Idéal pour les élèves et les classes."
     },
     {
       "id": "NT100Days",
       "title": "New Testament in 100 days",
+      "titleFr": "Le Nouveau Testament en 100 jours",
       "description": "100 Stories",
+      "descriptionFr": "100 récits",
       "image": "island",
       "segments": {
         "Mat": {
@@ -1251,16 +1259,20 @@
           ]
         }
       },
-      "shortDescription": "Discover the New Testament through 100 carefully selected stories. Great for new believers."
+      "shortDescription": "Discover the New Testament through 100 carefully selected stories. Great for new believers.",
+      "shortDescriptionFr": "Découvrez le Nouveau Testament à travers 100 récits soigneusement choisis. Parfait pour les nouveaux croyants."
     }
   ],
   "challenges": [
     {
       "id": "godsStory7Day",
       "title": "God's Story: The Good News",
+      "titleFr": "L'histoire de Dieu\u00a0: la Bonne Nouvelle",
       "description": "7 Stories - 1 Week",
+      "descriptionFr": "7 récits — 1 semaine",
       "image": "island",
       "longDescription": "Experience the complete Gospel story in just one week! From creation to the new creation, journey through the seven pivotal moments that reveal God's redemptive plan for humanity. This chronological journey takes you from Genesis to Revelation, showing how every part of Scripture points to Jesus Christ and His ultimate victory.",
+      "longDescriptionFr": "Découvrez l'Évangile en une semaine\u00a0! De la création à la nouvelle création, parcourez les sept moments clés qui révèlent le plan rédempteur de Dieu pour l'humanité. Ce voyage chronologique vous emmène de la Genèse à l'Apocalypse et montre comment toute l'Écriture pointe vers Jésus-Christ et sa victoire finale.",
       "chronologicalOrder": true,
       "chronologicalMapping": "godsStory7DayChronological",
       "segments": {
@@ -1292,14 +1304,18 @@
           ]
         }
       },
-      "shortDescription": "Experience the Gospel in seven pivotal moments of redemption. Quick overview of God's plan."
+      "shortDescription": "Experience the Gospel in seven pivotal moments of redemption. Quick overview of God's plan.",
+      "shortDescriptionFr": "Vivez l'Évangile en sept moments clés de la rédemption. Un aperçu rapide du plan de Dieu."
     },
     {
       "id": "oldTestamentJourney",
       "title": "Old Testament Journey",
+      "titleFr": "Parcours de l'Ancien Testament",
       "description": "57 Stories - 11 Weeks",
+      "descriptionFr": "57 récits — 11 semaines",
       "image": "island",
       "longDescription": "Journey through God's redemptive plan from Creation to the prophets in historical order. Experience how God established His covenant people, delivered them from bondage, gave them His law, and prepared them for the coming Messiah through judges, kings, and prophets.",
+      "longDescriptionFr": "Suivez le plan rédempteur de Dieu, de la Création aux prophètes, dans l'ordre historique. Découvrez comment Dieu a établi son peuple d'alliance, l'a libéré de l'esclavage, lui a donné sa loi et l'a préparé à la venue du Messie à travers juges, rois et prophètes.",
       "chronologicalOrder": true,
       "chronologicalMapping": "oldTestamentJourneyChronological",
       "segments": {
@@ -1449,14 +1465,18 @@
           ]
         }
       },
-      "shortDescription": "Explore God's covenant relationship from Creation to the prophets. Foundational for understanding Christ."
+      "shortDescription": "Explore God's covenant relationship from Creation to the prophets. Foundational for understanding Christ.",
+      "shortDescriptionFr": "Explorez la relation d'alliance de Dieu, de la Création aux prophètes. Fondamental pour comprendre le Christ."
     },
     {
       "id": "newTestamentJourney",
       "title": "New Testament Journey",
+      "titleFr": "Parcours du Nouveau Testament",
       "description": "40 Stories - 8 Weeks",
+      "descriptionFr": "40 récits — 8 semaines",
       "image": "island",
       "longDescription": "Experience the New Testament in historical order, from Jesus' birth and ministry through the early church's growth and apostolic letters. This chronological journey reveals how the gospel spread from Jerusalem to the ends of the earth, establishing the foundation for Christian faith and practice.",
+      "longDescriptionFr": "Vivez le Nouveau Testament dans l'ordre historique, de la naissance et du ministère de Jésus à la croissance de l'Église primitive et aux lettres apostoliques. Ce parcours chronologique révèle comment l'Évangile s'est répandu de Jérusalem jusqu'aux extrémités de la terre.",
       "chronologicalOrder": true,
       "chronologicalMapping": "newTestamentJourneyChronological",
       "segments": {
@@ -1551,14 +1571,18 @@
           ]
         }
       },
-      "shortDescription": "Follow Jesus and the early church through key New Testament books. Builds strong discipleship foundation."
+      "shortDescription": "Follow Jesus and the early church through key New Testament books. Builds strong discipleship foundation.",
+      "shortDescriptionFr": "Suivez Jésus et l'Église primitive à travers les livres clés du Nouveau Testament. Solide fondement pour le discipulat."
     },
     {
       "id": "inTheBeginning",
       "title": "In The Beginning",
+      "titleFr": "Au commencement",
       "description": "18 Stories - 3 Weeks",
+      "descriptionFr": "18 récits — 3 semaines",
       "image": "island",
       "longDescription": "Experience the foundational events of human history in chronological order. From the creation of the universe to Abraham's call, witness how God established His covenant relationship with humanity through the great patriarchs of faith.",
+      "longDescriptionFr": "Revivez les événements fondateurs de l'histoire humaine dans l'ordre chronologique. De la création de l'univers à l'appel d'Abraham, découvrez comment Dieu a établi son alliance avec l'humanité à travers les grands patriarches de la foi.",
       "chronologicalOrder": true,
       "chronologicalMapping": "inTheBeginningChronological",
       "segments": {
@@ -1586,14 +1610,18 @@
           ]
         }
       },
-      "shortDescription": "Witness humanity's origins and God's first covenant promises. Starting point for Bible study."
+      "shortDescription": "Witness humanity's origins and God's first covenant promises. Starting point for Bible study.",
+      "shortDescriptionFr": "Découvrez les origines de l'humanité et les premières promesses d'alliance de Dieu. Point de départ idéal pour l'étude biblique."
     },
     {
       "id": "theGospels",
       "title": "The Gospels",
+      "titleFr": "Les Évangiles",
       "description": "42 Stories - 6 Weeks",
+      "descriptionFr": "42 récits — 6 semaines",
       "image": "island",
       "longDescription": "Journey through the life of Jesus with the four Gospel accounts in their traditional book order. Experience His birth, ministry, teachings, death, and resurrection through the complementary perspectives of Matthew, Mark, Luke, and John. Each Gospel offers unique insights into Christ's character and mission, providing a comprehensive foundation for understanding the heart of the Christian faith.",
+      "longDescriptionFr": "Parcourez la vie de Jésus à travers les quatre Évangiles dans leur ordre traditionnel. Vivez sa naissance, son ministère, ses enseignements, sa mort et sa résurrection selon les perspectives complémentaires de Matthieu, Marc, Luc et Jean. Chaque Évangile offre un éclairage unique sur le caractère et la mission du Christ.",
       "chronologicalOrder": false,
       "segments": {
         "Mat": {
@@ -1659,14 +1687,18 @@
           ]
         }
       },
-      "shortDescription": "Journey through Jesus' life, ministry, death, and resurrection. Heart of the Christian faith."
+      "shortDescription": "Journey through Jesus' life, ministry, death, and resurrection. Heart of the Christian faith.",
+      "shortDescriptionFr": "Parcourez la vie, le ministère, la mort et la résurrection de Jésus. Le cœur de la foi chrétienne."
     },
     {
       "id": "paulsLetters",
       "title": "Paul's Letters",
+      "titleFr": "Les lettres de Paul",
       "description": "35 Stories - 7 Weeks",
+      "descriptionFr": "35 récits — 7 semaines",
       "image": "island",
       "longDescription": "Journey through Paul's transformative letters in the order they were written. From his earliest teachings to his final pastoral instructions, experience how the apostle's theology and ministry evolved as he planted churches and discipled believers across the Roman Empire.",
+      "longDescriptionFr": "Parcourez les lettres de Paul dans l'ordre de leur rédaction. De ses premiers enseignements à ses ultimes instructions pastorales, découvrez comment la théologie et le ministère de l'apôtre ont évolué tandis qu'il fondait des Églises et formait des croyants à travers l'Empire romain.",
       "chronologicalOrder": true,
       "chronologicalMapping": "paulsLettersChronological",
       "segments": {
@@ -1763,14 +1795,18 @@
           ]
         }
       },
-      "shortDescription": "Study the apostle's teachings on faith, grace, and Christian living. Transformative for spiritual growth."
+      "shortDescription": "Study the apostle's teachings on faith, grace, and Christian living. Transformative for spiritual growth.",
+      "shortDescriptionFr": "Étudiez les enseignements de l'apôtre sur la foi, la grâce et la vie chrétienne. Transformateur pour la croissance spirituelle."
     },
     {
       "id": "womenOfTheBible",
       "title": "Women of the Bible",
+      "titleFr": "Femmes de la Bible",
       "description": "20 Stories - 4 Weeks",
+      "descriptionFr": "20 récits — 4 semaines",
       "image": "island",
       "longDescription": "Journey through the remarkable stories of biblical women in chronological order. From Eve's pivotal choice in Eden to Mary's faithful 'yes' in Nazareth, experience how women of faith shaped God's redemptive plan across history. This chronological journey reveals the threads of courage, wisdom, and devotion woven throughout Scripture.",
+      "longDescriptionFr": "Parcourez les récits remarquables des femmes de la Bible dans l'ordre chronologique. Du choix décisif d'Ève en Éden au « oui » fidèle de Marie à Nazareth, découvrez comment des femmes de foi ont façonné le plan rédempteur de Dieu à travers l'histoire. Ce voyage chronologique révèle les fils de courage, de sagesse et de dévouement tissés dans toute l'Écriture.",
       "chronologicalOrder": true,
       "chronologicalMapping": "womenOfTheBibleChronological",
       "segments": {
@@ -1829,14 +1865,18 @@
           ]
         }
       },
-      "shortDescription": "Meet remarkable women who shaped biblical history. Inspiring stories of faith and courage."
+      "shortDescription": "Meet remarkable women who shaped biblical history. Inspiring stories of faith and courage.",
+      "shortDescriptionFr": "Rencontrez des femmes remarquables qui ont marqué l'histoire biblique. Des récits inspirants de foi et de courage."
     },
     {
       "id": "davidsLife",
       "title": "David's Life",
+      "titleFr": "La vie de David",
       "description": "35 Stories - 7 Weeks",
+      "descriptionFr": "35 récits — 7 semaines",
       "image": "island",
       "longDescription": "Follow the journey of David from shepherd boy to king of Israel. Through victories and failures, discover how this 'man after God's own heart' teaches us about leadership, worship, and walking with God.",
+      "longDescriptionFr": "Suivez le parcours de David, du jeune berger au roi d'Israël. À travers victoires et échecs, découvrez comment cet « homme selon le cœur de Dieu » nous enseigne le leadership, l'adoration et la marche avec Dieu.",
       "chronologicalOrder": true,
       "chronologicalMapping": "davidsLifeChronological",
       "segments": {
@@ -1907,14 +1947,18 @@
           ]
         }
       },
-      "shortDescription": "Follow Israel's greatest king from shepherd to throne. Lessons in leadership and worship."
+      "shortDescription": "Follow Israel's greatest king from shepherd to throne. Lessons in leadership and worship.",
+      "shortDescriptionFr": "Suivez le plus grand roi d'Israël, du troupeau au trône. Des leçons de leadership et d'adoration."
     },
     {
       "id": "adventJourneyChronological",
       "title": "Advent Journey",
+      "titleFr": "Parcours de l'Avent",
       "description": "16 Stories - 4 Weeks",
+      "descriptionFr": "16 récits — 4 semaines",
       "image": "island",
       "longDescription": "Prepare your heart for Christmas with this chronological Advent journey. Follow God's promises from ancient prophecies through their fulfillment in Jesus' birth. Perfect for the Christmas season (December - January).",
+      "longDescriptionFr": "Préparez votre cœur pour Noël avec ce parcours chronologique de l'Avent. Suivez les promesses de Dieu depuis les prophéties anciennes jusqu'à leur accomplissement dans la naissance de Jésus. Idéal pour la période de Noël (décembre – janvier).",
       "chronologicalOrder": true,
       "chronologicalMapping": "adventJourneyChronological",
       "segments": {
@@ -1955,14 +1999,18 @@
           ]
         }
       },
-      "shortDescription": "Prepare your heart for Christmas with prophecy and fulfillment. Perfect for the holiday season."
+      "shortDescription": "Prepare your heart for Christmas with prophecy and fulfillment. Perfect for the holiday season.",
+      "shortDescriptionFr": "Préparez votre cœur pour Noël avec prophéties et accomplissement. Idéal pour les fêtes."
     },
     {
       "id": "lentenReflectionChronological",
       "title": "Lenten Reflection",
+      "titleFr": "Méditation de Carême",
       "description": "21 Stories - 3 Weeks",
+      "descriptionFr": "21 récits — 3 semaines",
       "image": "island",
       "longDescription": "Journey with Jesus through His final weeks in this meaningful Lenten reflection. Follow His path from ministry to passion, death, and resurrection. Perfect for the Lenten season (February - April).",
+      "longDescriptionFr": "Accompagnez Jésus durant ses dernières semaines dans cette méditation de Carême. Suivez son chemin du ministère à la passion, la mort et la résurrection. Idéal pour le temps du Carême (février – avril).",
       "chronologicalOrder": true,
       "chronologicalMapping": "lentenReflectionChronological",
       "segments": {
@@ -2008,14 +2056,18 @@
           ]
         }
       },
-      "shortDescription": "Walk with Jesus through His final weeks and resurrection. Meaningful for Easter preparation."
+      "shortDescription": "Walk with Jesus through His final weeks and resurrection. Meaningful for Easter preparation.",
+      "shortDescriptionFr": "Marchez avec Jésus durant ses dernières semaines et sa résurrection. Enrichissant pour préparer Pâques."
     },
     {
       "id": "christmas12",
       "title": "12 Days of Christmas",
+      "titleFr": "Les 12 jours de Noël",
       "description": "6 Stories - 12 Days",
+      "descriptionFr": "6 récits — 12 jours",
       "image": "island",
       "longDescription": "Celebrate the Christmas season with the nativity stories in chronological order. From the angel's announcements to the early events of Jesus' life, experience the wonder and joy of God becoming man to dwell among us during the traditional twelve days of Christmas.",
+      "longDescriptionFr": "Célébrez le temps de Noël avec les récits de la Nativité dans l'ordre chronologique. Des annonces de l'ange aux premiers événements de la vie de Jésus, vivez l'émerveillement et la joie de Dieu fait homme venu habiter parmi nous durant les douze jours traditionnels de Noël.",
       "chronologicalOrder": true,
       "chronologicalMapping": "christmas12Chronological",
       "segments": {
@@ -2036,14 +2088,18 @@
           ]
         }
       },
-      "shortDescription": "Celebrate Christ's birth with nativity stories and reflections. Tradition meets scripture."
+      "shortDescription": "Celebrate Christ's birth with nativity stories and reflections. Tradition meets scripture.",
+      "shortDescriptionFr": "Célébrez la naissance du Christ avec les récits de la Nativité. La tradition rencontre l'Écriture."
     },
     {
       "id": "christmas7",
       "title": "🎄 7 Days of Christmas Story 🌟",
+      "titleFr": "🎄 L'histoire de Noël en 7 jours 🌟",
       "description": "7 Stories - 1 Week",
+      "descriptionFr": "7 récits — 1 semaine",
       "image": "island",
       "longDescription": "Journey through the Christmas story chronologically in just seven days. Begin with the ancient prophecies of Isaiah, move through the angelic announcements, and finish with the birth of Jesus on Christmas Eve and Christmas Day. Designed for families, youth, and small groups reading together.",
+      "longDescriptionFr": "Parcourez l'histoire de Noël dans l'ordre chronologique en seulement sept jours. Commencez par les prophéties anciennes d'Ésaïe, poursuivez avec les annonces angéliques et terminez avec la naissance de Jésus la veille et le jour de Noël. Conçu pour les familles, les jeunes et les petits groupes de lecture.",
       "chronologicalOrder": true,
       "chronologicalMapping": "christmas7Chronological",
       "segments": {
@@ -2057,7 +2113,8 @@
           "segments": ["S266"]
         }
       },
-      "shortDescription": "Experience the Christmas story in a fresh way through prophecy, promise, and Jesus' birth. Perfect for the week before Christmas."
+      "shortDescription": "Experience the Christmas story in a fresh way through prophecy, promise, and Jesus' birth. Perfect for the week before Christmas.",
+      "shortDescriptionFr": "Vivez l'histoire de Noël d'une manière nouvelle à travers prophéties, promesses et naissance de Jésus. Idéal pour la semaine avant Noël."
     }
   ]
 }

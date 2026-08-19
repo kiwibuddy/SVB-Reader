@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ThreadList from '@/components/thread/ThreadList';
-import { getCompletedStoryIds } from '@/utils/threadProgress';
+import { shortStoryId } from '@/utils/threadProgress';
 import { ThreadColors } from '@/constants/Colors';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -15,18 +15,17 @@ import {
   getPlanProgress,
   getChallengeProgress,
 } from '@/api/sqlite';
-import { findCatalogItem, nextUnreadStory } from '@/utils/planCatalog';
+import { findCatalogItem, nextUnreadStory, getLocalizedPlanText } from '@/utils/planCatalog';
 import { openSegment } from '@/utils/openSegment';
 import { hapticImpactLight } from '@/utils/haptics';
 
 const PlanDetail = () => {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, completedSegment } = useLocalSearchParams<{ id: string; completedSegment?: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isDarkMode, language } = useSyncAppSettings();
   const { t } = useTranslation();
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
-  const lang = language.startsWith('fr') ? 'fr' : 'en';
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [isActive, setIsActive] = useState(false);
   const [planDone, setPlanDone] = useState(0);
@@ -37,26 +36,22 @@ const PlanDetail = () => {
     () => storyFilter.reduce((sum, sid) => sum + getSegmentReadingTime(sid), 0),
     [storyFilter]
   );
+  const focusId = completedSegment ? shortStoryId(String(completedSegment)) : null;
 
   useFocusEffect(
     useCallback(() => {
       let alive = true;
       (async () => {
-        const [completed, activePlan] = await Promise.all([
-          getCompletedStoryIds(),
+        if (!item) return;
+        const [activePlan, progress] = await Promise.all([
           getActivePlanFromDB(),
+          item.type === 'plan' ? getPlanProgress(item.id) : getChallengeProgress(item.id),
         ]);
         if (!alive) return;
-        setCompletedIds(completed);
         setIsActive(activePlan?.planId === id || activePlan?.itemID === id);
-
-        if (item) {
-          const progress =
-            item.type === 'plan'
-              ? await getPlanProgress(item.id)
-              : await getChallengeProgress(item.id);
-          if (alive) setPlanDone(progress?.completedSegments || 0);
-        }
+        const ids = new Set((progress?.completedSegmentIds || []).map(shortStoryId));
+        setCompletedIds(ids);
+        setPlanDone(progress?.completedSegments || 0);
       })();
       return () => { alive = false; };
     }, [id, item])
@@ -85,6 +80,10 @@ const PlanDetail = () => {
   };
 
   const pct = item.stories.length > 0 ? Math.round((planDone / item.stories.length) * 100) : 0;
+  const storyNav =
+    item.type === 'plan'
+      ? { planId: item.id }
+      : { challengeId: item.id };
 
   return (
     <View style={{ flex: 1, backgroundColor: palette.bg, paddingTop: insets.top }}>
@@ -93,7 +92,7 @@ const PlanDetail = () => {
           ‹ {t('UI.tabs.plan')}
         </Text>
       </Pressable>
-      <Text style={[styles.title, { color: palette.ink }]}>{item.title}</Text>
+      <Text style={[styles.title, { color: palette.ink }]}>{getLocalizedPlanText(item, 'title', language)}</Text>
       <View style={styles.metaRow}>
         <Text style={[styles.meta, { color: palette.mute }]}>
           {storyFilter.length} {t('UI.thread.stories')} · {formatReadingMinutes(minutes)}
@@ -110,14 +109,20 @@ const PlanDetail = () => {
       {planDone > 0 && (
         <View style={{ paddingHorizontal: 14, paddingBottom: 8 }}>
           <View style={[styles.prog, { backgroundColor: palette.hair }]}>
-            <View style={[styles.progFill, { width: `${pct}%`, backgroundColor: palette.acc }]} />
+            <View style={[styles.progFill, { width: `${pct}%`, backgroundColor: palette.chor }]} />
           </View>
         </View>
       )}
-      {item.longDescription && (
-        <Text style={[styles.desc, { color: palette.mute }]}>{item.longDescription}</Text>
+      {(item.longDescription || item.longDescriptionFr) && (
+        <Text style={[styles.desc, { color: palette.mute }]}>{getLocalizedPlanText(item, 'longDescription', language)}</Text>
       )}
-      <ThreadList completedIds={completedIds} storyFilter={storyFilter} hideSearch />
+      <ThreadList
+        completedIds={completedIds}
+        currentId={focusId}
+        storyFilter={storyFilter}
+        hideSearch
+        storyNav={storyNav}
+      />
     </View>
   );
 };

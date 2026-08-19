@@ -15,6 +15,7 @@ import { NARRATION_VOICES } from '@/utils/voicesMet';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useGrowOnFocus } from '@/hooks/useGrowOnFocus';
+import { openSegment } from '@/utils/openSegment';
 
 const conv = conversations as ConversationsFile;
 const titles = SegmentTitles as Record<string, { title?: string; book?: string[] }>;
@@ -143,7 +144,7 @@ const VoiceCard = () => {
           </Pressable>
         ))}
         {data.longestExchange && (
-          <Pressable onPress={() => router.push(`/${data.longestExchange!.storyId}`)} style={styles.pull}>
+          <Pressable onPress={() => openSegment(router, data.longestExchange!.storyId, { voice: name })} style={styles.pull}>
             <Text style={[styles.pullLabel, { color: cream }]}>{t('UI.thread.longestExchange')}</Text>
             <Text style={[styles.pullBody, { color: cream }]}>
               {data.longestExchange.turns} {t('UI.thread.turnsWith')} {localizeVoiceName(data.longestExchange.partner, language)} — {localizeStoryTitle(data.longestExchange.storyId, data.longestExchange.storyTitle, language)}
@@ -151,7 +152,7 @@ const VoiceCard = () => {
           </Pressable>
         )}
         {data.longestSpeech && (
-          <Pressable onPress={() => router.push(`/${data.longestSpeech!.storyId}`)} style={styles.pull}>
+          <Pressable onPress={() => openSegment(router, data.longestSpeech!.storyId, { voice: name })} style={styles.pull}>
             <Text style={[styles.pullLabel, { color: cream }]}>{t('UI.thread.longestSpeech')}</Text>
             <Text style={[styles.pullBody, { color: cream }]}>
               {formatCount(data.longestSpeech.words)} {t('UI.thread.words').toLowerCase()} — {localizeStoryTitle(data.longestSpeech.storyId, data.longestSpeech.storyTitle, language)}

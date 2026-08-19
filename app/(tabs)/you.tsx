@@ -9,7 +9,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { getCompletedStoryIds } from '@/utils/threadProgress';
 import { getCurrentStreak, getLastReadSegment, getPlanProgress, getChallengeProgress, getStartedPlansFromDB, getStartedChallengesFromDB, type StartedItem } from '@/api/sqlite';
 import { getVoicesMetCount, TOTAL_VOICES } from '@/utils/voicesMet';
-import { findCatalogItem } from '@/utils/planCatalog';
+import { findCatalogItem, getLocalizedPlanText } from '@/utils/planCatalog';
 
 type ActivePlanSummary = {
   id: string;
@@ -61,7 +61,7 @@ const YouScreen = () => {
           if (!alive) return;
           summaries.push({
             id: item.id,
-            title: item.title,
+            title: getLocalizedPlanText(item, 'title', language),
             done: progress?.completedSegments || 0,
             total: item.stories.length,
             isPaused: started.isPaused,
@@ -72,7 +72,7 @@ const YouScreen = () => {
       return () => {
         alive = false;
       };
-    }, [])
+    }, [language])
   );
 
   return (
@@ -137,7 +137,7 @@ const YouScreen = () => {
           </View>
         )}
 
-        <Pressable onPress={() => router.push('/About')} style={[styles.link, { borderTopColor: palette.hair }]}>
+        <Pressable onPress={() => router.push('/settings')} style={[styles.link, { borderTopColor: palette.hair }]}>
           <Text style={{ color: palette.ink }}>{t('UI.thread.settings')}</Text>
         </Pressable>
       </ScrollView>

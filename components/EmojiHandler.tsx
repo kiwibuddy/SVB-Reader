@@ -14,7 +14,7 @@ import { copyTurn, formatTurnCitation, shareTurn } from '@/utils/shareTurn';
 import { hapticImpactMedium } from '@/utils/haptics';
 import { localizeVoiceName } from '@/utils/localize';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
-import type { Ink } from '@/utils/ink';
+import { isLeftVoice, type Ink } from '@/utils/ink';
 
 interface EmojiHandlerProps {
   block: BibleBlock;
@@ -159,16 +159,10 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     return finalPosition;
   }, [screenWidth, pickerWidth, screenHeight]);
   
-  // Color-based alignment logic
   const color = block.source?.color || 'black';
-  
-  // ONLY BLACK (narrator) on left side, ALL OTHER COLORS (red, green, blue) on right side
-  const isLeftSide = color === "black";
-  const emojiAlignment = isLeftSide ? { left: 10 } : { right: 10 };
-  
-  // hasTail: who label (marginTop 11 + ~9 font + marginBottom 4) + bubble marginVertical 4 = ~28px to bubble top
-  // no tail: just bubble marginVertical 4 = ~4px to bubble top
-  const emojiTopOffset = hasTail ? 24 : 0;
+  const isLeftSide = isLeftVoice(color);
+  const emojiAlignment = isLeftSide ? { left: -6 } : { right: -6 };
+  const emojiTopOffset = 2;
 
   // CRITICAL: Load existing emoji and note when component mounts
   useEffect(() => {
@@ -188,6 +182,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         
         // Load both emoji and note from database
         const db = await import('@/api/database-manager').then(m => m.databaseManager.getDatabase());
+        if (!db) return;
         const result = await db.getFirstAsync<{ emoji: string | null; note: string | null }>(
           `SELECT emoji, note FROM emojis WHERE segmentID = ? AND blockID = ?`,
           state.segmentId,
@@ -220,6 +215,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
           if (!state.segmentId || !blockId) return;
           
           const db = await import('@/api/database-manager').then(m => m.databaseManager.getDatabase());
+          if (!db) return;
           const result = await db.getFirstAsync<{ emoji: string | null; note: string | null }>(
             `SELECT emoji, note FROM emojis WHERE segmentID = ? AND blockID = ?`,
             state.segmentId,
@@ -582,28 +578,23 @@ const styles = StyleSheet.create({
   container: {
     position: 'relative',
     width: '100%',
+    overflow: 'visible',
   },
-  // Using the working version's styling for emoji positioning
   reactionContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    padding: 5,
-    position: "absolute",  // CRITICAL: Must be absolute
+    gap: 4,
+    position: "absolute",
     elevation: 3,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    zIndex: 100,  // CRITICAL: High z-index to appear above bubble
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.18,
+    shadowRadius: 1.5,
+    zIndex: 100,
   },
   reactionText: {
-    fontSize: 30, // Match the working version size
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    fontSize: 22,
+    lineHeight: 26,
   },
   noteIconContainer: {
     padding: 0,

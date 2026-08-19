@@ -32,11 +32,21 @@ export function firstVerseRef(node: unknown): { chapter: string; verse: string }
   return firstVerseRef(record.children);
 }
 
-export function formatTurnCitation(segmentId: string, block: unknown): { text: string; citation: string; copy: string; bookName: string } {
+export function formatTurnCitation(segmentId: string, block: unknown): {
+  text: string;
+  citation: string;
+  copy: string;
+  bookId: string;
+  bookName: string;
+  storyTitle: string;
+  verse: { chapter: string; verse: string } | null;
+  passage: string;
+} {
   const short = segmentId.match(/S\d+|I\d+/i)?.[0] || segmentId;
   const info = titles[short];
   const bookId = info?.book?.[0] || '';
   const bookName = books[bookId]?.bookName || bookId || 'Scripture';
+  const storyTitle = info?.title || '';
   const text = collectTurnText(block);
   const verse = firstVerseRef(block);
   const passage = verse ? `${bookName} ${verse.chapter}:${verse.verse}` : `${bookName} ${info?.ref || ''}`.trim();
@@ -45,7 +55,11 @@ export function formatTurnCitation(segmentId: string, block: unknown): { text: s
     text,
     citation,
     copy: `"${text}" — ${citation}`,
+    bookId,
     bookName,
+    storyTitle,
+    verse,
+    passage,
   };
 }
 

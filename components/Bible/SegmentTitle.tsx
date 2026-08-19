@@ -40,9 +40,9 @@ export default function SegmentTitle({ segmentId }: { segmentId: string }) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 12,
+    paddingTop: 24,
     paddingHorizontal: 14,
-    paddingBottom: 4,
+    paddingBottom: 6,
   },
   title: {
     fontSize: 22,

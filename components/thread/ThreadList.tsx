@@ -5,19 +5,18 @@ import {
   Pressable,
   StyleSheet,
   TextInput,
+  useWindowDimensions,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
   Extrapolation,
   FadeInDown,
   interpolate,
-  useAnimatedProps,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
-  withTiming,
 } from 'react-native-reanimated';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 import Books from '@/assets/data/BookChapterList.json';
@@ -30,20 +29,24 @@ import {
   type Division,
 } from '@/constants/divisions';
 import { DEPTH_X, ROW_HEIGHT, buildThread, type ThreadRow } from '@/components/thread/buildThread';
-import { DUR, SPRING, timing } from '@/constants/Motion';
+import { DUR, SPRING } from '@/constants/Motion';
+import { useThreadReveal } from '@/hooks/useThreadReveal';
+import { ThreadRevealRow } from '@/components/thread/ThreadRevealRow';
 import { ThreadColors, inkHex } from '@/constants/Colors';
-import { dominantInk } from '@/utils/ink';
 import { localizeBookName, localizeStoryTitle, localizeVoiceName, formatCount } from '@/utils/localize';
 import { ConversationsFile } from '@/types/conversations';
-import { bibleLoader } from '@/services/BibleLoader';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { FilterChip } from '@/components/thread/FilterChip';
 import { hapticImpactLight, hapticSelection } from '@/utils/haptics';
 import { formatReadingMinutes, getSegmentReadingTime } from '@/utils/readingTime';
 import { resolveContinueTarget, type ActiveReading } from '@/utils/continueTarget';
-import { getPlanProgress } from '@/api/sqlite';
-import { getActivePlanFromDB } from '@/api/sqlite';
+import { getPlanProgress, getStartedPlansFromDB, getStartedChallengesFromDB, getChallengeProgress } from '@/api/sqlite';
+import { lookupReference, type ReferenceLookup } from '@/utils/reference';
+import { openSegment } from '@/utils/openSegment';
+import { findCatalogItem, getLocalizedPlanText, nextUnreadStory } from '@/utils/planCatalog';
+import { shortStoryId } from '@/utils/threadProgress';
+import { BookBead, StoryBead, ThreadKnot } from '@/components/thread/ThreadBead';
 
 type Scope = 'all' | 'voices' | 'books' | 'stories' | 'words';
 
@@ -52,6 +55,7 @@ interface ThreadListProps {
   currentId?: string | null;
   storyFilter?: string[];
   hideSearch?: boolean;
+  storyNav?: { planId?: string; challengeId?: string };
 }
 
 type VisibleKind = 'division' | 'book' | 'story';
@@ -85,14 +89,65 @@ function booksForDivision(division: Division, allowed: Set<string> | null) {
     .filter((book) => book.stories.length > 0);
 }
 
+function ReferenceSearchResult({ refResult, palette, router, setQuery }: {
+  refResult?: ReferenceLookup;
+  palette: typeof ThreadColors.light | typeof ThreadColors.dark;
+  router: ReturnType<typeof useRouter>;
+  setQuery: (q: string) => void;
+}) {
+  if (!refResult) return null;
+  if (refResult.kind === 'exact') {
+    const r = refResult.result;
+    return (
+      <View>
+        <Text style={{ fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', color: palette.mute, paddingHorizontal: 14, paddingTop: 16, paddingBottom: 6 }}>REFERENCE</Text>
+        <Pressable
+          onPress={() => openSegment(router, r.segmentId, { pos: r.position })}
+          style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: palette.hair }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 15, fontWeight: '600', color: palette.ink }}>{r.book} {r.chapter}:{r.verse}</Text>
+            <Text style={{ fontSize: 11, color: palette.mute, marginTop: 2 }}>{r.segmentId}</Text>
+          </View>
+        </Pressable>
+      </View>
+    );
+  }
+  if (refResult.kind === 'disambiguate') {
+    return (
+      <View>
+        <Text style={{ fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', color: palette.mute, paddingHorizontal: 14, paddingTop: 16, paddingBottom: 6 }}>DID YOU MEAN?</Text>
+        {refResult.options.map((opt) => (
+          <Pressable
+            key={opt.bookIndex}
+            onPress={() => setQuery(opt.book + ' ')}
+            style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: palette.hair }}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 15, fontWeight: '600', color: palette.ink }}>{opt.book}</Text>
+            </View>
+          </Pressable>
+        ))}
+      </View>
+    );
+  }
+  return null;
+}
+
 const ThreadList: React.FC<ThreadListProps> = ({
   completedIds,
   currentId,
   storyFilter,
   hideSearch,
+  storyNav,
 }) => {
   const router = useRouter();
+  const params = useLocalSearchParams<{ completedSegment?: string }>();
+  const justCompletedId = params.completedSegment
+    ? shortStoryId(String(params.completedSegment))
+    : null;
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
   const { isDarkMode, language } = useSyncAppSettings();
   const { t } = useTranslation();
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
@@ -101,10 +156,20 @@ const ThreadList: React.FC<ThreadListProps> = ({
   const [openBook, setOpenBook] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [scope, setScope] = useState<Scope>('all');
+  const [expandedSearch, setExpandedSearch] = useState<{ type: 'voice' | 'book'; id: string } | null>(null);
   const [activeReading, setActiveReading] = useState<ActiveReading | null>(null);
+  const [startedPlans, setStartedPlans] = useState<{
+    id: string;
+    type: 'plan' | 'challenge';
+    title: string;
+    nextStoryId: string | null;
+    day?: number;
+    done: number;
+    total: number;
+    isPaused: boolean;
+  }[]>([]);
   const seeded = useRef(false);
 
-  const bible = bibleLoader.getCurrentBible();
   const allowed = useMemo(() => (storyFilter ? new Set(storyFilter) : null), [storyFilter]);
 
   useEffect(() => {
@@ -112,37 +177,65 @@ const ThreadList: React.FC<ThreadListProps> = ({
     let alive = true;
     (async () => {
       try {
-        const plan = await getActivePlanFromDB();
+        const [startedP, startedC] = await Promise.all([
+          getStartedPlansFromDB(),
+          getStartedChallengesFromDB(),
+        ]);
         if (!alive) return;
-        const planId = plan?.planId || plan?.itemID || null;
-        if (planId) {
-          const progress = await getPlanProgress(planId);
+        const cards = [];
+        for (const started of [...startedP, ...startedC]) {
+          const item = findCatalogItem(started.id);
+          if (!item) continue;
+          const progress =
+            item.type === 'plan'
+              ? await getPlanProgress(item.id)
+              : await getChallengeProgress(item.id);
           if (!alive) return;
+          const planDone = new Set((progress?.completedSegmentIds || []).map(shortStoryId));
+          const next = nextUnreadStory(item.stories, planDone);
+          cards.push({
+            id: item.id,
+            type: item.type,
+            title: getLocalizedPlanText(item, 'title', language),
+            nextStoryId: next?.storyId || null,
+            day: next?.day,
+            done: progress?.completedSegments || 0,
+            total: item.stories.length,
+            isPaused: started.isPaused,
+          });
+        }
+        setStartedPlans(cards);
+        const first = cards.find((c) => !c.isPaused) || cards[0];
+        if (first) {
           setActiveReading({
-            id: planId,
-            type: 'plan',
-            completedIds: new Set(progress?.completedSegmentIds || []),
+            id: first.id,
+            type: first.type,
+            completedIds: new Set(),
           });
         } else {
           setActiveReading(null);
         }
       } catch {
-        if (alive) setActiveReading(null);
+        if (alive) {
+          setStartedPlans([]);
+          setActiveReading(null);
+        }
       }
     })();
     return () => {
       alive = false;
     };
-  }, [hideSearch, completedIds]);
+  }, [hideSearch, completedIds, language]);
 
+  const seedId = justCompletedId || currentId;
   useEffect(() => {
-    if (seeded.current || !currentId) return;
-    const division = divisionForStory(currentId);
+    if (seeded.current || !seedId) return;
+    const division = divisionForStory(seedId);
     if (!division) return;
     seeded.current = true;
     setOpenDivision(division.id);
-    setOpenBook(titles[currentId]?.book?.[0] || null);
-  }, [currentId]);
+    setOpenBook(titles[seedId]?.book?.[0] || null);
+  }, [seedId]);
 
   const divisions = useMemo(() => {
     return DIVISIONS.map((division) => {
@@ -199,25 +292,12 @@ const ThreadList: React.FC<ThreadListProps> = ({
   }, [completedIds, currentId, divisions, openBook, openDivision]);
 
   const thread = useMemo(
-    () => buildThread(visibleRows.map(({ key, depth, height }) => ({ key, depth, height }))),
-    [visibleRows]
+    () => buildThread(visibleRows.map(({ key, depth, height }) => ({ key, depth, height })), { width: windowWidth }),
+    [visibleRows, windowWidth]
   );
 
-  const progress = useSharedValue(0);
-  const prevLength = useSharedValue(0);
+  const { progress, pathProps } = useThreadReveal(thread.length);
   const scrollY = useSharedValue(0);
-
-  useEffect(() => {
-    if (!thread.length) return;
-    const from = prevLength.value > 0 ? Math.min(prevLength.value / thread.length, 1) : 0;
-    progress.value = from;
-    progress.value = withTiming(1, timing(DUR.slow));
-    prevLength.value = thread.length;
-  }, [prevLength, progress, thread.length]);
-
-  const pathProps = useAnimatedProps(() => ({
-    strokeDashoffset: thread.length * (1 - progress.value),
-  }));
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -241,11 +321,10 @@ const ThreadList: React.FC<ThreadListProps> = ({
       .slice(0, 20);
     const bookHits = Object.entries(books)
       .filter(([, info]) => info.bookName.toLowerCase().includes(q))
-      .map(([id, info]) => ({
-        id,
-        name: info.bookName,
-        stories: (info.segments || []).filter((s) => s.startsWith('S')).length,
-      }));
+      .map(([id, info]) => {
+        const storyIds = (info.segments || []).filter((s) => s.startsWith('S'));
+        return { id, name: info.bookName, storyIds, stories: storyIds.length };
+      });
     const storyHits = Object.entries(titles)
       .filter(([id, info]) => {
         if (!id.startsWith('S')) return false;
@@ -259,8 +338,14 @@ const ThreadList: React.FC<ThreadListProps> = ({
         ref: info.ref || '',
         minutes: getSegmentReadingTime(id),
       }));
-    return { voices, books: bookHits, stories: storyHits };
-  }, [language, q, searching]);
+    // Reference search (D1)
+    let refResult: ReferenceLookup = { kind: 'notFound' };
+    if (searching && /\d/.test(q)) {
+      try { refResult = lookupReference(query.trim()); } catch { /* ignore */ }
+    }
+
+    return { voices, books: bookHits, stories: storyHits, refResult };
+  }, [language, q, query, searching]);
 
   const continueTarget = hideSearch || searching
     ? null
@@ -272,18 +357,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
 
   const openStory = (id: string, extra?: { planId?: string; challengeId?: string }) => {
     void hapticImpactLight();
-    if (extra?.planId || extra?.challengeId) {
-      router.push({
-        pathname: '/[segment]',
-        params: {
-          segment: id,
-          ...(extra.planId ? { planId: extra.planId } : {}),
-          ...(extra.challengeId ? { challengeId: extra.challengeId } : {}),
-        },
-      });
-    } else {
-      router.push(`/${id}`);
-    }
+    openSegment(router, id, extra || storyNav);
   };
 
   const toggleDivision = (id: number, firstBookId?: string) => {
@@ -324,10 +398,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
           style={cardStyle}
         >
           <Pressable
-            onPress={() => openStory(continueTarget.storyId, {
-              planId: continueTarget.planId,
-              challengeId: continueTarget.challengeId,
-            })}
+            onPress={() => openStory(continueTarget.storyId)}
             style={[styles.continue, { backgroundColor: palette.surf, borderColor: palette.hair }]}
           >
             <View style={{ flex: 1 }}>
@@ -344,6 +415,38 @@ const ThreadList: React.FC<ThreadListProps> = ({
           </Pressable>
         </Animated.View>
       )}
+      {!hideSearch && startedPlans.length > 0 && startedPlans.map((plan) => (
+        <Pressable
+          key={plan.id}
+          onPress={() => {
+            if (plan.nextStoryId) {
+              openStory(plan.nextStoryId, {
+                planId: plan.type === 'plan' ? plan.id : undefined,
+                challengeId: plan.type === 'challenge' ? plan.id : undefined,
+              });
+            } else {
+              router.push(`/plan/${plan.id}`);
+            }
+          }}
+          style={[styles.continue, { backgroundColor: palette.surf, borderColor: plan.isPaused ? palette.hair : palette.chor }]}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.continueKicker, { color: plan.isPaused ? palette.mute : palette.chor }]}>
+              {plan.isPaused
+                ? (lang === 'fr' ? 'En pause' : 'Paused')
+                : plan.day
+                  ? t('UI.thread.day', { n: plan.day })
+                  : t('UI.thread.yourPlan')}
+            </Text>
+            <Text style={[styles.continueTitle, { color: palette.ink }]}>{plan.title}</Text>
+            <Text style={[styles.continueMeta, { color: palette.mute }]}>
+              {plan.done} {t('UI.thread.of')} {plan.total}
+              {plan.nextStoryId ? ` · ${localizeStoryTitle(plan.nextStoryId, titles[plan.nextStoryId]?.title || plan.nextStoryId, language)}` : ''}
+            </Text>
+          </View>
+          <Text style={[styles.continueGo, { color: palette.chor }]}>▶</Text>
+        </Pressable>
+      ))}
       {!hideSearch && !searching && openDivision === 0 && (
         <Text style={[styles.nudge, { color: palette.mute }]}>{t('UI.thread.nudge')}</Text>
       )}
@@ -388,38 +491,89 @@ const ThreadList: React.FC<ThreadListProps> = ({
       >
         {searching ? (
           <View>
+            <ReferenceSearchResult refResult={searchResults.refResult} palette={palette} router={router} setQuery={setQuery} />
             {showVoices && searchResults.voices.length > 0 && (
               <View>
                 <Text style={[styles.groupLabel, { color: palette.mute }]}>{t('UI.thread.scopeVoices')}</Text>
-                {searchResults.voices.map((voice) => (
-                  <Pressable
-                    key={voice.name}
-                    onPress={() => router.push(`/cast/${encodeURIComponent(voice.name)}`)}
-                    style={[styles.row, { borderBottomColor: palette.hair }]}
-                  >
-                    <View style={[styles.dot, { backgroundColor: inkHex(voice.color, palette) }]} />
-                    <View style={styles.rowBody}>
-                      <Text style={[styles.rowTitle, { color: palette.ink }]}>{localizeVoiceName(voice.name, language)}</Text>
-                      <Text style={[styles.rowMeta, { color: palette.mute }]}>
-                        {voice.storyIds.length} {t('UI.thread.stories')}
-                      </Text>
+                {searchResults.voices.map((voice) => {
+                  const open = expandedSearch?.type === 'voice' && expandedSearch.id === voice.name;
+                  return (
+                    <View key={voice.name}>
+                      <Pressable
+                        onPress={() =>
+                          setExpandedSearch(open ? null : { type: 'voice', id: voice.name })
+                        }
+                        style={[styles.row, { borderBottomColor: palette.hair }]}
+                      >
+                        <View style={[styles.dot, { backgroundColor: inkHex(voice.color, palette) }]} />
+                        <View style={styles.rowBody}>
+                          <Text style={[styles.rowTitle, { color: palette.ink }]}>{localizeVoiceName(voice.name, language)}</Text>
+                          <Text style={[styles.rowMeta, { color: palette.mute }]}>
+                            {voice.storyIds.length} {t('UI.thread.stories')}
+                          </Text>
+                        </View>
+                        <Text style={[styles.rowCount, { color: palette.mute }]}>{formatCount(voice.words)} w</Text>
+                      </Pressable>
+                      {open && voice.storyIds.map((id) => {
+                        const info = titles[id];
+                        return (
+                          <Pressable
+                            key={id}
+                            onPress={() => openStory(id)}
+                            style={[styles.row, { borderBottomColor: palette.hair, paddingLeft: 28 }]}
+                          >
+                            <View style={styles.rowBody}>
+                              <Text style={[styles.rowTitle, { color: palette.ink }]}>
+                                {localizeStoryTitle(id, info?.title || id, language)}
+                              </Text>
+                              <Text style={[styles.rowMeta, { color: palette.mute }]}>{info?.ref || ''}</Text>
+                            </View>
+                          </Pressable>
+                        );
+                      })}
                     </View>
-                    <Text style={[styles.rowCount, { color: palette.mute }]}>{formatCount(voice.words)} w</Text>
-                  </Pressable>
-                ))}
+                  );
+                })}
               </View>
             )}
             {showBooks && searchResults.books.length > 0 && (
               <View>
                 <Text style={[styles.groupLabel, { color: palette.mute }]}>{t('UI.thread.scopeBooks')}</Text>
-                {searchResults.books.map((book) => (
-                  <View key={book.id} style={[styles.row, { borderBottomColor: palette.hair }]}>
-                    <View style={styles.rowBody}>
-                      <Text style={[styles.rowTitle, { color: palette.ink }]}>{book.name}</Text>
+                {searchResults.books.map((book) => {
+                  const open = expandedSearch?.type === 'book' && expandedSearch.id === book.id;
+                  return (
+                    <View key={book.id}>
+                      <Pressable
+                        onPress={() =>
+                          setExpandedSearch(open ? null : { type: 'book', id: book.id })
+                        }
+                        style={[styles.row, { borderBottomColor: palette.hair }]}
+                      >
+                        <View style={styles.rowBody}>
+                          <Text style={[styles.rowTitle, { color: palette.ink }]}>{book.name}</Text>
+                        </View>
+                        <Text style={[styles.rowCount, { color: palette.mute }]}>{book.stories}</Text>
+                      </Pressable>
+                      {open && book.storyIds.map((id) => {
+                        const info = titles[id];
+                        return (
+                          <Pressable
+                            key={id}
+                            onPress={() => openStory(id)}
+                            style={[styles.row, { borderBottomColor: palette.hair, paddingLeft: 28 }]}
+                          >
+                            <View style={styles.rowBody}>
+                              <Text style={[styles.rowTitle, { color: palette.ink }]}>
+                                {localizeStoryTitle(id, info?.title || id, language)}
+                              </Text>
+                              <Text style={[styles.rowMeta, { color: palette.mute }]}>{info?.ref || ''}</Text>
+                            </View>
+                          </Pressable>
+                        );
+                      })}
                     </View>
-                    <Text style={[styles.rowCount, { color: palette.mute }]}>{book.stories}</Text>
-                  </View>
-                ))}
+                  );
+                })}
               </View>
             )}
             {showStories && searchResults.stories.length > 0 && (
@@ -445,7 +599,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
           </View>
         ) : (
           <View style={[styles.threadWrap, { height: thread.height }]}>
-            <Svg pointerEvents="none" style={StyleSheet.absoluteFill} width="100%" height={thread.height}>
+            <Svg pointerEvents="none" overflow="visible" style={StyleSheet.absoluteFill} width="100%" height={thread.height}>
               <AnimatedPath
                 d={thread.d}
                 fill="none"
@@ -462,34 +616,25 @@ const ThreadList: React.FC<ThreadListProps> = ({
                 const entry = divisions.find((item) => item.division.id === row.division?.id);
                 const open = openDivision === row.division.id;
                 return (
-                  <Pressable
-                    key={row.key}
-                    onPress={() => toggleDivision(row.division!.id, entry?.books[0]?.id)}
-                    style={[styles.threadRow, { height: row.height }]}
-                  >
-                    <View
-                      style={[
-                        styles.knot,
-                        {
-                          left: mark.x - 6,
-                          top: row.height / 2 - 6,
-                          borderColor: palette.thread,
-                          backgroundColor: open ? palette.acc : palette.bg,
-                        },
-                      ]}
-                    />
-                    <View style={[styles.rowBody, { paddingLeft: DEPTH_X[0] + 16 }]}>
-                      <Text style={[styles.divisionTitle, { color: palette.ink }]}>
-                        {lang === 'fr' ? row.division.titleFr : row.division.titleEn}
+                  <ThreadRevealRow key={row.key} index={index} total={visibleRows.length} progress={progress}>
+                    <Pressable
+                      onPress={() => toggleDivision(row.division!.id, entry?.books[0]?.id)}
+                      style={[styles.threadRow, { height: row.height }]}
+                    >
+                      <ThreadKnot x={mark.x} rowHeight={row.height} open={open} palette={palette} />
+                      <View style={[styles.rowBody, { paddingLeft: DEPTH_X[0] + 16 }]}>
+                        <Text style={[styles.divisionTitle, { color: palette.ink }]}>
+                          {lang === 'fr' ? row.division.titleFr : row.division.titleEn}
+                        </Text>
+                        <Text style={[styles.divisionBooks, { color: palette.mute }]}>
+                          {lang === 'fr' ? row.division.booksFr : row.division.booksEn}
+                        </Text>
+                      </View>
+                      <Text style={[styles.divisionCount, { color: palette.mute }]}>
+                        {entry && entry.completed > 0 ? `${entry.completed} / ${entry.stories.length}` : `${entry?.stories.length || 0}`}
                       </Text>
-                      <Text style={[styles.divisionBooks, { color: palette.mute }]}>
-                        {lang === 'fr' ? row.division.booksFr : row.division.booksEn}
-                      </Text>
-                    </View>
-                    <Text style={[styles.divisionCount, { color: palette.mute }]}>
-                      {entry && entry.completed > 0 ? `${entry.completed} / ${entry.stories.length}` : `${entry?.stories.length || 0}`}
-                    </Text>
-                  </Pressable>
+                    </Pressable>
+                  </ThreadRevealRow>
                 );
               }
               if (row.kind === 'book') {
@@ -498,81 +643,57 @@ const ThreadList: React.FC<ThreadListProps> = ({
                   .find((item) => item.division.id === row.division?.id)
                   ?.books.find((book) => book.id === row.bookId)?.stories.length;
                 return (
-                  <Pressable
-                    key={row.key}
-                    onPress={() => toggleBook(row.bookId!)}
-                    style={[styles.threadRow, { height: row.height }]}
-                  >
-                    <View
-                      style={[
-                        styles.bead,
-                        {
-                          left: mark.x - 7,
-                          top: row.height / 2 - 7,
-                          borderColor: palette.bg,
-                          backgroundColor: open ? palette.ink : 'transparent',
-                          borderWidth: open ? 3 : 1.5,
-                        },
-                        !open && { borderColor: palette.thread, width: 8, height: 8, left: mark.x - 4, top: row.height / 2 - 4 },
-                      ]}
-                    />
-                    <View style={[styles.rowBody, { paddingLeft: DEPTH_X[1] + 16 }]}>
-                      <Text style={[styles.bookTitle, { color: palette.ink }]}>
-                        {localizeBookName(row.bookId || '', row.bookName || '', language)}
-                      </Text>
-                    </View>
-                    <Text style={[styles.divisionCount, { color: palette.mute }]}>{bookStories}</Text>
-                  </Pressable>
+                  <ThreadRevealRow key={row.key} index={index} total={visibleRows.length} progress={progress}>
+                    <Pressable
+                      onPress={() => toggleBook(row.bookId!)}
+                      style={[styles.threadRow, { height: row.height }]}
+                    >
+                      <BookBead x={mark.x} rowHeight={row.height} open={open} palette={palette} />
+                      <View style={[styles.rowBody, { paddingLeft: DEPTH_X[1] + 16 }]}>
+                        <Text style={[styles.bookTitle, { color: palette.ink }]}>
+                          {localizeBookName(row.bookId || '', row.bookName || '', language)}
+                        </Text>
+                      </View>
+                      <Text style={[styles.divisionCount, { color: palette.mute }]}>{bookStories}</Text>
+                    </Pressable>
+                  </ThreadRevealRow>
                 );
               }
               const id = row.storyId!;
               const info = titles[id];
               const done = completedIds.has(id);
-              const current = !!row.current;
-              const colors = bible?.[id]?.colors;
-              const ink = dominantInk(colors || {});
+              const current = !!row.current && !done;
               const minutes = getSegmentReadingTime(id);
               const title = localizeStoryTitle(id, info?.title || id, language);
-              const beadSize = current ? 15 : 14;
               return (
-                <Pressable key={row.key} onPress={() => openStory(id)} style={[styles.threadRow, { height: row.height }]} hitSlop={12}>
-                  <View
-                    style={[
-                      styles.bead,
-                      {
-                        width: beadSize,
-                        height: beadSize,
-                        borderRadius: beadSize / 2,
-                        left: mark.x - beadSize / 2,
-                        top: row.height / 2 - beadSize / 2,
-                        borderWidth: 3,
-                        borderColor: palette.bg,
-                        backgroundColor: done
-                          ? inkHex(ink, palette)
-                          : current
-                            ? palette.acc
-                            : 'transparent',
-                      },
-                      !done && !current && { borderWidth: 1.5, borderColor: palette.thread, width: 8, height: 8, left: mark.x - 4, top: row.height / 2 - 4 },
-                    ]}
-                  />
-                  <View style={[styles.storyText, { paddingLeft: DEPTH_X[2] + 16 }]}>
-                    <Text
-                      style={[
-                        styles.storyTitle,
-                        { color: done ? palette.mute : palette.ink },
-                        current && styles.storyNow,
-                      ]}
-                    >
-                      {title}
-                    </Text>
-                    <Text style={[styles.storyRef, { color: current ? palette.acc : palette.mute }]}>
-                      {info?.book?.[0]} {info?.ref}
-                      {minutes ? ` · ${formatReadingMinutes(minutes)}` : ''}
-                      {done ? ` · ${t('UI.thread.read')}` : current ? ` · ${t('UI.thread.continue')}` : ''}
-                    </Text>
-                  </View>
-                </Pressable>
+                <ThreadRevealRow key={row.key} index={index} total={visibleRows.length} progress={progress}>
+                  <Pressable onPress={() => openStory(id)} style={[styles.threadRow, { height: row.height }]} hitSlop={12}>
+                    <StoryBead
+                      x={mark.x}
+                      rowHeight={row.height}
+                      done={done}
+                      current={current}
+                      justCompleted={justCompletedId === id}
+                      palette={palette}
+                    />
+                    <View style={[styles.storyText, { paddingLeft: DEPTH_X[2] + 16 }]}>
+                      <Text
+                        style={[
+                          styles.storyTitle,
+                          { color: done ? palette.mute : palette.ink },
+                          current && styles.storyNow,
+                        ]}
+                      >
+                        {title}
+                      </Text>
+                      <Text style={[styles.storyRef, { color: current ? palette.acc : palette.mute }]}>
+                        {info?.book?.[0]} {info?.ref}
+                        {minutes ? ` · ${formatReadingMinutes(minutes)}` : ''}
+                        {done ? ` · ${t('UI.thread.read')}` : current ? ` · ${t('UI.thread.continue')}` : ''}
+                      </Text>
+                    </View>
+                  </Pressable>
+                </ThreadRevealRow>
               );
             })}
           </View>
@@ -618,17 +739,8 @@ const styles = StyleSheet.create({
   scopeScroll: { flexGrow: 0 },
   scopes: { alignItems: 'flex-start', paddingHorizontal: 14, paddingTop: 10, gap: 6 },
   list: { paddingBottom: 120 },
-  threadWrap: { position: 'relative', paddingTop: 0 },
-  threadRow: { flexDirection: 'row', alignItems: 'center', paddingRight: 14 },
-  knot: {
-    position: 'absolute',
-    width: 12,
-    height: 12,
-    borderRadius: 3,
-    borderWidth: 1.5,
-    transform: [{ rotate: '45deg' }],
-  },
-  bead: { position: 'absolute', width: 14, height: 14, borderRadius: 7, borderWidth: 3 },
+  threadWrap: { position: 'relative', paddingTop: 0, overflow: 'visible' },
+  threadRow: { flexDirection: 'row', alignItems: 'center', paddingRight: 14, zIndex: 1 },
   rowBody: { flex: 1 },
   divisionTitle: { fontSize: 15, fontWeight: '600' },
   divisionBooks: { fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', marginTop: 2 },

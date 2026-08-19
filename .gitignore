@@ -37,6 +37,9 @@ dist/
 # Remove French Bible from bundle (will be downloaded on-demand)
 assets/data/FRA-Bible.json
 
+# Play Console service account — never commit
+google-service-account.json
+
 # Metadata file (temporary, already uploaded to Firebase)
 metadata.json
 

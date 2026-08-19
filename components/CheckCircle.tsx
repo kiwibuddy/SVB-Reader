@@ -103,34 +103,23 @@ export default function CheckCircle({
   };
 
   const navigateAfterComplete = () => {
-    if (params.planId || planId) {
-      router.push({
-        pathname: '/(tabs)/plan',
+    const short = segmentId.match(/S\d+/i)?.[0] || segmentId;
+    const plan = (planId || params.planId) as string | undefined;
+    const challenge = (challengeId || params.challengeId) as string | undefined;
+    if (plan || challenge) {
+      router.replace({
+        pathname: '/plan/[id]',
         params: {
-          expandedPlan: planId || params.planId,
-          completedSegment: segmentId,
-          timestamp: Date.now().toString(),
+          id: plan || challenge || '',
+          completedSegment: short,
         },
       });
       return;
     }
-    if (params.challengeId || challengeId) {
-      router.push({
-        pathname: '/(tabs)/plan',
-        params: {
-          expandedChallenge: challengeId || params.challengeId,
-          completedSegment: segmentId,
-          timestamp: Date.now().toString(),
-        },
-      });
-      return;
-    }
-    router.push({
+    router.replace({
       pathname: '/(tabs)/Home',
       params: {
-        expandedBook: segmentId.substring(1, 4),
-        completedSegment: segmentId,
-        timestamp: Date.now().toString(),
+        completedSegment: short,
       },
     });
   };
@@ -188,14 +177,25 @@ export default function CheckCircle({
   const stroke = 2.5;
   const r = (size - stroke) / 2;
   const cx = size / 2;
+  const btnBox = size + 24;
+  const ringSize = size * 2;
+  const ringInset = (btnBox - ringSize) / 2;
 
   return (
     <View style={styles.container}>
-      {/* Expanding ring */}
+      <View style={[styles.hit, { width: btnBox, height: btnBox }]}>
+      {/* Expanding ring — overlaid, must not inflate layout height */}
       <Animated.View
         style={[
           styles.ring,
-          { width: size * 2, height: size * 2, borderRadius: size, borderColor: palette.acc },
+          {
+            width: ringSize,
+            height: ringSize,
+            borderRadius: size,
+            borderColor: palette.chor,
+            top: ringInset,
+            left: ringInset,
+          },
           ringStyle,
         ]}
         pointerEvents="none"
@@ -203,7 +203,7 @@ export default function CheckCircle({
 
       <AnimatedPressable
         onPress={handlePress}
-        style={[styles.btn, { width: size + 24, height: size + 24 }, circleStyle]}
+        style={[styles.btn, { width: btnBox, height: btnBox }, circleStyle]}
         accessibilityRole="button"
         accessibilityLabel={isCompleted ? t('UI.completion.storyComplete', { title: segmentId }) : t('UI.alerts.markComplete')}
       >
@@ -223,8 +223,8 @@ export default function CheckCircle({
               cx={cx}
               cy={cx}
               r={r}
-              fill={palette.acc}
-              stroke={palette.acc}
+              fill={palette.chor}
+              stroke={palette.chor}
               strokeWidth={stroke}
             />
           )}
@@ -243,6 +243,7 @@ export default function CheckCircle({
           </View>
         )}
       </AnimatedPressable>
+      </View>
 
       {showCaption && readCount > 1 && (
         <Text style={[styles.readCount, { color: palette.mute }]}>
@@ -265,7 +266,10 @@ export default function CheckCircle({
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingVertical: 8,
+  },
+  hit: {
+    alignItems: 'center',
+    justifyContent: 'center',
     position: 'relative',
   },
   btn: {

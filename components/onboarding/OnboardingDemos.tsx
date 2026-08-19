@@ -121,7 +121,7 @@ export function ShapeDemo({ active, token, palette, language }: DemoProps) {
     depth: 2 as const,
     height: ROW_HEIGHT.story,
   }));
-  const thread = useMemo(() => buildThread(rows), []);
+  const thread = useMemo(() => buildThread(rows, { width: 280 }), []);
 
   useEffect(() => {
     if (!active) return;
@@ -140,7 +140,7 @@ export function ShapeDemo({ active, token, palette, language }: DemoProps) {
   return (
     <View style={[styles.card, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
       <View style={{ height: thread.height, position: 'relative' }}>
-        <Svg pointerEvents="none" style={StyleSheet.absoluteFill} width="100%" height={thread.height}>
+        <Svg pointerEvents="none" overflow="visible" style={StyleSheet.absoluteFill} width="100%" height={thread.height}>
           <AnimatedPath
             d={thread.d}
             fill="none"

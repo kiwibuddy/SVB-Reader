@@ -1,5 +1,4 @@
 import dailyStoryMap from '@/assets/data/DailyStoryMap.json';
-import { findCatalogItem, nextUnreadStory } from '@/utils/planCatalog';
 
 const daily = dailyStoryMap as string[];
 
@@ -37,27 +36,10 @@ export function resolveContinueTarget(
 ): ContinueTarget | null {
   const last = lastReadId?.match(/S\d+/i)?.[0] || lastReadId || null;
   if (last && last.startsWith('S') && !completedIds.has(last)) {
-    const inActive = !!active && !!findCatalogItem(active.id)?.stories.includes(last);
     return {
       kind: 'continue',
       storyId: last,
-      ...(inActive && active?.type === 'plan' ? { planId: active.id } : {}),
-      ...(inActive && active?.type === 'challenge' ? { challengeId: active.id } : {}),
     };
-  }
-
-  if (active) {
-    const item = findCatalogItem(active.id);
-    const next = item ? nextUnreadStory(item.stories, active.completedIds) : null;
-    if (next) {
-      return {
-        kind: 'plan',
-        storyId: next.storyId,
-        day: next.day,
-        ...(active.type === 'plan' ? { planId: active.id } : {}),
-        ...(active.type === 'challenge' ? { challengeId: active.id } : {}),
-      };
-    }
   }
 
   const today = todayStoryId();

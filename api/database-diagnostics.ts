@@ -51,7 +51,7 @@ export interface DataConflict {
 }
 
 // Current database version - increment when schema changes
-export const CURRENT_DB_VERSION = 1;
+export const CURRENT_DB_VERSION = 2;
 
 /**
  * Initialize database versioning table and metadata

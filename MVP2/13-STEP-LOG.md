@@ -141,3 +141,13 @@ Append-only. One entry per save point. Numbered 13 because `12-MOCKUP-DELTA.md` 
 | E6 era card / E7 exchange pager | cut on purpose (`mvp2-E`) |
 | Device checklist from C (S008 sides, Cast, late-division thread, You at zero, reader has no line/dots) | noted, not blocked (`mvp2-C`) |
 
+---
+
+## ship · 2026-08-19
+
+**This step:** D0 slim index (558 KB) + D1 reference search + D2/G2f aliases + D3 expand-in-place; `FF.FRENCH_ENABLED = false`; Settings at `/settings` (French rows gated); first-launch French Alert deleted; plan FR copy; Chronological/ReadingPlans deleted; privacy policy rewritten (no QR/camera); `CURRENT_DB_VERSION = 2`; SettingsModal/CustomHeader deleted.
+
+**X5 defaults (ship unless you override before screenshots):** division titles as in `constants/divisions.ts`; `supportsTablet: true` (iPad shots required); Cast promotions unchanged from mvp2-E; Revelation = spoken (division 10).
+
+**Still manual:** Play service account file; iPhone 1.2.1 overlay pass; Android emulator pass; screenshots; production builds + TestFlight/Play internal. Dev client with view-shot: https://expo.dev/accounts/kiwibuddy/projects/SVB-Youth/builds/87613526-fe2c-4588-991c-0942daf5add6
+

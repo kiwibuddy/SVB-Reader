@@ -9,7 +9,9 @@ import { isLeftVoice } from '@/utils/ink';
 import { DUR, timing } from '@/constants/Motion';
 import { ThreadColors } from '@/constants/Colors';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
-import { localizeVoiceName } from '@/utils/localize';
+import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
+import { localizeBookName, localizeStoryTitle, localizeVoiceName } from '@/utils/localize';
+import { formatTurnCitation } from '@/utils/shareTurn';
 
 interface BibleBlockProps {
   block: BibleBlock;
@@ -20,6 +22,7 @@ interface BibleBlockProps {
   targetVerse?: number;
   targetChapter?: number;
   dimmed?: boolean;
+  showMeta?: boolean;
 }
 
 const GlowingBubble = ({
@@ -31,11 +34,25 @@ const GlowingBubble = ({
   targetVerse,
   targetChapter,
   dimmed,
+  showMeta = false,
 }: BibleBlockProps) => {
   const { source, children } = block;
   const { color = 'black', sourceName = 'Unknown' } = source || {};
   const { isDarkMode, language, sizes } = useSyncAppSettings();
+  const { state } = useSQLiteGlobalContext();
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
+  const turn = formatTurnCitation(state.segmentId || '', block);
+  const speaker = localizeVoiceName(sourceName, language);
+  const storyTitle = localizeStoryTitle(
+    (state.segmentId || '').match(/S\d+|I\d+/i)?.[0] || state.segmentId || '',
+    turn.storyTitle,
+    language
+  );
+  const bookName = localizeBookName(turn.bookId, turn.bookName, language);
+  const passage = turn.verse
+    ? `${bookName} ${turn.verse.chapter}:${turn.verse.verse}`
+    : turn.passage.replace(turn.bookName, bookName);
+  const metaLine = [storyTitle, passage].filter(Boolean).join('  ·  ');
   const fills = getColors(color);
   const left = isLeftVoice(color);
   const ink = getBubbleTextColorSafe(color, isDarkMode);
@@ -72,46 +89,54 @@ const GlowingBubble = ({
 
   return (
     <View style={styles.row}>
-      <EmojiHandler block={block} blockIndex={bIndex} hasTail={hasTail} onLongPress={onLongPress}>
-        {hasTail && (
+      <View style={[styles.stack, { alignSelf: left ? 'flex-start' : 'flex-end' }]}>
+        <View style={{ alignSelf: left ? 'flex-start' : 'flex-end', maxWidth: '100%' }}>
+          <EmojiHandler block={block} blockIndex={bIndex} hasTail={hasTail} onLongPress={onLongPress}>
+            <Animated.View
+              style={[
+                styles.bubble,
+                radius,
+                bubbleStyle,
+                {
+                  backgroundColor: isDarkMode ? fills.dark : fills.light,
+                  borderColor: color === 'black' ? palette.hair : ink,
+                  borderWidth: isTargetVerse || isGlowing ? 2 : StyleSheet.hairlineWidth,
+                },
+              ]}
+            >
+            <View>
+              {children.map((item, index) => {
+                if (item.type === 'break' || item.tag === 'b') return null;
+                return (
+                  <BibleInlineComponent
+                    key={`${bIndex}-${index}`}
+                    iIndex={`${bIndex}-${index}`}
+                    inline={item}
+                    textColor={ink}
+                    bubbleColor={color}
+                    bodySize={bodySize}
+                    bodyLineHeight={lineHeight}
+                  />
+                );
+              })}
+            </View>
+          </Animated.View>
+        </EmojiHandler>
+        </View>
+        <View style={[styles.meta, { alignItems: left ? 'flex-start' : 'flex-end' }]}>
           <Text
-            accessibilityLabel={localizeVoiceName(sourceName, language)}
+            accessibilityLabel={speaker}
             style={[styles.who, { color: ink, textAlign: left ? 'left' : 'right' }]}
           >
-            {localizeVoiceName(sourceName, language)}
+            {speaker}
           </Text>
-        )}
-        <Animated.View
-          style={[
-            styles.bubble,
-            radius,
-            bubbleStyle,
-            {
-              alignSelf: left ? 'flex-start' : 'flex-end',
-              backgroundColor: isDarkMode ? fills.dark : fills.light,
-              borderColor: color === 'black' ? palette.hair : ink,
-              borderWidth: isTargetVerse || isGlowing ? 2 : StyleSheet.hairlineWidth,
-            },
-          ]}
-        >
-          <View>
-            {children.map((item, index) => {
-              if (item.type === 'break' || item.tag === 'b') return null;
-              return (
-                <BibleInlineComponent
-                  key={`${bIndex}-${index}`}
-                  iIndex={`${bIndex}-${index}`}
-                  inline={item}
-                  textColor={ink}
-                  bubbleColor={color}
-                  bodySize={bodySize}
-                  bodyLineHeight={lineHeight}
-                />
-              );
-            })}
-          </View>
-        </Animated.View>
-      </EmojiHandler>
+          {showMeta && !!metaLine && (
+            <Text style={[styles.cite, { color: palette.mute, textAlign: left ? 'left' : 'right' }]}>
+              {metaLine}
+            </Text>
+          )}
+        </View>
+      </View>
     </View>
   );
 };
@@ -122,19 +147,30 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 14,
   },
+  stack: {
+    maxWidth: '84%',
+  },
   who: {
     fontSize: 9,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
     fontWeight: '600',
-    marginTop: 11,
-    marginBottom: 4,
+  },
+  cite: {
+    fontSize: 10,
+    letterSpacing: 0.3,
+    marginTop: 2,
+  },
+  meta: {
+    marginTop: 6,
+    marginBottom: 10,
+    paddingHorizontal: 4,
   },
   bubble: {
-    maxWidth: '84%',
+    maxWidth: '100%',
     paddingVertical: 9,
     paddingHorizontal: 12,
-    marginVertical: 4,
+    marginTop: 10,
     position: 'relative',
     ...Platform.select({
       web: { boxShadow: 'none' },

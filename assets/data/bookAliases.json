@@ -1,0 +1,398 @@
+[
+  {
+    "canonical": "Genesis",
+    "aliases": ["gen", "ge", "gn"],
+    "fr": "Genèse",
+    "frAliases": ["genese", "gn"]
+  },
+  {
+    "canonical": "Exodus",
+    "aliases": ["exo", "ex", "exod"],
+    "fr": "Exode",
+    "frAliases": ["exode", "ex"]
+  },
+  {
+    "canonical": "Leviticus",
+    "aliases": ["lev", "le", "lv"],
+    "fr": "Lévitique",
+    "frAliases": ["levitique", "lv"]
+  },
+  {
+    "canonical": "Numbers",
+    "aliases": ["num", "nu", "nm"],
+    "fr": "Nombres",
+    "frAliases": ["nombres", "nb"]
+  },
+  {
+    "canonical": "Deuteronomy",
+    "aliases": ["deu", "de", "dt", "deut"],
+    "fr": "Deutéronome",
+    "frAliases": ["deuteronome", "dt"]
+  },
+  {
+    "canonical": "Joshua",
+    "aliases": ["jos", "josh"],
+    "fr": "Josué",
+    "frAliases": ["josue", "jos"]
+  },
+  {
+    "canonical": "Judges",
+    "aliases": ["jdg", "judg", "jud"],
+    "fr": "Juges",
+    "frAliases": ["juges", "jg"]
+  },
+  {
+    "canonical": "Ruth",
+    "aliases": ["rut", "ru"],
+    "fr": "Ruth",
+    "frAliases": ["ruth", "rt"]
+  },
+  {
+    "canonical": "1Sa",
+    "aliases": ["1sam", "1sa", "1sm"],
+    "fr": "1 Samuel",
+    "frAliases": ["1samuel", "1sa", "1sm"]
+  },
+  {
+    "canonical": "2Sa",
+    "aliases": ["2sam", "2sa", "2sm"],
+    "fr": "2 Samuel",
+    "frAliases": ["2samuel", "2sa", "2sm"]
+  },
+  {
+    "canonical": "1Ki",
+    "aliases": ["1ki", "1kgs", "1kin"],
+    "fr": "1 Rois",
+    "frAliases": ["1rois", "1ro"]
+  },
+  {
+    "canonical": "2Ki",
+    "aliases": ["2ki", "2kgs", "2kin"],
+    "fr": "2 Rois",
+    "frAliases": ["2rois", "2ro"]
+  },
+  {
+    "canonical": "1Ch",
+    "aliases": ["1ch", "1chr", "1chron"],
+    "fr": "1 Chroniques",
+    "frAliases": ["1chroniques", "1ch"]
+  },
+  {
+    "canonical": "2Ch",
+    "aliases": ["2ch", "2chr", "2chron"],
+    "fr": "2 Chroniques",
+    "frAliases": ["2chroniques", "2ch"]
+  },
+  {
+    "canonical": "Ezra",
+    "aliases": ["ezr", "ez"],
+    "fr": "Esdras",
+    "frAliases": ["esdras", "esd"]
+  },
+  {
+    "canonical": "Nehemiah",
+    "aliases": ["neh", "ne"],
+    "fr": "Néhémie",
+    "frAliases": ["nehemie", "ne"]
+  },
+  {
+    "canonical": "Esther",
+    "aliases": ["est", "esth"],
+    "fr": "Esther",
+    "frAliases": ["esther", "est"]
+  },
+  {
+    "canonical": "Job",
+    "aliases": ["job", "jb"],
+    "fr": "Job",
+    "frAliases": ["job", "jb"]
+  },
+  {
+    "canonical": "Psalms",
+    "aliases": ["psa", "ps", "psm", "pss"],
+    "fr": "Psaumes",
+    "frAliases": ["psaumes", "ps"]
+  },
+  {
+    "canonical": "Proverbs",
+    "aliases": ["pro", "pr", "prv", "prov"],
+    "fr": "Proverbes",
+    "frAliases": ["proverbes", "pr"]
+  },
+  {
+    "canonical": "Ecclesiastes",
+    "aliases": ["ecc", "ec", "eccl"],
+    "fr": "Ecclésiaste",
+    "frAliases": ["ecclesiaste", "ec"]
+  },
+  {
+    "canonical": "SoS",
+    "aliases": ["sos", "ss", "song", "sg"],
+    "fr": "Cantique des Cantiques",
+    "frAliases": ["cantique", "ct"]
+  },
+  {
+    "canonical": "Isaiah",
+    "aliases": ["isa", "is"],
+    "fr": "Ésaïe",
+    "frAliases": ["esaie", "es"]
+  },
+  {
+    "canonical": "Jeremiah",
+    "aliases": ["jer", "je", "jr"],
+    "fr": "Jérémie",
+    "frAliases": ["jeremie", "jr"]
+  },
+  {
+    "canonical": "Lamentations",
+    "aliases": ["lam", "la"],
+    "fr": "Lamentations",
+    "frAliases": ["lamentations", "lm"]
+  },
+  {
+    "canonical": "Eze",
+    "aliases": ["eze", "ezek", "ezk"],
+    "fr": "Ézéchiel",
+    "frAliases": ["ezechiel", "ez"]
+  },
+  {
+    "canonical": "Daniel",
+    "aliases": ["dan", "da", "dn"],
+    "fr": "Daniel",
+    "frAliases": ["daniel", "dn"]
+  },
+  {
+    "canonical": "Hosea",
+    "aliases": ["hos", "ho"],
+    "fr": "Osée",
+    "frAliases": ["osee", "os"]
+  },
+  {
+    "canonical": "Joe",
+    "aliases": ["joe", "joel", "jl"],
+    "fr": "Joël",
+    "frAliases": ["joel", "jl"]
+  },
+  {
+    "canonical": "Amos",
+    "aliases": ["amo", "am"],
+    "fr": "Amos",
+    "frAliases": ["amos", "am"]
+  },
+  {
+    "canonical": "Obadiah",
+    "aliases": ["oba", "ob", "obad"],
+    "fr": "Abdias",
+    "frAliases": ["abdias", "ab"]
+  },
+  {
+    "canonical": "Jonah",
+    "aliases": ["jon", "jnh"],
+    "fr": "Jonas",
+    "frAliases": ["jonas", "jon"]
+  },
+  {
+    "canonical": "Micah",
+    "aliases": ["mic", "mi"],
+    "fr": "Michée",
+    "frAliases": ["michee", "mi"]
+  },
+  {
+    "canonical": "Nahum",
+    "aliases": ["nah", "na"],
+    "fr": "Nahum",
+    "frAliases": ["nahum", "na"]
+  },
+  {
+    "canonical": "Habakkuk",
+    "aliases": ["hab", "hb"],
+    "fr": "Habacuc",
+    "frAliases": ["habacuc", "ha"]
+  },
+  {
+    "canonical": "Zephaniah",
+    "aliases": ["zep", "zp", "zeph"],
+    "fr": "Sophonie",
+    "frAliases": ["sophonie", "so"]
+  },
+  {
+    "canonical": "Haggai",
+    "aliases": ["hag", "hg"],
+    "fr": "Aggée",
+    "frAliases": ["aggee", "ag"]
+  },
+  {
+    "canonical": "Zechariah",
+    "aliases": ["zec", "zc", "zech"],
+    "fr": "Zacharie",
+    "frAliases": ["zacharie", "za"]
+  },
+  {
+    "canonical": "Malachi",
+    "aliases": ["mal", "ml"],
+    "fr": "Malachie",
+    "frAliases": ["malachie", "ml"]
+  },
+  {
+    "canonical": "Matthew",
+    "aliases": ["mat", "mt", "matt"],
+    "fr": "Matthieu",
+    "frAliases": ["matthieu", "mt"]
+  },
+  {
+    "canonical": "Mark",
+    "aliases": ["mar", "mk", "mrk"],
+    "fr": "Marc",
+    "frAliases": ["marc", "mc"]
+  },
+  {
+    "canonical": "Luke",
+    "aliases": ["luk", "lk"],
+    "fr": "Luc",
+    "frAliases": ["luc", "lc"]
+  },
+  {
+    "canonical": "Joh",
+    "aliases": ["joh", "john", "jn"],
+    "fr": "Jean",
+    "frAliases": ["jean", "jn"]
+  },
+  {
+    "canonical": "Acts",
+    "aliases": ["act", "ac"],
+    "fr": "Actes",
+    "frAliases": ["actes", "ac"]
+  },
+  {
+    "canonical": "Romans",
+    "aliases": ["rom", "ro", "rm"],
+    "fr": "Romains",
+    "frAliases": ["romains", "rm"]
+  },
+  {
+    "canonical": "1Co",
+    "aliases": ["1co", "1cor"],
+    "fr": "1 Corinthiens",
+    "frAliases": ["1corinthiens", "1co"]
+  },
+  {
+    "canonical": "2Co",
+    "aliases": ["2co", "2cor"],
+    "fr": "2 Corinthiens",
+    "frAliases": ["2corinthiens", "2co"]
+  },
+  {
+    "canonical": "Galatians",
+    "aliases": ["gal", "ga"],
+    "fr": "Galates",
+    "frAliases": ["galates", "ga"]
+  },
+  {
+    "canonical": "Ephesians",
+    "aliases": ["eph", "ep"],
+    "fr": "Éphésiens",
+    "frAliases": ["ephesiens", "ep"]
+  },
+  {
+    "canonical": "Philippians",
+    "aliases": ["php", "phil", "pp"],
+    "fr": "Philippiens",
+    "frAliases": ["philippiens", "ph"]
+  },
+  {
+    "canonical": "Colossians",
+    "aliases": ["col", "co"],
+    "fr": "Colossiens",
+    "frAliases": ["colossiens", "col"]
+  },
+  {
+    "canonical": "1Th",
+    "aliases": ["1th", "1thes", "1thess"],
+    "fr": "1 Thessaloniciens",
+    "frAliases": ["1thessaloniciens", "1th"]
+  },
+  {
+    "canonical": "2Th",
+    "aliases": ["2th", "2thes", "2thess"],
+    "fr": "2 Thessaloniciens",
+    "frAliases": ["2thessaloniciens", "2th"]
+  },
+  {
+    "canonical": "1Ti",
+    "aliases": ["1ti", "1tim"],
+    "fr": "1 Timothée",
+    "frAliases": ["1timothee", "1ti", "1tm"]
+  },
+  {
+    "canonical": "2Ti",
+    "aliases": ["2ti", "2tim"],
+    "fr": "2 Timothée",
+    "frAliases": ["2timothee", "2ti", "2tm"]
+  },
+  {
+    "canonical": "Titus",
+    "aliases": ["tit", "ti"],
+    "fr": "Tite",
+    "frAliases": ["tite", "tt"]
+  },
+  {
+    "canonical": "Philemon",
+    "aliases": ["phm", "phil", "phile"],
+    "fr": "Philémon",
+    "frAliases": ["philemon", "phm"]
+  },
+  {
+    "canonical": "Hebrews",
+    "aliases": ["heb", "he"],
+    "fr": "Hébreux",
+    "frAliases": ["hebreux", "he"]
+  },
+  {
+    "canonical": "Jam",
+    "aliases": ["jam", "james", "jas", "jm"],
+    "fr": "Jacques",
+    "frAliases": ["jacques", "jc"]
+  },
+  {
+    "canonical": "1Pe",
+    "aliases": ["1pe", "1pet", "1pt"],
+    "fr": "1 Pierre",
+    "frAliases": ["1pierre", "1pi"]
+  },
+  {
+    "canonical": "2Pe",
+    "aliases": ["2pe", "2pet", "2pt"],
+    "fr": "2 Pierre",
+    "frAliases": ["2pierre", "2pi"]
+  },
+  {
+    "canonical": "1Jn",
+    "aliases": ["1jn", "1john", "1joh"],
+    "fr": "1 Jean",
+    "frAliases": ["1jean", "1jn"]
+  },
+  {
+    "canonical": "2Jn",
+    "aliases": ["2jn", "2john", "2joh"],
+    "fr": "2 Jean",
+    "frAliases": ["2jean", "2jn"]
+  },
+  {
+    "canonical": "3Jn",
+    "aliases": ["3jn", "3john", "3joh"],
+    "fr": "3 Jean",
+    "frAliases": ["3jean", "3jn"]
+  },
+  {
+    "canonical": "Jude",
+    "aliases": ["jude", "jud", "jd"],
+    "fr": "Jude",
+    "frAliases": ["jude", "jd"]
+  },
+  {
+    "canonical": "Revelation",
+    "aliases": ["rev", "re", "rv"],
+    "fr": "Apocalypse",
+    "frAliases": ["apocalypse", "ap"]
+  }
+]

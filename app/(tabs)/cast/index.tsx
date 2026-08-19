@@ -1,30 +1,28 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet, TextInput, FlatList } from 'react-native';
-import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import conversations from '@/assets/data/conversations.json';
 import { ThreadColors, fillHex, inkHex } from '@/constants/Colors';
 import { ConversationsFile, ConversationVoice } from '@/types/conversations';
-import { localizeVoiceName, formatCount } from '@/utils/localize';
-import { inkLabel, Ink } from '@/utils/ink';
+import { localizeVoiceName } from '@/utils/localize';
+import { Ink } from '@/utils/ink';
 import { NARRATION_VOICES } from '@/utils/voicesMet';
-import { isWrittenVoice, writtenLetterCount } from '@/utils/writtenVoices';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { hapticSelection } from '@/utils/haptics';
+import { CastVoiceRow } from '@/components/thread/CastVoiceRow';
 
 const conv = conversations as ConversationsFile;
 
 type CastFilter = 'green' | 'blue' | 'red' | 'all';
 
 const CastIndex = () => {
-  const router = useRouter();
   const { isDarkMode, language } = useSyncAppSettings();
   const { t } = useTranslation();
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
-  const lang = language.startsWith('fr') ? 'fr' : 'en';
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<CastFilter>('green');
+  const [expandedName, setExpandedName] = useState<string | null>(null);
 
   const voices = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -47,41 +45,30 @@ const CastIndex = () => {
 
   const storyLabel = (count: number) =>
     count === 1 ? t('UI.thread.storySingular') : t('UI.thread.stories');
+  const letterLabel = (count: number) =>
+    count === 1 ? t('UI.thread.letter') : t('UI.thread.letters');
 
-  const renderVoice = ({ item: voice }: { item: ConversationVoice }) => {
-    const written = isWrittenVoice(voice.name, voice.storyIds);
-    const letters = writtenLetterCount(voice.name);
-    return (
-      <Pressable
-        onPress={() => router.push(`/cast/${encodeURIComponent(voice.name)}`)}
-        style={[styles.row, { borderBottomColor: palette.hair }, written && { opacity: 0.72 }]}
-      >
-        <View
-          style={[
-            styles.dot,
-            written && styles.dotWritten,
-            { backgroundColor: written ? palette.mute : inkHex(voice.color, palette) },
-          ]}
-        />
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.name, { color: palette.ink }]}>{localizeVoiceName(voice.name, language)}</Text>
-          <Text style={[styles.meta, { color: palette.mute }]}>
-            {written
-              ? `${t('UI.thread.written')} · ${letters || voice.storyIds.length} ${letters === 1 ? t('UI.thread.letter') : t('UI.thread.letters')}`
-              : `${inkLabel(voice.color, lang)} · ${voice.storyIds.length} ${storyLabel(voice.storyIds.length)}`}
-          </Text>
-        </View>
-        <Text style={[styles.count, { color: palette.mute }]}>{formatCount(voice.words)} w</Text>
-      </Pressable>
-    );
-  };
+  const renderVoice = ({ item: voice }: { item: ConversationVoice }) => (
+    <CastVoiceRow
+      voice={voice}
+      expanded={expandedName === voice.name}
+      palette={palette}
+      language={language}
+      storyLabel={storyLabel}
+      letterLabel={letterLabel}
+      onToggle={() => setExpandedName((current) => (current === voice.name ? null : voice.name))}
+    />
+  );
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: palette.bg }]} edges={['top']}>
       <View style={[styles.search, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
         <TextInput
           value={query}
-          onChangeText={setQuery}
+          onChangeText={(value) => {
+            setQuery(value);
+            setExpandedName(null);
+          }}
           placeholder={t('UI.thread.searchPlaceholder')}
           placeholderTextColor={palette.mute}
           style={[styles.input, { color: palette.ink }]}
@@ -103,6 +90,7 @@ const CastIndex = () => {
               onPress={() => {
                 void hapticSelection();
                 setFilter(item.id);
+                setExpandedName(null);
               }}
               style={[
                 styles.bubble,
@@ -121,12 +109,13 @@ const CastIndex = () => {
       </ScrollView>
       <FlatList
         data={voices}
+        extraData={expandedName}
         keyExtractor={(voice) => voice.name}
         renderItem={renderVoice}
         contentContainerStyle={{ paddingBottom: 120 }}
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
-        removeClippedSubviews
+        removeClippedSubviews={!expandedName}
       />
     </SafeAreaView>
   );
@@ -149,12 +138,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bubbleText: { fontSize: 9, letterSpacing: 1.1, textTransform: 'uppercase', fontWeight: '600' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, minHeight: 44 },
-  dot: { width: 8, height: 8, borderRadius: 4 },
-  dotWritten: { borderRadius: 2, borderTopLeftRadius: 1 },
-  name: { fontSize: 16 },
-  meta: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', marginTop: 2 },
-  count: { fontSize: 10, fontVariant: ['tabular-nums'] },
 });
 
 export default CastIndex;

@@ -14,6 +14,10 @@ export type CatalogItem = {
   description: string;
   shortDescription?: string;
   longDescription?: string;
+  titleFr?: string;
+  descriptionFr?: string;
+  shortDescriptionFr?: string;
+  longDescriptionFr?: string;
   chronologicalOrder?: boolean;
   stories: string[];
   group: PlanGroupId;
@@ -72,6 +76,10 @@ function toCatalogItem(
     description: string;
     shortDescription?: string;
     longDescription?: string;
+    titleFr?: string;
+    descriptionFr?: string;
+    shortDescriptionFr?: string;
+    longDescriptionFr?: string;
     chronologicalOrder?: boolean;
     segments: Record<string, { segments?: string[] } | undefined>;
   },
@@ -85,10 +93,27 @@ function toCatalogItem(
     description: raw.description,
     shortDescription: raw.shortDescription,
     longDescription: raw.longDescription,
+    titleFr: raw.titleFr,
+    descriptionFr: raw.descriptionFr,
+    shortDescriptionFr: raw.shortDescriptionFr,
+    longDescriptionFr: raw.longDescriptionFr,
     chronologicalOrder: raw.chronologicalOrder,
     stories,
     group: groupForStoryCount(stories.length),
   };
+}
+
+export function getLocalizedPlanText(
+  item: CatalogItem,
+  field: 'title' | 'description' | 'shortDescription' | 'longDescription',
+  language: string
+): string {
+  if (language.startsWith('fr')) {
+    const frKey = `${field}Fr` as keyof CatalogItem;
+    const fr = item[frKey];
+    if (typeof fr === 'string' && fr) return fr;
+  }
+  return (item[field] as string) || '';
 }
 
 export function getCatalogItems(): CatalogItem[] {

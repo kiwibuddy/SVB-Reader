@@ -111,6 +111,17 @@ const YearThread: React.FC<YearThreadProps> = ({ completedIds, currentId, isDark
           strokeDasharray={spark.length}
           animatedProps={doneProps}
         />
+        {spark.marks.map((mark) => (
+          <Circle
+            key={mark.key}
+            cx={mark.x}
+            cy={mark.y}
+            r={4.5}
+            fill={mark.done > 0 ? palette.chor : palette.bg}
+            stroke={palette.thread}
+            strokeWidth={1.5}
+          />
+        ))}
         {currentMark && (
           <>
             <AnimatedCircle
