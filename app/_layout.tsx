@@ -171,6 +171,10 @@ function AppContent() {
                   }}
                 >
                   <Stack.Screen name="(tabs)" />
+                  <Stack.Screen
+                    name="onboarding"
+                    options={{ gestureEnabled: false, animation: 'fade', headerShown: false }}
+                  />
                   <Stack.Screen name="+not-found" />
                 </Stack>
               </BottomNavProvider>

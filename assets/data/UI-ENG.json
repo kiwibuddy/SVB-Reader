@@ -421,6 +421,30 @@
       "metVoiceFirstTime": "You met {{name}} for the first time.",
       "voicesCount": "{{met}} of {{total}} voices."
     },
+    "onboarding": {
+      "skip": "Skip",
+      "next": "Next",
+      "startReading": "Start reading",
+      "howSourceViewWorks": "How SourceView works",
+      "screen1Title": "The Bible, told as 365 stories",
+      "screen1Body": "Not chapters and verses. Stories with beginnings and endings — one a day for a year, or whenever you like.",
+      "screen2Title": "Everyone has a voice",
+      "screen2Body": "Every word is coloured by who said it. The narrator tells the story. God speaks in red. The people in it speak in their own colours.",
+      "screen3Title": "Read it with three friends",
+      "screen3Body": "One person takes each colour and you read it out loud together. That's it — no setup, no codes. Works just as well on your own.",
+      "screen4Title": "Keep what stays with you",
+      "screen4Body": "Press and hold any verse to react, add a note, or send it to someone. It's saved to that verse, so you'll find it again.",
+      "narratorLabel": "Narrator",
+      "godLabel": "God",
+      "mainCharactersLabel": "Main characters",
+      "everyoneElseLabel": "Everyone else",
+      "narratorRoleDescription": "tells the story",
+      "godRoleDescription": "God, Jesus, the Spirit",
+      "mainCharacterRoleDescription": "the people the story follows",
+      "otherVoicesRoleDescription": "every other voice, down to a single blind beggar",
+      "fourReaders": "Four voices · four readers",
+      "sampleNote": "The hardest sentence…"
+    },
     "groupReading": {
       "selectYourReadingRole": "Select Your Reading Role"
     },

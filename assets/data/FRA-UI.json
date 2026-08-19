@@ -22973,6 +22973,30 @@
       "metVoiceFirstTime": "Vous avez rencontré {{name}} pour la première fois.",
       "voicesCount": "{{met}} voix sur {{total}}."
     },
+    "onboarding": {
+      "skip": "Passer",
+      "next": "Suivant",
+      "startReading": "Commencer à lire",
+      "howSourceViewWorks": "Comment SourceView fonctionne",
+      "screen1Title": "La Bible, en 365 récits",
+      "screen1Body": "Pas des chapitres et des versets. Des récits avec un début et une fin — un par jour pendant un an, ou quand vous voulez.",
+      "screen2Title": "Chacun a une voix",
+      "screen2Body": "Chaque mot est coloré selon celui qui l'a dit. Le narrateur raconte l'histoire. Dieu parle en rouge. Les gens de l'histoire parlent dans leurs propres couleurs.",
+      "screen3Title": "Lisez-le avec trois amis",
+      "screen3Body": "Chacun prend une couleur et vous lisez à voix haute ensemble. C'est tout — pas d'installation, pas de codes. Ça marche tout aussi bien seul.",
+      "screen4Title": "Gardez ce qui reste",
+      "screen4Body": "Appuyez longuement sur un verset pour réagir, ajouter une note, ou l'envoyer à quelqu'un. C'est lié à ce verset, vous le retrouverez.",
+      "narratorLabel": "Narrateur",
+      "godLabel": "Dieu",
+      "mainCharactersLabel": "Personnages principaux",
+      "everyoneElseLabel": "Tous les autres",
+      "narratorRoleDescription": "raconte l'histoire",
+      "godRoleDescription": "Dieu, Jésus, l'Esprit",
+      "mainCharacterRoleDescription": "les gens que l'histoire suit",
+      "otherVoicesRoleDescription": "chaque autre voix, jusqu'à un mendiant aveugle",
+      "fourReaders": "Quatre voix · quatre lecteurs",
+      "sampleNote": "La phrase la plus dure…"
+    },
     "groupReading": {
       "selectYourReadingRole": "Sélectionnez votre rôle de lecture"
     },

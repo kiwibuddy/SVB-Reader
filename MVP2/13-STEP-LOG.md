@@ -116,3 +116,28 @@ Append-only. One entry per save point. Numbered 13 because `12-MOCKUP-DELTA.md` 
 
 ---
 
+## mvp2-G1 · 2026-08-19
+
+**Tag:** `mvp2-G1`  
+**Commands:** `npx tsc --noEmit`
+
+| Check | Result |
+| --- | --- |
+| tsc | **pass** |
+| expo lint | **deferred** — pre-existing SettingsModal class |
+| `@react-navigation/` | **clean** |
+| `/(tabs)/Navigation` | **clean** |
+
+**This step:** four-screen onboarding at `app/onboarding.tsx` per `11-ONBOARDING.md`. Versioned flag `onboardingVersion: 2` (legacy `hasLaunchedBefore` → version 1, so existing installs see v2 once). Live S001–S003 thread, S008 Abraham exchange + call sheet, share/react demo. Skip on every screen. *Start reading* opens today's story. Re-open from You → About → How SourceView works. EN+FR `onboarding.*`; colour blurbs moved to `onboarding.*`. Reduce Motion: final state, no delays.
+
+### Deferred errors (all tags)
+
+| Issue | Introduced |
+| --- | --- |
+| expo lint ~76 errors / SettingsModal refs class | pre-existing (`mvp2-00`) |
+| view-shot image share needs a new native/dev-client build | `mvp2-H1` |
+| `ChronologicalMappings.json` still imported by hidden `ChronologicalView` / ReadingPlans | `mvp2-E` / `mvp2-F` |
+| Appearance / font / language toggles no longer on You (only About) | `mvp2-F` |
+| E6 era card / E7 exchange pager | cut on purpose (`mvp2-E`) |
+| Device checklist from C (S008 sides, Cast, late-division thread, You at zero, reader has no line/dots) | noted, not blocked (`mvp2-C`) |
+
