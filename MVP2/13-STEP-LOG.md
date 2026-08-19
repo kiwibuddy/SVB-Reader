@@ -67,3 +67,19 @@ Append-only. One entry per save point. Numbered 13 because `12-MOCKUP-DELTA.md` 
 
 ---
 
+## mvp2-H1 · 2026-08-19
+
+**Tag:** `mvp2-H1`  
+**Commands:** `npx tsc --noEmit`
+
+| Check | Result |
+| --- | --- |
+| tsc | **pass** |
+| expo lint | **deferred** — pre-existing |
+| `@react-navigation/` | **clean** |
+| view-shot native | **deferred** — `react-native-view-shot` added; image share needs a new dev client. Copy and text share work without it. |
+
+**This step:** long-press sheet gains Share + Copy. Copy is `"text" — Genesis 22:2 (NLT)`. Share captures a speaker/ink/wordmark card when view-shot is available, otherwise shares the citation.
+
+---
+

@@ -9,6 +9,12 @@ import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { addEmoji, deleteEmoji, getEmoji } from '@/api/sqlite';
 import EmojiPicker from './EmojiPicker';
 import NoteInput from './NoteInput';
+import ShareCard from '@/components/thread/ShareCard';
+import { copyTurn, formatTurnCitation, shareTurn } from '@/utils/shareTurn';
+import { hapticImpactMedium } from '@/utils/haptics';
+import { localizeVoiceName } from '@/utils/localize';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
+import type { Ink } from '@/utils/ink';
 
 interface EmojiHandlerProps {
   block: BibleBlock;
@@ -57,6 +63,8 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   onLongPress
 }) => {
   const { state, updateSegmentId, updateEmojiActions } = useSQLiteGlobalContext();
+  const { language, isDarkMode } = useSyncAppSettings();
+  const shareCardRef = useRef<View>(null);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const [showPicker, setShowPicker] = useState(false);
   const [showNoteInput, setShowNoteInput] = useState(false);
@@ -390,6 +398,40 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     setShowNoteInput(false);
   }, []);
 
+  const handleCopy = useCallback(async () => {
+    try {
+      await hapticImpactMedium();
+      await copyTurn(state.segmentId || '', block);
+      setShowPicker(false);
+    } catch (error) {
+      logger.error('Copy turn failed:', error);
+    }
+  }, [block, state.segmentId]);
+
+  const handleShare = useCallback(async () => {
+    try {
+      await hapticImpactMedium();
+      let imageUri: string | null = null;
+      try {
+        const { captureRef } = require('react-native-view-shot');
+        if (shareCardRef.current) {
+          imageUri = await captureRef(shareCardRef, { format: 'png', quality: 1, result: 'tmpfile' });
+        }
+      } catch (error) {
+        logger.warn('Share image capture unavailable; sharing text instead.', error);
+      }
+      await shareTurn({
+        segmentId: state.segmentId || '',
+        block,
+        speaker: localizeVoiceName(block.source?.sourceName || '', language),
+        imageUri,
+      });
+      setShowPicker(false);
+    } catch (error) {
+      logger.error('Share turn failed:', error);
+    }
+  }, [block, language, state.segmentId]);
+
   // CRITICAL: Enhanced gesture handler with comprehensive validation
   const handleGestureTrigger = useCallback((event: any, gestureType: 'doubleTap' | 'longPress') => {
     'worklet';
@@ -495,6 +537,8 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         <EmojiPicker
           onEmojiSelect={handleEmojiSelect}
           onNoteSelect={handleNoteSelect}
+          onShare={handleShare}
+          onCopy={handleCopy}
           onClose={handlePickerClose}
           position={pickerPosition}
           existingNote={existingNote}
@@ -521,6 +565,16 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
           />
         </View>
       </Modal>
+      <View style={styles.shareCardHost} pointerEvents="none">
+        <ShareCard
+          ref={shareCardRef}
+          speaker={localizeVoiceName(block.source?.sourceName || '', language)}
+          text={formatTurnCitation(state.segmentId || '', block).text}
+          citation={formatTurnCitation(state.segmentId || '', block).citation}
+          ink={(block.source?.color || 'black') as Ink}
+          isDarkMode={isDarkMode}
+        />
+      </View>
     </View>
   );
 };
@@ -561,6 +615,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  shareCardHost: {
+    position: 'absolute',
+    left: -4000,
+    top: 0,
   },
 });
 
