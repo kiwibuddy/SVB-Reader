@@ -50,3 +50,20 @@ Append-only. One entry per save point. Numbered 13 because `12-MOCKUP-DELTA.md` 
 
 ---
 
+## mvp2-C · 2026-08-19
+
+**Tag:** `mvp2-C`  
+**Commands:** `npx tsc --noEmit`, grep `@react-navigation/` and reader gutter/dots
+
+| Check | Result |
+| --- | --- |
+| tsc | **pass** |
+| expo lint | **deferred** — pre-existing SettingsModal class |
+| `@react-navigation/` imports | **clean** |
+| reader gutter / speaker dots | **clean** in GlowBubble/Segment — no Svg, no tails. `Block.tsx` still has tails but is unused by the reader path. |
+| Device checklist | **noted, not blocked** — confirm S008 left/right, Cast list, late-division thread, You year thread at zero, reader has no line and no dots. |
+
+**This step:** C1–C3 bubbles 84% / 16px / 1.45 / 16+5 corners, no tails, stagger cap 8; C4 no gutter; C7–C8 call sheet mix bar + ink dim 0.55; header `Gen 15:1–18:15` style; read-aloud fades chrome and dims other turns to 0.35.
+
+---
+

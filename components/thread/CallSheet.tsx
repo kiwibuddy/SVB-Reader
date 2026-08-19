@@ -1,19 +1,30 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { ThreadColors, inkHex } from '@/constants/Colors';
+import Animated, { LinearTransition, useAnimatedStyle } from 'react-native-reanimated';
+import { ThreadColors, inkHex, fillHex } from '@/constants/Colors';
 import { localizeVoiceName } from '@/utils/localize';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useGrowOnFocus } from '@/hooks/useGrowOnFocus';
+import { DUR } from '@/constants/Motion';
+import { hapticSelection } from '@/utils/haptics';
+import type { Ink } from '@/utils/ink';
 
 interface CallSheetProps {
   sources: Record<string, { words: number; color: string }>;
+  colorData?: { black?: number; red?: number; green?: number; blue?: number; total?: number };
+  selectedInk?: Ink | null;
+  onSelectInk?: (ink: Ink | null) => void;
 }
 
-const CallSheet: React.FC<CallSheetProps> = ({ sources }) => {
+const INKS: Ink[] = ['black', 'red', 'green', 'blue'];
+
+const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, onSelectInk }) => {
   const { isDarkMode, language } = useSyncAppSettings();
   const { t } = useTranslation();
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
   const [open, setOpen] = useState(false);
+  const grow = useGrowOnFocus();
 
   const cast = useMemo(() => {
     return Object.entries(sources || {})
@@ -21,33 +32,85 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources }) => {
       .sort((a, b) => (b[1].words || 0) - (a[1].words || 0));
   }, [sources]);
 
+  const mix = useMemo(() => {
+    const total = colorData?.total || INKS.reduce((sum, ink) => sum + (colorData?.[ink] || 0), 0);
+    return INKS.map((ink) => ({ ink, value: colorData?.[ink] || 0 })).filter((part) => part.value > 0 && total > 0);
+  }, [colorData]);
+
+  const mixStyle = useAnimatedStyle(() => ({
+    transform: [{ scaleX: grow.value }],
+  }));
+
   return (
-    <View style={styles.wrap}>
-      <Pressable onPress={() => setOpen((value) => !value)} style={styles.header}>
-        <Text style={[styles.label, { color: palette.mute }]}>
-          {t('UI.thread.callSheet')} · {cast.length}
+    <Animated.View
+      layout={LinearTransition.duration(DUR.base)}
+      style={[styles.wrap, { backgroundColor: palette.surf, borderColor: palette.hair }]}
+    >
+      <Pressable
+        onPress={() => {
+          void hapticSelection();
+          setOpen((value) => !value);
+        }}
+        style={styles.top}
+      >
+        <Animated.View style={[styles.mix, mixStyle, { transformOrigin: 'left' }]}>
+          {mix.map((part) => (
+            <View
+              key={part.ink}
+              style={{ flex: part.value, backgroundColor: inkHex(part.ink, palette), height: 4 }}
+            />
+          ))}
+        </Animated.View>
+        <Text style={[styles.count, { color: palette.mute }]}>
+          {cast.length} {t('UI.thread.voices').toLowerCase()} {open ? '⌃' : '⌄'}
         </Text>
       </Pressable>
-      {open &&
-        cast.map(([name, info]) => (
-          <View key={name} style={styles.row}>
-            <View style={[styles.dot, { backgroundColor: inkHex(info.color, palette) }]} />
-            <Text style={[styles.name, { color: palette.ink }]}>{localizeVoiceName(name, language)}</Text>
-            <Text style={[styles.words, { color: palette.mute }]}>{info.words}</Text>
-          </View>
-        ))}
-    </View>
+      {open && (
+        <View style={styles.cast}>
+          {cast.map(([name, info]) => {
+            const ink = (info.color || 'black') as Ink;
+            const active = !selectedInk || selectedInk === ink;
+            return (
+              <Pressable
+                key={name}
+                onPress={() => {
+                  void hapticSelection();
+                  onSelectInk?.(selectedInk === ink ? null : ink);
+                }}
+                style={[styles.row, { opacity: active ? 1 : 0.55 }]}
+              >
+                <View
+                  style={[
+                    styles.swatch,
+                    {
+                      backgroundColor: fillHex(ink, palette),
+                      borderColor: inkHex(ink, palette),
+                    },
+                  ]}
+                />
+                <Text style={[styles.name, { color: palette.ink }]}>{localizeVoiceName(name, language)}</Text>
+                <Text style={[styles.words, { color: palette.mute }]}>{info.words}</Text>
+              </Pressable>
+            );
+          })}
+          <Text style={[styles.hint, { color: palette.mute }]}>{t('UI.thread.readingTogether')}</Text>
+        </View>
+      )}
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 14, paddingBottom: 8 },
-  header: { paddingVertical: 8 },
-  label: { fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
-  dot: { width: 8, height: 8, borderRadius: 4 },
+  wrap: { marginHorizontal: 14, marginTop: 8, borderWidth: 1, borderRadius: 12, overflow: 'hidden' },
+  top: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 10 },
+  mix: { flex: 1, flexDirection: 'row', height: 4, borderRadius: 2, overflow: 'hidden', gap: 1 },
+  count: { fontSize: 9, letterSpacing: 1.1, textTransform: 'uppercase' },
+  cast: { paddingHorizontal: 12, paddingBottom: 12, gap: 8 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 },
+  swatch: { width: 13, height: 13, borderRadius: 5, borderTopLeftRadius: 2, borderWidth: 1 },
   name: { flex: 1, fontSize: 13 },
   words: { fontSize: 11, fontVariant: ['tabular-nums'] },
+  hint: { fontSize: 10, marginTop: 4 },
 });
 
 export default CallSheet;

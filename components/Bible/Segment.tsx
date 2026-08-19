@@ -1,16 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"; // Ensure useEffect is imported
 import logger from '@/utils/logger';
 import { View, Text, FlatList, ScrollView, Pressable, TouchableOpacity, StyleSheet, useWindowDimensions, Platform, Animated } from "react-native";
+import Reanimated from "react-native-reanimated";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BibleBlockComponent from './BibleBlock';
 import { BibleBlock, SegmentType } from "@/types";
-import RoleProgressBar from "../RoleProgressBar";
 import CallSheet from "@/components/thread/CallSheet";
-import ChartLegend from "../ChartLegend";
-import { MaterialIcons } from '@expo/vector-icons'; // Example icon library
 import { splitContentIntoReaderParts } from "@/scripts/splitContentIntoReaderParts";
 import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
-import { getColors } from "@/scripts/getColors";
 import SegmentTitle from "./SegmentTitle";
 import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import CelebrationPopup from "./CelebrationPopup";
@@ -23,6 +20,7 @@ import * as Haptics from 'expo-haptics';
 import { useTranslation } from '@/hooks/useTranslation';
 import * as Speech from 'expo-speech';
 import { ThreadColors } from '@/constants/Colors';
+import type { Ink } from '@/utils/ink';
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -76,10 +74,9 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   // All hooks must be called before any early returns
   const [showCelebration, setShowCelebration] = useState(false);
-  const [selectedReaderPosition, setSelectedReaderPosition] = useState<{
-    color: string;
-    position: number;
-  } | null>(null);
+  const [selectedInk, setSelectedInk] = useState<Ink | null>(null);
+  const [speakingIndex, setSpeakingIndex] = useState<number | null>(null);
+  const speakGen = useRef(0);
   const [showCourtesyPopup, setShowCourtesyPopup] = useState(!!currentSession);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -112,7 +109,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   useEffect(() => {
     if (!currentSession) {
       // ensure individual mode starts with no pre-selected role
-      setSelectedReaderPosition(null);
+      setSelectedInk(null);
     }
     const force = showCourtesy === '1';
     // Only show courtesy if not dismissed during this visit
@@ -129,42 +126,24 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   useEffect(() => {
     if (!currentSession) {
       // Reset reading role selection when navigating to a new story in individual mode
-      setSelectedReaderPosition(null);
+      setSelectedInk(null);
     }
   }, [segID, currentSession]);
 
   useEffect(() => {
     return () => {
+      speakGen.current += 1;
       Speech.stop();
     };
   }, []);
 
-  const toggleReadAloud = useCallback(() => {
-    if (isSpeaking) {
-      Speech.stop();
-      setIsSpeaking(false);
-      return;
-    }
-    const collect = (node: any): string => {
-      if (!node) return '';
-      if (typeof node === 'string') return node;
-      if (Array.isArray(node)) return node.map(collect).join(' ');
-      if (node.note) return '';
-      return `${node.text || ''} ${collect(node.children)}`;
-    };
-    const script = (segmentData?.content || [])
-      .map((block) => {
-        const who = block?.source?.sourceName || '';
-        return `${who}. ${collect(block)}`;
-      })
-      .join('. ');
-    setIsSpeaking(true);
-    Speech.speak(script, {
-      onDone: () => setIsSpeaking(false),
-      onStopped: () => setIsSpeaking(false),
-      onError: () => setIsSpeaking(false),
-    });
-  }, [isSpeaking, segmentData?.content]);
+  const collectSpeech = (node: any): string => {
+    if (!node) return '';
+    if (typeof node === 'string') return node;
+    if (Array.isArray(node)) return node.map(collectSpeech).join(' ');
+    if (node.note) return '';
+    return `${node.text || ''} ${collectSpeech(node.children)}`;
+  };
 
   const dismissCourtesy = useCallback(() => {
     courtesyDismissedRef.current = true;
@@ -290,7 +269,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     };
     const color = roleToColor[currentRole];
     const positions = readersByColor[color] || [0];
-    setSelectedReaderPosition({ color, position: 0 });
+    setSelectedInk((color as Ink) || 'black');
   }, [currentRole, readersByColor]);
 
   const currentRoleLabel = useMemo(() => {
@@ -313,25 +292,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return { color, label: map[color] || 'Reader' };
   }, [memoizedContent]);
 
-  // Update shouldBlockGlow to use the new state
-  const shouldBlockGlow = useCallback((blockColor: string, blockIndex: number) => {
-    if (!selectedReaderPosition) return false;
-    
-    const { color, position } = selectedReaderPosition;
-    if (blockColor !== color) return false;
-
-    const colorPositions = readersByColor[blockColor] || [];
-    if (colorPositions.length <= 1) {
-      return position === 0;
-    }
-
-    // For multiple readers of same color - USE MEMOIZED CONTENT (the split content)
-    const blocksOfThisColor = memoizedContent.filter(item => item.source?.color === blockColor);
-    const positionInSequence = blocksOfThisColor.findIndex(item => 
-      memoizedContent.indexOf(item) === blockIndex
-    );
-    return positionInSequence % colorPositions.length === position;
-  }, [memoizedContent, readersByColor, selectedReaderPosition]);
+  const shouldBlockGlow = useCallback((_blockColor: string, _blockIndex: number) => false, []);
 
   // Update renderItem to use new glow logic
   const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
@@ -463,24 +424,49 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     }
   };
 
-  const handleReaderRoleSelect = (color: string, position: number) => {
-    setSelectedReaderPosition(prev => {
-      // If clicking the already selected role, deselect it
-      if (prev?.color === color && prev?.position === position) {
-        return null;
+  const toggleReadAloud = useCallback(() => {
+    if (isSpeaking) {
+      speakGen.current += 1;
+      Speech.stop();
+      setIsSpeaking(false);
+      setSpeakingIndex(null);
+      return;
+    }
+    const gen = speakGen.current + 1;
+    speakGen.current = gen;
+    setIsSpeaking(true);
+    const speakAt = (index: number) => {
+      if (speakGen.current !== gen) return;
+      if (index >= memoizedContent.length) {
+        setIsSpeaking(false);
+        setSpeakingIndex(null);
+        return;
       }
-      // Otherwise select this new role (deselecting any previous role)
-      return { color, position };
-    });
-  };
-
-
+      const block = memoizedContent[index];
+      const who = block?.source?.sourceName || '';
+      setSpeakingIndex(index);
+      Speech.speak(`${who}. ${collectSpeech(block)}`, {
+        onDone: () => speakAt(index + 1),
+        onStopped: () => {
+          if (speakGen.current === gen) {
+            setIsSpeaking(false);
+            setSpeakingIndex(null);
+          }
+        },
+        onError: () => {
+          setIsSpeaking(false);
+          setSpeakingIndex(null);
+        },
+      });
+    };
+    speakAt(0);
+  }, [isSpeaking, memoizedContent]);
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: 16,
+    padding: 0,
   },
   roleContainer: {
     backgroundColor: colors.card,
@@ -636,72 +622,26 @@ const styles = StyleSheet.create({
         // Disable scroll when long press is detected
         scrollEnabled={true}
       >
-        <SegmentTitle segmentId={segID} />
-        <Pressable onPress={toggleReadAloud} style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+        <Reanimated.View style={{ opacity: isSpeaking ? 0 : 1 }}>
+          <SegmentTitle segmentId={segID} />
+          <CallSheet
+            sources={segmentData?.sources || {}}
+            colorData={colorData}
+            selectedInk={selectedInk}
+            onSelectInk={setSelectedInk}
+          />
+        </Reanimated.View>
+        <Pressable onPress={toggleReadAloud} hitSlop={8} style={{ paddingHorizontal: 14, paddingVertical: 10, minHeight: 44, justifyContent: 'center' }}>
           <Text style={{ color: threadPalette.acc, fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase' }}>
             {isSpeaking ? t('UI.thread.stopReading') : t('UI.thread.readAloud')}
           </Text>
         </Pressable>
-        <View style={{
-          paddingHorizontal: 16,
-          paddingTop: 20,
-          paddingBottom: 0,
-          width: '100%',
-        }}>
-          {/* Role Selection Section - Full Width */}
-          <View style={styles.readerSection}>
-            <Text style={styles.readerText}>
-              {t('UI.groupReading.selectYourReadingRole') + ':'}
-            </Text>
-            {/* Remove separate badge; title above communicates selection */}
-            <View style={styles.iconContainer}>
-              {/* Create reader role icons based on actual speech bubble distribution */}
-              {(() => {
-                const roleIcons: React.ReactElement[] = [];
-                
-                // Use the same logic as readersByColor to create icons
-                Object.entries(readersByColor).forEach(([color, positions]) => {
-                  positions.forEach((position) => {
-                    const isActive = selectedReaderPosition?.color === color && 
-                                    selectedReaderPosition?.position === position;
-                    const colors = getColors(color);
-                    
-                    roleIcons.push(
-                      <TouchableOpacity
-                        key={`${color}-${position}`}
-                        onPress={() => handleReaderRoleSelect(color, position)}
-                      >
-                        <MaterialIcons
-                          name={isActive ? "mark-chat-read" : "chat-bubble"}
-                          size={30}
-                          color={color === "black" ? "grey" : isActive ? colors.dark : colors.light}
-                        />
-                      </TouchableOpacity>
-                    );
-                  });
-                });
-                
-                return roleIcons;
-              })()}
-            </View>
-          </View>
-          
-          {/* Progress Bar Section - As Divider */}
-          <View style={{ marginTop: 24, marginBottom: 20, marginHorizontal: -16 }}>
-            <RoleProgressBar 
-              colorData={colorData}
-              height={4}
-            />
-            <CallSheet sources={segmentData?.sources || {}} />
-          </View>
-        </View>
 
         {memoizedContent.map((item, index) => {
           const { sourceName } = item.source || {};
           const showSourceName = index === 0 ||
             memoizedContent[index - 1].source?.sourceName !== sourceName;
-
-          const isGlowing = shouldBlockGlow(item.source?.color || 'black', index);
+          const ink = (item.source?.color || 'black') as Ink;
 
           return (
             <BibleBlockComponent
@@ -709,10 +649,12 @@ const styles = StyleSheet.create({
               block={item}
               bIndex={index}
               hasTail={showSourceName}
-              isGlowing={isGlowing}
+              isGlowing={false}
               onLongPress={handleLongPress}
               targetVerse={targetVerse}
               targetChapter={targetChapter}
+              dimmed={!!selectedInk && selectedInk !== ink}
+              spokenDimmed={speakingIndex != null && speakingIndex !== index}
             />
           );
         })}
@@ -748,7 +690,7 @@ const styles = StyleSheet.create({
             </Text>
             {firstSpeakerInfo && (
               <Text style={{ color: '#FFFFFF', fontSize: 13, textAlign: 'center', opacity: 0.95 }}>
-                {currentRole && selectedReaderPosition && firstSpeakerInfo.color === selectedReaderPosition.color
+                {currentRole && selectedInk && firstSpeakerInfo.color === selectedInk
                   ? 'You are the first reader.'
                   : `${firstSpeakerInfo.label} starts first.`}
               </Text>

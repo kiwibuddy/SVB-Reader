@@ -11,16 +11,20 @@ interface BibleBlockProps {
   onLongPress: (block: BibleBlock, index: number) => void;
   targetVerse?: number;
   targetChapter?: number;
+  dimmed?: boolean;
+  spokenDimmed?: boolean;
 }
 
-const BibleBlockComponent: React.FC<BibleBlockProps> = ({ 
-  block, 
-  bIndex, 
-  hasTail, 
+const BibleBlockComponent: React.FC<BibleBlockProps> = ({
+  block,
+  bIndex,
+  hasTail,
   isGlowing,
   onLongPress,
   targetVerse,
-  targetChapter
+  targetChapter,
+  dimmed,
+  spokenDimmed,
 }) => {
   return (
     <TouchableOpacity onLongPress={() => onLongPress(block, bIndex)}>
@@ -31,6 +35,8 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({
         isGlowing={isGlowing}
         targetVerse={targetVerse}
         targetChapter={targetChapter}
+        dimmed={dimmed}
+        spokenDimmed={spokenDimmed}
       />
     </TouchableOpacity>
   );

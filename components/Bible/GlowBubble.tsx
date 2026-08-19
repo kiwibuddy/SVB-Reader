@@ -1,12 +1,15 @@
-import React, { useEffect, useRef } from "react";
-import { View, StyleSheet, Animated, Platform } from "react-native";
-import { getColors, getBubbleTextColorSafe } from "@/scripts/getColors";
-import { BibleBlock } from "@/types";
-import SourceNameComponent from "./SourceName";
-import BibleInlineComponent from "./Inline";
-import EmojiHandler from "@/components/EmojiHandler";
-import { useAppSettings } from "@/context/AppSettingsContext";
-import { isLeftVoice } from "@/utils/ink";
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, Platform } from 'react-native';
+import Animated, { FadeInDown, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import { getColors, getBubbleTextColorSafe } from '@/scripts/getColors';
+import { BibleBlock } from '@/types';
+import BibleInlineComponent from './Inline';
+import EmojiHandler from '@/components/EmojiHandler';
+import { isLeftVoice } from '@/utils/ink';
+import { DUR, STAGGER, timing } from '@/constants/Motion';
+import { ThreadColors } from '@/constants/Colors';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
+import { localizeVoiceName } from '@/utils/localize';
 
 interface BibleBlockProps {
   block: BibleBlock;
@@ -16,30 +19,40 @@ interface BibleBlockProps {
   onLongPress?: (block: BibleBlock, index: number) => void;
   targetVerse?: number;
   targetChapter?: number;
+  dimmed?: boolean;
+  spokenDimmed?: boolean;
 }
 
-const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetVerse, targetChapter }: BibleBlockProps) => {
+const GlowingBubble = ({
+  block,
+  bIndex,
+  hasTail,
+  isGlowing,
+  onLongPress,
+  targetVerse,
+  targetChapter,
+  dimmed,
+  spokenDimmed,
+}: BibleBlockProps) => {
   const { source, children } = block;
   const { color = 'black', sourceName = 'Unknown' } = source || {};
-  const { isDarkMode } = useAppSettings();
-  const colors = getColors(color);
-  // COMMENTED OUT: Animation variables no longer needed for static glow
-  // const glowAnim = useRef(new Animated.Value(0)).current;
-  const targetVerseAnim = useRef(new Animated.Value(0)).current;
-  
-  // Check if this block contains the target verse
+  const { isDarkMode, language, sizes } = useSyncAppSettings();
+  const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
+  const fills = getColors(color);
+  const left = isLeftVoice(color);
+  const reduced = useReducedMotion();
+  const ink = getBubbleTextColorSafe(color, isDarkMode);
+  const bodySize = sizes.body;
+  const lineHeight = Math.round(bodySize * 1.45);
+  const opacity = useSharedValue(1);
+
   const isTargetVerse = React.useMemo(() => {
     if (!targetVerse || !targetChapter) return false;
-    
-    // Search through children to find verse references
     for (const child of children) {
-      // Search through BibleLeaf children for verse references
       if (child.children && Array.isArray(child.children)) {
         for (const leaf of child.children) {
           if (leaf.link && leaf.link.chapter && leaf.link.verse) {
-            const chapter = parseInt(leaf.link.chapter);
-            const verse = parseInt(leaf.link.verse);
-            if (chapter === targetChapter && verse === targetVerse) {
+            if (parseInt(leaf.link.chapter, 10) === targetChapter && parseInt(leaf.link.verse, 10) === targetVerse) {
               return true;
             }
           }
@@ -48,202 +61,85 @@ const GlowingBubble = ({ block, bIndex, hasTail, isGlowing, onLongPress, targetV
     }
     return false;
   }, [children, targetVerse, targetChapter]);
-  
-  // Animate target verse highlight
+
   useEffect(() => {
-    if (isTargetVerse) {
-      // Start with a bright highlight
-      targetVerseAnim.setValue(1);
-      
-      // Animate to a subtle highlight
-      Animated.timing(targetVerseAnim, {
-        toValue: 0.3,
-        duration: 2000,
-        useNativeDriver: false,
-      }).start();
-    } else {
-      targetVerseAnim.setValue(0);
-    }
-  }, [isTargetVerse, targetVerseAnim]);
-  
-  // COMMENTED OUT: Animation tracking no longer needed for static glow
-  // const animationRef = useRef<Animated.CompositeAnimation | null>(null);
+    const next = spokenDimmed ? 0.35 : dimmed ? 0.55 : 1;
+    opacity.value = withTiming(next, timing(DUR.quick));
+  }, [dimmed, opacity, spokenDimmed]);
 
-  // COMMENTED OUT: Glow animation for performance optimization
-  // useEffect(() => {
-  //   // Only run animation if glowing is enabled
-  //   if (!isGlowing) {
-  //     glowAnim.setValue(0);
-  //     return;
-  //   }
-
-  //   // Create optimized animation configuration
-  //   const animationConfig = {
-  //     toValue: 1,
-  //     duration: 4000, // Reduced from 12000ms to 4000ms for better performance
-  //     useNativeDriver: false, // Fixed: Use false for both platforms to support shadow properties
-  //   };
-
-  //   // Start the animation loop
-  //   animationRef.current = Animated.loop(
-  //     Animated.timing(glowAnim, animationConfig)
-  //   );
-    
-  //   animationRef.current.start();
-
-  //   // Cleanup function to stop animation when component unmounts or isGlowing changes
-  //   return () => {
-  //     if (animationRef.current) {
-  //       animationRef.current.stop();
-  //       animationRef.current = null;
-  //     }
-  //   };
-  // }, [isGlowing, isDarkMode]); // Only re-run when isGlowing or isDarkMode changes
-
-  // COMMENTED OUT: Complex color interpolation for performance
-  // const glowColor = glowAnim.interpolate({
-  //   inputRange: [0, 0.33, 0.66, 1],
-  //   outputRange: isDarkMode ? [
-  //     // Dark mode: very light, almost white pastel colors for maximum visibility
-  //     "rgba(255, 230, 230, 0.95)", // Very light pink/white
-  //     "rgba(230, 255, 230, 0.95)", // Very light green/white
-  //     "rgba(230, 240, 255, 0.95)", // Very light blue/white
-  //     "rgba(255, 230, 230, 0.95)", // Very light pink/white (loop back)
-  //   ] : [
-  //     // Light mode: original vibrant colors
-  //     "rgba(255, 0, 0, 0.8)",
-  //     "rgba(0, 255, 0, 0.8)",
-  //     "rgba(0, 0, 255, 0.8)",
-  //     "rgba(255, 0, 0, 0.8)",
-  //   ],
-  // });
-
-  // NEW: Static glow colors for better performance
-  const getStaticGlowColor = () => {
-    if (isDarkMode) {
-      return "rgba(255, 255, 255, 0.3)"; // Subtle white glow for dark mode
-    }
-    // Light mode: use a subtle glow that matches the bubble color
-    switch (color) {
-      case "red":
-        return "rgba(255, 0, 0, 0.2)"; // Subtle red glow
-      case "green":
-        return "rgba(0, 255, 0, 0.2)"; // Subtle green glow
-      case "blue":
-        return "rgba(0, 0, 255, 0.2)"; // Subtle blue glow
-      default:
-        return "rgba(0, 0, 0, 0.1)"; // Subtle black glow
-    }
+  const wrapStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  const delay = reduced ? 0 : Math.min(bIndex, STAGGER.max) * STAGGER.turn;
+  const radius = {
+    borderRadius: 16,
+    borderTopLeftRadius: left ? 5 : 16,
+    borderTopRightRadius: left ? 16 : 5,
   };
 
-  const tailAlignment = isLeftVoice(color) ? { left: 15 } : { right: 15 };
-  const sideAlign = isLeftVoice(color) ? "flex-start" : "flex-end";
-  const nameAlign = isLeftVoice(color) ? "left" : "right";
-
   return (
-    <View key={bIndex} style={{ position: 'relative', alignItems: sideAlign, paddingHorizontal: 14 }}>
-      <EmojiHandler
-        block={block}
-        blockIndex={bIndex}
-        hasTail={hasTail}
-        onLongPress={onLongPress}
-      >
-        {hasTail && <SourceNameComponent sourceName={sourceName} align={nameAlign} />}
-        <Animated.View
+    <Animated.View
+      entering={FadeInDown.duration(DUR.base).delay(delay)}
+      style={[{ alignItems: left ? 'flex-start' : 'flex-end', paddingHorizontal: 14 }, wrapStyle]}
+    >
+      <EmojiHandler block={block} blockIndex={bIndex} hasTail={hasTail} onLongPress={onLongPress}>
+        {hasTail && (
+          <Text
+            accessibilityLabel={localizeVoiceName(sourceName, language)}
+            style={[styles.who, { color: ink, textAlign: left ? 'left' : 'right' }]}
+          >
+            {localizeVoiceName(sourceName, language)}
+          </Text>
+        )}
+        <View
           style={[
             styles.bubble,
+            radius,
             {
-              backgroundColor: isDarkMode ? colors.dark : colors.light,
-              ...(isGlowing ? {
-                // NEW: Static glow effect for better performance
-                borderWidth: 3,
-                borderColor: getStaticGlowColor(),
-                shadowColor: getStaticGlowColor(),
-                shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.8,
-                shadowRadius: 8,
-                elevation: isDarkMode ? 8 : 5, // Higher elevation in dark mode for better glow visibility
-              } : {
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 3,
-                elevation: 3,
-              }),
-              borderWidth: isTargetVerse ? 3 : (isGlowing ? 3 : 0),
-              borderColor: isTargetVerse ? 
-                targetVerseAnim.interpolate({
-                  inputRange: [0, 0.3, 1],
-                  outputRange: ['transparent', '#FFD700', '#FFA500'] // Orange to gold to transparent
-                }) : (isGlowing ? getStaticGlowColor() : 'transparent'),
+              backgroundColor: isDarkMode ? fills.dark : fills.light,
+              borderColor: color === 'black' ? palette.hair : ink,
+              maxWidth: '84%',
+              borderWidth: isTargetVerse || isGlowing ? 2 : StyleSheet.hairlineWidth,
             },
           ]}
         >
-          {hasTail && (
-            <View
-              style={[
-                styles.tail,
-                {
-                  borderBottomColor: isDarkMode ? colors.dark : colors.light,
-                },
-                tailAlignment
-              ]}
-            />
-          )}
           <View>
             {children.map((item, index) => {
-              if (item.type === "break" || item.tag === "b") return null;
+              if (item.type === 'break' || item.tag === 'b') return null;
               return (
                 <BibleInlineComponent
                   key={`${bIndex}-${index}`}
                   iIndex={`${bIndex}-${index}`}
                   inline={item}
-                  textColor={getBubbleTextColorSafe(color, isDarkMode)}
+                  textColor={ink}
                   bubbleColor={color}
+                  bodySize={bodySize}
+                  bodyLineHeight={lineHeight}
                 />
               );
             })}
           </View>
-        </Animated.View>
+        </View>
       </EmojiHandler>
-    </View>
+    </Animated.View>
   );
 };
 
-// Define styles
 const styles = StyleSheet.create({
-  bubble: {
-    borderRadius: 16,
-    padding: 10,
-    position: "relative",
-    marginVertical: 4,
-    maxWidth: "84%",
-    ...Platform.select({
-      web: {
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
-      },
-      default: {
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        elevation: 3,
-      },
-    }),
+  who: {
+    fontSize: 9,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    fontWeight: '600',
+    marginBottom: 4,
+    marginTop: 11,
   },
-  tail: {
-    position: "absolute",
-    top: -9, // Position above the bubble
-    width: 0,
-    height: 0,
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
-    borderBottomWidth: 10,
-    borderLeftColor: "transparent",
-    borderRightColor: "transparent",
+  bubble: {
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    marginBottom: 2,
+    ...Platform.select({
+      web: { boxShadow: 'none' },
+      default: {},
+    }),
   },
 });
 

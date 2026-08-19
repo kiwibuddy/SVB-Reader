@@ -1,8 +1,11 @@
 import React, { useMemo } from 'react';
-import { Text, View, StyleSheet } from "react-native";
-import SegmentTitles from "@/assets/data/SegmentTitles.json";
-import { useAppSettings } from '@/context/AppSettingsContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import { Text, View, StyleSheet } from 'react-native';
+import SegmentTitles from '@/assets/data/SegmentTitles.json';
+import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
+import { ThreadColors } from '@/constants/Colors';
+import { localizeStoryTitle, localizeBookName } from '@/utils/localize';
+import { formatReadingMinutes, getSegmentReadingTime } from '@/utils/readingTime';
+import Books from '@/assets/data/BookChapterList.json';
 
 interface SegmentTitleType {
   title: string;
@@ -10,79 +13,46 @@ interface SegmentTitleType {
   ref?: string;
 }
 
-const dualBookSegments = ["S115", "S096"];
+const books = Books as Record<string, { bookName: string }>;
 
-export default function SegmentTitle({segmentId}: {segmentId: string}) {
-  const { colors, language } = useAppSettings();
-  const { t } = useTranslation();
-  
-  // Get localized segment title based on current language
-  const localizedData = useMemo(() => {
-    if (language === 'fr') {
-      // Try to get French title and book names from FRA-UI.json
-      try {
-        const fraUI = require('@/assets/data/FRA-UI.json');
-        const frenchTitle = fraUI.Titles?.[segmentId];
-        if (frenchTitle) {
-          // Get English data for structure
-          const englishData = SegmentTitles[segmentId as keyof typeof SegmentTitles] as SegmentTitleType;
-          
-          // Translate book names if available
-          let localizedBooks = englishData.book;
-          if (fraUI.bookNames) {
-            localizedBooks = englishData.book.map((bookName: string) => {
-              // bookNames structure: { "GEN": { "bookName": "Genèse", "Abbreviation Translation": "Gn" } }
-              const frenchBook = fraUI.bookNames[bookName];
-              return frenchBook?.bookName || bookName;
-            });
-          }
-          
-          return {
-            title: frenchTitle,
-            book: localizedBooks,
-            ref: englishData.ref // Keep reference as is (it's mostly numbers/abbreviations)
-          };
-        }
-      } catch (error) {
-        // Fall back to English if French not available
-      }
-    }
-    // Default to English
-    return SegmentTitles[segmentId as keyof typeof SegmentTitles] as SegmentTitleType;
-  }, [segmentId, language]);
-  
-  const { title, book, ref } = localizedData;
-  const isDualBook = dualBookSegments.includes(segmentId);
+export default function SegmentTitle({ segmentId }: { segmentId: string }) {
+  const { isDarkMode, language } = useSyncAppSettings();
+  const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
+  const data = SegmentTitles[segmentId as keyof typeof SegmentTitles] as SegmentTitleType | undefined;
+  const title = localizeStoryTitle(segmentId, data?.title || segmentId, language);
+  const bookId = data?.book?.[0] || '';
+  const bookName = localizeBookName(bookId, books[bookId]?.bookName || bookId, language);
+  const ref = (data?.ref || '').replace(/-/g, '–');
+  const minutes = getSegmentReadingTime(segmentId);
+  const num = segmentId.replace(/^S/i, '');
   const isIntroduction = segmentId.startsWith('I');
-  
-  const reference = isDualBook ? `${book[0]} & ${book[1]}` : ref;
-
-  const styles = StyleSheet.create({
-    container: {
-      paddingTop: isIntroduction ? 32 : 32,
-      paddingHorizontal: 16,
-      paddingBottom: isIntroduction ? 4 : 8,
-      justifyContent: "center",
-      alignItems: "center"
-    },
-    title: {
-      fontSize: 24,
-      fontWeight: "600",
-      color: colors.text,
-      marginBottom: isIntroduction ? 0 : 8
-    },
-    subtitle: {
-      fontSize: 16,
-      color: colors.secondary,
-    }
-  });
+  const meta = [num, bookId && ref ? `${bookId} ${ref}` : bookName, minutes ? formatReadingMinutes(minutes) : '']
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      {!isIntroduction && (
-        <Text style={styles.subtitle}>{ref ? reference : book[0]}</Text>
-      )}
+      <Text style={[styles.title, { color: palette.ink }]}>{title}</Text>
+      {!isIntroduction && <Text style={[styles.meta, { color: palette.mute }]}>{meta}</Text>}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    paddingTop: 12,
+    paddingHorizontal: 14,
+    paddingBottom: 4,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '600',
+    letterSpacing: -0.3,
+  },
+  meta: {
+    fontSize: 10,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginTop: 4,
+  },
+});
