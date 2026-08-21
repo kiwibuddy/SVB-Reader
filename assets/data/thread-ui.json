@@ -63,15 +63,7 @@
       "savedReaction": "Saved reaction",
       "youEmptyTitle": "A year of stories is ahead",
       "youEmptyBody": "Ten divisions, 365 stories, 774 voices. The thread grows as you read.",
-      "yourYear": "Your year",
-      "onboardingColorsTitle": "Four voices, four colours",
-      "onboardingColorsBody": "Every word is inked for the voice that spoke it. Narrator, God, the named principals, and everyone else. Read it alone or hand the colours to friends in the room.",
-      "onboardingVoicesTitle": "774 voices",
-      "onboardingVoicesBody": "Look up anyone who speaks in Scripture. See who they spoke with, and their longest exchange.",
-      "onboardingThreadTitle": "One thread through the Bible",
-      "onboardingThreadBody": "Ten divisions hold 365 stories. Open a knot, follow the line, and keep reading together without a host or a QR code.",
-      "onboardingSavedTitle": "React and remember",
-      "onboardingSavedBody": "Long-press a turn to react or note. Saved verses keep their voice, colour, and place in the story."
+      "yourYear": "Your year"
     }
   },
   "fr": {
@@ -138,15 +130,7 @@
       "savedReaction": "Réaction gardée",
       "youEmptyTitle": "Une année d’histoires vous attend",
       "youEmptyBody": "Dix divisions, 365 récits, 774 voix. Le fil grandit à mesure que vous lisez.",
-      "yourYear": "Votre année",
-      "onboardingColorsTitle": "Quatre voix, quatre couleurs",
-      "onboardingColorsBody": "Chaque mot porte l’encre de celui qui l’a dit. Narrateur, Dieu, les personnages nommés, et tous les autres. Lisez seul ou donnez les couleurs à des amis dans la pièce.",
-      "onboardingVoicesTitle": "774 voix",
-      "onboardingVoicesBody": "Retrouvez quiconque parle dans l’Écriture. Voyez avec qui ils ont parlé, et leur plus long échange.",
-      "onboardingSavedTitle": "Réagir et se souvenir",
-      "onboardingSavedBody": "Appui long sur une réplique pour réagir ou noter. Les versets gardés conservent leur voix, leur couleur et leur place.",
-      "onboardingThreadTitle": "Un fil à travers la Bible",
-      "onboardingThreadBody": "Dix divisions portent 365 récits. Ouvrez un nœud, suivez la ligne, et lisez ensemble sans hôte ni QR code."
+      "yourYear": "Votre année"
     }
   }
 }
