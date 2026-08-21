@@ -11,8 +11,16 @@ release. Written 21 August 2026.
 | [`PLAY-STORE-LISTING.md`](PLAY-STORE-LISTING.md) | Every Play field, final copy. Includes Data safety answers and the asset list. |
 | [`RELEASE-NOTES-2.0.0.md`](RELEASE-NOTES-2.0.0.md) | What's New for both stores, plus what was left out and why. |
 | [`COPY-RATIONALE.md`](COPY-RATIONALE.md) | The market research behind the register, how the copy signals "Bible app", how it states what is distinctive without comparing, and a fact check of every claim against the code. |
+| [`PRE-SUBMISSION-FIXES.md`](PRE-SUBMISSION-FIXES.md) | **Everything that must be true before this copy goes live.** Ordered by what breaks if you skip it. |
 
 Copy is final. The fenced blocks are meant to be pasted verbatim.
+
+**The copy is written as if the whole 2.0.0 punch list is done** — it describes
+the app you are shipping, not the branch as it stands today. Two sentences in the
+descriptions currently claim things the build does not do. Work
+[`PRE-SUBMISSION-FIXES.md`](PRE-SUBMISSION-FIXES.md) before you paste, and if
+anything there is still open at submission time, cut the sentence that claims it
+rather than shipping the claim.
 
 ## What changed in the repo
 
@@ -52,9 +60,10 @@ pasted anywhere.
    `mailto:` link.
 3. **Finalise the division titles.** They appear on every Read-tab screenshot.
    Any shot taken before they land is wasted.
-4. **Verify the three claims flagged in `RELEASE-NOTES-2.0.0.md`** — image share,
-   verse reference search, and data survival across the upgrade. The listings
-   assert all three.
+4. **Work `PRE-SUBMISSION-FIXES.md` §1–§3** — verse reference search (broken for
+   about one verse in five), image share on a production build, and data survival
+   across the upgrade. The listings assert all three. Re-run
+   `node scripts/test-reference-search.js` until it exits clean.
 5. **Shoot screenshots**, all required device classes, per the brief in
    `APP-STORE-LISTING.md`.
 6. **Paste the copy**, run the checklist below, submit to TestFlight and the Play
@@ -90,7 +99,9 @@ Build:
 - [ ] Real 1.2.1 database upgrades to 2.0.0 with zero data loss on a physical
       iPhone
 - [ ] Share produces an image, not a fallback citation
-- [ ] `gen 4:3` opens Genesis 4 at verse 3
+- [ ] `node scripts/test-reference-search.js` exits clean — 15/15 cases, all 66
+      books reachable under their real names
+- [ ] `gen 4:3` opens Genesis 4 at verse 3 **and scrolls to it**, on a device
 
 Assets:
 

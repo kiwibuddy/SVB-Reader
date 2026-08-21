@@ -103,19 +103,21 @@ did not eat their notes. New users need to not care. Putting it last serves both
 
 ## Before you paste these in
 
-Three claims in these notes are true of the code but have **not been confirmed on
-a production build**. Verify each one, because the listing asserts it:
+These notes are written as if the whole 2.0.0 punch list is done. Three of their
+claims are **not true of the branch as it stands**, and each one has to be closed
+before this text goes live:
 
-1. **Image share.** `react-native-view-shot` is in `package.json`, but the share
-   path falls back to sharing citation text when the native module is missing.
-   The Apple description says "send a bubble to someone as an image". Open a
-   story on the production build, long-press a bubble, tap Share, and confirm an
-   image appears rather than text.
-2. **Verse reference search.** `utils/reference.ts` and `verseSearchIndex.json`
-   both ship, and the notes claim `gen 4:3` works. Run the acceptance list in
-   `MVP2/14-SHIP-PLAN.md` §2 before submitting.
+1. **Image share.** The notes do not mention it, but both descriptions do. The
+   share path silently falls back to citation text when `react-native-view-shot`
+   is unavailable, and it has never been seen rendering a card.
+2. **Verse reference search.** Broken for 17 books plus Isaiah — about one verse
+   in five is unreachable. The descriptions use `1 co 13` as an example, which
+   returns nothing today.
 3. **Data survives the upgrade.** "Everything you have already read, saved and
-   noted comes with you" is a promise to your existing users. Install 1.2.1 from
-   TestFlight, generate real data, install 2.0.0 over the top without deleting,
-   and check completions, reactions, notes, the active plan and the streak. This
-   is the migration pass in `MVP2/14-SHIP-PLAN.md` §4.
+   noted comes with you" is a promise to your existing users, and the migration
+   pass has not been run against a real 1.2.1 database.
+
+All three, with reproduction steps and fixes, are in
+[`PRE-SUBMISSION-FIXES.md`](PRE-SUBMISSION-FIXES.md). If any one of them is still
+open at submission time, cut the sentence that claims it rather than shipping the
+claim.

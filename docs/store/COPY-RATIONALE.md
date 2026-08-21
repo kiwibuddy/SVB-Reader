@@ -146,11 +146,17 @@ listing is the thing Apple and Google check the build against.
 | Seasonal plans appear in season | `utils/planCatalog.ts` `isSeasonalChallengeVisible` gates Advent, Lent and Christmas | ✅ |
 | You tab: stories / 365, voices met / 774, streak, plan progress | `app/(tabs)/you.tsx` | ✅ |
 | Questions in three sets after each story | `components/thread/TalkAboutCard.tsx` — family, school, small group; `Questions-EN.json` covers 365 segments × 3 audiences × 2 sets | ✅ |
-| Verse reference search, `gen 4:3` | `utils/reference.ts` + `assets/data/verseSearchIndex.json` (558 KB) | ⚠️ **untested on hardware** |
-| Share a bubble as an image | `utils/shareTurn.ts` — falls back to citation text when `react-native-view-shot` is unavailable | ⚠️ **needs production-build check** |
+| Verse reference search, `gen 4:3` | `utils/reference.ts` + `assets/data/verseSearchIndex.json` (558 KB) | ⚠️ **broken today** — `gen 4:3` works, `1 co 13` and Isaiah do not. See [`PRE-SUBMISSION-FIXES.md`](PRE-SUBMISSION-FIXES.md) §1 |
+| Share a bubble as an image | `utils/shareTurn.ts` — falls back to citation text when `react-native-view-shot` is unavailable | ⚠️ **needs production-build check** — [§2](PRE-SUBMISSION-FIXES.md) |
 | No account, no ads, nothing to buy | No auth surface; no ad, analytics or IAP dependency in `package.json` | ✅ |
 | Nothing leaves your phone | Local SQLite only. Network use is `expo-updates` and optional translation downloads | ✅ |
 | Light and dark, adjustable text size | `app/settings.tsx` — appearance light/dark/auto, font size, orientation lock | ✅ |
+
+**The copy is written as if the two ⚠️ rows are fixed.** That is deliberate: the
+listings describe the app you are shipping, not the branch as it stands. Both are
+tracked in [`PRE-SUBMISSION-FIXES.md`](PRE-SUBMISSION-FIXES.md), and if either
+one is still broken when you submit, the affected sentence has to come out of
+both descriptions.
 
 ### Three things to fix or watch
 
