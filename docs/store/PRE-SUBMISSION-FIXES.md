@@ -26,9 +26,9 @@ across **all 24,935 indexed verses**. Today: **all pass.**
 Both load the app's real modules rather than reimplementing them, so a pass means
 the shipped code works. Neither needs `node_modules`.
 
-What could not be checked from here, and needs a device: anything about rendered
-layout, scroll behaviour, gestures, the share sheet, and migration from a real
-1.2.1 database.
+What no script can prove — rendered layout, scroll behaviour, gestures, the
+share sheet, migration from a real 1.2.1 database — is collected in the **Device
+test checklist** near the end of this document. Work it before you submit.
 
 ---
 
@@ -536,21 +536,79 @@ one area where a store reviewer can reject on principle.
 
 ---
 
+# Device test checklist
+
+Everything a script cannot prove. Nothing here is optional — each line covers a
+fix whose logic is verified but whose *rendered* behaviour is not.
+
+## D1 · Verse landing and the arrival pulse — the H2 fix
+
+Logic verified across all 24,935 indexed verses; none of the following was, or
+can be, checked off-device.
+
+- [ ] Search `gen 4:3`. It should land **partway down** "People Sin" — turn 37 of
+      64 — not at the head of the story.
+- [ ] The preceding turn should be partly visible above it, about 90px of
+      context. Not flush to the top, not centred.
+- [ ] The pulse fires **once** on arrival and fades over ~1.5s. It must not
+      re-fire when you scroll away and back.
+- [ ] The pulse is legible against **all four bubble colours** — narrator, God,
+      main character, supporting — in **light and dark**. The `find` tint was
+      chosen to clear all four, but only a screen can confirm it.
+- [ ] It does not read as the saved/reacted state. Put a reaction on a
+      neighbouring turn and compare.
+- [ ] Scrolling immediately after landing behaves normally — no snap-back, no
+      fighting the animation.
+- [ ] Open a story **without** a reference (tap it in the thread). It must still
+      open at the top. This is the guard on the scroll-reset effect.
+- [ ] Open a story from a **plan** and from the **Cast** longest-exchange link.
+      Neither passes a verse, so both must open at the top.
+- [ ] Try `rev 22` (last story), `psalm 23` (chapter-only → verse 1), and
+      `Genesis 1:1` (first turn — should sit at the top with nothing above it).
+- [ ] Rotate the device mid-scroll, and try a large font size from Settings.
+      Both change layout after measurement; the landing should still be sane.
+- [ ] With **Reduce Motion** on, the pulse should settle without animating.
+
+## D2 · Image share — S1
+
+- [ ] Long-press a turn → Share produces an **image**, not citation text.
+- [ ] Speaker, ink colour, reference and wordmark all render, in light and dark.
+
+## D3 · Migration from 1.2.1 — S3
+
+Full procedure in `MVP2/14-SHIP-PLAN.md` §4.
+
+- [ ] Completions, reactions, notes, active plan and streak all survive.
+- [ ] Onboarding v2 shows exactly once.
+
+## D4 · The C device checklist
+
+Never yet run on hardware; carried over from `MVP2/13-STEP-LOG.md`.
+
+- [ ] S008 left/right alternation on a four-ink story.
+- [ ] Cast list order and pills.
+- [ ] A late-division thread (Revelation) draws correctly.
+- [ ] The You year thread at zero.
+- [ ] The reader carries no gutter line and no speaker dots.
+
+---
+
 # Summary
 
 | | Item | Blocks |
 | --- | --- | --- |
 | **H1** | Verse search — index, names, the "I" parser, multi-word, ambiguity | A claim in both listings |
-| ~~H2~~ | ~~Search results do not scroll to the verse~~ — **fixed 21 Aug**, device check outstanding | — |
+| ~~H2~~ | ~~Search results do not scroll to the verse~~ — **fixed 21 Aug**; device checks in D1 | — |
 | **H3** | Streaks computed in UTC — wrong for NZ/AU/Asia | A feature named in both listings |
 | **M1** | "More questions" dead-ends on ~20 stories | — |
 | **M2** | Continue card ignores the active plan | — |
 | **M3** | Achievements and its subtree unreachable, with a dead `/Bible` route | — |
 | **M4** | 49 orphaned modules; the real cause of the lint count | X3 |
 | **L1–L7** | Bundle, config, tracked artifacts, logging, data gaps | — |
-| **S1** | Image share on a production build | A claim in both listings |
+| **S1** | Image share on a production build (D2) | A claim in both listings |
 | **S2** | Privacy policy URL · Play service account | Submission itself |
-| **S3** | Migration pass on a real 1.2.1 database | A promise to existing users |
+| **S3** | Migration pass on a real 1.2.1 database (D3) | A promise to existing users |
 | **S4** | Division titles final | Screenshots |
 | **S5** | French removed from both consoles | Review risk |
+| **D1–D4** | Device test checklist — the part no script can prove | Submission |
 | **C1–C8** | Suggestions, not defects | — |
