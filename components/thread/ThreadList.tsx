@@ -102,7 +102,7 @@ function ReferenceSearchResult({ refResult, palette, router, setQuery }: {
       <View>
         <Text style={{ fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', color: palette.mute, paddingHorizontal: 14, paddingTop: 16, paddingBottom: 6 }}>REFERENCE</Text>
         <Pressable
-          onPress={() => openSegment(router, r.segmentId, { pos: r.position })}
+          onPress={() => openSegment(router, r.segmentId, { chapter: r.chapter, verse: r.verse })}
           style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: palette.hair }}
         >
           <View style={{ flex: 1 }}>

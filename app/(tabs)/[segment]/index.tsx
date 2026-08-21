@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo, useEffect } from 'react';
+import React, { useRef, useState, useMemo, useEffect, useCallback } from 'react';
 import logger from '@/utils/logger';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, StatusBar, Dimensions } from 'react-native';
@@ -23,54 +23,6 @@ import { startReadingSession, updateReadingSession } from '@/api/sqlite';
 import { isLargeScreen, isLandscape, responsivePadding, spacing } from '@/constants/sizes';
 
 // Helper function moved outside component but Bible loading moved inside
-
-// Helper function to find verse location in Bible content
-const findVerseLocation = (segmentData: any, targetChapter: number, targetVerse: number) => {
-  if (!segmentData) {
-    return null;
-  }
-  
-  // Check different possible data structures
-  let content = null;
-  if (segmentData.children) {
-    content = segmentData.children;
-  } else if (segmentData.content) {
-    content = segmentData.content;
-  } else {
-    return null;
-  }
-  
-  // Search through the Bible content to find the target verse
-  let currentY = 0;
-  let verseCount = 0;
-  
-  for (const block of content) {
-    if (block.type === 'paragraph' && block.children) {
-      for (const child of block.children) {
-        // Check if this child has a verse reference
-        if (child.link && child.link.chapter && child.link.verse) {
-          const chapter = parseInt(child.link.chapter);
-          const verse = parseInt(child.link.verse);
-          verseCount++;
-          
-          if (chapter === targetChapter && verse === targetVerse) {
-            return { y: currentY, chapter, verse, verseCount };
-          }
-        }
-        // Increment Y position for each verse element
-        currentY += 40; // Approximate height per verse element
-      }
-    } else if (block.type === 'paragraph') {
-      // For paragraph blocks without children, add some height
-      currentY += 60;
-    } else {
-      // For other block types (headings, etc.)
-      currentY += 80;
-    }
-  }
-  
-  return null;
-};
 
 // Move styles outside component
 const createStyles = (colors: any, isLargeScreen: boolean, isLandscape: boolean) => StyleSheet.create({
@@ -178,7 +130,7 @@ export default function BibleScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
-  const { planId, challengeId, verse, chapter, pos, voice } = params;
+  const { planId, challengeId, verse, chapter, voice } = params;
   const voiceName = Array.isArray(voice) ? voice[0] : voice;
   const flatListRef = useRef<ScrollView>(null);
   const { isVisible } = useBottomNavAnimation();
@@ -338,88 +290,40 @@ export default function BibleScreen() {
     }
   }, [segID, updateSegmentId]);
 
-  // Always start scrolled to the top when a story loads or segID changes
+  // Always start scrolled to the top when a story loads or segID changes —
+  // unless we were sent here by a verse reference, in which case these resets
+  // would land on top of the scroll to that verse and win.
   useEffect(() => {
+    if (verse && chapter) return;
+
     // Multiple scroll reset attempts to ensure it works reliably
     const scrollToTop = () => {
       flatListRef.current?.scrollTo({ y: 0, animated: false });
     };
-    
+
     // Immediate scroll reset
     scrollToTop();
-    
+
     // Additional scroll reset after a brief delay to ensure content is loaded
     const timer1 = setTimeout(scrollToTop, 50);
     const timer2 = setTimeout(scrollToTop, 200);
-    
+
     logger.info(`📜 [BibleScreen] Resetting scroll position for segment ${segID}`);
-    
+
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [segID]);
+  }, [segID, verse, chapter]);
 
-  // Verse navigation logic - scroll to specific verse when provided
-  useEffect(() => {
-    if (verse && chapter && flatListRef.current && segmentData) {
-      logger.info(`🎯 [BibleScreen] Navigating to verse ${chapter}:${verse} in segment ${segID}`);
-      
-      // Delay to ensure content is fully loaded and rendered
-      const scrollToVerse = () => {
-        if (flatListRef.current && segmentData) {
-          try {
-            // Find the verse location in the Bible content
-            const targetVerse = findVerseLocation(segmentData, parseInt(chapter as string), parseInt(verse as string));
-            if (targetVerse) {
-              logger.info(`📍 [BibleScreen] Found verse at position: ${targetVerse.y}px, scrolling...`);
-              
-              // Add a small offset to center the verse better
-              const scrollPosition = Math.max(0, targetVerse.y - 100);
-              
-              flatListRef.current.scrollTo({ 
-                y: scrollPosition, 
-                animated: true 
-              });
-              
-              logger.info(`✅ [BibleScreen] Successfully scrolled to verse ${chapter}:${verse}`);
-            } else {
-              logger.warn(`⚠️ [BibleScreen] Verse ${chapter}:${verse} not found in segment ${segID}`);
-            }
-          } catch (error) {
-            logger.error(`❌ [BibleScreen] Error scrolling to verse:`, error);
-          }
-        }
-      };
-      
-      // Try multiple times with increasing delays to ensure content is loaded
-      const timers = [
-        setTimeout(scrollToVerse, 300),   // Quick first attempt
-        setTimeout(scrollToVerse, 800),   // Second attempt
-        setTimeout(scrollToVerse, 1500),  // Third attempt
-        setTimeout(scrollToVerse, 2500)   // Final attempt
-      ];
-      
-      return () => {
-        timers.forEach(timer => clearTimeout(timer));
-      };
-    }
-  }, [verse, chapter, segID, segmentData]);
-
-  // Scroll to a raw position offset (from verseSearchIndex) when `pos` param is provided
-  useEffect(() => {
-    if (pos && flatListRef.current) {
-      const targetPos = parseInt(pos as string, 10);
-      if (!isNaN(targetPos) && targetPos > 0) {
-        const doScroll = () => {
-          flatListRef.current?.scrollTo({ y: Math.max(0, targetPos - 80), animated: true });
-        };
-        const t1 = setTimeout(doScroll, 400);
-        const t2 = setTimeout(doScroll, 1200);
-        return () => { clearTimeout(t1); clearTimeout(t2); };
-      }
-    }
-  }, [pos, segID]);
+  // Scroll to the turn a verse reference resolved to. Segment finds it and
+  // reports its measured offset once layout is known, so there is nothing to
+  // guess at here — no timers, no estimated pixel positions.
+  const handleVerseLocated = useCallback((y: number) => {
+    // Leave the preceding turn partly visible so the landing has some context.
+    flatListRef.current?.scrollTo({ y: Math.max(0, y - 90), animated: true });
+    logger.info(`📍 [BibleScreen] Scrolled to ${chapter}:${verse} at ${Math.round(y)}px`);
+  }, [chapter, verse]);
 
   // Clear verse highlighting when navigating to a different segment
   useEffect(() => {
@@ -629,6 +533,7 @@ export default function BibleScreen() {
             challengeId={challengeId as string}
             targetVerse={verse ? parseInt(verse as string) : undefined}
             targetChapter={chapter ? parseInt(chapter as string) : undefined}
+            onVerseLocated={handleVerseLocated}
           />
           <View style={[styles.checkCircleContainer, { flexDirection: 'row', gap: 24, justifyContent: 'center', alignItems: 'flex-end' }]}> 
             <CheckCircle 

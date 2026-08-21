@@ -12,12 +12,19 @@ bug could be demonstrated, it was — the evidence is quoted inline.
 **Two standing checks:**
 
 ```bash
-node scripts/test-reference-search.js   # verse search — currently fails
+node scripts/test-reference-search.js   # resolution — FAILS (H1)
+node scripts/test-verse-landing.js      # landing    — PASSES (H2 fixed)
 ```
 
-Reports the acceptance list from `MVP2/14-SHIP-PLAN.md` §2 plus a coverage sweep
-over all 66 books, and exits non-zero while anything is wrong. Today:
-**10/15 cases, 20 books unreachable, 3 wrong display names.**
+The first runs the acceptance list from `MVP2/14-SHIP-PLAN.md` §2 plus a coverage
+sweep over all 66 books. Today: **10/15 cases, 20 books unreachable, 3 wrong
+display names.**
+
+The second checks that a resolved reference lands on the turn holding the verse,
+across **all 24,935 indexed verses**. Today: **all pass.**
+
+Both load the app's real modules rather than reimplementing them, so a pass means
+the shipped code works. Neither needs `node_modules`.
 
 What could not be checked from here, and needs a device: anything about rendered
 layout, scroll behaviour, gestures, the share sheet, and migration from a real
@@ -135,41 +142,66 @@ outright; a prefix matching more than one book shows all of them as rows.* Typin
 Lower stakes than H1a–H1c, but today `jud 1` delivers a **wrong** answer
 confidently rather than a missing one.
 
-## H2 · Tapping a search result does not land on the verse
+## ~~H2 · Tapping a search result does not land on the verse~~ — FIXED 21 Aug
 
-Even for references that resolve, the reader does not go to the right place.
+**Fixed.** `node scripts/test-verse-landing.js` covers it: all 24,935 indexed
+verses land on a turn that contains them.
 
-`app/(tabs)/[segment]/index.tsx:411–415` treats the index's `position` as a **pixel Y
-offset**:
+### What was wrong
 
-```js
-flatListRef.current?.scrollTo({ y: Math.max(0, targetPos - 80), animated: true });
-```
+Three things, not one.
 
-`position` is not a pixel offset. It is a synthetic estimate at **40 px per
-verse** — the same `currentY += 40` heuristic that appears in `findVerseLocation`
-at the top of that file. Every value is a multiple of 40, and they are not even
-monotonic. Genesis 1:
+**The offset was fictional.** `app/(tabs)/[segment]/index.tsx` fed the index's
+`position` straight into `scrollTo({ y })`, but `position` is a synthetic
+estimate at 40px per verse — the same `currentY += 40` heuristic that sat dead at
+the top of that file. Every value a multiple of 40, and not even monotonic:
+Genesis 1:1 → 40, 1:2 → 200, 1:3 → **80**. S001's largest was 2,440px for a story
+several thousand pixels tall, so it always undershot to near the top.
 
-```
-Genesis-1-1  block=0  pos=40
-Genesis-1-2  block=0  pos=200
-Genesis-1-3  block=0  pos=80     ← goes backwards
-Genesis-1-4  block=2  pos=200
-```
+**`blockIndex` is right but is not the rendered index.** It is trustworthy —
+verified 100% across all 24,935 entries — but it addresses `segmentData.content`,
+and the reader renders that through `splitIntoParagraphs()` and, for **232 of the
+365 stories**, `splitContentIntoReaderParts()` too. The rendered list is
+1.2×–2.2× longer, so using `blockIndex` as a rendered index would have replaced
+one wrong answer with another.
 
-S001's largest position is 2,440 px for a ~2,000-word story of speech bubbles,
-so the scroll consistently **undershoots and lands near the top** regardless of
-which verse you asked for.
+**The highlight had never fired.** `GlowBubble` decided the target verse by
+reading `leaf.link.chapter`. Across the whole Bible only **782 of 135,679 leaves
+carry `link`, and only inside book introductions**. Story verses use
+`ref: ["Gen-1-1"]` — 131,090 leaves. The same dead lookup drove
+`findVerseLocation()` and its four staged timeouts.
 
-`MVP2/14-SHIP-PLAN.md` §2 D1 called this exactly: *"the reader has to act on
-`position`… find the block via `onLayout` offsets… Budget half a day for this
-alone; it is not a lookup problem."* The lookup was built; this half-day was not.
+**And a race underneath all of it.** A scroll-reset effect fired at 0ms, 50ms and
+200ms on every story open. Any correct scroll arriving inside that window was
+undone — which is very likely why the original code reached for 300/800/1500/2500ms
+timers.
 
-**Fix.** Use `blockIndex`, which the index already stores and which is correct,
-against `onLayout`-measured block offsets in the reader. Add the highlight pulse
-on arrival that the spec asks for. Then verify `gen 4:3` lands on Genesis 4:3
-inside "People Sin", not at the head of the story.
+### How it works now
+
+Locate the verse by its own `ref` in the blocks that were actually rendered, in
+`utils/verseLocator.ts`. That is immune to both splitters, needs no index
+mapping, and will keep working after H1 rebuilds the index — the rebuild changes
+book names and adds the 17 missing books, but not `ref`.
+
+- `openSegment()` carries `chapter`/`verse` instead of `pos`.
+- `Segment` finds the turn, measures it with `onLayout`, and reports the offset
+  up once layout is known — no timers, no estimates.
+- The reader scrolls to it, leaving 90px of the preceding turn visible.
+- The turn washes in a new `find` tint and fades back over ~1.5s. Colour only:
+  animating border width would reflow the bubble the reader just measured.
+- The scroll-reset is skipped when a reference sent you here.
+- `findVerseLocation()`, the `pos` effect, the dead `link` lookup and a dead
+  `flatListRef` in `Segment` are gone.
+
+`position` is left in the index; it costs little and H1's rebuild can drop it.
+
+### Still to check on a device
+
+Everything above is verified as logic. What a script cannot prove is the
+rendered result: that `gen 4:3` visibly lands on Genesis 4:3 partway down "People
+Sin" rather than at the head, that the pulse reads clearly against all four
+bubble colours in light and dark, and that a story opened *without* a reference
+still starts at the top.
 
 ## H3 · Streaks are computed in UTC and break for everyone east of it
 
@@ -464,10 +496,11 @@ ranking and on how the listing converts, and you are about to send a wave of new
 users at it. Trigger it after a completed story on a multi-day streak — never on
 first launch.
 
-## C4 · The highlight pulse on verse arrival
+## ~~C4 · The highlight pulse on verse arrival~~ — done
 
-Specified alongside H2 and worth doing in the same pass. Landing on a verse
-without marking it means the reader still has to hunt.
+Built as part of H2. The turn washes in the new `find` tint and fades back over
+~1.5s. Still worth looking at on a device: it needs to read clearly against all
+four bubble colours, in light and dark.
 
 ## C5 · Read-aloud mode
 
@@ -508,7 +541,7 @@ one area where a store reviewer can reject on principle.
 | | Item | Blocks |
 | --- | --- | --- |
 | **H1** | Verse search — index, names, the "I" parser, multi-word, ambiguity | A claim in both listings |
-| **H2** | Search results do not scroll to the verse | The same claim |
+| ~~H2~~ | ~~Search results do not scroll to the verse~~ — **fixed 21 Aug**, device check outstanding | — |
 | **H3** | Streaks computed in UTC — wrong for NZ/AU/Asia | A feature named in both listings |
 | **M1** | "More questions" dead-ends on ~20 stories | — |
 | **M2** | Continue card ignores the active plan | — |

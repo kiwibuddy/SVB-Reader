@@ -17,6 +17,7 @@ import { getSegmentCompletionStatus } from "@/api/sqlite";
 import { ANIMATION } from '@/services/animation';
 import * as Haptics from 'expo-haptics';
 import type { Ink } from '@/utils/ink';
+import { bookCodesForSegment, findVerseBlockIndex } from '@/utils/verseLocator';
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -25,6 +26,12 @@ interface SegmentProps {
   challengeId?: string;
   targetVerse?: number;
   targetChapter?: number;
+  /**
+   * Called once with the target turn's offset inside the scroll view, as soon
+   * as layout makes it known. The reader owns the scroll view, so it does the
+   * scrolling; this only reports where to go.
+   */
+  onVerseLocated?: (y: number) => void;
 }
 
 const icons = [
@@ -49,7 +56,8 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   planId,
   challengeId,
   targetVerse,
-  targetChapter
+  targetChapter,
+  onVerseLocated
 }) => {
   const { width: screenWidth } = useWindowDimensions();
   const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenWidth > 768);
@@ -163,6 +171,40 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       return splitContent;
     }
   }, [segmentData?.content, segmentData?.readers]);
+
+  // Which rendered turn holds the verse we were sent to. Found by matching the
+  // verse's own ref in what was rendered, because memoizedContent has been
+  // through one or two splitters and no longer lines up with the index's
+  // blockIndex. See utils/verseLocator.ts.
+  const targetIndex = useMemo(() => {
+    if (!targetChapter || !targetVerse) return -1;
+    return findVerseBlockIndex(
+      memoizedContent,
+      bookCodesForSegment(segID),
+      targetChapter,
+      targetVerse
+    );
+  }, [memoizedContent, segID, targetChapter, targetVerse]);
+
+  const segmentTopRef = useRef<number | null>(null);
+  const targetTopRef = useRef<number | null>(null);
+  const reportedRef = useRef(false);
+
+  useEffect(() => {
+    reportedRef.current = false;
+    targetTopRef.current = null;
+  }, [targetIndex, segID]);
+
+  // Both offsets arrive from independent onLayout calls in no fixed order, so
+  // report as soon as whichever lands second completes the pair.
+  const reportIfLocated = useCallback(() => {
+    if (reportedRef.current || targetIndex < 0) return;
+    const segmentTop = segmentTopRef.current;
+    const targetTop = targetTopRef.current;
+    if (segmentTop == null || targetTop == null) return;
+    reportedRef.current = true;
+    onVerseLocated?.(segmentTop + targetTop);
+  }, [onVerseLocated, targetIndex]);
 
   const computedSources = useMemo(() => {
     const explicit = segmentData?.sources;
@@ -307,23 +349,16 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     );
   }, [memoizedContent, shouldBlockGlow]);
 
-  const flatListRef = useRef<FlatList>(null);
-
-  // Force scroll to top whenever the segment changes
+  // On web the page itself scrolls, so a story change has to reset it. Skipped
+  // when a verse reference sent us here, or it would undo the scroll to it.
+  // (Native resets are handled by the reader, which owns the scroll view.)
   useEffect(() => {
-    // Immediate scroll
-    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-    
-    // Double-check after a brief moment to ensure content is rendered
-    const timer = setTimeout(() => {
-      flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-      if (Platform.OS === 'web') {
-        window.scrollTo(0, 0);
-      }
-    }, 50);
+    if (Platform.OS !== 'web') return;
+    if (targetChapter && targetVerse) return;
 
+    const timer = setTimeout(() => window.scrollTo(0, 0), 50);
     return () => clearTimeout(timer);
-  }, [segmentData?.id]);
+  }, [segmentData?.id, targetChapter, targetVerse]);
 
   // Load completion status from SQLite (hook must not be conditional)
   useEffect(() => {
@@ -562,7 +597,13 @@ const styles = StyleSheet.create({
 
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      onLayout={(event) => {
+        segmentTopRef.current = event.nativeEvent.layout.y;
+        reportIfLocated();
+      }}
+    >
       <SegmentTitle segmentId={segID} />
       <CallSheet
         sources={computedSources}
@@ -585,9 +626,16 @@ const styles = StyleSheet.create({
             hasTail={showSourceName}
             isGlowing={false}
             onLongPress={handleLongPress}
-            targetVerse={targetVerse}
-            targetChapter={targetChapter}
+            isTarget={index === targetIndex}
             dimmed={!!selectedInk && selectedInk !== ink}
+            onLayout={
+              index === targetIndex
+                ? (event) => {
+                    targetTopRef.current = event.nativeEvent.layout.y;
+                    reportIfLocated();
+                  }
+                : undefined
+            }
           />
         );
       })}

@@ -1,46 +1,27 @@
 #!/usr/bin/env node
 /**
- * Acceptance tests for verse reference search.
+ * Acceptance tests for verse reference *resolution*.
  *
  *   node scripts/test-reference-search.js
  *
- * Runs the list from MVP2/14-SHIP-PLAN.md §2 against utils/reference.ts, plus
- * a coverage check that every one of the 66 books is reachable by name.
+ * Runs the list from MVP2/14-SHIP-PLAN.md §2 against utils/reference.ts, plus a
+ * coverage check that every one of the 66 books is reachable by name.
  *
- * utils/reference.ts mixes ESM `export` with CommonJS `require()` — fine under
- * Metro, not runnable by plain node. So this copies the file to a temp dir,
- * rewrites the `@/` aliases to real paths, prepends a createRequire shim, and
- * runs it with node's type stripping. Nothing in the app is modified.
+ * Where a result *lands* once resolved is a separate concern — see
+ * scripts/test-verse-landing.js.
  *
- * Requires node 22+ (for --experimental-strip-types).
+ * Requires node 22+.
  */
 
-const fs = require('fs');
-const os = require('os');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { runTsHarness, ROOT } = require('./lib/run-ts-harness');
 
-const ROOT = path.join(__dirname, '..');
 const DATA = path.join(ROOT, 'assets', 'data');
 
-const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'refsearch-'));
-
-fs.writeFileSync(path.join(tmp, 'package.json'), '{"type":"module"}');
-
-const shim =
-  "import { createRequire } from 'node:module';\n" +
-  'const require = createRequire(import.meta.url);\n\n';
-
-const src = fs
-  .readFileSync(path.join(ROOT, 'utils', 'reference.ts'), 'utf8')
-  .replace(/require\('@\/assets\/data\//g, `require('${DATA}/`);
-
-fs.writeFileSync(path.join(tmp, 'reference.ts'), shim + src);
-
-// The harness runs inside the temp dir so it can import the shimmed copy.
 const harness = `
 import { lookupReference } from './reference.ts';
 import { createRequire } from 'node:module';
+
 const req = createRequire(import.meta.url);
 const bcl = req('${DATA}/BookChapterList.json');
 const titles = req('${DATA}/SegmentTitles.json');
@@ -116,21 +97,8 @@ if (wrongName.length) {
 }
 
 const bad = failures.length + unreachable.length + wrongName.length;
-console.log(bad === 0 ? '\\nAll green.\\n' : \`\\n\${bad} problem(s). See docs/store/PRE-SUBMISSION-FIXES.md §1.\\n\`);
+console.log(bad === 0 ? '\\nAll green.\\n' : \`\\n\${bad} problem(s). See docs/store/PRE-SUBMISSION-FIXES.md H1.\\n\`);
 process.exit(bad === 0 ? 0 : 1);
 `;
 
-fs.writeFileSync(path.join(tmp, 'run.ts'), harness);
-
-let code = 0;
-try {
-  execFileSync(process.execPath, ['--experimental-strip-types', 'run.ts'], {
-    cwd: tmp,
-    stdio: 'inherit',
-  });
-} catch (e) {
-  code = e.status ?? 1;
-} finally {
-  fs.rmSync(tmp, { recursive: true, force: true });
-}
-process.exit(code);
+process.exit(runTsHarness({ modules: ['utils/reference.ts'], harness }));

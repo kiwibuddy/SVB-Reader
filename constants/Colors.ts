@@ -19,6 +19,9 @@ export const ThreadColors = {
     prinFill: '#E9F4EF',
     chorFill: '#EBEFFA',
     thread: '#B4C0B8',
+    // Momentary wash on the turn a verse reference lands on. Warm, so it reads
+    // against all four bubble fills, and distinct from acc, which means active.
+    find: '#FCEFC0',
   },
   dark: {
     bg: '#080D13',
@@ -35,6 +38,7 @@ export const ThreadColors = {
     prinFill: '#0D2620',
     chorFill: '#111C31',
     thread: '#2C3742',
+    find: '#3D3418',
   },
 } as const;
 
