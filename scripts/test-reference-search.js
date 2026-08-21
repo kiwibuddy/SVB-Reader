@@ -34,6 +34,7 @@ const cases = [
   ['GEN 4 3',     'exact:Genesis 4:3'],
   ['1 co 13',     'exact:1 Corinthians 13:1'],
   ['1co13',       'exact:1 Corinthians 13:1'],
+  ['i cor 13',    'exact:1 Corinthians 13:1'],
   ['rev 22',      'exact:Revelation 22:1'],
   ['psalm 23',    'exact:Psalms 23:1'],
   ['Jean 3:16',   'exact:John 3:16'],
@@ -43,6 +44,24 @@ const cases = [
   ['jo 3',        'multi:5'],
   ['zzz',         'notFound'],
   ['',            'notFound'],
+
+  // Books that were unreachable before the index was rebuilt from source.
+  ['Isaiah 40',        'exact:Isaiah 40:1'],
+  ['isa 40',           'exact:Isaiah 40:1'],
+  ['is 40',            'exact:Isaiah 40:1'],
+  ['1 sam 3:10',       'exact:1 Samuel 3:10'],
+  ['2 kings 2',        'exact:2 Kings 2:1'],
+  ['1 peter 5:7',      'exact:1 Peter 5:7'],
+  ['3 john 2',         'exact:3 John 1:2'],
+  ['jude 3',           'exact:Jude 1:3'],
+  ['philemon 6',       'exact:Philemon 1:6'],
+  ['Song of Songs 1',  'exact:Song of Songs 1:1'],
+  ['Ezekiel 1',        'exact:Ezekiel 1:1'],
+  ['James 1:5',        'exact:James 1:5'],
+  ['Joel 2',           'exact:Joel 2:1'],
+  ['John 3:16',        'exact:John 3:16'],
+  ['judges 1',         'exact:Judges 1:1'],
+  ['jude 1',           'exact:Jude 1:1'],
 ];
 
 let pass = 0;

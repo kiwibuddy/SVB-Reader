@@ -1,398 +1,908 @@
 [
   {
     "canonical": "Genesis",
-    "aliases": ["gen", "ge", "gn"],
+    "code": "Gen",
+    "aliases": [
+      "gen",
+      "ge",
+      "gn"
+    ],
     "fr": "Genèse",
-    "frAliases": ["genese", "gn"]
+    "frAliases": [
+      "genese",
+      "gn"
+    ]
   },
   {
     "canonical": "Exodus",
-    "aliases": ["exo", "ex", "exod"],
+    "code": "Exo",
+    "aliases": [
+      "exo",
+      "ex",
+      "exod"
+    ],
     "fr": "Exode",
-    "frAliases": ["exode", "ex"]
+    "frAliases": [
+      "exode",
+      "ex"
+    ]
   },
   {
     "canonical": "Leviticus",
-    "aliases": ["lev", "le", "lv"],
+    "code": "Lev",
+    "aliases": [
+      "lev",
+      "le",
+      "lv"
+    ],
     "fr": "Lévitique",
-    "frAliases": ["levitique", "lv"]
+    "frAliases": [
+      "levitique",
+      "lv"
+    ]
   },
   {
     "canonical": "Numbers",
-    "aliases": ["num", "nu", "nm"],
+    "code": "Num",
+    "aliases": [
+      "num",
+      "nu",
+      "nm"
+    ],
     "fr": "Nombres",
-    "frAliases": ["nombres", "nb"]
+    "frAliases": [
+      "nombres",
+      "nb"
+    ]
   },
   {
     "canonical": "Deuteronomy",
-    "aliases": ["deu", "de", "dt", "deut"],
+    "code": "Deu",
+    "aliases": [
+      "deu",
+      "de",
+      "dt",
+      "deut"
+    ],
     "fr": "Deutéronome",
-    "frAliases": ["deuteronome", "dt"]
+    "frAliases": [
+      "deuteronome",
+      "dt"
+    ]
   },
   {
     "canonical": "Joshua",
-    "aliases": ["jos", "josh"],
+    "code": "Jos",
+    "aliases": [
+      "jos",
+      "josh"
+    ],
     "fr": "Josué",
-    "frAliases": ["josue", "jos"]
+    "frAliases": [
+      "josue",
+      "jos"
+    ]
   },
   {
     "canonical": "Judges",
-    "aliases": ["jdg", "judg", "jud"],
+    "code": "Jdg",
+    "aliases": [
+      "jdg",
+      "judg",
+      "jud"
+    ],
     "fr": "Juges",
-    "frAliases": ["juges", "jg"]
+    "frAliases": [
+      "juges",
+      "jg"
+    ]
   },
   {
     "canonical": "Ruth",
-    "aliases": ["rut", "ru"],
+    "code": "Rut",
+    "aliases": [
+      "rut",
+      "ru"
+    ],
     "fr": "Ruth",
-    "frAliases": ["ruth", "rt"]
+    "frAliases": [
+      "ruth",
+      "rt"
+    ]
   },
   {
-    "canonical": "1Sa",
-    "aliases": ["1sam", "1sa", "1sm"],
+    "canonical": "1 Samuel",
+    "code": "1Sa",
+    "aliases": [
+      "1sam",
+      "1sa",
+      "1sm"
+    ],
     "fr": "1 Samuel",
-    "frAliases": ["1samuel", "1sa", "1sm"]
+    "frAliases": [
+      "1samuel",
+      "1sa",
+      "1sm"
+    ]
   },
   {
-    "canonical": "2Sa",
-    "aliases": ["2sam", "2sa", "2sm"],
+    "canonical": "2 Samuel",
+    "code": "2Sa",
+    "aliases": [
+      "2sam",
+      "2sa",
+      "2sm"
+    ],
     "fr": "2 Samuel",
-    "frAliases": ["2samuel", "2sa", "2sm"]
+    "frAliases": [
+      "2samuel",
+      "2sa",
+      "2sm"
+    ]
   },
   {
-    "canonical": "1Ki",
-    "aliases": ["1ki", "1kgs", "1kin"],
+    "canonical": "1 Kings",
+    "code": "1Ki",
+    "aliases": [
+      "1ki",
+      "1kgs",
+      "1kin"
+    ],
     "fr": "1 Rois",
-    "frAliases": ["1rois", "1ro"]
+    "frAliases": [
+      "1rois",
+      "1ro"
+    ]
   },
   {
-    "canonical": "2Ki",
-    "aliases": ["2ki", "2kgs", "2kin"],
+    "canonical": "2 Kings",
+    "code": "2Ki",
+    "aliases": [
+      "2ki",
+      "2kgs",
+      "2kin"
+    ],
     "fr": "2 Rois",
-    "frAliases": ["2rois", "2ro"]
+    "frAliases": [
+      "2rois",
+      "2ro"
+    ]
   },
   {
-    "canonical": "1Ch",
-    "aliases": ["1ch", "1chr", "1chron"],
+    "canonical": "1 Chronicles",
+    "code": "1Ch",
+    "aliases": [
+      "1ch",
+      "1chr",
+      "1chron"
+    ],
     "fr": "1 Chroniques",
-    "frAliases": ["1chroniques", "1ch"]
+    "frAliases": [
+      "1chroniques",
+      "1ch"
+    ]
   },
   {
-    "canonical": "2Ch",
-    "aliases": ["2ch", "2chr", "2chron"],
+    "canonical": "2 Chronicles",
+    "code": "2Ch",
+    "aliases": [
+      "2ch",
+      "2chr",
+      "2chron"
+    ],
     "fr": "2 Chroniques",
-    "frAliases": ["2chroniques", "2ch"]
+    "frAliases": [
+      "2chroniques",
+      "2ch"
+    ]
   },
   {
     "canonical": "Ezra",
-    "aliases": ["ezr", "ez"],
+    "code": "Ezr",
+    "aliases": [
+      "ezr",
+      "ez"
+    ],
     "fr": "Esdras",
-    "frAliases": ["esdras", "esd"]
+    "frAliases": [
+      "esdras",
+      "esd"
+    ]
   },
   {
     "canonical": "Nehemiah",
-    "aliases": ["neh", "ne"],
+    "code": "Neh",
+    "aliases": [
+      "neh",
+      "ne"
+    ],
     "fr": "Néhémie",
-    "frAliases": ["nehemie", "ne"]
+    "frAliases": [
+      "nehemie",
+      "ne"
+    ]
   },
   {
     "canonical": "Esther",
-    "aliases": ["est", "esth"],
+    "code": "Est",
+    "aliases": [
+      "est",
+      "esth"
+    ],
     "fr": "Esther",
-    "frAliases": ["esther", "est"]
+    "frAliases": [
+      "esther",
+      "est"
+    ]
   },
   {
     "canonical": "Job",
-    "aliases": ["job", "jb"],
+    "code": "Job",
+    "aliases": [
+      "job",
+      "jb"
+    ],
     "fr": "Job",
-    "frAliases": ["job", "jb"]
+    "frAliases": [
+      "job",
+      "jb"
+    ]
   },
   {
     "canonical": "Psalms",
-    "aliases": ["psa", "ps", "psm", "pss"],
+    "code": "Psa",
+    "aliases": [
+      "psa",
+      "ps",
+      "psm",
+      "pss"
+    ],
     "fr": "Psaumes",
-    "frAliases": ["psaumes", "ps"]
+    "frAliases": [
+      "psaumes",
+      "ps"
+    ]
   },
   {
     "canonical": "Proverbs",
-    "aliases": ["pro", "pr", "prv", "prov"],
+    "code": "Pro",
+    "aliases": [
+      "pro",
+      "pr",
+      "prv",
+      "prov"
+    ],
     "fr": "Proverbes",
-    "frAliases": ["proverbes", "pr"]
+    "frAliases": [
+      "proverbes",
+      "pr"
+    ]
   },
   {
     "canonical": "Ecclesiastes",
-    "aliases": ["ecc", "ec", "eccl"],
+    "code": "Ecc",
+    "aliases": [
+      "ecc",
+      "ec",
+      "eccl"
+    ],
     "fr": "Ecclésiaste",
-    "frAliases": ["ecclesiaste", "ec"]
+    "frAliases": [
+      "ecclesiaste",
+      "ec"
+    ]
   },
   {
-    "canonical": "SoS",
-    "aliases": ["sos", "ss", "song", "sg"],
+    "canonical": "Song of Songs",
+    "code": "SoS",
+    "aliases": [
+      "sos",
+      "ss",
+      "song",
+      "sg"
+    ],
     "fr": "Cantique des Cantiques",
-    "frAliases": ["cantique", "ct"]
+    "frAliases": [
+      "cantique",
+      "ct"
+    ]
   },
   {
     "canonical": "Isaiah",
-    "aliases": ["isa", "is"],
+    "code": "Isa",
+    "aliases": [
+      "isa",
+      "is"
+    ],
     "fr": "Ésaïe",
-    "frAliases": ["esaie", "es"]
+    "frAliases": [
+      "esaie",
+      "es"
+    ]
   },
   {
     "canonical": "Jeremiah",
-    "aliases": ["jer", "je", "jr"],
+    "code": "Jer",
+    "aliases": [
+      "jer",
+      "je",
+      "jr"
+    ],
     "fr": "Jérémie",
-    "frAliases": ["jeremie", "jr"]
+    "frAliases": [
+      "jeremie",
+      "jr"
+    ]
   },
   {
     "canonical": "Lamentations",
-    "aliases": ["lam", "la"],
+    "code": "Lam",
+    "aliases": [
+      "lam",
+      "la"
+    ],
     "fr": "Lamentations",
-    "frAliases": ["lamentations", "lm"]
+    "frAliases": [
+      "lamentations",
+      "lm"
+    ]
   },
   {
-    "canonical": "Eze",
-    "aliases": ["eze", "ezek", "ezk"],
+    "canonical": "Ezekiel",
+    "code": "Eze",
+    "aliases": [
+      "eze",
+      "ezek",
+      "ezk"
+    ],
     "fr": "Ézéchiel",
-    "frAliases": ["ezechiel", "ez"]
+    "frAliases": [
+      "ezechiel",
+      "ez"
+    ]
   },
   {
     "canonical": "Daniel",
-    "aliases": ["dan", "da", "dn"],
+    "code": "Dan",
+    "aliases": [
+      "dan",
+      "da",
+      "dn"
+    ],
     "fr": "Daniel",
-    "frAliases": ["daniel", "dn"]
+    "frAliases": [
+      "daniel",
+      "dn"
+    ]
   },
   {
     "canonical": "Hosea",
-    "aliases": ["hos", "ho"],
+    "code": "Hos",
+    "aliases": [
+      "hos",
+      "ho"
+    ],
     "fr": "Osée",
-    "frAliases": ["osee", "os"]
+    "frAliases": [
+      "osee",
+      "os"
+    ]
   },
   {
-    "canonical": "Joe",
-    "aliases": ["joe", "joel", "jl"],
+    "canonical": "Joel",
+    "code": "Joe",
+    "aliases": [
+      "joe",
+      "joel",
+      "jl"
+    ],
     "fr": "Joël",
-    "frAliases": ["joel", "jl"]
+    "frAliases": [
+      "joel",
+      "jl"
+    ]
   },
   {
     "canonical": "Amos",
-    "aliases": ["amo", "am"],
+    "code": "Amo",
+    "aliases": [
+      "amo",
+      "am"
+    ],
     "fr": "Amos",
-    "frAliases": ["amos", "am"]
+    "frAliases": [
+      "amos",
+      "am"
+    ]
   },
   {
     "canonical": "Obadiah",
-    "aliases": ["oba", "ob", "obad"],
+    "code": "Oba",
+    "aliases": [
+      "oba",
+      "ob",
+      "obad"
+    ],
     "fr": "Abdias",
-    "frAliases": ["abdias", "ab"]
+    "frAliases": [
+      "abdias",
+      "ab"
+    ]
   },
   {
     "canonical": "Jonah",
-    "aliases": ["jon", "jnh"],
+    "code": "Jon",
+    "aliases": [
+      "jon",
+      "jnh"
+    ],
     "fr": "Jonas",
-    "frAliases": ["jonas", "jon"]
+    "frAliases": [
+      "jonas",
+      "jon"
+    ]
   },
   {
     "canonical": "Micah",
-    "aliases": ["mic", "mi"],
+    "code": "Mic",
+    "aliases": [
+      "mic",
+      "mi"
+    ],
     "fr": "Michée",
-    "frAliases": ["michee", "mi"]
+    "frAliases": [
+      "michee",
+      "mi"
+    ]
   },
   {
     "canonical": "Nahum",
-    "aliases": ["nah", "na"],
+    "code": "Nah",
+    "aliases": [
+      "nah",
+      "na"
+    ],
     "fr": "Nahum",
-    "frAliases": ["nahum", "na"]
+    "frAliases": [
+      "nahum",
+      "na"
+    ]
   },
   {
     "canonical": "Habakkuk",
-    "aliases": ["hab", "hb"],
+    "code": "Hab",
+    "aliases": [
+      "hab",
+      "hb"
+    ],
     "fr": "Habacuc",
-    "frAliases": ["habacuc", "ha"]
+    "frAliases": [
+      "habacuc",
+      "ha"
+    ]
   },
   {
     "canonical": "Zephaniah",
-    "aliases": ["zep", "zp", "zeph"],
+    "code": "Zep",
+    "aliases": [
+      "zep",
+      "zp",
+      "zeph"
+    ],
     "fr": "Sophonie",
-    "frAliases": ["sophonie", "so"]
+    "frAliases": [
+      "sophonie",
+      "so"
+    ]
   },
   {
     "canonical": "Haggai",
-    "aliases": ["hag", "hg"],
+    "code": "Hag",
+    "aliases": [
+      "hag",
+      "hg"
+    ],
     "fr": "Aggée",
-    "frAliases": ["aggee", "ag"]
+    "frAliases": [
+      "aggee",
+      "ag"
+    ]
   },
   {
     "canonical": "Zechariah",
-    "aliases": ["zec", "zc", "zech"],
+    "code": "Zec",
+    "aliases": [
+      "zec",
+      "zc",
+      "zech"
+    ],
     "fr": "Zacharie",
-    "frAliases": ["zacharie", "za"]
+    "frAliases": [
+      "zacharie",
+      "za"
+    ]
   },
   {
     "canonical": "Malachi",
-    "aliases": ["mal", "ml"],
+    "code": "Mal",
+    "aliases": [
+      "mal",
+      "ml"
+    ],
     "fr": "Malachie",
-    "frAliases": ["malachie", "ml"]
+    "frAliases": [
+      "malachie",
+      "ml"
+    ]
   },
   {
     "canonical": "Matthew",
-    "aliases": ["mat", "mt", "matt"],
+    "code": "Mat",
+    "aliases": [
+      "mat",
+      "mt",
+      "matt"
+    ],
     "fr": "Matthieu",
-    "frAliases": ["matthieu", "mt"]
+    "frAliases": [
+      "matthieu",
+      "mt"
+    ]
   },
   {
     "canonical": "Mark",
-    "aliases": ["mar", "mk", "mrk"],
+    "code": "Mar",
+    "aliases": [
+      "mar",
+      "mk",
+      "mrk"
+    ],
     "fr": "Marc",
-    "frAliases": ["marc", "mc"]
+    "frAliases": [
+      "marc",
+      "mc"
+    ]
   },
   {
     "canonical": "Luke",
-    "aliases": ["luk", "lk"],
+    "code": "Luk",
+    "aliases": [
+      "luk",
+      "lk"
+    ],
     "fr": "Luc",
-    "frAliases": ["luc", "lc"]
+    "frAliases": [
+      "luc",
+      "lc"
+    ]
   },
   {
-    "canonical": "Joh",
-    "aliases": ["joh", "john", "jn"],
+    "canonical": "John",
+    "code": "Joh",
+    "aliases": [
+      "joh",
+      "john",
+      "jn"
+    ],
     "fr": "Jean",
-    "frAliases": ["jean", "jn"]
+    "frAliases": [
+      "jean",
+      "jn"
+    ]
   },
   {
     "canonical": "Acts",
-    "aliases": ["act", "ac"],
+    "code": "Act",
+    "aliases": [
+      "act",
+      "ac"
+    ],
     "fr": "Actes",
-    "frAliases": ["actes", "ac"]
+    "frAliases": [
+      "actes",
+      "ac"
+    ]
   },
   {
     "canonical": "Romans",
-    "aliases": ["rom", "ro", "rm"],
+    "code": "Rom",
+    "aliases": [
+      "rom",
+      "ro",
+      "rm"
+    ],
     "fr": "Romains",
-    "frAliases": ["romains", "rm"]
+    "frAliases": [
+      "romains",
+      "rm"
+    ]
   },
   {
-    "canonical": "1Co",
-    "aliases": ["1co", "1cor"],
+    "canonical": "1 Corinthians",
+    "code": "1Co",
+    "aliases": [
+      "1co",
+      "1cor"
+    ],
     "fr": "1 Corinthiens",
-    "frAliases": ["1corinthiens", "1co"]
+    "frAliases": [
+      "1corinthiens",
+      "1co"
+    ]
   },
   {
-    "canonical": "2Co",
-    "aliases": ["2co", "2cor"],
+    "canonical": "2 Corinthians",
+    "code": "2Co",
+    "aliases": [
+      "2co",
+      "2cor"
+    ],
     "fr": "2 Corinthiens",
-    "frAliases": ["2corinthiens", "2co"]
+    "frAliases": [
+      "2corinthiens",
+      "2co"
+    ]
   },
   {
     "canonical": "Galatians",
-    "aliases": ["gal", "ga"],
+    "code": "Gal",
+    "aliases": [
+      "gal",
+      "ga"
+    ],
     "fr": "Galates",
-    "frAliases": ["galates", "ga"]
+    "frAliases": [
+      "galates",
+      "ga"
+    ]
   },
   {
     "canonical": "Ephesians",
-    "aliases": ["eph", "ep"],
+    "code": "Eph",
+    "aliases": [
+      "eph",
+      "ep"
+    ],
     "fr": "Éphésiens",
-    "frAliases": ["ephesiens", "ep"]
+    "frAliases": [
+      "ephesiens",
+      "ep"
+    ]
   },
   {
     "canonical": "Philippians",
-    "aliases": ["php", "phil", "pp"],
+    "code": "Php",
+    "aliases": [
+      "php",
+      "phil",
+      "pp"
+    ],
     "fr": "Philippiens",
-    "frAliases": ["philippiens", "ph"]
+    "frAliases": [
+      "philippiens",
+      "ph"
+    ]
   },
   {
     "canonical": "Colossians",
-    "aliases": ["col", "co"],
+    "code": "Col",
+    "aliases": [
+      "col",
+      "co"
+    ],
     "fr": "Colossiens",
-    "frAliases": ["colossiens", "col"]
+    "frAliases": [
+      "colossiens",
+      "col"
+    ]
   },
   {
-    "canonical": "1Th",
-    "aliases": ["1th", "1thes", "1thess"],
+    "canonical": "1 Thessalonians",
+    "code": "1Th",
+    "aliases": [
+      "1th",
+      "1thes",
+      "1thess"
+    ],
     "fr": "1 Thessaloniciens",
-    "frAliases": ["1thessaloniciens", "1th"]
+    "frAliases": [
+      "1thessaloniciens",
+      "1th"
+    ]
   },
   {
-    "canonical": "2Th",
-    "aliases": ["2th", "2thes", "2thess"],
+    "canonical": "2 Thessalonians",
+    "code": "2Th",
+    "aliases": [
+      "2th",
+      "2thes",
+      "2thess"
+    ],
     "fr": "2 Thessaloniciens",
-    "frAliases": ["2thessaloniciens", "2th"]
+    "frAliases": [
+      "2thessaloniciens",
+      "2th"
+    ]
   },
   {
-    "canonical": "1Ti",
-    "aliases": ["1ti", "1tim"],
+    "canonical": "1 Timothy",
+    "code": "1Ti",
+    "aliases": [
+      "1ti",
+      "1tim"
+    ],
     "fr": "1 Timothée",
-    "frAliases": ["1timothee", "1ti", "1tm"]
+    "frAliases": [
+      "1timothee",
+      "1ti",
+      "1tm"
+    ]
   },
   {
-    "canonical": "2Ti",
-    "aliases": ["2ti", "2tim"],
+    "canonical": "2 Timothy",
+    "code": "2Ti",
+    "aliases": [
+      "2ti",
+      "2tim"
+    ],
     "fr": "2 Timothée",
-    "frAliases": ["2timothee", "2ti", "2tm"]
+    "frAliases": [
+      "2timothee",
+      "2ti",
+      "2tm"
+    ]
   },
   {
     "canonical": "Titus",
-    "aliases": ["tit", "ti"],
+    "code": "Tit",
+    "aliases": [
+      "tit",
+      "ti"
+    ],
     "fr": "Tite",
-    "frAliases": ["tite", "tt"]
+    "frAliases": [
+      "tite",
+      "tt"
+    ]
   },
   {
     "canonical": "Philemon",
-    "aliases": ["phm", "phil", "phile"],
+    "code": "Phm",
+    "aliases": [
+      "phm",
+      "phil",
+      "phile"
+    ],
     "fr": "Philémon",
-    "frAliases": ["philemon", "phm"]
+    "frAliases": [
+      "philemon",
+      "phm"
+    ]
   },
   {
     "canonical": "Hebrews",
-    "aliases": ["heb", "he"],
+    "code": "Heb",
+    "aliases": [
+      "heb",
+      "he"
+    ],
     "fr": "Hébreux",
-    "frAliases": ["hebreux", "he"]
+    "frAliases": [
+      "hebreux",
+      "he"
+    ]
   },
   {
-    "canonical": "Jam",
-    "aliases": ["jam", "james", "jas", "jm"],
+    "canonical": "James",
+    "code": "Jam",
+    "aliases": [
+      "jam",
+      "james",
+      "jas",
+      "jm"
+    ],
     "fr": "Jacques",
-    "frAliases": ["jacques", "jc"]
+    "frAliases": [
+      "jacques",
+      "jc"
+    ]
   },
   {
-    "canonical": "1Pe",
-    "aliases": ["1pe", "1pet", "1pt"],
+    "canonical": "1 Peter",
+    "code": "1Pe",
+    "aliases": [
+      "1pe",
+      "1pet",
+      "1pt"
+    ],
     "fr": "1 Pierre",
-    "frAliases": ["1pierre", "1pi"]
+    "frAliases": [
+      "1pierre",
+      "1pi"
+    ]
   },
   {
-    "canonical": "2Pe",
-    "aliases": ["2pe", "2pet", "2pt"],
+    "canonical": "2 Peter",
+    "code": "2Pe",
+    "aliases": [
+      "2pe",
+      "2pet",
+      "2pt"
+    ],
     "fr": "2 Pierre",
-    "frAliases": ["2pierre", "2pi"]
+    "frAliases": [
+      "2pierre",
+      "2pi"
+    ]
   },
   {
-    "canonical": "1Jn",
-    "aliases": ["1jn", "1john", "1joh"],
+    "canonical": "1 John",
+    "code": "1Jn",
+    "aliases": [
+      "1jn",
+      "1john",
+      "1joh"
+    ],
     "fr": "1 Jean",
-    "frAliases": ["1jean", "1jn"]
+    "frAliases": [
+      "1jean",
+      "1jn"
+    ]
   },
   {
-    "canonical": "2Jn",
-    "aliases": ["2jn", "2john", "2joh"],
+    "canonical": "2 John",
+    "code": "2Jn",
+    "aliases": [
+      "2jn",
+      "2john",
+      "2joh"
+    ],
     "fr": "2 Jean",
-    "frAliases": ["2jean", "2jn"]
+    "frAliases": [
+      "2jean",
+      "2jn"
+    ]
   },
   {
-    "canonical": "3Jn",
-    "aliases": ["3jn", "3john", "3joh"],
+    "canonical": "3 John",
+    "code": "3Jn",
+    "aliases": [
+      "3jn",
+      "3john",
+      "3joh"
+    ],
     "fr": "3 Jean",
-    "frAliases": ["3jean", "3jn"]
+    "frAliases": [
+      "3jean",
+      "3jn"
+    ]
   },
   {
     "canonical": "Jude",
-    "aliases": ["jude", "jud", "jd"],
+    "code": "Jud",
+    "aliases": [
+      "jude",
+      "jud",
+      "jd"
+    ],
     "fr": "Jude",
-    "frAliases": ["jude", "jd"]
+    "frAliases": [
+      "jude",
+      "jd"
+    ]
   },
   {
     "canonical": "Revelation",
-    "aliases": ["rev", "re", "rv"],
+    "code": "Rev",
+    "aliases": [
+      "rev",
+      "re",
+      "rv"
+    ],
     "fr": "Apocalypse",
-    "frAliases": ["apocalypse", "ap"]
+    "frAliases": [
+      "apocalypse",
+      "ap"
+    ]
   }
 ]

@@ -60,7 +60,9 @@ export function findVerseBlockIndex(
   chapter: number,
   verse: number
 ): number {
-  if (!Array.isArray(blocks) || !chapter || !verse) return -1;
+  // Verse 0 is real — psalm superscriptions ("A psalm of David") are indexed
+  // that way — so test for absence, not falsiness.
+  if (!Array.isArray(blocks) || chapter == null || verse == null) return -1;
 
   const suffix = `-${chapter}-${verse}`;
   const wanted = bookCodes.map((code) => `${code}${suffix}`);

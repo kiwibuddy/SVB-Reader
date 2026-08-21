@@ -2,7 +2,7 @@
 /**
  * Does a verse reference land on the right bubble?
  *
- *   node scripts/test-verse-landing.js          # all 24,935 indexed verses
+ *   node scripts/test-verse-landing.js          # every indexed verse
  *   node scripts/test-verse-landing.js --quick  # one verse per story
  *
  * Resolution is a separate concern — that is scripts/test-reference-search.js.
@@ -122,13 +122,18 @@ const typed = [
   ['rev 22',      'S365', 'last chapter'],
   ['psalm 23',    null,   'chapter-only resolves to verse 1'],
   ['Jean 3:16',   null,   'French input'],
+  ['1 co 13',     null,   'numbered book — unreachable before H1'],
+  ['Isaiah 40',   null,   'was swallowed by the Roman-numeral parser'],
+  ['1 sam 3:10',  null,   'numbered book, explicit verse'],
+  ['jude 3',      null,   'single-chapter book — a lone number is a verse'],
+  ['Song of Songs 1', null, 'multi-word book name'],
 ];
 
 let e2ePass = 0;
 for (const [input, wantSeg, note] of typed) {
   const r = lookupReference(input);
   if (r.kind !== 'exact') {
-    console.log(\`  SKIP  \${input.padEnd(13)} does not resolve (H1) — \${note}\`);
+    console.log(\`  SKIP  \${input.padEnd(13)} does not resolve — \${note}\`);
     continue;
   }
   const { segmentId, chapter, verse } = r.result;

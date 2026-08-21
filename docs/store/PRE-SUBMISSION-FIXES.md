@@ -12,16 +12,21 @@ bug could be demonstrated, it was — the evidence is quoted inline.
 **Two standing checks:**
 
 ```bash
-node scripts/test-reference-search.js   # resolution — FAILS (H1)
-node scripts/test-verse-landing.js      # landing    — PASSES (H2 fixed)
+node scripts/build-verse-index.js       # rebuilds the index — PASSES
+node scripts/test-reference-search.js   # resolution        — PASSES (H1 fixed)
+node scripts/test-verse-landing.js      # landing           — PASSES (H2 fixed)
 ```
 
-The first runs the acceptance list from `MVP2/14-SHIP-PLAN.md` §2 plus a coverage
-sweep over all 66 books. Today: **10/15 cases, 20 books unreachable, 3 wrong
-display names.**
+The builder regenerates `verseSearchIndex.json` from `newBibleNLT1.json` and
+fails if the index and `bookAliases.json` disagree.
 
-The second checks that a resolved reference lands on the turn holding the verse,
-across **all 24,935 indexed verses**. Today: **all pass.**
+The second runs the acceptance list from `MVP2/14-SHIP-PLAN.md` §2 plus a
+coverage sweep over all 66 books. Today: **32/32 cases, all 66 books reachable,
+no wrong display names.**
+
+The third checks that a resolved reference lands on the turn holding the verse,
+across **all 31,244 indexed verses**. Today: **all pass**, plus 11 end-to-end
+cases from typed input.
 
 Both load the app's real modules rather than reimplementing them, so a pass means
 the shipped code works. Neither needs `node_modules`.
@@ -34,113 +39,75 @@ test checklist** near the end of this document. Work it before you submit.
 
 # HIGH — a claim in the listing is false, or a core feature misbehaves
 
-## H1 · Verse reference search is broken for a fifth of the Bible
+## ~~H1 · Verse reference search is broken for a fifth of the Bible~~ — FIXED 21 Aug
 
-**Both descriptions say** *"Jump to any verse by reference: type `gen 4:3` or
-`1 co 13`"*, and the Apple reviewer notes repeat it. `1 co 13` returns nothing
-today. Neither does Isaiah.
+**Fixed.** `node scripts/test-reference-search.js` is green: 32/32 acceptance
+cases, **all 66 books reachable under their real names**.
 
-Four independent faults. Fixing the index does not fix the parser.
+### What was wrong
 
-### H1a · The index only ever held 49 of the 66 books
+Four independent faults.
 
-`assets/data/verseIndex.json` — and `verseSearchIndex.json`, built from it by
-`scripts/build-verse-index.js` — is missing **every numbered book**:
+**The index only ever held 49 of the 66 books.** `verseIndex.json` — the
+intermediate the old builder read — was missing **every numbered book**:
+1 & 2 Samuel, Kings, Chronicles, Corinthians, Thessalonians, Timothy, Peter,
+1/2/3 John. Seventeen books, **6,128 verses**, including 1 Corinthians 13.
+`bookAliases.json` had all 66, but `getAliasMap()` silently dropped any whose
+canonical name was absent from the index, so they failed without erroring.
 
-> 1 & 2 Samuel · 1 & 2 Kings · 1 & 2 Chronicles · 1 & 2 Corinthians ·
-> 1 & 2 Thessalonians · 1 & 2 Timothy · 1 & 2 Peter · 1, 2 & 3 John
+**Five books carried a truncated code.** `Joh`, `Jam`, `Joe`, `Eze`, `SoS`. So
+`John 3:16` resolved but the row read **"Joh 3:16"**, and Ezekiel and Song of
+Songs could not be found by their full names at all.
 
-Seventeen books, **6,128 of 31,102 verses — one verse in five.** Includes
-1 Corinthians 13, 1 Samuel, 1 Kings, 1 Peter, 1 John.
+**Any book starting with "I" was unreachable.** The parser read a leading
+`I`/`II`/`III` as a Roman numeral, so `Isaiah 40` became `1saiah`. **Isaiah —
+1,292 verses — could not be reached by any spelling.**
 
-`build-verse-index.js` is not at fault; it copies `entry.book` faithfully. The gap
-is upstream in `verseIndex.json`, whose generator is not in this repo.
-`bookAliases.json` has all 66 entries, but `getAliasMap()` at
-`utils/reference.ts:55` drops any whose canonical name is absent from the index —
-so the 17 fail silently rather than erroring.
+**Multi-word names could not parse.** The book capture was a single
+`[a-zA-ZÀ-ÿ]+` token, so `Song of Songs 1` failed.
 
-**Fix.** Rebuild from source instead of repairing the intermediate.
-`newBibleNLT1.json` carries every verse link keyed by three-letter code (`1Co`,
-`1Sa`, `Joh`); `BookChapterList.json` maps all 66 codes to correct full names.
-Point `build-verse-index.js` at those two and the intermediate stops mattering —
-which also lets you drop the 6.5 MB `verseIndex.json` the ship plan wanted gone.
+And the ambiguity rule (your `jud` question): `resolveBook()` returned on *any*
+alias hit, so `jud 1` went straight to Judges and never offered Jude.
 
-### H1b · Five books carry a truncated code instead of a name
+### How it works now
 
-| Typed | Now | Should |
-| --- | --- | --- |
-| `John 3:16` | resolves, renders **"Joh 3:16"** | "John 3:16" |
-| `James 1` | resolves, renders "Jam 1:1" | "James 1:1" |
-| `Joel 2` | resolves, renders "Joe 2:1" | "Joel 2:1" |
-| `Ezekiel 1` | **not found** — only `eze 1` works | resolves |
-| `Song of Songs 1` | **not found** | resolves |
+**The index is built from source.** `scripts/build-verse-index.js` now reads
+`newBibleNLT1.json` — the same file the reader renders — and takes book names
+from `BookChapterList.json`. The broken intermediate is gone. If a verse is in
+the Bible the app ships, it is in the index. **31,244 verses, 66 books, 561 KB.**
 
-John is the one that will get noticed — plausibly the most-searched reference in
-the app, rendering a truncated code. Same rebuild fixes all five.
+The builder also validates `bookAliases.json` against the index and **fails the
+build** if any canonical name does not resolve. That is what caught the 22 stale
+entries; they now carry full book names plus a `code` field.
 
-### H1c · Any book starting with "I" is unreachable — Isaiah included
+**The parser tokenises instead of pattern-matching.** Trailing digits are taken
+as chapter and verse; everything before them names the book, so multi-word names
+work. A leading Roman numeral is only treated as an ordinal when another token
+follows it — `i cor` becomes `1 cor`, while `Isaiah` is left alone.
 
-Independent of the index, and the worst single defect. The parser at
-`utils/reference.ts:102` treats a leading `I`/`II`/`III` as a Roman numeral:
+**Ambiguity is offered, not guessed.** An exact canonical name wins outright, so
+`judges` and `jude` are unambiguous. Anything shorter that more than one book
+answers to comes back as a list: `jud` → Judges · Jude, `phil` → Philippians ·
+Philemon, `jo` → five books.
 
-```
-/^([iI]{1,3}|[123]|premier|deuxi[eè]me|troisi[eè]me|first|second|third)?\s*([a-zA-ZÀ-ÿ]+)…/
-```
+**One extra fix found while testing.** Obadiah, Philemon, 2 and 3 John and Jude
+have a single chapter, so a lone number after them is a verse, not a chapter.
+`jude 3` now resolves to Jude 1:3 rather than a chapter 3 that does not exist.
 
-`Isaiah 40` parses as ordinal `I` + book `saiah` → `1saiah` → nothing. Verified,
-all four return not-found:
+### Notes on the numbers
 
-```
-"Isaiah 40" · "isaiah 40" · "isa 40" · "Is 40"
-```
+The index holds 31,244 verses against BookChapterList's 31,102. The difference
+is accounted for exactly:
 
-**Isaiah is 1,292 verses and cannot be reached by reference at all.**
+- **+156** psalm superscriptions ("A psalm of David"), indexed at verse 0 — 150
+  in Psalms, 6 in Song of Songs.
+- **−16** verses the NLT genuinely omits as later additions — Matthew 17:21,
+  Mark 7:16, John 5:4, Acts 8:37 and the rest. BookChapterList's counts are not
+  NLT-based.
+- **+2** minor, in 3 John and Revelation.
 
-A trap follows: once H1a lands and `1Sa` exists, `isa 40` will parse as `1`+`sa`
-and open **1 Samuel 40**. Fixing the index without fixing the parser makes this
-one worse.
-
-**Fix.** Treat a leading `I`/`II`/`III` as an ordinal only when separated by
-whitespace or a dot (`i cor`, `ii tim`). Better: resolve the whole token as a book
-name first, and fall back to ordinal-splitting only if that fails.
-
-### H1d · Multi-word book names cannot be parsed
-
-The book capture is a single `[a-zA-ZÀ-ÿ]+` token, so `Song of Songs 1` and
-`Song of Solomon 1` fail. Widen it to allow internal spaces and let the alias
-table decide where the name ends.
-
-### H1e · Partial names should offer every match
-
-This is your question about `jud`, and the good news is **it already works — until
-you type a number.** `ThreadList.tsx:343` only runs the reference lookup when the
-query contains a digit:
-
-```js
-if (searching && /\d/.test(q)) { refResult = lookupReference(query.trim()); }
-```
-
-| You type | You get | Right? |
-| --- | --- | --- |
-| `jud` | Books section lists **Judges and Jude**, both expandable | ✅ exactly as you described |
-| `judg` | narrows to Judges | ✅ |
-| `jude` | narrows to Jude | ✅ |
-| `jud 1` | jumps **straight to Judges 1:1**; Jude never offered | ❌ |
-| `phil 1:1` | jumps **straight to Philippians 1:1**; Philemon never offered | ❌ |
-| `jo 3` | offers five — Joshua, Job, Joel, Jonah, John | ✅ |
-
-The narrowing you pictured is the Books section doing substring matching, and it
-is fine. The bug is only in the reference path: `resolveBook()` at
-`utils/reference.ts:127` returns on *any* alias hit, and `jud`/`phil` happen to be
-registered aliases. `jo` is not an alias of anything, which is why it correctly
-falls through to prefix matching.
-
-`MVP2/14-SHIP-PLAN.md` §2 specifies the fix: *an exact canonical match wins
-outright; a prefix matching more than one book shows all of them as rows.* Typing
-"Judges" or "Jude" in full still wins outright, so nothing regresses.
-
-Lower stakes than H1a–H1c, but today `jud 1` delivers a **wrong** answer
-confidently rather than a missing one.
+`assets/data/verseIndex.json` (6.4 MB) is deleted; nothing reads it now, and its
+Metro blocklist entry has gone with it.
 
 ## ~~H2 · Tapping a search result does not land on the verse~~ — FIXED 21 Aug
 
@@ -180,8 +147,8 @@ timers.
 
 Locate the verse by its own `ref` in the blocks that were actually rendered, in
 `utils/verseLocator.ts`. That is immune to both splitters, needs no index
-mapping, and will keep working after H1 rebuilds the index — the rebuild changes
-book names and adds the 17 missing books, but not `ref`.
+mapping, and survived the H1 index rebuild unchanged — that rebuild renamed
+books and added the 17 missing ones, but never touched `ref`.
 
 - `openSegment()` carries `chapter`/`verse` instead of `pos`.
 - `Segment` finds the turn, measures it with `onLayout`, and reports the offset
@@ -193,7 +160,8 @@ book names and adds the 17 missing books, but not `ref`.
 - `findVerseLocation()`, the `pos` effect, the dead `link` lookup and a dead
   `flatListRef` in `Segment` are gone.
 
-`position` is left in the index; it costs little and H1's rebuild can drop it.
+`position` is gone from the index entirely — the H1 rebuild dropped it, since
+nothing reads it any more.
 
 ### Still to check on a device
 
@@ -513,7 +481,7 @@ the obvious companion to it, and the group-reading spec assumed it would exist.
 
 ## C6 · Bare book names could offer the reference row too
 
-Related to H1e. Typing `psalm` alone does nothing in the reference path because
+Still open after the H1 fix. Typing `psalm` alone does nothing in the reference path because
 of the digit gate, so you get book results but never "Psalms 1:1". Dropping the
 digit requirement — and letting a bare book name resolve to chapter 1, verse 1 —
 would make the search feel like it understands references rather than waiting for
@@ -597,7 +565,7 @@ Never yet run on hardware; carried over from `MVP2/13-STEP-LOG.md`.
 
 | | Item | Blocks |
 | --- | --- | --- |
-| **H1** | Verse search — index, names, the "I" parser, multi-word, ambiguity | A claim in both listings |
+| ~~H1~~ | ~~Verse search — index, names, the "I" parser, multi-word, ambiguity~~ — **fixed 21 Aug** | — |
 | ~~H2~~ | ~~Search results do not scroll to the verse~~ — **fixed 21 Aug**; device checks in D1 | — |
 | **H3** | Streaks computed in UTC — wrong for NZ/AU/Asia | A feature named in both listings |
 | **M1** | "More questions" dead-ends on ~20 stories | — |
