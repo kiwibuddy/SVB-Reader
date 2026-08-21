@@ -1,277 +1,523 @@
 # Fix before submitting 2.0.0
 
-The store copy in this folder is written **as if everything below is fixed.**
-That was a deliberate choice — the listings describe the app you are shipping,
-not the branch as it stands today. Every item here has to be true before those
-words go live.
+The store copy in this folder is written **as if everything below is fixed.** That
+was deliberate — the listings describe the app you are shipping, not the branch as
+it stands today. Every item marked HIGH has to be true before those words go live.
 
-Ordered by what breaks if you skip it.
+Findings come from a full static review on 21 August 2026: every route and
+navigation target, every interactive handler on a live screen, the content data,
+and the logic behind completion, streaks, plans, search and onboarding. Where a
+bug could be demonstrated, it was — the evidence is quoted inline.
 
-Re-run the verse search checks at any point with:
+**Two standing checks:**
 
 ```bash
-node scripts/test-reference-search.js
+node scripts/test-reference-search.js   # verse search — currently fails
 ```
 
-It prints the acceptance list from `MVP2/14-SHIP-PLAN.md` §2 and a coverage
-sweep over all 66 books, and exits non-zero while anything is wrong. As of
-21 August 2026 it reports **10/15 acceptance cases passing, 20 books
-unreachable, 3 books displaying a wrong name.**
+Reports the acceptance list from `MVP2/14-SHIP-PLAN.md` §2 plus a coverage sweep
+over all 66 books, and exits non-zero while anything is wrong. Today:
+**10/15 cases, 20 books unreachable, 3 wrong display names.**
+
+What could not be checked from here, and needs a device: anything about rendered
+layout, scroll behaviour, gestures, the share sheet, and migration from a real
+1.2.1 database.
 
 ---
 
-## 1 · Verse reference search is broken for a fifth of the Bible
+# HIGH — a claim in the listing is false, or a core feature misbehaves
 
-**Blocks a claim in both listings.** The descriptions say *"Jump to any verse by
-reference: type `gen 4:3` or `1 co 13`"*, and the Apple reviewer notes repeat it.
-Right now `1 co 13` returns nothing, and neither does Isaiah.
+## H1 · Verse reference search is broken for a fifth of the Bible
 
-There are four separate faults tangled together here. They are independent — fixing
-the index does not fix the parser.
+**Both descriptions say** *"Jump to any verse by reference: type `gen 4:3` or
+`1 co 13`"*, and the Apple reviewer notes repeat it. `1 co 13` returns nothing
+today. Neither does Isaiah.
 
-### 1a · The index only ever contained 49 of the 66 books
+Four independent faults. Fixing the index does not fix the parser.
 
-`assets/data/verseIndex.json` — and therefore `verseSearchIndex.json`, which is
-built from it by `scripts/build-verse-index.js` — is missing **every numbered
-book**:
+### H1a · The index only ever held 49 of the 66 books
+
+`assets/data/verseIndex.json` — and `verseSearchIndex.json`, built from it by
+`scripts/build-verse-index.js` — is missing **every numbered book**:
 
 > 1 & 2 Samuel · 1 & 2 Kings · 1 & 2 Chronicles · 1 & 2 Corinthians ·
 > 1 & 2 Thessalonians · 1 & 2 Timothy · 1 & 2 Peter · 1, 2 & 3 John
 
-Seventeen books, **6,128 of 31,102 verses — one verse in five — unfindable.**
-That includes 1 Corinthians 13, 1 Samuel, 1 Kings, 1 Peter and 1 John.
+Seventeen books, **6,128 of 31,102 verses — one verse in five.** Includes
+1 Corinthians 13, 1 Samuel, 1 Kings, 1 Peter, 1 John.
 
-`scripts/build-verse-index.js` is not at fault; it copies `entry.book` faithfully.
-The gap is upstream in `verseIndex.json`, whose generator is not in this repo.
-
-`assets/data/bookAliases.json` has all 66 entries, but `getAliasMap()` in
-`utils/reference.ts:52` drops any whose canonical name is absent from the index —
+`build-verse-index.js` is not at fault; it copies `entry.book` faithfully. The gap
+is upstream in `verseIndex.json`, whose generator is not in this repo.
+`bookAliases.json` has all 66 entries, but `getAliasMap()` at
+`utils/reference.ts:55` drops any whose canonical name is absent from the index —
 so the 17 fail silently rather than erroring.
 
-**The fix.** Rebuild the index from source rather than repairing the intermediate.
-`assets/data/newBibleNLT1.json` carries every verse link keyed by three-letter
-code (`1Co`, `1Sa`, `Joh`), and `assets/data/BookChapterList.json` maps all 66
-codes to correct full names. Point `build-verse-index.js` at those two directly
-and the intermediate stops mattering — which also lets you delete the 6.6 MB
-`verseIndex.json` the ship plan already wanted gone.
+**Fix.** Rebuild from source instead of repairing the intermediate.
+`newBibleNLT1.json` carries every verse link keyed by three-letter code (`1Co`,
+`1Sa`, `Joh`); `BookChapterList.json` maps all 66 codes to correct full names.
+Point `build-verse-index.js` at those two and the intermediate stops mattering —
+which also lets you drop the 6.5 MB `verseIndex.json` the ship plan wanted gone.
 
-### 1b · Five books carry a truncated code instead of a name
+### H1b · Five books carry a truncated code instead of a name
 
-The index stores `Eze`, `Jam`, `Joe`, `Joh` and `SoS` where it should hold
-Ezekiel, James, Joel, John and Song of Songs. Two consequences:
-
-| Typed | Happens now | Should happen |
+| Typed | Now | Should |
 | --- | --- | --- |
-| `John 3:16` | resolves, but the result row reads **"Joh 3:16"** | reads "John 3:16" |
-| `James 1` | resolves, reads "Jam 1:1" | reads "James 1:1" |
-| `Joel 2` | resolves, reads "Joe 2:1" | reads "Joel 2:1" |
+| `John 3:16` | resolves, renders **"Joh 3:16"** | "John 3:16" |
+| `James 1` | resolves, renders "Jam 1:1" | "James 1:1" |
+| `Joel 2` | resolves, renders "Joe 2:1" | "Joel 2:1" |
 | `Ezekiel 1` | **not found** — only `eze 1` works | resolves |
 | `Song of Songs 1` | **not found** | resolves |
 
-John is the one that will get noticed. It is plausibly the most-searched
-reference in the app, and it currently renders a truncated code in the results
-list. Same rebuild fixes all five.
+John is the one that will get noticed — plausibly the most-searched reference in
+the app, rendering a truncated code. Same rebuild fixes all five.
 
-### 1c · Any book starting with "I" is unreachable — Isaiah included
+### H1c · Any book starting with "I" is unreachable — Isaiah included
 
-This one is independent of the index and is the worst single defect in the
-feature.
-
-The parser at `utils/reference.ts:99` treats a leading `I`, `II` or `III` as a
-Roman numeral:
+Independent of the index, and the worst single defect. The parser at
+`utils/reference.ts:102` treats a leading `I`/`II`/`III` as a Roman numeral:
 
 ```
 /^([iI]{1,3}|[123]|premier|deuxi[eè]me|troisi[eè]me|first|second|third)?\s*([a-zA-ZÀ-ÿ]+)…/
 ```
 
-So `Isaiah 40` is parsed as ordinal `I` plus book `saiah`, becomes `1saiah`, and
-resolves to nothing. Verified — every one of these returns not-found today:
+`Isaiah 40` parses as ordinal `I` + book `saiah` → `1saiah` → nothing. Verified,
+all four return not-found:
 
 ```
 "Isaiah 40" · "isaiah 40" · "isa 40" · "Is 40"
 ```
 
-**Isaiah is 1,292 verses and one of the most-read books in the Bible.** It cannot
-currently be reached by reference at all.
+**Isaiah is 1,292 verses and cannot be reached by reference at all.**
 
-There is a latent trap too: once 1a is fixed and `1Sa` exists in the index,
-`isa 40` will parse as `1` + `sa` and cheerfully open **1 Samuel 40**. Fixing the
-index without fixing the parser makes this worse, not better.
+A trap follows: once H1a lands and `1Sa` exists, `isa 40` will parse as `1`+`sa`
+and open **1 Samuel 40**. Fixing the index without fixing the parser makes this
+one worse.
 
-**The fix.** Only treat a leading `I`/`II`/`III` as an ordinal when what follows
-is separated by whitespace or a dot — `i cor`, `ii tim`, `iii jn` — never when the
-letters run straight into the rest of the word. Resolving the whole token as a
-book name first, and only falling back to ordinal-splitting if that fails, is the
-more robust ordering.
+**Fix.** Treat a leading `I`/`II`/`III` as an ordinal only when separated by
+whitespace or a dot (`i cor`, `ii tim`). Better: resolve the whole token as a book
+name first, and fall back to ordinal-splitting only if that fails.
 
-### 1d · Multi-word book names cannot be parsed
+### H1d · Multi-word book names cannot be parsed
 
-The book portion of the pattern is a single `[a-zA-ZÀ-ÿ]+` token, so anything
-with a space in it fails: `Song of Songs 1`, `Song of Solomon 1`. Widen the book
-capture to allow internal spaces, then let the alias table decide where the book
-name ends and the numbers begin.
+The book capture is a single `[a-zA-ZÀ-ÿ]+` token, so `Song of Songs 1` and
+`Song of Solomon 1` fail. Widen it to allow internal spaces and let the alias
+table decide where the name ends.
 
-### 1e · Partial names should offer every match — your question
+### H1e · Partial names should offer every match
 
-You asked:
-
-> any partial written … should show the possible bible matches, so "Jud" should
-> show all possible matches, then as you continue to type "judg" etc Jude
-> disappears?
-
-That is exactly the intent, and **it already works that way — right up until you
-type a number.** The distinction is worth knowing because it tells you how small
-this fix is.
-
-`ThreadList.tsx:343` only runs the reference lookup when the query contains a
-digit:
+This is your question about `jud`, and the good news is **it already works — until
+you type a number.** `ThreadList.tsx:343` only runs the reference lookup when the
+query contains a digit:
 
 ```js
 if (searching && /\d/.test(q)) { refResult = lookupReference(query.trim()); }
 ```
 
-So:
-
-| You type | What you get | Right? |
+| You type | You get | Right? |
 | --- | --- | --- |
-| `jud` | The **Books** section lists Judges *and* Jude, both expandable in place | ✅ exactly what you described |
-| `judg` | Books narrows to Judges alone | ✅ |
-| `jude` | Books narrows to Jude alone | ✅ |
-| `jud 1` | Jumps **straight to Judges 1:1**. Jude is never offered. | ❌ |
-| `phil 1:1` | Jumps **straight to Philippians 1:1**. Philemon is never offered. | ❌ |
-| `jo 3` | Offers five books — Joshua, Job, Joel, Jonah, John | ✅ |
+| `jud` | Books section lists **Judges and Jude**, both expandable | ✅ exactly as you described |
+| `judg` | narrows to Judges | ✅ |
+| `jude` | narrows to Jude | ✅ |
+| `jud 1` | jumps **straight to Judges 1:1**; Jude never offered | ❌ |
+| `phil 1:1` | jumps **straight to Philippians 1:1**; Philemon never offered | ❌ |
+| `jo 3` | offers five — Joshua, Job, Joel, Jonah, John | ✅ |
 
-The as-you-type narrowing you are picturing is the Books section doing substring
-matching, and it is fine. The bug is only in the reference path: `resolveBook()`
-at `utils/reference.ts:130` returns immediately on *any* alias hit, and `jud` and
-`phil` happen to be registered aliases for Judges and Philippians. `jo` is not an
-alias of anything, which is why it falls through to prefix matching and correctly
-offers five.
+The narrowing you pictured is the Books section doing substring matching, and it
+is fine. The bug is only in the reference path: `resolveBook()` at
+`utils/reference.ts:127` returns on *any* alias hit, and `jud`/`phil` happen to be
+registered aliases. `jo` is not an alias of anything, which is why it correctly
+falls through to prefix matching.
 
-`MVP2/14-SHIP-PLAN.md` §2 specifies the rule that fixes it: *an exact canonical
-match wins outright; a prefix matching more than one book shows all of them as
-rows.* "Judges" and "Jude" typed in full are exact canonical names and still win
-outright, so nothing regresses — only the ambiguous stems change.
+`MVP2/14-SHIP-PLAN.md` §2 specifies the fix: *an exact canonical match wins
+outright; a prefix matching more than one book shows all of them as rows.* Typing
+"Judges" or "Jude" in full still wins outright, so nothing regresses.
 
-Worth doing, and lower stakes than 1a–1c: today `jud 1` silently takes someone to
-Judges when they may have wanted Jude, which is a wrong answer delivered
+Lower stakes than H1a–H1c, but today `jud 1` delivers a **wrong** answer
 confidently rather than a missing one.
 
-### Acceptance
+## H2 · Tapping a search result does not land on the verse
 
-`node scripts/test-reference-search.js` must exit clean: 15/15 acceptance cases,
-all 66 books reachable, no wrong display names.
+Even for references that resolve, the reader does not go to the right place.
 
-Then one thing the harness cannot check, because it needs a device: tapping a
-result must **scroll to the verse**, not just open the story at the top.
-`openSegment` passes a `pos`, and `app/(tabs)/[segment]/index.tsx` has to act on
-it. Check `gen 4:3` lands on Genesis 4:3 inside "People Sin", not at the head of
-the story.
+`app/(tabs)/[segment]/index.tsx:411–415` treats the index's `position` as a **pixel Y
+offset**:
+
+```js
+flatListRef.current?.scrollTo({ y: Math.max(0, targetPos - 80), animated: true });
+```
+
+`position` is not a pixel offset. It is a synthetic estimate at **40 px per
+verse** — the same `currentY += 40` heuristic that appears in `findVerseLocation`
+at the top of that file. Every value is a multiple of 40, and they are not even
+monotonic. Genesis 1:
+
+```
+Genesis-1-1  block=0  pos=40
+Genesis-1-2  block=0  pos=200
+Genesis-1-3  block=0  pos=80     ← goes backwards
+Genesis-1-4  block=2  pos=200
+```
+
+S001's largest position is 2,440 px for a ~2,000-word story of speech bubbles,
+so the scroll consistently **undershoots and lands near the top** regardless of
+which verse you asked for.
+
+`MVP2/14-SHIP-PLAN.md` §2 D1 called this exactly: *"the reader has to act on
+`position`… find the block via `onLayout` offsets… Budget half a day for this
+alone; it is not a lookup problem."* The lookup was built; this half-day was not.
+
+**Fix.** Use `blockIndex`, which the index already stores and which is correct,
+against `onLayout`-measured block offsets in the reader. Add the highlight pulse
+on arrival that the spec asks for. Then verify `gen 4:3` lands on Genesis 4:3
+inside "People Sin", not at the head of the story.
+
+## H3 · Streaks are computed in UTC and break for everyone east of it
+
+`updateStreak()` at `api/sqlite.ts:1023` stamps the day with
+
+```js
+const today = new Date().toISOString().split('T')[0];   // UTC
+```
+
+while the row is initialised with `date('now','localtime')` at
+`api/database-manager.ts:458` — **local**. The two never agree outside UTC.
+
+Demonstrated for `Pacific/Auckland`:
+
+```
+local 2026-08-21 09:00  →  stored as 2026-08-20
+local 2026-08-21 21:00  →  stored as 2026-08-21
+```
+
+So a reader who finishes a story at **9pm Monday** and another at **9am Tuesday**
+stores the same date twice. `updateStreak` hits `if (lastReadDate === today)
+return;` — *"Already read today, no change to streak"* — and **Tuesday's reading
+never counts.** Read at 9am Monday and 9pm Monday instead and it counts as two
+days.
+
+Every user in New Zealand, Australia and Asia has a streak that is wrong in a way
+that depends on what time of day they read. `getContextualStreaks()` at
+`api/sqlite.ts:476` has the same `toISOString()` bug.
+
+**Fix.** Use one local-date helper everywhere — `toLocaleDateString('en-CA')`
+gives `YYYY-MM-DD` in local time — for `today`, for `yesterdayStr`, and for the
+initialising INSERT. The streak is on the You tab and named in the store copy, so
+it should be right.
+
+**Also worth a look while you are in there:** the `UPDATE streak_data … WHERE
+id = 1` at `api/sqlite.ts:1070` assumes the row is `id = 1`. It will be if the
+table was created empty, but `database-migration.ts:387` also inserts, and a row
+at `id = 2` would make the update silently affect nothing while `LIMIT 1` still
+reads. Safer to drop the `WHERE`, since the table holds one row by design.
 
 ---
 
-## 2 · Confirm image share on a production build
+# MEDIUM — real defects that will be noticed, but no listing claim rests on them
+
+## M1 · "More questions" is a one-way trip on ~20 stories
+
+`Questions-EN.json` covers all 365 stories for set 1, but **set 2 is missing for
+20 school, 20 family and 21 small-group stories.**
+
+`components/thread/TalkAboutCard.tsx` renders the toggle only when there is
+something to show:
+
+```jsx
+{questions.length > 0 && (<Pressable onPress={handleRefresh}>More questions ↻</Pressable>)}
+```
+
+So on one of those stories: tap **More questions** → set 2 is empty → the body
+reads "No questions available" → **and the button that would take you back
+disappears.** The only way out is to leave the story and come back.
+
+**Fix.** Either keep the toggle visible when the list is empty, or fall back to
+set 1 automatically, or hide the toggle when set 2 is known to be absent. Filling
+the 61 missing question sets is the other half, and the better one.
+
+## M2 · The Continue card ignores your reading plan
+
+`resolveContinueTarget()` in `utils/continueTarget.ts` accepts an
+`active?: ActiveReading` argument and **never reads it.** `ContinueKind` declares
+`'plan'` and the function can never return it. Consequently
+`ThreadList.tsx:388`:
+
+```jsx
+continueTarget?.kind === 'plan' ? t('UI.thread.day', { n: continueTarget.day }) : …
+```
+
+is unreachable — the "Day N" kicker never renders on the Continue card. (The
+`UI.thread.day` string itself is fine; the plan cards below use it at
+`ThreadList.tsx:438` with their own `plan.day`.)
+
+Compounding it, `ThreadList.tsx:210` builds the object with the progress it just
+computed thrown away:
+
+```js
+setActiveReading({ id: first.id, type: first.type, completedIds: new Set() });
+```
+
+`completedIds` is **always empty**, even though `planDone` was computed ten lines
+above.
+
+Net effect: someone reading "New Testament in 100 days" opens the app and the
+headline card offers today's *calendar* story — possibly deep in the Old
+Testament — rather than their plan's next one. Their plan does still appear as its
+own card below, so this is a hierarchy problem rather than a dead end.
+
+**Fix.** Either wire `active` through so the card leads with the plan's next
+story and the "Day N" kicker, or delete the parameter, the `'plan'` kind and the
+dead branch. Half-implemented is the worst of the three.
+
+## M3 · A whole screen and its subtree are unreachable
+
+`app/(tabs)/Achievements.tsx` is registered `href: null` at
+`app/(tabs)/_layout.tsx:31` and **nothing in the app navigates to it.** The only
+other mention is a vestigial active-state check at
+`components/navigation/BottomNavigation.tsx:37`.
+
+It is the sole importer of `components/navigation/NavBook.tsx`, which is the sole
+importer of `SegmentItem.tsx`. `SegmentNavigation.tsx` sits in the same dead
+subtree and contains a navigation call to a route that does not exist:
+
+```js
+router.push('/Bible'); // Navigate to the Bible tab   ← SegmentNavigation.tsx:43
+```
+
+Harmless only because nothing can reach it.
+
+**Fix.** Delete `Achievements.tsx`, `NavBook.tsx`, `SegmentItem.tsx`,
+`SegmentNavigation.tsx`, `AccordionItem.tsx` and the `Tabs.Screen` entry. This is
+the ship plan's X2 item, extended — it also removes a large slice of the lint
+count.
+
+## M4 · Roughly half the component tree is orphaned
+
+Reachability from every route file:
+
+| | Reachable | Orphaned |
+| --- | --- | --- |
+| `components/` | 39 | **29** |
+| `utils/` | 14 | 6 |
+| `api/` | 8 | 6 |
+| `hooks/` | 5 | 5 |
+| `context/` | 7 | 2 |
+| `services/` | 7 | 1 |
+
+**49 orphaned modules.** Among them `Questions.tsx`, `NoteModal.tsx`,
+`ExternalLink.tsx`, the whole `components/loading/` directory, `components/demo/`,
+`utils/parseReference.ts` (superseded by `reference.ts`), and
+`api/sqlite-optimized.ts`.
+
+This is the real reason the lint count is 55 errors / 204 warnings. The ship
+plan's X3 assumed deleting four files would fix it; the number is closer to fifty.
+Deleting dead code is the cheapest way to get lint to zero, and it removes the
+risk of someone wiring a stale component back up — which is exactly how the QR
+string survived in `thread-ui.json` until this review.
+
+---
+
+# LOW — worth doing, nothing breaks if you don't
+
+## L1 · 877 KB of French strings ship in a build where French is off
+
+`FF.FRENCH_ENABLED` is `false`, so no user can select French — but
+`config/i18n.ts:4`, `utils/localize.ts:1` and `components/CheckCircle.tsx:25` all
+import `assets/data/FRA-UI.json` unconditionally, so all 877 KB is bundled.
+
+Not worth restructuring the i18n layer for. Worth knowing about if download size
+comes up, and worth revisiting when French returns.
+
+## L2 · `metro.config.js` puts `json` in both `sourceExts` and `assetExts`
+
+```js
+config.resolver.sourceExts = [...config.resolver.sourceExts, 'ts', 'tsx'];
+config.resolver.assetExts  = [...config.resolver.assetExts, 'json'];
+```
+
+An extension in both lists is a known Metro footgun: JSON imports can resolve as
+*assets* (a URI) rather than parsed data. It evidently resolves the right way
+today, but it is the kind of thing that flips on an SDK upgrade — and you have
+just done one. `ts`/`tsx` are already in Expo's default `sourceExts` too, so both
+lines are redundant.
+
+Note the same file correctly blocks the 6.5 MB `verseIndex.json` from the bundle,
+so that file costs repo weight only, not app size.
+
+## L3 · Build artifacts tracked in git
+
+`assets/data/FRA-UI.json.backup`, `ReadingPlansChallenges.json.backup`,
+`ReadingPlansChallenges.json.recovery`, root `sourceview.db` (757 KB) and
+`verseIndex.json` (6.5 MB) are all tracked. None is imported. `sourceview.db` is
+the stale artifact behind the schema question in H-adjacent item S3 below —
+deleting it removes the ambiguity.
+
+## L4 · `CheckCircle` navigates to a differently-spelled Home
+
+`components/CheckCircle.tsx:119` uses `pathname: '/(tabs)/Home'` where every other
+call site uses `/Home`. Both resolve, but with `typedRoutes: true` the
+inconsistency is the kind that breaks on an expo-router upgrade.
+
+## L5 · The Continue card re-offers a story you just finished
+
+`resolveContinueTarget` returns `{ kind: 'today' }` whenever today's story is not
+your unfinished last-read — including when you have **already completed it**. It
+only returns `null` at 365/365. There is no "done for today" state.
+
+## L6 · 13 raw `console.*` calls bypass the logger
+
+`utils/logger.ts` correctly gates `info` behind `__DEV__`; thirteen call sites
+skip it and will log in production.
+
+## L7 · Question set 2 is incomplete
+
+20 school, 20 family and 21 small-group stories have no second set — the data half
+of M1.
+
+---
+
+# Still open from the original submission list
+
+These are unchanged and still required.
+
+## S1 · Confirm image share on a production build
 
 **Blocks a claim in both listings** — *"Send a bubble to someone as an image"*.
+`react-native-view-shot@5.1.0` is in `package.json`, but `utils/shareTurn.ts:87`
+falls back to citation text whenever the native module is unavailable, silently,
+and the card has never been seen rendering. Long-press a bubble on the production
+build and confirm an image appears — speaker, ink colour, reference, wordmark,
+correct in light and dark. If it hands you text, cut the sentence.
 
-`react-native-view-shot@5.1.0` is in `package.json`, but `utils/shareTurn.ts:81`
-falls back to sharing citation text whenever the native module is unavailable,
-silently. The dev client that predates the dependency has never rendered the
-card.
+## S2 · Two external accounts, both pure lead time
 
-Open a story on the production build, long-press a bubble, tap Share, and confirm
-an **image** appears — speaker name, ink colour, reference, wordmark, correct in
-both light and dark. If it hands you text instead, delete that sentence from both
-descriptions before submitting.
+- **A hosted privacy policy URL.** `privacy-policy.html` is in the repo but served
+  nowhere recorded. Apple checks the link resolves. The same host can serve the
+  support page, which **must be a web page, not a `mailto:`**.
+- **The Play service account.** `eas.json` points at `./google-service-account.json`,
+  which does not exist. Google Cloud service account → enable the Play Android
+  Publisher API → link the key in Play Console. About an hour.
 
----
+## S3 · Run the migration pass on a real 1.2.1 database
 
-## 3 · Run the migration pass on a real 1.2.1 database
+**Blocks a promise to your existing users** — *"Everything you have already read,
+saved and noted comes with you."* Procedure in `MVP2/14-SHIP-PLAN.md` §4.
 
-**Blocks a promise to your existing users.** The Apple release note says
-*"Everything you have already read, saved and noted comes with you."*
+The schema question there is still open: bundled `sourceview.db` carries
+`completedSegments`, `sourceReadings` and `user_settings`; `api/database-manager.ts`
+creates `completed`, `source` and no `user_settings`. Settle it by pulling a
+database off a 1.2.1 device, not by reading the repo file.
 
-Full procedure in `MVP2/14-SHIP-PLAN.md` §4. In short: install 1.2.1 build 20
-from TestFlight, generate real data (six completed stories across two divisions,
-four reactions, two notes, a paused `Bible1Year`, a three-day streak), then
-install 2.0.0 **over the top without deleting the app** and verify completions,
-reactions, notes, active plan, streak, and that onboarding v2 shows exactly once.
+## S4 · Finalise division titles before shooting screenshots
 
-Note the schema question in §4 of that document is still open: the bundled
-`sourceview.db` carries `completedSegments`, `sourceReadings` and `user_settings`,
-while `api/database-manager.ts` creates `completed`, `source` and no
-`user_settings`. Settle which shape real installs have by pulling a database off a
-1.2.1 device — not by reading the repo file.
+The ten in `constants/divisions.ts` ship as defaults. They appear on **every
+Read-tab screenshot**.
 
----
+## S5 · Remove French from both store consoles
 
-## 4 · Two external accounts, both pure lead time
+The flag is off, so French is unreachable. The listings only say it is returning,
+which is fine — but delete any French **localisation entry** in App Store Connect
+and Play. Both stores check an advertised language is reachable in the binary.
 
-Start these first; they are waiting, not working.
+## S6 · Housekeeping
 
-- **A hosted privacy policy URL.** `privacy-policy.html` exists in the repo but is
-  not served anywhere recorded, and `app.json` previously pointed at a raw GitHub
-  Markdown link. Apple checks the link resolves. The same host can serve the
-  support page, which **must be a web page, not a `mailto:`** — Apple has rejected
-  `mailto:` support URLs.
-- **The Play service account.** `eas.json` points the Android submit at
-  `./google-service-account.json`, which does not exist. Google Cloud service
-  account → enable the Play Android Publisher API → link the key in Play Console
-  under Users & permissions. About an hour.
-
----
-
-## 5 · Finalise the division titles before shooting screenshots
-
-The ten titles in `constants/divisions.ts` ship as defaults per the step log's X5
-note. They appear on **every Read-tab screenshot**, so any shot taken before they
-are final is wasted work. This gates §6 of the screenshot brief in
-`APP-STORE-LISTING.md`.
+- **Voice count disagrees with itself.** `TOTAL_VOICES = 774` and the You tab
+  renders "/ 774"; `conversations.json` metadata says 773.
+  `MVP2/03-DESIGN-DIRECTION.md` explains 774 as the union of the per-colour sets
+  and is authoritative, so the listings use 774 and match the screen.
+- **`APP_DESCRIPTION.md` says "15-20 minutes each".** The data says median 10,
+  max 14. Do not hand that file to anyone writing marketing.
+- **`PRIVACY_POLICY.md` mentions French.** Consistent with "French is returning".
+  Both files are clean of QR and camera references.
 
 ---
 
-## 6 · Remove French from the store consoles
+# Consider adding before 2.0
 
-`FF.FRENCH_ENABLED` is `false` in `constants/featureFlags.ts`, so `app/settings.tsx`
-hides the language rows and no user can reach French in this build.
+Not defects. These are the gaps most likely to cost you on a public push, roughly
+in order of what I would do first.
 
-The listings say only that French is returning, which is a statement of intent and
-fine. But **delete any French localisation entry in App Store Connect and Play**
-for this release. Both stores check that an advertised language is actually
-reachable in the binary, and a localised listing is a claim about this build
-rather than a future one.
+## C1 · A way to remove a reaction or note from the Saved tab
+
+You can un-react from inside the reader (`EmojiHandler.tsx:316` calls
+`deleteEmoji`), but the Saved tab offers only "tap to open the story". Saved is
+the screen that grows without limit, and it is the one place with no edit or
+delete. A swipe-to-delete, or the same long-press sheet the reader uses, closes
+the loop on a feature both listings sell.
+
+## C2 · A daily reminder
+
+There is no notification code and no notification permission in the app — nothing
+in `package.json`, nothing in `app.json`. You are shipping a streak, a "Today"
+card and reading plans, which is the full apparatus of a daily habit, with no way
+to ask someone to come back. For a public push this is the single largest
+retention lever available, and `expo-notifications` with one local daily
+reminder is a small build.
+
+It costs you the "asks for no permissions" line, so it is a real trade — but a
+local notification permission is the least objectionable one there is, and you can
+ask for it after someone's third day rather than at launch.
+
+## C3 · A review prompt
+
+No `expo-store-review` and no prompt anywhere. Ratings are the main lever on store
+ranking and on how the listing converts, and you are about to send a wave of new
+users at it. Trigger it after a completed story on a multi-day streak — never on
+first launch.
+
+## C4 · The highlight pulse on verse arrival
+
+Specified alongside H2 and worth doing in the same pass. Landing on a verse
+without marking it means the reader still has to hunt.
+
+## C5 · Read-aloud mode
+
+`MVP2/05-GROUP-READING.md` §3 specifies it — chrome hides, type scales up, the
+current turn holds full ink while the rest dim back. **It was never built**; the
+only "aloud" string in the codebase is in the NLT description. The Apple subtitle
+is *"Read the Bible aloud, together"*, and the call sheet's tap-a-colour dimming
+does cover the group case, so nothing in the copy is false. But a focus mode is
+the obvious companion to it, and the group-reading spec assumed it would exist.
+
+## C6 · Bare book names could offer the reference row too
+
+Related to H1e. Typing `psalm` alone does nothing in the reference path because
+of the digit gate, so you get book results but never "Psalms 1:1". Dropping the
+digit requirement — and letting a bare book name resolve to chapter 1, verse 1 —
+would make the search feel like it understands references rather than waiting for
+you to prove it.
+
+## C7 · Decide iPad properly
+
+`supportsTablet: true` makes iPad screenshots mandatory and invites reviewers to
+judge the tablet layout. Nothing in the codebase suggests a tablet-specific
+layout beyond `constants/sizes.ts` helpers. Either give it a pass on a real iPad
+or set `supportsTablet: false` — before you start shooting.
+
+## C8 · An accessibility pass
+
+No `accessibilityLabel` audit was possible statically, but the reader is built
+from coloured bubbles where **colour carries the meaning** — which is precisely
+the case where a screen reader and a colour-blind reader need the speaker's name
+announced rather than implied. The name is already in the data. This is also the
+one area where a store reviewer can reject on principle.
 
 ---
 
-## 7 · Housekeeping — none of it blocks submission
-
-**The voice count disagrees with itself.** `utils/voicesMet.ts` sets
-`TOTAL_VOICES = 774` and the You tab renders "X / 774";
-`conversations.json` metadata says `773`. `MVP2/03-DESIGN-DIRECTION.md` explains
-774 as the union of the per-colour sets and is authoritative, so the listings use
-774 and match what a user sees. Reconcile the data file when convenient.
-
-**`APP_DESCRIPTION.md` says stories are "15-20 minutes each".** The data says a
-median of 10 and a maximum of 14. Nothing in the new copy repeats it, but do not
-hand that file to anyone writing marketing — see `COPY-RATIONALE.md` §1 for the
-other reasons.
-
-**`PRIVACY_POLICY.md` still lists "English or French" and the French Bible
-download.** Consistent with "French is returning", so no action needed. If a
-reviewer asks, the answer is that the download machinery ships dormant behind a
-flag. Both the Markdown and the HTML are clean of QR and camera references, which
-was the real risk.
-
----
-
-## Summary
+# Summary
 
 | | Item | Blocks |
 | --- | --- | --- |
-| 1 | Verse reference search — index, names, the "I" parser, multi-word, ambiguity | A claim in both listings |
-| 2 | Image share on a production build | A claim in both listings |
-| 3 | Migration pass on a real 1.2.1 database | A promise to existing users |
-| 4 | Privacy policy URL · Play service account | Submission itself |
-| 5 | Division titles final | Screenshots |
-| 6 | French removed from both consoles | Review risk |
-| 7 | Voice count, old marketing doc | Nothing |
+| **H1** | Verse search — index, names, the "I" parser, multi-word, ambiguity | A claim in both listings |
+| **H2** | Search results do not scroll to the verse | The same claim |
+| **H3** | Streaks computed in UTC — wrong for NZ/AU/Asia | A feature named in both listings |
+| **M1** | "More questions" dead-ends on ~20 stories | — |
+| **M2** | Continue card ignores the active plan | — |
+| **M3** | Achievements and its subtree unreachable, with a dead `/Bible` route | — |
+| **M4** | 49 orphaned modules; the real cause of the lint count | X3 |
+| **L1–L7** | Bundle, config, tracked artifacts, logging, data gaps | — |
+| **S1** | Image share on a production build | A claim in both listings |
+| **S2** | Privacy policy URL · Play service account | Submission itself |
+| **S3** | Migration pass on a real 1.2.1 database | A promise to existing users |
+| **S4** | Division titles final | Screenshots |
+| **S5** | French removed from both consoles | Review risk |
+| **C1–C8** | Suggestions, not defects | — |
