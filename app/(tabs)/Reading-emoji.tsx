@@ -1,23 +1,26 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, SectionList, TextInput } from 'react-native';
+import { View, Text, Pressable, StyleSheet, FlatList, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getEmojis } from '@/api/sqlite';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 import Books from '@/assets/data/BookChapterList.json';
-import { ThreadColors } from '@/constants/Colors';
+import { ThreadColors, type ThreadPalette } from '@/constants/Colors';
 import { storyNumber } from '@/constants/divisions';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
-import { localizeBookName, localizeStoryTitle, localizeVoiceName } from '@/utils/localize';
-import { collectTurnText } from '@/utils/shareTurn';
+import { localizeStoryTitle } from '@/utils/localize';
 import { BibleBlock } from '@/types';
 import SavedBubble from '@/components/thread/SavedBubble';
+import { hapticSelection } from '@/utils/haptics';
 import {
+  COLOR_KEYS,
   EMPTY_SAVED_FILTERS,
+  EMOJI_OPTIONS,
   SavedFilterSheet,
   savedFilterCount,
+  toggleSavedFilter,
   type SavedFilters,
 } from '@/components/thread/SavedFilterSheet';
 
@@ -55,7 +58,7 @@ function testamentOf(id: string): 'ot' | 'nt' | null {
   return n <= 265 ? 'ot' : 'nt';
 }
 
-function matchesFilters(row: SavedRow, filters: SavedFilters, query: string, language: string): boolean {
+function matchesFilters(row: SavedRow, filters: SavedFilters): boolean {
   const id = storyIdOf(row);
   const block = parseBlock(row.blockData);
   const color = (block?.source?.color || '').toLowerCase();
@@ -73,22 +76,49 @@ function matchesFilters(row: SavedRow, filters: SavedFilters, query: string, lan
   if (filters.sourceName.length && !filters.sourceName.includes(sourceName)) return false;
   if (filters.book.length && !filters.book.includes(bookId)) return false;
   if (filters.emoji.length && !filters.emoji.includes(emoji)) return false;
+  return true;
+}
 
-  const q = query.trim().toLowerCase();
-  if (!q) return true;
-  const haystack = [
-    localizeStoryTitle(id, titles[id]?.title || id, language),
-    titles[id]?.ref || '',
-    localizeBookName(bookId, books[bookId]?.bookName || '', language),
-    localizeVoiceName(sourceName, language),
-    sourceName,
-    note,
-    collectTurnText(block),
-    emoji,
-  ]
-    .join(' ')
-    .toLowerCase();
-  return haystack.includes(q);
+function QuickChip({
+  label,
+  selected,
+  onPress,
+  palette,
+  emoji,
+  swatch,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+  palette: ThreadPalette;
+  emoji?: boolean;
+  swatch?: string;
+}) {
+  return (
+    <Pressable
+      onPress={() => {
+        void hapticSelection();
+        onPress();
+      }}
+      style={[
+        styles.chip,
+        {
+          backgroundColor: selected ? palette.ink : palette.surf,
+          borderColor: selected ? palette.ink : palette.hair,
+        },
+      ]}
+    >
+      {swatch ? <View style={[styles.swatch, { backgroundColor: swatch }]} /> : null}
+      <Text
+        style={[
+          emoji ? styles.chipEmoji : styles.chipText,
+          { color: selected && !emoji ? palette.bg : palette.ink },
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
 }
 
 const SavedScreen = () => {
@@ -97,7 +127,6 @@ const SavedScreen = () => {
   const { t } = useTranslation();
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
   const [rows, setRows] = useState<SavedRow[]>([]);
-  const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<SavedFilters>(EMPTY_SAVED_FILTERS);
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -138,11 +167,11 @@ const SavedScreen = () => {
   }, [rows]);
 
   const filteredRows = useMemo(
-    () => rows.filter((row) => matchesFilters(row, filters, query, language)),
-    [filters, language, query, rows]
+    () => rows.filter((row) => matchesFilters(row, filters)),
+    [filters, rows]
   );
 
-  const sections = useMemo(() => {
+  const items = useMemo(() => {
     const byStory = new Map<string, SavedRow[]>();
     for (const row of filteredRows) {
       const id = storyIdOf(row);
@@ -151,18 +180,24 @@ const SavedScreen = () => {
       list.push(row);
       byStory.set(id, list);
     }
-    return [...byStory.entries()].map(([id, items]) => ({
-      id,
-      title: localizeStoryTitle(id, titles[id]?.title || id, language),
-      ref: titles[id]?.ref || '',
-      bookName: books[titles[id]?.book?.[0] || '']?.bookName || '',
-      data: items,
-    }));
+    return [...byStory.entries()].flatMap(([id, rowsForStory]) => {
+      const title = localizeStoryTitle(id, titles[id]?.title || id, language);
+      const bookName = books[titles[id]?.book?.[0] || '']?.bookName || '';
+      return rowsForStory.map((row) => ({
+        ...row,
+        storyId: id,
+        storyTitle: title,
+        bookName,
+      }));
+    });
   }, [filteredRows, language]);
 
   const activeCount = savedFilterCount(filters);
   const showingEmptySaved = rows.length === 0;
-  const showingNoMatches = !showingEmptySaved && sections.length === 0;
+  const showingNoMatches = !showingEmptySaved && items.length === 0;
+
+  const colorSwatch = (key: string) =>
+    key === 'black' ? palette.narr : key === 'red' ? palette.divine : key === 'green' ? palette.prin : palette.chor;
 
   const header = (
     <>
@@ -186,17 +221,53 @@ const SavedScreen = () => {
         )}
       </View>
       {!showingEmptySaved && (
-        <View style={[styles.search, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder={t('UI.filters.searchSaved')}
-            placeholderTextColor={palette.mute}
-            style={[styles.searchInput, { color: palette.ink }]}
-            autoCorrect={false}
-            autoCapitalize="none"
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chips}
+          style={styles.chipScroll}
+        >
+          {EMOJI_OPTIONS.map((emoji) => (
+            <QuickChip
+              key={emoji}
+              label={emoji}
+              emoji
+              selected={filters.emoji.includes(emoji)}
+              palette={palette}
+              onPress={() => setFilters((prev) => ({ ...prev, emoji: toggleSavedFilter(prev.emoji, emoji) }))}
+            />
+          ))}
+          <QuickChip
+            label={t('UI.filters.hasNotes')}
+            selected={filters.hasNotes}
+            palette={palette}
+            onPress={() => setFilters((prev) => ({ ...prev, hasNotes: !prev.hasNotes }))}
           />
-        </View>
+          <QuickChip
+            label={t('UI.filters.otShort')}
+            selected={filters.testament.includes('ot')}
+            palette={palette}
+            onPress={() => setFilters((prev) => ({ ...prev, testament: toggleSavedFilter(prev.testament, 'ot') }))}
+          />
+          <QuickChip
+            label={t('UI.filters.ntShort')}
+            selected={filters.testament.includes('nt')}
+            palette={palette}
+            onPress={() => setFilters((prev) => ({ ...prev, testament: toggleSavedFilter(prev.testament, 'nt') }))}
+          />
+          {COLOR_KEYS.map((item) => (
+            <QuickChip
+              key={item.key}
+              label={t(item.labelKey)}
+              selected={filters.sourceColor.includes(item.key)}
+              palette={palette}
+              swatch={colorSwatch(item.key)}
+              onPress={() =>
+                setFilters((prev) => ({ ...prev, sourceColor: toggleSavedFilter(prev.sourceColor, item.key) }))
+              }
+            />
+          ))}
+        </ScrollView>
       )}
     </>
   );
@@ -214,31 +285,25 @@ const SavedScreen = () => {
           <Text style={[styles.emptyTitle, { color: palette.ink }]}>{t('UI.filters.noMatches')}</Text>
         </View>
       ) : (
-        <SectionList
-          sections={sections}
+        <FlatList
+          data={items}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={{ paddingBottom: 140 }}
-          stickySectionHeadersEnabled={false}
-          renderSectionHeader={({ section }) => (
-            <Pressable onPress={() => router.push(`/${section.id}`)} style={styles.header}>
-              <Text style={[styles.story, { color: palette.ink }]}>{section.title}</Text>
-              <Text style={[styles.ref, { color: palette.mute }]}>{section.ref}</Text>
-            </Pressable>
-          )}
-          renderItem={({ item, index, section }) => {
+          keyboardShouldPersistTaps="handled"
+          renderItem={({ item, index }) => {
             const block = parseBlock(item.blockData);
             return (
               <Pressable
-                onPress={() => router.push(`/${section.id}`)}
+                onPress={() => router.push(`/${item.storyId}`)}
                 style={styles.card}
               >
                 {block ? (
                   <SavedBubble
                     block={block}
                     index={index}
-                    segmentId={section.id}
-                    citationBook={section.bookName}
-                    storyTitle={section.title}
+                    segmentId={item.storyId}
+                    citationBook={item.bookName}
+                    storyTitle={item.storyTitle}
                     emoji={item.emoji || (item.note ? '✎' : null)}
                   />
                 ) : (
@@ -297,21 +362,41 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   badgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
-  search: {
-    marginHorizontal: 14,
-    marginBottom: 8,
+  chipScroll: { flexGrow: 0 },
+  chips: {
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingTop: 4,
+    paddingBottom: 10,
+    gap: 8,
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 8,
+    marginRight: 2,
+    minHeight: 40,
+    gap: 6,
   },
-  searchInput: { fontSize: 15, padding: 0 },
+  chipText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  chipEmoji: {
+    fontSize: 18,
+    lineHeight: 22,
+  },
+  swatch: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
   empty: { paddingHorizontal: 14, paddingTop: 40 },
   emptyTitle: { fontSize: 18, fontWeight: '600' },
   emptyBody: { fontSize: 14, lineHeight: 20, marginTop: 8 },
-  header: { paddingHorizontal: 14, paddingTop: 10, paddingBottom: 4 },
-  story: { fontSize: 16, fontWeight: '600' },
-  ref: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', marginTop: 2 },
   card: { paddingHorizontal: 10, paddingBottom: 10, paddingTop: 8 },
   fallback: { fontSize: 15, lineHeight: 22, paddingHorizontal: 8, paddingVertical: 8 },
   note: {

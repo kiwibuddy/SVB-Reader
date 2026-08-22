@@ -111,7 +111,7 @@ const GlowingBubble = ({
             </Text>
           )}
         </View>
-        <View style={{ alignSelf: left ? 'flex-start' : 'flex-end', maxWidth: '100%' }}>
+        <View style={{ alignSelf: left ? 'flex-start' : 'flex-end', maxWidth: '100%', overflow: 'visible' }}>
           <EmojiHandler block={block} blockIndex={bIndex} hasTail={hasTail} onLongPress={onLongPress}>
             <Animated.View
               style={[
@@ -164,6 +164,7 @@ const styles = StyleSheet.create({
   },
   stack: {
     maxWidth: '84%',
+    overflow: 'visible',
   },
   who: {
     fontSize: 9,

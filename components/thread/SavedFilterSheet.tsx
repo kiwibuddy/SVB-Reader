@@ -36,18 +36,18 @@ export function savedFilterCount(filters: SavedFilters): number {
   );
 }
 
-function toggleValue<T>(list: T[], value: T): T[] {
+export function toggleSavedFilter<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
 }
 
-const COLOR_KEYS = [
+export const COLOR_KEYS = [
   { key: 'black', labelKey: 'UI.filters.narrator' },
   { key: 'red', labelKey: 'UI.filters.godJesus' },
   { key: 'green', labelKey: 'UI.filters.mainSpeaker' },
   { key: 'blue', labelKey: 'UI.filters.otherSpeakers' },
 ] as const;
 
-const EMOJI_OPTIONS = ['❤️', '👍', '🤔', '🙏'] as const;
+export const EMOJI_OPTIONS = ['❤️', '👍', '🤔', '🙏'] as const;
 
 type Props = {
   visible: boolean;
@@ -144,7 +144,7 @@ export function SavedFilterSheet({
               key={emoji}
               label={emoji}
               selected={draft.emoji.includes(emoji)}
-              onPress={() => setDraft((prev) => ({ ...prev, emoji: toggleValue(prev.emoji, emoji) }))}
+              onPress={() => setDraft((prev) => ({ ...prev, emoji: toggleSavedFilter(prev.emoji, emoji) }))}
             />
           ))}
 
@@ -152,12 +152,12 @@ export function SavedFilterSheet({
           <Option
             label={t('UI.filters.oldTestament')}
             selected={draft.testament.includes('ot')}
-            onPress={() => setDraft((prev) => ({ ...prev, testament: toggleValue(prev.testament, 'ot') }))}
+            onPress={() => setDraft((prev) => ({ ...prev, testament: toggleSavedFilter(prev.testament, 'ot') }))}
           />
           <Option
             label={t('UI.filters.newTestament')}
             selected={draft.testament.includes('nt')}
-            onPress={() => setDraft((prev) => ({ ...prev, testament: toggleValue(prev.testament, 'nt') }))}
+            onPress={() => setDraft((prev) => ({ ...prev, testament: toggleSavedFilter(prev.testament, 'nt') }))}
           />
 
           <Text style={[styles.section, { color: palette.mute }]}>{t('UI.filters.speakerType')}</Text>
@@ -167,7 +167,7 @@ export function SavedFilterSheet({
               label={t(item.labelKey)}
               selected={draft.sourceColor.includes(item.key)}
               swatch={item.key === 'black' ? palette.narr : item.key === 'red' ? palette.divine : item.key === 'green' ? palette.prin : palette.chor}
-              onPress={() => setDraft((prev) => ({ ...prev, sourceColor: toggleValue(prev.sourceColor, item.key) }))}
+              onPress={() => setDraft((prev) => ({ ...prev, sourceColor: toggleSavedFilter(prev.sourceColor, item.key) }))}
             />
           ))}
 
@@ -181,7 +181,7 @@ export function SavedFilterSheet({
                   key={name}
                   label={localizeVoiceName(name, language)}
                   selected={draft.sourceName.includes(name)}
-                  onPress={() => setDraft((prev) => ({ ...prev, sourceName: toggleValue(prev.sourceName, name) }))}
+                  onPress={() => setDraft((prev) => ({ ...prev, sourceName: toggleSavedFilter(prev.sourceName, name) }))}
                 />
               ))}
               {speakers.length > 8 && (
@@ -200,7 +200,7 @@ export function SavedFilterSheet({
               key={book.id}
               label={localizeBookName(book.id, book.name, language)}
               selected={draft.book.includes(book.id)}
-              onPress={() => setDraft((prev) => ({ ...prev, book: toggleValue(prev.book, book.id) }))}
+              onPress={() => setDraft((prev) => ({ ...prev, book: toggleSavedFilter(prev.book, book.id) }))}
             />
           ))}
         </ScrollView>

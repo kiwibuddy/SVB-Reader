@@ -57,15 +57,41 @@ and wrapped in four different covers.
 
 ## Printing
 
-- **Saddle stitch, A5 from A4.** Print the PDF with your printer's "Booklet"
-  option, or impose 20 pages onto 5 A4 sheets double-sided (20/1, 2/19, 18/3,
-  4/17, …), fold and staple twice on the spine.
-- **Margins are mirrored**: 16 mm on the binding edge, 12 mm on the outside.
-- **No bleed is set.** Covers run to the trim edge, so if a commercial printer
-  wants bleed, ask for 3 mm and reprint with the page size raised to
-  154 × 216 mm, a one-line change in `styles.mjs`.
-- The four cover colours are `#26262A` graphite, `#B3261E` red, `#2E7D32`
-  green, `#1565C0` blue.
+### Printers **with** a Booklet preset
+
+Print `dist/jonah-booklet-<colour>.pdf` using the printer's Booklet option (A4 →
+A5 saddle stitch).
+
+### Printers **without** a Booklet preset (recommended)
+
+Impose the A5 PDF onto ready-to-fold A4 sheets first:
+
+```bash
+python3 -m venv print/.venv   # once
+print/.venv/bin/pip install -r print/requirements.txt
+print/.venv/bin/python print/impose-a5-booklet.py \
+  print/jonah-booklet/dist/jonah-booklet-green.pdf
+```
+
+Writes `jonah-booklet-green-a4-print.pdf` (10 landscape A4 sides = 5 physical
+sheets). Then print that file:
+
+- **Paper:** A4
+- **Two-sided:** ON, **flip on short edge**
+- **Scale:** 100% / Actual size (not "Fit to page")
+- **Margins:** None, or borderless if your driver offers it
+
+Keep the sheets in order, fold the stack in half, staple the spine twice.
+The two A5 pages fill the A4 sheet (covers run to the paper edge). Interior
+type already sits 12–16 mm in, so a typical 5 mm printer unprintable band
+only clips cover colour. If that clip looks ugly, re-run with `--margin-mm 3`.
+If the backs come out upside-down, re-run with `--rotate-backs` and flip on
+the long edge instead.
+
+20 pages impose as 20|1, 2|19, 18|3, 4|17, … on five A4 sheets. Interior
+margins are mirrored: 16 mm on the binding edge, 12 mm on the outside. No
+bleed is set; covers run to the trim edge. The four cover colours are
+`#26262A` graphite, `#B3261E` red, `#2E7D32` green, `#1565C0` blue.
 
 ## Files
 
@@ -76,6 +102,7 @@ and wrapped in four different covers.
 | `pages.mjs` | The fixed pages: covers, how-to, questions, fillers |
 | `build.mjs` | Fonts, assembly, and the client-side paginator |
 | `render.mjs` | HTML to PDF over the DevTools protocol |
+| `../impose-a5-booklet.py` | A5 sequential PDF → A4 duplex print PDF |
 
 ## Where print differs from the app on purpose
 

@@ -403,12 +403,529 @@
       "almostReady": "Almost ready...",
       "complete": "Welcome to SourceView Together!"
     },
+    "chronologicalPhases": {
+      "gospelsChronological": {
+        "Birth Narratives": {
+          "title": "Birth Narratives",
+          "description": "The miraculous events surrounding Jesus' birth and early life"
+        },
+        "Early Life": {
+          "title": "Early Life",
+          "description": "Jesus' childhood and preparation for ministry"
+        },
+        "Early Ministry": {
+          "title": "Early Ministry",
+          "description": "John the Baptist's ministry and Jesus' baptism and temptation"
+        },
+        "Galilean Ministry": {
+          "title": "Galilean Ministry",
+          "description": "Jesus' ministry in Galilee, including miracles and calling disciples"
+        },
+        "Teaching Ministry": {
+          "title": "Teaching Ministry",
+          "description": "Jesus' major teachings including the Sermon on the Mount"
+        }
+      },
+      "davidsLifeChronological": {
+        "Background - Samuel's Ministry": {
+          "title": "Background - Samuel's Ministry",
+          "description": "The foundation of Israel's transition from judges to kings"
+        },
+        "Background - Israel's Transition": {
+          "title": "Background - Israel's Transition",
+          "description": "Israel's demand for a king and the establishment of monarchy"
+        },
+        "Background - Saul's Rise": {
+          "title": "Background - Saul's Rise",
+          "description": "Saul's anointing and early reign as Israel's first king"
+        },
+        "Background - Saul's Decline": {
+          "title": "Background - Saul's Decline",
+          "description": "Saul's disobedience and God's rejection of his kingship"
+        },
+        "David's Calling - Young Shepherd": {
+          "title": "David's Calling - Young Shepherd",
+          "description": "David's anointing and early service in Saul's court"
+        },
+        "David's Early Psalms - Shepherd's Heart": {
+          "title": "David's Early Psalms - Shepherd's Heart",
+          "description": "Psalms reflecting David's heart as a shepherd and worshipper"
+        },
+        "David's Rise - Giant Slayer": {
+          "title": "David's Rise - Giant Slayer",
+          "description": "David's victory over Goliath and growing reputation"
+        },
+        "David's Psalms of Trust": {
+          "title": "David's Psalms of Trust",
+          "description": "Psalms of faith and trust during times of testing"
+        },
+        "David's Friendship - Jonathan's Loyalty": {
+          "title": "David's Friendship - Jonathan's Loyalty",
+          "description": "The covenant friendship between David and Jonathan"
+        },
+        "David's Flight - Fugitive Years Begin": {
+          "title": "David's Flight - Fugitive Years Begin",
+          "description": "David's escape from Saul's jealousy and murderous intent"
+        },
+        "David's Psalms of Struggle": {
+          "title": "David's Psalms of Struggle",
+          "description": "Psalms written during times of conflict and repentance"
+        },
+        "David's Mercy - Sparing Saul": {
+          "title": "David's Mercy - Sparing Saul",
+          "description": "David's opportunities to kill Saul but choosing mercy instead"
+        },
+        "David's Psalms of Persecution": {
+          "title": "David's Psalms of Persecution",
+          "description": "Psalms expressing David's trust during persecution"
+        },
+        "David's Trials - Final Fugitive Days": {
+          "title": "David's Trials - Final Fugitive Days",
+          "description": "David's final period as a fugitive from Saul"
+        },
+        "David's Grief - Mourning for Saul": {
+          "title": "David's Grief - Mourning for Saul",
+          "description": "David's lament over the death of Saul and Jonathan"
+        },
+        "David's Kingdom - King of Israel": {
+          "title": "David's Kingdom - King of Israel",
+          "description": "David's rise to become king over all Israel"
+        },
+        "David's Royal Psalms": {
+          "title": "David's Royal Psalms",
+          "description": "Psalms celebrating God's kingship and David's royal calling"
+        },
+        "David's Covenant - God's Promise": {
+          "title": "David's Covenant - God's Promise",
+          "description": "God's covenant promise to establish David's dynasty forever"
+        },
+        "David's Temple Psalms": {
+          "title": "David's Temple Psalms",
+          "description": "Psalms related to worship and the future temple"
+        },
+        "David's Conquests - Military Success": {
+          "title": "David's Conquests - Military Success",
+          "description": "David's military victories and expansion of Israel's borders"
+        },
+        "David's Historical Psalms": {
+          "title": "David's Historical Psalms",
+          "description": "Psalms reflecting on Israel's history and God's faithfulness"
+        },
+        "David's Fall - Sin and Consequences": {
+          "title": "David's Fall - Sin and Consequences",
+          "description": "David's sin with Bathsheba and its devastating consequences"
+        },
+        "David's Crisis - Family Rebellion": {
+          "title": "David's Crisis - Family Rebellion",
+          "description": "Absalom's rebellion and David's family troubles"
+        },
+        "David's Psalms of Exile": {
+          "title": "David's Psalms of Exile",
+          "description": "Psalms written during David's flight from Absalom"
+        },
+        "David's Exile - Son's Betrayal": {
+          "title": "David's Exile - Son's Betrayal",
+          "description": "David's heartbreak as his own son rebels against him"
+        },
+        "David's Restoration - Return to Throne": {
+          "title": "David's Restoration - Return to Throne",
+          "description": "David's return to Jerusalem and restoration as king"
+        },
+        "David's Psalms of Worship": {
+          "title": "David's Psalms of Worship",
+          "description": "Psalms celebrating God's eternal kingship and sovereignty"
+        },
+        "David's Final Years - Elder King": {
+          "title": "David's Final Years - Elder King",
+          "description": "David's later reign and preparation for succession"
+        },
+        "David's Psalms of Deliverance": {
+          "title": "David's Psalms of Deliverance",
+          "description": "Psalms reflecting on God's faithfulness through all trials"
+        },
+        "David's Legacy - Passing the Throne": {
+          "title": "David's Legacy - Passing the Throne",
+          "description": "David's final days and Solomon's succession to the throne"
+        },
+        "David's Wisdom Psalms": {
+          "title": "David's Wisdom Psalms",
+          "description": "Psalms of wisdom and instruction for future generations"
+        },
+        "David's Psalms of Praise": {
+          "title": "David's Psalms of Praise",
+          "description": "Psalms of celebration and thanksgiving to God"
+        },
+        "David's Love for God's Word": {
+          "title": "David's Love for God's Word",
+          "description": "The great psalm celebrating love for God's law and word"
+        },
+        "David's Songs of Ascent": {
+          "title": "David's Songs of Ascent",
+          "description": "Pilgrimage psalms and songs of praise for worship"
+        },
+        "David's Prayers and Reflections": {
+          "title": "David's Prayers and Reflections",
+          "description": "Later psalms of prayer and spiritual reflection"
+        },
+        "David's Final Praises": {
+          "title": "David's Final Praises",
+          "description": "Concluding psalms of pure praise and worship"
+        }
+      },
+      "adventJourneyChronological": {
+        "Ancient Promises": {
+          "title": "Ancient Promises",
+          "description": "Prophetic promises of the coming Messiah spoken centuries before Christ"
+        },
+        "Messianic Vision": {
+          "title": "Messianic Vision",
+          "description": "Isaiah's detailed vision of the Messiah's character and mission"
+        },
+        "Divine Announcements": {
+          "title": "Divine Announcements",
+          "description": "God's angels announce the fulfillment of ancient promises"
+        },
+        "The Nativity": {
+          "title": "The Nativity",
+          "description": "The long-awaited Messiah is born in Bethlehem"
+        },
+        "Fulfillment Begins": {
+          "title": "Fulfillment Begins",
+          "description": "Jesus begins His earthly ministry, fulfilling prophecy"
+        }
+      },
+      "lentenReflectionChronological": {
+        "Preparation": {
+          "title": "Preparation",
+          "description": "Jesus prepares for His earthly ministry through baptism and temptation"
+        },
+        "Early Ministry": {
+          "title": "Early Ministry",
+          "description": "Jesus begins His public ministry with teaching and healing"
+        },
+        "Ministry Expansion": {
+          "title": "Ministry Expansion",
+          "description": "Jesus expands His ministry, sending out disciples and teaching in parables"
+        },
+        "Growing Opposition": {
+          "title": "Growing Opposition",
+          "description": "Religious leaders increasingly oppose Jesus as His ministry grows"
+        },
+        "Final Confrontation": {
+          "title": "Final Confrontation",
+          "description": "Jesus enters Jerusalem and faces His final week of earthly ministry"
+        },
+        "The Last Supper": {
+          "title": "The Last Supper",
+          "description": "Jesus shares His final meal with disciples and prepares them for what's to come"
+        },
+        "The Passion": {
+          "title": "The Passion",
+          "description": "Jesus suffers, dies, and is buried, fulfilling His mission of salvation"
+        },
+        "Resurrection Victory": {
+          "title": "Resurrection Victory",
+          "description": "Jesus rises from the dead, defeating death and offering eternal life"
+        }
+      },
+      "womenOfTheBibleChronological": {
+        "The Beginning": {
+          "title": "The Beginning",
+          "description": "The first woman and the beginning of human history"
+        },
+        "The Patriarchs": {
+          "title": "The Patriarchs",
+          "description": "Founding mothers of God's covenant people"
+        },
+        "The Exodus": {
+          "title": "The Exodus",
+          "description": "Women of courage during Israel's deliverance"
+        },
+        "The Judges": {
+          "title": "The Judges",
+          "description": "Women leaders and faithful followers in turbulent times"
+        },
+        "The Kingdom": {
+          "title": "The Kingdom",
+          "description": "Women of faith in the age of kings and prophets"
+        },
+        "The Exile": {
+          "title": "The Exile",
+          "description": "Queens and heroines in foreign lands"
+        },
+        "The Messiah": {
+          "title": "The Messiah",
+          "description": "Women who welcomed and celebrated Jesus' arrival"
+        },
+        "The Ministry": {
+          "title": "The Ministry",
+          "description": "Women who encountered and followed Jesus"
+        }
+      },
+      "paulsLettersChronological": {
+        "Early Missionary Letters": {
+          "title": "Early Missionary Letters",
+          "description": "Paul's first letters addressing foundational gospel truths"
+        },
+        "Major Doctrinal Letters": {
+          "title": "Major Doctrinal Letters",
+          "description": "Comprehensive teaching on Christian life and doctrine"
+        },
+        "Theological Masterworks": {
+          "title": "Theological Masterworks",
+          "description": "Paul's most systematic presentation of gospel theology"
+        },
+        "Prison Epistles": {
+          "title": "Prison Epistles",
+          "description": "Letters written during Paul's imprisonment, emphasizing Christ's supremacy"
+        },
+        "Pastoral Epistles": {
+          "title": "Pastoral Epistles",
+          "description": "Final instructions for church leadership and ministry"
+        }
+      },
+      "inTheBeginningChronological": {
+        "Creation and Fall": {
+          "title": "Creation and Fall",
+          "description": "The perfect beginning and humanity's tragic rebellion"
+        },
+        "Judgment and Mercy": {
+          "title": "Judgment and Mercy",
+          "description": "God's justice balanced with His preserving grace"
+        },
+        "The Covenant Begins": {
+          "title": "The Covenant Begins",
+          "description": "God establishes His redemptive plan through Abraham"
+        },
+        "Testing and Triumph": {
+          "title": "Testing and Triumph",
+          "description": "Faith proven through trials and God's faithfulness confirmed"
+        },
+        "Family Struggles": {
+          "title": "Family Struggles",
+          "description": "God works through imperfect people to accomplish His purposes"
+        },
+        "Divine Providence": {
+          "title": "Divine Providence",
+          "description": "God's sovereign care displayed through Joseph's life"
+        }
+      },
+      "christmas12Chronological": {
+        "Divine Announcements": {
+          "title": "Divine Announcements",
+          "description": "God's messengers prepare the world for the Messiah's arrival"
+        },
+        "The Nativity": {
+          "title": "The Nativity",
+          "description": "The miraculous birth of God's Son in human flesh"
+        },
+        "Early Recognition": {
+          "title": "Early Recognition",
+          "description": "Faithful people recognize and worship the newborn King"
+        }
+      },
+      "newTestamentJourneyChronological": {
+        "The Messiah Arrives": {
+          "title": "The Messiah Arrives",
+          "description": "God's Son enters human history to accomplish salvation"
+        },
+        "The Ministry Unfolds": {
+          "title": "The Ministry Unfolds",
+          "description": "Jesus teaches, heals, and reveals the Kingdom of God"
+        },
+        "Growing Opposition": {
+          "title": "Growing Opposition",
+          "description": "Religious leaders reject Jesus despite His miraculous works"
+        },
+        "Victory Through Death": {
+          "title": "Victory Through Death",
+          "description": "Jesus' death and resurrection secure eternal life"
+        },
+        "The Church Begins": {
+          "title": "The Church Begins",
+          "description": "The Holy Spirit empowers believers to spread the gospel"
+        },
+        "The Mission Expands": {
+          "title": "The Mission Expands",
+          "description": "The gospel spreads from Jerusalem to the Gentile world"
+        },
+        "Witness in Chains": {
+          "title": "Witness in Chains",
+          "description": "Even persecution cannot stop the advance of God's Word"
+        },
+        "Apostolic Letters": {
+          "title": "Apostolic Letters",
+          "description": "Paul and others provide theological foundation for the church"
+        },
+        "General Letters": {
+          "title": "General Letters",
+          "description": "Practical wisdom for Christian living and perseverance"
+        },
+        "The End Revealed": {
+          "title": "The End Revealed",
+          "description": "Christ's ultimate victory and eternal kingdom established"
+        }
+      },
+      "oldTestamentJourneyChronological": {
+        "The Beginning": {
+          "title": "The Beginning",
+          "description": "From creation through the flood to the tower of Babel - the foundation of human history"
+        },
+        "The Patriarchs": {
+          "title": "The Patriarchs",
+          "description": "God's covenant with Abraham and the establishment of His chosen people"
+        },
+        "The Exodus": {
+          "title": "The Exodus",
+          "description": "Israel's deliverance from Egypt and journey toward the Promised Land"
+        },
+        "The Law": {
+          "title": "The Law",
+          "description": "God gives His law to establish His covenant relationship with Israel"
+        },
+        "The Wilderness": {
+          "title": "The Wilderness",
+          "description": "Israel's testing and preparation in the wilderness"
+        },
+        "The Law Renewed": {
+          "title": "The Law Renewed",
+          "description": "Moses renews the covenant before Israel enters the Promised Land"
+        },
+        "The Conquest": {
+          "title": "The Conquest",
+          "description": "Joshua leads Israel to conquer and settle the Promised Land"
+        },
+        "The Judges": {
+          "title": "The Judges",
+          "description": "God raises up judges to deliver Israel from oppression"
+        },
+        "The Kingdom Begins": {
+          "title": "The Kingdom Begins",
+          "description": "Israel transitions from judges to monarchy under Saul and David"
+        },
+        "David's Reign": {
+          "title": "David's Reign",
+          "description": "David establishes Jerusalem and God's covenant with his dynasty"
+        },
+        "The Kingdom Divides": {
+          "title": "The Kingdom Divides",
+          "description": "Solomon's reign and the division of Israel into two kingdoms"
+        },
+        "The Kingdom Falls": {
+          "title": "The Kingdom Falls",
+          "description": "The fall of both kingdoms and the exile to Babylon"
+        },
+        "The Return": {
+          "title": "The Return",
+          "description": "God's people return from exile and rebuild Jerusalem"
+        },
+        "Worship & Wisdom": {
+          "title": "Worship & Wisdom",
+          "description": "Psalms and Proverbs - Israel's worship and wisdom literature"
+        },
+        "The Prophets": {
+          "title": "The Prophets",
+          "description": "God's messengers calling His people back to covenant faithfulness"
+        }
+      },
+      "jesusFilmChronological": {
+        "The Gospel Begins": {
+          "title": "The Gospel Begins",
+          "description": "Luke's introduction and unique perspective on Jesus' life and ministry"
+        },
+        "The Birth Narratives": {
+          "title": "The Birth Narratives",
+          "description": "The miraculous events surrounding Jesus' birth and early life"
+        },
+        "Early Life & Preparation": {
+          "title": "Early Life & Preparation",
+          "description": "Jesus' childhood and preparation for His earthly ministry"
+        },
+        "The Ministry Begins": {
+          "title": "The Ministry Begins",
+          "description": "Jesus begins His public ministry with miracles, healing, and teaching"
+        },
+        "The Ministry Expands": {
+          "title": "The Ministry Expands",
+          "description": "Jesus expands His ministry and reveals His identity to His disciples"
+        },
+        "The Journey Begins": {
+          "title": "The Journey Begins",
+          "description": "Jesus begins His journey to Jerusalem, facing increasing opposition"
+        },
+        "The Journey Continues": {
+          "title": "The Journey Continues",
+          "description": "Jesus continues teaching and healing as He moves toward Jerusalem"
+        },
+        "The Final Week": {
+          "title": "The Final Week",
+          "description": "Jesus enters Jerusalem and prepares for His final sacrifice"
+        },
+        "The Passion": {
+          "title": "The Passion",
+          "description": "Jesus' suffering, betrayal, and preparation for the cross"
+        },
+        "Victory Through Death": {
+          "title": "Victory Through Death",
+          "description": "Jesus' death and resurrection accomplish salvation for all people"
+        }
+      },
+      "godsStory7DayChronological": {
+        "Creation": {
+          "title": "Creation",
+          "description": "God creates the heavens, earth, and humanity in His image"
+        },
+        "The Fall": {
+          "title": "The Fall",
+          "description": "Humanity rebels against God, bringing sin and death into the world"
+        },
+        "The Promise": {
+          "title": "The Promise",
+          "description": "God makes a covenant with Abraham, promising blessing to all nations"
+        },
+        "The Law": {
+          "title": "The Law",
+          "description": "God gives His law to reveal His character and humanity's need for grace"
+        },
+        "The Incarnation": {
+          "title": "The Incarnation",
+          "description": "God becomes human in Jesus Christ, fulfilling His promise"
+        },
+        "The Redemption": {
+          "title": "The Redemption",
+          "description": "Jesus dies for our sins and rises victorious over death"
+        },
+        "The Restoration": {
+          "title": "The Restoration",
+          "description": "God creates a new heaven and earth, restoring all things"
+        }
+      },
+      "christmas7Chronological": {
+        "Ancient Promises": {
+          "title": "Ancient Promises",
+          "description": "Prophetic promises of the coming Messiah spoken centuries before Christ"
+        },
+        "Divine Announcements": {
+          "title": "Divine Announcements",
+          "description": "God's angels announce the fulfillment of ancient promises"
+        },
+        "The Nativity": {
+          "title": "The Nativity",
+          "description": "The long-awaited Messiah is born in Bethlehem"
+        }
+      }
+    },
     "planCategories": {
       "wholeYearPlans": "Whole Year Plans",
+      "wholeYearPlansBlurb": "The whole Bible in a year, a school-year selection, or the New Testament in a hundred days — a daily rhythm for the long haul.",
       "monthlyChallenges": "Monthly Challenges",
+      "monthlyChallengesBlurb": "Thematic and chronological journeys of a month or so. Walk one thread of Scripture from beginning to end.",
       "miniStudies": "Mini Studies",
+      "miniStudiesBlurb": "A week or two on a single storyline — the gospel in seven days, Christmas, a life, a letter.",
       "stories": "stories",
-      "story": "story"
+      "story": "story",
+      "plan": "plan",
+      "plans": "plans"
     },
     "alerts": {
       "cancel": "Cancel",
@@ -486,6 +1003,8 @@
       "applyFilters": "Apply Filters",
       "content": "Content",
       "hasNotes": "Has Notes",
+      "otShort": "OT",
+      "ntShort": "NT",
       "book": "Book",
       "reaction": "Reaction",
       "searchSaved": "Search saved verses",

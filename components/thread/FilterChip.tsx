@@ -25,7 +25,7 @@ export function FilterChip({
   }, [progress, selected]);
 
   const chipStyle = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(progress.value, [0, 1], ['transparent', palette.ink]),
+    backgroundColor: interpolateColor(progress.value, [0, 1], [palette.surf, palette.ink]),
     borderColor: interpolateColor(progress.value, [0, 1], [palette.hair, palette.ink]),
   }));
 
@@ -38,7 +38,7 @@ export function FilterChip({
       style={[styles.chip, chipStyle]}
       hitSlop={8}
     >
-      <Text style={[styles.chipText, { color: selected ? palette.bg : palette.mute, fontWeight: selected ? '700' : '400' }]}>
+      <Text style={[styles.chipText, { color: selected ? palette.bg : palette.ink, fontWeight: selected ? '700' : '600' }]}>
         {label}
       </Text>
     </AnimatedPressable>
@@ -46,6 +46,14 @@ export function FilterChip({
 }
 
 const styles = StyleSheet.create({
-  chip: { borderWidth: 1, borderRadius: 11, paddingHorizontal: 9, paddingVertical: 4, marginRight: 6 },
-  chipText: { fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase' },
+  chip: {
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginRight: 8,
+    minHeight: 36,
+    justifyContent: 'center',
+  },
+  chipText: { fontSize: 12, letterSpacing: 0.6, textTransform: 'uppercase' },
 });

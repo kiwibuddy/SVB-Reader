@@ -1,4 +1,5 @@
 import readingPlansData from '@/assets/data/ReadingPlansChallenges.json';
+import { chronologicalStoryIds } from '@/utils/chronologicalPlans';
 
 const HIDDEN_PLAN_IDS = new Set(['SchoolYear2', 'SchoolYear3', 'test']);
 
@@ -19,6 +20,7 @@ export type CatalogItem = {
   shortDescriptionFr?: string;
   longDescriptionFr?: string;
   chronologicalOrder?: boolean;
+  chronologicalMapping?: string;
   stories: string[];
   group: PlanGroupId;
 };
@@ -81,11 +83,14 @@ function toCatalogItem(
     shortDescriptionFr?: string;
     longDescriptionFr?: string;
     chronologicalOrder?: boolean;
+    chronologicalMapping?: string;
     segments: Record<string, { segments?: string[] } | undefined>;
   },
   type: PlanItemType
 ): CatalogItem {
-  const stories = storyIdsFromSegments(raw.segments as Record<string, { segments?: string[] } | undefined>);
+  const fromBooks = storyIdsFromSegments(raw.segments as Record<string, { segments?: string[] } | undefined>);
+  const mapped = chronologicalStoryIds(raw.chronologicalMapping);
+  const stories = mergeStoryOrder(fromBooks, mapped);
   return {
     id: raw.id,
     type,
@@ -98,9 +103,19 @@ function toCatalogItem(
     shortDescriptionFr: raw.shortDescriptionFr,
     longDescriptionFr: raw.longDescriptionFr,
     chronologicalOrder: raw.chronologicalOrder,
+    chronologicalMapping: raw.chronologicalMapping,
     stories,
     group: groupForStoryCount(stories.length),
   };
+}
+
+function mergeStoryOrder(fromBooks: string[], mapped: string[]): string[] {
+  if (!mapped.length) return fromBooks;
+  const allowed = new Set(fromBooks);
+  const ordered = mapped.filter((id) => allowed.has(id));
+  if (!ordered.length) return fromBooks;
+  const seen = new Set(ordered);
+  return [...ordered, ...fromBooks.filter((id) => !seen.has(id))];
 }
 
 export function getLocalizedPlanText(

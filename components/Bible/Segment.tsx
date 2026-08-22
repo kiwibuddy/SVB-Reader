@@ -18,6 +18,7 @@ import { ANIMATION } from '@/services/animation';
 import * as Haptics from 'expo-haptics';
 import type { Ink } from '@/utils/ink';
 import { bookCodesForSegment, findVerseBlockIndex } from '@/utils/verseLocator';
+import { findExchangeStart, findLongestSpeechStart } from '@/utils/castLocator';
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -26,6 +27,9 @@ interface SegmentProps {
   challengeId?: string;
   targetVerse?: number;
   targetChapter?: number;
+  targetVoice?: string;
+  targetPartner?: string;
+  locate?: 'speech' | 'exchange';
   onVerseLocated?: (y: number) => void;
 }
 
@@ -52,6 +56,9 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   challengeId,
   targetVerse,
   targetChapter,
+  targetVoice,
+  targetPartner,
+  locate,
   onVerseLocated
 }) => {
   const { width: screenWidth } = useWindowDimensions();
@@ -171,14 +178,22 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   }, [segmentData?.colors, memoizedContent]);
 
   const targetIndex = useMemo(() => {
-    if (targetChapter == null || targetVerse == null) return -1;
-    return findVerseBlockIndex(
-      memoizedContent,
-      bookCodesForSegment(segID),
-      targetChapter,
-      targetVerse
-    );
-  }, [memoizedContent, segID, targetChapter, targetVerse]);
+    if (targetChapter != null && targetVerse != null) {
+      return findVerseBlockIndex(
+        memoizedContent,
+        bookCodesForSegment(segID),
+        targetChapter,
+        targetVerse
+      );
+    }
+    if (locate === 'speech' && targetVoice) {
+      return findLongestSpeechStart(memoizedContent, targetVoice);
+    }
+    if (locate === 'exchange' && targetVoice && targetPartner) {
+      return findExchangeStart(memoizedContent, targetVoice, targetPartner);
+    }
+    return -1;
+  }, [memoizedContent, segID, targetChapter, targetVerse, targetVoice, targetPartner, locate]);
 
   const segmentTopRef = useRef<number | null>(null);
   const targetTopRef = useRef<number | null>(null);

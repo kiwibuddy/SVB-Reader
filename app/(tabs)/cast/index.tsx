@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet, TextInput, FlatList } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet, FlatList, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import conversations from '@/assets/data/conversations.json';
 import { ThreadColors, fillHex, inkHex } from '@/constants/Colors';
@@ -11,6 +11,7 @@ import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { hapticSelection } from '@/utils/haptics';
 import { CastVoiceRow } from '@/components/thread/CastVoiceRow';
+import SearchField from '@/components/thread/SearchField';
 
 const conv = conversations as ConversationsFile;
 
@@ -62,25 +63,25 @@ const CastIndex = () => {
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: palette.bg }]} edges={['top']}>
-      <View style={[styles.search, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
-        <TextInput
-          value={query}
-          onChangeText={(value) => {
-            setQuery(value);
-            setExpandedName(null);
-          }}
-          placeholder={t('UI.thread.searchPlaceholder')}
-          placeholderTextColor={palette.mute}
-          style={[styles.input, { color: palette.ink }]}
-          autoCorrect={false}
-          autoCapitalize="none"
-        />
-      </View>
+      <SearchField
+        value={query}
+        onChangeText={(value) => {
+          setQuery(value);
+          setExpandedName(null);
+        }}
+        placeholder={t('UI.thread.searchPlaceholder')}
+        palette={palette}
+        isDarkMode={isDarkMode}
+        clearLabel={t('UI.search.clearSearch')}
+        style={styles.search}
+      />
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.filters}
         style={styles.filterScroll}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
       >
         {pills.map((item) => {
           const selected = filter === item.id;
@@ -88,6 +89,7 @@ const CastIndex = () => {
             <Pressable
               key={item.id}
               onPress={() => {
+                Keyboard.dismiss();
                 void hapticSelection();
                 setFilter(item.id);
                 setExpandedName(null);
@@ -123,8 +125,7 @@ const CastIndex = () => {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  search: { margin: 14, borderWidth: 1, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 8 },
-  input: { fontSize: 15, padding: 0 },
+  search: { margin: 14 },
   filterScroll: { flexGrow: 0 },
   filters: { alignItems: 'flex-start', paddingHorizontal: 14, paddingBottom: 8, gap: 6 },
   bubble: {

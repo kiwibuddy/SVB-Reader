@@ -22948,6 +22948,8 @@
       "showLess": "Afficher moins",
       "content": "Contenu",
       "hasNotes": "A des notes",
+      "otShort": "AT",
+      "ntShort": "NT",
       "book": "Livre",
       "reaction": "Réaction",
       "searchSaved": "Rechercher les versets gardés",
@@ -22962,10 +22964,15 @@
     },
     "planCategories": {
       "wholeYearPlans": "Plans annuels",
+      "wholeYearPlansBlurb": "Toute la Bible en un an, une sélection pour l'année scolaire, ou le Nouveau Testament en cent jours — un rythme quotidien sur la durée.",
       "monthlyChallenges": "Défis mensuels",
+      "monthlyChallengesBlurb": "Des parcours thématiques et chronologiques d'un mois environ. Suivez un fil de l'Écriture du début à la fin.",
       "miniStudies": "Mini études",
+      "miniStudiesBlurb": "Une semaine ou deux sur un seul récit — l'Évangile en sept jours, Noël, une vie, une lettre.",
       "stories": "histoires",
-      "story": "histoire"
+      "story": "histoire",
+      "plan": "plan",
+      "plans": "plans"
     },
     "alerts": {
       "cancel": "Annuler",

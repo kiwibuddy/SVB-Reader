@@ -34,6 +34,11 @@ const POSITIONING_CONSTANTS = {
   MIN_SCREEN_HEIGHT: 400, // Minimum expected screen height
 } as const;
 
+// Reaction badge sits on the bubble's top border: half above, half below.
+const REACTION_EMOJI_SIZE = 22;
+const REACTION_LINE_HEIGHT = 26;
+const REACTION_TOP_OFFSET = -Math.round(REACTION_LINE_HEIGHT / 2);
+
 // Platform-specific gesture configuration
 const getPlatformGestureConfig = () => {
   if (Platform.OS === 'ios') {
@@ -164,7 +169,6 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   // Speaker name sits above the bubble on the same side as the bubble —
   // put the emoji/note badge on the opposite top corner so they don't collide.
   const emojiAlignment = isLeftSide ? { right: -6 } : { left: -6 };
-  const emojiTopOffset = 2;
 
   // CRITICAL: Load existing emoji and note when component mounts
   useEffect(() => {
@@ -504,10 +508,15 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
       
       {/* CRITICAL: Emoji and/or Note indicator positioned inline */}
       {(existingEmoji || existingNote) && (
-        <View style={[styles.reactionContainer, { top: emojiTopOffset }, emojiAlignment]}>
+        <View style={[styles.reactionContainer, { top: REACTION_TOP_OFFSET }, emojiAlignment]}>
           {existingEmoji && (
             <Pressable onPress={handleEmojiDelete}>
-              <Text style={styles.reactionText}>{existingEmoji}</Text>
+              <Text
+                allowFontScaling={false}
+                style={styles.reactionText}
+              >
+                {existingEmoji}
+              </Text>
             </Pressable>
           )}
           {existingNote && (
@@ -585,6 +594,7 @@ const styles = StyleSheet.create({
   reactionContainer: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 4,
     position: "absolute",
     elevation: 3,
@@ -595,8 +605,13 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   reactionText: {
-    fontSize: 22,
-    lineHeight: 26,
+    fontSize: REACTION_EMOJI_SIZE,
+    lineHeight: REACTION_LINE_HEIGHT,
+    textAlign: 'center',
+    ...Platform.select({
+      android: { includeFontPadding: false, textAlignVertical: 'center' },
+      default: {},
+    }),
   },
   noteIconContainer: {
     padding: 0,

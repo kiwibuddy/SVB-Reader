@@ -128,8 +128,10 @@ export default function BibleScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
-  const { planId, challengeId, verse, chapter, voice } = params;
+  const { planId, challengeId, verse, chapter, voice, partner, locate } = params;
   const voiceName = Array.isArray(voice) ? voice[0] : voice;
+  const partnerName = Array.isArray(partner) ? partner[0] : partner;
+  const locateKind = (Array.isArray(locate) ? locate[0] : locate) as 'speech' | 'exchange' | undefined;
   const flatListRef = useRef<ScrollView>(null);
   const { isVisible } = useBottomNavAnimation();
   
@@ -292,7 +294,7 @@ export default function BibleScreen() {
   // reference sent us here, in which case these resets would land on top of
   // the scroll to that verse and win.
   useEffect(() => {
-    if (verse && chapter) return;
+    if ((verse && chapter) || locateKind) return;
 
     const scrollToTop = () => {
       flatListRef.current?.scrollTo({ y: 0, animated: false });
@@ -308,7 +310,7 @@ export default function BibleScreen() {
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [segID, verse, chapter]);
+  }, [segID, verse, chapter, locateKind]);
 
   const handleVerseLocated = useCallback((y: number) => {
     flatListRef.current?.scrollTo({ y: Math.max(0, y - 90), animated: true });
@@ -523,6 +525,9 @@ export default function BibleScreen() {
             challengeId={challengeId as string}
             targetVerse={verse ? parseInt(verse as string) : undefined}
             targetChapter={chapter ? parseInt(chapter as string) : undefined}
+            targetVoice={voiceName ? String(voiceName) : undefined}
+            targetPartner={partnerName ? String(partnerName) : undefined}
+            locate={locateKind === 'speech' || locateKind === 'exchange' ? locateKind : undefined}
             onVerseLocated={handleVerseLocated}
           />
           <View style={[styles.checkCircleContainer, { flexDirection: 'row', gap: 24, justifyContent: 'center', alignItems: 'flex-end' }]}> 

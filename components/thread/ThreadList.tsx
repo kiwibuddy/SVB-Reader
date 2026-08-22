@@ -4,7 +4,8 @@ import {
   Text,
   Pressable,
   StyleSheet,
-  TextInput,
+  ScrollView,
+  Keyboard,
   useWindowDimensions,
 } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
@@ -38,6 +39,7 @@ import { ConversationsFile } from '@/types/conversations';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { FilterChip } from '@/components/thread/FilterChip';
+import SearchField from '@/components/thread/SearchField';
 import { hapticImpactLight, hapticSelection } from '@/utils/haptics';
 import { formatReadingMinutes, getSegmentReadingTime } from '@/utils/readingTime';
 import { resolveContinueTarget, type ActiveReading } from '@/utils/continueTarget';
@@ -48,7 +50,7 @@ import { findCatalogItem, getLocalizedPlanText, nextUnreadStory } from '@/utils/
 import { shortStoryId } from '@/utils/threadProgress';
 import { BookBead, StoryBead, ThreadKnot } from '@/components/thread/ThreadBead';
 
-type Scope = 'all' | 'voices' | 'books' | 'stories' | 'words';
+type Scope = 'all' | 'voices' | 'books' | 'stories';
 
 interface ThreadListProps {
   completedIds: Set<string>;
@@ -102,7 +104,10 @@ function ReferenceSearchResult({ refResult, palette, router, setQuery }: {
       <View>
         <Text style={{ fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', color: palette.mute, paddingHorizontal: 14, paddingTop: 16, paddingBottom: 6 }}>REFERENCE</Text>
         <Pressable
-          onPress={() => openSegment(router, r.segmentId, { chapter: r.chapter, verse: r.verse })}
+          onPress={() => {
+            Keyboard.dismiss();
+            openSegment(router, r.segmentId, { chapter: r.chapter, verse: r.verse });
+          }}
           style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: palette.hair }}
         >
           <View style={{ flex: 1 }}>
@@ -361,6 +366,31 @@ const ThreadList: React.FC<ThreadListProps> = ({
     return { voices, books: bookHits, stories: storyHits, refResult };
   }, [language, q, query, searching]);
 
+  const hasRefHit =
+    searchResults.refResult?.kind === 'exact' || searchResults.refResult?.kind === 'disambiguate';
+  const hasVoices = searchResults.voices.length > 0;
+  const hasBooks = searchResults.books.length > 0;
+  const hasStories = searchResults.stories.length > 0;
+  const availableScopes = useMemo(() => {
+    if (!searching) return [] as Scope[];
+    const next: Scope[] = [];
+    if (hasVoices || hasBooks || hasStories || hasRefHit) next.push('all');
+    if (hasVoices) next.push('voices');
+    if (hasBooks) next.push('books');
+    if (hasStories) next.push('stories');
+    return next;
+  }, [hasBooks, hasRefHit, hasStories, hasVoices, searching]);
+
+  useEffect(() => {
+    if (!searching) {
+      if (scope !== 'all') setScope('all');
+      return;
+    }
+    if (availableScopes.length > 0 && !availableScopes.includes(scope)) {
+      setScope(availableScopes[0]);
+    }
+  }, [availableScopes, scope, searching]);
+
   const continueTarget = hideSearch || searching
     ? null
     : resolveContinueTarget(completedIds, currentId, activeReading);
@@ -370,6 +400,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
   const continueMinutes = continueTarget ? getSegmentReadingTime(continueTarget.storyId) : 0;
 
   const openStory = (id: string, extra?: { planId?: string; challengeId?: string }) => {
+    Keyboard.dismiss();
     void hapticImpactLight();
     openSegment(router, id, extra || storyNav);
   };
@@ -392,10 +423,9 @@ const ThreadList: React.FC<ThreadListProps> = ({
     setOpenBook((current) => (current === id ? null : id));
   };
 
-  const scopes: Scope[] = ['all', 'voices', 'books', 'stories', 'words'];
   const showVoices = scope === 'all' || scope === 'voices';
   const showBooks = scope === 'all' || scope === 'books';
-  const showStories = scope === 'all' || scope === 'stories' || scope === 'words';
+  const showStories = scope === 'all' || scope === 'stories';
 
   const continueKicker =
     continueTarget?.kind === 'plan'
@@ -406,7 +436,42 @@ const ThreadList: React.FC<ThreadListProps> = ({
 
   return (
     <View style={[styles.root, { backgroundColor: palette.bg, paddingTop: insets.top }]}>
-      {!hideSearch && continueTarget && continueInfo && (
+      {!hideSearch && (
+        <View style={[styles.searchHeader, { backgroundColor: palette.bg }]}>
+          <SearchField
+            value={query}
+            onChangeText={setQuery}
+            placeholder={t('UI.thread.searchPlaceholder')}
+            palette={palette}
+            isDarkMode={isDarkMode}
+            clearLabel={t('UI.search.clearSearch')}
+            style={styles.search}
+          />
+          {searching && availableScopes.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              style={styles.scopeScroll}
+              contentContainerStyle={styles.scopes}
+            >
+              {availableScopes.map((item) => (
+                <FilterChip
+                  key={item}
+                  label={t(`UI.thread.scope${item.charAt(0).toUpperCase()}${item.slice(1)}`)}
+                  selected={scope === item}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setScope(item);
+                  }}
+                  palette={palette}
+                />
+              ))}
+            </ScrollView>
+          )}
+        </View>
+      )}
+      {!hideSearch && !searching && continueTarget && continueInfo && (
         <Animated.View
           entering={FadeInDown.duration(DUR.base).springify().damping(SPRING.damping).stiffness(SPRING.stiffness)}
           style={cardStyle}
@@ -429,7 +494,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
           </Pressable>
         </Animated.View>
       )}
-      {!hideSearch && startedPlans.length > 0 && startedPlans.map((plan) => (
+      {!hideSearch && !searching && startedPlans.length > 0 && startedPlans.map((plan) => (
         <Pressable
           key={plan.id}
           onPress={() => {
@@ -463,37 +528,6 @@ const ThreadList: React.FC<ThreadListProps> = ({
       ))}
       {!hideSearch && !searching && openDivision === 0 && (
         <Text style={[styles.nudge, { color: palette.mute }]}>{t('UI.thread.nudge')}</Text>
-      )}
-      {!hideSearch && (
-        <View style={[styles.search, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder={t('UI.thread.searchPlaceholder')}
-            placeholderTextColor={palette.mute}
-            style={[styles.searchInput, { color: palette.ink }]}
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
-        </View>
-      )}
-      {searching && (
-        <Animated.ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scopes}
-          style={styles.scopeScroll}
-        >
-          {scopes.map((item) => (
-            <FilterChip
-              key={item}
-              label={t(`UI.thread.scope${item.charAt(0).toUpperCase()}${item.slice(1)}`)}
-              selected={scope === item}
-              onPress={() => setScope(item)}
-              palette={palette}
-            />
-          ))}
-        </Animated.ScrollView>
       )}
       <Animated.ScrollView
         contentContainerStyle={styles.list}
@@ -741,17 +775,24 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     paddingHorizontal: 14,
   },
+  searchHeader: {
+    zIndex: 2,
+  },
   search: {
     marginHorizontal: 14,
     marginTop: 8,
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
   },
-  searchInput: { fontSize: 15, padding: 0 },
-  scopeScroll: { flexGrow: 0 },
-  scopes: { alignItems: 'flex-start', paddingHorizontal: 14, paddingTop: 10, gap: 6 },
+  scopeScroll: {
+    flexGrow: 0,
+    flexShrink: 0,
+    minHeight: 52,
+  },
+  scopes: {
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 8,
+  },
   list: { paddingBottom: 120 },
   threadWrap: { position: 'relative', paddingTop: 0, overflow: 'visible' },
   threadRow: { flexDirection: 'row', alignItems: 'center', paddingRight: 14, zIndex: 1 },

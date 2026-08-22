@@ -18,6 +18,10 @@ type Props = {
   emoji?: string | null;
 };
 
+const REACTION_EMOJI_SIZE = 22;
+const REACTION_LINE_HEIGHT = 26;
+const REACTION_TOP_OFFSET = -Math.round(REACTION_LINE_HEIGHT / 2);
+
 const SavedBubble = ({ block, index, segmentId, citationBook, storyTitle, emoji }: Props) => {
   const { source, children } = block;
   const { color = 'black', sourceName = 'Unknown' } = source || {};
@@ -28,6 +32,7 @@ const SavedBubble = ({ block, index, segmentId, citationBook, storyTitle, emoji 
   const ink = getBubbleTextColorSafe(color, isDarkMode);
   const bodySize = Math.max(14, (sizes.body || 16) - 1);
   const lineHeight = Math.round(bodySize * 1.45);
+  const speaker = localizeVoiceName(sourceName, language);
   const turn = formatTurnCitation(segmentId || '', block);
   const bookName = localizeBookName(turn.bookId, citationBook || turn.bookName, language);
   const title = localizeStoryTitle(
@@ -49,9 +54,25 @@ const SavedBubble = ({ block, index, segmentId, citationBook, storyTitle, emoji 
   return (
     <View style={styles.row} pointerEvents="none">
       <View style={[styles.stack, { alignSelf: left ? 'flex-start' : 'flex-end' }]}>
+        <View style={[styles.meta, { alignItems: left ? 'flex-start' : 'flex-end' }]}>
+          <Text
+            accessibilityLabel={speaker}
+            style={[styles.who, { color: ink, textAlign: left ? 'left' : 'right' }]}
+          >
+            {speaker}
+          </Text>
+          {!!metaLine && (
+            <Text style={[styles.cite, { color: palette.mute, textAlign: left ? 'left' : 'right' }]}>
+              {metaLine}
+            </Text>
+          )}
+        </View>
         <View style={[styles.bubbleWrap, { alignSelf: left ? 'flex-start' : 'flex-end' }]}>
           {!!emoji && (
-            <Text style={[styles.reaction, left ? styles.reactionLeft : styles.reactionRight]}>
+            <Text
+              allowFontScaling={false}
+              style={[styles.reaction, left ? styles.reactionRight : styles.reactionLeft]}
+            >
               {emoji}
             </Text>
           )}
@@ -82,19 +103,6 @@ const SavedBubble = ({ block, index, segmentId, citationBook, storyTitle, emoji 
             })}
           </View>
         </View>
-        <View style={[styles.meta, { alignItems: left ? 'flex-start' : 'flex-end' }]}>
-          <Text
-            accessibilityLabel={localizeVoiceName(sourceName, language)}
-            style={[styles.who, { color: ink, textAlign: left ? 'left' : 'right' }]}
-          >
-            {localizeVoiceName(sourceName, language)}
-          </Text>
-          {!!metaLine && (
-            <Text style={[styles.cite, { color: palette.mute, textAlign: left ? 'left' : 'right' }]}>
-              {metaLine}
-            </Text>
-          )}
-        </View>
       </View>
     </View>
   );
@@ -106,18 +114,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   stack: {
-    maxWidth: '92%',
+    maxWidth: '84%',
+    overflow: 'visible',
   },
   bubbleWrap: {
     position: 'relative',
     maxWidth: '100%',
+    overflow: 'visible',
   },
   reaction: {
     position: 'absolute',
-    top: -4,
-    fontSize: 22,
-    lineHeight: 26,
+    top: REACTION_TOP_OFFSET,
+    fontSize: REACTION_EMOJI_SIZE,
+    lineHeight: REACTION_LINE_HEIGHT,
     zIndex: 2,
+    ...Platform.select({
+      android: { includeFontPadding: false, textAlignVertical: 'center' },
+      default: {},
+    }),
   },
   reactionLeft: { left: -6 },
   reactionRight: { right: -6 },
@@ -127,25 +141,24 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     fontWeight: '600',
   },
+  cite: {
+    fontSize: 10,
+    letterSpacing: 0.3,
+    marginTop: 2,
+  },
+  meta: {
+    marginTop: 10,
+    marginBottom: 6,
+    paddingHorizontal: 4,
+  },
   bubble: {
     maxWidth: '100%',
     paddingVertical: 9,
     paddingHorizontal: 12,
-    marginTop: 10,
     ...Platform.select({
       web: { boxShadow: 'none' },
       default: {},
     }),
-  },
-  meta: {
-    marginTop: 6,
-    paddingHorizontal: 4,
-  },
-  cite: {
-    fontSize: 10,
-    letterSpacing: 0.4,
-    marginTop: 2,
-    marginBottom: 2,
   },
 });
 

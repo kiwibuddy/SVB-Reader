@@ -97,6 +97,7 @@ const PlanDetail = () => {
         <Text style={[styles.meta, { color: palette.mute }]}>
           {storyFilter.length} {t('UI.thread.stories')} · {formatReadingMinutes(minutes)}
           {planDone > 0 ? ` · ${planDone} ${t('UI.thread.read')}` : ''}
+          {item.chronologicalOrder ? ` · ${t('UI.thread.chronological')}` : ''}
         </Text>
         {!isActive && (
           <Pressable onPress={handleStart} style={[styles.startBtn, { borderColor: palette.acc }]}>
@@ -113,8 +114,10 @@ const PlanDetail = () => {
           </View>
         </View>
       )}
-      {(item.longDescription || item.longDescriptionFr) && (
-        <Text style={[styles.desc, { color: palette.mute }]}>{getLocalizedPlanText(item, 'longDescription', language)}</Text>
+      {(item.longDescription || item.longDescriptionFr || item.shortDescription || item.shortDescriptionFr) && (
+        <Text style={[styles.desc, { color: palette.mute }]}>
+          {getLocalizedPlanText(item, 'longDescription', language) || getLocalizedPlanText(item, 'shortDescription', language)}
+        </Text>
       )}
       <ThreadList
         completedIds={completedIds}

@@ -64,7 +64,7 @@ export function CastVoiceRow({
   const { progress, pathProps } = useThreadReveal(thread.length, { replayOnFocus: false });
 
   const openCard = () => {
-    router.push(`/cast/${encodeURIComponent(voice.name)}`);
+    router.push({ pathname: '/cast/[voice]', params: { voice: voice.name } });
   };
 
   const openVoiceStory = (id: string) => {
