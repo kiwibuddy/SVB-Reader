@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   TextInput,
   useWindowDimensions,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
@@ -229,13 +229,27 @@ const ThreadList: React.FC<ThreadListProps> = ({
 
   const seedId = justCompletedId || currentId;
   useEffect(() => {
+    // Home/read stays collapsed; only plan detail auto-opens the current story.
+    if (!hideSearch) return;
     if (seeded.current || !seedId) return;
     const division = divisionForStory(seedId);
     if (!division) return;
     seeded.current = true;
     setOpenDivision(division.id);
     setOpenBook(titles[seedId]?.book?.[0] || null);
-  }, [seedId]);
+  }, [hideSearch, seedId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (hideSearch) return;
+      setOpenDivision(0);
+      setOpenBook(null);
+      return () => {
+        setOpenDivision(0);
+        setOpenBook(null);
+      };
+    }, [hideSearch])
+  );
 
   const divisions = useMemo(() => {
     return DIVISIONS.map((division) => {
