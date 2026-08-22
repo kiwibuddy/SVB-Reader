@@ -599,7 +599,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
           </View>
         ) : (
           <View style={[styles.threadWrap, { height: thread.height }]}>
-            <Svg pointerEvents="none" overflow="visible" style={StyleSheet.absoluteFill} width="100%" height={thread.height}>
+            <Svg pointerEvents="none" style={StyleSheet.absoluteFill} width="100%" height={thread.height}>
               <AnimatedPath
                 d={thread.d}
                 fill="none"

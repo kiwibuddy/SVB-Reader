@@ -284,47 +284,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return { color, label: map[color] || 'Reader' };
   }, [memoizedContent]);
 
-  const shouldBlockGlow = useCallback((_blockColor: string, _blockIndex: number) => false, []);
-
-  // Update renderItem to use new glow logic
-  const renderItem = useCallback(({ item, index }: { item: BibleBlock; index: number }) => {
-    const { sourceName } = item.source || {};
-    const showSourceName = index === 0 || 
-      memoizedContent[index - 1].source?.sourceName !== sourceName;
-
-    const isGlowing = shouldBlockGlow(item.source?.color || 'black', index);
-
-    return (
-      <BibleBlockComponent
-        block={item}
-        bIndex={index}
-        hasTail={showSourceName}
-        isGlowing={isGlowing}
-        onLongPress={(block: BibleBlock, index: number) => {
-          // This is now handled by the Block component itself
-        }}
-      />
-    );
-  }, [memoizedContent, shouldBlockGlow]);
-
-  const flatListRef = useRef<FlatList>(null);
-
-  // Force scroll to top whenever the segment changes
-  useEffect(() => {
-    // Immediate scroll
-    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-    
-    // Double-check after a brief moment to ensure content is rendered
-    const timer = setTimeout(() => {
-      flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-      if (Platform.OS === 'web') {
-        window.scrollTo(0, 0);
-      }
-    }, 50);
-
-    return () => clearTimeout(timer);
-  }, [segmentData?.id]);
-
   // Load completion status from SQLite (hook must not be conditional)
   useEffect(() => {
     if (!segID) {
