@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, { LinearTransition, useAnimatedStyle } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 import { ThreadColors, inkHex, fillHex } from '@/constants/Colors';
 import { localizeVoiceName } from '@/utils/localize';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
@@ -33,7 +34,6 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
       .filter(([name]) => name && name !== 'undefined')
       .sort((a, b) => (b[1].words || 0) - (a[1].words || 0));
     if (entries.length > 0) return entries;
-    // Fallback: synthesize from colorData so the expanded list is never empty
     const inkLabels: Record<string, string> = { black: 'Narrator', red: 'God', green: 'Main Character', blue: 'Other Voices' };
     return INKS
       .filter((ink) => (colorData?.[ink] || 0) > 0)
@@ -75,9 +75,13 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
       </Pressable>
       {open && (
         <View style={styles.cast}>
+          {cast.length === 0 && (
+            <Text style={[styles.hint, { color: palette.mute }]}>{t('UI.thread.noVoicesAvailable')}</Text>
+          )}
           {cast.map(([name, info]) => {
             const ink = (info.color || 'black') as Ink;
             const active = !selectedInk || selectedInk === ink;
+            const selected = selectedInk === ink;
             return (
               <Pressable
                 key={name}
@@ -85,27 +89,35 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
                   void hapticSelection();
                   router.push({ pathname: '/cast/[voice]', params: { voice: name } });
                 }}
-                onLongPress={() => {
-                  void hapticSelection();
-                  onSelectInk?.(selectedInk === ink ? null : ink);
-                }}
                 style={[styles.row, { opacity: active ? 1 : 0.55 }]}
               >
-                <View
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`${localizeVoiceName(name, language)}${selected ? ', selected' : ''}`}
+                  hitSlop={6}
+                  onPress={() => {
+                    void hapticSelection();
+                    onSelectInk?.(selected ? null : ink);
+                  }}
                   style={[
                     styles.swatch,
                     {
                       backgroundColor: fillHex(ink, palette),
                       borderColor: inkHex(ink, palette),
+                      borderWidth: selected ? 2 : 1,
                     },
                   ]}
-                />
+                >
+                  {selected && <Ionicons name="checkmark" size={16} color={inkHex(ink, palette)} />}
+                </Pressable>
                 <Text style={[styles.name, { color: palette.ink }]}>{localizeVoiceName(name, language)}</Text>
                 <Text style={[styles.words, { color: palette.mute }]}>{info.words}</Text>
               </Pressable>
             );
           })}
-          <Text style={[styles.hint, { color: palette.mute }]}>{t('UI.thread.readingTogether')}</Text>
+          {cast.length > 0 && (
+            <Text style={[styles.hint, { color: palette.mute }]}>{t('UI.thread.readingTogether')}</Text>
+          )}
         </View>
       )}
     </Animated.View>
@@ -119,7 +131,15 @@ const styles = StyleSheet.create({
   count: { fontSize: 9, letterSpacing: 1.1, textTransform: 'uppercase' },
   cast: { paddingHorizontal: 12, paddingBottom: 12, gap: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 },
-  swatch: { width: 13, height: 13, borderRadius: 5, borderTopLeftRadius: 2, borderWidth: 1 },
+  swatch: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    borderTopLeftRadius: 3,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   name: { flex: 1, fontSize: 13 },
   words: { fontSize: 11, fontVariant: ['tabular-nums'] },
   hint: { fontSize: 10, marginTop: 4 },

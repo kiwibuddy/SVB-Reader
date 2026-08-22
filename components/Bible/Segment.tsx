@@ -130,18 +130,6 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     setShowCourtesyPopup(false);
   }, []);
 
-  // Use pre-calculated color data from segmentData (with safe fallback)
-  const colorData = useMemo(() => {
-    // Use the original pre-calculated color data that's based on word counts
-    return segmentData?.colors || {
-      black: 0,
-      red: 0,
-      green: 0,
-      blue: 0,
-      total: 0
-    };
-  }, [segmentData?.colors]);
-
   // Memoize the content to prevent unnecessary re-renders (with safe fallback)
   const memoizedContent = useMemo(() => {
     if (!segmentData?.content) return [];
@@ -166,6 +154,21 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       return splitContent;
     }
   }, [segmentData?.content, segmentData?.readers]);
+
+  const colorData = useMemo(() => {
+    const precalculated = segmentData?.colors;
+    if (precalculated && (precalculated.total || 0) > 0) return precalculated;
+    const derived: ColorData = { black: 0, red: 0, green: 0, blue: 0, total: 0 };
+    for (const block of memoizedContent) {
+      const color = (block.source?.color || 'black') as keyof Omit<ColorData, 'total'>;
+      const text = (block.children || [])
+        .map((c: any) => (typeof c === 'string' ? c : c.text || '')).join(' ');
+      const words = text.split(/\s+/).filter(Boolean).length;
+      derived[color] = (derived[color] || 0) + words;
+      derived.total += words;
+    }
+    return derived;
+  }, [segmentData?.colors, memoizedContent]);
 
   const targetIndex = useMemo(() => {
     if (targetChapter == null || targetVerse == null) return -1;
@@ -198,11 +201,16 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const computedSources = useMemo(() => {
     const explicit = segmentData?.sources;
     if (explicit && Object.keys(explicit).length > 0) return explicit;
+    const inkLabels: Record<string, string> = {
+      black: 'Narrator',
+      red: 'God',
+      green: 'Main Character',
+      blue: 'Other Voices',
+    };
     const acc: Record<string, { words: number; color: string }> = {};
     for (const block of memoizedContent) {
-      const name = block.source?.sourceName;
       const color = block.source?.color || 'black';
-      if (!name) continue;
+      const name = block.source?.sourceName || inkLabels[color] || 'Unknown';
       if (!acc[name]) acc[name] = { words: 0, color };
       const text = (block.children || [])
         .map((c: any) => (typeof c === 'string' ? c : c.text || '')).join(' ');
@@ -579,7 +587,7 @@ const styles = StyleSheet.create({
             block={item}
             bIndex={index}
             hasTail={showSourceName}
-            isGlowing={false}
+            isGlowing={!!selectedInk && selectedInk === ink}
             onLongPress={handleLongPress}
             isTarget={index === targetIndex}
             dimmed={!!selectedInk && selectedInk !== ink}

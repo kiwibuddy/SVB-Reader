@@ -161,7 +161,9 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   
   const color = block.source?.color || 'black';
   const isLeftSide = isLeftVoice(color);
-  const emojiAlignment = isLeftSide ? { left: -6 } : { right: -6 };
+  // Speaker name sits above the bubble on the same side as the bubble —
+  // put the emoji/note badge on the opposite top corner so they don't collide.
+  const emojiAlignment = isLeftSide ? { right: -6 } : { left: -6 };
   const emojiTopOffset = 2;
 
   // CRITICAL: Load existing emoji and note when component mounts
