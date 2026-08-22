@@ -11,12 +11,15 @@ type StoryBeadProps = {
   current?: boolean;
   justCompleted?: boolean;
   palette: ThreadPalette;
+  /** Distance from the top of the row to the bead center. Defaults to the row midpoint. */
+  anchor?: number;
 };
 
 /** Opaque beads so the thread never shows through the middle. Completed = chor blue. */
-export function StoryBead({ x, rowHeight, done, current, justCompleted, palette }: StoryBeadProps) {
+export function StoryBead({ x, rowHeight, done, current, justCompleted, palette, anchor }: StoryBeadProps) {
   const fill = useSharedValue(justCompleted ? 0 : done ? 1 : 0);
   const size = current ? 15 : 14;
+  const top = (anchor ?? rowHeight / 2) - size / 2;
 
   useEffect(() => {
     if (justCompleted) {
@@ -42,7 +45,7 @@ export function StoryBead({ x, rowHeight, done, current, justCompleted, palette 
           height: size,
           borderRadius: size / 2,
           left: x - size / 2,
-          top: rowHeight / 2 - size / 2,
+          top,
           backgroundColor: palette.bg,
           borderColor: current ? palette.acc : palette.thread,
           borderWidth: done || justCompleted ? 0 : current ? 2 : 1.5,
@@ -69,11 +72,13 @@ export function BookBead({
   rowHeight,
   open,
   palette,
+  anchor,
 }: {
   x: number;
   rowHeight: number;
   open: boolean;
   palette: ThreadPalette;
+  anchor?: number;
 }) {
   const size = open ? 14 : 10;
   return (
@@ -86,7 +91,7 @@ export function BookBead({
           height: size,
           borderRadius: size / 2,
           left: x - size / 2,
-          top: rowHeight / 2 - size / 2,
+          top: (anchor ?? rowHeight / 2) - size / 2,
           backgroundColor: open ? palette.ink : palette.bg,
           borderColor: open ? palette.bg : palette.thread,
           borderWidth: open ? 3 : 1.5,
@@ -103,12 +108,14 @@ export function ThreadKnot({
   open,
   palette,
   fillColor,
+  anchor,
 }: {
   x: number;
   rowHeight: number;
   open: boolean;
   palette: ThreadPalette;
   fillColor?: string;
+  anchor?: number;
 }) {
   return (
     <View
@@ -117,7 +124,7 @@ export function ThreadKnot({
         styles.knot,
         {
           left: x - 6,
-          top: rowHeight / 2 - 6,
+          top: (anchor ?? rowHeight / 2) - 6,
           borderColor: palette.thread,
           backgroundColor: open ? fillColor || palette.acc : palette.bg,
           zIndex: 2,

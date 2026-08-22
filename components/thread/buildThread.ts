@@ -14,25 +14,32 @@ export const ROW_HEIGHT = {
   current: 58,
 } as const;
 
-export type ThreadRow = { key: string; depth: 0 | 1 | 2; height: number };
+export type ThreadRow = {
+  key: string;
+  depth: 0 | 1 | 2;
+  height: number;
+  /** Distance from the top of the row to the bead. Defaults to the vertical center. */
+  markOffset?: number;
+};
 
 export type ThreadMark = { key: string; x: number; y: number };
 
 /**
  * Builds an SVG path using only horizontal lines, vertical lines, and
- * quarter-circle arcs. Marks are placed at the vertical center of each row
- * starting at y=0 (matching the layout). The entry path extends into negative
- * Y space (handled by SVG overflow: visible).
+ * quarter-circle arcs. Marks sit at `markOffset` (or the row center) from the
+ * top of each row. Optional entry/exit corridors run above the first row and
+ * below the last row so they never cut through card text.
  */
 export function buildThread(
   rows: ThreadRow[],
-  opts?: { width?: number; exit?: 'left' | 'right' },
+  opts?: { width?: number; exit?: 'left' | 'right' | 'none'; entry?: 'left' | 'none' },
 ) {
   const width = Math.max(opts?.width ?? 390, 200);
   const exitSide = opts?.exit ?? 'left';
+  const entrySide = opts?.entry ?? 'left';
   let y = 0;
   const marks: ThreadMark[] = rows.map((r) => {
-    const mark = { key: r.key, x: DEPTH_X[r.depth], y: y + r.height / 2 };
+    const mark = { key: r.key, x: DEPTH_X[r.depth], y: y + (r.markOffset ?? r.height / 2) };
     y += r.height;
     return mark;
   });
@@ -42,18 +49,25 @@ export function buildThread(
   let length = 0;
 
   const firstMark = marks[0];
-  const startX = -THREAD_OVERHANG;
+  const rowsBottom = y;
 
-  // Entry: horizontal line at R above first mark, arc down, vertical to first mark
-  const entryY = firstMark.y - R;
-  d = `M ${startX} ${entryY}`;
-  const hEnd = firstMark.x - R;
-  d += ` H ${hEnd}`;
-  length += hEnd - startX;
-  // Arc: right → down
-  d += ` A ${R} ${R} 0 0 1 ${firstMark.x} ${entryY + R}`;
-  length += (Math.PI / 2) * R;
-  // Now at firstMark position exactly
+  if (entrySide === 'none') {
+    d = `M ${firstMark.x} ${firstMark.y}`;
+  } else {
+    const startX = -THREAD_OVERHANG;
+    // Keep the entry corridor above the first row so it never cuts through tall cards.
+    const entryY = Math.min(firstMark.y - R, 0);
+    d = `M ${startX} ${entryY}`;
+    const hEnd = firstMark.x - R;
+    d += ` H ${hEnd}`;
+    length += hEnd - startX;
+    d += ` A ${R} ${R} 0 0 1 ${firstMark.x} ${entryY + R}`;
+    length += (Math.PI / 2) * R;
+    if (firstMark.y > entryY + R) {
+      d += ` V ${firstMark.y}`;
+      length += firstMark.y - (entryY + R);
+    }
+  }
 
   let prev = firstMark;
 
@@ -123,10 +137,16 @@ export function buildThread(
     prev = m;
   }
 
-  // Exit: vertical down GAP past last mark, then arc and horizontal off-screen
-  const exitTurnY = prev.y + GAP;
-  d += ` V ${exitTurnY}`;
-  length += GAP;
+  if (exitSide === 'none') {
+    return { d, length, marks, height: rowsBottom };
+  }
+
+  // Exit below the last row so the corridor never crosses card text.
+  const exitTurnY = rowsBottom + GAP;
+  if (exitTurnY > prev.y) {
+    d += ` V ${exitTurnY}`;
+    length += exitTurnY - prev.y;
+  }
   if (exitSide === 'right') {
     d += ` A ${R} ${R} 0 0 0 ${prev.x + R} ${exitTurnY + R}`;
     length += (Math.PI / 2) * R;
@@ -141,7 +161,5 @@ export function buildThread(
     length += (prev.x - R) - exitX;
   }
 
-  // Height includes the exit arc below the last row
-  const totalHeight = y + GAP + R;
-  return { d, length, marks, height: totalHeight };
+  return { d, length, marks, height: rowsBottom + GAP + R };
 }

@@ -1,15 +1,40 @@
-import React, { useCallback, useState } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import React, { useCallback, useRef, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import YearThread from '@/components/thread/YearThread';
+import { Ionicons } from '@expo/vector-icons';
+import StoryHeatmap from '@/components/thread/StoryHeatmap';
+import YouStatRings from '@/components/thread/YouStatRings';
+import PlanRingCard from '@/components/thread/PlanRingCard';
+import YouInsightBlocks from '@/components/thread/YouInsightBlocks';
 import { ThreadColors } from '@/constants/Colors';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCompletedStoryIds } from '@/utils/threadProgress';
-import { getCurrentStreak, getLastReadSegment, getPlanProgress, getChallengeProgress, getStartedPlansFromDB, getStartedChallengesFromDB, type StartedItem } from '@/api/sqlite';
-import { getVoicesMetCount, TOTAL_VOICES } from '@/utils/voicesMet';
+import {
+  getCurrentStreak,
+  getLastReadSegment,
+  getPlanProgress,
+  getChallengeProgress,
+  getStartedPlansFromDB,
+  getStartedChallengesFromDB,
+  getOldTestamentProgress,
+  getNewTestamentProgress,
+  type StartedItem,
+} from '@/api/sqlite';
+import { getVoicesMetCount } from '@/utils/voicesMet';
 import { findCatalogItem, getLocalizedPlanText } from '@/utils/planCatalog';
+import {
+  getWeekStreak,
+  getSourceWordMix,
+  getVoicesMetByColor,
+  getNextUnmetVoices,
+  getThinEras,
+  type ColorWordMix,
+  type VoicesByColor,
+  type NextVoice,
+  type ThinEra,
+} from '@/utils/youInsights';
 
 type ActivePlanSummary = {
   id: string;
@@ -21,33 +46,79 @@ type ActivePlanSummary = {
 
 const YouScreen = () => {
   const router = useRouter();
+  const scrollRef = useRef<ScrollView>(null);
   const { isDarkMode, language } = useSyncAppSettings();
   const { t } = useTranslation();
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
   const lang = language.startsWith('fr') ? 'fr' : 'en';
+
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [currentId, setCurrentId] = useState<string | null>(null);
-  const [streak, setStreak] = useState(0);
+  const [dayStreak, setDayStreak] = useState(0);
+  const [weekStreak, setWeekStreak] = useState(0);
   const [voicesMet, setVoicesMet] = useState(0);
+  const [voicesByColor, setVoicesByColor] = useState<VoicesByColor>({
+    green: 0,
+    blue: 0,
+    red: 0,
+    black: 0,
+    total: 0,
+  });
+  const [ot, setOt] = useState({ completed: 0, total: 219 });
+  const [nt, setNt] = useState({ completed: 0, total: 146 });
+  const [colorMix, setColorMix] = useState<ColorWordMix>({
+    total: 0,
+    black: 0,
+    red: 0,
+    green: 0,
+    blue: 0,
+  });
+  const [nextVoices, setNextVoices] = useState<NextVoice[]>([]);
+  const [thinEras, setThinEras] = useState<ThinEra[]>([]);
   const [planSummaries, setPlanSummaries] = useState<ActivePlanSummary[]>([]);
+  const [focusDivisionKey, setFocusDivisionKey] = useState<string | null>(null);
+  const [replayToken, setReplayToken] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
       let alive = true;
+      setReplayToken((n) => n + 1);
       (async () => {
-        const [completed, last, streakValue, met, startedPlans, startedChallenges] = await Promise.all([
+        const [
+          completed,
+          last,
+          streakValue,
+          weekValue,
+          met,
+          otProgress,
+          ntProgress,
+          startedPlans,
+          startedChallenges,
+        ] = await Promise.all([
           getCompletedStoryIds(),
           getLastReadSegment(),
           getCurrentStreak(),
+          getWeekStreak(),
           getVoicesMetCount(),
+          getOldTestamentProgress(),
+          getNewTestamentProgress(),
           getStartedPlansFromDB(),
           getStartedChallengesFromDB(),
         ]);
         if (!alive) return;
+
+        const lastStoryId = last?.match(/S\d+/i)?.[0] || last;
         setCompletedIds(completed);
-        setCurrentId(last?.match(/S\d+/i)?.[0] || last);
-        setStreak(streakValue || 0);
+        setCurrentId(lastStoryId);
+        setDayStreak(streakValue || 0);
+        setWeekStreak(weekValue || 0);
         setVoicesMet(met);
+        setOt(otProgress);
+        setNt(ntProgress);
+        setVoicesByColor(getVoicesMetByColor(completed));
+        setColorMix(getSourceWordMix(completed));
+        setNextVoices(getNextUnmetVoices(completed, lastStoryId, 3));
+        setThinEras(getThinEras(completed, lang));
 
         const allStarted: StartedItem[] = [...startedPlans, ...startedChallenges];
         const summaries: ActivePlanSummary[] = [];
@@ -72,74 +143,113 @@ const YouScreen = () => {
       return () => {
         alive = false;
       };
-    }, [language])
+    }, [language, lang])
   );
+
+  const ringLabels = {
+    stories: t('UI.thread.stories'),
+    voicesMet: t('UI.thread.voicesMet'),
+    streak: t('UI.thread.streak'),
+    ot: t('UI.thread.oldTestament'),
+    nt: t('UI.thread.newTestament'),
+    all: t('UI.thread.allStories'),
+    day: t('UI.thread.dayStreak'),
+    week: t('UI.thread.weekStreak'),
+    principal: t('UI.thread.mainFilter'),
+    supporting: t('UI.thread.supportingFilter'),
+    divine: t('UI.thread.divineFilter'),
+    narrator: t('UI.thread.narratorShort'),
+  };
+
+  const insightLabels = {
+    colorMixTitle: t('UI.thread.colorMixTitle'),
+    colorMixBody: t('UI.thread.colorMixBody'),
+    nextVoicesTitle: t('UI.thread.nextVoicesTitle'),
+    nextVoicesEmpty: t('UI.thread.nextVoicesEmpty'),
+    thinErasTitle: t('UI.thread.thinErasTitle'),
+    thinEraLine: t('UI.thread.thinEraLine'),
+  };
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: palette.bg }]} edges={['top']}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 140 }}>
-        <Text style={[styles.name, { color: palette.ink }]}>{t('UI.tabs.you')}</Text>
-        <Text style={[styles.year, { color: palette.mute }]}>{t('UI.thread.yourYear')} · {new Date().getFullYear()}</Text>
+      <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 140 }}>
+        <View style={styles.header}>
+          <View style={styles.headerText}>
+            <Text style={[styles.name, { color: palette.ink }]}>{t('UI.tabs.you')}</Text>
+            <Text style={[styles.subtitle, { color: palette.mute }]}>{t('UI.thread.youSubtitle')}</Text>
+          </View>
+          <Pressable
+            onPress={() => router.push('/settings')}
+            style={styles.gear}
+            accessibilityRole="button"
+            accessibilityLabel={t('UI.thread.settings')}
+            hitSlop={8}
+          >
+            <Ionicons name="settings-outline" size={22} color={palette.mute} />
+          </Pressable>
+        </View>
+
         {completedIds.size === 0 ? (
           <View style={styles.empty}>
             <Text style={[styles.emptyTitle, { color: palette.ink }]}>{t('UI.thread.youEmptyTitle')}</Text>
             <Text style={[styles.emptyBody, { color: palette.mute }]}>{t('UI.thread.youEmptyBody')}</Text>
           </View>
-        ) : (
-          <>
-            <YearThread completedIds={completedIds} currentId={currentId} isDarkMode={isDarkMode} />
-            <View style={styles.stats}>
-              <View>
-                <Text style={[styles.big, { color: palette.ink }]}>{completedIds.size}<Text style={[styles.em, { color: palette.mute }]}> / 365</Text></Text>
-                <Text style={[styles.lab, { color: palette.mute }]}>{t('UI.thread.stories')}</Text>
-              </View>
-              <View>
-                <Text style={[styles.big, { color: palette.ink }]}>{voicesMet}<Text style={[styles.em, { color: palette.mute }]}> / {TOTAL_VOICES}</Text></Text>
-                <Text style={[styles.lab, { color: palette.mute }]}>{t('UI.thread.voicesMet')}</Text>
-              </View>
-              <View>
-                <Text style={[styles.big, { color: palette.ink }]}>{streak}</Text>
-                <Text style={[styles.lab, { color: palette.mute }]}>{t('UI.thread.streak')}</Text>
-              </View>
-            </View>
-          </>
-        )}
+        ) : null}
 
-        {/* Plan progress tracking */}
+        <StoryHeatmap
+          completedIds={completedIds}
+          currentId={currentId}
+          isDarkMode={isDarkMode}
+          language={language}
+          focusDivisionKey={focusDivisionKey}
+        />
+
+        <YouStatRings
+          palette={palette}
+          storiesDone={completedIds.size}
+          ot={ot}
+          nt={nt}
+          voicesMet={voicesMet}
+          voicesByColor={voicesByColor}
+          dayStreak={dayStreak}
+          weekStreak={weekStreak}
+          replayToken={replayToken}
+          labels={ringLabels}
+        />
+
         {planSummaries.length > 0 && (
           <View style={styles.planSection}>
-            <Text style={[styles.lab, { color: palette.mute }]}>
-              {t('UI.thread.yourPlan')}
-            </Text>
-            {planSummaries.map((plan) => {
-              const pct = plan.total > 0 ? Math.round((plan.done / plan.total) * 100) : 0;
-              return (
-                <Pressable
-                  key={plan.id}
-                  onPress={() => router.push(`/plan/${plan.id}`)}
-                  style={[styles.planCard, { borderColor: palette.hair }]}
-                >
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Text style={[styles.planName, { color: palette.ink }]}>{plan.title}</Text>
-                    <Text style={[styles.planPct, { color: plan.isPaused ? palette.mute : palette.acc }]}>
-                      {plan.isPaused ? (lang === 'fr' ? 'Pause' : 'Paused') : `${pct}%`}
-                    </Text>
-                  </View>
-                  <View style={[styles.prog, { backgroundColor: palette.hair, marginTop: 6 }]}>
-                    <View style={[styles.progFill, { width: `${pct}%`, backgroundColor: plan.isPaused ? palette.mute : palette.acc }]} />
-                  </View>
-                  <Text style={[styles.planMeta, { color: palette.mute }]}>
-                    {plan.done} {t('UI.thread.of')} {plan.total} {t('UI.thread.stories')}
-                  </Text>
-                </Pressable>
-              );
-            })}
+            <Text style={[styles.sectionLab, { color: palette.mute }]}>{t('UI.thread.yourPlan')}</Text>
+            {planSummaries.map((plan) => (
+              <PlanRingCard
+                key={plan.id}
+                title={plan.title}
+                done={plan.done}
+                total={plan.total}
+                isPaused={plan.isPaused}
+                palette={palette}
+                pausedLabel={t('UI.thread.paused')}
+                metaLabel={`${plan.done} ${t('UI.thread.of')} ${plan.total} ${t('UI.thread.stories')}`}
+                replayToken={replayToken}
+                onPress={() => router.push(`/plan/${plan.id}`)}
+              />
+            ))}
           </View>
         )}
 
-        <Pressable onPress={() => router.push('/settings')} style={[styles.link, { borderTopColor: palette.hair }]}>
-          <Text style={{ color: palette.ink }}>{t('UI.thread.settings')}</Text>
-        </Pressable>
+        <YouInsightBlocks
+          palette={palette}
+          language={language}
+          colorMix={colorMix}
+          nextVoices={nextVoices}
+          thinEras={thinEras}
+          labels={insightLabels}
+          onVoicePress={(name) => router.push(`/cast/${encodeURIComponent(name)}`)}
+          onEraPress={(key) => {
+            setFocusDivisionKey(key);
+            scrollRef.current?.scrollTo({ y: 0, animated: true });
+          }}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -147,24 +257,28 @@ const YouScreen = () => {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  name: { fontSize: 22, fontWeight: '600', paddingHorizontal: 14, paddingTop: 8, letterSpacing: -0.3 },
-  year: { fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', paddingHorizontal: 14, marginTop: 2 },
-  empty: { paddingHorizontal: 14, paddingTop: 28, paddingBottom: 8 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingTop: 8,
+  },
+  headerText: { flex: 1 },
+  name: { fontSize: 22, fontWeight: '600', letterSpacing: -0.3 },
+  subtitle: { fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', marginTop: 2 },
+  gear: { padding: 6, marginTop: -2, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  empty: { paddingHorizontal: 14, paddingTop: 12, paddingBottom: 4 },
   emptyTitle: { fontSize: 18, fontWeight: '600' },
   emptyBody: { fontSize: 14, lineHeight: 20, marginTop: 8 },
-  stats: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 14, paddingTop: 8 },
-  big: { fontSize: 28, letterSpacing: -0.8 },
-  em: { fontSize: 14 },
-  lab: { fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', marginTop: 4, paddingHorizontal: 14 },
-  link: { marginTop: 18, marginHorizontal: 14, paddingVertical: 14, borderTopWidth: StyleSheet.hairlineWidth, minHeight: 44 },
-
-  planSection: { marginTop: 16 },
-  planCard: { marginHorizontal: 14, marginTop: 8, borderWidth: 1, borderRadius: 12, padding: 12 },
-  planName: { fontSize: 15, fontWeight: '600' },
-  planPct: { fontSize: 12, fontWeight: '600' },
-  planMeta: { fontSize: 9, letterSpacing: 0.8, textTransform: 'uppercase', marginTop: 3 },
-  prog: { height: 4, borderRadius: 3, overflow: 'hidden' },
-  progFill: { height: '100%' },
+  sectionLab: {
+    fontSize: 9,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    marginTop: 16,
+    paddingHorizontal: 14,
+  },
+  planSection: { marginBottom: 4 },
 });
 
 export default YouScreen;
