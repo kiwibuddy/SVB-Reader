@@ -79,14 +79,15 @@ export function buildThread(
       d += ` V ${m.y}`;
       length += Math.abs(m.y - prev.y);
     } else {
-      // Depth change
+      // Depth change — keep the horizontal corridor between the two marks so it
+      // doesn’t cut through text sitting under the previous bead (e.g. phase blurbs).
       const goingRight = m.x > prev.x;
       const dx = Math.abs(m.x - prev.x);
       const r = Math.min(R, dx / 2);
 
-      // Place the horizontal corridor between prev and m
-      // midway vertically, but at least GAP below prev and GAP+2r above m
-      const midY = prev.y + GAP + r;
+      const lo = prev.y + GAP + r;
+      const hi = m.y - GAP - r;
+      const midY = hi >= lo ? (lo + hi) / 2 : lo;
 
       if (goingRight) {
         // Vertical to corridor start

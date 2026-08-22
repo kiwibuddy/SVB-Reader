@@ -18,7 +18,7 @@ import { ThreadColors } from '@/constants/Colors';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { createUserPlan } from '@/api/userPlans';
-import { startPlan } from '@/api/sqlite';
+import { setPendingFocusUserPlan } from '@/utils/pendingPlanUI';
 import { hapticImpactLight } from '@/utils/haptics';
 
 const CreateUserPlanScreen = () => {
@@ -58,10 +58,15 @@ const CreateUserPlanScreen = () => {
     setSaving(true);
     try {
       const plan = await createUserPlan(trimmed, selected);
-      await startPlan(plan.id);
       void hapticImpactLight();
       setTitleOpen(false);
-      router.replace(`/plan/${plan.id}`);
+      // Land on Plan tab list (collapsed) — never /plan/[id]
+      setPendingFocusUserPlan(plan.id);
+      if (router.canDismiss()) {
+        router.dismiss();
+      } else {
+        router.replace('/(tabs)/plan');
+      }
     } catch (error) {
       Alert.alert(
         t('UI.alerts.error'),

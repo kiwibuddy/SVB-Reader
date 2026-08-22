@@ -49,6 +49,7 @@ import { getChronologicalPhases, type ChronologicalPhase } from '@/utils/chronol
 import { openSegment } from '@/utils/openSegment';
 import { findPlanItem, listUserPlanCatalogItems, deleteUserPlan } from '@/api/userPlans';
 import { isUserPlanId } from '@/utils/userPlans';
+import { takePendingFocusUserPlan } from '@/utils/pendingPlanUI';
 
 const titles = SegmentTitles as Record<string, { title?: string; ref?: string; book?: string[] }>;
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -60,7 +61,8 @@ const GROUP_COPY: Record<PlanGroupId, { title: string; blurb: string }> = {
 };
 
 const PLAN_ROW_HEIGHT = 92;
-const PHASE_ROW_HEIGHT = 64;
+/** Room below the phase title/blurb so the depth-change corridor doesn’t cross text. */
+const PHASE_ROW_HEIGHT = 96;
 /** Sit the bead beside the title, not in the middle of the 2-line blurb. */
 const PLAN_MARK = 20;
 const PHASE_MARK = 18;
@@ -101,7 +103,9 @@ const PlanScreen = () => {
   const lang = language.startsWith('fr') ? 'fr' : 'en';
 
   const [activePlans, setActivePlans] = useState<ActivePlanData[]>([]);
-  const [createdPlans, setCreatedPlans] = useState<ActivePlanData[]>([]);
+  /** All user-created plans, shown as expandable catalog-style rows (not detail pages / big cards). */
+  const [userPlans, setUserPlans] = useState<CatalogItem[]>([]);
+  const [userStartedById, setUserStartedById] = useState<Record<string, StartedItem>>({});
   const [openGroup, setOpenGroup] = useState<PlanGroupId | null>(null);
   const [openPlanId, setOpenPlanId] = useState<string | null>(null);
   const [progressById, setProgressById] = useState<Record<string, { done: number; ids: string[] }>>({});
@@ -121,8 +125,8 @@ const PlanScreen = () => {
 
       const allStarted = [...startedPlans, ...startedChallenges];
       const catalogActive: ActivePlanData[] = [];
-      const createdActive: ActivePlanData[] = [];
       const prog: Record<string, { done: number; ids: string[] }> = {};
+      const userStarted: Record<string, StartedItem> = {};
 
       for (const item of catalog) {
         const progress =
@@ -151,20 +155,8 @@ const PlanScreen = () => {
           done: progress?.completedSegments || 0,
           ids: (progress?.completedSegmentIds || []).map(shortStoryId),
         };
-        const started = allStarted.find((s) => s.id === item.id) || {
-          id: item.id,
-          type: 'plan' as const,
-          isPaused: true,
-          isActive: false,
-          startDate: null,
-          progressPercentage: 0,
-        };
-        createdActive.push({
-          catalog: item,
-          started,
-          completed: progress?.completedSegments || 0,
-          completedIds: new Set((progress?.completedSegmentIds || []).map(shortStoryId)),
-        });
+        const started = allStarted.find((s) => s.id === item.id);
+        if (started) userStarted[item.id] = started;
       }
 
       const sortActive = (list: ActivePlanData[]) =>
@@ -172,13 +164,21 @@ const PlanScreen = () => {
 
       setProgressById(prog);
       setActivePlans(sortActive(catalogActive));
-      setCreatedPlans(sortActive(createdActive));
+      setUserPlans(userCatalog);
+      setUserStartedById(userStarted);
     } finally {
       loading.current = false;
     }
   }, [catalog]);
 
-  useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+      // After create: stay on list, keep the new plan collapsed (title + meta only)
+      takePendingFocusUserPlan();
+      setOpenGroup(null);
+    }, [loadData])
+  );
 
   useEffect(() => {
     const expandId = params.expandedPlan ? String(params.expandedPlan) : null;
@@ -255,6 +255,38 @@ const PlanScreen = () => {
     return rows;
   }, [grouped, openGroup, openPlanId, progressById, t]);
 
+  // Stories under the expanded custom plan — depth 0 anchor + depth 1 stories
+  // so the thread curves like catalog plan → story (same-depth rows stay vertical).
+  const userStoryRows: VisibleRow[] = useMemo(() => {
+    const rows: VisibleRow[] = [];
+    const item = userPlans.find((p) => p.id === openPlanId);
+    if (!item) return rows;
+    rows.push({
+      key: `up-anchor-${item.id}`,
+      kind: 'plan',
+      depth: 0,
+      height: ROW_HEIGHT.book,
+      markOffset: PLAN_MARK,
+      catalogItem: item,
+    });
+    const planDone = new Set(progressById[item.id]?.ids || []);
+    const next = nextUnreadStory(item.stories, planDone);
+    for (const storyId of item.stories) {
+      const done = planDone.has(storyId);
+      const current = !done && next?.storyId === storyId;
+      rows.push({
+        key: `${item.id}-${storyId}`,
+        kind: 'story',
+        depth: 1,
+        height: current ? ROW_HEIGHT.current : ROW_HEIGHT.story,
+        storyId,
+        current,
+        catalogItem: item,
+      });
+    }
+    return rows;
+  }, [userPlans, openPlanId, progressById]);
+
   const thread = useMemo(
     () =>
       buildThread(
@@ -264,7 +296,19 @@ const PlanScreen = () => {
     [visibleRows, windowWidth]
   );
 
+  const userStoryThread = useMemo(
+    () =>
+      buildThread(
+        userStoryRows.map(({ key, depth, height, markOffset }) => ({ key, depth, height, markOffset })),
+        { width: windowWidth, entry: 'none', exit: 'none' }
+      ),
+    [userStoryRows, windowWidth]
+  );
+
   const { progress, pathProps } = useThreadReveal(thread.length, { replayOnFocus: false });
+  const { progress: userProgress, pathProps: userPathProps } = useThreadReveal(userStoryThread.length, {
+    replayOnFocus: false,
+  });
   const scrollY = useSharedValue(0);
 
   const onScroll = useAnimatedScrollHandler({
@@ -286,6 +330,12 @@ const PlanScreen = () => {
 
   const togglePlan = (id: string) => {
     void hapticSelection();
+    setOpenPlanId((prev) => (prev === id ? null : id));
+  };
+
+  const toggleUserPlan = (id: string) => {
+    void hapticSelection();
+    setOpenGroup(null);
     setOpenPlanId((prev) => (prev === id ? null : id));
   };
 
@@ -320,27 +370,92 @@ const PlanScreen = () => {
 
   const handleEndPlan = (data: ActivePlanData) => {
     const isUser = !!data.catalog.isUserPlan || isUserPlanId(data.catalog.id);
-    const label = isUser
-      ? t('UI.customPlans.delete')
-      : data.catalog.type === 'plan'
-        ? t('UI.alerts.endReadingPlan')
-        : t('UI.alerts.endReadingChallenge');
-    const message = isUser
-      ? t('UI.customPlans.deleteConfirm').replace('{title}', getLocalizedPlanText(data.catalog, 'title', language))
-      : t('UI.alerts.endConfirmation').replace('{title}', getLocalizedPlanText(data.catalog, 'title', language));
-    Alert.alert(label, message, [
+    const label = data.catalog.type === 'plan' ? t('UI.alerts.endReadingPlan') : t('UI.alerts.endReadingChallenge');
+    const message = t('UI.alerts.endConfirmation').replace(
+      '{title}',
+      getLocalizedPlanText(data.catalog, 'title', language)
+    );
+    const buttons: {
+      text: string;
+      style?: 'cancel' | 'destructive' | 'default';
+      onPress?: () => void;
+    }[] = [
       { text: t('UI.alerts.cancel'), style: 'cancel' },
       {
-        text: isUser ? t('UI.customPlans.delete') : t('UI.alerts.end'),
+        text: t('UI.alerts.end'),
         style: 'destructive',
         onPress: async () => {
-          if (isUser) await deleteUserPlan(data.catalog.id);
-          else if (data.catalog.type === 'plan') await endPlan(data.catalog.id);
+          if (data.catalog.type === 'plan') await endPlan(data.catalog.id);
           else await endChallenge(data.catalog.id);
           await loadData();
         },
       },
-    ]);
+    ];
+    if (isUser) {
+      buttons.push({
+        text: t('UI.customPlans.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          await deleteUserPlan(data.catalog.id);
+          await loadData();
+        },
+      });
+    }
+    Alert.alert(label, message, buttons);
+  };
+
+  const handlePauseResumeUser = async (item: CatalogItem) => {
+    const started = userStartedById[item.id];
+    if (!started) return;
+    if (started.isPaused) await resumePlan(item.id);
+    else await pausePlan(item.id);
+    await loadData();
+  };
+
+  const handleDeleteUserPlan = (item: CatalogItem) => {
+    Alert.alert(
+      t('UI.customPlans.delete'),
+      t('UI.customPlans.deleteConfirm').replace('{title}', getLocalizedPlanText(item, 'title', language)),
+      [
+        { text: t('UI.alerts.cancel'), style: 'cancel' },
+        {
+          text: t('UI.customPlans.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            await deleteUserPlan(item.id);
+            if (openPlanId === item.id) setOpenPlanId(null);
+            await loadData();
+          },
+        },
+      ]
+    );
+  };
+
+  const handleEndUserPlan = (item: CatalogItem) => {
+    Alert.alert(
+      t('UI.alerts.endReadingPlan'),
+      t('UI.alerts.endConfirmation').replace('{title}', getLocalizedPlanText(item, 'title', language)),
+      [
+        { text: t('UI.alerts.cancel'), style: 'cancel' },
+        {
+          text: t('UI.alerts.end'),
+          style: 'destructive',
+          onPress: async () => {
+            await endPlan(item.id);
+            await loadData();
+          },
+        },
+        {
+          text: t('UI.customPlans.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            await deleteUserPlan(item.id);
+            if (openPlanId === item.id) setOpenPlanId(null);
+            await loadData();
+          },
+        },
+      ]
+    );
   };
 
   const renderActivePlan = (data: ActivePlanData) => {
@@ -430,8 +545,18 @@ const PlanScreen = () => {
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
+        {/* Catalog plans currently in progress */}
+        {activePlans.length > 0 && (
+          <View style={styles.activeSection}>
+            <Text style={[styles.lab, { color: palette.mute }]}>
+              {t('UI.customPlans.inProgress')}
+            </Text>
+            {activePlans.map(renderActivePlan)}
+          </View>
+        )}
+
         {/* Curated catalog */}
-        <Text style={[styles.lab, { color: palette.mute }]}>
+        <Text style={[styles.lab, { color: palette.mute, marginTop: activePlans.length > 0 ? 6 : 0 }]}>
           {t('UI.thread.plans')}
         </Text>
 
@@ -525,7 +650,7 @@ const PlanScreen = () => {
                         <ThreadRevealRow key={row.key} index={index} total={visibleRows.length} progress={progress}>
                           <View style={[styles.threadRow, styles.phaseThreadRow, { height: row.height }]}>
                             <ThreadKnot x={mark.x} rowHeight={row.height} open palette={palette} fillColor={phase.color} anchor={PHASE_MARK} />
-                            <View style={[styles.rowBody, { paddingLeft: DEPTH_X[1] + 16 }]}>
+                            <View style={[styles.rowBody, { paddingLeft: DEPTH_X[2] + 12 }]}>
                               <Text style={[styles.phaseTitle, { color: phase.color }]} numberOfLines={1}>
                                 {phase.title}
                               </Text>
@@ -599,7 +724,7 @@ const PlanScreen = () => {
           );
         })}
 
-        {/* Your Plans — created + started catalog */}
+        {/* Your Plans — category-style plan rows; stories use plan thread when expanded */}
         <View style={styles.yourPlansSection}>
           <View style={styles.yourPlansHeader}>
             <Text style={[styles.lab, { color: palette.mute, flex: 1, paddingTop: 18 }]}>
@@ -618,23 +743,189 @@ const PlanScreen = () => {
             </Pressable>
           </View>
 
-          {createdPlans.length === 0 && activePlans.length === 0 && (
+          {userPlans.length === 0 && (
             <Text style={[styles.emptyHint, { color: palette.mute }]}>{t('UI.customPlans.empty')}</Text>
           )}
 
-          {createdPlans.length > 0 && (
-            <View>
-              <Text style={[styles.subLab, { color: palette.mute }]}>{t('UI.customPlans.created')}</Text>
-              {createdPlans.map(renderActivePlan)}
-            </View>
-          )}
+          {userPlans.map((item) => {
+            const prog = progressById[item.id];
+            const done = prog?.done || 0;
+            const started = userStartedById[item.id];
+            const total = item.stories.length;
+            const open = openPlanId === item.id;
+            return (
+              <View key={item.id}>
+                <Pressable
+                  onPress={() => toggleUserPlan(item.id)}
+                  onLongPress={() => handleDeleteUserPlan(item)}
+                  style={[styles.groupRow, { borderBottomColor: palette.hair }]}
+                >
+                  <View style={[styles.groupDot, { backgroundColor: palette.acc }]} />
+                  <View style={styles.rowBody}>
+                    <Text style={[styles.groupTitle, { color: palette.ink }]} numberOfLines={2}>
+                      {getLocalizedPlanText(item, 'title', language)}
+                    </Text>
+                    <Text style={[styles.groupSub, { color: palette.mute }]}>
+                      {started
+                        ? `${done} ${t('UI.thread.of')} ${total}`
+                        : `${total} ${t('UI.thread.stories')}`}
+                      {started?.isPaused ? ` · ${lang === 'fr' ? 'En pause' : 'Paused'}` : ''}
+                    </Text>
+                  </View>
+                  <View style={styles.planActions}>
+                    {!started ? (
+                      <Pressable
+                        onPress={() => handleStartPlan(item)}
+                        hitSlop={12}
+                        style={[styles.startBtn, { borderColor: palette.acc }]}
+                      >
+                        <Text style={{ color: palette.acc, fontSize: 9, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase' }}>
+                          {lang === 'fr' ? 'Démarrer' : 'Start'}
+                        </Text>
+                      </Pressable>
+                    ) : (
+                      <Pressable
+                        onPress={() => handlePauseResumeUser(item)}
+                        hitSlop={12}
+                        style={[styles.startBtn, { borderColor: started.isPaused ? palette.acc : '#FF9F0A' }]}
+                      >
+                        <Text
+                          style={{
+                            color: started.isPaused ? palette.acc : '#FF9F0A',
+                            fontSize: 9,
+                            fontWeight: '600',
+                            letterSpacing: 0.8,
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {started.isPaused
+                            ? lang === 'fr'
+                              ? 'Reprendre'
+                              : 'Resume'
+                            : 'Pause'}
+                        </Text>
+                      </Pressable>
+                    )}
+                    <Pressable
+                      onPress={() => (started ? handleEndUserPlan(item) : handleDeleteUserPlan(item))}
+                      hitSlop={12}
+                      style={[styles.startBtn, { borderColor: palette.hair }]}
+                    >
+                      <Text style={{ color: palette.mute, fontSize: 9, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase' }}>
+                        {started
+                          ? lang === 'fr'
+                            ? 'Fin'
+                            : 'End'
+                          : lang === 'fr'
+                            ? 'Suppr.'
+                            : 'Delete'}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </Pressable>
 
-          {activePlans.length > 0 && (
-            <View>
-              <Text style={[styles.subLab, { color: palette.mute }]}>{t('UI.customPlans.inProgress')}</Text>
-              {activePlans.map(renderActivePlan)}
-            </View>
-          )}
+                {open && userStoryThread.length > 0 && (
+                  <View style={[styles.threadWrap, { height: userStoryThread.height }]}>
+                    <Svg
+                      pointerEvents="none"
+                      style={StyleSheet.absoluteFill}
+                      width="100%"
+                      height={userStoryThread.height}
+                    >
+                      <AnimatedPath
+                        d={userStoryThread.d}
+                        fill="none"
+                        stroke={palette.thread}
+                        strokeWidth={1.5}
+                        strokeDasharray={userStoryThread.length}
+                        animatedProps={userPathProps}
+                      />
+                    </Svg>
+                    {userStoryRows.map((row, index) => {
+                      const mark = userStoryThread.marks[index];
+                      if (!mark) return null;
+
+                      if (row.kind === 'plan') {
+                        return (
+                          <ThreadRevealRow
+                            key={row.key}
+                            index={index}
+                            total={userStoryRows.length}
+                            progress={userProgress}
+                          >
+                            <View style={[styles.threadRow, { height: row.height }]}>
+                              <BookBead
+                                x={mark.x}
+                                rowHeight={row.height}
+                                open
+                                palette={palette}
+                                anchor={PLAN_MARK}
+                              />
+                            </View>
+                          </ThreadRevealRow>
+                        );
+                      }
+
+                      if (!row.storyId) return null;
+                      const id = row.storyId;
+                      const info = titles[id];
+                      const planDone = new Set(progressById[item.id]?.ids || []);
+                      const storyDone = planDone.has(id);
+                      const current = !!row.current && !storyDone;
+                      const minutes = getSegmentReadingTime(id);
+                      const title = localizeStoryTitle(id, info?.title || id, language);
+                      return (
+                        <ThreadRevealRow
+                          key={row.key}
+                          index={index}
+                          total={userStoryRows.length}
+                          progress={userProgress}
+                        >
+                          <Pressable
+                            onPress={() => {
+                              void hapticImpactLight();
+                              openSegment(router, id, { planId: item.id });
+                            }}
+                            style={[styles.threadRow, { height: row.height }]}
+                            hitSlop={12}
+                          >
+                            <StoryBead
+                              x={mark.x}
+                              rowHeight={row.height}
+                              done={storyDone}
+                              current={current}
+                              justCompleted={justCompletedId === id}
+                              palette={palette}
+                            />
+                            <View style={[styles.storyText, { paddingLeft: DEPTH_X[1] + 16 }]}>
+                              <Text
+                                style={[
+                                  styles.storyTitle,
+                                  { color: storyDone ? palette.mute : palette.ink },
+                                  current && styles.storyNow,
+                                ]}
+                              >
+                                {title}
+                              </Text>
+                              <Text style={[styles.storyRef, { color: current ? palette.acc : palette.mute }]}>
+                                {info?.book?.[0]} {info?.ref}
+                                {minutes ? ` · ${formatReadingMinutes(minutes)}` : ''}
+                                {storyDone
+                                  ? ` · ${t('UI.thread.read')}`
+                                  : current
+                                    ? ` · ${t('UI.thread.continue')}`
+                                    : ''}
+                              </Text>
+                            </View>
+                          </Pressable>
+                        </ThreadRevealRow>
+                      );
+                    })}
+                  </View>
+                )}
+              </View>
+            );
+          })}
         </View>
       </Animated.ScrollView>
     </View>
@@ -713,6 +1004,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
+  planActions: { gap: 6, alignItems: 'flex-end' },
   storyText: { flex: 1, paddingVertical: 6 },
   storyTitle: { fontSize: 14 },
   storyNow: { fontSize: 18, fontWeight: '600' },

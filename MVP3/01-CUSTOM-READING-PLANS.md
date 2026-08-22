@@ -30,7 +30,7 @@ accounts in this version.
 | **Reorder** | Out of scope for 2.1. A later version may reopen the plan and drag stories to a custom order, then save. |
 | **Intros (`I###`)** | Custom plans are **stories only** (`S###`). No intro segments. |
 | **One active plan** | Same rule as catalog plans: starting a custom plan pauses other incomplete plans. |
-| **Day 1** | Creating a custom plan **starts it immediately**. The calendar day of creation is **day 1**. |
+| **Day 1** | Creating a custom plan saves it **unstarted**. Day 1 begins when the user taps **Start** (same as catalog plans). |
 | **Edit after create** | 2.1 ships **create + delete** only. Add/remove stories (and reorder) is a follow-up. |
 | **Naming** | UI label stays **Your Plans** / **Vos plans**. Distinguish *user-created* plans (always listed) from *started catalog* plans (listed only while active / started), via copy or grouping inside that section if both appear. |
 
@@ -50,8 +50,9 @@ accounts in this version.
 6. Sticky bottom: **Create reading plan** (enabled when ≥ 1 story selected).
 7. Sheet: title field + summary (“N stories”) → **Create** or **Cancel**
    (returns to picker with selection preserved).
-8. On Create: persist plan, sort stories canonically, auto-start (day 1 =
-   today), dismiss modal, show plan under Your Plans.
+8. On Create: persist plan, sort stories canonically, **do not auto-start**, dismiss
+   to the Plans tab, and show the new plan under **Your Plans** (title + story count),
+   expandable like a catalog plan. User taps **Start** when ready (day 1 = start day).
 
 ### 3.2 Use
 
