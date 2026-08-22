@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useAppSettings } from '@/context/SyncAppSettingsContext';
 
 interface ColorData {
   total: number;

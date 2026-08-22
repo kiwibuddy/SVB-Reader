@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, AccessibilityInfo, Image } from 'react-native';
 import { ProgressIndicator, LinearProgress } from './ProgressIndicator';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export type LoadingStage = 

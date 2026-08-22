@@ -1,7 +1,19 @@
 import { StyleSheet, Platform } from 'react-native';
+import { type TextSizes } from '@/context/FontSizeContext';
+
+// Medium is the baseline the pixel values below were tuned for (sizes.body === 16
+// at the 'medium' font-size setting). Scaling every font size in this file by the
+// same ratio the rest of the app uses for body text keeps the Intro screen's look
+// unchanged at the default setting while making it respond to the font-size slider.
+const MEDIUM_BODY = 16;
+export const getFontScale = (sizes: TextSizes) => sizes.body / MEDIUM_BODY;
+const scaled = (scale: number, value: number) => Math.round(value * scale);
 
 // Function to create dynamic styles with theme colors
-export const createStyles = (colors: any, isTablet: boolean = false) => StyleSheet.create({
+export const createStyles = (colors: any, sizes: TextSizes, isTablet: boolean = false) => {
+  const scale = getFontScale(sizes);
+
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -29,8 +41,8 @@ export const createStyles = (colors: any, isTablet: boolean = false) => StyleShe
     paddingHorizontal: 16,
   },
   text: {
-    fontSize: isTablet ? 18 : 16,
-    lineHeight: isTablet ? 28 : 24,
+    fontSize: scaled(scale, isTablet ? 18 : 16),
+    lineHeight: scaled(scale, isTablet ? 28 : 24),
     color: colors.text,
     fontFamily: Platform.select({
       ios: 'System',
@@ -38,58 +50,58 @@ export const createStyles = (colors: any, isTablet: boolean = false) => StyleShe
     }),
   },
   title: {
-    fontSize: isTablet ? 36 : 28,
+    fontSize: scaled(scale, isTablet ? 36 : 28),
     fontWeight: '700',
     color: colors.primary,
     marginBottom: isTablet ? 16 : 12,
     marginTop: isTablet ? 24 : 20,
     textAlign: 'center',
-    lineHeight: isTablet ? 42 : 34,
+    lineHeight: scaled(scale, isTablet ? 42 : 34),
   },
   subtitle: {
-    fontSize: isTablet ? 28 : 22,
+    fontSize: scaled(scale, isTablet ? 28 : 22),
     fontWeight: '600',
     color: colors.primary,
     marginBottom: isTablet ? 20 : 16,
     marginTop: isTablet ? 20 : 16,
     textAlign: 'center',
-    lineHeight: isTablet ? 34 : 28,
+    lineHeight: scaled(scale, isTablet ? 34 : 28),
   },
   header: {
-    fontSize: isTablet ? 28 : 24,
+    fontSize: scaled(scale, isTablet ? 28 : 24),
     fontWeight: '600',
     color: colors.text,
     marginTop: isTablet ? 24 : 20,
     marginBottom: isTablet ? 12 : 8,
-    lineHeight: isTablet ? 34 : 30,
+    lineHeight: scaled(scale, isTablet ? 34 : 30),
   },
   subheader: {
-    fontSize: isTablet ? 24 : 20,
+    fontSize: scaled(scale, isTablet ? 24 : 20),
     fontWeight: '600',
     color: colors.text,
     marginTop: isTablet ? 20 : 16,
     marginBottom: isTablet ? 12 : 8,
-    lineHeight: isTablet ? 30 : 26,
+    lineHeight: scaled(scale, isTablet ? 30 : 26),
   },
   heading: {
-    fontSize: isTablet ? 22 : 18,
+    fontSize: scaled(scale, isTablet ? 22 : 18),
     fontWeight: '600',
     color: colors.text,
     marginTop: isTablet ? 20 : 16,
     marginBottom: isTablet ? 12 : 8,
-    lineHeight: isTablet ? 28 : 24,
+    lineHeight: scaled(scale, isTablet ? 28 : 24),
   },
   subheading: {
-    fontSize: isTablet ? 20 : 16,
+    fontSize: scaled(scale, isTablet ? 20 : 16),
     fontWeight: '600',
     color: colors.text,
     marginTop: isTablet ? 16 : 12,
     marginBottom: isTablet ? 10 : 6,
-    lineHeight: isTablet ? 26 : 22,
+    lineHeight: scaled(scale, isTablet ? 26 : 22),
   },
   paragraph: {
     marginBottom: isTablet ? 16 : 12,
-    lineHeight: isTablet ? 28 : 24,
+    lineHeight: scaled(scale, isTablet ? 28 : 24),
   },
   smallCaps: {
     textTransform: 'uppercase',
@@ -129,7 +141,7 @@ export const createStyles = (colors: any, isTablet: boolean = false) => StyleShe
   },
   startReadingText: {
     color: "#FFF",
-    fontSize: isTablet ? 18 : 16,
+    fontSize: scaled(scale, isTablet ? 18 : 16),
     fontWeight: "700",
   },
   // List styles
@@ -143,15 +155,15 @@ export const createStyles = (colors: any, isTablet: boolean = false) => StyleShe
   },
   bullet: {
     width: isTablet ? 22 : 18,
-    lineHeight: isTablet ? 28 : 24,
-    fontSize: isTablet ? 18 : 16,
+    lineHeight: scaled(scale, isTablet ? 28 : 24),
+    fontSize: scaled(scale, isTablet ? 18 : 16),
     color: colors.text,
     textAlign: 'center',
   },
   listItemText: {
     flex: 1,
-    lineHeight: isTablet ? 28 : 24,
-    fontSize: isTablet ? 18 : 16,
+    lineHeight: scaled(scale, isTablet ? 28 : 24),
+    fontSize: scaled(scale, isTablet ? 18 : 16),
     color: colors.text,
   },
   // Table styles
@@ -171,25 +183,27 @@ export const createStyles = (colors: any, isTablet: boolean = false) => StyleShe
     paddingHorizontal: 8,
   },
   tableText: {
-    fontSize: isTablet ? 24 : 20,
-    lineHeight: isTablet ? 40 : 36,
+    fontSize: scaled(scale, isTablet ? 24 : 20),
+    lineHeight: scaled(scale, isTablet ? 40 : 36),
     color: colors.text,
   },
   tableHeaderText: {
-    fontSize: isTablet ? 24 : 20,
+    fontSize: scaled(scale, isTablet ? 24 : 20),
     fontWeight: '700',
     color: colors.text,
   },
-});
+  });
+};
 
 // Export static styles for backwards compatibility
-export const styles = createStyles({
-  background: '#FFFFFF',
-  text: '#000000',
-  primary: '#FF5733',
-  secondary: '#666666',
-  border: '#E5E5E5',
-  bubbles: { default: '#F5F5F5' }
-});
-
-
+export const styles = createStyles(
+  {
+    background: '#FFFFFF',
+    text: '#000000',
+    primary: '#FF5733',
+    secondary: '#666666',
+    border: '#E5E5E5',
+    bubbles: { default: '#F5F5F5' }
+  },
+  { title: 24, subtitle: 18, body: 16, caption: 14, button: 16, navigation: 16 }
+);

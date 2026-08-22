@@ -11,7 +11,7 @@ import SegmentTitle from "./SegmentTitle";
 import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import CelebrationPopup from "./CelebrationPopup";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useAppSettings } from '@/context/SyncAppSettingsContext';
 import { memo } from "react";
 import { getSegmentCompletionStatus } from "@/api/sqlite";
 import { ANIMATION } from '@/services/animation';

@@ -12,7 +12,7 @@ import {
   Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import NoteInput from './NoteInput';
 

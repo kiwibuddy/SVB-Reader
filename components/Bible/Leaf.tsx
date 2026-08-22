@@ -2,7 +2,7 @@ import { BibleLeaf } from "@/types";
 import logger from '@/utils/logger';
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useAppSettings } from '@/context/SyncAppSettingsContext';
 
 interface BibleLeafProps {
   leaf: BibleLeaf;
@@ -14,7 +14,10 @@ interface BibleLeafProps {
 }
 
 const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textColor, leafIndex, bubbleColor = 'black', renderAsTextContent = false }) => {
-  const { isDarkMode } = useAppSettings();
+  const { sizes } = useAppSettings();
+  const verseRefFontSize = Math.round(sizes.body / 2);
+  const verseRefLineHeight = Math.round(sizes.body);
+  const bodyLineHeight = Math.round(sizes.body * 1.8);
   
   // Function to get lighter border color based on bubble color
   const getBorderColor = (color: string) => {
@@ -90,7 +93,7 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
                 ]}>
                   <Text style={[
                     styles.tableCellText,
-                    { color: textColor },
+                    { color: textColor, fontSize: sizes.body, lineHeight: bodyLineHeight },
                     isHeader && styles.tableHeaderText
                   ]}>
                     {child.children?.map((textChild: any, textIndex: number) => {
@@ -109,8 +112,8 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
                             <Text
                               style={{
                                 color: textColor,
-                                fontSize: 10,
-                                lineHeight: 20,
+                                fontSize: verseRefFontSize,
+                                lineHeight: verseRefLineHeight,
                               }}
                             >
                               {textChild.text}
@@ -220,8 +223,8 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
         <Text
           style={{
             color: textColor,
-            fontSize: 10,
-            lineHeight: 20,
+            fontSize: verseRefFontSize,
+            lineHeight: verseRefLineHeight,
           }}
         >
           {isIndented ? "     " : ""}
@@ -243,8 +246,8 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
       style={{
         ...{
           color: textColor,
-          fontSize: 20,
-          lineHeight: 36,
+          fontSize: sizes.body,
+          lineHeight: bodyLineHeight,
         },
         ...tagStyle,
       }}

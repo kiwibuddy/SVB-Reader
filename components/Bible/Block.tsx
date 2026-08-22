@@ -7,7 +7,7 @@ import { BibleBlock } from "@/types";
 import SourceNameComponent from "./SourceName";
 import { getColors, getBubbleTextColorSafe } from "@/scripts/getColors";
 import GlowBubble from "./GlowBubble";
-import { useAppSettings } from "@/context/AppSettingsContext";
+import { useAppSettings } from "@/context/SyncAppSettingsContext";
 import { baseSizes as sizes } from "@/context/FontSizeContext";
 import EmojiHandler from "@/components/EmojiHandler";
 

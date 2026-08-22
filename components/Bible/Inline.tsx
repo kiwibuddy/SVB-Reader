@@ -3,7 +3,7 @@ import logger from '@/utils/logger';
 import { View, Text, StyleSheet } from "react-native";
 import BibleLeafComponent from "./Leaf";
 import { BibleInline } from "@/types";
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useAppSettings } from '@/context/SyncAppSettingsContext';
 
 interface BibleInlineProps {
   inline: BibleInline;

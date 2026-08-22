@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
   interpolate,
 } from 'react-native-reanimated';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useAppSettings } from '@/context/SyncAppSettingsContext';
 
 const { width: screenWidth } = Dimensions.get('window');
 
