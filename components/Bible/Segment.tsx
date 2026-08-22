@@ -19,6 +19,7 @@ import * as Haptics from 'expo-haptics';
 import type { Ink } from '@/utils/ink';
 import { bookCodesForSegment, findVerseBlockIndex } from '@/utils/verseLocator';
 import { findExchangeStart, findLongestSpeechStart } from '@/utils/castLocator';
+import { normalizeBibleContent } from '@/utils/normalizeBibleContent';
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -140,18 +141,18 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   // Memoize the content to prevent unnecessary re-renders (with safe fallback)
   const memoizedContent = useMemo(() => {
     if (!segmentData?.content) return [];
-    
+
     // ALWAYS split content into paragraphs first (breaks long speeches into smaller bubbles)
     // This ensures Moses' long speeches get broken up into multiple bubbles as shown in the example
-    const splitContent = splitIntoParagraphs(segmentData.content);
-    
+    const splitContent = normalizeBibleContent(splitIntoParagraphs(segmentData.content));
+
     // Get readers array safely
     const safeReaders = segmentData.readers || [];
-    
+
     // Check if there are duplicate colors in readers array
     const uniqueColors = new Set(safeReaders);
     const hasDuplicateColors = uniqueColors.size !== safeReaders.length;
-    
+
     if (hasDuplicateColors) {
       // If multiple readers have same color, apply additional splitting logic
       // This further splits content for turn-taking among readers of the same color
@@ -599,21 +600,25 @@ const styles = StyleSheet.create({
       />
 
       {memoizedContent.map((item, index) => {
-        const { sourceName } = item.source || {};
-        const showSourceName = index === 0 ||
-          memoizedContent[index - 1].source?.sourceName !== sourceName;
+        const { sourceName, kind } = item.source || {};
+        const isEditorial = kind === 'editorial';
+        const showSourceName =
+          !isEditorial &&
+          (index === 0 ||
+            memoizedContent[index - 1].source?.kind === 'editorial' ||
+            memoizedContent[index - 1].source?.sourceName !== sourceName);
         const ink = (item.source?.color || 'black') as Ink;
 
         return (
           <BibleBlockComponent
-            key={`${item.source?.sourceName || 'unknown'}-${index}`}
+            key={`${item.source?.sourceName || item.source?.kind || 'block'}-${index}`}
             block={item}
             bIndex={index}
             hasTail={showSourceName}
-            isGlowing={!!selectedInk && selectedInk === ink}
+            isGlowing={!isEditorial && !!selectedInk && selectedInk === ink}
             onLongPress={handleLongPress}
             isTarget={index === targetIndex}
-            dimmed={!!selectedInk && selectedInk !== ink}
+            dimmed={!isEditorial && !!selectedInk && selectedInk !== ink}
             onLayout={
               index === targetIndex
                 ? (event) => {
