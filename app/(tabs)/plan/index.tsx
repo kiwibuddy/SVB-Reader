@@ -189,7 +189,7 @@ const PlanScreen = () => {
   }, [grouped, openGroup, openPlanId, progressById]);
 
   const thread = useMemo(
-    () => buildThread(visibleRows.map(({ key, depth, height }) => ({ key, depth, height })), { width: windowWidth }),
+    () => buildThread(visibleRows.map(({ key, depth, height }) => ({ key, depth, height })), { width: windowWidth, exit: 'right' }),
     [visibleRows, windowWidth]
   );
 
@@ -385,7 +385,7 @@ const PlanScreen = () => {
 
               {open && thread.length > 0 && (
                 <View style={[styles.threadWrap, { height: thread.height }]}>
-                  <Svg pointerEvents="none" overflow="visible" style={StyleSheet.absoluteFill} width="100%" height={thread.height}>
+                  <Svg pointerEvents="none" style={StyleSheet.absoluteFill} width="100%" height={thread.height}>
                     <AnimatedPath
                       d={thread.d}
                       fill="none"

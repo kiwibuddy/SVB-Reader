@@ -1,10 +1,14 @@
 import * as React from 'react';
-import renderer from 'react-test-renderer';
+import renderer, { act } from 'react-test-renderer';
 
 import { ThemedText } from '../ThemedText';
 
 it(`renders correctly`, () => {
-  const tree = renderer.create(<ThemedText>Snapshot test!</ThemedText>).toJSON();
+  // React 19 only commits inside act(); without it toJSON() is null.
+  let root: renderer.ReactTestRenderer;
+  act(() => {
+    root = renderer.create(<ThemedText>Snapshot test!</ThemedText>);
+  });
 
-  expect(tree).toMatchSnapshot();
+  expect(root!.toJSON()).toMatchSnapshot();
 });

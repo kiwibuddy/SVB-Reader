@@ -2,6 +2,8 @@ import { Appearance } from 'react-native';
 import { databaseManager } from '@/api/database-manager';
 import logger from '@/utils/logger';
 
+export type AppearanceMode = 'light' | 'dark' | 'auto';
+
 // ============================================================================
 // SYNCHRONOUS SQLITE SETTINGS MANAGER
 // ============================================================================
@@ -14,6 +16,8 @@ export interface UserSettings {
   notificationsEnabled: boolean;
   fontSize: 'small' | 'medium' | 'large';
   autoBackup: boolean;
+  appearanceMode: AppearanceMode;
+  reviewPromptShown: boolean;
 }
 
 export type SettingsKey = keyof UserSettings;
@@ -26,7 +30,9 @@ const DEFAULT_SETTINGS: UserSettings = {
   groupUserName: '',
   notificationsEnabled: true,
   fontSize: 'medium',
-  autoBackup: true
+  autoBackup: true,
+  appearanceMode: 'auto',
+  reviewPromptShown: false,
 };
 
 // ============================================================================
@@ -110,6 +116,8 @@ export function getAllSettingsSync(): UserSettings {
     notificationsEnabled: getSyncSetting('notificationsEnabled') ?? getSmartDefault('notificationsEnabled'),
     fontSize: getSyncSetting('fontSize') ?? getSmartDefault('fontSize'),
     autoBackup: getSyncSetting('autoBackup') ?? getSmartDefault('autoBackup'),
+    appearanceMode: getSyncSetting('appearanceMode') ?? getSmartDefault('appearanceMode'),
+    reviewPromptShown: getSyncSetting('reviewPromptShown') ?? getSmartDefault('reviewPromptShown'),
   };
 }
 
@@ -147,10 +155,26 @@ export async function setSetting<K extends SettingsKey>(
       [key, String(value)]
     );
   } catch (error) {
-    // Background write failed - log but don't throw
     setTimeout(() => {
       logger.warn(`Background setting write failed for ${key}:`, error);
     }, 0);
+  }
+}
+
+export async function getSetting<K extends SettingsKey>(key: K): Promise<UserSettings[K] | null> {
+  try {
+    const db = await databaseManager.getSafeDatabase();
+    if (!db) return null;
+    const row = await db.getFirstAsync<{ value: string }>(
+      'SELECT value FROM user_settings WHERE key = ?',
+      [key]
+    );
+    if (!row?.value) return null;
+    if (row.value === 'true') return true as UserSettings[K];
+    if (row.value === 'false') return false as UserSettings[K];
+    return row.value as UserSettings[K];
+  } catch {
+    return null;
   }
 }
 

@@ -5,14 +5,19 @@
     "version": "1.3.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "sourceview",
     "userInterfaceStyle": "automatic",
-    "description": "SourceView Together is a Bible you read by voice. Every word is attributed to who spoke it — 774 voices across 365 stories. Read alone or together using the four ink colours. No camera, no QR codes.",
+    "description": "SourceView Together is a Bible you read by voice. Every word is attributed to who spoke it — 774 voices across 365 stories. Read alone or together using the four source colors.",
     "primaryColor": "#FF5733",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sourceview.together",
-      "buildNumber": "21",
+      "buildNumber": "22",
+      "icon": {
+        "light": "./assets/images/icon.png",
+        "dark": "./assets/images/icon-dark.png",
+        "tinted": "./assets/images/icon-tinted.png"
+      },
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -25,14 +30,16 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#808080"
+        "backgroundColor": "#F3F5F2",
+        "monochromeImage": "./assets/images/adaptive-icon-monochrome.png"
       },
       "permissions": [
         "android.permission.INTERNET",
-        "android.permission.ACCESS_NETWORK_STATE"
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.POST_NOTIFICATIONS"
       ],
       "package": "com.sourceview.together",
-      "versionCode": 21,
+      "versionCode": 22,
       "allowBackup": true,
       "icon": "./assets/images/icon.png"
     },
@@ -49,7 +56,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#808080"
+          "backgroundColor": "#F3F5F2"
         }
       ],
       [
@@ -70,7 +77,24 @@
           "version": "latest"
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "./plugins/withAndroidBackupRules",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "organization": "sourceview-together",
+          "project": "sourceview-together"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "enableBackgroundRemoteNotifications": false
+        }
+      ],
+      "./plugins/withLocalNotificationsOnly",
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true
@@ -87,7 +111,6 @@
         "bible",
         "bible study",
         "bible reading",
-        "group bible study",
         "christian app",
         "scripture",
         "bible app",
@@ -95,7 +118,6 @@
         "bible reading app",
         "sourceview",
         "together",
-        "group reading",
         "family bible study",
         "small group",
         "religion",
@@ -108,7 +130,7 @@
     },
     "updates": {
       "enabled": true,
-      "checkAutomatically": "ON_LOAD",
+      "checkAutomatically": "NEVER",
       "fallbackToCacheTimeout": 10000,
       "url": "https://u.expo.dev/4b89909c-ac28-498a-9e46-5591000b8616"
     }

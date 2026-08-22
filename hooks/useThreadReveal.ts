@@ -57,23 +57,23 @@ export function useThreadReveal(
     }
   }, [focused, replayOnFocus, length, progress, replay]);
 
-  // Length-change replay: when thread grows/shrinks (expand/collapse)
+  // Length-change replay: ThreadList expand/collapse while focused
   useEffect(() => {
+    if (!replayOnFocus) return;
     if (!length || !focused) return;
-    if (replayOnFocus && prevLengthRef.current === 0) {
+    if (prevLengthRef.current === 0) {
       // First paint after focus — already handled above
       prevLengthRef.current = length;
       return;
     }
-    if (prevLengthRef.current !== length && prevLengthRef.current > 0) {
-      // Expand/collapse: start from the fraction already drawn
+    if (prevLengthRef.current !== length) {
       const from = Math.min(prevLengthRef.current / length, 1);
       replay(from);
     }
     prevLengthRef.current = length;
   }, [length, focused, replayOnFocus, replay]);
 
-  // Non-focus-replay mode: just animate when length appears/changes
+  // Accordion mode (Cast / Plan): animate when length appears or changes
   useEffect(() => {
     if (replayOnFocus) return;
     if (!length) {

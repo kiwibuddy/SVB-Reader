@@ -13,6 +13,11 @@ const path = require('path');
 const src = path.join(__dirname, '..', 'assets', 'data', 'verseIndex.json');
 const dst = path.join(__dirname, '..', 'assets', 'data', 'verseSearchIndex.json');
 
+if (!fs.existsSync(src)) {
+  console.error('verseIndex.json was removed from the bundle. verseSearchIndex.json is the shipped index.');
+  process.exit(1);
+}
+
 const raw = JSON.parse(fs.readFileSync(src, 'utf8'));
 
 const bookSet = [];

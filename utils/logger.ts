@@ -3,6 +3,8 @@
  * Only logs in development, removes all console statements in production
  */
 
+import { addBreadcrumb, captureException } from '@/utils/sentry';
+
 const isDevelopment = __DEV__;
 
 export const logger = {
@@ -22,6 +24,7 @@ export const logger = {
   warn: (...args: any[]) => {
     // ALWAYS log warnings - even in production - so they appear in crash logs
     console.warn('[WARN]', ...args);
+    addBreadcrumb(args.map(String).join(' '));
   },
 
   /**
@@ -30,18 +33,15 @@ export const logger = {
    */
   error: (...args: any[]) => {
     // ALWAYS log errors - even in production - so they appear in crash logs
-    const errorString = args.map(arg => {
-      if (arg instanceof Error) {
-        return `${arg.message}\n${arg.stack}`;
-      }
-      return String(arg);
-    }).join(' ');
-    
+    const errorArg = args.find((arg) => arg instanceof Error);
+    if (errorArg) {
+      captureException(errorArg);
+    } else {
+      captureException(new Error(args.map(String).join(' ')));
+    }
+
     // Use console.error which appears in crash logs
     console.error('[ERROR]', ...args);
-    
-    // Also log to crash reporting service if available
-    // Example: crashlytics().recordError(new Error(errorString));
   },
 
   /**

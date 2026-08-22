@@ -3,15 +3,13 @@ import { View, Text, StyleSheet, Pressable, ScrollView, Modal, Alert } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useFontSize } from '@/context/FontSizeContext';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { clearFirstLaunchFlag } from '@/hooks/useFirstLaunch';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const About = () => {
   const router = useRouter();
-  const { sizes } = useFontSize();
-  const { colors } = useSyncAppSettings();
+  const { colors, sizes } = useSyncAppSettings();
   const { t } = useTranslation();
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);

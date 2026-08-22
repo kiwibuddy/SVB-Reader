@@ -539,7 +539,7 @@ export async function getUserActivityInsights(): Promise<UserActivityInsights> {
     // Get most active day of week
     const dayAnalysis = await db.getFirstAsync<{ dayOfWeek: string; count: number }>(`
       SELECT 
-        CASE CAST(strftime('%w', completionDate) AS INTEGER)
+        CASE CAST(strftime('%w', datetime(completionDate, 'localtime')) AS INTEGER)
           WHEN 0 THEN 'Sunday'
           WHEN 1 THEN 'Monday'
           WHEN 2 THEN 'Tuesday'
@@ -551,7 +551,7 @@ export async function getUserActivityInsights(): Promise<UserActivityInsights> {
         COUNT(*) as count
       FROM segment_completion 
       WHERE completionDate IS NOT NULL
-      GROUP BY CAST(strftime('%w', completionDate) AS INTEGER)
+      GROUP BY CAST(strftime('%w', datetime(completionDate, 'localtime')) AS INTEGER)
       ORDER BY count DESC
       LIMIT 1
     `);

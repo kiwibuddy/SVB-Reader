@@ -5,7 +5,7 @@ import Books from '@/assets/data/BookChapterList.json';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 
 const books = Books as Record<string, { bookName: string }>;
-const titles = SegmentTitles as Record<string, { book?: string[]; ref?: string }>;
+const titles = SegmentTitles as Record<string, { title?: string; book?: string[]; ref?: string }>;
 
 export function collectTurnText(node: unknown): string {
   if (!node) return '';

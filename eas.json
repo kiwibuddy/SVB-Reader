@@ -28,6 +28,9 @@
     },
     "preview": {
       "distribution": "internal",
+      "env": {
+        "SENTRY_ALLOW_FAILURE": "true"
+      },
       "ios": {
         "buildConfiguration": "Release",
         "image": "latest"
@@ -40,6 +43,9 @@
       "distribution": "store",
       "autoIncrement": false,
       "channel": "production",
+      "env": {
+        "SENTRY_ALLOW_FAILURE": "true"
+      },
       "ios": {
         "buildConfiguration": "Release",
         "scheme": "SourceViewTogether",
