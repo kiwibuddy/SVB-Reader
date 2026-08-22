@@ -22974,6 +22974,27 @@
       "plan": "plan",
       "plans": "plans"
     },
+    "customPlans": {
+      "section": "Vos plans",
+      "created": "Créés par vous",
+      "inProgress": "En cours",
+      "empty": "Composez une liste d'histoires — touchez + pour commencer.",
+      "add": "Créer un plan",
+      "pickerTitle": "Ajouter des histoires",
+      "pickerNudge": "Ouvrez une section, ou cherchez une voix comme Simon Pierre",
+      "selectHint": "Sélectionnez des histoires à inclure",
+      "createCta": "Créer le plan de lecture",
+      "nameTitle": "Nommez votre plan",
+      "namePlaceholder": "ex. Simon Pierre",
+      "titleRequired": "Veuillez donner un titre à votre plan.",
+      "create": "Créer",
+      "createFailed": "Impossible de créer ce plan. Réessayez.",
+      "storyCount": "{{n}} histoires",
+      "storyCountOne": "1 histoire",
+      "delete": "Supprimer le plan",
+      "deleteConfirm": "Supprimer « {title} » ? Cela efface le plan et sa progression.",
+      "deleted": "Plan supprimé"
+    },
     "alerts": {
       "cancel": "Annuler",
       "ok": "OK",

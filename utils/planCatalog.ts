@@ -23,6 +23,8 @@ export type CatalogItem = {
   chronologicalMapping?: string;
   stories: string[];
   group: PlanGroupId;
+  /** Device-local playlist created by the user (2.1+). */
+  isUserPlan?: boolean;
 };
 
 const GROUP_THRESHOLDS = {
