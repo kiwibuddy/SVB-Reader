@@ -9,12 +9,13 @@ navigation target, every interactive handler on a live screen, the content data,
 and the logic behind completion, streaks, plans, search and onboarding. Where a
 bug could be demonstrated, it was — the evidence is quoted inline.
 
-**Two standing checks:**
+**Four standing checks:**
 
 ```bash
 node scripts/build-verse-index.js       # rebuilds the index — PASSES
 node scripts/test-reference-search.js   # resolution        — PASSES (H1 fixed)
 node scripts/test-verse-landing.js      # landing           — PASSES (H2 fixed)
+node scripts/audit-scripture.js         # nothing missing   — PASSES
 ```
 
 The builder regenerates `verseSearchIndex.json` from `newBibleNLT1.json` and
@@ -28,8 +29,13 @@ The third checks that a resolved reference lands on the turn holding the verse,
 across **all 31,244 indexed verses**. Today: **all pass**, plus 11 end-to-end
 cases from typed input.
 
-Both load the app's real modules rather than reimplementing them, so a pass means
-the shipped code works. Neither needs `node_modules`.
+The fourth answers "is any scripture missing from what the reader displays?"
+Today: **66/66 books, every chapter present, every verse carrying text, all 368
+table cells populated, no leaf dropped by the renderer.** Details in the
+scripture audit below.
+
+All four load the app's real modules rather than reimplementing them, so a pass
+means the shipped code works. None needs `node_modules`.
 
 What no script can prove — rendered layout, scroll behaviour, gestures, the
 share sheet, migration from a real 1.2.1 database — is collected in the **Device
@@ -111,7 +117,7 @@ Metro blocklist entry has gone with it.
 
 ## ~~H2 · Tapping a search result does not land on the verse~~ — FIXED 21 Aug
 
-**Fixed.** `node scripts/test-verse-landing.js` covers it: all 24,935 indexed
+**Fixed.** `node scripts/test-verse-landing.js` covers it: all 31,244 indexed
 verses land on a turn that contains them.
 
 ### What was wrong
@@ -126,7 +132,7 @@ Genesis 1:1 → 40, 1:2 → 200, 1:3 → **80**. S001's largest was 2,440px for 
 several thousand pixels tall, so it always undershot to near the top.
 
 **`blockIndex` is right but is not the rendered index.** It is trustworthy —
-verified 100% across all 24,935 entries — but it addresses `segmentData.content`,
+verified 100% across every entry — but it addresses `segmentData.content`,
 and the reader renders that through `splitIntoParagraphs()` and, for **232 of the
 365 stories**, `splitContentIntoReaderParts()` too. The rendered list is
 1.2×–2.2× longer, so using `blockIndex` as a rendered index would have replaced
@@ -233,6 +239,21 @@ disappears.** The only way out is to leave the story and come back.
 **Fix.** Either keep the toggle visible when the list is empty, or fall back to
 set 1 automatically, or hide the toggle when set 2 is known to be absent. Filling
 the 61 missing question sets is the other half, and the better one.
+
+## M5 · 4,887 asterisks with nothing behind them
+
+The NLT carries translator footnotes — "Or…", "Hebrew reads…". The data has
+**4,887 of them across the 365 stories**, and each one puts a visible `*` into
+the text. `Leaf.tsx:49` destructures `note` off the leaf and then never renders
+it.
+
+So the marker shows and the note cannot be read. An asterisk mid-sentence that
+does nothing, on very nearly every screen.
+
+No scripture is lost — footnotes are translator notes, not text. But it is the
+most frequently visible unfinished edge in the reader. Either render the note
+(a tap target opening a sheet) or stop emitting the marker. Leaving both is the
+one option that reads as a bug.
 
 ## M2 · The Continue card ignores your reading plan
 
@@ -511,7 +532,7 @@ fix whose logic is verified but whose *rendered* behaviour is not.
 
 ## D1 · Verse landing and the arrival pulse — the H2 fix
 
-Logic verified across all 24,935 indexed verses; none of the following was, or
+Logic verified across all 31,244 indexed verses; none of the following was, or
 can be, checked off-device.
 
 - [ ] Search `gen 4:3`. It should land **partway down** "People Sin" — turn 37 of
@@ -572,6 +593,7 @@ Never yet run on hardware; carried over from `MVP2/13-STEP-LOG.md`.
 | **M2** | Continue card ignores the active plan | — |
 | **M3** | Achievements and its subtree unreachable, with a dead `/Bible` route | — |
 | **M4** | 49 orphaned modules; the real cause of the lint count | X3 |
+| **M5** | 4,887 footnote asterisks that cannot be read | — |
 | **L1–L7** | Bundle, config, tracked artifacts, logging, data gaps | — |
 | **S1** | Image share on a production build (D2) | A claim in both listings |
 | **S2** | Privacy policy URL · Play service account | Submission itself |
