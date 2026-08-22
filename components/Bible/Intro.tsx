@@ -5,9 +5,9 @@ import { IntroType } from "@/types";
 import SegmentTitle from "./SegmentTitle";
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
-import { useAppSettings } from '@/context/AppSettingsContext';
+import { useAppSettings } from '@/context/SyncAppSettingsContext';
 import Markdown from 'react-native-markdown-display';
-import { createStyles } from './Intro.styles';
+import { createStyles, getFontScale } from './Intro.styles';
 import BookChapterList from '@/assets/data/BookChapterList.json';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 import readingPlansData from '@/assets/data/ReadingPlansChallenges.json';
@@ -31,8 +31,8 @@ const IntroContentChildComponent: React.FC<any> = ({
   children,
   isTablet,
 }) => {
-  const { colors } = useAppSettings();
-  const styles = createStyles(colors, isTablet);
+  const { colors, sizes } = useAppSettings();
+  const styles = createStyles(colors, sizes, isTablet);
   
   // Handle rendering children properly - some blocks have multiple text segments
   const renderChildren = () => {
@@ -74,20 +74,22 @@ const IntroContentChildComponent: React.FC<any> = ({
   // For markdown content, use the markdown renderer
   const firstChildText = text || (children && children[0] && children[0].text) || '';
   if (type === 'markdown' || (firstChildText && typeof firstChildText === 'string' && (firstChildText.includes('**') || firstChildText.includes('#')))) {
+    const mdScale = getFontScale(sizes);
+    const mdSize = (base: number) => Math.round(base * mdScale);
     return (
       <View style={styles.childContainer}>
         <Markdown style={{
-          body: { color: colors.text, fontSize: 16, lineHeight: 24, fontStyle: 'italic' },
-          heading1: { color: colors.text, fontSize: 24, fontWeight: 'bold', marginVertical: 8 },
-          heading2: { color: colors.text, fontSize: 20, fontWeight: 'bold', marginVertical: 6 },
-          heading3: { color: colors.text, fontSize: 18, fontWeight: 'bold', marginVertical: 4 },
-          paragraph: { color: colors.text, fontSize: 16, lineHeight: 24, marginVertical: 4, fontStyle: 'italic' },
-          list_item: { color: colors.text, fontSize: 16, lineHeight: 24, fontStyle: 'italic' },
+          body: { color: colors.text, fontSize: mdSize(16), lineHeight: mdSize(24), fontStyle: 'italic' },
+          heading1: { color: colors.text, fontSize: mdSize(24), fontWeight: 'bold', marginVertical: 8 },
+          heading2: { color: colors.text, fontSize: mdSize(20), fontWeight: 'bold', marginVertical: 6 },
+          heading3: { color: colors.text, fontSize: mdSize(18), fontWeight: 'bold', marginVertical: 4 },
+          paragraph: { color: colors.text, fontSize: mdSize(16), lineHeight: mdSize(24), marginVertical: 4, fontStyle: 'italic' },
+          list_item: { color: colors.text, fontSize: mdSize(16), lineHeight: mdSize(24), fontStyle: 'italic' },
           bullet_list: { marginVertical: 4 },
           ordered_list: { marginVertical: 4 },
           table: { borderWidth: 0 },
           table_row: { borderBottomWidth: 0 },
-          table_cell: { padding: 8, color: colors.text, fontSize: 16, fontStyle: 'italic' },
+          table_cell: { padding: 8, color: colors.text, fontSize: mdSize(16), fontStyle: 'italic' },
           strong: { fontWeight: 'bold', color: colors.text },
           em: { fontStyle: 'italic', color: colors.text },
           link: { color: colors.primary, textDecorationLine: 'underline' },
@@ -130,8 +132,8 @@ const IntroContentChildComponent: React.FC<any> = ({
 };
 
 const IntroList: React.FC<{ items: any[]; ordered?: boolean; isTablet?: boolean }> = ({ items, ordered, isTablet }) => {
-  const { colors } = useAppSettings();
-  const styles = createStyles(colors, isTablet);
+  const { colors, sizes } = useAppSettings();
+  const styles = createStyles(colors, sizes, isTablet);
   
   return (
     <View style={styles.listContainer}>
@@ -148,8 +150,8 @@ const IntroList: React.FC<{ items: any[]; ordered?: boolean; isTablet?: boolean 
 };
 
 const IntroTable: React.FC<{ rows: any[]; bookCode?: string; isTablet?: boolean }> = ({ rows, bookCode, isTablet }) => {
-  const { colors } = useAppSettings();
-  const styles = createStyles(colors, isTablet);
+  const { colors, sizes } = useAppSettings();
+  const styles = createStyles(colors, sizes, isTablet);
   
   return (
     <View style={styles.tableWrapper}>
@@ -172,8 +174,8 @@ const IntroTable: React.FC<{ rows: any[]; bookCode?: string; isTablet?: boolean 
 };
 
 const SourceComparison: React.FC<{ sources: any; isTablet?: boolean }> = ({ sources, isTablet }) => {
-  const { colors } = useAppSettings();
-  const styles = createStyles(colors, isTablet);
+  const { colors, sizes } = useAppSettings();
+  const styles = createStyles(colors, sizes, isTablet);
   
   if (!sources || Object.keys(sources).length === 0) {
     return null;
@@ -239,8 +241,8 @@ const IntroComponent: React.FC<IntroProps> = ({ segmentData, context = 'main', p
   const isIPad = Platform.OS === 'ios' && Platform.isPad || screenWidth > 768;
   const { content, id, sources } = segmentData;
   const router = useRouter();
-  const { colors } = useAppSettings();
-  const styles = createStyles(colors, isIPad);
+  const { colors, sizes } = useAppSettings();
+  const styles = createStyles(colors, sizes, isIPad);
 
   // Get the book code from the introduction ID (e.g., "I001" -> "001" -> get corresponding book)
   const getBookFromIntroId = (introId: string): string | null => {

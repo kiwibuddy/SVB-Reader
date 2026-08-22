@@ -1,7 +1,6 @@
 import { Text, View, Pressable, StyleSheet, Animated, Platform, ActivityIndicator } from 'react-native'
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { MaterialIcons } from '@expo/vector-icons'
-import { useAppSettings } from '@/context/AppSettingsContext';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getQuestionsUnified, hasQuestionsData, type AudienceType } from '@/api/question-functions';
@@ -30,8 +29,7 @@ const AUDIENCE_CONFIG = {
 };
 
 const Questions: React.FC<QuestionsProps> = ({ segmentId }) => {
-  const { colors } = useAppSettings();
-  const { language } = useSyncAppSettings();
+  const { colors, language } = useSyncAppSettings();
   const { t } = useTranslation();
   const [selectedAudience, setSelectedAudience] = useState<AudienceType>('family');
   const [currentSet, setCurrentSet] = useState<1 | 2>(1);
