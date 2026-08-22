@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ThreadList from '@/components/thread/ThreadList';
@@ -15,7 +15,8 @@ import {
   getPlanProgress,
   getChallengeProgress,
 } from '@/api/sqlite';
-import { findCatalogItem, nextUnreadStory, getLocalizedPlanText } from '@/utils/planCatalog';
+import { nextUnreadStory, getLocalizedPlanText, type CatalogItem } from '@/utils/planCatalog';
+import { findPlanItem, deleteUserPlan } from '@/api/userPlans';
 import { openSegment } from '@/utils/openSegment';
 import { hapticImpactLight } from '@/utils/haptics';
 
@@ -26,11 +27,12 @@ const PlanDetail = () => {
   const { isDarkMode, language } = useSyncAppSettings();
   const { t } = useTranslation();
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
+  const [item, setItem] = useState<CatalogItem | null>(null);
+  const [loading, setLoading] = useState(true);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [isActive, setIsActive] = useState(false);
   const [planDone, setPlanDone] = useState(0);
 
-  const item = useMemo(() => findCatalogItem(id), [id]);
   const storyFilter = useMemo(() => item?.stories || [], [item]);
   const minutes = useMemo(
     () => storyFilter.reduce((sum, sid) => sum + getSegmentReadingTime(sid), 0),
@@ -42,25 +44,44 @@ const PlanDetail = () => {
     useCallback(() => {
       let alive = true;
       (async () => {
-        if (!item) return;
+        setLoading(true);
+        const resolved = await findPlanItem(id);
+        if (!alive) return;
+        setItem(resolved || null);
+        if (!resolved) {
+          setLoading(false);
+          return;
+        }
         const [activePlan, progress] = await Promise.all([
           getActivePlanFromDB(),
-          item.type === 'plan' ? getPlanProgress(item.id) : getChallengeProgress(item.id),
+          resolved.type === 'plan' ? getPlanProgress(resolved.id) : getChallengeProgress(resolved.id),
         ]);
         if (!alive) return;
         setIsActive(activePlan?.planId === id || activePlan?.itemID === id);
         const ids = new Set((progress?.completedSegmentIds || []).map(shortStoryId));
         setCompletedIds(ids);
         setPlanDone(progress?.completedSegments || 0);
+        setLoading(false);
       })();
-      return () => { alive = false; };
-    }, [id, item])
+      return () => {
+        alive = false;
+      };
+    }, [id])
   );
+
+  if (loading) {
+    return <View style={{ flex: 1, backgroundColor: palette.bg, paddingTop: insets.top }} />;
+  }
 
   if (!item) {
     return (
-      <View style={{ flex: 1, paddingTop: insets.top }}>
-        <Text>Not found</Text>
+      <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: palette.bg }}>
+        <Pressable onPress={() => router.back()} style={styles.back}>
+          <Text style={{ color: palette.mute, letterSpacing: 1.4, textTransform: 'uppercase', fontSize: 11 }}>
+            ‹ {t('UI.tabs.plan')}
+          </Text>
+        </Pressable>
+        <Text style={{ paddingHorizontal: 14, color: palette.ink }}>Not found</Text>
       </View>
     );
   }
@@ -79,6 +100,24 @@ const PlanDetail = () => {
     }
   };
 
+  const handleDelete = () => {
+    Alert.alert(
+      t('UI.customPlans.delete'),
+      t('UI.customPlans.deleteConfirm').replace('{title}', getLocalizedPlanText(item, 'title', language)),
+      [
+        { text: t('UI.alerts.cancel'), style: 'cancel' },
+        {
+          text: t('UI.customPlans.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            await deleteUserPlan(item.id);
+            router.replace('/plan');
+          },
+        },
+      ]
+    );
+  };
+
   const pct = item.stories.length > 0 ? Math.round((planDone / item.stories.length) * 100) : 0;
   const storyNav =
     item.type === 'plan'
@@ -87,11 +126,20 @@ const PlanDetail = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: palette.bg, paddingTop: insets.top }}>
-      <Pressable onPress={() => router.back()} style={styles.back}>
-        <Text style={{ color: palette.mute, letterSpacing: 1.4, textTransform: 'uppercase', fontSize: 11 }}>
-          ‹ {t('UI.tabs.plan')}
-        </Text>
-      </Pressable>
+      <View style={styles.topRow}>
+        <Pressable onPress={() => router.back()} style={styles.back}>
+          <Text style={{ color: palette.mute, letterSpacing: 1.4, textTransform: 'uppercase', fontSize: 11 }}>
+            ‹ {t('UI.tabs.plan')}
+          </Text>
+        </Pressable>
+        {item.isUserPlan && (
+          <Pressable onPress={handleDelete} hitSlop={10} style={styles.deleteBtn}>
+            <Text style={{ color: palette.mute, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase' }}>
+              {t('UI.customPlans.delete')}
+            </Text>
+          </Pressable>
+        )}
+      </View>
       <Text style={[styles.title, { color: palette.ink }]}>{getLocalizedPlanText(item, 'title', language)}</Text>
       <View style={styles.metaRow}>
         <Text style={[styles.meta, { color: palette.mute }]}>
@@ -131,7 +179,9 @@ const PlanDetail = () => {
 };
 
 const styles = StyleSheet.create({
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   back: { paddingHorizontal: 14, paddingTop: 4, paddingBottom: 6 },
+  deleteBtn: { paddingHorizontal: 14, paddingTop: 4, paddingBottom: 6 },
   title: { fontSize: 22, fontWeight: '600', paddingHorizontal: 14, paddingBottom: 2, letterSpacing: -0.4 },
   metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingBottom: 8 },
   meta: { fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', flex: 1 },

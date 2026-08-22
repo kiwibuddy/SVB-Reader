@@ -24,6 +24,7 @@ import {
 } from '@/api/sqlite';
 import { getVoicesMetCount } from '@/utils/voicesMet';
 import { findCatalogItem, getLocalizedPlanText } from '@/utils/planCatalog';
+import { findPlanItem } from '@/api/userPlans';
 import {
   getWeekStreak,
   getSourceWordMix,
@@ -123,7 +124,7 @@ const YouScreen = () => {
         const allStarted: StartedItem[] = [...startedPlans, ...startedChallenges];
         const summaries: ActivePlanSummary[] = [];
         for (const started of allStarted) {
-          const item = findCatalogItem(started.id);
+          const item = findCatalogItem(started.id) || (await findPlanItem(started.id));
           if (!item) continue;
           const progress =
             item.type === 'plan'

@@ -433,6 +433,15 @@ export class DatabaseManager {
         CREATE INDEX IF NOT EXISTS idx_group_sessions_id ON group_reading_sessions(sessionId);
         CREATE INDEX IF NOT EXISTS idx_group_sessions_expires ON group_reading_sessions(expiresAt);
 
+        -- User-created reading plans (playlist-style, device-local)
+        CREATE TABLE IF NOT EXISTS user_plans (
+          id TEXT PRIMARY KEY NOT NULL,
+          title TEXT NOT NULL,
+          story_ids TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        );
+
         -- Questions table for study questions
         CREATE TABLE IF NOT EXISTS questions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -521,6 +530,17 @@ export class DatabaseManager {
           ALTER TABLE plan_challenge_status ADD COLUMN lastUpdated TEXT
         `);
       }
+
+      // Custom reading plans (2.1) — ensure table exists on upgraded installs
+      await this.db.execAsync(`
+        CREATE TABLE IF NOT EXISTS user_plans (
+          id TEXT PRIMARY KEY NOT NULL,
+          title TEXT NOT NULL,
+          story_ids TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        )
+      `);
     } catch (error) {
       logger.error("Error during database migration:", error);
       // Don't throw error for migration issues, as they might be expected

@@ -47,6 +47,8 @@ import {
 } from '@/utils/planCatalog';
 import { getChronologicalPhases, type ChronologicalPhase } from '@/utils/chronologicalPlans';
 import { openSegment } from '@/utils/openSegment';
+import { findPlanItem, listUserPlanCatalogItems, deleteUserPlan } from '@/api/userPlans';
+import { isUserPlanId } from '@/utils/userPlans';
 
 const titles = SegmentTitles as Record<string, { title?: string; ref?: string; book?: string[] }>;
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -99,6 +101,7 @@ const PlanScreen = () => {
   const lang = language.startsWith('fr') ? 'fr' : 'en';
 
   const [activePlans, setActivePlans] = useState<ActivePlanData[]>([]);
+  const [createdPlans, setCreatedPlans] = useState<ActivePlanData[]>([]);
   const [openGroup, setOpenGroup] = useState<PlanGroupId | null>(null);
   const [openPlanId, setOpenPlanId] = useState<string | null>(null);
   const [progressById, setProgressById] = useState<Record<string, { done: number; ids: string[] }>>({});
@@ -110,13 +113,15 @@ const PlanScreen = () => {
     if (loading.current) return;
     loading.current = true;
     try {
-      const [startedPlans, startedChallenges] = await Promise.all([
+      const [startedPlans, startedChallenges, userCatalog] = await Promise.all([
         getStartedPlansFromDB(),
         getStartedChallengesFromDB(),
+        listUserPlanCatalogItems(),
       ]);
 
       const allStarted = [...startedPlans, ...startedChallenges];
-      const activeItems: ActivePlanData[] = [];
+      const catalogActive: ActivePlanData[] = [];
+      const createdActive: ActivePlanData[] = [];
       const prog: Record<string, { done: number; ids: string[] }> = {};
 
       for (const item of catalog) {
@@ -131,7 +136,7 @@ const PlanScreen = () => {
 
         const started = allStarted.find((s) => s.id === item.id);
         if (started) {
-          activeItems.push({
+          catalogActive.push({
             catalog: item,
             started,
             completed: progress?.completedSegments || 0,
@@ -140,8 +145,34 @@ const PlanScreen = () => {
         }
       }
 
+      for (const item of userCatalog) {
+        const progress = await getPlanProgress(item.id);
+        prog[item.id] = {
+          done: progress?.completedSegments || 0,
+          ids: (progress?.completedSegmentIds || []).map(shortStoryId),
+        };
+        const started = allStarted.find((s) => s.id === item.id) || {
+          id: item.id,
+          type: 'plan' as const,
+          isPaused: true,
+          isActive: false,
+          startDate: null,
+          progressPercentage: 0,
+        };
+        createdActive.push({
+          catalog: item,
+          started,
+          completed: progress?.completedSegments || 0,
+          completedIds: new Set((progress?.completedSegmentIds || []).map(shortStoryId)),
+        });
+      }
+
+      const sortActive = (list: ActivePlanData[]) =>
+        list.sort((a, b) => (a.started.isActive ? -1 : 1) - (b.started.isActive ? -1 : 1));
+
       setProgressById(prog);
-      setActivePlans(activeItems.sort((a, b) => (a.started.isActive ? -1 : 1) - (b.started.isActive ? -1 : 1)));
+      setActivePlans(sortActive(catalogActive));
+      setCreatedPlans(sortActive(createdActive));
     } finally {
       loading.current = false;
     }
@@ -152,10 +183,12 @@ const PlanScreen = () => {
   useEffect(() => {
     const expandId = params.expandedPlan ? String(params.expandedPlan) : null;
     if (!expandId) return;
-    const item = findCatalogItem(expandId);
-    if (!item) return;
-    setOpenGroup(item.group);
-    setOpenPlanId(item.id);
+    (async () => {
+      const item = findCatalogItem(expandId) || (await findPlanItem(expandId));
+      if (!item || item.isUserPlan) return;
+      setOpenGroup(item.group);
+      setOpenPlanId(item.id);
+    })();
   }, [params.expandedPlan]);
 
   const activeIds = useMemo(() => new Set(activePlans.map((a) => a.catalog.id)), [activePlans]);
@@ -286,14 +319,23 @@ const PlanScreen = () => {
   };
 
   const handleEndPlan = (data: ActivePlanData) => {
-    const label = data.catalog.type === 'plan' ? t('UI.alerts.endReadingPlan') : t('UI.alerts.endReadingChallenge');
-    Alert.alert(label, t('UI.alerts.endConfirmation').replace('{title}', getLocalizedPlanText(data.catalog, 'title', language)), [
+    const isUser = !!data.catalog.isUserPlan || isUserPlanId(data.catalog.id);
+    const label = isUser
+      ? t('UI.customPlans.delete')
+      : data.catalog.type === 'plan'
+        ? t('UI.alerts.endReadingPlan')
+        : t('UI.alerts.endReadingChallenge');
+    const message = isUser
+      ? t('UI.customPlans.deleteConfirm').replace('{title}', getLocalizedPlanText(data.catalog, 'title', language))
+      : t('UI.alerts.endConfirmation').replace('{title}', getLocalizedPlanText(data.catalog, 'title', language));
+    Alert.alert(label, message, [
       { text: t('UI.alerts.cancel'), style: 'cancel' },
       {
-        text: t('UI.alerts.end'),
+        text: isUser ? t('UI.customPlans.delete') : t('UI.alerts.end'),
         style: 'destructive',
         onPress: async () => {
-          if (data.catalog.type === 'plan') await endPlan(data.catalog.id);
+          if (isUser) await deleteUserPlan(data.catalog.id);
+          else if (data.catalog.type === 'plan') await endPlan(data.catalog.id);
           else await endChallenge(data.catalog.id);
           await loadData();
         },
@@ -388,18 +430,8 @@ const PlanScreen = () => {
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
-        {/* Active plans as standalone cards */}
-        {activePlans.length > 0 && (
-          <View style={styles.activeSection}>
-            <Text style={[styles.lab, { color: palette.mute }]}>
-              {lang === 'fr' ? 'Vos plans' : 'Your plans'}
-            </Text>
-            {activePlans.map(renderActivePlan)}
-          </View>
-        )}
-
-        {/* Plan categories — plain list like Cast voices */}
-        <Text style={[styles.lab, { color: palette.mute, marginTop: activePlans.length > 0 ? 6 : 0 }]}>
+        {/* Curated catalog */}
+        <Text style={[styles.lab, { color: palette.mute }]}>
           {t('UI.thread.plans')}
         </Text>
 
@@ -566,6 +598,44 @@ const PlanScreen = () => {
             </View>
           );
         })}
+
+        {/* Your Plans — created + started catalog */}
+        <View style={styles.yourPlansSection}>
+          <View style={styles.yourPlansHeader}>
+            <Text style={[styles.lab, { color: palette.mute, flex: 1, paddingTop: 18 }]}>
+              {t('UI.customPlans.section')}
+            </Text>
+            <Pressable
+              onPress={() => {
+                void hapticImpactLight();
+                router.push('/plan/create');
+              }}
+              hitSlop={12}
+              accessibilityLabel={t('UI.customPlans.add')}
+              style={[styles.plusBtn, { borderColor: palette.acc }]}
+            >
+              <Text style={{ color: palette.acc, fontSize: 22, fontWeight: '400', lineHeight: 24 }}>＋</Text>
+            </Pressable>
+          </View>
+
+          {createdPlans.length === 0 && activePlans.length === 0 && (
+            <Text style={[styles.emptyHint, { color: palette.mute }]}>{t('UI.customPlans.empty')}</Text>
+          )}
+
+          {createdPlans.length > 0 && (
+            <View>
+              <Text style={[styles.subLab, { color: palette.mute }]}>{t('UI.customPlans.created')}</Text>
+              {createdPlans.map(renderActivePlan)}
+            </View>
+          )}
+
+          {activePlans.length > 0 && (
+            <View>
+              <Text style={[styles.subLab, { color: palette.mute }]}>{t('UI.customPlans.inProgress')}</Text>
+              {activePlans.map(renderActivePlan)}
+            </View>
+          )}
+        </View>
       </Animated.ScrollView>
     </View>
   );
@@ -578,6 +648,26 @@ const styles = StyleSheet.create({
 
   // Active plan cards
   activeSection: { marginBottom: 4 },
+  yourPlansSection: { marginTop: 10, paddingBottom: 8 },
+  yourPlansHeader: { flexDirection: 'row', alignItems: 'center', paddingRight: 14 },
+  plusBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  emptyHint: { paddingHorizontal: 14, paddingTop: 8, paddingBottom: 4, fontSize: 13, lineHeight: 18 },
+  subLab: {
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 2,
+    fontSize: 9,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+  },
   activeCard: {
     marginHorizontal: 14,
     marginTop: 8,

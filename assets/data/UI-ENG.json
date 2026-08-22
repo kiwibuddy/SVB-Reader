@@ -927,6 +927,27 @@
       "plan": "plan",
       "plans": "plans"
     },
+    "customPlans": {
+      "section": "Your Plans",
+      "created": "Created by you",
+      "inProgress": "In progress",
+      "empty": "Build a playlist of stories — tap + to start.",
+      "add": "Create plan",
+      "pickerTitle": "Add stories",
+      "pickerNudge": "Open a section, or search a voice like Simon Peter",
+      "selectHint": "Select stories to include",
+      "createCta": "Create reading plan",
+      "nameTitle": "Name your plan",
+      "namePlaceholder": "e.g. Simon Peter",
+      "titleRequired": "Please give your plan a title.",
+      "create": "Create",
+      "createFailed": "Could not create this plan. Try again.",
+      "storyCount": "{{n}} stories",
+      "storyCountOne": "1 story",
+      "delete": "Delete plan",
+      "deleteConfirm": "Delete \"{title}\"? This removes the plan and its progress.",
+      "deleted": "Plan deleted"
+    },
     "alerts": {
       "cancel": "Cancel",
       "ok": "OK",

@@ -47,6 +47,7 @@ import { getPlanProgress, getStartedPlansFromDB, getStartedChallengesFromDB, get
 import { lookupReference, type ReferenceLookup } from '@/utils/reference';
 import { openSegment } from '@/utils/openSegment';
 import { findCatalogItem, getLocalizedPlanText, nextUnreadStory } from '@/utils/planCatalog';
+import { findPlanItem } from '@/api/userPlans';
 import { shortStoryId } from '@/utils/threadProgress';
 import { BookBead, StoryBead, ThreadKnot } from '@/components/thread/ThreadBead';
 
@@ -189,7 +190,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
         if (!alive) return;
         const cards = [];
         for (const started of [...startedP, ...startedC]) {
-          const item = findCatalogItem(started.id);
+          const item = findCatalogItem(started.id) || (await findPlanItem(started.id));
           if (!item) continue;
           const progress =
             item.type === 'plan'

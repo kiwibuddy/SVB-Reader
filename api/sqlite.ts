@@ -334,42 +334,56 @@ export const hasDailyCompletionToday = async (
 export async function getPlanProgress(planID: string): Promise<PlanProgress> {
   try {
     const db = databaseManager.getDatabase();
-    
-    // Get plan data from JSON to determine total segments
+
+    const empty: PlanProgress = {
+      totalSegments: 0,
+      completedSegments: 0,
+      progressPercentage: 0,
+      isCompleted: false,
+      completedSegmentIds: [],
+    };
+
+    let totalSegments = 0;
+
     const readingPlansData = require('../assets/data/ReadingPlansChallenges.json');
     const plan = readingPlansData.plans.find((p: any) => p.id === planID);
-    
-    if (!plan) {
-      return {
-        totalSegments: 0,
-        completedSegments: 0,
-        progressPercentage: 0,
-        isCompleted: false,
-        completedSegmentIds: []
-      };
+
+    if (plan) {
+      totalSegments = Object.values(plan.segments).reduce((total: number, book: any) => {
+        return total + (book?.segments?.filter((s: string) => !s.startsWith('I')).length || 0);
+      }, 0);
+    } else {
+      // User-created plan (device-local playlist)
+      const row = await db.getFirstAsync<{ story_ids: string }>(
+        'SELECT story_ids FROM user_plans WHERE id = ?',
+        [planID]
+      );
+      if (!row?.story_ids) return empty;
+      try {
+        const ids = JSON.parse(row.story_ids);
+        totalSegments = Array.isArray(ids)
+          ? ids.filter((s: string) => typeof s === 'string' && s.startsWith('S')).length
+          : 0;
+      } catch {
+        return empty;
+      }
     }
 
-    // Calculate total story segments in plan from the JSON structure (excluding intro segments)
-    const totalSegments = Object.values(plan.segments).reduce((total: number, book: any) => {
-      return total + (book?.segments?.filter((s: string) => !s.startsWith('I')).length || 0);
-    }, 0);
-    
-    // Get completed segments for this plan (excluding introduction segments)
     const completedResult = await db.getAllAsync<{ segmentID: string }>(
       'SELECT segmentID FROM reading_plan_progress WHERE planID = ? AND isCompleted = 1 AND segmentID NOT LIKE "I%"',
       [planID]
     );
-    
+
     const completedSegments = completedResult?.length || 0;
     const progressPercentage = totalSegments > 0 ? (completedSegments / totalSegments) * 100 : 0;
     const isCompleted = completedSegments >= totalSegments && totalSegments > 0;
-    
+
     return {
       totalSegments,
       completedSegments,
       progressPercentage,
       isCompleted,
-      completedSegmentIds: completedResult?.map(r => r.segmentID) || []
+      completedSegmentIds: completedResult?.map((r) => r.segmentID) || [],
     };
   } catch (error) {
     logger.error("Error getting plan progress:", error);
@@ -1636,31 +1650,48 @@ export const getTodaysSegmentForPlan = async (planId: string): Promise<{ segment
   try {
     const ReadingPlansChallenges = require('../assets/data/ReadingPlansChallenges.json');
     const SegmentTitles = require('../assets/data/SegmentTitles.json');
-    
+
+    let allSegments: string[] = [];
+
     const plan = ReadingPlansChallenges.plans.find((p: any) => p.id === planId);
-    if (!plan?.segments) return null;
-    
+    if (plan?.segments) {
+      allSegments = Object.values(plan.segments)
+        .flatMap((book: any) => book?.segments || [])
+        .filter((seg: string) => !seg.startsWith('I'));
+    } else {
+      const db = await databaseManager.ensureDatabase();
+      const row = await db.getFirstAsync<{ story_ids: string }>(
+        'SELECT story_ids FROM user_plans WHERE id = ?',
+        [planId]
+      );
+      if (!row?.story_ids) return null;
+      try {
+        const ids = JSON.parse(row.story_ids);
+        allSegments = Array.isArray(ids)
+          ? ids.filter((s: string) => typeof s === 'string' && s.startsWith('S'))
+          : [];
+      } catch {
+        return null;
+      }
+    }
+
+    if (!allSegments.length) return null;
+
     // Get plan start date from database
     const activePlan = await getActivePlanFromDB();
     if (!activePlan || activePlan.planId !== planId) return null;
-    
+
     const startDate = localCalendarDateFromISO(activePlan.dateStarted);
     if (!startDate) return null;
 
-    // Days since plan started, counted by local calendar day (0-based)
+    // Days since plan started, counted by local calendar day (0-based) — creation day is day 1
     const daysSinceStart = daysBetweenLocalDates(startDate, localCalendarDate());
 
     if (daysSinceStart < 0) return null; // Plan hasn't started yet
-    
-    // Get all segments from the plan
-    const allSegments = Object.values(plan.segments)
-      .flatMap((book: any) => book?.segments || [])
-      .filter((seg: string) => !seg.startsWith('I')); // Filter out introductions
-    
-    // Get today's segment based on daily progression
+
     const todaysSegmentIndex = daysSinceStart % allSegments.length;
     const todaysSegmentId = allSegments[todaysSegmentIndex];
-    
+
     if (todaysSegmentId) {
       const segmentData = SegmentTitles[todaysSegmentId as keyof typeof SegmentTitles];
       return {
@@ -1668,7 +1699,7 @@ export const getTodaysSegmentForPlan = async (planId: string): Promise<{ segment
         title: segmentData?.title || 'Unknown Story'
       };
     }
-    
+
     return null;
   } catch (error) {
     logger.error('Error getting today\'s segment for plan:', error);
