@@ -1,6 +1,13 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { View, Text, StyleSheet, Platform, type ViewProps } from 'react-native';
+import Animated, {
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { getColors, getBubbleTextColorSafe } from '@/scripts/getColors';
 import { BibleBlock } from '@/types';
 import BibleInlineComponent from './Inline';
@@ -19,10 +26,11 @@ interface BibleBlockProps {
   hasTail: boolean;
   isGlowing: boolean;
   onLongPress?: (block: BibleBlock, index: number) => void;
-  targetVerse?: number;
-  targetChapter?: number;
+  /** True for the turn a verse reference resolved to. Drives the arrival pulse. */
+  isTarget?: boolean;
   dimmed?: boolean;
   showMeta?: boolean;
+  onLayout?: ViewProps['onLayout'];
 }
 
 const GlowingBubble = ({
@@ -31,10 +39,10 @@ const GlowingBubble = ({
   hasTail,
   isGlowing,
   onLongPress,
-  targetVerse,
-  targetChapter,
+  isTarget = false,
   dimmed,
   showMeta = false,
+  onLayout,
 }: BibleBlockProps) => {
   const { source, children } = block;
   const { color = 'black', sourceName = 'Unknown' } = source || {};
@@ -59,28 +67,27 @@ const GlowingBubble = ({
   const bodySize = sizes.body;
   const lineHeight = Math.round(bodySize * 1.45);
   const opacity = useSharedValue(1);
-
-  const isTargetVerse = React.useMemo(() => {
-    if (!targetVerse || !targetChapter) return false;
-    for (const child of children) {
-      if (child.children && Array.isArray(child.children)) {
-        for (const leaf of child.children) {
-          if (leaf.link && leaf.link.chapter && leaf.link.verse) {
-            if (parseInt(leaf.link.chapter, 10) === targetChapter && parseInt(leaf.link.verse, 10) === targetVerse) {
-              return true;
-            }
-          }
-        }
-      }
-    }
-    return false;
-  }, [children, targetVerse, targetChapter]);
+  const baseFill = isDarkMode ? fills.dark : fills.light;
+  const baseBorder = color === 'black' ? palette.hair : ink;
+  const pulse = useSharedValue(0);
 
   useEffect(() => {
     opacity.value = withTiming(dimmed ? 0.55 : 1, timing(DUR.quick));
   }, [dimmed, opacity]);
 
-  const bubbleStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  useEffect(() => {
+    if (!isTarget) return;
+    pulse.value = withDelay(
+      300,
+      withSequence(withTiming(1, timing(DUR.base)), withTiming(0, timing(900)))
+    );
+  }, [isTarget, pulse]);
+
+  const bubbleStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    backgroundColor: interpolateColor(pulse.value, [0, 1], [baseFill, palette.find]),
+    borderColor: interpolateColor(pulse.value, [0, 1], [baseBorder, palette.acc]),
+  }));
   const radius = {
     borderRadius: 16,
     borderTopLeftRadius: left ? 5 : 16,
@@ -88,7 +95,7 @@ const GlowingBubble = ({
   };
 
   return (
-    <View style={styles.row}>
+    <View style={styles.row} onLayout={onLayout}>
       <View style={[styles.stack, { alignSelf: left ? 'flex-start' : 'flex-end' }]}>
         <View style={{ alignSelf: left ? 'flex-start' : 'flex-end', maxWidth: '100%' }}>
           <EmojiHandler block={block} blockIndex={bIndex} hasTail={hasTail} onLongPress={onLongPress}>
@@ -97,11 +104,7 @@ const GlowingBubble = ({
                 styles.bubble,
                 radius,
                 bubbleStyle,
-                {
-                  backgroundColor: isDarkMode ? fills.dark : fills.light,
-                  borderColor: color === 'black' ? palette.hair : ink,
-                  borderWidth: isTargetVerse || isGlowing ? 2 : StyleSheet.hairlineWidth,
-                },
+                { borderWidth: isGlowing ? 2 : StyleSheet.hairlineWidth },
               ]}
             >
             <View>

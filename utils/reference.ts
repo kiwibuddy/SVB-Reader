@@ -1,11 +1,23 @@
 /**
- * Verse reference search — D0 lazy index loader + D1 parser + D2 alias resolution.
+ * Verse reference search — parsing "gen 4:3" into a place in the Bible.
+ *
+ * The index covers all 66 books. Book names come from BookChapterList.json, so
+ * what the parser resolves and what the result row displays are the same strings.
  */
 
 type VerseSearchIndex = {
   books: string[];
   segs: string[];
-  v: Record<string, [number, number, number]>;
+  /** "bookIdx-chapter-verse" → [segIdx, blockIdx] */
+  v: Record<string, [number, number]>;
+};
+
+type AliasEntry = {
+  canonical: string;
+  code: string;
+  aliases: string[];
+  fr: string;
+  frAliases: string[];
 };
 
 let _index: VerseSearchIndex | null = null;
@@ -20,7 +32,6 @@ function getVerseIndex(): VerseSearchIndex {
 export type ReferenceResult = {
   segmentId: string;
   blockIndex: number;
-  position: number;
   book: string;
   chapter: number;
   verse: number;
@@ -31,121 +42,125 @@ export type ReferenceLookup =
   | { kind: 'disambiguate'; options: { book: string; bookIndex: number }[] }
   | { kind: 'notFound' };
 
-// ---- D2: Book alias table (loaded lazily alongside the index) ----
+type BookTables = {
+  canonical: Map<string, number>;
+  alias: Map<string, number[]>;
+};
 
-let _aliases: Record<string, number> | null = null;
-let _bookNames: { canonical: string; index: number }[] | null = null;
+let _tables: BookTables | null = null;
 
-function getAliasMap(): { aliases: Record<string, number>; bookNames: { canonical: string; index: number }[] } {
-  if (_aliases && _bookNames) return { aliases: _aliases, bookNames: _bookNames };
+function getBookTables(): BookTables {
+  if (_tables) return _tables;
 
-  const data = require('@/assets/data/bookAliases.json') as {
-    canonical: string;
-    aliases: string[];
-    fr: string;
-    frAliases: string[];
-  }[];
-
+  const entries = require('@/assets/data/bookAliases.json') as AliasEntry[];
   const idx = getVerseIndex();
-  const map: Record<string, number> = {};
-  const names: { canonical: string; index: number }[] = [];
 
-  data.forEach((entry) => {
-    const bIdx = idx.books.indexOf(entry.canonical);
-    if (bIdx === -1) return;
-    names.push({ canonical: entry.canonical, index: bIdx });
+  const canonical = new Map<string, number>();
+  const alias = new Map<string, number[]>();
 
-    const allNames = [
-      entry.canonical,
-      ...entry.aliases,
-      entry.fr,
-      ...entry.frAliases,
-    ];
-    for (const name of allNames) {
-      const norm = normalize(name);
-      if (norm && !(norm in map)) {
-        map[norm] = bIdx;
-      }
+  const claim = (name: string, bookIndex: number) => {
+    const key = normalize(name);
+    if (!key) return;
+    const existing = alias.get(key);
+    if (existing) {
+      if (!existing.includes(bookIndex)) existing.push(bookIndex);
+    } else {
+      alias.set(key, [bookIndex]);
     }
-  });
+  };
 
-  _aliases = map;
-  _bookNames = names;
-  return { aliases: map, bookNames: names };
+  for (const entry of entries) {
+    const bookIndex = idx.books.indexOf(entry.canonical);
+    if (bookIndex === -1) continue;
+
+    canonical.set(normalize(entry.canonical), bookIndex);
+    canonical.set(normalize(entry.fr), bookIndex);
+
+    claim(entry.canonical, bookIndex);
+    claim(entry.fr, bookIndex);
+    for (const name of entry.aliases) claim(name, bookIndex);
+    for (const name of entry.frAliases) claim(name, bookIndex);
+  }
+
+  _tables = { canonical, alias };
+  return _tables;
 }
-
-// ---- Normalization ----
 
 function normalize(s: string): string {
-  return s
+  return (s || '')
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // strip accents
-    .replace(/[^a-z0-9]/g, '');      // strip punctuation/spaces
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
 }
 
-// ---- D1: Reference parsing ----
-
-const ORDINAL_MAP: Record<string, string> = {
+const ORDINALS: Record<string, string> = {
   i: '1', ii: '2', iii: '3',
-  premier: '1', deuxieme: '2', troisieme: '3',
+  premier: '1', premiere: '1', deuxieme: '2', troisieme: '3',
   first: '1', second: '2', third: '3',
 };
 
-function parseReference(input: string): { bookQuery: string; chapter?: number; verse?: number } | null {
-  const trimmed = input.trim();
+type ParsedReference = { bookQuery: string; chapter?: number; verse?: number };
+
+function parseReference(input: string): ParsedReference | null {
+  const trimmed = (input || '').trim();
   if (!trimmed) return null;
 
-  // Separate the leading book name from trailing numbers
-  // e.g. "1 co 13:4" → ordinal "1", book part "co", numbers "13:4"
-  // e.g. "genesis 4:3" → book "genesis", numbers "4:3"
-  const match = trimmed.match(
-    /^([iI]{1,3}|[123]|premier|deuxi[eè]me|troisi[eè]me|first|second|third)?\s*([a-zA-ZÀ-ÿ]+)\s*[.:\s,]*(\d+)?\s*[.:\s,]*(\d+)?$/
-  );
-  if (!match) return null;
+  const tokens = trimmed
+    .replace(/[.:,]/g, ' ')
+    .replace(/([a-zA-ZÀ-ſ])(\d)/g, '$1 $2')
+    .split(/\s+/)
+    .filter(Boolean);
 
-  const [, ordRaw, bookRaw, chRaw, vsRaw] = match;
-  let bookQuery = normalize(bookRaw);
+  if (tokens.length === 0) return null;
 
-  if (ordRaw) {
-    const ordNorm = normalize(ordRaw);
-    const digit = ORDINAL_MAP[ordNorm] || ordNorm;
-    bookQuery = digit + bookQuery;
+  const numbers: number[] = [];
+  let end = tokens.length;
+  while (end > 1 && numbers.length < 2 && /^\d+$/.test(tokens[end - 1])) {
+    numbers.unshift(parseInt(tokens[end - 1], 10));
+    end -= 1;
   }
 
-  return {
-    bookQuery,
-    chapter: chRaw ? parseInt(chRaw, 10) : undefined,
-    verse: vsRaw ? parseInt(vsRaw, 10) : undefined,
-  };
+  const bookTokens = tokens.slice(0, end);
+  if (bookTokens.length === 0) return null;
+
+  if (bookTokens.length > 1) {
+    const ordinal = ORDINALS[normalize(bookTokens[0])];
+    if (ordinal) bookTokens[0] = ordinal;
+  }
+
+  const bookQuery = normalize(bookTokens.join(''));
+  if (!bookQuery) return null;
+
+  return { bookQuery, chapter: numbers[0], verse: numbers[1] };
 }
 
 function resolveBook(bookQuery: string): number[] {
-  const { aliases, bookNames } = getAliasMap();
+  const { canonical, alias } = getBookTables();
 
-  // Exact alias match
-  if (bookQuery in aliases) return [aliases[bookQuery]];
+  const exact = canonical.get(bookQuery);
+  if (exact !== undefined) return [exact];
 
-  // Prefix match
-  const matches: number[] = [];
-  const seen = new Set<number>();
-  for (const name of bookNames) {
-    const norm = normalize(name.canonical);
-    if (norm.startsWith(bookQuery) && !seen.has(name.index)) {
-      seen.add(name.index);
-      matches.push(name.index);
+  const claimed = alias.get(bookQuery);
+  if (claimed && claimed.length > 0) return [...claimed].sort((a, b) => a - b);
+
+  const matches = new Set<number>();
+  for (const [key, indices] of alias) {
+    if (key.startsWith(bookQuery)) {
+      for (const index of indices) matches.add(index);
     }
   }
-  if (matches.length > 0) return matches;
+  return [...matches].sort((a, b) => a - b);
+}
 
-  // Also check all alias keys for prefix
-  for (const [key, idx] of Object.entries(aliases)) {
-    if (key.startsWith(bookQuery) && !seen.has(idx)) {
-      seen.add(idx);
-      matches.push(idx);
-    }
-  }
-  return matches;
+const _singleChapter = new Map<number, boolean>();
+
+function isSingleChapter(bookIndex: number): boolean {
+  const cached = _singleChapter.get(bookIndex);
+  if (cached !== undefined) return cached;
+  const single = !(`${bookIndex}-2-1` in getVerseIndex().v);
+  _singleChapter.set(bookIndex, single);
+  return single;
 }
 
 export function lookupReference(input: string): ReferenceLookup {
@@ -160,15 +175,20 @@ export function lookupReference(input: string): ReferenceLookup {
   if (bookIndices.length > 1) {
     return {
       kind: 'disambiguate',
-      options: bookIndices.map((bi) => ({ book: idx.books[bi], bookIndex: bi })),
+      options: bookIndices.map((bookIndex) => ({ book: idx.books[bookIndex], bookIndex })),
     };
   }
 
-  const bIdx = bookIndices[0];
-  const chapter = parsed.chapter ?? 1;
-  const verse = parsed.verse ?? 1;
-  const key = `${bIdx}-${chapter}-${verse}`;
-  const entry = idx.v[key];
+  const bookIndex = bookIndices[0];
+  let chapter = parsed.chapter ?? 1;
+  let verse = parsed.verse ?? 1;
+
+  if (parsed.chapter !== undefined && parsed.verse === undefined && isSingleChapter(bookIndex)) {
+    chapter = 1;
+    verse = parsed.chapter;
+  }
+
+  const entry = idx.v[`${bookIndex}-${chapter}-${verse}`];
 
   if (!entry) return { kind: 'notFound' };
 
@@ -177,25 +197,20 @@ export function lookupReference(input: string): ReferenceLookup {
     result: {
       segmentId: idx.segs[entry[0]],
       blockIndex: entry[1],
-      position: entry[2],
-      book: idx.books[bIdx],
+      book: idx.books[bookIndex],
       chapter,
       verse,
     },
   };
 }
 
-/**
- * For a given book index, find all chapters available.
- */
 export function getBookChapters(bookIndex: number): number[] {
   const idx = getVerseIndex();
   const chapters = new Set<number>();
   const prefix = `${bookIndex}-`;
   for (const key of Object.keys(idx.v)) {
     if (key.startsWith(prefix)) {
-      const ch = parseInt(key.split('-')[1], 10);
-      chapters.add(ch);
+      chapters.add(parseInt(key.split('-')[1], 10));
     }
   }
   return Array.from(chapters).sort((a, b) => a - b);

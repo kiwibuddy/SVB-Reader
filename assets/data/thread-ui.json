@@ -69,7 +69,7 @@
       "onboardingVoicesTitle": "774 voices",
       "onboardingVoicesBody": "Look up anyone who speaks in Scripture. See who they spoke with, and their longest exchange.",
       "onboardingThreadTitle": "One thread through the Bible",
-      "onboardingThreadBody": "Ten divisions hold 365 stories. Open a knot, follow the line, and keep reading together without a host or a QR code.",
+      "onboardingThreadBody": "Ten divisions hold 365 stories. Open a knot, follow the line, and keep reading together.",
       "onboardingSavedTitle": "React and remember",
       "onboardingSavedBody": "Long-press a turn to react or note. Saved verses keep their voice, colour, and place in the story."
     }
@@ -146,7 +146,7 @@
       "onboardingSavedTitle": "Réagir et se souvenir",
       "onboardingSavedBody": "Appui long sur une réplique pour réagir ou noter. Les versets gardés conservent leur voix, leur couleur et leur place.",
       "onboardingThreadTitle": "Un fil à travers la Bible",
-      "onboardingThreadBody": "Dix divisions portent 365 récits. Ouvrez un nœud, suivez la ligne, et lisez ensemble sans hôte ni QR code."
+      "onboardingThreadBody": "Dix divisions portent 365 récits. Ouvrez un nœud, suivez la ligne, et lisez ensemble."
     }
   }
 }

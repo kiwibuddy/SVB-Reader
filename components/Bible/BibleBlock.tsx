@@ -1,4 +1,5 @@
 import React from 'react';
+import type { ViewProps } from 'react-native';
 import { BibleBlock } from '@/types';
 import GlowBubble from './GlowBubble';
 
@@ -8,9 +9,9 @@ interface BibleBlockProps {
   hasTail: boolean;
   isGlowing: boolean;
   onLongPress: (block: BibleBlock, index: number) => void;
-  targetVerse?: number;
-  targetChapter?: number;
+  isTarget?: boolean;
   dimmed?: boolean;
+  onLayout?: ViewProps['onLayout'];
 }
 
 const BibleBlockComponent: React.FC<BibleBlockProps> = ({
@@ -19,9 +20,9 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({
   hasTail,
   isGlowing,
   onLongPress,
-  targetVerse,
-  targetChapter,
+  isTarget,
   dimmed,
+  onLayout,
 }) => {
   return (
     <GlowBubble
@@ -30,9 +31,9 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({
       hasTail={hasTail}
       isGlowing={isGlowing}
       onLongPress={onLongPress}
-      targetVerse={targetVerse}
-      targetChapter={targetChapter}
+      isTarget={isTarget}
       dimmed={dimmed}
+      onLayout={onLayout}
     />
   );
 };

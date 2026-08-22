@@ -17,6 +17,7 @@ import { getSegmentCompletionStatus } from "@/api/sqlite";
 import { ANIMATION } from '@/services/animation';
 import * as Haptics from 'expo-haptics';
 import type { Ink } from '@/utils/ink';
+import { bookCodesForSegment, findVerseBlockIndex } from '@/utils/verseLocator';
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -25,6 +26,7 @@ interface SegmentProps {
   challengeId?: string;
   targetVerse?: number;
   targetChapter?: number;
+  onVerseLocated?: (y: number) => void;
 }
 
 const icons = [
@@ -49,7 +51,8 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   planId,
   challengeId,
   targetVerse,
-  targetChapter
+  targetChapter,
+  onVerseLocated
 }) => {
   const { width: screenWidth } = useWindowDimensions();
   const isIPad = Platform.OS === 'ios' && Platform.isPad || (Platform.OS === 'ios' && screenWidth > 768);
@@ -163,6 +166,34 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       return splitContent;
     }
   }, [segmentData?.content, segmentData?.readers]);
+
+  const targetIndex = useMemo(() => {
+    if (targetChapter == null || targetVerse == null) return -1;
+    return findVerseBlockIndex(
+      memoizedContent,
+      bookCodesForSegment(segID),
+      targetChapter,
+      targetVerse
+    );
+  }, [memoizedContent, segID, targetChapter, targetVerse]);
+
+  const segmentTopRef = useRef<number | null>(null);
+  const targetTopRef = useRef<number | null>(null);
+  const reportedRef = useRef(false);
+
+  useEffect(() => {
+    reportedRef.current = false;
+    targetTopRef.current = null;
+  }, [targetIndex, segID]);
+
+  const reportIfLocated = useCallback(() => {
+    if (reportedRef.current || targetIndex < 0) return;
+    const segmentTop = segmentTopRef.current;
+    const targetTop = targetTopRef.current;
+    if (segmentTop == null || targetTop == null) return;
+    reportedRef.current = true;
+    onVerseLocated?.(segmentTop + targetTop);
+  }, [onVerseLocated, targetIndex]);
 
   const computedSources = useMemo(() => {
     const explicit = segmentData?.sources;
@@ -521,7 +552,13 @@ const styles = StyleSheet.create({
 
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      onLayout={(event) => {
+        segmentTopRef.current = event.nativeEvent.layout.y;
+        reportIfLocated();
+      }}
+    >
       <SegmentTitle segmentId={segID} />
       <CallSheet
         sources={computedSources}
@@ -544,9 +581,16 @@ const styles = StyleSheet.create({
             hasTail={showSourceName}
             isGlowing={false}
             onLongPress={handleLongPress}
-            targetVerse={targetVerse}
-            targetChapter={targetChapter}
+            isTarget={index === targetIndex}
             dimmed={!!selectedInk && selectedInk !== ink}
+            onLayout={
+              index === targetIndex
+                ? (event) => {
+                    targetTopRef.current = event.nativeEvent.layout.y;
+                    reportIfLocated();
+                  }
+                : undefined
+            }
           />
         );
       })}
