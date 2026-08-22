@@ -214,10 +214,8 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   }, [onVerseLocated, targetIndex]);
 
   const computedSources = useMemo(() => {
-    const explicit = segmentData?.sources;
-    if (explicit && Object.keys(explicit).length > 0) return explicit;
     const inkLabels: Record<string, string> = {
-      black: 'Narrator',
+      black: 'The Narrator',
       red: 'God',
       green: 'Main Character',
       blue: 'Other Voices',
@@ -230,6 +228,16 @@ const SegmentComponent: React.FC<SegmentProps> = ({
       const text = (block.children || [])
         .map((c: any) => (typeof c === 'string' ? c : c.text || '')).join(' ');
       acc[name].words += text.split(/\s+/).filter(Boolean).length;
+    }
+    const explicit = segmentData?.sources;
+    if (explicit && typeof explicit === 'object') {
+      for (const [name, info] of Object.entries(explicit)) {
+        if (!name || name === 'undefined') continue;
+        const words = typeof info === 'number' ? info : Number((info as { words?: number })?.words) || 0;
+        const color = typeof info === 'object' ? (info as { color?: string })?.color || acc[name]?.color || 'black' : acc[name]?.color || 'black';
+        if (!acc[name]) acc[name] = { words, color };
+        else if (words > acc[name].words) acc[name].words = words;
+      }
     }
     return acc;
   }, [segmentData?.sources, memoizedContent]);
