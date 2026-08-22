@@ -41,6 +41,113 @@ What no script can prove — rendered layout, scroll behaviour, gestures, the
 share sheet, migration from a real 1.2.1 database — is collected in the **Device
 test checklist** near the end of this document. Work it before you submit.
 
+**Only after a TestFlight build?** Most of this document does not block one —
+see [Road to TestFlight](#road-to-testflight--a-much-lower-bar-than-submission)
+immediately below.
+
+---
+
+# Road to TestFlight — a much lower bar than submission
+
+**Most of this document does not block a TestFlight build.** Internal TestFlight
+(your own team, up to 100 testers) needs no App Review, no screenshots, no store
+copy, no privacy policy URL, no Play account. Those gate *submission*. Getting a
+2.0.0 build onto your phone gates almost nothing.
+
+Checked 22 August against this branch.
+
+## Nothing in the code blocks the build
+
+| Checked | State |
+| --- | --- |
+| All four standing checks | pass |
+| Assets in `app.json` (icon, adaptive icon, splash, favicon) | all present |
+| App icon | byte-identical to the one that shipped in build 20, so its alpha channel is a non-issue — prebuild flattens it |
+| `version` / `buildNumber` | 2.0.0 / 1 — a new version string, so build 1 is unique and valid |
+| Export compliance | `usesNonExemptEncryption: false` already declared |
+| `production` profile | exists, `distribution: store`, channel `production` |
+| TypeScript | 3 pre-existing SVG prop errors — **irrelevant, EAS does not run `tsc`** |
+
+`react-native-view-shot` is in `package.json`, so this build is the first one
+that can actually render the share card. That makes **S1 testable** for the
+first time rather than being a thing to fix beforehand.
+
+## The one thing that could fail the build
+
+`eas.json`'s production iOS profile pins `"scheme": "SourceViewTogether"`, but
+`ios/` is gitignored and prebuilt fresh on the build server. If the scheme
+prebuild generates from `app.json`'s `name` does not match that string exactly,
+the build fails with a scheme-not-found error.
+
+It very likely matches. If it does not, the fix is one line: **delete the
+`scheme` key** and let EAS detect it. Worth knowing the failure mode so it costs
+you five minutes rather than an afternoon.
+
+## Land these first, or you will burn a test cycle
+
+The point of this build is to run the **Device test checklist** below. Anything
+already known to be broken will surface during that testing and cost you another
+build. In rough order of how much noise each one makes:
+
+| | Why it matters for *this* build |
+| --- | --- |
+| **M5** footnote asterisks | 4,887 of them, on nearly every screen. You will hit this in the first minute and wonder what it is. |
+| **H3** streak computed in UTC | You are in NZ. Test the streak over two days and it will be wrong. Small fix. |
+| **M1** "More questions" dead end | ~20 stories strand you with no way back. Easy to hit by accident. |
+| **M2** Continue card ignores your plan | Visible on the home screen the moment you start a plan. |
+
+M3 and M4 (dead routes, orphaned modules) are invisible to a tester. Skip them
+for now.
+
+## Then build
+
+```bash
+# bump only if 2.0.0 build 1 has already been uploaded
+npx eas build --platform ios --profile production
+npx eas submit --platform ios --profile production
+```
+
+`autoIncrement` is `false` on the production profiles, so **every subsequent
+upload needs `ios.buildNumber` bumped by hand** — 1, 2, 3. Forgetting is the
+most common way to lose twenty minutes here.
+
+## Then iterate without rebuilding
+
+`runtimeVersion.policy` is `appVersion`, so once **any** 2.0.0 binary is on your
+phone, JavaScript-only fixes reach it over the air:
+
+```bash
+npx eas update --branch production
+```
+
+That covers nearly everything left in this document — all of MEDIUM and LOW is
+JS. Only a native or config change (a new dependency, an `app.json` edit, a
+permission) needs a fresh binary. So: get 2.0.0 build 1 up early, then fix and
+OTA while you test.
+
+Confirm the branch/channel link once before relying on it:
+
+```bash
+npx eas channel:view production
+```
+
+## What TestFlight does *not* need
+
+Deferred to submission — do not let any of it hold up a build you want to test
+on:
+
+- Store copy, screenshots, feature graphic
+- A hosted privacy policy URL and support page (**S2**) — needed for App Review
+  and for *external* TestFlight, not for internal
+- The Play service account (**S2**) — Android only
+- Final division titles (**S4**) — they gate screenshots, not the build
+- Removing French from the store consoles (**S5**)
+- App Privacy / Data safety answers
+
+One caveat: if you want to add **external** testers rather than just your own
+devices, that triggers Beta App Review, which does want a feedback email and a
+working privacy policy URL. For testing it yourself, none of that applies.
+
 ---
 
 # HIGH — a claim in the listing is false, or a core feature misbehaves
