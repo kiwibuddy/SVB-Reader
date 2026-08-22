@@ -38,7 +38,7 @@
     },
     "production": {
       "distribution": "store",
-      "autoIncrement": false,
+      "autoIncrement": true,
       "channel": "production",
       "ios": {
         "buildConfiguration": "Release",
@@ -51,7 +51,7 @@
     },
     "production-android": {
       "extends": "production",
-      "autoIncrement": false,
+      "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"
       }

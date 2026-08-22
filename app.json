@@ -104,7 +104,7 @@
     },
     "owner": "kiwibuddy",
     "runtimeVersion": {
-      "policy": "appVersion"
+      "policy": "fingerprint"
     },
     "updates": {
       "enabled": true,
