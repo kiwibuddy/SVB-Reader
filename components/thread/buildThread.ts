@@ -7,6 +7,16 @@ const R = 16;
 /** Vertical gap between the last mark on a depth and the horizontal corridor. */
 const GAP = 14;
 
+/**
+ * Minimum straight horizontal between the two corner arcs on a depth step.
+ * Too little H (with large r) collapses into a near-diagonal S that reads as
+ * jagged/stair-stepped on screen.
+ */
+const MIN_STEP_H = 8;
+
+/** Minimum straight vertical before/after the corridor so arcs don't reverse. */
+const MIN_STEP_V = 4;
+
 export const ROW_HEIGHT = {
   division: 46,
   book: 46,
@@ -27,13 +37,46 @@ export type ThreadMark = { key: string; x: number; y: number };
 type PathMark = ThreadMark & { rowTop: number; rowBottom: number };
 
 /**
+ * Corner radius for a depth step: keep a clear H corridor, and shrink when the
+ * vertical span between beads is too short for two full arcs.
+ */
+function stepRadius(dx: number, dy: number): number {
+  const byWidth = Math.max(4, (dx - MIN_STEP_H) / 2);
+  // Never exceed half the bead span (keeps arcs from reversing/overshooting).
+  const byHeight = Math.max(1, dy / 2 - 0.5);
+  return Math.max(1, Math.floor(Math.min(R, byWidth, byHeight)));
+}
+
+/**
+ * Horizontal corridor Y for a depth step. Prefer the shared row boundary so
+ * plan blurbs stay clear; fall back to the bead midpoint when the row is too
+ * short for a clean boundary placement.
+ */
+function stepMidY(prev: PathMark, next: PathMark, r: number): number {
+  const dy = next.y - prev.y;
+  const pad = Math.min(MIN_STEP_V, Math.max(0, (dy - 2 * r) / 2));
+  const minMid = prev.y + r + pad;
+  const maxMid = next.y - r - pad;
+  if (maxMid < minMid) {
+    return (prev.y + next.y) / 2;
+  }
+  const boundary = prev.rowBottom;
+  if (boundary >= minMid && boundary <= maxMid) {
+    return boundary;
+  }
+  // Boundary doesn't fit — classic midY between beads (still clamped).
+  const classic = (prev.y + next.y) / 2;
+  return Math.max(minMid, Math.min(maxMid, classic));
+}
+
+/**
  * Builds an SVG path using only horizontal lines, vertical lines, and
  * quarter-circle arcs. Marks sit at `markOffset` (or the row center) from the
  * top of each row. Optional entry/exit corridors run above the first row and
  * below the last row so they never cut through card text.
  *
- * Depth changes step at the **row boundary** (below the previous row’s text),
- * so the horizontal corridor never slices through blurbs or titles.
+ * Depth changes step at the **row boundary** when there is room; short rows
+ * fall back to a bead-centered corridor so arcs stay smooth (no micro-stairs).
  */
 export function buildThread(
   rows: ThreadRow[],
@@ -93,23 +136,23 @@ export function buildThread(
       d += ` V ${m.y}`;
       length += Math.abs(m.y - prev.y);
     } else {
-      // Depth change — rounded step at the row boundary so copy stays clear:
+      // Depth change — rounded orthogonal step:
       // deeper = down → right → down; shallower = down → left → down.
       const goingRight = m.x > prev.x;
       const dx = Math.abs(m.x - prev.x);
-      // Leave a short straight H so the step reads clearly (not a pure S-wave).
-      const r = Math.min(R, Math.max(8, dx / 2 - 2));
+      const dy = Math.max(1, m.y - prev.y);
+      const r = stepRadius(dx, dy);
+      const midY = stepMidY(prev, m, r);
+      const beforeArc = midY - r;
+      const afterArc = midY + r;
 
-      // Prefer the shared edge between rows; clamp so both arcs still fit.
-      const minMid = prev.y + r + 4;
-      const maxMid = m.y - r - 4;
-      const boundary = prev.rowBottom;
-      const midY =
-        maxMid >= minMid ? Math.max(minMid, Math.min(maxMid, boundary)) : (prev.y + m.y) / 2;
+      // stepRadius/stepMidY guarantee beforeArc >= prev.y and afterArc <= m.y.
+      if (beforeArc > prev.y) {
+        d += ` V ${beforeArc}`;
+        length += beforeArc - prev.y;
+      }
 
       if (goingRight) {
-        d += ` V ${midY - r}`;
-        length += midY - r - prev.y;
         // down → right (clockwise quarter in SVG y-down)
         d += ` A ${r} ${r} 0 0 1 ${prev.x + r} ${midY}`;
         length += (Math.PI / 2) * r;
@@ -119,16 +162,9 @@ export function buildThread(
           length += hTarget - (prev.x + r);
         }
         // right → down
-        d += ` A ${r} ${r} 0 0 0 ${m.x} ${midY + r}`;
+        d += ` A ${r} ${r} 0 0 0 ${m.x} ${afterArc}`;
         length += (Math.PI / 2) * r;
-        const afterArc = midY + r;
-        if (m.y > afterArc) {
-          d += ` V ${m.y}`;
-          length += m.y - afterArc;
-        }
       } else {
-        d += ` V ${midY - r}`;
-        length += midY - r - prev.y;
         // down → left
         d += ` A ${r} ${r} 0 0 0 ${prev.x - r} ${midY}`;
         length += (Math.PI / 2) * r;
@@ -138,13 +174,13 @@ export function buildThread(
           length += prev.x - r - hTarget;
         }
         // left → down
-        d += ` A ${r} ${r} 0 0 1 ${m.x} ${midY + r}`;
+        d += ` A ${r} ${r} 0 0 1 ${m.x} ${afterArc}`;
         length += (Math.PI / 2) * r;
-        const afterArc = midY + r;
-        if (m.y > afterArc) {
-          d += ` V ${m.y}`;
-          length += m.y - afterArc;
-        }
+      }
+
+      if (m.y > afterArc) {
+        d += ` V ${m.y}`;
+        length += m.y - afterArc;
       }
     }
     prev = m;

@@ -654,6 +654,8 @@ const ThreadList: React.FC<ThreadListProps> = ({
                 fill="none"
                 stroke={palette.thread}
                 strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 strokeDasharray={thread.length}
                 animatedProps={pathProps}
               />

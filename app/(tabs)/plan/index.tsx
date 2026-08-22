@@ -594,6 +594,8 @@ const PlanScreen = () => {
                       fill="none"
                       stroke={palette.thread}
                       strokeWidth={1.5}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       strokeDasharray={thread.length}
                       animatedProps={pathProps}
                     />
@@ -845,6 +847,8 @@ const PlanScreen = () => {
                         fill="none"
                         stroke={palette.thread}
                         strokeWidth={1.5}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         strokeDasharray={userStoryThread.length}
                         animatedProps={userPathProps}
                       />
