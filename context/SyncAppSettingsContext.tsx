@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { type FontSize, type TextSizes } from './FontSizeContext';
 import { type ColorScheme } from './types';
-import { syncSettingsHelpers, setSetting } from '@/services/sync-settings-manager';
+import { Appearance } from 'react-native';
+import { syncSettingsHelpers, setSetting, getSetting, type AppearanceMode } from '@/services/sync-settings-manager';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import i18next from 'i18next';
 import { bibleLoader } from '@/services/BibleLoader';
@@ -18,6 +19,8 @@ export interface SyncAppSettingsContextType {
   setOrientationLock: (locked: boolean) => Promise<void>;
   isDarkMode: boolean;
   setDarkMode: (enabled: boolean) => Promise<void>;
+  appearanceMode: AppearanceMode;
+  setAppearanceMode: (mode: AppearanceMode) => Promise<void>;
   colors: ColorScheme;
   language: SupportedLanguage;
   setLanguage: (language: SupportedLanguage) => Promise<void>;
@@ -97,6 +100,7 @@ export const SyncAppSettingsProvider: React.FC<{ children: React.ReactNode }> = 
   const [fontSize, setFontSizeState] = useState<FontSize>('medium');
   
   const [isDarkMode, setIsDarkModeState] = useState<boolean>(false);
+  const [appearanceMode, setAppearanceModeState] = useState<AppearanceMode>('auto');
   
   const [isOrientationLocked, setIsOrientationLockedState] = useState<boolean>(false);
   
@@ -106,23 +110,46 @@ export const SyncAppSettingsProvider: React.FC<{ children: React.ReactNode }> = 
   useEffect(() => {
     const loadSettingsInBackground = async () => {
       try {
-        // Load settings asynchronously after initial render
-        await new Promise(resolve => setTimeout(resolve, 200)); // Delay to ensure render completes
-        
-        // Keep light mode as default for now - system detection causes React Native warnings
-        // TODO: Implement system dark mode detection through a different method
-        // setIsDarkModeState(false); // Keep default
-        
-        // Load other settings from database if available
-        // This is non-blocking and won't affect initial render
-        
-      } catch (error) {
-        // Silent error - keep defaults
+        await new Promise(resolve => setTimeout(resolve, 200));
+        const savedFont = await getSetting('fontSize');
+        if (savedFont === 'small' || savedFont === 'medium' || savedFont === 'large') {
+          setFontSizeState(savedFont);
+        }
+        const savedMode = await getSetting('appearanceMode');
+        if (savedMode === 'light' || savedMode === 'dark' || savedMode === 'auto') {
+          setAppearanceModeState(savedMode);
+          if (savedMode === 'auto') {
+            setIsDarkModeState(Appearance.getColorScheme() === 'dark');
+          } else {
+            setIsDarkModeState(savedMode === 'dark');
+          }
+        } else {
+          const savedDark = await getSetting('isDarkMode');
+          if (typeof savedDark === 'boolean') {
+            setIsDarkModeState(savedDark);
+            setAppearanceModeState(savedDark ? 'dark' : 'light');
+          }
+        }
+        const savedLang = await getSetting('language');
+        if (savedLang === 'en' || savedLang === 'fr') {
+          setLanguageState(savedLang);
+        }
+      } catch {
+        // keep defaults
       }
     };
-    
+
     loadSettingsInBackground();
   }, []);
+
+  useEffect(() => {
+    const sub = Appearance.addChangeListener(({ colorScheme }) => {
+      if (appearanceMode === 'auto') {
+        setIsDarkModeState(colorScheme === 'dark');
+      }
+    });
+    return () => sub.remove();
+  }, [appearanceMode]);
   
   // 🚀 COMPUTED VALUES (INSTANT)
   const sizes = fontSizeConfigs[fontSize];
@@ -140,8 +167,19 @@ export const SyncAppSettingsProvider: React.FC<{ children: React.ReactNode }> = 
   
   const setDarkMode = async (enabled: boolean) => {
     setIsDarkModeState(enabled);
-    // Background write
     await setSetting('isDarkMode', enabled);
+  };
+
+  const setAppearanceMode = async (mode: AppearanceMode) => {
+    setAppearanceModeState(mode);
+    await setSetting('appearanceMode', mode);
+    if (mode === 'auto') {
+      const dark = Appearance.getColorScheme() === 'dark';
+      setIsDarkModeState(dark);
+      await setSetting('isDarkMode', dark);
+    } else {
+      await setDarkMode(mode === 'dark');
+    }
   };
   
   const setOrientationLock = async (locked: boolean) => {
@@ -198,6 +236,8 @@ export const SyncAppSettingsProvider: React.FC<{ children: React.ReactNode }> = 
       setOrientationLock,
       isDarkMode,
       setDarkMode,
+      appearanceMode,
+      setAppearanceMode,
       colors,
       language,
       setLanguage,
@@ -224,6 +264,8 @@ export const useSyncAppSettings = () => {
       setOrientationLock: async () => {},
       isDarkMode: false, // Safe default - no system check
       setDarkMode: async () => {},
+      appearanceMode: 'auto' as AppearanceMode,
+      setAppearanceMode: async () => {},
       colors: lightColors, // Safe default colors
       language: 'en' as SupportedLanguage,
       setLanguage: async () => {},

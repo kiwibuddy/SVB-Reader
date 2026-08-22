@@ -22448,7 +22448,17 @@
       "lockOrientation": "Verrouiller l'orientation de l'écran",
       "language": "Langue",
       "info": "Infos",
-      "close": "Fermer"
+      "close": "Fermer",
+      "reminders": "Rappels",
+      "reminderDaily": "Rappel de lecture quotidien",
+      "reminderTime": "Heure du rappel",
+      "reminderEnable": "Me rappeler",
+      "reminderPromptTitle": "Un rappel chaque jour ?",
+      "reminderPromptBody": "Nous pouvons vous rappeler sur cet appareil de lire l'histoire du jour. Rien n'est envoyé à un serveur.",
+      "reminderDailyTitle": "Lisez votre histoire",
+      "reminderDailyBody": "Votre prochaine histoire vous attend.",
+      "reminderStreakTitle": "Gardez votre série",
+      "reminderStreakBody": "Vous n'avez pas encore lu aujourd'hui. Quelques minutes suffisent pour continuer."
     },
     "landing": {
       "title": "Commencez votre voyage",

@@ -5,20 +5,23 @@ import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useState, useEffect } from 'react';
+import { AppState, View, Text } from 'react-native';
 // Removed duplicate logger import
 import 'react-native-reanimated';
 import 'react-native-worklets';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BottomNavProvider } from '@/context/BottomNavContext';
-import { FontSizeProvider } from '@/context/FontSizeContext';
 import { SyncAppSettingsProvider, useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { initializeAppSystems } from '@/services/app-startup-manager';
-import { View, Text } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import * as Updates from 'expo-updates';
 import { SimpleLoadingScreen } from '@/components/SimpleLoadingScreen';
 import '../config/i18n'; // Import this to initialize i18next
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { rescheduleReadingReminders } from '@/utils/readingReminders';
+import { initSentry } from '@/utils/sentry';
+import { applyPendingOtaOnColdStart, fetchOtaInBackground } from '@/utils/otaUpdates';
+
+initSentry();
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -38,7 +41,7 @@ function AppContent() {
         if (result.success) {
           setDbReady(true);
           logger.info('[INIT] Database ready, checking updates...');
-          checkForUpdates();
+          void fetchOtaInBackground();
         } else {
           logger.error('[CRASH] Database initialization failed:', result.error);
           setDbReady(true);
@@ -53,32 +56,19 @@ function AppContent() {
       }
     };
 
-    const checkForUpdates = async () => {
-      try {
-        // Skip update checks in development builds
-        if (__DEV__ || !Updates.isEnabled) {
-          logger.info('⏭️ Skipping OTA update check (development build or updates disabled)');
-          return;
-        }
-        
-        logger.info('🔄 Checking for OTA updates...');
-        
-        // OTA update check completed
-        
-        const update = await Updates.checkForUpdateAsync();
-        
-        if (update.isAvailable) {
-          const fetchResult = await Updates.fetchUpdateAsync();
-          await Updates.reloadAsync();
-        }
-      } catch (error) {
-        logger.error('❌ Update check failed:', error);
-        logger.error('❌ Error details:', JSON.stringify(error, null, 2));
-      }
-    };
-
-    initializeApp();
+    void applyPendingOtaOnColdStart().then(() => {
+      initializeApp();
+    });
   }, []);
+
+  useEffect(() => {
+    if (!dbReady) return;
+    void rescheduleReadingReminders();
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') void rescheduleReadingReminders();
+    });
+    return () => sub.remove();
+  }, [dbReady]);
   
   if (dbError) {
     return (
@@ -111,7 +101,6 @@ function AppContent() {
       <SafeAreaProvider>
       <ThemeProvider value={isDarkMode ? DarkTheme : DefaultTheme}>
         <View style={{ flex: 1, backgroundColor: colors.background }}>
-          <FontSizeProvider>
             <SQLiteGlobalProvider>
               <BottomNavProvider>
                 <StatusBar style={isDarkMode ? "light" : "dark"} />
@@ -131,7 +120,6 @@ function AppContent() {
                 </Stack>
               </BottomNavProvider>
             </SQLiteGlobalProvider>
-          </FontSizeProvider>
           
         </View>
       </ThemeProvider>

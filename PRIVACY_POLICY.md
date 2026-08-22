@@ -9,14 +9,13 @@ SourceView Together ("we," "our," or "the app") is a Bible reading application d
 
 ## Information We Do NOT Collect
 
-**We do not collect, store, or transmit any personal information to external servers.** This includes:
+**We do not collect names, emails, accounts, or advertising identifiers.** Reading progress stays on your device. This includes:
 - No personal names or contact information
 - No email addresses or phone numbers
 - No user accounts or login credentials
 - No location data
-- No usage analytics sent to external services
+- No advertising or usage analytics
 - No device identifiers for tracking purposes
-- No data that could identify you personally
 
 ## Information Stored Locally on Your Device
 
@@ -35,35 +34,41 @@ SourceView Together stores the following information **only on your device** usi
 - App language settings (English or French)
 - Current reading position
 - Display preferences (font size, appearance, orientation)
+- Optional daily reading reminders scheduled **on this device only** (no push server, no notification tokens sent off-device)
 
-**Important:** All this data remains on your device and is never uploaded to our servers or shared with third parties.
+**Important:** Reading notes, reactions, and progress are never uploaded to a SourceView account.
 
 ## Permissions
 
 SourceView Together does not request camera, microphone, location, or contacts permissions. The app requires only network access for:
 - Downloading optional Bible translations (e.g. French Bible, ~50 MB)
 - Receiving app updates through the official app stores and Expo's update system
+- Optional crash diagnostics (see Sentry below)
 
 ## Data Security
 
 ### Local Data Protection
 - All user data is stored using SQLite with industry-standard security practices
 - Data is protected by your device's built-in security features
-- No data is transmitted over the internet except for Bible content downloads and app updates
 
-### No External Data Transmission
-- We do not operate servers that collect user data
-- We do not use analytics services that track user behavior
+### No advertising or accounts
+- We do not operate user accounts
+- We do not use analytics services that track reading behavior
 - We do not integrate with social media platforms for data collection
 - We do not use advertising networks
 
 ## Third-Party Services
 
+### Sentry (crash diagnostics)
+If the app crashes, we may receive a diagnostic report through Sentry. These reports can include:
+- Stack traces and error messages
+- Device type and operating system version
+- App version
+
+They do **not** include your name, email, Bible notes, reactions, or reading progress. We use this only to fix crashes.
+
 ### Expo Platform
-SourceView Together is built using Expo, which may collect anonymous technical data for app functionality:
-- Crash reports (containing no personal information)
-- Performance metrics (device type, OS version)
-- App update delivery
+SourceView Together is built using Expo, which delivers app updates and may process anonymous technical data required to run the update service.
 
 ### Apple App Store / Google Play Store
 - App downloads and updates are handled by Apple/Google
@@ -73,10 +78,9 @@ SourceView Together is built using Expo, which may collect anonymous technical d
 ## Children's Privacy
 
 SourceView Together is designed to be safe for users of all ages, including children under 13:
-- We do not collect any personal information from anyone, including children
-- All data remains on the user's device
-- No online interactions with strangers are possible within the app
-- Parents can review all data by checking the app's local storage through device settings
+- We do not collect personal information from anyone, including children
+- Reading data remains on the user's device
+- Crash reports do not include names or contact details
 
 ## Data Retention and Deletion
 
@@ -115,7 +119,7 @@ We will notify you of significant changes by updating the "Last Updated" date at
 
 ## Your Rights
 
-Since we don't collect personal data, traditional data subject rights (access, rectification, deletion) are handled locally on your device. You have complete control over your data through the app's settings and your device's storage management.
+Reading data is stored locally, so access, correction, and deletion happen on your device through Settings or uninstall. Crash diagnostics are not linked to an account.
 
 ## Compliance
 
@@ -131,12 +135,13 @@ This Privacy Policy is designed to comply with:
 ### Data Storage
 - **Local Database:** SQLite (industry standard)
 - **Encryption:** Protected by device-level security
-- **Backup:** Handled through device's standard backup systems (iCloud, Google Backup)
+- **Backup:** Device backups may include app preferences; the reading database is excluded from Android Auto Backup so an older schema is not restored into a newer install
 
 ### Network Usage
 - **Bible Content:** Downloaded from trusted biblical text sources
 - **App Updates:** Delivered through Expo's secure update system
-- **No Tracking:** No analytics, advertising, or tracking networks
+- **Crash diagnostics:** Sentry, as described above
+- **No Tracking:** No advertising or behavioral analytics networks
 
 ---
 

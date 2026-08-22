@@ -60,7 +60,7 @@ export function CastVoiceRow({
         : [],
     [expanded, voice.name, voice.storyIds]
   );
-  const thread = useMemo(() => buildThread(rows, { width }), [rows, width]);
+  const thread = useMemo(() => buildThread(rows, { width, exit: 'right' }), [rows, width]);
   const { progress, pathProps } = useThreadReveal(thread.length, { replayOnFocus: false });
 
   const openCard = () => {

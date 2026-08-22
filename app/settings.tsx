@@ -7,7 +7,6 @@ import {
   Switch,
   ScrollView,
   Alert,
-  useColorScheme,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -15,59 +14,53 @@ import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import { ThreadColors } from '@/constants/Colors';
 import { FF } from '@/constants/featureFlags';
-import { useFontSize } from '@/context/FontSizeContext';
 import { useSyncAppSettings, SupportedLanguage } from '@/context/SyncAppSettingsContext';
+import { type AppearanceMode } from '@/services/sync-settings-manager';
 import { useTranslation } from '@/hooks/useTranslation';
 import { bibleStorageManager } from '@/services/BibleStorageManager';
 import BibleDownloadModal from '@/components/BibleDownloadModal';
+import {
+  formatReminderTime,
+  getReminderPrefs,
+  nextReminderTime,
+  setReminderEnabled,
+  setReminderTime,
+} from '@/utils/readingReminders';
 
-type AppearanceMode = 'light' | 'dark' | 'auto';
 type FontSizeOption = 'small' | 'medium' | 'large';
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const systemScheme = useColorScheme();
-  const { fontSize, setFontSize, sizes } = useFontSize();
   const {
     isDarkMode,
-    setDarkMode,
+    appearanceMode,
+    setAppearanceMode,
     isOrientationLocked,
     setOrientationLock,
     language,
     setLanguage,
+    fontSize,
+    setFontSize,
+    sizes,
   } = useSyncAppSettings();
   const { t } = useTranslation();
+  const [reminderOn, setReminderOn] = useState(false);
+  const [reminderHour, setReminderHour] = useState(8);
+  const [reminderMinute, setReminderMinute] = useState(0);
+
+  useEffect(() => {
+    void getReminderPrefs().then((prefs) => {
+      setReminderOn(prefs.enabled);
+      setReminderHour(prefs.hour);
+      setReminderMinute(prefs.minute);
+    });
+  }, []);
 
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
 
-  // Appearance mode: derive initial from current isDarkMode + system
-  const [appearanceMode, setAppearanceMode] = useState<AppearanceMode>(() => {
-    if (isDarkMode && systemScheme === 'dark') return 'auto';
-    if (!isDarkMode && systemScheme !== 'dark') return 'auto';
-    return isDarkMode ? 'dark' : 'light';
-  });
-
   const handleAppearanceChange = async (mode: AppearanceMode) => {
-    setAppearanceMode(mode);
-    switch (mode) {
-      case 'light':
-        await setDarkMode(false);
-        break;
-      case 'dark':
-        await setDarkMode(true);
-        break;
-      case 'auto':
-        await setDarkMode(systemScheme === 'dark');
-        break;
-    }
+    await setAppearanceMode(mode);
   };
-
-  // Keep auto mode in sync with system changes
-  useEffect(() => {
-    if (appearanceMode === 'auto') {
-      setDarkMode(systemScheme === 'dark');
-    }
-  }, [systemScheme, appearanceMode]);
 
   // French Bible download state
   const [isFrenchBibleDownloaded, setIsFrenchBibleDownloaded] = useState(false);
@@ -280,6 +273,41 @@ export default function SettingsScreen() {
             />
             <Text style={{ fontSize: sizes.title, color: palette.ink }}>A</Text>
           </View>
+        </View>
+
+        {/* Daily reminder */}
+        <Text style={[styles.sectionLabel, { color: palette.mute }]}>
+          {t('UI.settings.reminders')}
+        </Text>
+        <View style={[styles.card, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
+          <View style={styles.row}>
+            <Text style={[styles.rowText, { color: palette.ink }]}>{t('UI.settings.reminderDaily')}</Text>
+            <Switch
+              value={reminderOn}
+              onValueChange={async (on) => {
+                await setReminderEnabled(on);
+                const prefs = await getReminderPrefs();
+                setReminderOn(prefs.enabled);
+              }}
+              trackColor={{ false: palette.hair, true: palette.acc }}
+            />
+          </View>
+          {reminderOn && (
+            <Pressable
+              style={[styles.row, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: palette.hair }]}
+              onPress={async () => {
+                const next = nextReminderTime(reminderHour, reminderMinute);
+                await setReminderTime(next.hour, next.minute);
+                setReminderHour(next.hour);
+                setReminderMinute(next.minute);
+              }}
+            >
+              <Text style={[styles.rowText, { color: palette.ink }]}>{t('UI.settings.reminderTime')}</Text>
+              <Text style={[styles.rowText, { color: palette.mute }]}>
+                {formatReminderTime(reminderHour, reminderMinute)}
+              </Text>
+            </Pressable>
+          )}
         </View>
 
         {/* Appearance */}

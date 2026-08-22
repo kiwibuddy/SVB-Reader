@@ -17,7 +17,6 @@ config.resolver.platforms = ['ios', 'android', 'native', 'web'];
 // Block Node.js-only packages from being bundled
 config.resolver.blockList = [
   /node_modules\/sqlite3\/.*/,
-  /assets\/data\/verseIndex\.json$/,
 ];
 
 // Ensure JSON files are properly resolved

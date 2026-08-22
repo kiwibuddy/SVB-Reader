@@ -25,7 +25,17 @@
       "lockOrientation": "Lock Screen Orientation",
       "language": "Language",
       "info": "Info",
-      "close": "Close"
+      "close": "Close",
+      "reminders": "Reminders",
+      "reminderDaily": "Daily reading reminder",
+      "reminderTime": "Reminder time",
+      "reminderEnable": "Remind me",
+      "reminderPromptTitle": "Want a daily nudge?",
+      "reminderPromptBody": "We can remind you on this device to read today's story. Nothing is sent to a server.",
+      "reminderDailyTitle": "Read your story",
+      "reminderDailyBody": "Your next story is waiting.",
+      "reminderStreakTitle": "Keep your streak",
+      "reminderStreakBody": "You haven't read yet today. A few minutes will keep the chain going."
     },
     "landing": {
       "title": "Begin Your Journey",

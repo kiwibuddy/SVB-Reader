@@ -17,6 +17,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
   getSegmentReadCount,
   getSegmentCompletionStatus,
+  getCurrentStreak,
   markSegmentComplete,
 } from '@/api/sqlite';
 import CompletionBanner from '@/components/Bible/CompletionBanner';
@@ -26,6 +27,9 @@ import FRA_UI from '@/assets/data/FRA-UI.json';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { ThreadColors } from '@/constants/Colors';
 import { DUR, timing } from '@/constants/Motion';
+import { getCompletedStoryIds } from '@/utils/threadProgress';
+import { maybePromptAfterFirstStory, rescheduleReadingReminders } from '@/utils/readingReminders';
+import { maybeRequestReview } from '@/utils/appReviewPrompt';
 
 interface CheckCircleProps {
   segmentId: string;
@@ -157,6 +161,18 @@ export default function CheckCircle({
         setBannerVoice(t('UI.completion.metVoiceFirstTime', { name: localizeVoice(voices.firstVoice) }));
       }
       setShowBanner(true);
+
+      try {
+        await rescheduleReadingReminders();
+        const [completed, streak] = await Promise.all([
+          getCompletedStoryIds(),
+          getCurrentStreak(),
+        ]);
+        if (completed.size === 1) {
+          await maybePromptAfterFirstStory();
+        }
+        await maybeRequestReview({ streak, completedCount: completed.size });
+      } catch {}
 
       setTimeout(navigateAfterComplete, 3200);
     } catch (error) {

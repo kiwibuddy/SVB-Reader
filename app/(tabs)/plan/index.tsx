@@ -189,7 +189,7 @@ const PlanScreen = () => {
   }, [grouped, openGroup, openPlanId, progressById]);
 
   const thread = useMemo(
-    () => buildThread(visibleRows.map(({ key, depth, height }) => ({ key, depth, height })), { width: windowWidth }),
+    () => buildThread(visibleRows.map(({ key, depth, height }) => ({ key, depth, height })), { width: windowWidth, exit: 'right' }),
     [visibleRows, windowWidth]
   );
 

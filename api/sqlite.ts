@@ -1,7 +1,17 @@
 import logger from '@/utils/logger';
+import { maybeRequestReview } from '@/utils/appReviewPrompt';
 import { databaseManager } from './database-manager';
 import { BibleBlock } from "@/types";
 import { SafeDatabaseWrapper } from './database-safe-wrapper';
+import {
+  addLocalCalendarDays,
+  daysBetweenLocalDates,
+  displayedStreak,
+  isoRangeForLocalDate,
+  localCalendarDate,
+  localCalendarDateFromISO,
+  nextStreak,
+} from '@/utils/localDate';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -250,11 +260,10 @@ export const getSegmentCompletionStatus = async (
         [challengeId, segmentId]
       );
     } else if (context === 'today') {
-      // For today's reading, check if it was completed today in the completedSegments table
-      const today = new Date().toISOString().split('T')[0];
+      const { start, end } = isoRangeForLocalDate(localCalendarDate());
       result = await db.getFirstAsync<{ isCompleted: number }>(
-        'SELECT isCompleted FROM completedSegments WHERE segmentID = ? AND completionDate LIKE ?',
-        [segmentId, `${today}%`]
+        'SELECT isCompleted FROM completedSegments WHERE segmentID = ? AND completionDate >= ? AND completionDate < ?',
+        [segmentId, start, end]
       );
     }
 
@@ -296,18 +305,18 @@ export const hasDailyCompletionToday = async (
 ): Promise<boolean> => {
   try {
     const db = databaseManager.getDatabase();
-    const today = new Date().toISOString().split('T')[0];
+    const { start, end } = isoRangeForLocalDate(localCalendarDate());
     let result: any;
 
     if (context === 'plan' && planId) {
       result = await db.getFirstAsync<{ count: number }>(
-        'SELECT COUNT(*) as count FROM reading_plan_progress WHERE planID = ? AND completionDate LIKE ? AND isCompleted = 1',
-        [planId, `${today}%`]
+        'SELECT COUNT(*) as count FROM reading_plan_progress WHERE planID = ? AND completionDate >= ? AND completionDate < ? AND isCompleted = 1',
+        [planId, start, end]
       );
     } else if (context === 'challenge' && challengeId) {
       result = await db.getFirstAsync<{ count: number }>(
-        'SELECT COUNT(*) as count FROM reading_challenge_progress WHERE challengeID = ? AND completionDate LIKE ? AND isCompleted = 1',
-        [challengeId, `${today}%`]
+        'SELECT COUNT(*) as count FROM reading_challenge_progress WHERE challengeID = ? AND completionDate >= ? AND completionDate < ? AND isCompleted = 1',
+        [challengeId, start, end]
       );
     }
 
@@ -443,13 +452,30 @@ export async function getBestStreak(): Promise<number> {
   }
 }
 
+export async function getStreakLastReadDate(): Promise<string | null> {
+  try {
+    const db = databaseManager.getDatabase();
+    const result = await db.getFirstAsync<{ lastReadDate: string | null }>(
+      'SELECT lastReadDate FROM streak_data LIMIT 1'
+    );
+    return result?.lastReadDate || null;
+  } catch (error) {
+    logger.error("Error getting last read date:", error);
+    return null;
+  }
+}
+
 export async function getCurrentStreak(): Promise<number> {
   try {
     const db = databaseManager.getDatabase();
-    const result = await db.getFirstAsync<{ currentStreak: number }>(
-      'SELECT currentStreak FROM streak_data LIMIT 1'
+    const result = await db.getFirstAsync<{ currentStreak: number; lastReadDate: string | null }>(
+      'SELECT currentStreak, lastReadDate FROM streak_data LIMIT 1'
     );
-    return result?.currentStreak || 0;
+    const shown = displayedStreak(result?.currentStreak || 0, result?.lastReadDate);
+    if ((result?.currentStreak || 0) > 0 && shown === 0) {
+      await db.runAsync('UPDATE streak_data SET currentStreak = 0');
+    }
+    return shown;
   } catch (error) {
     logger.error("Error getting current streak:", error);
     return 0;
@@ -470,48 +496,45 @@ export async function getContextualStreaks(): Promise<{
     // Calculate streak for each context by checking consecutive days with completions
     const calculateContextStreak = async (context: string): Promise<number> => {
       let streak = 0;
-      let currentDate = new Date();
-      
+      let dateStr = localCalendarDate();
+
       while (true) {
-        const dateStr = currentDate.toISOString().split('T')[0];
-        
+        const { start, end } = isoRangeForLocalDate(dateStr);
         const result = await db.getFirstAsync<{ count: number }>(
-          'SELECT COUNT(DISTINCT segmentID) as count FROM segment_completion WHERE completionType = ? AND DATE(completionDate) = ?',
-          [context, dateStr]
+          'SELECT COUNT(DISTINCT segmentID) as count FROM segment_completion WHERE completionType = ? AND completionDate >= ? AND completionDate < ?',
+          [context, start, end]
         );
-        
+
         if ((result?.count || 0) > 0) {
           streak++;
-          currentDate.setDate(currentDate.getDate() - 1);
+          dateStr = addLocalCalendarDays(dateStr, -1);
         } else {
           break;
         }
       }
-      
+
       return streak;
     };
-    
-    // Calculate overall streak (any completion on any day)
+
     const calculateOverallStreak = async (): Promise<number> => {
       let streak = 0;
-      let currentDate = new Date();
-      
+      let dateStr = localCalendarDate();
+
       while (true) {
-        const dateStr = currentDate.toISOString().split('T')[0];
-        
+        const { start, end } = isoRangeForLocalDate(dateStr);
         const result = await db.getFirstAsync<{ count: number }>(
-          'SELECT COUNT(DISTINCT segmentID) as count FROM segment_completion WHERE DATE(completionDate) = ?',
-          [dateStr]
+          'SELECT COUNT(DISTINCT segmentID) as count FROM segment_completion WHERE completionDate >= ? AND completionDate < ?',
+          [start, end]
         );
-        
+
         if ((result?.count || 0) > 0) {
           streak++;
-          currentDate.setDate(currentDate.getDate() - 1);
+          dateStr = addLocalCalendarDays(dateStr, -1);
         } else {
           break;
         }
       }
-      
+
       return streak;
     };
     
@@ -952,6 +975,10 @@ export async function getActiveChallenges(): Promise<any[]> {
 async function updatePlanStatus(planID: string): Promise<void> {
   try {
     const db = databaseManager.getDatabase();
+    const previous = await db.getFirstAsync<{ isCompleted: number }>(
+      `SELECT isCompleted FROM plan_challenge_status WHERE itemID = ? AND itemType = 'plan'`,
+      planID
+    );
     const progress = await getPlanProgress(planID);
     
     await db.runAsync(`
@@ -964,6 +991,10 @@ async function updatePlanStatus(planID: string): Promise<void> {
         lastUpdated
       ) VALUES (?, 'plan', 1, ?, ?, datetime('now'))
     `, planID, progress.isCompleted ? 1 : 0, progress.progressPercentage);
+
+    if (progress.isCompleted && !previous?.isCompleted) {
+      void maybeRequestReview({ planCompleted: true });
+    }
   } catch (error) {
     logger.error("Error updating plan status:", error);
   }
@@ -992,7 +1023,7 @@ async function updateChallengeStatus(challengeID: string): Promise<void> {
 export async function updateDailyActivity(segmentId: string) {
   try {
     const db = databaseManager.getDatabase();
-    const today = new Date().toISOString().split('T')[0];
+    const today = localCalendarDate();
     
     await db.runAsync(`
       INSERT OR REPLACE INTO daily_activity (date, segmentCount, lastUpdated)
@@ -1023,7 +1054,7 @@ export async function getSegmentReadCount(segmentID: string): Promise<number> {
 async function updateStreak() {
   try {
     const db = databaseManager.getDatabase();
-    const today = new Date().toISOString().split('T')[0];
+    const today = localCalendarDate();
     
     const streakData = await db.getFirstAsync<{
       currentStreak: number;
@@ -1037,25 +1068,9 @@ async function updateStreak() {
     let longestStreak = streakData?.longestStreak || 0;
     const lastReadDate = streakData?.lastReadDate;
 
-    if (lastReadDate === today) {
-      // Already read today, no change to streak
-      return;
-    }
-
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-    if (lastReadDate === yesterdayStr) {
-      // Consecutive day, increment streak
-      currentStreak++;
-    } else if (lastReadDate && lastReadDate !== today) {
-      // Break in streak, reset to 1
-      currentStreak = 1;
-    } else if (!lastReadDate) {
-      // First time reading, start streak at 1
-      currentStreak = 1;
-    }
+    const next = nextStreak(currentStreak, lastReadDate, today);
+    if (next.alreadyToday) return;
+    currentStreak = next.streak;
 
     // Update longest streak if current is longer
     if (currentStreak > longestStreak) {
@@ -1224,8 +1239,8 @@ export async function startReadingSession() {
     const db = databaseManager.getDatabase();
     const result = await db.runAsync(`
       INSERT INTO reading_sessions (startTime, endTime, segmentCount, sessionDate)
-      VALUES (datetime('now'), datetime('now'), 0, date('now'))
-    `);
+      VALUES (datetime('now'), datetime('now'), 0, ?)
+    `, localCalendarDate());
     return result.lastInsertRowId;
   } catch (error) {
     logger.error("Error starting reading session:", error);
@@ -1629,12 +1644,12 @@ export const getTodaysSegmentForPlan = async (planId: string): Promise<{ segment
     const activePlan = await getActivePlanFromDB();
     if (!activePlan || activePlan.planId !== planId) return null;
     
-    const startDate = new Date(activePlan.dateStarted);
-    const today = new Date();
-    
-    // Calculate days since plan started (0-based)
-    const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    
+    const startDate = localCalendarDateFromISO(activePlan.dateStarted);
+    if (!startDate) return null;
+
+    // Days since plan started, counted by local calendar day (0-based)
+    const daysSinceStart = daysBetweenLocalDates(startDate, localCalendarDate());
+
     if (daysSinceStart < 0) return null; // Plan hasn't started yet
     
     // Get all segments from the plan
@@ -1675,12 +1690,12 @@ export const getTodaysSegmentForChallenge = async (challengeId: string): Promise
     const activeChallenge = activeChallenges[challengeId];
     if (!activeChallenge) return null;
     
-    const startDate = new Date(activeChallenge.dateStarted);
-    const today = new Date();
-    
-    // Calculate days since challenge started (0-based)
-    const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    
+    const startDate = localCalendarDateFromISO(activeChallenge.dateStarted);
+    if (!startDate) return null;
+
+    // Days since challenge started, counted by local calendar day (0-based)
+    const daysSinceStart = daysBetweenLocalDates(startDate, localCalendarDate());
+
     if (daysSinceStart < 0) return null; // Challenge hasn't started yet
     
     // Get all segments from the challenge
@@ -1711,10 +1726,10 @@ export const getTodaysSegmentForChallenge = async (challengeId: string): Promise
 export const isPlanDailyCompleted = async (planId: string, segmentId: string): Promise<boolean> => {
   try {
     const db = databaseManager.getDatabase();
-    const today = new Date().toISOString().split('T')[0];
+    const { start, end } = isoRangeForLocalDate(localCalendarDate());
     const result = await db.getFirstAsync<{ isCompleted: number }>(
-      'SELECT isCompleted FROM reading_plan_progress WHERE planID = ? AND segmentID = ? AND completionDate LIKE ?',
-      [planId, segmentId, `${today}%`]
+      'SELECT isCompleted FROM reading_plan_progress WHERE planID = ? AND segmentID = ? AND completionDate >= ? AND completionDate < ?',
+      [planId, segmentId, start, end]
     );
     
     return result?.isCompleted === 1;
@@ -1728,10 +1743,10 @@ export const isPlanDailyCompleted = async (planId: string, segmentId: string): P
 export const isChallengeDailyCompleted = async (challengeId: string, segmentId: string): Promise<boolean> => {
   try {
     const db = databaseManager.getDatabase();
-    const today = new Date().toISOString().split('T')[0];
+    const { start, end } = isoRangeForLocalDate(localCalendarDate());
     const result = await db.getFirstAsync<{ isCompleted: number }>(
-      'SELECT isCompleted FROM reading_challenge_progress WHERE challengeID = ? AND segmentID = ? AND completionDate LIKE ?',
-      [challengeId, segmentId, `${today}%`]
+      'SELECT isCompleted FROM reading_challenge_progress WHERE challengeID = ? AND segmentID = ? AND completionDate >= ? AND completionDate < ?',
+      [challengeId, segmentId, start, end]
     );
     
     return result?.isCompleted === 1;
@@ -1748,7 +1763,7 @@ let currentSessionStartTime: Date | null = null;
 export async function getCurrentSession(): Promise<number | null> {
   try {
     const db = databaseManager.getDatabase();
-    const today = new Date().toISOString().split('T')[0];
+    const today = localCalendarDate();
     
     // Check if we have an active session for today
     const result = await db.getFirstAsync<{ id: number }>(

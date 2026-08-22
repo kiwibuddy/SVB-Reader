@@ -1,5 +1,6 @@
 import logger from '@/utils/logger';
 import { databaseManager } from './database-manager';
+import { isoRangeForLocalDate, localCalendarDate } from '@/utils/localDate';
 
 // ============================================================================
 // CACHE MANAGEMENT
@@ -169,10 +170,10 @@ export const getSegmentCompletionStatusOptimized = async (
         [challengeId, segmentId]
       );
     } else if (context === 'today') {
-      const today = new Date().toISOString().split('T')[0];
+      const { start, end } = isoRangeForLocalDate(localCalendarDate());
       result = await db.getFirstAsync<{ isCompleted: number }>(
-        'SELECT isCompleted FROM completedSegments WHERE segmentID = ? AND completionDate LIKE ?',
-        [segmentId, `${today}%`]
+        'SELECT isCompleted FROM completedSegments WHERE segmentID = ? AND completionDate >= ? AND completionDate < ?',
+        [segmentId, start, end]
       );
     }
 

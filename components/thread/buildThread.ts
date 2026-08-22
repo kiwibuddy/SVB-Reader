@@ -24,8 +24,12 @@ export type ThreadMark = { key: string; x: number; y: number };
  * starting at y=0 (matching the layout). The entry path extends into negative
  * Y space (handled by SVG overflow: visible).
  */
-export function buildThread(rows: ThreadRow[], opts?: { width?: number }) {
+export function buildThread(
+  rows: ThreadRow[],
+  opts?: { width?: number; exit?: 'left' | 'right' },
+) {
   const width = Math.max(opts?.width ?? 390, 200);
+  const exitSide = opts?.exit ?? 'left';
   let y = 0;
   const marks: ThreadMark[] = rows.map((r) => {
     const mark = { key: r.key, x: DEPTH_X[r.depth], y: y + r.height / 2 };
@@ -119,15 +123,23 @@ export function buildThread(rows: ThreadRow[], opts?: { width?: number }) {
     prev = m;
   }
 
-  // Exit: vertical down GAP past last mark, arc left, horizontal off-screen left
+  // Exit: vertical down GAP past last mark, then arc and horizontal off-screen
   const exitTurnY = prev.y + GAP;
   d += ` V ${exitTurnY}`;
   length += GAP;
-  d += ` A ${R} ${R} 0 0 1 ${prev.x - R} ${exitTurnY + R}`;
-  length += (Math.PI / 2) * R;
-  const exitX = -THREAD_OVERHANG;
-  d += ` H ${exitX}`;
-  length += (prev.x - R) - exitX;
+  if (exitSide === 'right') {
+    d += ` A ${R} ${R} 0 0 0 ${prev.x + R} ${exitTurnY + R}`;
+    length += (Math.PI / 2) * R;
+    const exitX = width + THREAD_OVERHANG;
+    d += ` H ${exitX}`;
+    length += exitX - (prev.x + R);
+  } else {
+    d += ` A ${R} ${R} 0 0 1 ${prev.x - R} ${exitTurnY + R}`;
+    length += (Math.PI / 2) * R;
+    const exitX = -THREAD_OVERHANG;
+    d += ` H ${exitX}`;
+    length += (prev.x - R) - exitX;
+  }
 
   // Height includes the exit arc below the last row
   const totalHeight = y + GAP + R;
