@@ -98,19 +98,21 @@ const GlowingBubble = ({
   return (
     <View style={styles.row} onLayout={onLayout}>
       <View style={[styles.stack, { alignSelf: left ? 'flex-start' : 'flex-end' }]}>
-        <View style={[styles.meta, { alignItems: left ? 'flex-start' : 'flex-end' }]}>
-          <Text
-            accessibilityLabel={speaker}
-            style={[styles.who, { color: ink, textAlign: left ? 'left' : 'right' }]}
-          >
-            {speaker}
-          </Text>
-          {showMeta && !!metaLine && (
-            <Text style={[styles.cite, { color: palette.mute, textAlign: left ? 'left' : 'right' }]}>
-              {metaLine}
+        {hasTail && (
+          <View style={[styles.meta, { alignItems: left ? 'flex-start' : 'flex-end' }]}>
+            <Text
+              accessibilityLabel={speaker}
+              style={[styles.who, { color: ink, textAlign: left ? 'left' : 'right' }]}
+            >
+              {speaker}
             </Text>
-          )}
-        </View>
+            {showMeta && !!metaLine && (
+              <Text style={[styles.cite, { color: palette.mute, textAlign: left ? 'left' : 'right' }]}>
+                {metaLine}
+              </Text>
+            )}
+          </View>
+        )}
         <View style={{ alignSelf: left ? 'flex-start' : 'flex-end', maxWidth: '100%', overflow: 'visible' }}>
           <EmojiHandler block={block} blockIndex={bIndex} hasTail={hasTail} onLongPress={onLongPress}>
             <Animated.View
@@ -168,9 +170,14 @@ const styles = StyleSheet.create({
   },
   who: {
     fontSize: 9,
+    lineHeight: 14,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
     fontWeight: '600',
+    ...Platform.select({
+      android: { includeFontPadding: false },
+      default: {},
+    }),
   },
   cite: {
     fontSize: 10,
@@ -178,9 +185,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   meta: {
-    marginTop: 10,
-    marginBottom: 6,
+    // Keep clear of the bubble and of reaction badges (top: -13 on the bubble).
+    marginTop: 14,
+    marginBottom: 12,
     paddingHorizontal: 4,
+    zIndex: 2,
   },
   bubble: {
     maxWidth: '100%',

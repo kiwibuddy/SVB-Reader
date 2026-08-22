@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: 24,
     paddingHorizontal: 14,
-    paddingBottom: 6,
+    paddingBottom: 14,
   },
   title: {
     fontSize: 22,
@@ -53,6 +53,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     letterSpacing: 1,
     textTransform: 'uppercase',
-    marginTop: 4,
+    marginTop: 6,
   },
 });

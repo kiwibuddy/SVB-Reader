@@ -79,6 +79,10 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
 
   return (
     <View style={[styles.wrap, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
+      <Text style={[styles.prompt, { color: palette.mute }]}>
+        {t('UI.thread.pickCastPrompt')}
+      </Text>
+
       <View style={styles.top}>
         <View style={styles.boxes}>
           {INKS.map((ink) => {
@@ -107,7 +111,7 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
                   },
                 ]}
               >
-                {selected && <Ionicons name="checkmark" size={18} color={inkHex(ink, palette)} />}
+                {selected && <Ionicons name="checkmark" size={20} color={inkHex(ink, palette)} />}
               </Pressable>
             );
           })}
@@ -118,11 +122,19 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
             setOpen((value) => !value);
           }}
           hitSlop={8}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: open }}
+          accessibilityLabel={`${cast.length} ${t('UI.thread.scopeVoices')}`}
           style={styles.countHit}
         >
           <Text style={[styles.count, { color: palette.mute }]}>
-            {cast.length} {t('UI.thread.scopeVoices').toLowerCase()} {open ? '⌃' : '⌄'}
+            {cast.length} {t('UI.thread.scopeVoices').toUpperCase()}
           </Text>
+          <Ionicons
+            name={open ? 'chevron-up' : 'chevron-down'}
+            size={16}
+            color={palette.mute}
+          />
         </Pressable>
       </View>
 
@@ -170,21 +182,57 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
 };
 
 const styles = StyleSheet.create({
-  wrap: { marginHorizontal: 14, marginTop: 8, borderWidth: 1, borderRadius: 12, overflow: 'visible' },
-  top: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 10 },
-  boxes: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  wrap: {
+    marginHorizontal: 14,
+    marginTop: 4,
+    marginBottom: 4,
+    borderWidth: 1,
+    borderRadius: 12,
+    overflow: 'visible',
+  },
+  prompt: {
+    fontSize: 13,
+    lineHeight: 18,
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 12,
+  },
+  top: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingBottom: 14,
+  },
+  boxes: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 2,
+  },
   box: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 11,
     borderTopLeftRadius: 4,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  countHit: { paddingVertical: 8, paddingLeft: 4 },
-  count: { fontSize: 9, letterSpacing: 1.1, textTransform: 'uppercase' },
-  cast: { paddingHorizontal: 12, paddingBottom: 12, gap: 4 },
+  countHit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 8,
+    paddingLeft: 4,
+  },
+  count: {
+    fontSize: 12,
+    letterSpacing: 1.1,
+    fontWeight: '600',
+  },
+  cast: { paddingHorizontal: 14, paddingBottom: 14, gap: 4 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 },
   dot: { width: 8, height: 8, borderRadius: 4 },
   name: { flex: 1, fontSize: 15 },

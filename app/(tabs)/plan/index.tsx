@@ -60,12 +60,12 @@ const GROUP_COPY: Record<PlanGroupId, { title: string; blurb: string }> = {
   mini: { title: 'UI.planCategories.miniStudies', blurb: 'UI.planCategories.miniStudiesBlurb' },
 };
 
-const PLAN_ROW_HEIGHT = 92;
-/** Room below the phase title/blurb so the right-angle step clears the text. */
-const PHASE_ROW_HEIGHT = 108;
+const PLAN_ROW_HEIGHT = 118;
+/** Room below the phase title/blurb so the depth step lands on the row boundary. */
+const PHASE_ROW_HEIGHT = 124;
 /** Sit the bead beside the title, not in the middle of the 2-line blurb. */
-const PLAN_MARK = 20;
-const PHASE_MARK = 18;
+const PLAN_MARK = 22;
+const PHASE_MARK = 20;
 
 const GROUP_COLORS: Record<PlanGroupId, string> = {
   year: '#007AFF',
@@ -615,7 +615,15 @@ const PlanScreen = () => {
                             style={[styles.threadRow, styles.planThreadRow, { height: row.height }]}
                           >
                             <BookBead x={mark.x} rowHeight={row.height} open={planOpen} palette={palette} anchor={PLAN_MARK} />
-                            <View style={[styles.rowBody, { paddingLeft: DEPTH_X[0] + 16 }]}>
+                            <View
+                              style={[
+                                styles.rowBody,
+                                {
+                                  paddingLeft:
+                                    (item.chronologicalOrder ? DEPTH_X[1] : DEPTH_X[0]) + 18,
+                                },
+                              ]}
+                            >
                               <Text style={[styles.planTitle, { color: palette.ink }]} numberOfLines={2}>
                                 {getLocalizedPlanText(item, 'title', language)}
                               </Text>
@@ -650,7 +658,7 @@ const PlanScreen = () => {
                         <ThreadRevealRow key={row.key} index={index} total={visibleRows.length} progress={progress}>
                           <View style={[styles.threadRow, styles.phaseThreadRow, { height: row.height }]}>
                             <ThreadKnot x={mark.x} rowHeight={row.height} open palette={palette} fillColor={phase.color} anchor={PHASE_MARK} />
-                            <View style={[styles.rowBody, { paddingLeft: DEPTH_X[2] + 12 }]}>
+                            <View style={[styles.rowBody, { paddingLeft: DEPTH_X[2] + 16 }]}>
                               <Text style={[styles.phaseTitle, { color: phase.color }]} numberOfLines={1}>
                                 {phase.title}
                               </Text>
@@ -934,7 +942,7 @@ const PlanScreen = () => {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  list: { paddingBottom: 140 },
+  list: { paddingBottom: 180 },
   lab: { paddingHorizontal: 14, paddingTop: 12, paddingBottom: 4, fontSize: 9, letterSpacing: 1.6, textTransform: 'uppercase' },
 
   // Active plan cards
@@ -986,8 +994,8 @@ const styles = StyleSheet.create({
   // Thread rows
   threadWrap: { position: 'relative', paddingTop: 0, overflow: 'visible' },
   threadRow: { flexDirection: 'row', alignItems: 'center', paddingRight: 14, zIndex: 1 },
-  planThreadRow: { alignItems: 'flex-start', paddingTop: 12 },
-  phaseThreadRow: { alignItems: 'flex-start', paddingTop: 10, paddingBottom: 18 },
+  planThreadRow: { alignItems: 'flex-start', paddingTop: 14, paddingBottom: 20 },
+  phaseThreadRow: { alignItems: 'flex-start', paddingTop: 12, paddingBottom: 28 },
   rowBody: { flex: 1 },
   groupTitle: { fontSize: 15, fontWeight: '600' },
   groupBlurb: { fontSize: 13, lineHeight: 18, marginTop: 3 },

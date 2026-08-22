@@ -53,9 +53,6 @@ const createStyles = (colors: any, isLargeScreen: boolean, isLandscape: boolean)
     flex: 1,
     backgroundColor: colors.background,
   },
-  headerSpacer: {
-    height: 32,
-  },
   buttonContainer: {
     position: "absolute",
     left: 0,
@@ -507,7 +504,7 @@ export default function BibleScreen() {
   // Render the header content that was previously in ScrollView
   const renderHeader = () => (
     <View>
-      <View style={styles.headerSpacer} />
+      <View style={{ height: Math.max(insets.top, 12) + 8 }} />
       {segID[0] === "I" && isIntroType(segmentData) && (
         <Intro 
           segmentData={{...segmentData, id: segID}} 

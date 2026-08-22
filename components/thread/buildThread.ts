@@ -24,11 +24,16 @@ export type ThreadRow = {
 
 export type ThreadMark = { key: string; x: number; y: number };
 
+type PathMark = ThreadMark & { rowTop: number; rowBottom: number };
+
 /**
  * Builds an SVG path using only horizontal lines, vertical lines, and
  * quarter-circle arcs. Marks sit at `markOffset` (or the row center) from the
  * top of each row. Optional entry/exit corridors run above the first row and
  * below the last row so they never cut through card text.
+ *
+ * Depth changes step at the **row boundary** (below the previous row’s text),
+ * so the horizontal corridor never slices through blurbs or titles.
  */
 export function buildThread(
   rows: ThreadRow[],
@@ -38,12 +43,21 @@ export function buildThread(
   const exitSide = opts?.exit ?? 'left';
   const entrySide = opts?.entry ?? 'left';
   let y = 0;
-  const marks: ThreadMark[] = rows.map((r) => {
-    const mark = { key: r.key, x: DEPTH_X[r.depth], y: y + (r.markOffset ?? r.height / 2) };
-    y += r.height;
+  const marks: PathMark[] = rows.map((r) => {
+    const markOffset = r.markOffset ?? r.height / 2;
+    const rowTop = y;
+    const rowBottom = y + r.height;
+    const mark: PathMark = {
+      key: r.key,
+      x: DEPTH_X[r.depth],
+      y: rowTop + markOffset,
+      rowTop,
+      rowBottom,
+    };
+    y = rowBottom;
     return mark;
   });
-  if (!marks.length) return { d: '', length: 0, marks, height: 0 };
+  if (!marks.length) return { d: '', length: 0, marks: [] as ThreadMark[], height: 0 };
 
   let d = '';
   let length = 0;
@@ -79,21 +93,23 @@ export function buildThread(
       d += ` V ${m.y}`;
       length += Math.abs(m.y - prev.y);
     } else {
-      // Depth change — same rounded corners, stepped the correct way:
+      // Depth change — rounded step at the row boundary so copy stays clear:
       // deeper = down → right → down; shallower = down → left → down.
       const goingRight = m.x > prev.x;
       const dx = Math.abs(m.x - prev.x);
       // Leave a short straight H so the step reads clearly (not a pure S-wave).
       const r = Math.min(R, Math.max(8, dx / 2 - 2));
 
-      // Keep the horizontal corridor between beads, prefer lower so phase blurbs clear.
-      const lo = prev.y + GAP + r;
-      const hi = m.y - GAP - r;
-      const midY = hi >= lo ? lo + (hi - lo) * 0.72 : lo;
+      // Prefer the shared edge between rows; clamp so both arcs still fit.
+      const minMid = prev.y + r + 4;
+      const maxMid = m.y - r - 4;
+      const boundary = prev.rowBottom;
+      const midY =
+        maxMid >= minMid ? Math.max(minMid, Math.min(maxMid, boundary)) : (prev.y + m.y) / 2;
 
       if (goingRight) {
         d += ` V ${midY - r}`;
-        length += (midY - r) - prev.y;
+        length += midY - r - prev.y;
         // down → right (clockwise quarter in SVG y-down)
         d += ` A ${r} ${r} 0 0 1 ${prev.x + r} ${midY}`;
         length += (Math.PI / 2) * r;
@@ -112,14 +128,14 @@ export function buildThread(
         }
       } else {
         d += ` V ${midY - r}`;
-        length += (midY - r) - prev.y;
+        length += midY - r - prev.y;
         // down → left
         d += ` A ${r} ${r} 0 0 0 ${prev.x - r} ${midY}`;
         length += (Math.PI / 2) * r;
         const hTarget = m.x + r;
         if (hTarget < prev.x - r) {
           d += ` H ${hTarget}`;
-          length += (prev.x - r) - hTarget;
+          length += prev.x - r - hTarget;
         }
         // left → down
         d += ` A ${r} ${r} 0 0 1 ${m.x} ${midY + r}`;
@@ -134,8 +150,10 @@ export function buildThread(
     prev = m;
   }
 
+  const publicMarks: ThreadMark[] = marks.map(({ key, x, y: my }) => ({ key, x, y: my }));
+
   if (exitSide === 'none') {
-    return { d, length, marks, height: rowsBottom };
+    return { d, length, marks: publicMarks, height: rowsBottom };
   }
 
   // Exit below the last row so the corridor never crosses card text.
@@ -155,8 +173,8 @@ export function buildThread(
     length += (Math.PI / 2) * R;
     const exitX = -THREAD_OVERHANG;
     d += ` H ${exitX}`;
-    length += (prev.x - R) - exitX;
+    length += prev.x - R - exitX;
   }
 
-  return { d, length, marks, height: rowsBottom + GAP + R };
+  return { d, length, marks: publicMarks, height: rowsBottom + GAP + R };
 }
