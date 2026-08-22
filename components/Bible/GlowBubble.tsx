@@ -7,7 +7,7 @@ import BibleInlineComponent from './Inline';
 import EmojiHandler from '@/components/EmojiHandler';
 import { isLeftVoice } from '@/utils/ink';
 import { DUR, timing } from '@/constants/Motion';
-import { ThreadColors } from '@/constants/Colors';
+import { ThreadColors, inkHex } from '@/constants/Colors';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { localizeBookName, localizeStoryTitle, localizeVoiceName } from '@/utils/localize';
@@ -87,9 +87,24 @@ const GlowingBubble = ({
     borderTopRightRadius: left ? 16 : 5,
   };
 
+  const glow = isGlowing ? inkHex(color, palette) : undefined;
+
   return (
     <View style={styles.row}>
       <View style={[styles.stack, { alignSelf: left ? 'flex-start' : 'flex-end' }]}>
+        <View style={[styles.meta, { alignItems: left ? 'flex-start' : 'flex-end' }]}>
+          <Text
+            accessibilityLabel={speaker}
+            style={[styles.who, { color: ink, textAlign: left ? 'left' : 'right' }]}
+          >
+            {speaker}
+          </Text>
+          {showMeta && !!metaLine && (
+            <Text style={[styles.cite, { color: palette.mute, textAlign: left ? 'left' : 'right' }]}>
+              {metaLine}
+            </Text>
+          )}
+        </View>
         <View style={{ alignSelf: left ? 'flex-start' : 'flex-end', maxWidth: '100%' }}>
           <EmojiHandler block={block} blockIndex={bIndex} hasTail={hasTail} onLongPress={onLongPress}>
             <Animated.View
@@ -99,8 +114,19 @@ const GlowingBubble = ({
                 bubbleStyle,
                 {
                   backgroundColor: isDarkMode ? fills.dark : fills.light,
-                  borderColor: color === 'black' ? palette.hair : ink,
+                  borderColor: glow || (color === 'black' ? palette.hair : ink),
                   borderWidth: isTargetVerse || isGlowing ? 2 : StyleSheet.hairlineWidth,
+                },
+                isGlowing && {
+                  shadowColor: glow,
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.45,
+                  shadowRadius: 6,
+                  elevation: isDarkMode ? 6 : 4,
+                  ...Platform.select({
+                    web: { boxShadow: `0 0 8px ${glow}` },
+                    default: {},
+                  }),
                 },
               ]}
             >
@@ -122,19 +148,6 @@ const GlowingBubble = ({
             </View>
           </Animated.View>
         </EmojiHandler>
-        </View>
-        <View style={[styles.meta, { alignItems: left ? 'flex-start' : 'flex-end' }]}>
-          <Text
-            accessibilityLabel={speaker}
-            style={[styles.who, { color: ink, textAlign: left ? 'left' : 'right' }]}
-          >
-            {speaker}
-          </Text>
-          {showMeta && !!metaLine && (
-            <Text style={[styles.cite, { color: palette.mute, textAlign: left ? 'left' : 'right' }]}>
-              {metaLine}
-            </Text>
-          )}
         </View>
       </View>
     </View>
@@ -162,15 +175,14 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   meta: {
-    marginTop: 6,
-    marginBottom: 10,
+    marginTop: 10,
+    marginBottom: 6,
     paddingHorizontal: 4,
   },
   bubble: {
     maxWidth: '100%',
     paddingVertical: 9,
     paddingHorizontal: 12,
-    marginTop: 10,
     position: 'relative',
     ...Platform.select({
       web: { boxShadow: 'none' },
