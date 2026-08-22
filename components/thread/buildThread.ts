@@ -5,7 +5,7 @@ export const THREAD_OVERHANG = 32;
 const R = 16;
 
 /** Vertical gap between the last mark on a depth and the horizontal corridor. */
-const GAP = 12;
+const GAP = 14;
 
 export const ROW_HEIGHT = {
   division: 46,
@@ -79,55 +79,51 @@ export function buildThread(
       d += ` V ${m.y}`;
       length += Math.abs(m.y - prev.y);
     } else {
-      // Depth change — keep the horizontal corridor between the two marks so it
-      // doesn’t cut through text sitting under the previous bead (e.g. phase blurbs).
+      // Depth change — same rounded corners, stepped the correct way:
+      // deeper = down → right → down; shallower = down → left → down.
       const goingRight = m.x > prev.x;
       const dx = Math.abs(m.x - prev.x);
-      const r = Math.min(R, dx / 2);
+      // Leave a short straight H so the step reads clearly (not a pure S-wave).
+      const r = Math.min(R, Math.max(8, dx / 2 - 2));
 
+      // Keep the horizontal corridor between beads, prefer lower so phase blurbs clear.
       const lo = prev.y + GAP + r;
       const hi = m.y - GAP - r;
-      const midY = hi >= lo ? (lo + hi) / 2 : lo;
+      const midY = hi >= lo ? lo + (hi - lo) * 0.72 : lo;
 
       if (goingRight) {
-        // Vertical to corridor start
         d += ` V ${midY - r}`;
         length += (midY - r) - prev.y;
-        // Arc: down → right
-        d += ` A ${r} ${r} 0 0 0 ${prev.x + r} ${midY}`;
+        // down → right (clockwise quarter in SVG y-down)
+        d += ` A ${r} ${r} 0 0 1 ${prev.x + r} ${midY}`;
         length += (Math.PI / 2) * r;
-        // Horizontal
         const hTarget = m.x - r;
         if (hTarget > prev.x + r) {
           d += ` H ${hTarget}`;
           length += hTarget - (prev.x + r);
         }
-        // Arc: right → down
-        d += ` A ${r} ${r} 0 0 1 ${m.x} ${midY + r}`;
+        // right → down
+        d += ` A ${r} ${r} 0 0 0 ${m.x} ${midY + r}`;
         length += (Math.PI / 2) * r;
-        // Vertical to mark
         const afterArc = midY + r;
         if (m.y > afterArc) {
           d += ` V ${m.y}`;
           length += m.y - afterArc;
         }
       } else {
-        // Vertical to corridor start
         d += ` V ${midY - r}`;
         length += (midY - r) - prev.y;
-        // Arc: down → left
-        d += ` A ${r} ${r} 0 0 1 ${prev.x - r} ${midY}`;
+        // down → left
+        d += ` A ${r} ${r} 0 0 0 ${prev.x - r} ${midY}`;
         length += (Math.PI / 2) * r;
-        // Horizontal
         const hTarget = m.x + r;
         if (hTarget < prev.x - r) {
           d += ` H ${hTarget}`;
           length += (prev.x - r) - hTarget;
         }
-        // Arc: left → down
-        d += ` A ${r} ${r} 0 0 0 ${m.x} ${midY + r}`;
+        // left → down
+        d += ` A ${r} ${r} 0 0 1 ${m.x} ${midY + r}`;
         length += (Math.PI / 2) * r;
-        // Vertical to mark
         const afterArc = midY + r;
         if (m.y > afterArc) {
           d += ` V ${m.y}`;

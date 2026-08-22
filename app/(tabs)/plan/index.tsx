@@ -61,8 +61,8 @@ const GROUP_COPY: Record<PlanGroupId, { title: string; blurb: string }> = {
 };
 
 const PLAN_ROW_HEIGHT = 92;
-/** Room below the phase title/blurb so the depth-change corridor doesn’t cross text. */
-const PHASE_ROW_HEIGHT = 96;
+/** Room below the phase title/blurb so the right-angle step clears the text. */
+const PHASE_ROW_HEIGHT = 108;
 /** Sit the bead beside the title, not in the middle of the 2-line blurb. */
 const PLAN_MARK = 20;
 const PHASE_MARK = 18;
@@ -987,7 +987,7 @@ const styles = StyleSheet.create({
   threadWrap: { position: 'relative', paddingTop: 0, overflow: 'visible' },
   threadRow: { flexDirection: 'row', alignItems: 'center', paddingRight: 14, zIndex: 1 },
   planThreadRow: { alignItems: 'flex-start', paddingTop: 12 },
-  phaseThreadRow: { alignItems: 'flex-start', paddingTop: 10 },
+  phaseThreadRow: { alignItems: 'flex-start', paddingTop: 10, paddingBottom: 18 },
   rowBody: { flex: 1 },
   groupTitle: { fontSize: 15, fontWeight: '600' },
   groupBlurb: { fontSize: 13, lineHeight: 18, marginTop: 3 },
@@ -997,7 +997,7 @@ const styles = StyleSheet.create({
   planBlurb: { fontSize: 13, lineHeight: 18, marginTop: 2 },
   planMeta: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', marginTop: 4 },
   phaseTitle: { fontSize: 13, fontWeight: '600' },
-  phaseBlurb: { fontSize: 12, lineHeight: 16, marginTop: 2 },
+  phaseBlurb: { fontSize: 12, lineHeight: 16, marginTop: 2, paddingRight: 8 },
   startBtn: {
     borderWidth: 1,
     borderRadius: 10,
