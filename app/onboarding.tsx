@@ -74,16 +74,20 @@ function ParallaxLayer({
   scrollX,
   page,
   width,
+  reduced,
   children,
 }: {
   scrollX: SharedValue<number>;
   page: number;
   width: number;
+  reduced: boolean;
   children: React.ReactNode;
 }) {
   const style = useAnimatedStyle(() => {
+    if (reduced) return { transform: [{ translateX: 0 }] };
     const delta = scrollX.value - page * width;
-    return { transform: [{ translateX: delta * 0.15 }] };
+    // Keep the lag small so demos stay inside the clipped page during swipes.
+    return { transform: [{ translateX: delta * 0.08 }] };
   });
   return <Animated.View style={[styles.demoInner, style]}>{children}</Animated.View>;
 }
@@ -228,7 +232,7 @@ export default function OnboardingScreen() {
             end={{ x: 1, y: 1 }}
             style={StyleSheet.absoluteFill}
           />
-          <ParallaxLayer scrollX={scrollX} page={page} width={width}>
+          <ParallaxLayer scrollX={scrollX} page={page} width={width} reduced={!!reduced}>
             {renderDemo(page, demoProps)}
           </ParallaxLayer>
         </View>
@@ -278,6 +282,7 @@ export default function OnboardingScreen() {
         showsHorizontalScrollIndicator={false}
         onScroll={scrollHandler}
         scrollEventThrottle={16}
+        style={styles.pager}
         onMomentumScrollEnd={(event) => {
           const next = Math.round(event.nativeEvent.contentOffset.x / width);
           if (next !== index) setIndex(next);
@@ -292,14 +297,23 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   boot: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  page: { flex: 1, paddingHorizontal: 20 },
+  pager: { flex: 1, overflow: 'hidden' },
+  // iOS defaults to overflow:visible — without clipping, parallax on adjacent
+  // pages bleeds their demos into the current screen.
+  page: { flex: 1, paddingHorizontal: 20, overflow: 'hidden' },
   top: { minHeight: 44, alignItems: 'flex-end', justifyContent: 'center' },
   skipHit: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 4 },
   skip: { fontSize: 15 },
   headline: { fontWeight: '600', letterSpacing: -0.4, marginTop: 8 },
   body: { marginTop: 8, maxWidth: 360 },
-  demo: { flex: 1, marginTop: 18, justifyContent: 'center' },
-  demoInner: { flex: 1, justifyContent: 'center' },
+  demo: {
+    flex: 1,
+    marginTop: 18,
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderRadius: 16,
+  },
+  demoInner: { flex: 1, justifyContent: 'center', paddingHorizontal: 4 },
   footer: { gap: 14 },
   dots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   dot: { height: 6, borderRadius: 3 },

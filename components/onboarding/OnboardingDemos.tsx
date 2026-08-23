@@ -123,12 +123,15 @@ function DemoBubble({
 export function ShapeDemo({ active, token, palette, language }: DemoProps) {
   const reduced = useReducedMotion();
   const progress = useSharedValue(reduced ? 1 : 0);
+  // Onboarding only shows story rows — use division depth so the thread sits
+  // near the card's left edge instead of leaving a blank story-depth gutter.
   const rows = ONBOARDING_STORY_IDS.map((id) => ({
     key: id,
-    depth: 2 as const,
+    depth: 0 as const,
     height: ROW_HEIGHT.story,
   }));
   const thread = useMemo(() => buildThread(rows, { width: 280 }), []);
+  const beadX = DEPTH_X[0];
 
   useEffect(() => {
     if (!active) return;
@@ -168,13 +171,13 @@ export function ShapeDemo({ active, token, palette, language }: DemoProps) {
                 style={[
                   styles.bead,
                   {
-                    left: (mark?.x || DEPTH_X[2]) - 4,
+                    left: (mark?.x || beadX) - 4,
                     borderColor: palette.thread,
                     backgroundColor: palette.bg,
                   },
                 ]}
               />
-              <View style={{ paddingLeft: DEPTH_X[2] + 16, flex: 1 }}>
+              <View style={{ paddingLeft: beadX + 16, flex: 1 }}>
                 <Text style={[styles.storyTitle, { color: palette.ink }]}>{title}</Text>
                 <Text style={[styles.storyRef, { color: palette.mute }]}>
                   {info?.book?.[0]} {info?.ref}
@@ -206,7 +209,7 @@ export function VoicesDemo({ active, token, palette, isDarkMode, language, t }: 
   }, [active, blocks, reduced, token]);
 
   return (
-    <View>
+    <View style={styles.demoStack}>
       <View style={styles.exchange}>
         {blocks.map((block, index) => (
           <DemoBubble
@@ -429,7 +432,7 @@ export function KeepDemo({ active, token, palette, isDarkMode, language, t }: De
   if (!block) return null;
 
   return (
-    <View>
+    <View style={styles.demoStack}>
       <DemoBubble
         key={token}
         block={block}
@@ -453,6 +456,7 @@ export function KeepDemo({ active, token, palette, isDarkMode, language, t }: De
 
 const styles = StyleSheet.create({
   card: { borderWidth: 1, borderRadius: 14, padding: 12, overflow: 'hidden' },
+  demoStack: { width: '100%', overflow: 'hidden' },
   kicker: { fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', fontWeight: '600' },
   habitTop: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   habitPlan: { flex: 1, gap: 4 },
