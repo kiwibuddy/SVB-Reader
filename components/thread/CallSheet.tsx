@@ -9,12 +9,15 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { hapticSelection } from '@/utils/haptics';
 import { useRouter } from 'expo-router';
 import type { Ink } from '@/utils/ink';
+import type { ReaderSlot } from '@/utils/readerParts';
 
 interface CallSheetProps {
   sources: Record<string, { words: number; color: string } | number | undefined>;
   colorData?: { black?: number; red?: number; green?: number; blue?: number; total?: number };
-  selectedInk?: Ink | null;
-  onSelectInk?: (ink: Ink | null) => void;
+  /** The story's four reading parts, left to right. */
+  slots: ReaderSlot[];
+  selectedReader?: number | null;
+  onSelectReader?: (index: number | null) => void;
 }
 
 const INKS: Ink[] = ['black', 'red', 'green', 'blue'];
@@ -63,7 +66,13 @@ function toCastList(
   }));
 }
 
-const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, onSelectInk }) => {
+const CallSheet: React.FC<CallSheetProps> = ({
+  sources,
+  colorData,
+  slots,
+  selectedReader,
+  onSelectReader,
+}) => {
   const { isDarkMode, language } = useSyncAppSettings();
   const { t } = useTranslation();
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
@@ -71,6 +80,8 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
   const router = useRouter();
 
   const cast = useMemo(() => toCastList(sources, colorData), [sources, colorData]);
+  // The voice behind the chosen part, for dimming the cast list.
+  const selectedInk = selectedReader == null ? null : slots[selectedReader]?.ink ?? null;
 
   const openCast = (name: string) => {
     void hapticSelection();
@@ -86,33 +97,35 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
       <View style={[styles.wrap, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
         <View style={styles.top}>
           <View style={styles.boxes}>
-            {INKS.map((ink) => {
-              const present = (colorData?.[ink] || 0) > 0;
-              const selected = selectedInk === ink;
+            {slots.map((slot) => {
+              const selected = selectedReader === slot.index;
               return (
                 <Pressable
-                  key={ink}
+                  key={slot.index}
                   accessibilityRole="button"
-                  accessibilityState={{ disabled: !present, selected }}
-                  accessibilityLabel={`${t(inkLabelKey(ink))}${selected ? ', selected' : ''}`}
+                  accessibilityState={{ selected }}
+                  // Position first, because four boxes can share one colour.
+                  accessibilityLabel={t('UI.thread.readerPart', {
+                    number: slot.index + 1,
+                    voice: t(inkLabelKey(slot.ink)),
+                  })}
                   hitSlop={4}
-                  disabled={!present}
                   onPress={() => {
-                    if (!present) return;
                     void hapticSelection();
-                    onSelectInk?.(selected ? null : ink);
+                    onSelectReader?.(selected ? null : slot.index);
                   }}
                   style={[
                     styles.box,
                     {
-                      backgroundColor: fillHex(ink, palette),
-                      borderColor: inkHex(ink, palette),
+                      backgroundColor: fillHex(slot.ink, palette),
+                      borderColor: inkHex(slot.ink, palette),
                       borderWidth: selected ? 2 : 1,
-                      opacity: present ? 1 : 0.28,
                     },
                   ]}
                 >
-                  {selected && <Ionicons name="checkmark" size={20} color={inkHex(ink, palette)} />}
+                  {selected && (
+                    <Ionicons name="checkmark" size={20} color={inkHex(slot.ink, palette)} />
+                  )}
                 </Pressable>
               );
             })}
