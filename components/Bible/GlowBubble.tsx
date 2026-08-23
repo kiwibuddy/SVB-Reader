@@ -45,7 +45,7 @@ const GlowingBubble = ({
   onLayout,
 }: BibleBlockProps) => {
   const { source, children } = block;
-  const { color = 'black', sourceName = 'Unknown' } = source || {};
+  const { color = 'black', sourceName = 'Unknown', kind } = source || {};
   const { isDarkMode, language, sizes } = useSyncAppSettings();
   const { state } = useSQLiteGlobalContext();
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
@@ -71,6 +71,7 @@ const GlowingBubble = ({
   const baseFill = isDarkMode ? fills.dark : fills.light;
   const baseBorder = glow || (color === 'black' ? palette.hair : ink);
   const pulse = useSharedValue(0);
+  const isEditorial = kind === 'editorial';
 
   useEffect(() => {
     opacity.value = withTiming(dimmed ? 0.55 : 1, timing(DUR.quick));
@@ -95,22 +96,52 @@ const GlowingBubble = ({
     borderTopRightRadius: left ? 16 : 5,
   };
 
+  const body = (
+    <View>
+      {children.map((item, index) => {
+        if (item.type === 'break' || item.tag === 'b') return null;
+        return (
+          <BibleInlineComponent
+            key={`${bIndex}-${index}`}
+            iIndex={`${bIndex}-${index}`}
+            inline={item}
+            textColor={isEditorial ? palette.mute : ink}
+            bubbleColor={color}
+            bodySize={isEditorial ? Math.max(13, bodySize - 2) : bodySize}
+            bodyLineHeight={isEditorial ? Math.round(bodySize * 1.35) : lineHeight}
+          />
+        );
+      })}
+    </View>
+  );
+
+  // NLT manuscript notes (e.g. John 7:53–8:11) — not speech; no "Unknown" cast label.
+  if (isEditorial) {
+    return (
+      <View style={styles.editorialRow} onLayout={onLayout}>
+        <View style={styles.editorial}>{body}</View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.row} onLayout={onLayout}>
       <View style={[styles.stack, { alignSelf: left ? 'flex-start' : 'flex-end' }]}>
-        <View style={[styles.meta, { alignItems: left ? 'flex-start' : 'flex-end' }]}>
-          <Text
-            accessibilityLabel={speaker}
-            style={[styles.who, { color: ink, textAlign: left ? 'left' : 'right' }]}
-          >
-            {speaker}
-          </Text>
-          {showMeta && !!metaLine && (
-            <Text style={[styles.cite, { color: palette.mute, textAlign: left ? 'left' : 'right' }]}>
-              {metaLine}
+        {hasTail && !!sourceName && (
+          <View style={[styles.meta, { alignItems: left ? 'flex-start' : 'flex-end' }]}>
+            <Text
+              accessibilityLabel={speaker}
+              style={[styles.who, { color: ink, textAlign: left ? 'left' : 'right' }]}
+            >
+              {speaker}
             </Text>
-          )}
-        </View>
+            {showMeta && !!metaLine && (
+              <Text style={[styles.cite, { color: palette.mute, textAlign: left ? 'left' : 'right' }]}>
+                {metaLine}
+              </Text>
+            )}
+          </View>
+        )}
         <View style={{ alignSelf: left ? 'flex-start' : 'flex-end', maxWidth: '100%', overflow: 'visible' }}>
           <EmojiHandler block={block} blockIndex={bIndex} hasTail={hasTail} onLongPress={onLongPress}>
             <Animated.View
@@ -132,22 +163,7 @@ const GlowingBubble = ({
                 },
               ]}
             >
-            <View>
-              {children.map((item, index) => {
-                if (item.type === 'break' || item.tag === 'b') return null;
-                return (
-                  <BibleInlineComponent
-                    key={`${bIndex}-${index}`}
-                    iIndex={`${bIndex}-${index}`}
-                    inline={item}
-                    textColor={ink}
-                    bubbleColor={color}
-                    bodySize={bodySize}
-                    bodyLineHeight={lineHeight}
-                  />
-                );
-              })}
-            </View>
+            {body}
           </Animated.View>
         </EmojiHandler>
         </View>
@@ -166,11 +182,24 @@ const styles = StyleSheet.create({
     maxWidth: '84%',
     overflow: 'visible',
   },
+  editorialRow: {
+    width: '100%',
+    paddingHorizontal: 28,
+    paddingVertical: 10,
+  },
+  editorial: {
+    alignItems: 'center',
+  },
   who: {
     fontSize: 9,
+    lineHeight: 14,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
     fontWeight: '600',
+    ...Platform.select({
+      android: { includeFontPadding: false },
+      default: {},
+    }),
   },
   cite: {
     fontSize: 10,
@@ -178,9 +207,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   meta: {
-    marginTop: 10,
-    marginBottom: 6,
+    // Keep clear of the bubble and of reaction badges (top: -13 on the bubble).
+    marginTop: 14,
+    marginBottom: 12,
     paddingHorizontal: 4,
+    zIndex: 2,
   },
   bubble: {
     maxWidth: '100%',

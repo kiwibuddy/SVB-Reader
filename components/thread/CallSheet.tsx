@@ -78,113 +78,164 @@ const CallSheet: React.FC<CallSheetProps> = ({ sources, colorData, selectedInk, 
   };
 
   return (
-    <View style={[styles.wrap, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
-      <View style={styles.top}>
-        <View style={styles.boxes}>
-          {INKS.map((ink) => {
-            const present = (colorData?.[ink] || 0) > 0;
-            const selected = selectedInk === ink;
-            return (
-              <Pressable
-                key={ink}
-                accessibilityRole="button"
-                accessibilityState={{ disabled: !present, selected }}
-                accessibilityLabel={`${t(inkLabelKey(ink))}${selected ? ', selected' : ''}`}
-                hitSlop={4}
-                disabled={!present}
-                onPress={() => {
-                  if (!present) return;
-                  void hapticSelection();
-                  onSelectInk?.(selected ? null : ink);
-                }}
-                style={[
-                  styles.box,
-                  {
-                    backgroundColor: fillHex(ink, palette),
-                    borderColor: inkHex(ink, palette),
-                    borderWidth: selected ? 2 : 1,
-                    opacity: present ? 1 : 0.28,
-                  },
-                ]}
-              >
-                {selected && <Ionicons name="checkmark" size={18} color={inkHex(ink, palette)} />}
-              </Pressable>
-            );
-          })}
-        </View>
-        <Pressable
-          onPress={() => {
-            void hapticSelection();
-            setOpen((value) => !value);
-          }}
-          hitSlop={8}
-          style={styles.countHit}
-        >
-          <Text style={[styles.count, { color: palette.mute }]}>
-            {cast.length} {t('UI.thread.scopeVoices').toLowerCase()} {open ? '⌃' : '⌄'}
-          </Text>
-        </Pressable>
-      </View>
+    <View style={styles.outer}>
+      <Text style={[styles.prompt, { color: palette.mute }]}>
+        {t('UI.thread.pickCastPrompt')}
+      </Text>
 
-      {open ? (
-        <View style={styles.cast} collapsable={false}>
-          {cast.length === 0 ? (
-            <Text style={[styles.hint, { color: palette.mute }]}>{t('UI.thread.noVoicesAvailable')}</Text>
-          ) : (
-            cast.map((row) => {
-              const active = !selectedInk || selectedInk === row.color;
-              const showCast = !NARRATION_VOICES.has(row.name);
+      <View style={[styles.wrap, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
+        <View style={styles.top}>
+          <View style={styles.boxes}>
+            {INKS.map((ink) => {
+              const present = (colorData?.[ink] || 0) > 0;
+              const selected = selectedInk === ink;
               return (
-                <View
-                  key={row.name}
-                  style={[styles.row, { opacity: active ? 1 : 0.55 }]}
+                <Pressable
+                  key={ink}
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: !present, selected }}
+                  accessibilityLabel={`${t(inkLabelKey(ink))}${selected ? ', selected' : ''}`}
+                  hitSlop={4}
+                  disabled={!present}
+                  onPress={() => {
+                    if (!present) return;
+                    void hapticSelection();
+                    onSelectInk?.(selected ? null : ink);
+                  }}
+                  style={[
+                    styles.box,
+                    {
+                      backgroundColor: fillHex(ink, palette),
+                      borderColor: inkHex(ink, palette),
+                      borderWidth: selected ? 2 : 1,
+                      opacity: present ? 1 : 0.28,
+                    },
+                  ]}
                 >
-                  <View style={[styles.dot, { backgroundColor: inkHex(row.color, palette) }]} />
-                  <Text style={[styles.name, { color: palette.ink }]} numberOfLines={1}>
-                    {localizeVoiceName(row.name, language)}
-                  </Text>
-                  <Text style={[styles.words, { color: palette.mute }]}>
-                    {row.words} {t('UI.thread.words').toLowerCase()}
-                  </Text>
-                  {showCast ? (
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={t('UI.thread.openCastPage')}
-                      hitSlop={10}
-                      onPress={() => openCast(row.name)}
-                      style={styles.castBtn}
-                    >
-                      <Ionicons name="person-circle-outline" size={26} color={inkHex(row.color, palette)} />
-                    </Pressable>
-                  ) : (
-                    <View style={styles.castBtn} />
-                  )}
-                </View>
+                  {selected && <Ionicons name="checkmark" size={20} color={inkHex(ink, palette)} />}
+                </Pressable>
               );
-            })
-          )}
+            })}
+          </View>
+          <Pressable
+            onPress={() => {
+              void hapticSelection();
+              setOpen((value) => !value);
+            }}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: open }}
+            accessibilityLabel={`${cast.length} ${t('UI.thread.scopeVoices')}`}
+            style={styles.countHit}
+          >
+            <Text style={[styles.count, { color: palette.ink }]}>
+              {cast.length} {t('UI.thread.scopeVoices').toUpperCase()}
+            </Text>
+            <Ionicons
+              name={open ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color={palette.ink}
+            />
+          </Pressable>
         </View>
-      ) : null}
+
+        {open ? (
+          <View style={styles.cast} collapsable={false}>
+            {cast.length === 0 ? (
+              <Text style={[styles.hint, { color: palette.mute }]}>{t('UI.thread.noVoicesAvailable')}</Text>
+            ) : (
+              cast.map((row) => {
+                const active = !selectedInk || selectedInk === row.color;
+                const showCast = !NARRATION_VOICES.has(row.name);
+                return (
+                  <View
+                    key={row.name}
+                    style={[styles.row, { opacity: active ? 1 : 0.55 }]}
+                  >
+                    <View style={[styles.dot, { backgroundColor: inkHex(row.color, palette) }]} />
+                    <Text style={[styles.name, { color: palette.ink }]} numberOfLines={1}>
+                      {localizeVoiceName(row.name, language)}
+                    </Text>
+                    <Text style={[styles.words, { color: palette.mute }]}>
+                      {row.words} {t('UI.thread.words').toLowerCase()}
+                    </Text>
+                    {showCast ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={t('UI.thread.openCastPage')}
+                        hitSlop={10}
+                        onPress={() => openCast(row.name)}
+                        style={styles.castBtn}
+                      >
+                        <Ionicons name="person-circle-outline" size={26} color={inkHex(row.color, palette)} />
+                      </Pressable>
+                    ) : (
+                      <View style={styles.castBtn} />
+                    )}
+                  </View>
+                );
+              })
+            )}
+          </View>
+        ) : null}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  wrap: { marginHorizontal: 14, marginTop: 8, borderWidth: 1, borderRadius: 12, overflow: 'visible' },
-  top: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 10 },
-  boxes: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  outer: {
+    marginHorizontal: 14,
+    marginTop: 2,
+    marginBottom: 8,
+  },
+  prompt: {
+    fontSize: 14,
+    lineHeight: 20,
+    paddingHorizontal: 2,
+    paddingTop: 4,
+    paddingBottom: 10,
+  },
+  wrap: {
+    borderWidth: 1,
+    borderRadius: 12,
+    overflow: 'visible',
+  },
+  top: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  boxes: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   box: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 42,
+    height: 42,
+    borderRadius: 11,
     borderTopLeftRadius: 4,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  countHit: { paddingVertical: 8, paddingLeft: 4 },
-  count: { fontSize: 9, letterSpacing: 1.1, textTransform: 'uppercase' },
-  cast: { paddingHorizontal: 12, paddingBottom: 12, gap: 4 },
+  countHit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 8,
+    paddingLeft: 4,
+  },
+  count: {
+    fontSize: 13,
+    letterSpacing: 1.1,
+    fontWeight: '700',
+  },
+  cast: { paddingHorizontal: 14, paddingBottom: 14, gap: 4 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44 },
   dot: { width: 8, height: 8, borderRadius: 4 },
   name: { flex: 1, fontSize: 15 },

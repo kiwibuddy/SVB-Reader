@@ -6,6 +6,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { isLargeScreen, isLandscape } from '@/constants/sizes';
+import conversations from '@/assets/data/conversations.json';
+import { ConversationsFile } from '@/types/conversations';
+import { roleFill } from '@/utils/ink';
+
+const CAST_CREAM = '#F2EAE0';
+const conv = conversations as ConversationsFile;
 
 interface BottomNavigationProps {
   isHome?: boolean;
@@ -20,6 +26,21 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
   const lastScrollY = React.useRef(0);
   const { colors } = useSyncAppSettings();
   const { t } = useTranslation();
+
+  // Match the Cast voice page field so the tab bar reads as one colored surface.
+  const castField = useMemo(() => {
+    const match = pathname.match(/^\/cast\/(.+)$/);
+    if (!match) return null;
+    const name = decodeURIComponent(match[1]);
+    const voice = conv.voices[name];
+    return voice ? roleFill(voice.color) : null;
+  }, [pathname]);
+
+  const navBackground = castField || colors.background;
+  const navBorder = castField ? 'rgba(242,234,224,0.22)' : colors.border;
+  const inactiveTint = castField ? 'rgba(242,234,224,0.55)' : colors.secondary;
+  const activeTint = castField ? CAST_CREAM : colors.primary;
+  const labelColor = castField ? 'rgba(242,234,224,0.7)' : colors.text;
 
   // iPad-specific override: always show bottom navigation on iPad even if "large screen"
   const isIPad = Platform.OS === 'ios' && (Platform as any).isPad === true;
@@ -171,14 +192,14 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
       maxWidth: isLargeScreen ? 120 : 100,
     },
     navText: {
-      color: colors.text,
+      color: labelColor,
       fontSize: isLargeScreen ? 13 : 11,
       marginTop: 4,
       fontWeight: '500',
       textAlign: 'center',
     },
     activeText: {
-      color: colors.primary,
+      color: activeTint,
       fontWeight: '600',
     },
   });
@@ -187,11 +208,11 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     styles.container,
     {
       paddingBottom: Math.max(insets.bottom, isLargeScreen ? 4 : 2),
-      backgroundColor: colors.background,
-      borderTopColor: colors.border,
-      shadowColor: colors.text,
+      backgroundColor: navBackground,
+      borderTopColor: navBorder,
+      shadowColor: castField ? '#000' : colors.text,
       shadowOffset: { width: 0, height: -2 },
-      shadowOpacity: 0.1,
+      shadowOpacity: castField ? 0.18 : 0.1,
       shadowRadius: 4,
       elevation: 8,
       transform: [{
@@ -203,28 +224,34 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ isHome }) => {
     },
   ];
 
+  const isRead = pathname === "/Home";
+  const isCast = pathname.startsWith("/cast");
+  const isPlan = pathname === "/plan" || pathname.startsWith("/plan/");
+  const isSaved = pathname === "/Reading-emoji";
+  const isYou = pathname === "/you";
+
   return (
     <Animated.View style={containerStyle}>
       <View style={styles.content}>
         <Pressable style={styles.navItem} onPress={() => router.replace("/Home")}>
-          <Ionicons name={pathname === "/Home" ? "book" : "book-outline"} size={iconSize} color={pathname === "/Home" ? colors.primary : colors.secondary} />
-          <Text style={[styles.navText, pathname === "/Home" && styles.activeText]}>{t('UI.tabs.read')}</Text>
+          <Ionicons name={isRead ? "book" : "book-outline"} size={iconSize} color={isRead ? activeTint : inactiveTint} />
+          <Text style={[styles.navText, isRead && styles.activeText]}>{t('UI.tabs.read')}</Text>
         </Pressable>
         <Pressable style={styles.navItem} onPress={() => router.replace("/cast")}>
-          <Ionicons name={pathname.startsWith("/cast") ? "people" : "people-outline"} size={iconSize} color={pathname.startsWith("/cast") ? colors.primary : colors.secondary} />
-          <Text style={[styles.navText, pathname.startsWith("/cast") && styles.activeText]}>{t('UI.tabs.cast')}</Text>
+          <Ionicons name={isCast ? "people" : "people-outline"} size={iconSize} color={isCast ? activeTint : inactiveTint} />
+          <Text style={[styles.navText, isCast && styles.activeText]}>{t('UI.tabs.cast')}</Text>
         </Pressable>
         <Pressable style={styles.navItem} onPress={() => router.replace("/plan")}>
-          <Ionicons name={pathname === "/plan" || pathname.startsWith("/plan/") ? "calendar" : "calendar-outline"} size={iconSize} color={pathname.includes("plan") ? colors.primary : colors.secondary} />
-          <Text style={[styles.navText, pathname.includes("plan") && styles.activeText]}>{t('UI.tabs.plan')}</Text>
+          <Ionicons name={isPlan ? "calendar" : "calendar-outline"} size={iconSize} color={isPlan ? activeTint : inactiveTint} />
+          <Text style={[styles.navText, isPlan && styles.activeText]}>{t('UI.tabs.plan')}</Text>
         </Pressable>
         <Pressable style={styles.navItem} onPress={() => router.replace("/Reading-emoji")}>
-          <Ionicons name={pathname === "/Reading-emoji" ? "bookmark" : "bookmark-outline"} size={iconSize} color={pathname === "/Reading-emoji" ? colors.primary : colors.secondary} />
-          <Text style={[styles.navText, pathname === "/Reading-emoji" && styles.activeText]}>{t('UI.tabs.saved')}</Text>
+          <Ionicons name={isSaved ? "bookmark" : "bookmark-outline"} size={iconSize} color={isSaved ? activeTint : inactiveTint} />
+          <Text style={[styles.navText, isSaved && styles.activeText]}>{t('UI.tabs.saved')}</Text>
         </Pressable>
         <Pressable style={styles.navItem} onPress={() => router.replace("/you")}>
-          <Ionicons name={pathname === "/you" ? "person" : "person-outline"} size={iconSize} color={pathname === "/you" ? colors.primary : colors.secondary} />
-          <Text style={[styles.navText, pathname === "/you" && styles.activeText]}>{t('UI.tabs.you')}</Text>
+          <Ionicons name={isYou ? "person" : "person-outline"} size={iconSize} color={isYou ? activeTint : inactiveTint} />
+          <Text style={[styles.navText, isYou && styles.activeText]}>{t('UI.tabs.you')}</Text>
         </Pressable>
       </View>
     </Animated.View>

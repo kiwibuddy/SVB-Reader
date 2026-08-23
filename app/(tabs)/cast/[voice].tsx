@@ -8,7 +8,7 @@ import conversations from '@/assets/data/conversations.json';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 import Books from '@/assets/data/BookChapterList.json';
 import { ConversationsFile } from '@/types/conversations';
-import { inkLabel, type Ink } from '@/utils/ink';
+import { inkLabel, roleFill, type Ink } from '@/utils/ink';
 import { localizeVoiceName, localizeStoryTitle, localizeBookName, formatCount } from '@/utils/localize';
 import { DIVISIONS, storyNumber } from '@/constants/divisions';
 import { NARRATION_VOICES } from '@/utils/voicesMet';
@@ -21,13 +21,6 @@ import { hapticImpactLight, hapticSelection } from '@/utils/haptics';
 const conv = conversations as ConversationsFile;
 const titles = SegmentTitles as Record<string, { title?: string; book?: string[]; ref?: string }>;
 const books = Books as Record<string, { bookName: string }>;
-
-function roleFill(color: string): string {
-  if (color === 'red') return '#B4231A';
-  if (color === 'green') return '#0E6B4C';
-  if (color === 'black') return '#3A4550';
-  return '#1D46A8';
-}
 
 function TimelineSeg({
   grow,
@@ -129,6 +122,8 @@ const VoiceCard = () => {
   const maxPartner = Math.max(...partners.map((partner) => partner.shared.length || partner.count), 1);
   const spokenCount = Object.values(conv.voices).filter((item) => !NARRATION_VOICES.has(item.name)).length;
   const presentDivisions = timeline.filter((item) => item.lit);
+  const nameSize = data.name.length > 14 ? 44 : 64;
+  const nameLineHeight = Math.round(nameSize * 1.22);
 
   return (
     <View style={[styles.root, { backgroundColor: field }]}>
@@ -151,7 +146,12 @@ const VoiceCard = () => {
         <Text
           style={[
             styles.name,
-            { color: cream, fontSize: data.name.length > 14 ? 44 : 64 },
+            {
+              color: cream,
+              fontSize: nameSize,
+              lineHeight: nameLineHeight,
+              paddingTop: Platform.OS === 'ios' ? 4 : 0,
+            },
           ]}
         >
           {localizeVoiceName(data.name, language)}
@@ -323,9 +323,12 @@ const styles = StyleSheet.create({
   rank: { fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.85, marginTop: 12 },
   name: {
     fontFamily: Platform.OS === 'ios' ? 'Didot' : 'serif',
-    lineHeight: 64,
     letterSpacing: -1,
-    marginTop: 6,
+    marginTop: 8,
+    ...Platform.select({
+      android: { includeFontPadding: false },
+      default: {},
+    }),
   },
   sentence: { fontSize: 14, lineHeight: 20, marginTop: 10, opacity: 0.92 },
   books: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 12 },

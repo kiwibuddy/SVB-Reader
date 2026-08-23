@@ -65,6 +65,8 @@ export interface BibleBlock {
   source?: {  // Make source optional for intro entries
     color: string;
     sourceName: string;
+    /** Manuscript note / non-speech row from the translation apparatus. */
+    kind?: 'speech' | 'editorial' | 'title';
     unique_sources?: string[];
     recipientName?: string;
     unique_recipients?: string[];
