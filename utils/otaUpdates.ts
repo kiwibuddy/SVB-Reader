@@ -34,3 +34,14 @@ export async function fetchOtaInBackground(): Promise<void> {
     logger.error('Update check failed:', error);
   }
 }
+
+/** Settings row: "binary" until a matching OTA reloads, then a short update id. */
+export function getOtaDebugLabel(): string {
+  if (__DEV__ || !Updates.isEnabled) return 'dev';
+  if (Updates.isEmbeddedLaunch) return 'binary';
+  const id = Updates.updateId?.replace(/-/g, '').slice(0, 8) ?? 'applied';
+  const at = Updates.createdAt
+    ? Updates.createdAt.toISOString().slice(0, 16).replace('T', ' ')
+    : '';
+  return at ? `${id} · ${at} UTC` : id;
+}

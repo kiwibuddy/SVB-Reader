@@ -15,14 +15,12 @@ import Animated, {
   Extrapolation,
   interpolate,
   interpolateColor,
-  useAnimatedScrollHandler,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
   withSequence,
   withSpring,
 } from 'react-native-reanimated';
-import type { SharedValue } from 'react-native-reanimated';
 import { useFirstLaunch } from '@/hooks/useFirstLaunch';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
@@ -70,27 +68,6 @@ function Dot({ active, palette }: { active: boolean; palette: ThreadPalette }) {
   return <Animated.View style={[styles.dot, style]} />;
 }
 
-function ParallaxLayer({
-  scrollX,
-  page,
-  width,
-  reduced,
-  children,
-}: {
-  scrollX: SharedValue<number>;
-  page: number;
-  width: number;
-  reduced: boolean;
-  children: React.ReactNode;
-}) {
-  const style = useAnimatedStyle(() => {
-    if (reduced) return { transform: [{ translateX: 0 }] };
-    const delta = scrollX.value - page * width;
-    // Keep the lag small so demos stay inside the clipped page during swipes.
-    return { transform: [{ translateX: delta * 0.08 }] };
-  });
-  return <Animated.View style={[styles.demoInner, style]}>{children}</Animated.View>;
-}
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -108,14 +85,7 @@ export default function OnboardingScreen() {
   const [token, setToken] = useState(1);
   const finishing = useRef(false);
   const skipTokenBump = useRef(true);
-  const scrollX = useSharedValue(0);
   const ctaScale = useSharedValue(1);
-
-  const scrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      scrollX.value = event.contentOffset.x;
-    },
-  });
 
   useEffect(() => {
     if (skipTokenBump.current) {
@@ -232,9 +202,7 @@ export default function OnboardingScreen() {
             end={{ x: 1, y: 1 }}
             style={StyleSheet.absoluteFill}
           />
-          <ParallaxLayer scrollX={scrollX} page={page} width={width} reduced={!!reduced}>
-            {renderDemo(page, demoProps)}
-          </ParallaxLayer>
+          <View style={styles.demoInner}>{renderDemo(page, demoProps)}</View>
         </View>
         <View style={styles.footer}>
           <View style={styles.dots}>

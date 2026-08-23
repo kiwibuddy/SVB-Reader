@@ -25,6 +25,8 @@
       "lockOrientation": "Lock Screen Orientation",
       "language": "Language",
       "info": "Info",
+      "version": "Version",
+      "jsUpdate": "JS update",
       "close": "Close",
       "reminders": "Reminders",
       "reminderDaily": "Daily reading reminder",

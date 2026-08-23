@@ -26,6 +26,8 @@ import {
   setReminderEnabled,
   setReminderTime,
 } from '@/utils/readingReminders';
+import { getDisplayVersion } from '@/utils/version-manager';
+import { getOtaDebugLabel } from '@/utils/otaUpdates';
 
 type FontSizeOption = 'small' | 'medium' | 'large';
 
@@ -349,6 +351,14 @@ export default function SettingsScreen() {
             <Text style={[styles.rowText, { color: palette.ink }]}>{t('UI.about.title')}</Text>
             <Ionicons name="chevron-forward" size={16} color={palette.mute} />
           </Pressable>
+          <View style={[styles.row, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: palette.hair }]}>
+            <Text style={[styles.rowText, { color: palette.ink }]}>{t('UI.settings.version')}</Text>
+            <Text style={[styles.rowText, { color: palette.mute }]}>{getDisplayVersion()}</Text>
+          </View>
+          <View style={[styles.row, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: palette.hair }]}>
+            <Text style={[styles.rowText, { color: palette.ink }]}>{t('UI.settings.jsUpdate')}</Text>
+            <Text style={[styles.rowText, { color: palette.mute }]}>{getOtaDebugLabel()}</Text>
+          </View>
         </View>
       </ScrollView>
 

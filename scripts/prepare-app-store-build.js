@@ -155,8 +155,11 @@ log('2. Submit to TestFlight: npm run submit:ios');
 log('3. After TestFlight approval, submit to App Store review');
 log('4. Android: npm run build:android && npm run submit:android');
 
-log('\nFor future OTA updates:');
-log('- JavaScript/asset changes: npm run update:production');
+log('\nFor future OTA updates (TestFlight 2.0.0 build 25):');
+log('- JavaScript/asset changes: npm run update:production -- -m "what changed"');
+log('  (pins runtime f9d9eb63… — a raw eas update fingerprints to 7fd8cc0b… and the phone ignores it)');
+log('- Check: npm run ota:status');
 log('- Native code changes: Increment buildNumber/versionCode and rebuild');
+log('- See docs/store/OTA_2.0.0.md');
 
 log('\nReady for Apple App Store submission!');

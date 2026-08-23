@@ -1,0 +1,17 @@
+{
+  "branch": "production",
+  "environment": "production",
+  "ios": {
+    "label": "TestFlight / App Store 2.0.0 (25)",
+    "runtimeVersion": "f9d9eb63e0d3500524486afbc0155ef8ca24a327",
+    "buildId": "38254b2e-28fe-438f-99ee-5fc0662963b7",
+    "neverPublishRuntimes": [
+      "7fd8cc0b645f7a23e0e19d62ad11dc0ec488ede6"
+    ]
+  },
+  "android": {
+    "label": "Play 2.0.0 (23)",
+    "runtimeVersion": "421ba001bc5a7c4952bdbb6048cdffd5ed3a9879",
+    "buildId": "fbdf5fa5-8074-470d-8dd2-9477b107bf17"
+  }
+}

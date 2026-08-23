@@ -39,7 +39,7 @@ Repo-side release prep is on branch `release/2.0.0`. These steps cannot be finis
 - [ ] TestFlight / Play internal smoke (hardware checklist in store listing doc)
 - [ ] Submit App Store review (Apple first)
 - [ ] Promote Play internal → production
-- [ ] Record production fingerprint; only then `npm run update:production`
+- [ ] Record production fingerprint; only then publish OTA (see below)
 
 ### Production fingerprints (2.0.0)
 
@@ -49,4 +49,4 @@ Repo-side release prep is on branch `release/2.0.0`. These steps cannot be finis
 | iOS | `38254b2e-28fe-438f-99ee-5fc0662963b7` | 2.0.0 (25) submitted (iPad restored) | `f9d9eb63e0d3500524486afbc0155ef8ca24a327` |
 | Android | `fbdf5fa5-8074-470d-8dd2-9477b107bf17` | 2.0.0 (23) | `421ba001bc5a7c4952bdbb6048cdffd5ed3a9879` |
 
-OTA: only run `npm run update:production` after both store binaries are live and fingerprints match the update runtime.
+**OTA for TestFlight 2.0.0 (25):** do **not** run a raw `eas update`. This laptop fingerprints to `7fd8cc0b…`, which build 25 ignores. Use `npm run update:production -- -m "…"` (pins `f9d9eb63…`). Full notes: `docs/store/OTA_2.0.0.md`.

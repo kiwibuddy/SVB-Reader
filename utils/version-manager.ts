@@ -19,8 +19,10 @@ export interface AppVersion {
 export const APP_VERSION_INFO: AppVersion = {
   version: '2.0.0',
   buildNumber: '25',
-  // OTA matching uses Expo fingerprint policy (app.json runtimeVersion.policy),
-  // not this string. Kept as the marketing version for display/analytics only.
+  // Display/analytics only. Live OTA matching is the native fingerprint baked
+  // into each binary. TestFlight 2.0.0 (25) is
+  // f9d9eb63e0d3500524486afbc0155ef8ca24a327 — publish with
+  // `npm run update:production`, not a raw `eas update`.
   runtimeVersion: 'fingerprint',
   releaseDate: new Date().toISOString(),
   buildType: 'production'

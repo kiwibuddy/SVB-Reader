@@ -1,0 +1,24 @@
+---
+description: How to publish OTA updates so TestFlight 2.0.0 (25) actually installs them
+alwaysApply: true
+---
+
+# OTA for TestFlight 2.0.0 (25)
+
+Build 25 only installs updates with runtime `f9d9eb63e0d3500524486afbc0155ef8ca24a327`.
+
+A plain `eas update` from this repo fingerprints to `7fd8cc0b…`. That binary ignores those publishes.
+
+**Always** use:
+
+```bash
+npm run update:production -- -m "what changed"
+```
+
+That script pins the TestFlight runtime, publishes iOS, restores `app.json`. Do not commit the pin.
+
+Never run `npx eas-cli update` / `eas update` directly. Check with `npm run ota:status`.
+
+Android is a different runtime (`421ba001…`). iOS OTAs do not reach Play.
+
+Apply on device: force-quit → open → force-quit → open. Settings → Info stays `binary` until the second cold start.

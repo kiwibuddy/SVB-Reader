@@ -22448,6 +22448,8 @@
       "lockOrientation": "Verrouiller l'orientation de l'écran",
       "language": "Langue",
       "info": "Infos",
+      "version": "Version",
+      "jsUpdate": "Mise à jour JS",
       "close": "Fermer",
       "reminders": "Rappels",
       "reminderDaily": "Rappel de lecture quotidien",
