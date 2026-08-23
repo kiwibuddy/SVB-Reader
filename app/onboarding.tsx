@@ -248,9 +248,6 @@ export default function OnboardingScreen() {
         pagingEnabled
         bounces={false}
         showsHorizontalScrollIndicator={false}
-        onScroll={scrollHandler}
-        scrollEventThrottle={16}
-        style={styles.pager}
         onMomentumScrollEnd={(event) => {
           const next = Math.round(event.nativeEvent.contentOffset.x / width);
           if (next !== index) setIndex(next);
@@ -265,10 +262,9 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   boot: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  pager: { flex: 1, overflow: 'hidden' },
-  // iOS defaults to overflow:visible — without clipping, parallax on adjacent
-  // pages bleeds their demos into the current screen.
-  page: { flex: 1, paddingHorizontal: 20, overflow: 'hidden' },
+  // Do not put overflow:'hidden' on page — it clips FadeInDown entrances and
+  // can collapse horizontal FlatList item layout on iOS after an OTA reload.
+  page: { flex: 1, paddingHorizontal: 20 },
   top: { minHeight: 44, alignItems: 'flex-end', justifyContent: 'center' },
   skipHit: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 4 },
   skip: { fontSize: 15 },
@@ -281,10 +277,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderRadius: 16,
   },
-  demoInner: { flex: 1, justifyContent: 'center', paddingHorizontal: 4 },
+  demoInner: { flex: 1, justifyContent: 'center' },
   footer: { gap: 14 },
   dots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
-  dot: { height: 6, borderRadius: 3 },
+  dot: { width: 6, height: 6, borderRadius: 3 },
   cta: { borderRadius: 13, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
   ctaLabel: { fontSize: 11, letterSpacing: 1.4, textTransform: 'uppercase', fontWeight: '600' },
 });
