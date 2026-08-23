@@ -32,6 +32,9 @@ interface ColorCounts {
 
 export const READER_COUNT = 4;
 
+/** No reader takes this row — an editorial insert or a psalm title. */
+export const NO_READER = -1;
+
 /** Narrator first, then divine, principals, everyone else. */
 const INK_ORDER: Ink[] = ['black', 'red', 'green', 'blue'];
 
@@ -98,10 +101,21 @@ export function readerSlots(readers?: string[], colorData?: ColorCounts): Reader
 }
 
 /**
- * The slot that reads each block, parallel to `blocks`.
+ * A manuscript note is not a speaking turn. Psalm headings (`kind: 'title'`)
+ * are, though — someone says "Psalm 23" out loud — and the reader already
+ * glows and dims them like any other turn, so only editorial rows are skipped.
+ */
+export function isSpokenBlock(block: BibleBlock): boolean {
+  return block.source?.kind !== 'editorial';
+}
+
+/**
+ * The slot that reads each block, parallel to `blocks`. `NO_READER` marks a row
+ * nobody takes.
  *
  * Bubbles of an ink are dealt round-robin to the slots holding that ink, in the
- * order they appear in the story.
+ * order they appear in the story. Editorial rows are skipped rather than
+ * counted, so a bracketed note cannot push the rest of the story out of step.
  */
 export function assignReaders(blocks: BibleBlock[], slots: ReaderSlot[]): number[] {
   const slotsByInk = new Map<Ink, number[]>();
@@ -113,6 +127,7 @@ export function assignReaders(blocks: BibleBlock[], slots: ReaderSlot[]): number
 
   const seen = new Map<Ink, number>();
   return blocks.map((block) => {
+    if (!isSpokenBlock(block)) return NO_READER;
     const ink = (isInk(block.source?.color) ? block.source?.color : 'black') as Ink;
     const candidates = slotsByInk.get(ink);
     // An ink nobody was cast for reads with the first slot rather than nobody.

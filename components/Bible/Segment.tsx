@@ -16,10 +16,10 @@ import { memo } from "react";
 import { getSegmentCompletionStatus } from "@/api/sqlite";
 import { ANIMATION } from '@/services/animation';
 import * as Haptics from 'expo-haptics';
-import type { Ink } from '@/utils/ink';
 import { bookCodesForSegment, findVerseBlockIndex } from '@/utils/verseLocator';
 import { findExchangeStart, findLongestSpeechStart } from '@/utils/castLocator';
 import { normalizeBibleContent } from '@/utils/normalizeBibleContent';
+import { assignReaders, readerSlots } from '@/utils/readerParts';
 
 interface SegmentProps {
   segmentData: SegmentType;
@@ -80,7 +80,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
 
   // All hooks must be called before any early returns
   const [showCelebration, setShowCelebration] = useState(false);
-  const [selectedInk, setSelectedInk] = useState<Ink | null>(null);
+  const [selectedReader, setSelectedReader] = useState<number | null>(null);
   const [showCourtesyPopup, setShowCourtesyPopup] = useState(!!currentSession);
   const [isCompleted, setIsCompleted] = useState(false);
   const courtesyAnim = useRef(new Animated.Value(0));
@@ -111,7 +111,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   useEffect(() => {
     if (!currentSession) {
       // ensure individual mode starts with no pre-selected role
-      setSelectedInk(null);
+      setSelectedReader(null);
     }
     const force = showCourtesy === '1';
     // Only show courtesy if not dismissed during this visit
@@ -128,7 +128,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   useEffect(() => {
     if (!currentSession) {
       // Reset reading role selection when navigating to a new story in individual mode
-      setSelectedInk(null);
+      setSelectedReader(null);
     }
   }, [segID, currentSession]);
 
@@ -243,109 +243,16 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     return acc;
   }, [segmentData?.sources, memoizedContent]);
 
-  // Calculate reader roles based on actual speech bubble distribution
-  const readersByColor = useMemo(() => {
-    const maxRoles = 4;
-    const result: { [color: string]: number[] } = {};
-    
-    // Count actual speech bubbles by color from memoized content
-    const bubblesByColor = memoizedContent.reduce((acc, block) => {
-      const color = block.source?.color || 'black';
-      acc[color] = (acc[color] || 0) + 1;
-      return acc;
-    }, {} as { [color: string]: number });
-    
-    // Sort colors by bubble count (descending) to prioritize speakers with more bubbles
-    const colorsByBubbleCount = Object.entries(bubblesByColor)
-      .map(([color, count]) => ({ color, count }))
-      .sort((a, b) => b.count - a.count);
-    
-    let rolesAssigned = 0;
-    
-    // First pass: Ensure every speaker gets at least 1 role
-    colorsByBubbleCount.forEach(({ color }) => {
-      if (rolesAssigned < maxRoles) {
-        result[color] = [0];
-        rolesAssigned++;
-      }
-    });
-    
-    // Second pass: Distribute remaining roles proportionally to dominant speakers
-    if (rolesAssigned < maxRoles) {
-      const totalBubbles = Object.values(bubblesByColor).reduce((sum, c) => sum + c, 0);
-      
-      colorsByBubbleCount.forEach(({ color, count }) => {
-        if (rolesAssigned >= maxRoles) return;
-        
-        const proportion = count / totalBubbles;
-        const currentRoles = result[color]?.length || 0;
-        
-        // Calculate additional roles this color should get based on proportion
-        const targetRoles = Math.round(proportion * maxRoles);
-        const additionalRoles = Math.max(0, targetRoles - currentRoles);
-        
-        // Add additional roles up to remaining capacity
-        const rolesToAdd = Math.min(additionalRoles, maxRoles - rolesAssigned);
-        
-        if (rolesToAdd > 0) {
-          const currentPositions = result[color] || [];
-          for (let i = 0; i < rolesToAdd; i++) {
-            currentPositions.push(currentPositions.length);
-            rolesAssigned++;
-          }
-          result[color] = currentPositions;
-        }
-      });
-    }
-    
-    // Final pass: If still under 4 roles, give remaining to most dominant speaker
-    if (rolesAssigned < maxRoles && colorsByBubbleCount.length > 0) {
-      const dominantColor = colorsByBubbleCount[0].color;
-      const currentPositions = result[dominantColor] || [];
-      const additionalRoles = maxRoles - rolesAssigned;
-      
-      for (let i = 0; i < additionalRoles; i++) {
-        currentPositions.push(currentPositions.length);
-      }
-      result[dominantColor] = currentPositions;
-    }
-   
-    return result;
-  }, [memoizedContent]);
+  // The story's four reading parts, and which part reads each turn.
+  const readerSlotsForStory = useMemo(
+    () => readerSlots(segmentData?.readers, colorData),
+    [segmentData?.readers, colorData]
+  );
 
-  // Preselect reader role when a role is assigned
-  useEffect(() => {
-    if (!currentRole) return;
-    const roleToColor: Record<string, string> = {
-      narrator: 'black',
-      god: 'red',
-      main_character: 'green',
-      other_voices: 'blue',
-    };
-    const color = roleToColor[currentRole];
-    const positions = readersByColor[color] || [0];
-    setSelectedInk((color as Ink) || 'black');
-  }, [currentRole, readersByColor]);
-
-  const currentRoleLabel = useMemo(() => {
-    if (!currentRole) return null;
-    const roleLabels: Record<string, string> = {
-      narrator: 'Narrator',
-      god: 'God',
-      main_character: 'Main Character',
-      other_voices: 'Other Voices',
-    };
-    return roleLabels[currentRole] || null;
-  }, [currentRole]);
-
-  // Determine which role starts based on first speaking block
-  const firstSpeakerInfo = useMemo(() => {
-    const firstBlock = memoizedContent.find(b => !!b.source?.color);
-    if (!firstBlock) return null;
-    const color = firstBlock.source?.color || 'black';
-    const map: Record<string, string> = { black: 'Narrator', red: 'God', green: 'Main Character', blue: 'Other Voices' };
-    return { color, label: map[color] || 'Reader' };
-  }, [memoizedContent]);
+  const bubbleReaders = useMemo(
+    () => assignReaders(memoizedContent, readerSlotsForStory),
+    [memoizedContent, readerSlotsForStory]
+  );
 
   // Load completion status from SQLite (hook must not be conditional)
   useEffect(() => {
@@ -595,8 +502,9 @@ const styles = StyleSheet.create({
       <CallSheet
         sources={computedSources}
         colorData={colorData}
-        selectedInk={selectedInk}
-        onSelectInk={setSelectedInk}
+        slots={readerSlotsForStory}
+        selectedReader={selectedReader}
+        onSelectReader={setSelectedReader}
       />
 
       {memoizedContent.map((item, index) => {
@@ -607,7 +515,9 @@ const styles = StyleSheet.create({
           (index === 0 ||
             memoizedContent[index - 1].source?.kind === 'editorial' ||
             memoizedContent[index - 1].source?.sourceName !== sourceName);
-        const ink = (item.source?.color || 'black') as Ink;
+        // A turn belongs to the selected reader, not merely to their colour, so
+        // four readers sharing an ink still light up one bubble each.
+        const mine = selectedReader !== null && bubbleReaders[index] === selectedReader;
 
         return (
           <BibleBlockComponent
@@ -615,10 +525,10 @@ const styles = StyleSheet.create({
             block={item}
             bIndex={index}
             hasTail={showSourceName}
-            isGlowing={!isEditorial && !!selectedInk && selectedInk === ink}
+            isGlowing={!isEditorial && mine}
             onLongPress={handleLongPress}
             isTarget={index === targetIndex}
-            dimmed={!isEditorial && !!selectedInk && selectedInk !== ink}
+            dimmed={!isEditorial && selectedReader !== null && !mine}
             onLayout={
               index === targetIndex
                 ? (event) => {
@@ -630,46 +540,6 @@ const styles = StyleSheet.create({
           />
         );
       })}
-      {/* Courtesy popup overlay - COMMENTED OUT FOR NOW
-      {showCourtesyPopup && currentSession && (
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={dismissCourtesy}
-          onLongPress={dismissCourtesy}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2000, alignItems: 'center', justifyContent: 'flex-start', paddingTop: Math.max(insets.top + 100, (isIPad ? 140 : 100)) }}
-        >
-          <Animated.View style={{
-            backgroundColor: '#42A5F5',
-            borderRadius: 16,
-            paddingVertical: 16,
-            paddingHorizontal: 18,
-            maxWidth: 460,
-            marginHorizontal: 24,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.2,
-            shadowRadius: 10,
-            elevation: 5,
-            opacity: courtesyAnim.current,
-            transform: [{ translateY: courtesyAnim.current.interpolate({ inputRange: [0,1], outputRange: [-12, 0] }) }]
-          }}>
-            <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '800', textAlign: 'center', marginBottom: 6 }}>
-              Get Ready
-            </Text>
-            <Text style={{ color: '#FFFFFF', fontSize: 14, textAlign: 'center', marginBottom: 6 }}>
-              Please wait for the other 3 readers to be ready.
-            </Text>
-            {firstSpeakerInfo && (
-              <Text style={{ color: '#FFFFFF', fontSize: 13, textAlign: 'center', opacity: 0.95 }}>
-                {currentRole && selectedInk && firstSpeakerInfo.color === selectedInk
-                  ? 'You are the first reader.'
-                  : `${firstSpeakerInfo.label} starts first.`}
-              </Text>
-            )}
-          </Animated.View>
-        </TouchableOpacity>
-      )}
-      */}
       {/* Modal removed - emoji picker is now floating and handled by Block component */}
       <View style={styles.divider} />
 
