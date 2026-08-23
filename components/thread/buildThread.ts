@@ -1,17 +1,11 @@
 export const DEPTH_X = [30, 52, 74]; // division, book, story
 export const THREAD_OVERHANG = 32;
 
-/** Quarter-circle arc radius — matches card borderRadius for visual consistency. */
+/** Quarter-circle arc radius — entry/exit corridors only. */
 const R = 16;
 
 /** Vertical gap between the last mark on a depth and the horizontal corridor. */
 const GAP = 14;
-
-/**
- * Vertical pull on cubic control points when the spine changes depth.
- * Keeps the line easing sideways (an S-bow) instead of turning a stair-step corner.
- */
-const BOW = 18;
 
 export const ROW_HEIGHT = {
   division: 46,
@@ -31,8 +25,8 @@ export type ThreadRow = {
 export type ThreadMark = { key: string; x: number; y: number };
 
 /**
- * Builds an SVG path. Same-depth stretches stay vertical. Depth changes use a
- * cubic S-bow so the spine eases between indents instead of drawing H/V stairs.
+ * Builds an SVG path. Same-depth stretches stay vertical. Depth changes are a
+ * single straight segment between beads — no arcs or S-bows in the spine.
  * Optional entry/exit corridors run above the first row and below the last row
  * so they never cut through card text.
  */
@@ -90,14 +84,9 @@ export function buildThread(
       d += ` V ${m.y}`;
       length += Math.abs(m.y - prev.y);
     } else {
-      // Depth change — S-bow: control points pull vertically so the line eases
-      // sideways around the beads instead of turning an H/V corner.
-      const dy = Math.abs(m.y - prev.y);
-      const bow = Math.min(BOW, Math.max(4, dy / 3));
-      const c1y = prev.y + Math.sign(m.y - prev.y || 1) * bow;
-      const c2y = m.y - Math.sign(m.y - prev.y || 1) * bow;
-      d += ` C ${prev.x} ${c1y} ${m.x} ${c2y} ${m.x} ${m.y}`;
-      length += Math.hypot(m.x - prev.x, m.y - prev.y) * 1.08;
+      // Depth change — one straight segment between beads (no bow, no stair arcs).
+      d += ` L ${m.x} ${m.y}`;
+      length += Math.hypot(m.x - prev.x, m.y - prev.y);
     }
     prev = m;
   }
