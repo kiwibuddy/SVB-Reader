@@ -296,7 +296,11 @@ const ThreadList: React.FC<ThreadListProps> = ({
             }, unread[0])
           : null;
         for (const id of book.stories) {
-          const current = currentId === id || (!completedIds.has(id) && id === nextUnread);
+          // Plan detail may highlight the focused story. The general Read page
+          // never marks a "next" story — beads stay the same size/colour.
+          const current =
+            !!hideSearch &&
+            (currentId === id || (!completedIds.has(id) && id === nextUnread));
           rows.push({
             key: id,
             kind: 'story',
@@ -309,7 +313,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
       }
     }
     return rows;
-  }, [completedIds, currentId, divisions, openBook, openDivision]);
+  }, [completedIds, currentId, divisions, hideSearch, openBook, openDivision]);
 
   const thread = useMemo(
     () => buildThread(visibleRows.map(({ key, depth, height }) => ({ key, depth, height })), { width: windowWidth }),
