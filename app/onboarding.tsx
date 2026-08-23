@@ -3,35 +3,90 @@ import {
   View,
   Text,
   Pressable,
-  FlatList,
   StyleSheet,
   useWindowDimensions,
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, {
+  FadeInDown,
+  Extrapolation,
+  interpolate,
+  interpolateColor,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withSequence,
+  withSpring,
+} from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
 import { useFirstLaunch } from '@/hooks/useFirstLaunch';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { ThreadColors } from '@/constants/Colors';
-import { DUR } from '@/constants/Motion';
+import type { ThreadPalette } from '@/constants/Colors';
+import { RM, SPRING } from '@/constants/Motion';
 import { todayStoryId } from '@/utils/continueTarget';
-import { hapticSelection } from '@/utils/haptics';
+import { hapticSelection, hapticSuccess } from '@/utils/haptics';
 import {
+  CastDemo,
   FriendsDemo,
+  HabitDemo,
   KeepDemo,
   ShapeDemo,
   VoicesDemo,
 } from '@/components/onboarding/OnboardingDemos';
 import logger from '@/utils/logger';
 
+const AnimatedFlatList = Animated.FlatList;
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const POP_SPRING = { ...SPRING, ...RM };
+
 const SCREENS = [
   { title: 'UI.onboarding.screen1Title', body: 'UI.onboarding.screen1Body' },
   { title: 'UI.onboarding.screen2Title', body: 'UI.onboarding.screen2Body' },
   { title: 'UI.onboarding.screen3Title', body: 'UI.onboarding.screen3Body' },
   { title: 'UI.onboarding.screen4Title', body: 'UI.onboarding.screen4Body' },
+  { title: 'UI.onboarding.screen5Title', body: 'UI.onboarding.screen5Body' },
+  { title: 'UI.onboarding.screen6Title', body: 'UI.onboarding.screen6Body' },
 ] as const;
+
+function Dot({ active, palette }: { active: boolean; palette: ThreadPalette }) {
+  const reduced = useReducedMotion();
+  const progress = useSharedValue(active ? 1 : 0);
+
+  useEffect(() => {
+    progress.value = reduced ? (active ? 1 : 0) : withSpring(active ? 1 : 0, POP_SPRING);
+  }, [active, progress, reduced]);
+
+  const style = useAnimatedStyle(() => ({
+    width: interpolate(progress.value, [0, 1], [6, 16], Extrapolation.CLAMP),
+    backgroundColor: interpolateColor(progress.value, [0, 1], [palette.hair, palette.acc]),
+  }));
+
+  return <Animated.View style={[styles.dot, style]} />;
+}
+
+function ParallaxLayer({
+  scrollX,
+  page,
+  width,
+  children,
+}: {
+  scrollX: SharedValue<number>;
+  page: number;
+  width: number;
+  children: React.ReactNode;
+}) {
+  const style = useAnimatedStyle(() => {
+    const delta = scrollX.value - page * width;
+    return { transform: [{ translateX: delta * 0.15 }] };
+  });
+  return <Animated.View style={[styles.demoInner, style]}>{children}</Animated.View>;
+}
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -44,11 +99,19 @@ export default function OnboardingScreen() {
   const { markAsLaunched, isLoading } = useFirstLaunch();
   const reduced = useReducedMotion();
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
-  const listRef = useRef<FlatList>(null);
+  const listRef = useRef<React.ElementRef<typeof AnimatedFlatList>>(null);
   const [index, setIndex] = useState(0);
   const [token, setToken] = useState(1);
   const finishing = useRef(false);
   const skipTokenBump = useRef(true);
+  const scrollX = useSharedValue(0);
+  const ctaScale = useSharedValue(1);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollX.value = event.contentOffset.x;
+    },
+  });
 
   useEffect(() => {
     if (skipTokenBump.current) {
@@ -79,14 +142,50 @@ export default function OnboardingScreen() {
   );
 
   const goNext = () => {
-    void hapticSelection();
-    if (index >= SCREENS.length - 1) {
-      void finish(true);
+    const isLast = index >= SCREENS.length - 1;
+    void (isLast ? hapticSuccess() : hapticSelection());
+
+    if (isLast) {
+      if (reduced) {
+        void finish(true);
+        return;
+      }
+      ctaScale.value = withSequence(withSpring(1.05, POP_SPRING), withSpring(1, POP_SPRING));
+      setTimeout(() => void finish(true), 140);
       return;
     }
+
     const next = index + 1;
     listRef.current?.scrollToIndex({ index: next, animated: !reduced });
     setIndex(next);
+  };
+
+  const ctaAnimStyle = useAnimatedStyle(() => ({ transform: [{ scale: ctaScale.value }] }));
+
+  const renderDemo = (page: number, demoProps: {
+    active: boolean;
+    token: number;
+    palette: ThreadPalette;
+    isDarkMode: boolean;
+    language: string;
+    t: (key: string) => string;
+  }) => {
+    switch (page) {
+      case 0:
+        return <ShapeDemo {...demoProps} />;
+      case 1:
+        return <VoicesDemo {...demoProps} />;
+      case 2:
+        return <FriendsDemo {...demoProps} />;
+      case 3:
+        return <HabitDemo {...demoProps} />;
+      case 4:
+        return <CastDemo {...demoProps} />;
+      case 5:
+        return <KeepDemo {...demoProps} />;
+      default:
+        return null;
+    }
   };
 
   const renderItem = ({ item, index: page }: { item: (typeof SCREENS)[number]; index: number }) => {
@@ -101,50 +200,58 @@ export default function OnboardingScreen() {
         </View>
         <Animated.Text
           key={`h-${page}-${active ? token : 0}`}
-          entering={reduced ? undefined : FadeInDown.duration(DUR.base)}
+          entering={reduced ? undefined : FadeInDown.springify().damping(SPRING.damping).stiffness(SPRING.stiffness).mass(SPRING.mass)}
           style={[styles.headline, { color: palette.ink, fontSize: Math.round((sizes.body / 16) * 28) }]}
         >
           {t(item.title)}
         </Animated.Text>
         <Animated.Text
           key={`b-${page}-${active ? token : 0}`}
-          entering={reduced ? undefined : FadeInDown.duration(DUR.base).delay(reduced ? 0 : 60)}
+          entering={
+            reduced
+              ? undefined
+              : FadeInDown.springify()
+                  .damping(SPRING.damping)
+                  .stiffness(SPRING.stiffness)
+                  .mass(SPRING.mass)
+                  .delay(60)
+          }
           style={[styles.body, { color: palette.mute, fontSize: sizes.body, lineHeight: Math.round(sizes.body * 1.4) }]}
         >
           {t(item.body)}
         </Animated.Text>
         <View style={styles.demo}>
-          {page === 0 && <ShapeDemo {...demoProps} />}
-          {page === 1 && <VoicesDemo {...demoProps} />}
-          {page === 2 && <FriendsDemo {...demoProps} />}
-          {page === 3 && <KeepDemo {...demoProps} />}
+          <LinearGradient
+            pointerEvents="none"
+            colors={[`${palette.acc}22`, 'transparent']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <ParallaxLayer scrollX={scrollX} page={page} width={width}>
+            {renderDemo(page, demoProps)}
+          </ParallaxLayer>
         </View>
         <View style={styles.footer}>
           <View style={styles.dots}>
             {SCREENS.map((_, dot) => (
-              <View
-                key={dot}
-                style={[
-                  styles.dot,
-                  {
-                    width: dot === index ? 16 : 6,
-                    backgroundColor: dot === index ? palette.acc : palette.hair,
-                  },
-                ]}
-              />
+              <Dot key={dot} active={dot === index} palette={palette} />
             ))}
           </View>
-          <Pressable
+          <AnimatedPressable
             onPress={goNext}
-            style={({ pressed }) => [
-              styles.cta,
-              { backgroundColor: palette.acc, transform: [{ scale: pressed ? 0.97 : 1 }] },
-            ]}
+            onPressIn={() => {
+              ctaScale.value = withSpring(0.97, POP_SPRING);
+            }}
+            onPressOut={() => {
+              ctaScale.value = withSpring(1, POP_SPRING);
+            }}
+            style={[styles.cta, { backgroundColor: palette.acc }, ctaAnimStyle]}
           >
             <Text style={[styles.ctaLabel, { color: palette.bg }]}>
               {page === SCREENS.length - 1 ? t('UI.onboarding.startReading') : t('UI.onboarding.next')}
             </Text>
-          </Pressable>
+          </AnimatedPressable>
         </View>
       </View>
     );
@@ -160,7 +267,7 @@ export default function OnboardingScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: palette.bg }]}>
-      <FlatList
+      <AnimatedFlatList
         ref={listRef}
         data={SCREENS}
         keyExtractor={(item) => item.title}
@@ -169,6 +276,8 @@ export default function OnboardingScreen() {
         pagingEnabled
         bounces={false}
         showsHorizontalScrollIndicator={false}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
         onMomentumScrollEnd={(event) => {
           const next = Math.round(event.nativeEvent.contentOffset.x / width);
           if (next !== index) setIndex(next);
@@ -190,6 +299,7 @@ const styles = StyleSheet.create({
   headline: { fontWeight: '600', letterSpacing: -0.4, marginTop: 8 },
   body: { marginTop: 8, maxWidth: 360 },
   demo: { flex: 1, marginTop: 18, justifyContent: 'center' },
+  demoInner: { flex: 1, justifyContent: 'center' },
   footer: { gap: 14 },
   dots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   dot: { height: 6, borderRadius: 3 },

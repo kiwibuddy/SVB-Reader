@@ -8,10 +8,11 @@ import Animated, {
   useReducedMotion,
   useSharedValue,
   withDelay,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { DEPTH_X, ROW_HEIGHT, buildThread } from '@/components/thread/buildThread';
-import { DUR, STAGGER, timing } from '@/constants/Motion';
+import { DUR, RM, SPRING, STAGGER, timing } from '@/constants/Motion';
 import { ThreadColors, fillHex, inkHex } from '@/constants/Colors';
 import { getColors, getBubbleTextColorSafe } from '@/scripts/getColors';
 import BibleInlineComponent from '@/components/Bible/Inline';
@@ -19,14 +20,20 @@ import SegmentTitles from '@/assets/data/SegmentTitles.json';
 import { localizeStoryTitle, localizeVoiceName } from '@/utils/localize';
 import { formatReadingMinutes, getSegmentReadingTime } from '@/utils/readingTime';
 import { isLeftVoice } from '@/utils/ink';
+import { hapticImpactLight } from '@/utils/haptics';
+import StatRing from '@/components/thread/StatRing';
 import type { BibleBlock } from '@/types';
 import type { ThreadPalette } from '@/constants/Colors';
 import {
   ONBOARDING_STORY_IDS,
   getAbrahamExchange,
   getCallSheetDemo,
+  getCastDemo,
+  getHabitDemo,
   getShareDemoBlock,
 } from '@/utils/onboardingDemo';
+
+const spring = (value: number) => withSpring(value, { ...SPRING, ...RM });
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const titles = SegmentTitles as Record<string, { title?: string; ref?: string; book?: string[] }>;
@@ -43,7 +50,7 @@ type DemoProps = {
 
 function entering(reduced: boolean, delay: number) {
   if (reduced) return undefined;
-  return FadeInDown.duration(DUR.base).delay(delay);
+  return FadeInDown.springify().damping(SPRING.damping).stiffness(SPRING.stiffness).mass(SPRING.mass).delay(delay);
 }
 
 function DemoBubble({
@@ -130,7 +137,7 @@ export function ShapeDemo({ active, token, palette, language }: DemoProps) {
       return;
     }
     progress.value = 0;
-    progress.value = withTiming(1, timing(DUR.slow));
+    progress.value = spring(1);
   }, [active, progress, reduced, token]);
 
   const pathProps = useAnimatedProps(() => ({
@@ -191,6 +198,12 @@ export function VoicesDemo({ active, token, palette, isDarkMode, language, t }: 
     { ink: 'green', label: t('UI.onboarding.mainCharactersLabel'), body: t('UI.onboarding.mainCharacterRoleDescription') },
     { ink: 'blue', label: t('UI.onboarding.everyoneElseLabel'), body: t('UI.onboarding.otherVoicesRoleDescription') },
   ];
+
+  useEffect(() => {
+    if (!active || reduced) return;
+    const timers = blocks.map((_, index) => setTimeout(() => void hapticImpactLight(), index * BUBBLE_GAP));
+    return () => timers.forEach(clearTimeout);
+  }, [active, blocks, reduced, token]);
 
   return (
     <View>
@@ -257,7 +270,7 @@ export function FriendsDemo({ active, token, palette, language, t }: DemoProps) 
     }
     grow.value = 0;
     names.value = 0;
-    grow.value = withTiming(1, timing(DUR.slow));
+    grow.value = spring(1);
     names.value = withDelay(DUR.base, withTiming(1, timing(DUR.quick)));
   }, [active, grow, names, reduced, token]);
 
@@ -302,6 +315,114 @@ export function FriendsDemo({ active, token, palette, language, t }: DemoProps) 
   );
 }
 
+export function HabitDemo({ active, token, palette, t }: DemoProps) {
+  const reduced = useReducedMotion();
+  const demo = useMemo(() => getHabitDemo(), []);
+  const grow = useSharedValue(reduced ? 1 : 0);
+  const pct = demo.plan.total > 0 ? demo.plan.done / demo.plan.total : 0;
+
+  useEffect(() => {
+    if (!active) return;
+    if (reduced) {
+      grow.value = 1;
+      return;
+    }
+    grow.value = 0;
+    grow.value = spring(1);
+  }, [active, grow, reduced, token]);
+
+  useEffect(() => {
+    if (!active || reduced) return;
+    const timer = setTimeout(() => void hapticImpactLight(), DUR.slow);
+    return () => clearTimeout(timer);
+  }, [active, reduced, token]);
+
+  const barStyle = useAnimatedStyle(() => ({ transform: [{ scaleX: grow.value * pct }] }));
+
+  return (
+    <View style={[styles.card, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
+      <View style={styles.habitTop}>
+        <StatRing
+          size={72}
+          strokeWidth={6}
+          progress={1}
+          centerPrimary={String(demo.streakDays)}
+          centerSecondary={t('UI.thread.dayStreak')}
+          trackColor={palette.hair}
+          accentColor={palette.acc}
+          centerPrimaryColor={palette.ink}
+          centerSecondaryColor={palette.mute}
+          label={t('UI.thread.streak')}
+          replayToken={active ? token : 0}
+        />
+        <View style={styles.habitPlan}>
+          <Text style={[styles.callMeta, { color: palette.mute }]}>{t('UI.thread.yourPlan')}</Text>
+          <Text style={[styles.callTitle, { color: palette.ink }]}>{demo.plan.title}</Text>
+          <View style={[styles.habitBarTrack, { backgroundColor: palette.hair }]}>
+            <Animated.View style={[styles.habitBarFill, barStyle, { backgroundColor: palette.acc, transformOrigin: 'left' }]} />
+          </View>
+          <Text style={[styles.callMeta, { color: palette.mute }]}>
+            {demo.plan.done}/{demo.plan.total} {t('UI.thread.stories').toLowerCase()}
+          </Text>
+        </View>
+      </View>
+      <Animated.View entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 4)} style={styles.habitQuestion}>
+        <Text style={[styles.kicker, { color: palette.mute }]}>{t('UI.thread.talkAboutIt')}</Text>
+        <Text style={[styles.habitQuestionText, { color: palette.ink }]}>{t('UI.onboarding.sampleQuestion')}</Text>
+      </Animated.View>
+    </View>
+  );
+}
+
+export function CastDemo({ active, token, palette, language, t }: DemoProps) {
+  const reduced = useReducedMotion();
+  const demo = useMemo(() => getCastDemo(), []);
+
+  useEffect(() => {
+    if (!active || reduced || !demo?.longestSpeech) return;
+    const timer = setTimeout(() => void hapticImpactLight(), STAGGER.bar * 4);
+    return () => clearTimeout(timer);
+  }, [active, demo, reduced, token]);
+
+  if (!demo) return null;
+  const ink = inkHex(demo.color, palette);
+  const rankLabel = `${String(demo.rank).padStart(3, '0')} ${t('UI.thread.of')} ${demo.total}`;
+
+  return (
+    <View style={[styles.card, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
+      <Text style={[styles.castRank, { color: ink }]}>{rankLabel}</Text>
+      <Text style={[styles.castName, { color: palette.ink }]}>{localizeVoiceName(demo.name, language)}</Text>
+      {demo.topPartner && (
+        <Animated.View
+          key={`${token}-partner`}
+          entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 2)}
+          style={styles.castRow}
+        >
+          <Text style={[styles.kicker, { color: palette.mute }]}>{t('UI.thread.spokeWith')}</Text>
+          <Text style={[styles.castRowValue, { color: palette.ink }]}>
+            {localizeVoiceName(demo.topPartner.name, language)} · {demo.topPartner.count}
+          </Text>
+        </Animated.View>
+      )}
+      {demo.longestSpeech && (
+        <Animated.View
+          key={`${token}-speech`}
+          entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 4)}
+          style={styles.castPull}
+        >
+          <Text style={[styles.kicker, { color: palette.mute }]}>{t('UI.thread.longestSpeech')}</Text>
+          <Text style={[styles.castPullBody, { color: palette.ink }]}>
+            {demo.longestSpeech.words.toLocaleString()} {t('UI.thread.words').toLowerCase()}
+          </Text>
+          <Text style={[styles.castPullStory, { color: palette.mute }]}>
+            {localizeStoryTitle(demo.longestSpeech.storyId, demo.longestSpeech.storyTitle, language)}
+          </Text>
+        </Animated.View>
+      )}
+    </View>
+  );
+}
+
 export function KeepDemo({ active, token, palette, isDarkMode, language, t }: DemoProps) {
   const reduced = useReducedMotion();
   const block = useMemo(() => getShareDemoBlock(), []);
@@ -332,6 +453,36 @@ export function KeepDemo({ active, token, palette, isDarkMode, language, t }: De
 
 const styles = StyleSheet.create({
   card: { borderWidth: 1, borderRadius: 14, padding: 12, overflow: 'hidden' },
+  kicker: { fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', fontWeight: '600' },
+  habitTop: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  habitPlan: { flex: 1, gap: 4 },
+  habitBarTrack: { height: 4, borderRadius: 2, overflow: 'hidden', marginTop: 4 },
+  habitBarFill: { height: 4, borderRadius: 2, width: '100%' },
+  habitQuestion: {
+    marginTop: 16,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(0,0,0,0.08)',
+    gap: 4,
+  },
+  habitQuestionText: { fontSize: 14, lineHeight: 20, fontStyle: 'italic' },
+  castRank: { fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', fontWeight: '600' },
+  castName: {
+    fontSize: 26,
+    fontWeight: '600',
+    letterSpacing: -0.4,
+    marginTop: 2,
+    fontFamily: Platform.OS === 'ios' ? 'Didot' : 'serif',
+  },
+  castRow: { marginTop: 14, gap: 3 },
+  castRowValue: { fontSize: 14 },
+  castPull: { marginTop: 12, gap: 3 },
+  castPullBody: {
+    fontSize: 15,
+    lineHeight: 20,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+  },
+  castPullStory: { fontSize: 12, lineHeight: 16 },
   storyRow: { flexDirection: 'row', alignItems: 'center' },
   bead: {
     position: 'absolute',

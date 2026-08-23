@@ -1,9 +1,15 @@
 import type { BibleBlock } from '@/types';
 import { bibleLoader } from '@/services/BibleLoader';
 import { getSegmentWordCount } from '@/utils/readingTime';
+import conversations from '@/assets/data/conversations.json';
+import type { ConversationsFile } from '@/types/conversations';
+import { DIVISIONS } from '@/constants/divisions';
 
 const DEMO_STORY_ID = 'S008';
 const FEATURED_VOICES = ['The Narrator', 'God', 'Abraham', 'Sarah', 'Isaac'] as const;
+const conv = conversations as ConversationsFile;
+const CAST_DEMO_VOICE = 'David';
+const HABIT_DEMO_DIVISION = DIVISIONS[0]; // "The Beginning" — contains the S008 demo story
 
 function walkText(node: unknown): string {
   if (!node) return '';
@@ -106,3 +112,35 @@ export function getCallSheetDemo(bible?: Record<string, StorySegment>) {
 }
 
 export const ONBOARDING_STORY_IDS = ['S001', 'S002', 'S003'] as const;
+
+/** Illustrative habit demo: a streak + a plan mid-way through, and one real
+ * discussion question in the app's voice. Not the user's real progress —
+ * onboarding runs before anyone has read anything — same as the other
+ * demos, this is curated, deterministic, and never hits the DB. */
+export function getHabitDemo() {
+  return {
+    streakDays: 12,
+    plan: {
+      title: HABIT_DEMO_DIVISION.titleEn,
+      done: 24,
+      total: HABIT_DEMO_DIVISION.end - HABIT_DEMO_DIVISION.start + 1,
+    },
+  };
+}
+
+/** Real Cast data for the demo voice, pulled from the same precomputed
+ * conversations.json the live Cast tab reads. No invented numbers. */
+export function getCastDemo() {
+  const voice = conv.voices[CAST_DEMO_VOICE];
+  if (!voice) return null;
+  const speaking = Object.values(conv.voices).filter((item) => item.group !== 'narration');
+  const rank = speaking.slice().sort((a, b) => b.words - a.words).findIndex((item) => item.name === CAST_DEMO_VOICE) + 1;
+  return {
+    name: voice.name,
+    color: voice.color,
+    rank,
+    total: speaking.length,
+    topPartner: voice.spokeWith[0] || null,
+    longestSpeech: voice.longestSpeech,
+  };
+}
