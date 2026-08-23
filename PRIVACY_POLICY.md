@@ -90,9 +90,8 @@ SourceView Together is designed to be safe for users of all ages, including chil
 
 ### Manual Data Deletion
 You can delete your data at any time by:
-1. **Resetting the app:** Clear all reading progress through app settings
-2. **Uninstalling the app:** Removes all data from your device
-3. **Device reset:** Standard device factory reset removes all app data
+1. **Uninstalling the app:** Removes all data from your device
+2. **Device reset:** Standard device factory reset removes all app data
 
 ## Contact Information
 

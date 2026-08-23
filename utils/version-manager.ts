@@ -17,9 +17,11 @@ export interface AppVersion {
 }
 
 export const APP_VERSION_INFO: AppVersion = {
-  version: '1.2.0',
-  buildNumber: '17', 
-  runtimeVersion: '1.2.0',
+  version: '2.0.0',
+  buildNumber: '25',
+  // OTA matching uses Expo fingerprint policy (app.json runtimeVersion.policy),
+  // not this string. Kept as the marketing version for display/analytics only.
+  runtimeVersion: 'fingerprint',
   releaseDate: new Date().toISOString(),
   buildType: 'production'
 };

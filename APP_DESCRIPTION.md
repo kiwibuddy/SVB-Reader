@@ -43,11 +43,12 @@ Sit with family, a class, or a small group. Open the same story. Each person tak
 
 ## Plans, streak, and reactions
 
-- Flexible **reading plans** and shorter challenges for a season
+- Catalog **reading plans** and shorter challenges for a season
+- **Your Plans** — create your own reading plan as a playlist of stories
 - A **daily streak** that follows your local calendar
 - Optional **daily reminders** on this device
 - **Emoji reactions** and notes attached to the words that moved you
-- English and French
+- English (French returns in a later update)
 
 Progress, notes, and reactions stay on your device.
 
@@ -112,7 +113,7 @@ The 365 stories cover the biblical narrative from Genesis to Revelation — majo
 
 - Platforms: iOS and Android (Expo / React Native)
 - Storage: SQLite on device
-- Languages: English and French
+- Languages: English (French returns in a later update)
 - Updates: App Store, Google Play, and Expo over-the-air JavaScript updates
 - Requirements: iOS 16.4+ or Android 8+
 

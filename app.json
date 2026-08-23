@@ -2,17 +2,17 @@
   "expo": {
     "name": "SourceView Together",
     "slug": "SVB-Youth",
-    "version": "1.3.0",
+    "version": "2.0.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "sourceview",
     "userInterfaceStyle": "automatic",
-    "description": "SourceView Together is a Bible you read by voice. Every word is attributed to who spoke it — 774 voices across 365 stories. Read alone or together using the four source colors.",
+    "description": "SourceView Together is a Bible you read by voice. Every word is attributed to who spoke it \u2014 774 voices across 365 stories. Read alone or together using the four source colors.",
     "primaryColor": "#FF5733",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sourceview.together",
-      "buildNumber": "23",
+      "buildNumber": "25",
       "icon": {
         "light": "./assets/images/icon.png",
         "dark": "./assets/images/icon-dark.png",
@@ -39,7 +39,7 @@
         "android.permission.POST_NOTIFICATIONS"
       ],
       "package": "com.sourceview.together",
-      "versionCode": 22,
+      "versionCode": 23,
       "allowBackup": true,
       "icon": "./assets/images/icon.png"
     },

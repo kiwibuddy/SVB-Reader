@@ -31,7 +31,7 @@ export default function Root({ children }: PropsWithChildren) {
         <meta property="twitter:description" content="A Bible you read by voice. 365 stories in four source colors." />
         
         {/* Apple App Store Meta Tags - Helps with App Store indexing */}
-        <meta name="apple-itunes-app" content="app-id=YOUR_APP_STORE_ID" />
+        <meta name="apple-itunes-app" content="app-id=6748708102" />
         <meta name="apple-mobile-web-app-title" content="SourceView Together" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         
@@ -40,7 +40,7 @@ export default function Root({ children }: PropsWithChildren) {
         
         {/* App Links for Deep Linking */}
         <meta property="al:ios:app_name" content="SourceView Together" />
-        <meta property="al:ios:app_store_id" content="YOUR_APP_STORE_ID" />
+        <meta property="al:ios:app_store_id" content="6748708102" />
         <meta property="al:ios:url" content="sourceview://" />
         <meta property="al:android:app_name" content="SourceView Together" />
         <meta property="al:android:package" content="com.sourceview.together" />
