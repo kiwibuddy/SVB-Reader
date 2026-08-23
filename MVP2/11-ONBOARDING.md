@@ -14,6 +14,13 @@ taught once**. If screen 3 does not land, group reading does not happen.
 ## 1. Principles
 
 1. **Four screens. Never five.** Every screen added loses readers.
+   *(Revised for 2.0: two screens were added anyway — "Make it a habit" and
+   "Meet the cast" — to teach two real, shipped feature areas that had no
+   home anywhere else in the app's first run: reading plans/streak/
+   discussion questions, and the Cast tab's per-voice conversation data.
+   Both survive the "show the real thing" and "ask for nothing" rules below.
+   Treat "never five" as "don't add a screen casually," not as an absolute —
+   but every screen still has to earn its place the way these two did.)*
 2. **Show the real thing.** No illustrations, no icons standing in for scripture.
    Screen 2 renders an actual passage with actual bubbles — the product *is* the
    explanation. This also means nothing to commission.
@@ -26,7 +33,7 @@ taught once**. If screen 3 does not land, group reading does not happen.
 
 ---
 
-## 2. The four screens
+## 2. The six screens
 
 Layout is identical throughout, so only the content changes:
 
@@ -122,7 +129,46 @@ groups are usually a different size.
 
 ---
 
-### Screen 4 · Make it yours
+### Screen 4 · Make it a habit
+
+> # Make it a habit
+>
+> Pick a plan or read whenever you like — either way your streak follows your
+> calendar, and every story ends with something worth discussing.
+
+**Demonstration.** An illustrative streak ring (`StatRing`), a one-line plan
+readout ("The Beginning · 24/68 stories"), and one real discussion question
+about Abraham's test of faith. The streak and plan numbers are illustrative —
+onboarding runs before anyone has read anything — same convention as every
+other screen's curated demo data. Nothing tappable.
+
+**Why it exists:** plans, streak and discussion questions are real, shipped
+features (they carry the 1.3.0 "What's New" copy) that nothing in the
+original four screens ever mentioned.
+
+---
+
+### Screen 5 · Meet the cast
+
+> # Every voice has a page
+>
+> Tap any name to see who they spoke with most, their longest speech, and
+> every story they're in — across all 774 voices.
+
+**Demonstration.** A compact teaser of **David's** real Cast page, read
+straight from `assets/data/conversations.json` (no invented numbers): his
+rank among speaking voices, who he spoke with most (God, ×28), and his
+longest single speech — 1,522 words, a psalm, in *"Book 4: God our
+Deliverer"*. Nothing tappable.
+
+**Why David, not Abraham:** every other screen's demo already uses Abraham;
+switching protagonists here shows the onboarding isn't just retelling one
+story, and David's numbers (rank 4 of 769 speaking voices, a 1,522-word
+single speech) are the more striking hook for what Cast surfaces.
+
+---
+
+### Screen 6 · Make it yours
 
 > # Keep what stays with you
 >
@@ -157,14 +203,24 @@ is the one place slightly showy motion earns its keep, because it is teaching.
 | Screen 2 bubbles | One at a time, 280ms apart, fade + rise 8px |
 | Screen 2 legend | Colours arrive in sequence, `STAGGER.bar * 3` apart |
 | Screen 3 call sheet | Bar grows first, then names fade in |
-| Progress dots | Width, not opacity — active dot is a 16px pill, others 6px circles |
-| Button | Fill scales 0.97 on press, `DUR.instant` |
+| Screen 4 streak ring | Grows in on arrival (`StatRing`), one light haptic tick near completion |
+| Screen 5 cast card | Rank and "spoke with" arrive, then the longest-speech pull-quote, with a haptic tick |
+| Progress dots | Spring-animated width and colour, not a snap — active dot a 16px pill, others 6px circles |
+| Demo depth | Demo card carries a subtle per-screen accent glow and a slight parallax lag against the swipe |
+| Button | Spring scale on press; the final "Start reading" tap gets a small pop before navigating |
+
+*(2.0 revision: entrances moved from `withTiming`/`FadeInDown.duration()` to
+spring physics — `FadeInDown.springify()` and `withSpring()` against the
+`SPRING` token in `constants/Motion.ts` — per current motion-design norms.
+Timing-token durations above are historical; the spring config is now the
+source of truth.)*
 
 **Entrance animations replay on every visit to a screen**, forwards or back. A
 static screen on the way back reads as broken.
 
 **Reduce Motion:** everything final-state immediately, transitions become
-cross-fades, and the screen-2 bubble sequence appears complete. No delays.
+cross-fades, the screen-2 bubble sequence appears complete, the dot pager and
+CTA pop become instant, and the parallax layer holds still. No delays.
 
 ---
 
@@ -172,34 +228,40 @@ cross-fades, and the screen-2 bubble sequence appears complete. No delays.
 
 - `hooks/useFirstLaunch.ts` already gates first-run — build on it, don't add a
   parallel flag.
-- Persist a **version number**, not a boolean: `onboardingVersion: 2`. When you
-  change onboarding you can then re-show it to existing users, which a boolean
-  makes impossible.
+- Persist a **version number**, not a boolean: `onboardingVersion: 3` as of
+  2.0 (was 2). When you change onboarding you can then re-show it to existing
+  users, which a boolean makes impossible.
 - Show it **after** the database has initialised, so "Start reading" opens
   instantly. If init is slow the splash covers it.
 - Route: `app/onboarding.tsx`, outside `(tabs)` — no tab bar, and it must not be
   swipeable-back into.
 - **Re-openable** from You → About → *"How SourceView works"*. People forget the
   colours and there must be somewhere to look.
-- Screens 1–4 render **real components with real data**, not screenshots.
+- Screens 1–6 render **real components with real data**, not screenshots.
   Screenshots go stale the moment the design moves, and this design is still
-  moving.
+  moving. Screen 5's numbers come straight from `assets/data/conversations.json`
+  (the same file the live Cast tab reads) — never hand-type a stat there.
 
 ---
 
 ## 5. French
 
-The copy above is English. French runs roughly 20% longer, so:
+The copy for screens 1–3 and 6 is English and French, in `UI-ENG.json` /
+`FRA-UI.json` under `onboarding.*`. French runs roughly 20% longer, so:
 
 - Headlines must hold at **two lines** at the largest text size in French
 - *"Read it with three friends"* → *« Lisez-le avec trois amis »* — check the
   headline still fits beside the Skip button
-- All eight strings go in `UI-ENG.json` / `FRA-UI.json` under `onboarding.*` from
-  the start. Do not hard-code English "temporarily".
 - The four colour descriptions already exist in both languages under
   `groupReading.*` — **move them to `onboarding.*` rather than deleting them**
   with the rest of the group keys, or the French translation is lost and has to
   be redone.
+
+**Screens 4 and 5 (added in 2.0) are English-only.** 2.0 ships without French
+for these two screens — no `FRA-UI.json` entries exist for
+`screen4Title/Body` or `screen5Title/Body`. If French comes back for 2.0,
+translate these two before anything else in this file changes; until then,
+don't add French strings for them piecemeal.
 
 ---
 
@@ -220,13 +282,17 @@ The copy above is English. French runs roughly 20% longer, so:
 
 ## 7. Done when
 
-- [ ] Four screens, under 45 seconds at a normal reading pace
+- [ ] Six screens, under a minute at a normal reading pace
 - [ ] Skip visible on screen 1 and every screen after
-- [ ] Every demonstration renders live components with real data
+- [ ] Every demonstration renders live components with real data (screen 5's
+      numbers match `conversations.json` exactly)
 - [ ] "Start reading" opens today's story, not the list
 - [ ] Re-openable from You → About
-- [ ] English and French, both at all three text sizes, nothing clipped
-- [ ] Reduce Motion: complete, static, no added delay
+- [ ] Screens 1–3 and 6: English and French, both at all three text sizes,
+      nothing clipped. Screens 4–5: English, all three text sizes, nothing
+      clipped
+- [ ] Reduce Motion: complete, static, no added delay — spring entrances,
+      dot pager, parallax and the final CTA pop all collapse correctly
 - [ ] Nothing is requested — no account, no permission, no preference
 - [ ] Someone who has never seen the app can explain the four colours afterwards.
       **Test this on five people before shipping.** It is the only acceptance

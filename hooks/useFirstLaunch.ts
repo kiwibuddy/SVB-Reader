@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import logger from '@/utils/logger';
 
-export const CURRENT_ONBOARDING_VERSION = 2;
+export const CURRENT_ONBOARDING_VERSION = 3;
 const VERSION_KEY = 'onboardingVersion';
 const LEGACY_KEY = 'hasLaunchedBefore';
 
