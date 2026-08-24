@@ -88,15 +88,50 @@ function findAbrahamExchange(data?: Record<string, StorySegment>): BibleBlock[] 
 }
 
 export function getShareDemoBlock(bible?: Record<string, StorySegment>): BibleBlock | null {
+  return getKeepDemoItems(bible)[0]?.block || null;
+}
+
+/** Two Saved-tab style items for the Keep onboarding screen. */
+export function getKeepDemoItems(bible?: Record<string, StorySegment>): {
+  block: BibleBlock;
+  emoji: string;
+  noteKey: 'sampleNote' | 'sampleNote2' | null;
+  storyId: string;
+}[] {
   const content = getDemoStory(bible)?.content || [];
-  const block = content.find((item) => /Take your son, your only son/i.test(blockText(item)));
-  if (!block) return null;
-  return keepLeaves(block, (text) => /Take your son|only son/i.test(text) && !/^\d+$/.test(text.trim()));
+  const takeSon = content.find((item) => /Take your son, your only son/i.test(blockText(item)));
+  const hereIAm = content.find(
+    (item) => item.source?.sourceName === 'Abraham' && /Here I am/i.test(blockText(item))
+  );
+  const items: {
+    block: BibleBlock;
+    emoji: string;
+    noteKey: 'sampleNote' | 'sampleNote2' | null;
+    storyId: string;
+  }[] = [];
+  if (takeSon) {
+    items.push({
+      block: keepLeaves(takeSon, (text) => /Take your son|only son/i.test(text) && !/^\d+$/.test(text.trim())),
+      emoji: '🙏',
+      noteKey: 'sampleNote',
+      storyId: DEMO_STORY_ID,
+    });
+  }
+  if (hereIAm) {
+    items.push({
+      block: hereIAm,
+      emoji: '❤️',
+      noteKey: 'sampleNote2',
+      storyId: DEMO_STORY_ID,
+    });
+  }
+  return items;
 }
 
 export function getCallSheetDemo(bible?: Record<string, StorySegment>) {
   const story = getDemoStory(bible);
   const sources = story?.sources || {};
+  const colors = story?.colors || {};
   const voices = FEATURED_VOICES.map((name) => ({
     name,
     words: sources[name]?.words || 0,
@@ -105,9 +140,11 @@ export function getCallSheetDemo(bible?: Record<string, StorySegment>) {
 
   return {
     storyId: DEMO_STORY_ID,
-    words: story?.colors?.total || getSegmentWordCount(DEMO_STORY_ID),
-    colors: story?.colors || {},
+    words: colors.total || getSegmentWordCount(DEMO_STORY_ID),
+    colors,
     voices,
+    sources,
+    readers: (story as { readers?: string[] } | null)?.readers,
   };
 }
 
@@ -120,6 +157,8 @@ export const ONBOARDING_STORY_IDS = ['S001', 'S002', 'S003'] as const;
 export function getHabitDemo() {
   return {
     streakDays: 12,
+    storiesDone: 42,
+    voicesMet: 128,
     plan: {
       title: HABIT_DEMO_DIVISION.titleEn,
       done: 24,
@@ -134,13 +173,27 @@ export function getCastDemo() {
   const voice = conv.voices[CAST_DEMO_VOICE];
   if (!voice) return null;
   const speaking = Object.values(conv.voices).filter((item) => item.group !== 'narration');
-  const rank = speaking.slice().sort((a, b) => b.words - a.words).findIndex((item) => item.name === CAST_DEMO_VOICE) + 1;
+  const rank =
+    speaking
+      .slice()
+      .sort((a, b) => b.words - a.words)
+      .findIndex((item) => item.name === CAST_DEMO_VOICE) + 1;
+  const partner = voice.spokeWith[0];
   return {
     name: voice.name,
     color: voice.color,
     rank,
     total: speaking.length,
-    topPartner: voice.spokeWith[0] || null,
+    words: voice.words,
+    turns: voice.turns,
+    storyCount: voice.storyIds.length,
+    topPartner: partner
+      ? {
+          name: partner.name,
+          count: partner.count,
+          color: conv.voices[partner.name]?.color || 'blue',
+        }
+      : null,
     longestSpeech: voice.longestSpeech,
   };
 }

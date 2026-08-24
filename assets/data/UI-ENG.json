@@ -992,8 +992,8 @@
       "screen4Body": "Pick a plan or read whenever you like — either way your streak follows your calendar, and every story ends with something worth discussing.",
       "screen5Title": "Every voice has a page",
       "screen5Body": "Tap any name to see who they spoke with most, their longest speech, and every story they're in — across all 774 voices.",
-      "screen6Title": "Keep what stays with you",
-      "screen6Body": "Press and hold any verse to react, add a note, or send it to someone. It's saved to that verse, so you'll find it again.",
+      "screen6Title": "Save, note, and share",
+      "screen6Body": "Press and hold any verse to react, write a note, or share it. Everything stays on that verse so you can find it again.",
       "sampleQuestion": "Was Abraham right to trust, even when it made no sense?",
       "narratorLabel": "Narrator",
       "godLabel": "God",
@@ -1004,7 +1004,8 @@
       "mainCharacterRoleDescription": "the people the story follows",
       "otherVoicesRoleDescription": "every other voice, down to a single blind beggar",
       "fourReaders": "Four voices · four readers",
-      "sampleNote": "The hardest sentence…"
+      "sampleNote": "The hardest sentence…",
+      "sampleNote2": "Ready when God called."
     },
     "groupReading": {
       "selectYourReadingRole": "Select Your Reading Role"

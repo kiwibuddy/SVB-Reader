@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { View, Text, StyleSheet, Platform, ScrollView } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeInDown,
   useAnimatedProps,
@@ -13,15 +14,18 @@ import Animated, {
 } from 'react-native-reanimated';
 import { DEPTH_X, ROW_HEIGHT, buildThread } from '@/components/thread/buildThread';
 import { DUR, RM, SPRING, STAGGER, timing } from '@/constants/Motion';
-import { ThreadColors, fillHex, inkHex } from '@/constants/Colors';
+import { fillHex, inkHex } from '@/constants/Colors';
 import { getColors, getBubbleTextColorSafe } from '@/scripts/getColors';
 import BibleInlineComponent from '@/components/Bible/Inline';
-import SegmentTitles from '@/assets/data/SegmentTitles.json';
-import { localizeStoryTitle, localizeVoiceName } from '@/utils/localize';
-import { formatReadingMinutes, getSegmentReadingTime } from '@/utils/readingTime';
-import { isLeftVoice } from '@/utils/ink';
-import { hapticImpactLight } from '@/utils/haptics';
+import SavedBubble from '@/components/thread/SavedBubble';
+import StoryColorMix from '@/components/thread/StoryColorMix';
 import StatRing from '@/components/thread/StatRing';
+import SegmentTitles from '@/assets/data/SegmentTitles.json';
+import { localizeStoryTitle, localizeVoiceName, formatCount } from '@/utils/localize';
+import { formatReadingMinutes, getSegmentReadingTime } from '@/utils/readingTime';
+import { inkLabel, isLeftVoice, roleFill, type Ink } from '@/utils/ink';
+import { hapticImpactLight } from '@/utils/haptics';
+import { readerSlots } from '@/utils/readerParts';
 import type { BibleBlock } from '@/types';
 import type { ThreadPalette } from '@/constants/Colors';
 import {
@@ -30,7 +34,7 @@ import {
   getCallSheetDemo,
   getCastDemo,
   getHabitDemo,
-  getShareDemoBlock,
+  getKeepDemoItems,
 } from '@/utils/onboardingDemo';
 
 const spring = (value: number) => withSpring(value, { ...SPRING, ...RM });
@@ -38,6 +42,7 @@ const spring = (value: number) => withSpring(value, { ...SPRING, ...RM });
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const titles = SegmentTitles as Record<string, { title?: string; ref?: string; book?: string[] }>;
 const BUBBLE_GAP = 280;
+const CREAM = '#F2EAE0';
 
 type DemoProps = {
   active: boolean;
@@ -45,7 +50,7 @@ type DemoProps = {
   palette: ThreadPalette;
   isDarkMode: boolean;
   language: string;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 };
 
 function entering(reduced: boolean, delay: number) {
@@ -83,38 +88,40 @@ function DemoBubble({
   return (
     <Animated.View
       entering={entering(reduced, delay)}
-      style={{ alignItems: left ? 'flex-start' : 'flex-end' }}
+      style={{ alignItems: left ? 'flex-start' : 'flex-end', width: '100%' }}
     >
-      <Text
-        accessibilityLabel={localizeVoiceName(sourceName, language)}
-        style={[styles.who, { color: ink, textAlign: left ? 'left' : 'right' }]}
-      >
-        {localizeVoiceName(sourceName, language)}
-      </Text>
-      <View
-        style={[
-          styles.bubble,
-          radius,
-          {
-            backgroundColor: isDarkMode ? fills.dark : fills.light,
-            borderColor: color === 'black' ? palette.hair : ink,
-          },
-        ]}
-      >
-        {(block.children || []).map((item, childIndex) => {
-          if (item.type === 'break' || item.tag === 'b') return null;
-          return (
-            <BibleInlineComponent
-              key={`${index}-${childIndex}`}
-              iIndex={`${index}-${childIndex}`}
-              inline={item}
-              textColor={ink}
-              bubbleColor={color}
-              bodySize={15}
-              bodyLineHeight={22}
-            />
-          );
-        })}
+      <View style={[styles.bubbleStack, { alignSelf: left ? 'flex-start' : 'flex-end' }]}>
+        <Text
+          accessibilityLabel={localizeVoiceName(sourceName, language)}
+          style={[styles.who, { color: ink, textAlign: left ? 'left' : 'right' }]}
+        >
+          {localizeVoiceName(sourceName, language)}
+        </Text>
+        <View
+          style={[
+            styles.bubble,
+            radius,
+            {
+              backgroundColor: isDarkMode ? fills.dark : fills.light,
+              borderColor: color === 'black' ? palette.hair : ink,
+            },
+          ]}
+        >
+          {(block.children || []).map((item, childIndex) => {
+            if (item.type === 'break' || item.tag === 'b') return null;
+            return (
+              <BibleInlineComponent
+                key={`${index}-${childIndex}`}
+                iIndex={`${index}-${childIndex}`}
+                inline={item}
+                textColor={ink}
+                bubbleColor={color}
+                bodySize={15}
+                bodyLineHeight={22}
+              />
+            );
+          })}
+        </View>
       </View>
     </Animated.View>
   );
@@ -123,8 +130,6 @@ function DemoBubble({
 export function ShapeDemo({ active, token, palette, language }: DemoProps) {
   const reduced = useReducedMotion();
   const progress = useSharedValue(reduced ? 1 : 0);
-  // Onboarding only shows story rows — use division depth so the thread sits
-  // near the card's left edge instead of leaving a blank story-depth gutter.
   const rows = ONBOARDING_STORY_IDS.map((id) => ({
     key: id,
     depth: 0 as const,
@@ -210,27 +215,11 @@ export function VoicesDemo({ active, token, palette, isDarkMode, language, t }: 
 
   return (
     <View style={styles.demoStack}>
-      <View style={styles.exchange}>
-        {blocks.map((block, index) => (
-          <DemoBubble
-            key={`${token}-${index}`}
-            block={block}
-            index={reduced ? 0 : index}
-            reduced={reduced || !active}
-            isDarkMode={isDarkMode}
-            language={language}
-            palette={palette}
-          />
-        ))}
-      </View>
-      <View style={{ marginTop: 12, gap: 8 }}>
+      <View style={{ gap: 8 }}>
         {legend.map((item, index) => (
           <Animated.View
             key={`${token}-leg-${item.ink}`}
-            entering={entering(
-              reduced || !active,
-              reduced ? 0 : BUBBLE_GAP * Math.max(blocks.length, 1) + STAGGER.bar * 3 * index
-            )}
+            entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 3 * index)}
             style={styles.legendRow}
           >
             <View
@@ -247,6 +236,20 @@ export function VoicesDemo({ active, token, palette, isDarkMode, language, t }: 
           </Animated.View>
         ))}
       </View>
+      <View style={[styles.sectionRule, { backgroundColor: palette.hair }]} />
+      <View style={styles.exchange}>
+        {blocks.map((block, index) => (
+          <DemoBubble
+            key={`${token}-${index}`}
+            block={block}
+            index={reduced ? 0 : index}
+            reduced={reduced || !active}
+            isDarkMode={isDarkMode}
+            language={language}
+            palette={palette}
+          />
+        ))}
+      </View>
     </View>
   );
 }
@@ -257,12 +260,13 @@ export function FriendsDemo({ active, token, palette, language, t }: DemoProps) 
   const grow = useSharedValue(reduced ? 1 : 0);
   const names = useSharedValue(reduced ? 1 : 0);
   const title = localizeStoryTitle(demo.storyId, titles[demo.storyId]?.title || demo.storyId, language);
-  const mix = [
-    { ink: 'black', value: demo.colors.black || 0 },
-    { ink: 'red', value: demo.colors.red || 0 },
-    { ink: 'green', value: demo.colors.green || 0 },
-    { ink: 'blue', value: demo.colors.blue || 0 },
-  ].filter((part) => part.value > 0);
+  const info = titles[demo.storyId];
+  const minutes = getSegmentReadingTime(demo.storyId);
+  const num = demo.storyId.replace(/^S/i, '');
+  const meta = [num, info?.book?.[0] && info?.ref ? `${info.book[0]} ${info.ref}` : '', minutes ? formatReadingMinutes(minutes) : '']
+    .filter(Boolean)
+    .join(' · ');
+  const slots = useMemo(() => readerSlots(demo.readers, demo.colors), [demo.readers, demo.colors]);
 
   useEffect(() => {
     if (!active) return;
@@ -278,42 +282,46 @@ export function FriendsDemo({ active, token, palette, language, t }: DemoProps) 
   }, [active, grow, names, reduced, token]);
 
   const barStyle = useAnimatedStyle(() => ({
+    opacity: grow.value,
     transform: [{ scaleX: grow.value }],
   }));
   const namesStyle = useAnimatedStyle(() => ({ opacity: names.value }));
 
   return (
-    <View style={[styles.card, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
-      <Text style={[styles.callTitle, { color: palette.ink }]}>{title}</Text>
-      <Text style={[styles.callMeta, { color: palette.mute }]}>
-        {demo.words.toLocaleString()} {t('UI.thread.words').toLowerCase()}
-      </Text>
-      <Animated.View style={[styles.mix, barStyle, { transformOrigin: 'left' }]}>
-        {mix.map((part) => (
-          <View key={part.ink} style={{ flex: part.value, backgroundColor: inkHex(part.ink, palette), height: 4 }} />
-        ))}
+    <View style={styles.demoStack}>
+      <Text style={[styles.segmentTitle, { color: palette.ink }]}>{title}</Text>
+      <Text style={[styles.segmentMeta, { color: palette.mute }]}>{meta}</Text>
+      <Animated.View style={[{ transformOrigin: 'left' as const }, barStyle]}>
+        <StoryColorMix colors={demo.colors} palette={palette} style={{ marginTop: 10 }} />
       </Animated.View>
-      <Animated.View style={namesStyle}>
-        <Text style={[styles.callLine, { color: palette.mute }]}>
-          {demo.voices.map((voice) => `${localizeVoiceName(voice.name, language)} ${voice.words}`).join(' · ')}
-        </Text>
-        <View style={styles.avatars}>
-          {mix.map((part) => (
-            <View
-              key={part.ink}
-              pointerEvents="none"
-              style={[
-                styles.avatar,
-                {
-                  backgroundColor: fillHex(part.ink, palette),
-                  borderColor: inkHex(part.ink, palette),
-                },
-              ]}
-            />
-          ))}
+      <Text style={[styles.pickPrompt, { color: palette.mute }]}>{t('UI.thread.pickCastPrompt')}</Text>
+      <View style={[styles.callWrap, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
+        <View style={styles.callTop}>
+          <View style={styles.boxes}>
+            {slots.map((slot) => (
+              <View
+                key={slot.index}
+                style={[
+                  styles.box,
+                  {
+                    backgroundColor: fillHex(slot.ink, palette),
+                    borderColor: inkHex(slot.ink, palette),
+                  },
+                ]}
+              />
+            ))}
+          </View>
+          <Text style={[styles.voiceCount, { color: palette.ink }]}>
+            {demo.voices.length} {t('UI.thread.scopeVoices').toUpperCase()}
+          </Text>
         </View>
-        <Text style={[styles.four, { color: palette.mute }]}>{t('UI.onboarding.fourReaders')}</Text>
-      </Animated.View>
+        <Animated.View style={namesStyle}>
+          <Text style={[styles.callLine, { color: palette.mute }]}>
+            {demo.voices.map((voice) => `${localizeVoiceName(voice.name, language)} ${voice.words}`).join(' · ')}
+          </Text>
+          <Text style={[styles.four, { color: palette.mute }]}>{t('UI.onboarding.fourReaders')}</Text>
+        </Animated.View>
+      </View>
     </View>
   );
 }
@@ -321,18 +329,7 @@ export function FriendsDemo({ active, token, palette, language, t }: DemoProps) 
 export function HabitDemo({ active, token, palette, t }: DemoProps) {
   const reduced = useReducedMotion();
   const demo = useMemo(() => getHabitDemo(), []);
-  const grow = useSharedValue(reduced ? 1 : 0);
   const pct = demo.plan.total > 0 ? demo.plan.done / demo.plan.total : 0;
-
-  useEffect(() => {
-    if (!active) return;
-    if (reduced) {
-      grow.value = 1;
-      return;
-    }
-    grow.value = 0;
-    grow.value = spring(1);
-  }, [active, grow, reduced, token]);
 
   useEffect(() => {
     if (!active || reduced) return;
@@ -340,15 +337,39 @@ export function HabitDemo({ active, token, palette, t }: DemoProps) {
     return () => clearTimeout(timer);
   }, [active, reduced, token]);
 
-  const barStyle = useAnimatedStyle(() => ({ transform: [{ scaleX: grow.value * pct }] }));
-
   return (
-    <View style={[styles.card, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
-      <View style={styles.habitTop}>
+    <View style={styles.demoStack}>
+      <View style={styles.habitRings}>
         <StatRing
           size={72}
           strokeWidth={6}
-          progress={1}
+          progress={demo.storiesDone / 365}
+          centerPrimary={String(demo.storiesDone)}
+          centerSecondary="/ 365"
+          trackColor={palette.hair}
+          accentColor={palette.acc}
+          centerPrimaryColor={palette.ink}
+          centerSecondaryColor={palette.mute}
+          label={t('UI.thread.stories')}
+          replayToken={active ? token : 0}
+        />
+        <StatRing
+          size={72}
+          strokeWidth={6}
+          progress={demo.voicesMet / 774}
+          centerPrimary={String(demo.voicesMet)}
+          centerSecondary="/ 774"
+          trackColor={palette.hair}
+          accentColor={palette.chor}
+          centerPrimaryColor={palette.ink}
+          centerSecondaryColor={palette.mute}
+          label={t('UI.thread.voicesMet')}
+          replayToken={active ? token + 1 : 0}
+        />
+        <StatRing
+          size={72}
+          strokeWidth={6}
+          progress={Math.min(demo.streakDays / 30, 1)}
           centerPrimary={String(demo.streakDays)}
           centerSecondary={t('UI.thread.dayStreak')}
           trackColor={palette.hair}
@@ -356,18 +377,30 @@ export function HabitDemo({ active, token, palette, t }: DemoProps) {
           centerPrimaryColor={palette.ink}
           centerSecondaryColor={palette.mute}
           label={t('UI.thread.streak')}
-          replayToken={active ? token : 0}
+          replayToken={active ? token + 2 : 0}
         />
-        <View style={styles.habitPlan}>
+      </View>
+      <View style={[styles.planCard, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
+        <View style={{ flex: 1 }}>
           <Text style={[styles.callMeta, { color: palette.mute }]}>{t('UI.thread.yourPlan')}</Text>
           <Text style={[styles.callTitle, { color: palette.ink }]}>{demo.plan.title}</Text>
-          <View style={[styles.habitBarTrack, { backgroundColor: palette.hair }]}>
-            <Animated.View style={[styles.habitBarFill, barStyle, { backgroundColor: palette.acc, transformOrigin: 'left' }]} />
-          </View>
           <Text style={[styles.callMeta, { color: palette.mute }]}>
             {demo.plan.done}/{demo.plan.total} {t('UI.thread.stories').toLowerCase()}
           </Text>
         </View>
+        <StatRing
+          size={64}
+          strokeWidth={5}
+          progress={pct}
+          centerPrimary={`${Math.round(pct * 100)}%`}
+          centerSecondary={`${demo.plan.done}/${demo.plan.total}`}
+          trackColor={palette.hair}
+          accentColor={palette.acc}
+          centerPrimaryColor={palette.ink}
+          centerSecondaryColor={palette.mute}
+          label=""
+          replayToken={active ? token + 3 : 0}
+        />
       </View>
       <Animated.View entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 4)} style={styles.habitQuestion}>
         <Text style={[styles.kicker, { color: palette.mute }]}>{t('UI.thread.talkAboutIt')}</Text>
@@ -388,105 +421,165 @@ export function CastDemo({ active, token, palette, language, t }: DemoProps) {
   }, [active, demo, reduced, token]);
 
   if (!demo) return null;
-  const ink = inkHex(demo.color, palette);
-  const rankLabel = `${String(demo.rank).padStart(3, '0')} ${t('UI.thread.of')} ${demo.total}`;
+  const field = roleFill(demo.color);
+  const lang = language.startsWith('fr') ? 'fr' : 'en';
+  const rankLabel = `${inkLabel(demo.color as Ink, lang)} · ${String(demo.rank).padStart(3, '0')} ${t('UI.thread.of')} ${demo.total}`;
+  const partnerFill = roleFill(demo.topPartner?.color || 'blue');
 
   return (
-    <View style={[styles.card, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
-      <Text style={[styles.castRank, { color: ink }]}>{rankLabel}</Text>
-      <Text style={[styles.castName, { color: palette.ink }]}>{localizeVoiceName(demo.name, language)}</Text>
-      {demo.topPartner && (
-        <Animated.View
-          key={`${token}-partner`}
-          entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 2)}
-          style={styles.castRow}
-        >
-          <Text style={[styles.kicker, { color: palette.mute }]}>{t('UI.thread.spokeWith')}</Text>
-          <Text style={[styles.castRowValue, { color: palette.ink }]}>
-            {localizeVoiceName(demo.topPartner.name, language)} · {demo.topPartner.count}
-          </Text>
-        </Animated.View>
-      )}
-      {demo.longestSpeech && (
-        <Animated.View
-          key={`${token}-speech`}
-          entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 4)}
-          style={styles.castPull}
-        >
-          <Text style={[styles.kicker, { color: palette.mute }]}>{t('UI.thread.longestSpeech')}</Text>
-          <Text style={[styles.castPullBody, { color: palette.ink }]}>
-            {demo.longestSpeech.words.toLocaleString()} {t('UI.thread.words').toLowerCase()}
-          </Text>
-          <Text style={[styles.castPullStory, { color: palette.mute }]}>
-            {localizeStoryTitle(demo.longestSpeech.storyId, demo.longestSpeech.storyTitle, language)}
-          </Text>
-        </Animated.View>
-      )}
+    <View style={[styles.castField, { backgroundColor: field }]}>
+      <ScrollView
+        pointerEvents="none"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.castPad}
+      >
+        <Text style={[styles.castRank, { color: CREAM }]}>{rankLabel}</Text>
+        <Text style={[styles.castName, { color: CREAM }]}>{localizeVoiceName(demo.name, language)}</Text>
+        <Text style={[styles.castSentence, { color: CREAM }]}>
+          {t('UI.thread.castSentence', {
+            words: formatCount(demo.words),
+            turns: formatCount(demo.turns),
+            stories: demo.storyCount,
+          })}
+        </Text>
+        {demo.topPartner && (
+          <Animated.View
+            key={`${token}-partner`}
+            entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 2)}
+            style={styles.castSpoke}
+          >
+            <Text style={[styles.castKicker, { color: CREAM }]}>{t('UI.thread.spokeWith')}</Text>
+            <View style={styles.castSpokeRow}>
+              <View style={[styles.castIcon, { backgroundColor: partnerFill, borderColor: CREAM }]}>
+                <Ionicons name="person" size={12} color={CREAM} />
+              </View>
+              <Text style={[styles.castSpokeName, { color: CREAM }]}>
+                {localizeVoiceName(demo.topPartner.name, language)}
+              </Text>
+              <Text style={[styles.castSpokeCount, { color: CREAM }]}>{demo.topPartner.count}</Text>
+            </View>
+          </Animated.View>
+        )}
+        {demo.longestSpeech && (
+          <Animated.View
+            key={`${token}-speech`}
+            entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 4)}
+            style={styles.castPull}
+          >
+            <Text style={[styles.castKicker, { color: CREAM }]}>{t('UI.thread.longestSpeech')}</Text>
+            <Text style={[styles.castPullBody, { color: CREAM }]}>
+              {formatCount(demo.longestSpeech.words)} {t('UI.thread.words').toLowerCase()}
+            </Text>
+            <Text style={[styles.castPullStory, { color: CREAM }]}>
+              {localizeStoryTitle(demo.longestSpeech.storyId, demo.longestSpeech.storyTitle, language)}
+            </Text>
+          </Animated.View>
+        )}
+      </ScrollView>
     </View>
   );
 }
 
-export function KeepDemo({ active, token, palette, isDarkMode, language, t }: DemoProps) {
+export function KeepDemo({ active, token, palette, t }: DemoProps) {
   const reduced = useReducedMotion();
-  const block = useMemo(() => getShareDemoBlock(), []);
-  if (!block) return null;
+  const items = useMemo(() => getKeepDemoItems(), []);
+  if (!items.length) return null;
+  const info = titles[items[0].storyId];
 
   return (
-    <View style={styles.demoStack}>
-      <DemoBubble
-        key={token}
-        block={block}
-        index={0}
-        reduced={reduced || !active}
-        isDarkMode={isDarkMode}
-        language={language}
-        palette={palette}
-      />
-      <Animated.View
-        entering={entering(reduced || !active, reduced ? 0 : 120)}
-        style={styles.reactions}
-      >
-        <Text style={styles.emoji}>🙏</Text>
-        <Text style={styles.emoji}>❤️</Text>
-        <Text style={[styles.note, { color: palette.mute }]}>{t('UI.onboarding.sampleNote')}</Text>
-      </Animated.View>
-    </View>
+    <ScrollView
+      style={styles.demoStack}
+      contentContainerStyle={{ gap: 4, paddingBottom: 8 }}
+      showsVerticalScrollIndicator={false}
+      pointerEvents="none"
+    >
+      {items.map((item, index) => (
+        <Animated.View
+          key={`${token}-keep-${index}`}
+          entering={entering(reduced || !active, reduced ? 0 : 80 * index)}
+          style={styles.savedCard}
+        >
+          <SavedBubble
+            block={item.block}
+            index={index}
+            segmentId={item.storyId}
+            citationBook={info?.book?.[0]}
+            storyTitle={info?.title}
+            emoji={item.emoji}
+          />
+          {item.noteKey ? (
+            <Text style={[styles.savedNote, { color: palette.mute, borderTopColor: palette.hair }]}>
+              {t(`UI.onboarding.${item.noteKey}`)}
+            </Text>
+          ) : null}
+        </Animated.View>
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   card: { borderWidth: 1, borderRadius: 14, padding: 12, overflow: 'hidden' },
-  demoStack: { width: '100%', overflow: 'hidden' },
+  demoStack: { width: '100%' },
+  sectionRule: { height: StyleSheet.hairlineWidth, marginVertical: 14, opacity: 0.9 },
   kicker: { fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', fontWeight: '600' },
-  habitTop: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  habitPlan: { flex: 1, gap: 4 },
-  habitBarTrack: { height: 4, borderRadius: 2, overflow: 'hidden', marginTop: 4 },
-  habitBarFill: { height: 4, borderRadius: 2, width: '100%' },
+  habitRings: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  planCard: {
+    marginTop: 14,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingLeft: 12,
+    paddingRight: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   habitQuestion: {
-    marginTop: 16,
+    marginTop: 14,
     paddingTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'rgba(0,0,0,0.08)',
     gap: 4,
   },
   habitQuestionText: { fontSize: 14, lineHeight: 20, fontStyle: 'italic' },
-  castRank: { fontSize: 10, letterSpacing: 1.6, textTransform: 'uppercase', fontWeight: '600' },
+  castField: { flex: 1, borderRadius: 16, overflow: 'hidden', minHeight: 280 },
+  castPad: { padding: 16, paddingBottom: 20 },
+  castRank: { fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.85 },
   castName: {
-    fontSize: 26,
+    fontSize: 40,
     fontWeight: '600',
-    letterSpacing: -0.4,
-    marginTop: 2,
+    letterSpacing: -1,
+    marginTop: 6,
     fontFamily: Platform.OS === 'ios' ? 'Didot' : 'serif',
+    ...Platform.select({ android: { includeFontPadding: false }, default: {} }),
   },
-  castRow: { marginTop: 14, gap: 3 },
-  castRowValue: { fontSize: 14 },
-  castPull: { marginTop: 12, gap: 3 },
+  castSentence: { fontSize: 13, lineHeight: 18, marginTop: 8, opacity: 0.92 },
+  castKicker: { fontSize: 8, letterSpacing: 1.6, textTransform: 'uppercase', opacity: 0.75, marginBottom: 6 },
+  castSpoke: { marginTop: 16 },
+  castSpokeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  castIcon: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  castSpokeName: { flex: 1, fontSize: 13 },
+  castSpokeCount: { fontSize: 10, opacity: 0.85, fontVariant: ['tabular-nums'] },
+  castPull: {
+    marginTop: 14,
+    paddingTop: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(242,234,224,0.28)',
+  },
   castPullBody: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 20,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
-  castPullStory: { fontSize: 12, lineHeight: 16 },
+  castPullStory: { fontSize: 12, lineHeight: 16, opacity: 0.85, marginTop: 2 },
   storyRow: { flexDirection: 'row', alignItems: 'center' },
   bead: {
     position: 'absolute',
@@ -498,18 +591,39 @@ const styles = StyleSheet.create({
   },
   storyTitle: { fontSize: 14, fontWeight: '600' },
   storyRef: { fontSize: 10, letterSpacing: 0.6, marginTop: 2, textTransform: 'uppercase' },
-  exchange: { gap: 6 },
+  segmentTitle: { fontSize: 22, fontWeight: '600', letterSpacing: -0.3 },
+  segmentMeta: { fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', marginTop: 6 },
+  pickPrompt: { fontSize: 14, lineHeight: 20, marginTop: 12, marginBottom: 2 },
+  callWrap: { borderWidth: 1, borderRadius: 12, marginTop: 8, paddingBottom: 12 },
+  callTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  boxes: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  box: {
+    width: 42,
+    height: 42,
+    borderRadius: 11,
+    borderTopLeftRadius: 4,
+    borderWidth: 1,
+  },
+  voiceCount: { fontSize: 12, letterSpacing: 1.1, fontWeight: '700' },
+  exchange: { gap: 8 },
+  bubbleStack: { maxWidth: '84%' },
   who: {
     fontSize: 9,
     letterSpacing: 1.4,
     textTransform: 'uppercase',
     fontWeight: '600',
     marginBottom: 4,
+    paddingHorizontal: 4,
   },
   bubble: {
     paddingVertical: 9,
     paddingHorizontal: 12,
-    maxWidth: '84%',
     borderWidth: StyleSheet.hairlineWidth,
     ...Platform.select({ web: { boxShadow: 'none' }, default: {} }),
   },
@@ -519,12 +633,15 @@ const styles = StyleSheet.create({
   legendBody: { flex: 1, fontSize: 12 },
   callTitle: { fontSize: 15, fontWeight: '600' },
   callMeta: { fontSize: 11, marginTop: 4 },
-  mix: { flexDirection: 'row', height: 4, borderRadius: 2, overflow: 'hidden', gap: 1, marginTop: 10 },
-  callLine: { fontSize: 11, marginTop: 12, lineHeight: 16 },
-  avatars: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 12 },
-  avatar: { width: 34, height: 34, borderRadius: 17, borderWidth: 1.5 },
-  four: { fontSize: 10, textAlign: 'center', marginTop: 9 },
-  reactions: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8, paddingLeft: 4 },
-  emoji: { fontSize: 16 },
-  note: { fontSize: 13, fontStyle: 'italic', flex: 1 },
+  callLine: { fontSize: 11, marginTop: 4, lineHeight: 16, paddingHorizontal: 14 },
+  four: { fontSize: 10, textAlign: 'center', marginTop: 8 },
+  savedCard: { paddingBottom: 6 },
+  savedNote: {
+    marginTop: 8,
+    marginHorizontal: 8,
+    paddingTop: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    fontSize: 14,
+    lineHeight: 20,
+  },
 });

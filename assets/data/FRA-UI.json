@@ -23035,8 +23035,8 @@
       "screen2Body": "Chaque mot est coloré selon celui qui l'a dit. Le narrateur raconte l'histoire. Dieu parle en rouge. Les gens de l'histoire parlent dans leurs propres couleurs.",
       "screen3Title": "Lisez-le avec trois amis",
       "screen3Body": "Chacun prend une couleur et vous lisez à voix haute ensemble. C'est tout — pas d'installation, pas de codes. Ça marche tout aussi bien seul.",
-      "screen4Title": "Gardez ce qui reste",
-      "screen4Body": "Appuyez longuement sur un verset pour réagir, ajouter une note, ou l'envoyer à quelqu'un. C'est lié à ce verset, vous le retrouverez.",
+      "screen4Title": "Enregistrer, noter, partager",
+      "screen4Body": "Appuyez longuement sur un verset pour réagir, écrire une note, ou le partager. Tout reste sur ce verset pour que vous le retrouviez.",
       "narratorLabel": "Narrateur",
       "godLabel": "Dieu",
       "mainCharactersLabel": "Personnages principaux",
@@ -23046,7 +23046,8 @@
       "mainCharacterRoleDescription": "les gens que l'histoire suit",
       "otherVoicesRoleDescription": "chaque autre voix, jusqu'à un mendiant aveugle",
       "fourReaders": "Quatre voix · quatre lecteurs",
-      "sampleNote": "La phrase la plus dure…"
+      "sampleNote": "La phrase la plus dure…",
+      "sampleNote2": "Prêt quand Dieu l'a appelé."
     },
     "groupReading": {
       "selectYourReadingRole": "Sélectionnez votre rôle de lecture"

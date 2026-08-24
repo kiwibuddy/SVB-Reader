@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BibleBlockComponent from './BibleBlock';
 import { BibleBlock, SegmentType } from "@/types";
 import CallSheet from "@/components/thread/CallSheet";
+import StoryColorMix from "@/components/thread/StoryColorMix";
 import { splitContentIntoReaderParts } from "@/scripts/splitContentIntoReaderParts";
 import { splitIntoParagraphs } from "@/scripts/splitIntoParagraphs";
 import SegmentTitle from "./SegmentTitle";
@@ -12,6 +13,7 @@ import { useSQLiteGlobalContext } from "@/context/SQLiteGlobalContext";
 import CelebrationPopup from "./CelebrationPopup";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAppSettings } from '@/context/SyncAppSettingsContext';
+import { ThreadColors } from '@/constants/Colors';
 import { memo } from "react";
 import { getSegmentCompletionStatus } from "@/api/sqlite";
 import { ANIMATION } from '@/services/animation';
@@ -74,7 +76,8 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   const currentRole = null;
   const currentSession = null;
 
-  const { colors } = useAppSettings();
+  const { colors, isDarkMode } = useAppSettings();
+  const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
 
   const { scrollReset, showCourtesy } = useLocalSearchParams();
 
@@ -350,6 +353,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     padding: 0,
   },
+  colorMix: {
+    marginHorizontal: 14,
+    marginTop: -8,
+    marginBottom: 10,
+  },
   roleContainer: {
     backgroundColor: colors.card,
     borderRadius: 8,
@@ -499,6 +507,7 @@ const styles = StyleSheet.create({
       }}
     >
       <SegmentTitle segmentId={segID} />
+      <StoryColorMix colors={colorData} palette={palette} style={styles.colorMix} />
       <CallSheet
         sources={computedSources}
         colorData={colorData}

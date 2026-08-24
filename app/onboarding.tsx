@@ -142,7 +142,7 @@ export default function OnboardingScreen() {
     palette: ThreadPalette;
     isDarkMode: boolean;
     language: string;
-    t: (key: string) => string;
+    t: (key: string, params?: Record<string, string | number>) => string;
   }) => {
     switch (page) {
       case 0:
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   boot: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   // Do not put overflow:'hidden' on page — it clips FadeInDown entrances and
   // can collapse horizontal FlatList item layout on iOS after an OTA reload.
-  page: { flex: 1, paddingHorizontal: 20 },
+  page: { flex: 1, paddingHorizontal: 28 },
   top: { minHeight: 44, alignItems: 'flex-end', justifyContent: 'center' },
   skipHit: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 4 },
   skip: { fontSize: 15 },
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 18,
     justifyContent: 'center',
-    overflow: 'hidden',
+    overflow: 'visible',
     borderRadius: 16,
   },
   demoInner: { flex: 1, justifyContent: 'center' },
