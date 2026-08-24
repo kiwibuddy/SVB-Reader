@@ -7,7 +7,7 @@ Repo-side release prep is on branch `release/2.0.0`. These steps cannot be finis
 1. **Confirm build numbers in consoles**
    - App Store Connect: use iOS build **25** (build 24 rejected — Error 90101 dropped iPad; `supportsTablet` restored to `true`)
    - Play Console: Android `versionCode` **23** is fine (90101 is Apple-only)
-   - If higher exists, bump `app.json` and rebuild with `autoIncrement: false` still set
+   - If higher exists, bump `app.json` iOS `buildNumber` / Android `versionCode` by hand, then rebuild. Production EAS profiles must keep `autoIncrement: false`.
 
 2. **EAS secrets / env**
    ```bash

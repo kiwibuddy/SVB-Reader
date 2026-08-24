@@ -41,7 +41,7 @@
     },
     "production": {
       "distribution": "store",
-      "autoIncrement": true,
+      "autoIncrement": false,
       "channel": "production",
       "env": {
         "SENTRY_ALLOW_FAILURE": "true"
@@ -57,7 +57,7 @@
     },
     "production-android": {
       "extends": "production",
-      "autoIncrement": true,
+      "autoIncrement": false,
       "android": {
         "buildType": "app-bundle"
       }

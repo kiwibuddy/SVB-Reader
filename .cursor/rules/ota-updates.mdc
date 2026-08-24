@@ -19,6 +19,8 @@ That script pins the TestFlight runtime, publishes iOS, restores `app.json`. Do 
 
 Never run `npx eas-cli update` / `eas update` directly. Check with `npm run ota:status`.
 
+Keep `autoIncrement: false` on production EAS profiles. Only bump `ios.buildNumber` / `android.versionCode` in `app.json` when asked. Flipping autoIncrement also changes the fingerprint and breaks OTA matching.
+
 Android is a different runtime (`421ba001…`). iOS OTAs do not reach Play.
 
 Apply on device: force-quit → open → force-quit → open. Settings → Info stays `binary` until the second cold start.
