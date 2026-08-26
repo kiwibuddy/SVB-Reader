@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     paddingRight: 14,
     zIndex: 1,
   },
-  storyText: { flex: 1, paddingVertical: 6 },
+  storyText: { flex: 1, paddingTop: 6, paddingBottom: 2 },
   storyTitle: { fontSize: 14 },
   storyRef: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', marginTop: 2 },
 });

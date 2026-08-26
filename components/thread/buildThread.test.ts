@@ -24,20 +24,23 @@ describe('buildThread depth steps', () => {
       ],
       { entry: 'none', exit: 'none' }
     );
-    // down→right then right→down: sweep 0 then 1 keeps the arc inside the step box
     expect(d).toContain(`A 16 16 0 0 0 ${DEPTH_X[1] + 16} ${ROW_HEIGHT.book}`);
     expect(d).toContain(`A 16 16 0 0 1 ${DEPTH_X[2]} ${ROW_HEIGHT.book + 16}`);
   });
 
-  it('uses convex outer sweeps when stepping shallower', () => {
-    const { d } = buildThread(
+  it('enters from the left and exits to the right like Cast', () => {
+    const width = 390;
+    const { d, height } = buildThread(
       [
-        { key: 'story', depth: 2, height: ROW_HEIGHT.story },
-        { key: 'book', depth: 1, height: ROW_HEIGHT.book },
+        { key: 'voice', depth: 0, height: 56 },
+        { key: 's1', depth: 2, height: ROW_HEIGHT.story },
+        { key: 's2', depth: 2, height: ROW_HEIGHT.story },
       ],
-      { entry: 'none', exit: 'none' }
+      { width, entry: 'left', exit: 'right' }
     );
-    expect(d).toContain(`A 16 16 0 0 1 ${DEPTH_X[2] - 16} ${ROW_HEIGHT.story}`);
-    expect(d).toContain(`A 16 16 0 0 0 ${DEPTH_X[1]} ${ROW_HEIGHT.story + 16}`);
+    expect(d.startsWith('M -32 ')).toBe(true);
+    expect(d).toContain(`H ${width + 32}`);
+    const rowsBottom = 56 + ROW_HEIGHT.story * 2;
+    expect(height).toBe(rowsBottom + 6 + 16 + 16);
   });
 });

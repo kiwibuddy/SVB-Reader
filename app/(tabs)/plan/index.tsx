@@ -292,7 +292,8 @@ const PlanScreen = () => {
     () =>
       buildThread(
         visibleRows.map(({ key, depth, height, markOffset }) => ({ key, depth, height, markOffset })),
-        { width: windowWidth, entry: 'none', exit: 'none' }
+        // Same language as Cast: enter from off-screen left, exit off-screen right.
+        { width: windowWidth, entry: 'left', exit: 'right' }
       ),
     [visibleRows, windowWidth]
   );
@@ -301,7 +302,7 @@ const PlanScreen = () => {
     () =>
       buildThread(
         userStoryRows.map(({ key, depth, height, markOffset }) => ({ key, depth, height, markOffset })),
-        { width: windowWidth, entry: 'none', exit: 'none' }
+        { width: windowWidth, entry: 'left', exit: 'right' }
       ),
     [userStoryRows, windowWidth]
   );
@@ -1018,7 +1019,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   planActions: { gap: 6, alignItems: 'flex-end' },
-  storyText: { flex: 1, paddingVertical: 6 },
+  storyText: { flex: 1, paddingTop: 6, paddingBottom: 2 },
   storyTitle: { fontSize: 14 },
   storyNow: { fontSize: 18, fontWeight: '600' },
   storyRef: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', marginTop: 2 },

@@ -4,8 +4,14 @@ export const THREAD_OVERHANG = 32;
 /** Quarter-circle radius — same as the entry/exit corridors. */
 const R = 16;
 
-/** Vertical gap between the last mark on a depth and the horizontal corridor. */
-const GAP = 14;
+/**
+ * Space from the last row bottom to the exit turn — keep this tight so the
+ * bottom corridor sits just under the last title, not a deep empty gutter.
+ */
+const EXIT_GAP = 6;
+
+/** Extra blank under the exit horizontal before the next list section. */
+const EXIT_PAD_BELOW = 16;
 
 /** Straight horizontal between the two corner arcs on a depth step. */
 const MIN_STEP_H = 8;
@@ -176,7 +182,7 @@ export function buildThread(
     return { d, length, marks: publicMarks, height: rowsBottom };
   }
 
-  const exitTurnY = rowsBottom + GAP;
+  const exitTurnY = rowsBottom + EXIT_GAP;
   if (exitTurnY > prev.y) {
     d += ` V ${exitTurnY}`;
     length += exitTurnY - prev.y;
@@ -195,5 +201,6 @@ export function buildThread(
     length += prev.x - R - exitX;
   }
 
-  return { d, length, marks: publicMarks, height: rowsBottom + GAP + R };
+  // Path ends on the exit horizontal; height adds pad so the next section clears it.
+  return { d, length, marks: publicMarks, height: rowsBottom + EXIT_GAP + R + EXIT_PAD_BELOW };
 }
