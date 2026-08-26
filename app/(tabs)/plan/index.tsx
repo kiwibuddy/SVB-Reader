@@ -60,12 +60,13 @@ const GROUP_COPY: Record<PlanGroupId, { title: string; blurb: string }> = {
   mini: { title: 'UI.planCategories.miniStudies', blurb: 'UI.planCategories.miniStudiesBlurb' },
 };
 
-const PLAN_ROW_HEIGHT = 118;
-/** Room below the phase title/blurb so the depth step lands on the row boundary. */
-const PHASE_ROW_HEIGHT = 124;
-/** Sit the bead beside the title, not in the middle of the 2-line blurb. */
-const PLAN_MARK = 22;
-const PHASE_MARK = 20;
+/** Title + blurb + meta — tight two/three-line list row (not a card). */
+const PLAN_ROW_HEIGHT = 80;
+/** Phase title + up to 2-line blurb; even padding so the depth step sits in the gap. */
+const PHASE_ROW_HEIGHT = 64;
+/** Bead beside the first line of text, not mid-blurb / mid-empty. */
+const PLAN_MARK = 18;
+const PHASE_MARK = 16;
 
 const GROUP_COLORS: Record<PlanGroupId, string> = {
   year: '#007AFF',
@@ -660,7 +661,7 @@ const PlanScreen = () => {
                         <ThreadRevealRow key={row.key} index={index} total={visibleRows.length} progress={progress}>
                           <View style={[styles.threadRow, styles.phaseThreadRow, { height: row.height }]}>
                             <ThreadKnot x={mark.x} rowHeight={row.height} open palette={palette} fillColor={phase.color} anchor={PHASE_MARK} />
-                            <View style={[styles.rowBody, { paddingLeft: DEPTH_X[2] + 16 }]}>
+                            <View style={[styles.rowBody, { paddingLeft: DEPTH_X[1] + 16 }]}>
                               <Text style={[styles.phaseTitle, { color: phase.color }]} numberOfLines={1}>
                                 {phase.title}
                               </Text>
@@ -998,18 +999,18 @@ const styles = StyleSheet.create({
   // Thread rows
   threadWrap: { position: 'relative', paddingTop: 0, overflow: 'visible' },
   threadRow: { flexDirection: 'row', alignItems: 'center', paddingRight: 14, zIndex: 1 },
-  planThreadRow: { alignItems: 'flex-start', paddingTop: 14, paddingBottom: 20 },
-  phaseThreadRow: { alignItems: 'flex-start', paddingTop: 12, paddingBottom: 28 },
+  planThreadRow: { alignItems: 'flex-start', paddingTop: 10, paddingBottom: 10 },
+  phaseThreadRow: { alignItems: 'flex-start', paddingTop: 10, paddingBottom: 10 },
   rowBody: { flex: 1 },
   groupTitle: { fontSize: 15, fontWeight: '600' },
   groupBlurb: { fontSize: 13, lineHeight: 18, marginTop: 3 },
   groupSub: { fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', marginTop: 4 },
   countText: { fontSize: 10, fontVariant: ['tabular-nums'] },
   planTitle: { fontSize: 14, fontWeight: '500' },
-  planBlurb: { fontSize: 13, lineHeight: 18, marginTop: 2 },
-  planMeta: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', marginTop: 4 },
+  planBlurb: { fontSize: 12, lineHeight: 16, marginTop: 2 },
+  planMeta: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', marginTop: 3 },
   phaseTitle: { fontSize: 13, fontWeight: '600' },
-  phaseBlurb: { fontSize: 12, lineHeight: 16, marginTop: 2, paddingRight: 8 },
+  phaseBlurb: { fontSize: 11, lineHeight: 15, marginTop: 2, paddingRight: 8 },
   startBtn: {
     borderWidth: 1,
     borderRadius: 10,
