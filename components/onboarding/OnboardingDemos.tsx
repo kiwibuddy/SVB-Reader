@@ -781,10 +781,12 @@ export function CastDemo({ active, token, language, t }: DemoProps) {
 
 export function KeepDemo({ active, token, palette, isDarkMode, language, t }: DemoProps) {
   const reduced = false;
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const phone = isPhoneWidth(width);
   const blocks = useMemo(() => lukeBlocksForLayout(width, true), [width]);
   const pop = useSharedValue(1);
+  // Demo sits below the title; shift the centered pill up toward the visual middle of the page.
+  const phoneLift = phone ? Math.round(height * 0.12) : 0;
 
   useEffect(() => {
     if (!active) {
@@ -835,7 +837,10 @@ export function KeepDemo({ active, token, palette, isDarkMode, language, t }: De
         ))}
       </View>
       {/* Absolute overlay so the pill cannot be pushed off-screen on short phones. */}
-      <View style={styles.keepModalOverlay} pointerEvents="none">
+      <View
+        style={[styles.keepModalOverlay, phoneLift > 0 && { paddingBottom: phoneLift }]}
+        pointerEvents="none"
+      >
         <Animated.View style={[styles.keepModalWrap, phone && styles.keepModalWrapPhone, popStyle]}>
           <View style={[styles.savePill, phone && styles.savePillPhone]}>
             <View style={[styles.saveEmojiRow, phone && styles.saveEmojiRowPhone]}>

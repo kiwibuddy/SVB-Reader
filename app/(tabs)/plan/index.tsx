@@ -292,7 +292,7 @@ const PlanScreen = () => {
     () =>
       buildThread(
         visibleRows.map(({ key, depth, height, markOffset }) => ({ key, depth, height, markOffset })),
-        { width: windowWidth, entry: 'left', exit: 'full' }
+        { width: windowWidth, entry: 'left', exit: 'left' }
       ),
     [visibleRows, windowWidth]
   );
@@ -301,7 +301,7 @@ const PlanScreen = () => {
     () =>
       buildThread(
         userStoryRows.map(({ key, depth, height, markOffset }) => ({ key, depth, height, markOffset })),
-        { width: windowWidth, entry: 'left', exit: 'full' }
+        { width: windowWidth, entry: 'left', exit: 'left' }
       ),
     [userStoryRows, windowWidth]
   );
