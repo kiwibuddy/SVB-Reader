@@ -3,7 +3,7 @@ import { bibleLoader } from '@/services/BibleLoader';
 import { getSegmentWordCount } from '@/utils/readingTime';
 import conversations from '@/assets/data/conversations.json';
 import type { ConversationsFile } from '@/types/conversations';
-import { DIVISIONS, storyIdFromNumber } from '@/constants/divisions';
+import { DIVISIONS, storyIdFromNumber, storyNumber } from '@/constants/divisions';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 import Books from '@/assets/data/BookChapterList.json';
 
@@ -221,7 +221,9 @@ export function habitCompletedIds(storiesDone: number): Set<string> {
   return completedIds;
 }
 
-export type CastPartner = { name: string; count: number; color: string };
+export type CastPartner = { name: string; count: number; color: string; bar: number };
+
+export type CastTimelineSeg = { key: string; weight: number; lit: boolean; titleEn: string; titleFr: string };
 
 export type CastDemoData = {
   name: string;
@@ -234,6 +236,7 @@ export type CastDemoData = {
   bookIds: string[];
   topPartner: CastPartner | null;
   partners: CastPartner[];
+  timeline: CastTimelineSeg[];
   longestSpeech: { words: number; storyId: string; storyTitle: string } | null;
 };
 
@@ -247,11 +250,38 @@ export function getCastDemo(voiceName: string = 'David'): CastDemoData | null {
       .slice()
       .sort((a, b) => b.words - a.words)
       .findIndex((item) => item.name === voiceName) + 1;
-  const partners: CastPartner[] = (voice.spokeWith || []).slice(0, 4).map((partner) => ({
-    name: partner.name,
-    count: partner.count,
-    color: conv.voices[partner.name]?.color || 'blue',
+
+  const partnersRaw = (voice.spokeWith || []).slice(0, 8).map((partner) => {
+    const other = conv.voices[partner.name];
+    const shared = other ? voice.storyIds.filter((id) => other.storyIds.includes(id)).length : 0;
+    return {
+      name: partner.name,
+      count: shared || partner.count,
+      color: other?.color || 'blue',
+      bar: shared || partner.count,
+    };
+  });
+  const maxBar = Math.max(...partnersRaw.map((p) => p.bar), 1);
+  const partners: CastPartner[] = partnersRaw.map((p) => ({
+    ...p,
+    bar: p.bar / maxBar,
   }));
+
+  const timeline: CastTimelineSeg[] = DIVISIONS.map((division) => {
+    const weight = division.end - division.start + 1;
+    const hits = voice.storyIds.filter((id) => {
+      const n = storyNumber(id);
+      return n != null && n >= division.start && n <= division.end;
+    }).length;
+    return {
+      key: division.key,
+      weight,
+      lit: hits > 0,
+      titleEn: division.titleEn,
+      titleFr: division.titleFr,
+    };
+  });
+
   const bookIds: string[] = [];
   const seen = new Set<string>();
   for (const id of voice.storyIds) {
@@ -272,6 +302,7 @@ export function getCastDemo(voiceName: string = 'David'): CastDemoData | null {
     bookIds,
     topPartner: partners[0] || null,
     partners,
+    timeline,
     longestSpeech: voice.longestSpeech,
   };
 }

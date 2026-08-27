@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Platform, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, Platform, useWindowDimensions, ScrollView } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
   FadeInDown,
@@ -576,63 +576,108 @@ function CastCardFace({
   const lang = language.startsWith('fr') ? 'fr' : 'en';
   const field = roleFill(demo.color);
   const rankLabel = `${inkLabel(demo.color as Ink, lang)} · ${String(demo.rank).padStart(3, '0')} ${t('UI.thread.of')} ${demo.total}`;
-  const nameSize = demo.name.length > 14 ? 36 : 48;
+  const nameSize = demo.name.length > 14 ? 34 : 44;
+  const present = demo.timeline.filter((seg) => seg.lit);
 
   return (
     <View style={[styles.castCard, { backgroundColor: field }, style]}>
-      <Text style={[styles.castRank, { color: CREAM }]} numberOfLines={1}>
-        {rankLabel}
-      </Text>
-      <Text
-        style={[
-          styles.castName,
-          {
-            color: CREAM,
-            fontSize: nameSize,
-            lineHeight: Math.round(nameSize * 1.15),
-          },
-        ]}
-        numberOfLines={1}
+      <ScrollView
+        pointerEvents="none"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.castPad}
       >
-        {localizeVoiceName(demo.name, language)}
-      </Text>
-      <Text style={[styles.castSentence, { color: CREAM }]} numberOfLines={2}>
-        {t('UI.thread.castSentence', {
-          words: formatCount(demo.words),
-          turns: formatCount(demo.turns),
-          stories: demo.storyCount,
-        })}
-      </Text>
-      {demo.bookIds.length > 0 ? (
-        <View style={styles.books}>
-          {demo.bookIds.slice(0, 6).map((id) => (
-            <Text key={id} style={[styles.bookChip, { color: CREAM, borderColor: 'rgba(242,234,224,0.35)' }]}>
-              {localizeBookName(id, bookNameForId(id), language).toUpperCase()}
-            </Text>
-          ))}
-        </View>
-      ) : null}
-      {demo.partners.length > 0 ? (
-        <View style={styles.spokeBlock}>
-          <Text style={[styles.spokeKicker, { color: CREAM }]}>{t('UI.thread.spokeWith')}</Text>
-          {demo.partners.slice(0, 3).map((partner) => (
-            <View key={partner.name} style={styles.spokeRow}>
-              <View
-                style={[
-                  styles.spokeIcon,
-                  { backgroundColor: roleFill(partner.color), borderColor: CREAM },
-                ]}
-              >
-                <Ionicons name="person" size={11} color={CREAM} />
-              </View>
-              <Text style={[styles.spokeName, { color: CREAM }]} numberOfLines={1}>
-                {localizeVoiceName(partner.name, language)}
+        <Text style={[styles.castRank, { color: CREAM }]} numberOfLines={1}>
+          {rankLabel}
+        </Text>
+        <Text
+          style={[
+            styles.castName,
+            {
+              color: CREAM,
+              fontSize: nameSize,
+              lineHeight: Math.round(nameSize * 1.18),
+              paddingTop: Platform.OS === 'ios' ? 2 : 0,
+            },
+          ]}
+          numberOfLines={1}
+        >
+          {localizeVoiceName(demo.name, language)}
+        </Text>
+        <Text style={[styles.castSentence, { color: CREAM }]}>
+          {t('UI.thread.castSentence', {
+            words: formatCount(demo.words),
+            turns: formatCount(demo.turns),
+            stories: demo.storyCount,
+          })}
+        </Text>
+        {demo.bookIds.length > 0 ? (
+          <View style={styles.books}>
+            {demo.bookIds.map((id) => (
+              <Text key={id} style={[styles.bookChip, { color: CREAM, borderColor: 'rgba(242,234,224,0.35)' }]}>
+                {localizeBookName(id, bookNameForId(id), language).toUpperCase()}
               </Text>
-              <Text style={[styles.spokeCount, { color: CREAM }]}>{partner.count}</Text>
-            </View>
+            ))}
+          </View>
+        ) : null}
+
+        <Text style={[styles.castRank, { color: CREAM, marginTop: 14 }]}>{t('UI.thread.castTimeline')}</Text>
+        <View style={styles.timeline}>
+          {demo.timeline.map((seg) => (
+            <View
+              key={seg.key}
+              style={[
+                styles.timelineSeg,
+                {
+                  flexGrow: seg.weight,
+                  backgroundColor: seg.lit ? CREAM : 'rgba(242,234,224,0.22)',
+                },
+              ]}
+            />
           ))}
         </View>
-      ) : null}
+        <View style={styles.ribLabels}>
+          <Text style={[styles.ribLab, { color: CREAM }]}>{t('UI.thread.beginning')}</Text>
+          <Text style={[styles.ribLab, { color: CREAM }]}>{t('UI.thread.end')}</Text>
+        </View>
+        {present.length > 0 ? (
+          <Text style={[styles.timelineNames, { color: CREAM }]}>
+            {present.map((seg) => (lang === 'fr' ? seg.titleFr : seg.titleEn)).join('  ·  ')}
+          </Text>
+        ) : null}
+
+        <Text style={[styles.castRank, { color: CREAM, marginTop: 14 }]}>{t('UI.thread.spokeWith')}</Text>
+        {demo.partners.map((partner) => (
+          <View key={partner.name} style={styles.spokeRow}>
+            <View
+              style={[
+                styles.spokeIcon,
+                { backgroundColor: roleFill(partner.color), borderColor: CREAM },
+              ]}
+            >
+              <Ionicons name="person" size={12} color={CREAM} />
+            </View>
+            <Text style={[styles.spokeName, { color: CREAM }]} numberOfLines={1}>
+              {localizeVoiceName(partner.name, language)}
+            </Text>
+            <View style={styles.barTrack}>
+              <View style={[styles.barFill, { width: `${Math.round(partner.bar * 100)}%`, backgroundColor: CREAM }]} />
+            </View>
+            <Text style={[styles.spokeCount, { color: CREAM }]}>{partner.count}</Text>
+          </View>
+        ))}
+
+        {demo.longestSpeech ? (
+          <View style={styles.pullBlock}>
+            <Text style={[styles.spokeKicker, { color: CREAM }]}>{t('UI.thread.longestSpeech')}</Text>
+            <Text style={[styles.pullBody, { color: CREAM }]}>
+              {formatCount(demo.longestSpeech.words)} {t('UI.thread.words').toLowerCase()}
+            </Text>
+            <Text style={[styles.pullStory, { color: CREAM }]}>
+              {localizeStoryTitle(demo.longestSpeech.storyId, demo.longestSpeech.storyTitle, language)}
+            </Text>
+          </View>
+        ) : null}
+      </ScrollView>
     </View>
   );
 }
@@ -807,43 +852,78 @@ const styles = StyleSheet.create({
   castCard: {
     flex: 1,
     borderRadius: 18,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 20,
     overflow: 'hidden',
+  },
+  castPad: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 24,
   },
   castRank: { fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.85 },
   castName: {
     fontWeight: '600',
     letterSpacing: -1,
-    marginTop: 4,
+    marginTop: 6,
     fontFamily: Platform.OS === 'ios' ? 'Didot' : 'serif',
     ...Platform.select({ android: { includeFontPadding: false }, default: {} }),
   },
-  castSentence: { fontSize: 13, lineHeight: 18, marginTop: 6, opacity: 0.92 },
+  castSentence: { fontSize: 13, lineHeight: 18, marginTop: 8, opacity: 0.92 },
   books: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
   bookChip: {
     fontSize: 9,
     letterSpacing: 0.8,
     borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    borderRadius: 7,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     overflow: 'hidden',
   },
+  timeline: {
+    flexDirection: 'row',
+    height: 10,
+    gap: 2,
+    marginTop: 8,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  timelineSeg: { minWidth: 4, borderRadius: 2 },
+  ribLabels: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+  ribLab: { fontSize: 8, letterSpacing: 1.2, textTransform: 'uppercase', opacity: 0.7 },
+  timelineNames: { fontSize: 11, lineHeight: 15, marginTop: 4, opacity: 0.88 },
   spokeBlock: { marginTop: 14, gap: 8 },
-  spokeKicker: { fontSize: 8, letterSpacing: 1.6, textTransform: 'uppercase', opacity: 0.75 },
-  spokeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  spokeKicker: { fontSize: 8, letterSpacing: 1.6, textTransform: 'uppercase', opacity: 0.75, marginBottom: 2 },
+  spokeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
   spokeIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
   spokeName: { flex: 1, fontSize: 13 },
-  spokeCount: { fontSize: 10, opacity: 0.85, fontVariant: ['tabular-nums'] },
+  barTrack: {
+    width: 56,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(242,234,224,0.22)',
+    overflow: 'hidden',
+  },
+  barFill: { height: '100%', borderRadius: 2 },
+  spokeCount: { fontSize: 10, opacity: 0.85, fontVariant: ['tabular-nums'], minWidth: 18, textAlign: 'right' },
+  pullBlock: {
+    marginTop: 16,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(242,234,224,0.28)',
+    gap: 2,
+  },
+  pullBody: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+  },
+  pullStory: { fontSize: 12, lineHeight: 16, opacity: 0.85 },
   keepPad: { flex: 1, paddingHorizontal: 12, justifyContent: 'center' },
   keepBackdrop: {
     ...StyleSheet.absoluteFillObject,
