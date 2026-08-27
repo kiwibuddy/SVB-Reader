@@ -257,6 +257,9 @@ export default function OnboardingScreen() {
         pagingEnabled
         bounces={false}
         showsHorizontalScrollIndicator={false}
+        removeClippedSubviews={false}
+        windowSize={SCREENS.length}
+        initialNumToRender={SCREENS.length}
         onMomentumScrollEnd={(event) => {
           const next = Math.round(event.nativeEvent.contentOffset.x / width);
           if (next !== index) setIndex(next);

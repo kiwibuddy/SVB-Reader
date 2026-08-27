@@ -3,15 +3,15 @@ import { View, Text, StyleSheet, Platform, useWindowDimensions, ScrollView } fro
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
   FadeInDown,
+  ReduceMotion,
   useAnimatedProps,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
   withDelay,
   withSpring,
 } from 'react-native-reanimated';
 import { DEPTH_X, ROW_HEIGHT, buildThread } from '@/components/thread/buildThread';
-import { DUR, RM, SPRING, STAGGER } from '@/constants/Motion';
+import { DUR, SPRING, STAGGER } from '@/constants/Motion';
 import { fillHex, inkHex } from '@/constants/Colors';
 import { getColors, getBubbleTextColorSafe } from '@/scripts/getColors';
 import BibleInlineComponent from '@/components/Bible/Inline';
@@ -32,24 +32,40 @@ import {
   getCastDemo,
   getFriendsSampleBlocks,
   getHabitDemo,
-  getLukeKeepBackdrop,
   getLukeVoiceExchange,
   habitCompletedIds,
   type CastDemoData,
 } from '@/utils/onboardingDemo';
 import { Ionicons } from '@expo/vector-icons';
 
-const spring = (value: number) => withSpring(value, { ...SPRING, ...RM });
+const spring = (value: number) => withSpring(value, { ...SPRING, reduceMotion: ReduceMotion.Never });
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const titles = SegmentTitles as Record<string, { title?: string; ref?: string; book?: string[] }>;
 const BUBBLE_GAP = 100;
+const PHONE_BUBBLE_GAP = 70;
 const CREAM = '#F2EAE0';
 const BEGINNING_ID = DIVISIONS[0].id;
 const GENESIS_BOOK_ID = 'Gen';
 const PHASE_HOLD_MS = 1600;
 const FRIENDS_HOLD_MS = 900;
 const HABIT_TICK_MS = 70;
+/** Phone-only layout tweaks; iPad / wide layouts keep the full demos. */
+const PHONE_MAX_WIDTH = 600;
+
+function isPhoneWidth(width: number) {
+  return width < PHONE_MAX_WIDTH;
+}
+
+/** On phones, drop leading narrator so Jesus fits in the Voices / Keep slots. */
+function lukeBlocksForLayout(width: number, forKeep = false) {
+  const all = getLukeVoiceExchange();
+  const slice = forKeep ? all.slice(0, 8) : all;
+  if (!isPhoneWidth(width)) return slice;
+  let start = 0;
+  while (start < slice.length && (slice[start].source?.color || 'black') === 'black') start += 1;
+  return start > 0 ? slice.slice(start) : slice.slice(1);
+}
 
 type DemoProps = {
   active: boolean;
@@ -60,9 +76,17 @@ type DemoProps = {
   t: (key: string, params?: Record<string, string | number>) => string;
 };
 
-function entering(reduced: boolean, delay: number) {
+function entering(reduced: boolean, delay: number, phone = false) {
   if (reduced) return undefined;
-  return FadeInDown.springify().damping(SPRING.damping).stiffness(SPRING.stiffness).mass(SPRING.mass).delay(delay);
+  // Phone demo slot is short + overflow:hidden; keep the slide tiny so it isn't clipped away.
+  const motion = FadeInDown.springify()
+    .damping(SPRING.damping)
+    .stiffness(SPRING.stiffness)
+    .mass(SPRING.mass)
+    .delay(delay);
+  return phone
+    ? motion.withInitialValues({ opacity: 0, transform: [{ translateY: 8 }] })
+    : motion;
 }
 
 function DemoBubble({
@@ -74,6 +98,7 @@ function DemoBubble({
   palette,
   glowing,
   staggerMs = BUBBLE_GAP,
+  phone = false,
 }: {
   block: BibleBlock;
   index: number;
@@ -83,6 +108,7 @@ function DemoBubble({
   palette: ThreadPalette;
   glowing?: boolean;
   staggerMs?: number;
+  phone?: boolean;
 }) {
   const color = block.source?.color || 'black';
   const sourceName = block.source?.sourceName || '';
@@ -99,12 +125,19 @@ function DemoBubble({
 
   return (
     <Animated.View
-      entering={entering(reduced, delay)}
-      style={{ alignItems: left ? 'flex-start' : 'flex-end', width: '100%' }}
+      entering={entering(reduced, delay, phone)}
+      style={{ alignItems: left ? 'flex-start' : 'flex-end', width: '100%', paddingHorizontal: phone ? 2 : 0 }}
     >
-      <View style={[styles.bubbleStack, { alignSelf: left ? 'flex-start' : 'flex-end' }]}>
+      <View
+        style={[
+          styles.bubbleStack,
+          phone && styles.bubbleStackPhone,
+          { alignSelf: left ? 'flex-start' : 'flex-end' },
+        ]}
+      >
         <Text
           accessibilityLabel={localizeVoiceName(sourceName, language)}
+          numberOfLines={2}
           style={[styles.who, { color: ink, textAlign: left ? 'left' : 'right' }]}
         >
           {localizeVoiceName(sourceName, language)}
@@ -142,8 +175,8 @@ function DemoBubble({
                 inline={item}
                 textColor={ink}
                 bubbleColor={color}
-                bodySize={15}
-                bodyLineHeight={22}
+                bodySize={phone ? 14 : 15}
+                bodyLineHeight={phone ? 20 : 22}
               />
             );
           })}
@@ -156,7 +189,8 @@ function DemoBubble({
 type ShapePhase = 0 | 1 | 2;
 
 export function ShapeDemo({ active, token, palette, language }: DemoProps) {
-  const reduced = useReducedMotion();
+  // Onboarding demos always animate — Reduce Motion was silencing the whole walkthrough on some phones.
+  const reduced = false;
   const { width } = useWindowDimensions();
   const progress = useSharedValue(reduced ? 1 : 0);
   const [phase, setPhase] = useState<ShapePhase>(reduced ? 2 : 0);
@@ -309,19 +343,22 @@ export function ShapeDemo({ active, token, palette, language }: DemoProps) {
 }
 
 export function VoicesDemo({ active, token, palette, isDarkMode, language }: DemoProps) {
-  const reduced = useReducedMotion();
-  const blocks = useMemo(() => getLukeVoiceExchange(), []);
+  const reduced = false;
+  const { width } = useWindowDimensions();
+  const phone = isPhoneWidth(width);
+  const gap = phone ? PHONE_BUBBLE_GAP : BUBBLE_GAP;
+  const blocks = useMemo(() => lukeBlocksForLayout(width), [width]);
 
   useEffect(() => {
     if (!active || reduced) return;
-    const timers = blocks.map((_, index) => setTimeout(() => void hapticImpactLight(), index * BUBBLE_GAP));
+    const timers = blocks.map((_, index) => setTimeout(() => void hapticImpactLight(), index * gap));
     return () => timers.forEach(clearTimeout);
-  }, [active, blocks, reduced, token]);
+  }, [active, blocks, gap, reduced, token]);
 
   return (
-    <View style={[styles.fillBleed, styles.voicesPad]} pointerEvents="none">
+    <View style={[styles.fillBleed, phone ? styles.voicesPadPhone : styles.voicesPad]} pointerEvents="none">
       <View style={styles.exchangeClip}>
-        <View style={styles.exchange} key={`voices-${token}`}>
+        <View style={styles.exchange} key={`voices-${token}-${phone ? 'phone' : 'wide'}`}>
           {blocks.map((block, index) => (
             <DemoBubble
               key={`${token}-${index}`}
@@ -331,6 +368,8 @@ export function VoicesDemo({ active, token, palette, isDarkMode, language }: Dem
               isDarkMode={isDarkMode}
               language={language}
               palette={palette}
+              staggerMs={gap}
+              phone={phone}
             />
           ))}
         </View>
@@ -340,7 +379,7 @@ export function VoicesDemo({ active, token, palette, isDarkMode, language }: Dem
 }
 
 export function FriendsDemo({ active, token, palette, isDarkMode, language, t }: DemoProps) {
-  const reduced = useReducedMotion();
+  const reduced = false;
   const samples = useMemo(() => getFriendsSampleBlocks(), []);
   const parts = [
     { ink: 'black' as const, label: t('UI.onboarding.narratorLabel'), body: t('UI.onboarding.narratorPartDescription') },
@@ -456,7 +495,7 @@ export function FriendsDemo({ active, token, palette, isDarkMode, language, t }:
 }
 
 export function HabitDemo({ active, token, palette, isDarkMode, language, t }: DemoProps) {
-  const reduced = useReducedMotion();
+  const reduced = false;
   const demo = useMemo(() => getHabitDemo(), []);
   const [storiesDone, setStoriesDone] = useState(reduced ? demo.storiesDone : demo.startStories);
   const [voicesMet, setVoicesMet] = useState(reduced ? demo.voicesMet : demo.startVoices);
@@ -682,7 +721,7 @@ function CastCardFace({
 }
 
 export function CastDemo({ active, token, language, t }: DemoProps) {
-  const reduced = useReducedMotion();
+  const reduced = false;
   const jesus = useMemo(() => getCastDemo('Jesus'), []);
   const samuel = useMemo(() => getCastDemo('Samuel'), []);
   const david = useMemo(() => getCastDemo('David'), []);
@@ -741,28 +780,33 @@ export function CastDemo({ active, token, language, t }: DemoProps) {
 }
 
 export function KeepDemo({ active, token, palette, isDarkMode, language, t }: DemoProps) {
-  const reduced = useReducedMotion();
-  const blocks = useMemo(() => getLukeKeepBackdrop(), []);
-  const pop = useSharedValue(0);
+  const reduced = false;
+  const { width } = useWindowDimensions();
+  const phone = isPhoneWidth(width);
+  const blocks = useMemo(() => lukeBlocksForLayout(width, true), [width]);
+  const pop = useSharedValue(1);
 
   useEffect(() => {
     if (!active) {
-      pop.value = 0;
+      pop.value = phone ? 1 : 0;
       return;
     }
-    if (reduced) {
+    if (phone) {
       pop.value = 1;
-      return;
+      const timer = setTimeout(() => void hapticImpactLight(), DUR.base);
+      return () => clearTimeout(timer);
     }
     pop.value = 0;
     pop.value = withDelay(120, spring(1));
     const timer = setTimeout(() => void hapticImpactLight(), DUR.base);
     return () => clearTimeout(timer);
-  }, [active, pop, reduced, token]);
+  }, [active, phone, pop, token]);
 
   const popStyle = useAnimatedStyle(() => ({
-    opacity: 0.35 + pop.value * 0.65,
-    transform: [{ scale: 0.94 + pop.value * 0.06 }, { translateY: (1 - pop.value) * 10 }],
+    opacity: phone ? 1 : 0.35 + pop.value * 0.65,
+    transform: phone
+      ? [{ scale: 1 }]
+      : [{ scale: 0.94 + pop.value * 0.06 }, { translateY: (1 - pop.value) * 10 }],
   }));
 
   if (!blocks.length) return null;
@@ -776,7 +820,7 @@ export function KeepDemo({ active, token, palette, isDarkMode, language, t }: De
 
   return (
     <View style={[styles.fillBleed, styles.keepPad]} pointerEvents="none">
-      <View style={styles.keepBackdrop}>
+      <View style={[styles.keepBackdrop, phone && styles.keepBackdropPhone]}>
         {blocks.map((block, index) => (
           <DemoBubble
             key={`${token}-keep-${index}`}
@@ -786,41 +830,46 @@ export function KeepDemo({ active, token, palette, isDarkMode, language, t }: De
             isDarkMode={isDarkMode}
             language={language}
             palette={palette}
+            phone={phone}
           />
         ))}
       </View>
-      <Animated.View style={[styles.keepModalWrap, popStyle]}>
-        <View style={styles.savePill}>
-          <View style={styles.saveEmojiRow}>
-            {emojis.map((item) => (
-              <View
-                key={item.emoji}
-                style={[
-                  styles.saveEmojiBtn,
-                  { backgroundColor: `${item.color}15` },
-                  item.selected && styles.saveEmojiSelected,
-                ]}
-              >
-                <Text style={styles.saveEmojiText}>{item.emoji}</Text>
+      {/* Absolute overlay so the pill cannot be pushed off-screen on short phones. */}
+      <View style={styles.keepModalOverlay} pointerEvents="none">
+        <Animated.View style={[styles.keepModalWrap, phone && styles.keepModalWrapPhone, popStyle]}>
+          <View style={[styles.savePill, phone && styles.savePillPhone]}>
+            <View style={[styles.saveEmojiRow, phone && styles.saveEmojiRowPhone]}>
+              {emojis.map((item) => (
+                <View
+                  key={item.emoji}
+                  style={[
+                    styles.saveEmojiBtn,
+                    phone && styles.saveEmojiBtnPhone,
+                    { backgroundColor: `${item.color}15` },
+                    item.selected && styles.saveEmojiSelected,
+                  ]}
+                >
+                  <Text style={[styles.saveEmojiText, phone && styles.saveEmojiTextPhone]}>{item.emoji}</Text>
+                </View>
+              ))}
+              <View style={[styles.saveEmojiBtn, phone && styles.saveEmojiBtnPhone, styles.saveNoteBtn]}>
+                <Ionicons name="create-outline" size={phone ? 20 : 22} color="#8E8E93" />
               </View>
-            ))}
-            <View style={[styles.saveEmojiBtn, styles.saveNoteBtn]}>
-              <Ionicons name="create-outline" size={22} color="#8E8E93" />
+            </View>
+            <View style={styles.saveActs}>
+              <View style={[styles.saveAct, phone && styles.saveActPhone]}>
+                <Text style={styles.saveActText}>{t('UI.thread.share')}</Text>
+              </View>
+              <View style={[styles.saveAct, phone && styles.saveActPhone]}>
+                <Text style={styles.saveActText}>{t('UI.thread.copy')}</Text>
+              </View>
+            </View>
+            <View style={styles.saveClose}>
+              <Ionicons name="close" size={16} color="#666" />
             </View>
           </View>
-          <View style={styles.saveActs}>
-            <View style={styles.saveAct}>
-              <Text style={styles.saveActText}>{t('UI.thread.share')}</Text>
-            </View>
-            <View style={styles.saveAct}>
-              <Text style={styles.saveActText}>{t('UI.thread.copy')}</Text>
-            </View>
-          </View>
-          <View style={styles.saveClose}>
-            <Ionicons name="close" size={16} color="#666" />
-          </View>
-        </View>
-      </Animated.View>
+        </Animated.View>
+      </View>
     </View>
   );
 }
@@ -829,6 +878,7 @@ const styles = StyleSheet.create({
   fillBleed: { flex: 1, width: '100%' },
   threadClip: { overflow: 'hidden', paddingTop: 8 },
   voicesPad: { paddingHorizontal: 16, paddingTop: 4 },
+  voicesPadPhone: { paddingHorizontal: 10, paddingTop: 2 },
   exchangeClip: { flex: 1, overflow: 'hidden' },
   exchange: { gap: 8, paddingBottom: 8 },
   partsPad: { paddingHorizontal: 20, justifyContent: 'center', gap: 12 },
@@ -963,12 +1013,22 @@ const styles = StyleSheet.create({
     gap: 6,
     overflow: 'hidden',
   },
+  keepBackdropPhone: { opacity: 0.32, paddingHorizontal: 8, paddingTop: 4, gap: 4 },
+  keepModalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 20,
+    elevation: 20,
+    paddingHorizontal: 12,
+  },
   keepModalWrap: {
     width: '92%',
     maxWidth: 320,
     zIndex: 4,
     elevation: 20,
   },
+  keepModalWrapPhone: { width: '100%', maxWidth: 340 },
   savePill: {
     alignItems: 'stretch',
     paddingHorizontal: 16,
@@ -983,7 +1043,9 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 15,
   },
+  savePillPhone: { paddingHorizontal: 12, paddingVertical: 12, borderRadius: 16 },
   saveEmojiRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  saveEmojiRowPhone: { gap: 8, justifyContent: 'space-between' },
   saveEmojiBtn: {
     width: 48,
     height: 48,
@@ -993,11 +1055,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.4)',
   },
+  saveEmojiBtnPhone: { width: 42, height: 42, borderRadius: 21 },
   saveEmojiSelected: {
     borderColor: 'rgba(0, 0, 0, 0.28)',
     borderWidth: 2,
   },
   saveEmojiText: { fontSize: 24 },
+  saveEmojiTextPhone: { fontSize: 22 },
   saveNoteBtn: { backgroundColor: 'rgba(142, 142, 147, 0.08)' },
   saveActs: { flexDirection: 'row', gap: 8, marginTop: 10 },
   saveAct: {
@@ -1009,6 +1073,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  saveActPhone: { minHeight: 40 },
   saveActText: {
     fontSize: 10,
     letterSpacing: 1.3,
@@ -1039,6 +1104,7 @@ const styles = StyleSheet.create({
   storyTitle: { fontSize: 14, fontWeight: '600' },
   storyRef: { fontSize: 10, letterSpacing: 0.6, marginTop: 2, textTransform: 'uppercase' },
   bubbleStack: { maxWidth: '88%' },
+  bubbleStackPhone: { maxWidth: '100%', width: '92%' },
   who: {
     fontSize: 9,
     letterSpacing: 1.4,
