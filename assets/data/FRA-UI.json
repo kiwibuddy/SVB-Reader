@@ -23061,6 +23061,7 @@
       "everyoneElseLabel": "Tous les autres",
       "narratorRoleDescription": "raconte l'histoire, et les auteurs des lettres comme Éphésiens",
       "narratorPartDescription": "le narrateur, et parfois les auteurs des lettres (Éphésiens, Romains, et le reste)",
+      "friendsRoleHint": "Quand vous choisissez un rôle, les bulles à lire s'allument dans le récit.",
       "godRoleDescription": "Dieu, Jésus, l'Esprit",
       "mainCharacterRoleDescription": "les gens que l'histoire suit",
       "otherVoicesRoleDescription": "chaque autre voix, jusqu'à un mendiant aveugle",

@@ -27,24 +27,30 @@ import { hapticImpactLight } from '@/utils/haptics';
 import type { BibleBlock } from '@/types';
 import type { ThreadPalette } from '@/constants/Colors';
 import {
+  blockText,
   booksForDivision,
   bookNameForId,
   getCastDemo,
+  getFriendsSampleBlocks,
   getHabitDemo,
-  getKeepDemoItems,
+  getLukeKeepBackdrop,
   getLukeVoiceExchange,
+  habitCompletedIds,
   type CastDemoData,
 } from '@/utils/onboardingDemo';
+import { Ionicons } from '@expo/vector-icons';
 
 const spring = (value: number) => withSpring(value, { ...SPRING, ...RM });
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const titles = SegmentTitles as Record<string, { title?: string; ref?: string; book?: string[] }>;
-const BUBBLE_GAP = 220;
+const BUBBLE_GAP = 100;
 const CREAM = '#F2EAE0';
 const BEGINNING_ID = DIVISIONS[0].id;
 const GENESIS_BOOK_ID = 'Gen';
 const PHASE_HOLD_MS = 1600;
+const FRIENDS_HOLD_MS = 900;
+const HABIT_TICK_MS = 70;
 
 type DemoProps = {
   active: boolean;
@@ -67,6 +73,8 @@ function DemoBubble({
   isDarkMode,
   language,
   palette,
+  glowing,
+  staggerMs = BUBBLE_GAP,
 }: {
   block: BibleBlock;
   index: number;
@@ -74,13 +82,16 @@ function DemoBubble({
   isDarkMode: boolean;
   language: string;
   palette: ThreadPalette;
+  glowing?: boolean;
+  staggerMs?: number;
 }) {
   const color = block.source?.color || 'black';
   const sourceName = block.source?.sourceName || '';
   const left = isLeftVoice(color);
   const fills = getColors(color);
   const ink = getBubbleTextColorSafe(color, isDarkMode);
-  const delay = reduced ? 0 : index * BUBBLE_GAP;
+  const glow = glowing ? inkHex(color, palette) : undefined;
+  const delay = reduced ? 0 : index * staggerMs;
   const radius = {
     borderRadius: 16,
     borderTopLeftRadius: left ? 5 : 16,
@@ -105,8 +116,22 @@ function DemoBubble({
             radius,
             {
               backgroundColor: isDarkMode ? fills.dark : fills.light,
-              borderColor: color === 'black' ? palette.hair : ink,
+              borderColor: glow || (color === 'black' ? palette.hair : ink),
+              borderWidth: glowing ? 2 : StyleSheet.hairlineWidth,
             },
+            glowing && glow
+              ? {
+                  shadowColor: glow,
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.45,
+                  shadowRadius: 6,
+                  elevation: isDarkMode ? 6 : 4,
+                  ...Platform.select({
+                    web: { boxShadow: `0 0 8px ${glow}` },
+                    default: {},
+                  }),
+                }
+              : null,
           ]}
         >
           {(block.children || []).map((item, childIndex) => {
@@ -284,15 +309,9 @@ export function ShapeDemo({ active, token, palette, language }: DemoProps) {
   );
 }
 
-export function VoicesDemo({ active, token, palette, isDarkMode, language, t }: DemoProps) {
+export function VoicesDemo({ active, token, palette, isDarkMode, language }: DemoProps) {
   const reduced = useReducedMotion();
   const blocks = useMemo(() => getLukeVoiceExchange(), []);
-  const legend = [
-    { ink: 'black', label: t('UI.onboarding.narratorLabel'), body: t('UI.onboarding.narratorRoleDescription') },
-    { ink: 'red', label: t('UI.onboarding.godLabel'), body: t('UI.onboarding.godRoleDescription') },
-    { ink: 'green', label: t('UI.onboarding.mainCharactersLabel'), body: t('UI.onboarding.mainCharacterRoleDescription') },
-    { ink: 'blue', label: t('UI.onboarding.everyoneElseLabel'), body: t('UI.onboarding.otherVoicesRoleDescription') },
-  ];
 
   useEffect(() => {
     if (!active || reduced) return;
@@ -302,35 +321,13 @@ export function VoicesDemo({ active, token, palette, isDarkMode, language, t }: 
 
   return (
     <View style={[styles.fillBleed, styles.voicesPad]} pointerEvents="none">
-      <View style={styles.legendBlock}>
-        {legend.map((item, index) => (
-          <Animated.View
-            key={`${token}-leg-${item.ink}`}
-            entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 2 * index)}
-            style={styles.legendRow}
-          >
-            <View
-              style={[
-                styles.swatch,
-                {
-                  backgroundColor: fillHex(item.ink, palette),
-                  borderColor: inkHex(item.ink, palette),
-                },
-              ]}
-            />
-            <Text style={[styles.legendLabel, { color: palette.ink }]}>{item.label}</Text>
-            <Text style={[styles.legendBody, { color: palette.mute }]}>{item.body}</Text>
-          </Animated.View>
-        ))}
-      </View>
-      <View style={[styles.sectionRule, { backgroundColor: palette.hair }]} />
       <View style={styles.exchangeClip}>
-        <View style={styles.exchange}>
+        <View style={styles.exchange} key={`voices-${token}`}>
           {blocks.map((block, index) => (
             <DemoBubble
               key={`${token}-${index}`}
               block={block}
-              index={reduced ? 0 : index}
+              index={reduced || !active ? 0 : index}
               reduced={reduced || !active}
               isDarkMode={isDarkMode}
               language={language}
@@ -343,39 +340,117 @@ export function VoicesDemo({ active, token, palette, isDarkMode, language, t }: 
   );
 }
 
-export function FriendsDemo({ active, token, palette, t }: DemoProps) {
+export function FriendsDemo({ active, token, palette, isDarkMode, language, t }: DemoProps) {
   const reduced = useReducedMotion();
+  const samples = useMemo(() => getFriendsSampleBlocks(), []);
   const parts = [
-    { ink: 'black', label: t('UI.onboarding.narratorLabel'), body: t('UI.onboarding.narratorPartDescription') },
-    { ink: 'red', label: t('UI.onboarding.godLabel'), body: t('UI.onboarding.godRoleDescription') },
-    { ink: 'green', label: t('UI.onboarding.mainCharactersLabel'), body: t('UI.onboarding.mainCharacterRoleDescription') },
-    { ink: 'blue', label: t('UI.onboarding.everyoneElseLabel'), body: t('UI.onboarding.otherVoicesRoleDescription') },
+    { ink: 'black' as const, label: t('UI.onboarding.narratorLabel'), body: t('UI.onboarding.narratorPartDescription') },
+    { ink: 'red' as const, label: t('UI.onboarding.godLabel'), body: t('UI.onboarding.godRoleDescription') },
+    { ink: 'green' as const, label: t('UI.onboarding.mainCharactersLabel'), body: t('UI.onboarding.mainCharacterRoleDescription') },
+    { ink: 'blue' as const, label: t('UI.onboarding.everyoneElseLabel'), body: t('UI.onboarding.otherVoicesRoleDescription') },
   ];
+  const [selected, setSelected] = useState(reduced ? 0 : -1);
+
+  useEffect(() => {
+    if (!active) return;
+    if (reduced) {
+      setSelected(0);
+      return;
+    }
+    setSelected(-1);
+    let i = 0;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const tick = () => {
+      timer = setTimeout(() => {
+        if (cancelled) return;
+        setSelected(i % parts.length);
+        void hapticImpactLight();
+        i += 1;
+        tick();
+      }, i === 0 ? 200 : FRIENDS_HOLD_MS);
+    };
+    tick();
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [active, reduced, token, parts.length]);
 
   return (
     <View style={[styles.fillBleed, styles.partsPad]} pointerEvents="none">
+      <Text style={[styles.friendsHint, { color: palette.mute }]}>{t('UI.onboarding.friendsRoleHint')}</Text>
       <View style={styles.partsStack}>
-        {parts.map((item, index) => (
-          <Animated.View
-            key={`${token}-part-${item.ink}`}
-            entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 3 * index)}
-            style={styles.partRow}
-          >
-            <View
+        {parts.map((item, index) => {
+          const on = selected === index;
+          const sample = samples[item.ink];
+          const glow = on ? inkHex(item.ink, palette) : undefined;
+          const fills = getColors(item.ink);
+          return (
+            <Animated.View
+              key={`${token}-part-${item.ink}`}
+              entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 2 * index)}
               style={[
-                styles.partBox,
-                {
-                  backgroundColor: fillHex(item.ink, palette),
-                  borderColor: inkHex(item.ink, palette),
-                },
+                styles.partRow,
+                on && { transform: [{ scale: 1.02 }] },
               ]}
-            />
-            <View style={styles.partText}>
-              <Text style={[styles.partLabel, { color: palette.ink }]}>{item.label}</Text>
-              <Text style={[styles.partBody, { color: palette.mute }]}>{item.body}</Text>
-            </View>
-          </Animated.View>
-        ))}
+            >
+              <View
+                style={[
+                  styles.partBox,
+                  {
+                    backgroundColor: fillHex(item.ink, palette),
+                    borderColor: glow || inkHex(item.ink, palette),
+                    borderWidth: on ? 2.5 : 1.5,
+                  },
+                  on && glow
+                    ? {
+                        shadowColor: glow,
+                        shadowOffset: { width: 0, height: 0 },
+                        shadowOpacity: 0.5,
+                        shadowRadius: 8,
+                        elevation: 6,
+                      }
+                    : null,
+                ]}
+              />
+              <View style={styles.partText}>
+                <Text style={[styles.partLabel, { color: palette.ink }]}>{item.label}</Text>
+                <View
+                  style={[
+                    styles.partDescBubble,
+                    {
+                      backgroundColor: isDarkMode ? fills.dark : fills.light,
+                      borderColor: glow || (item.ink === 'black' ? palette.hair : inkHex(item.ink, palette)),
+                      borderWidth: on ? 2 : StyleSheet.hairlineWidth,
+                    },
+                    on && glow
+                      ? {
+                          shadowColor: glow,
+                          shadowOffset: { width: 0, height: 0 },
+                          shadowOpacity: 0.45,
+                          shadowRadius: 6,
+                          elevation: isDarkMode ? 6 : 4,
+                        }
+                      : null,
+                  ]}
+                >
+                  <Text style={[styles.partBody, { color: getBubbleTextColorSafe(item.ink, isDarkMode) }]}>
+                    {item.body}
+                  </Text>
+                  {sample ? (
+                    <Text
+                      style={[styles.partSample, { color: getBubbleTextColorSafe(item.ink, isDarkMode) }]}
+                      numberOfLines={2}
+                    >
+                      {`“${blockText(sample).replace(/^["“]|["”]$/g, '').slice(0, 70)}”`}
+                    </Text>
+                  ) : null}
+                </View>
+              </View>
+            </Animated.View>
+          );
+        })}
       </View>
     </View>
   );
@@ -384,18 +459,59 @@ export function FriendsDemo({ active, token, palette, t }: DemoProps) {
 export function HabitDemo({ active, token, palette, isDarkMode, language, t }: DemoProps) {
   const reduced = useReducedMotion();
   const demo = useMemo(() => getHabitDemo(), []);
+  const [storiesDone, setStoriesDone] = useState(reduced ? demo.storiesDone : demo.startStories);
+  const [voicesMet, setVoicesMet] = useState(reduced ? demo.voicesMet : demo.startVoices);
+  const [streakDays, setStreakDays] = useState(reduced ? demo.streakDays : demo.startStreak);
+  const [ringToken, setRingToken] = useState(0);
 
   useEffect(() => {
-    if (!active || reduced) return;
-    const timer = setTimeout(() => void hapticImpactLight(), DUR.slow);
-    return () => clearTimeout(timer);
-  }, [active, reduced, token]);
+    if (!active) return;
+    if (reduced) {
+      setStoriesDone(demo.storiesDone);
+      setVoicesMet(demo.voicesMet);
+      setStreakDays(demo.streakDays);
+      setRingToken((n) => n + 1);
+      return;
+    }
+    setStoriesDone(demo.startStories);
+    setVoicesMet(demo.startVoices);
+    setStreakDays(demo.startStreak);
+    setRingToken((n) => n + 1);
+    let stories = demo.startStories;
+    let voices = demo.startVoices;
+    let streak = demo.startStreak;
+    const steps = 28;
+    const ds = (demo.storiesDone - demo.startStories) / steps;
+    const dv = (demo.voicesMet - demo.startVoices) / steps;
+    const dst = (demo.streakDays - demo.startStreak) / steps;
+    let step = 0;
+    const timer = setInterval(() => {
+      step += 1;
+      stories = Math.min(demo.storiesDone, Math.round(demo.startStories + ds * step));
+      voices = Math.min(demo.voicesMet, Math.round(demo.startVoices + dv * step));
+      streak = Math.min(demo.streakDays, Math.round(demo.startStreak + dst * step));
+      setStoriesDone(stories);
+      setVoicesMet(voices);
+      setStreakDays(streak);
+      if (step % 4 === 0) void hapticImpactLight();
+      if (step >= steps) {
+        clearInterval(timer);
+        setStoriesDone(demo.storiesDone);
+        setVoicesMet(demo.voicesMet);
+        setStreakDays(demo.streakDays);
+        setRingToken((n) => n + 1);
+      }
+    }, HABIT_TICK_MS);
+    return () => clearInterval(timer);
+  }, [active, demo, reduced, token]);
+
+  const completedIds = useMemo(() => habitCompletedIds(storiesDone), [storiesDone]);
 
   return (
     <View style={[styles.fillBleed, styles.habitPad]} pointerEvents="none">
       <View style={styles.habitHeat}>
         <StoryHeatmap
-          completedIds={demo.completedIds}
+          completedIds={completedIds}
           currentId={null}
           isDarkMode={isDarkMode}
           language={language}
@@ -405,41 +521,41 @@ export function HabitDemo({ active, token, palette, isDarkMode, language, t }: D
         <StatRing
           size={72}
           strokeWidth={6}
-          progress={demo.storiesDone / 365}
-          centerPrimary={String(demo.storiesDone)}
+          progress={storiesDone / 365}
+          centerPrimary={String(storiesDone)}
           centerSecondary="/ 365"
           trackColor={palette.hair}
           accentColor={palette.acc}
           centerPrimaryColor={palette.ink}
           centerSecondaryColor={palette.mute}
           label={t('UI.thread.stories')}
-          replayToken={active ? token : 0}
+          replayToken={active ? token + ringToken : 0}
         />
         <StatRing
           size={72}
           strokeWidth={6}
-          progress={demo.voicesMet / 774}
-          centerPrimary={String(demo.voicesMet)}
+          progress={voicesMet / 774}
+          centerPrimary={String(voicesMet)}
           centerSecondary="/ 774"
           trackColor={palette.hair}
           accentColor={palette.chor}
           centerPrimaryColor={palette.ink}
           centerSecondaryColor={palette.mute}
           label={t('UI.thread.voicesMet')}
-          replayToken={active ? token + 1 : 0}
+          replayToken={active ? token + ringToken + 1 : 0}
         />
         <StatRing
           size={72}
           strokeWidth={6}
-          progress={Math.min(demo.streakDays / 30, 1)}
-          centerPrimary={String(demo.streakDays)}
+          progress={Math.min(streakDays / 30, 1)}
+          centerPrimary={String(streakDays)}
           centerSecondary={t('UI.thread.dayStreak')}
           trackColor={palette.hair}
           accentColor={palette.acc}
           centerPrimaryColor={palette.ink}
           centerSecondaryColor={palette.mute}
           label={t('UI.thread.streak')}
-          replayToken={active ? token + 2 : 0}
+          replayToken={active ? token + ringToken + 2 : 0}
         />
       </View>
     </View>
@@ -460,7 +576,7 @@ function CastCardFace({
   const lang = language.startsWith('fr') ? 'fr' : 'en';
   const field = roleFill(demo.color);
   const rankLabel = `${inkLabel(demo.color as Ink, lang)} · ${String(demo.rank).padStart(3, '0')} ${t('UI.thread.of')} ${demo.total}`;
-  const nameSize = demo.name.length > 14 ? 32 : 40;
+  const nameSize = demo.name.length > 14 ? 36 : 48;
 
   return (
     <View style={[styles.castCard, { backgroundColor: field }, style]}>
@@ -489,10 +605,31 @@ function CastCardFace({
       </Text>
       {demo.bookIds.length > 0 ? (
         <View style={styles.books}>
-          {demo.bookIds.slice(0, 5).map((id) => (
+          {demo.bookIds.slice(0, 6).map((id) => (
             <Text key={id} style={[styles.bookChip, { color: CREAM, borderColor: 'rgba(242,234,224,0.35)' }]}>
               {localizeBookName(id, bookNameForId(id), language).toUpperCase()}
             </Text>
+          ))}
+        </View>
+      ) : null}
+      {demo.partners.length > 0 ? (
+        <View style={styles.spokeBlock}>
+          <Text style={[styles.spokeKicker, { color: CREAM }]}>{t('UI.thread.spokeWith')}</Text>
+          {demo.partners.slice(0, 3).map((partner) => (
+            <View key={partner.name} style={styles.spokeRow}>
+              <View
+                style={[
+                  styles.spokeIcon,
+                  { backgroundColor: roleFill(partner.color), borderColor: CREAM },
+                ]}
+              >
+                <Ionicons name="person" size={11} color={CREAM} />
+              </View>
+              <Text style={[styles.spokeName, { color: CREAM }]} numberOfLines={1}>
+                {localizeVoiceName(partner.name, language)}
+              </Text>
+              <Text style={[styles.spokeCount, { color: CREAM }]}>{partner.count}</Text>
+            </View>
           ))}
         </View>
       ) : null}
@@ -522,24 +659,24 @@ export function CastDemo({ active, token, language, t }: DemoProps) {
   const leftStyle = useAnimatedStyle(() => ({
     opacity: 0.55 + fan.value * 0.35,
     transform: [
-      { translateX: -28 * fan.value },
-      { translateY: 18 * fan.value },
-      { rotate: `${-8 * fan.value}deg` },
-      { scale: 0.92 + fan.value * 0.02 },
+      { translateX: -36 * fan.value },
+      { translateY: 28 * fan.value },
+      { rotate: `${-9 * fan.value}deg` },
+      { scale: 0.9 + fan.value * 0.02 },
     ],
   }));
   const rightStyle = useAnimatedStyle(() => ({
     opacity: 0.55 + fan.value * 0.35,
     transform: [
-      { translateX: 28 * fan.value },
-      { translateY: 18 * fan.value },
-      { rotate: `${8 * fan.value}deg` },
-      { scale: 0.92 + fan.value * 0.02 },
+      { translateX: 36 * fan.value },
+      { translateY: 28 * fan.value },
+      { rotate: `${9 * fan.value}deg` },
+      { scale: 0.9 + fan.value * 0.02 },
     ],
   }));
   const topStyle = useAnimatedStyle(() => ({
     opacity: fan.value,
-    transform: [{ translateY: (1 - fan.value) * 16 }, { scale: 0.96 + fan.value * 0.04 }],
+    transform: [{ translateY: (1 - fan.value) * 20 }, { scale: 0.96 + fan.value * 0.04 }],
   }));
 
   if (!jesus || !samuel || !david) return null;
@@ -561,8 +698,7 @@ export function CastDemo({ active, token, language, t }: DemoProps) {
 
 export function KeepDemo({ active, token, palette, isDarkMode, language }: DemoProps) {
   const reduced = useReducedMotion();
-  const items = useMemo(() => getKeepDemoItems(), []);
-  const block = items[0]?.block;
+  const blocks = useMemo(() => getLukeKeepBackdrop(), []);
   const pop = useSharedValue(reduced ? 1 : 0);
 
   useEffect(() => {
@@ -582,19 +718,22 @@ export function KeepDemo({ active, token, palette, isDarkMode, language }: DemoP
     transform: [{ scale: 0.92 + pop.value * 0.08 }, { translateY: (1 - pop.value) * 12 }],
   }));
 
-  if (!block) return null;
+  if (!blocks.length) return null;
 
   return (
     <View style={[styles.fillBleed, styles.keepPad]} pointerEvents="none">
       <View style={styles.keepBackdrop}>
-        <DemoBubble
-          block={block}
-          index={0}
-          reduced={reduced || !active}
-          isDarkMode={isDarkMode}
-          language={language}
-          palette={palette}
-        />
+        {blocks.map((block, index) => (
+          <DemoBubble
+            key={`${token}-keep-${index}`}
+            block={block}
+            index={0}
+            reduced
+            isDarkMode={isDarkMode}
+            language={language}
+            palette={palette}
+          />
+        ))}
       </View>
       <Animated.View style={[styles.keepModalWrap, popStyle]}>
         <EmojiPicker
@@ -615,23 +754,31 @@ const styles = StyleSheet.create({
   fillBleed: { flex: 1, width: '100%' },
   threadClip: { overflow: 'hidden', paddingTop: 8 },
   voicesPad: { paddingHorizontal: 16, paddingTop: 4 },
-  legendBlock: { gap: 6 },
-  sectionRule: { height: StyleSheet.hairlineWidth, marginVertical: 10, opacity: 0.9 },
   exchangeClip: { flex: 1, overflow: 'hidden' },
   exchange: { gap: 8, paddingBottom: 8 },
-  partsPad: { paddingHorizontal: 28, justifyContent: 'center' },
-  partsStack: { gap: 14 },
-  partRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  partsPad: { paddingHorizontal: 20, justifyContent: 'center', gap: 12 },
+  friendsHint: { fontSize: 13, lineHeight: 18, paddingHorizontal: 4 },
+  partsStack: { gap: 12 },
+  partRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   partBox: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     borderRadius: 12,
     borderTopLeftRadius: 4,
     borderWidth: 1.5,
+    marginTop: 2,
   },
-  partText: { flex: 1, gap: 2 },
-  partLabel: { fontSize: 16, fontWeight: '600' },
-  partBody: { fontSize: 13, lineHeight: 18 },
+  partText: { flex: 1, gap: 4 },
+  partLabel: { fontSize: 15, fontWeight: '600' },
+  partDescBubble: {
+    borderRadius: 14,
+    borderTopLeftRadius: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    gap: 4,
+  },
+  partBody: { fontSize: 12, lineHeight: 16 },
+  partSample: { fontSize: 12, lineHeight: 16, fontStyle: 'italic', opacity: 0.92 },
   habitPad: { paddingTop: 4, justifyContent: 'flex-end', paddingBottom: 8 },
   habitHeat: { flex: 1, overflow: 'hidden', minHeight: 0 },
   habitRings: {
@@ -642,23 +789,27 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   fanStage: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   fanCard: {
     position: 'absolute',
-    width: '86%',
-    maxWidth: 360,
+    width: '94%',
+    maxWidth: 420,
+    top: '4%',
+    bottom: '4%',
   },
   fanBack: { zIndex: 1 },
   fanFront: { zIndex: 3 },
   castCard: {
-    borderRadius: 16,
+    flex: 1,
+    borderRadius: 18,
     paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 18,
-    minHeight: 168,
+    paddingTop: 16,
+    paddingBottom: 20,
     overflow: 'hidden',
   },
   castRank: { fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.85 },
@@ -680,14 +831,35 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     overflow: 'hidden',
   },
-  keepPad: { paddingHorizontal: 20, justifyContent: 'center', alignItems: 'center' },
-  keepBackdrop: { width: '100%', opacity: 0.55, marginBottom: 8 },
+  spokeBlock: { marginTop: 14, gap: 8 },
+  spokeKicker: { fontSize: 8, letterSpacing: 1.6, textTransform: 'uppercase', opacity: 0.75 },
+  spokeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  spokeIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  spokeName: { flex: 1, fontSize: 13 },
+  spokeCount: { fontSize: 10, opacity: 0.85, fontVariant: ['tabular-nums'] },
+  keepPad: { flex: 1, paddingHorizontal: 12, justifyContent: 'center' },
+  keepBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.42,
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    gap: 6,
+    overflow: 'hidden',
+  },
   keepModalWrap: {
     position: 'relative',
-    width: '100%',
+    width: '92%',
     maxWidth: 320,
     alignSelf: 'center',
     height: 160,
+    zIndex: 2,
   },
   storyRow: { flexDirection: 'row', alignItems: 'center' },
   bead: {
@@ -715,8 +887,4 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     ...Platform.select({ web: { boxShadow: 'none' }, default: {} }),
   },
-  legendRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  swatch: { width: 13, height: 13, borderRadius: 5, borderTopLeftRadius: 2, borderWidth: 1 },
-  legendLabel: { fontSize: 13, fontWeight: '600', minWidth: 108 },
-  legendBody: { flex: 1, fontSize: 12 },
 });

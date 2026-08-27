@@ -110,9 +110,27 @@ function findLukeVoiceExchange(data?: Record<string, StorySegment>): BibleBlock[
   const content = data?.[LUKE_STORY_ID]?.content || [];
   const fire = content.findIndex((block) => /call down fire from heaven/i.test(blockText(block)));
   if (fire < 0) return [];
-  const slice = content.slice(fire, fire + 5);
-  // Keep the exchange compact: drop empty / break-only blocks
+  // Opening narrator + the exchange through a few follow-ups so demos can fill the slot
+  const start = Math.max(0, fire - 1);
+  const slice = content.slice(start, start + 12);
   return slice.filter((block) => blockText(block).length > 0);
+}
+
+/** Longer Luke stretch for the Keep backdrop (fills behind the modal). */
+export function getLukeKeepBackdrop(bible?: Record<string, StorySegment>): BibleBlock[] {
+  return getLukeVoiceExchange(bible).slice(0, 8);
+}
+
+/** One short sample block per ink for the Friends reading-parts demo. */
+export function getFriendsSampleBlocks(bible?: Record<string, StorySegment>): Record<string, BibleBlock | null> {
+  const luke = getLukeVoiceExchange(bible);
+  const byInk = (ink: string) => luke.find((b) => (b.source?.color || 'black') === ink) || null;
+  return {
+    black: byInk('black'),
+    red: byInk('red'),
+    green: byInk('green'),
+    blue: byInk('blue'),
+  };
 }
 
 export function getShareDemoBlock(bible?: Record<string, StorySegment>): BibleBlock | null {
@@ -184,17 +202,26 @@ export function booksForDivision(divisionId: number) {
 
 /** Curated habit demo (~40% of the Bible + a 25-day streak). */
 export function getHabitDemo() {
-  const completedIds = new Set<string>();
-  for (let n = 1; n <= HABIT_DEMO_STORIES; n += 1) {
-    completedIds.add(storyIdFromNumber(n));
-  }
   return {
     streakDays: HABIT_DEMO_STREAK,
     storiesDone: HABIT_DEMO_STORIES,
     voicesMet: HABIT_DEMO_VOICES,
-    completedIds,
+    startStories: 42,
+    startVoices: 100,
+    startStreak: 5,
   };
 }
+
+export function habitCompletedIds(storiesDone: number): Set<string> {
+  const completedIds = new Set<string>();
+  const n = Math.max(0, Math.min(365, Math.round(storiesDone)));
+  for (let i = 1; i <= n; i += 1) {
+    completedIds.add(storyIdFromNumber(i));
+  }
+  return completedIds;
+}
+
+export type CastPartner = { name: string; count: number; color: string };
 
 export type CastDemoData = {
   name: string;
@@ -205,7 +232,8 @@ export type CastDemoData = {
   turns: number;
   storyCount: number;
   bookIds: string[];
-  topPartner: { name: string; count: number; color: string } | null;
+  topPartner: CastPartner | null;
+  partners: CastPartner[];
   longestSpeech: { words: number; storyId: string; storyTitle: string } | null;
 };
 
@@ -219,7 +247,11 @@ export function getCastDemo(voiceName: string = 'David'): CastDemoData | null {
       .slice()
       .sort((a, b) => b.words - a.words)
       .findIndex((item) => item.name === voiceName) + 1;
-  const partner = voice.spokeWith[0];
+  const partners: CastPartner[] = (voice.spokeWith || []).slice(0, 4).map((partner) => ({
+    name: partner.name,
+    count: partner.count,
+    color: conv.voices[partner.name]?.color || 'blue',
+  }));
   const bookIds: string[] = [];
   const seen = new Set<string>();
   for (const id of voice.storyIds) {
@@ -238,13 +270,8 @@ export function getCastDemo(voiceName: string = 'David'): CastDemoData | null {
     turns: voice.turns,
     storyCount: voice.storyIds.length,
     bookIds,
-    topPartner: partner
-      ? {
-          name: partner.name,
-          count: partner.count,
-          color: conv.voices[partner.name]?.color || 'blue',
-        }
-      : null,
+    topPartner: partners[0] || null,
+    partners,
     longestSpeech: voice.longestSpeech,
   };
 }
