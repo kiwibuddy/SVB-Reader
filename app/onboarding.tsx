@@ -204,7 +204,12 @@ export default function OnboardingScreen() {
             end={{ x: 1, y: 1 }}
             style={StyleSheet.absoluteFill}
           />
-          <View style={styles.demoInner}>{renderDemo(page, demoProps)}</View>
+          <View
+            key={active ? `demo-on-${page}-${token}` : `demo-off-${page}`}
+            style={styles.demoInner}
+          >
+            {renderDemo(page, demoProps)}
+          </View>
         </View>
         <View style={styles.footerPad}>
           <View style={styles.footer}>

@@ -17,7 +17,6 @@ import { getColors, getBubbleTextColorSafe } from '@/scripts/getColors';
 import BibleInlineComponent from '@/components/Bible/Inline';
 import StatRing from '@/components/thread/StatRing';
 import StoryHeatmap from '@/components/thread/StoryHeatmap';
-import EmojiPicker from '@/components/EmojiPicker';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 import { DIVISIONS } from '@/constants/divisions';
 import { localizeBookName, localizeStoryTitle, localizeVoiceName, formatCount } from '@/utils/localize';
@@ -741,29 +740,39 @@ export function CastDemo({ active, token, language, t }: DemoProps) {
   );
 }
 
-export function KeepDemo({ active, token, palette, isDarkMode, language }: DemoProps) {
+export function KeepDemo({ active, token, palette, isDarkMode, language, t }: DemoProps) {
   const reduced = useReducedMotion();
   const blocks = useMemo(() => getLukeKeepBackdrop(), []);
-  const pop = useSharedValue(reduced ? 1 : 0);
+  const pop = useSharedValue(0);
 
   useEffect(() => {
-    if (!active) return;
+    if (!active) {
+      pop.value = 0;
+      return;
+    }
     if (reduced) {
       pop.value = 1;
       return;
     }
     pop.value = 0;
-    pop.value = withDelay(DUR.quick, spring(1));
+    pop.value = withDelay(120, spring(1));
     const timer = setTimeout(() => void hapticImpactLight(), DUR.base);
     return () => clearTimeout(timer);
   }, [active, pop, reduced, token]);
 
   const popStyle = useAnimatedStyle(() => ({
-    opacity: pop.value,
-    transform: [{ scale: 0.92 + pop.value * 0.08 }, { translateY: (1 - pop.value) * 12 }],
+    opacity: 0.35 + pop.value * 0.65,
+    transform: [{ scale: 0.94 + pop.value * 0.06 }, { translateY: (1 - pop.value) * 10 }],
   }));
 
   if (!blocks.length) return null;
+
+  const emojis = [
+    { emoji: '❤️', color: '#FF6B47' },
+    { emoji: '👍', color: '#4ECDC4' },
+    { emoji: '🤔', color: '#FFB347' },
+    { emoji: '🙏', color: '#7B68EE', selected: true },
+  ];
 
   return (
     <View style={[styles.fillBleed, styles.keepPad]} pointerEvents="none">
@@ -781,15 +790,36 @@ export function KeepDemo({ active, token, palette, isDarkMode, language }: DemoP
         ))}
       </View>
       <Animated.View style={[styles.keepModalWrap, popStyle]}>
-        <EmojiPicker
-          onEmojiSelect={() => {}}
-          onNoteSelect={() => {}}
-          onShare={() => {}}
-          onCopy={() => {}}
-          onClose={() => {}}
-          position={{ x: 0, y: 0 }}
-          existingEmoji="🙏"
-        />
+        <View style={styles.savePill}>
+          <View style={styles.saveEmojiRow}>
+            {emojis.map((item) => (
+              <View
+                key={item.emoji}
+                style={[
+                  styles.saveEmojiBtn,
+                  { backgroundColor: `${item.color}15` },
+                  item.selected && styles.saveEmojiSelected,
+                ]}
+              >
+                <Text style={styles.saveEmojiText}>{item.emoji}</Text>
+              </View>
+            ))}
+            <View style={[styles.saveEmojiBtn, styles.saveNoteBtn]}>
+              <Ionicons name="create-outline" size={22} color="#8E8E93" />
+            </View>
+          </View>
+          <View style={styles.saveActs}>
+            <View style={styles.saveAct}>
+              <Text style={styles.saveActText}>{t('UI.thread.share')}</Text>
+            </View>
+            <View style={styles.saveAct}>
+              <Text style={styles.saveActText}>{t('UI.thread.copy')}</Text>
+            </View>
+          </View>
+          <View style={styles.saveClose}>
+            <Ionicons name="close" size={16} color="#666" />
+          </View>
+        </View>
       </Animated.View>
     </View>
   );
@@ -924,22 +954,78 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   pullStory: { fontSize: 12, lineHeight: 16, opacity: 0.85 },
-  keepPad: { flex: 1, paddingHorizontal: 12, justifyContent: 'center' },
+  keepPad: { flex: 1, paddingHorizontal: 12, justifyContent: 'center', alignItems: 'center' },
   keepBackdrop: {
     ...StyleSheet.absoluteFillObject,
-    opacity: 0.42,
+    opacity: 0.4,
     paddingHorizontal: 12,
     paddingTop: 8,
     gap: 6,
     overflow: 'hidden',
   },
   keepModalWrap: {
-    position: 'relative',
     width: '92%',
     maxWidth: 320,
-    alignSelf: 'center',
-    height: 160,
-    zIndex: 2,
+    zIndex: 4,
+    elevation: 20,
+  },
+  savePill: {
+    alignItems: 'stretch',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.08)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 15,
+  },
+  saveEmojiRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  saveEmojiBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+  },
+  saveEmojiSelected: {
+    borderColor: 'rgba(0, 0, 0, 0.28)',
+    borderWidth: 2,
+  },
+  saveEmojiText: { fontSize: 24 },
+  saveNoteBtn: { backgroundColor: 'rgba(142, 142, 147, 0.08)' },
+  saveActs: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  saveAct: {
+    flex: 1,
+    minHeight: 44,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveActText: {
+    fontSize: 10,
+    letterSpacing: 1.3,
+    textTransform: 'uppercase',
+    color: '#101619',
+    fontWeight: '600',
+  },
+  saveClose: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.06)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.08)',
   },
   storyRow: { flexDirection: 'row', alignItems: 'center' },
   bead: {
