@@ -160,7 +160,7 @@ const IntroTable: React.FC<{ rows: any[]; bookCode?: string; isTablet?: boolean 
           {row.children?.map((cell: any, cIndex: number) => (
             <View
               key={`cell-${rIndex}-${cIndex}`}
-              style={[rIndex === 0 ? styles.tableHeaderCell : styles.tableCell, { flex: 1 }]}
+              style={rIndex === 0 ? styles.tableHeaderCell : styles.tableCell}
             >
               <Text style={rIndex === 0 ? styles.tableHeaderText : styles.tableText}>
                 {cell.text}

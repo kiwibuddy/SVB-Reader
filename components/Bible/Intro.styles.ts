@@ -19,12 +19,14 @@ export const createStyles = (colors: any, sizes: TextSizes, isTablet: boolean = 
     backgroundColor: colors.background,
   },
   contentContainer: {
+    width: '100%',
     maxWidth: '100%',
     alignSelf: 'center',
     paddingHorizontal: 4,
     paddingTop: 8,
   },
   contentContainerIPad: {
+    width: '100%',
     maxWidth: 800,
   },
   blockContainer: {
@@ -168,17 +170,29 @@ export const createStyles = (colors: any, sizes: TextSizes, isTablet: boolean = 
   },
   // Table styles
   tableWrapper: {
+    width: '100%',
+    alignSelf: 'stretch',
     marginVertical: 8,
   },
   tableRow: {
     flexDirection: 'row',
+    width: '100%',
+    alignItems: 'stretch',
   },
   tableHeaderCell: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
+    minWidth: 0,
     paddingVertical: 10,
     paddingHorizontal: 8,
     backgroundColor: 'transparent',
   },
   tableCell: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
+    minWidth: 0,
     paddingVertical: 10,
     paddingHorizontal: 8,
   },
@@ -186,11 +200,13 @@ export const createStyles = (colors: any, sizes: TextSizes, isTablet: boolean = 
     fontSize: scaled(scale, isTablet ? 24 : 20),
     lineHeight: scaled(scale, isTablet ? 40 : 36),
     color: colors.text,
+    flexShrink: 1,
   },
   tableHeaderText: {
     fontSize: scaled(scale, isTablet ? 24 : 20),
     fontWeight: '700',
     color: colors.text,
+    flexShrink: 1,
   },
   });
 };

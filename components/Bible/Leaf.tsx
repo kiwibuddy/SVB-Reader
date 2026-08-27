@@ -13,6 +13,35 @@ interface BibleLeafProps {
   renderAsTextContent?: boolean
 }
 
+const TABLE_ROW_TAGS = ['tr'];
+const TABLE_HEADER_TAGS = ['th', 'th1', 'th2', 'th3'];
+const TABLE_CELL_TAGS = ['tc', 'tc1', 'tc2', 'tc3'];
+const TABLE_TAGS = [...TABLE_ROW_TAGS, ...TABLE_HEADER_TAGS, ...TABLE_CELL_TAGS];
+
+const SUPER_DIGITS: Record<string, string> = {
+  '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+  '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+  '-': '⁻',
+};
+
+function tagList(tag: unknown): string[] {
+  if (Array.isArray(tag)) return tag.filter((t): t is string => typeof t === 'string');
+  if (typeof tag === 'string') return [tag];
+  return [];
+}
+
+function hasAnyTag(tag: unknown, names: string[]): boolean {
+  return tagList(tag).some((t) => names.includes(t));
+}
+
+function isVerseTag(tag: unknown): boolean {
+  return tagList(tag).some((t) => t.indexOf('v') !== -1);
+}
+
+function toSuperscript(text: string): string {
+  return text.split('').map((char) => SUPER_DIGITS[char] || char).join('');
+}
+
 const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textColor, leafIndex, bubbleColor = 'black', renderAsTextContent = false }) => {
   const { sizes } = useAppSettings();
   const verseRefFontSize = Math.round(sizes.body / 2);
@@ -52,19 +81,14 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
   const { note, text, tag, embeddedDoc, SVitalics, children } = leaf;
   
   // Handle table elements that don't have text but have children
-  const isTableTag = tag && (
-    (Array.isArray(tag) && tag.some(t => ['tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(t))) ||
-    (typeof tag === 'string' && ['tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(tag))
-  );
+  const isTableTag = hasAnyTag(tag, TABLE_TAGS);
   
   if (isTableTag) {
     // For table elements, render children if they exist
     if (children && Array.isArray(children)) {
-      const isTableRow = (Array.isArray(tag) && tag.includes('tr')) || (typeof tag === 'string' && tag === 'tr');
-      const isTableHeader = (Array.isArray(tag) && tag.some(t => ['th', 'th1', 'th2', 'th3'].includes(t))) || 
-                           (typeof tag === 'string' && ['th', 'th1', 'th2', 'th3'].includes(tag));
-      const isTableCell = (Array.isArray(tag) && tag.some(t => ['tc', 'tc1', 'tc2', 'tc3'].includes(t))) || 
-                         (typeof tag === 'string' && ['tc', 'tc1', 'tc2', 'tc3'].includes(tag));
+      const isTableRow = hasAnyTag(tag, TABLE_ROW_TAGS);
+      const isTableHeader = hasAnyTag(tag, TABLE_HEADER_TAGS);
+      const isTableCell = hasAnyTag(tag, TABLE_CELL_TAGS);
       
       if (isTableRow) {
         // Count columns for dynamic spacing
@@ -74,16 +98,8 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
         return (
           <View style={styles.tableRow}>
             {children.map((child, index) => {
-              const isHeader = child.tag && (
-                (Array.isArray(child.tag) && child.tag.some(t => ['th', 'th1', 'th2', 'th3'].includes(t))) ||
-                (typeof child.tag === 'string' && ['th', 'th1', 'th2', 'th3'].includes(child.tag))
-              );
-              const isCell = child.tag && (
-                (Array.isArray(child.tag) && child.tag.some(t => ['tc', 'tc1', 'tc2', 'tc3'].includes(t))) ||
-                (typeof child.tag === 'string' && ['tc', 'tc1', 'tc2', 'tc3'].includes(child.tag))
-              );
-              
-              
+              const isHeader = hasAnyTag(child.tag, TABLE_HEADER_TAGS);
+
               return (
                 <View key={`${leafIndex}-cell-${index}`} style={[
                   styles.tableCell,
@@ -97,32 +113,22 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
                     isHeader && styles.tableHeaderText
                   ]}>
                     {child.children?.map((textChild: any, textIndex: number) => {
-                      // Check if this text child is a verse number
-                      const isVerseRef = textChild.tag && Array.isArray(textChild.tag) && textChild.tag.some((t: string) => t.indexOf("v") !== -1);
-                      
-                      if (isVerseRef) {
+                      if (isVerseTag(textChild.tag)) {
                         return (
-                          <View
+                          <Text
                             key={`text-${textIndex}`}
                             style={{
-                              position: 'relative',
-                              top: -6,
+                              color: textColor,
+                              fontSize: verseRefFontSize,
+                              lineHeight: bodyLineHeight,
                             }}
                           >
-                            <Text
-                              style={{
-                                color: textColor,
-                                fontSize: verseRefFontSize,
-                                lineHeight: verseRefLineHeight,
-                              }}
-                            >
-                              {textChild.text}
-                              {"\u00A0"}
-                            </Text>
-                          </View>
+                            {toSuperscript(String(textChild.text || ''))}
+                            {"\u00A0"}
+                          </Text>
                         );
                       }
-                      
+
                       return textChild.text;
                     })}
                   </Text>
@@ -179,7 +185,7 @@ const BibleLeafComponent: React.FC<BibleLeafProps> = ({ leaf, isIndented, textCo
   
   if (!text || typeof text !== 'string') {
     // Only warn if this is not a table element (which is expected to not have text)
-    const isTableElement = tag && Array.isArray(tag) && tag.some(t => ['tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(t));
+    const isTableElement = hasAnyTag(tag, TABLE_TAGS);
     if (!isTableElement) {
       logger.warn(`Missing or invalid text in leaf at index ${leafIndex}:`, leaf);
     }
@@ -265,18 +271,23 @@ const styles = StyleSheet.create({
     fontVariant: ["small-caps"],
   },
   tableElement: {
-    // Base style for table elements
+    width: '100%',
   },
   tableRow: {
     flexDirection: 'row',
+    alignItems: 'stretch',
+    width: '100%',
     minHeight: 40,
   },
   tableCell: {
-    flex: 1,
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
+    minWidth: 0,
     paddingVertical: 8,
     paddingHorizontal: 4,
     justifyContent: 'center',
-    borderBottomWidth: 1,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   tableHeaderCell: {
     // No background color for header cells
@@ -284,6 +295,7 @@ const styles = StyleSheet.create({
   tableCellText: {
     fontSize: 20,
     lineHeight: 36,
+    flexShrink: 1,
   },
   tableHeaderText: {
     fontWeight: '700',

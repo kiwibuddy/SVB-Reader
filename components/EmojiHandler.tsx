@@ -501,6 +501,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
       <GestureDetector gesture={gesture}>
         <TouchableOpacity
           activeOpacity={0.8}
+          style={styles.touchable}
         >
           {children}
         </TouchableOpacity>
@@ -590,6 +591,9 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     overflow: 'visible',
+  },
+  touchable: {
+    width: '100%',
   },
   reactionContainer: {
     flexDirection: "row",

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Platform, type ViewProps } from 'react-native';
+import { View, Text, StyleSheet, Platform, useWindowDimensions, type ViewProps } from 'react-native';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -46,6 +46,7 @@ const GlowingBubble = ({
 }: BibleBlockProps) => {
   const { source, children } = block;
   const { color = 'black', sourceName = 'Unknown', kind } = source || {};
+  const { width: windowWidth } = useWindowDimensions();
   const { isDarkMode, language, sizes } = useSyncAppSettings();
   const { state } = useSQLiteGlobalContext();
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
@@ -96,8 +97,14 @@ const GlowingBubble = ({
     borderTopRightRadius: left ? 16 : 5,
   };
 
+  // Tables live in their own bubble. Percentage widths inside a ScrollView
+  // often resolve to 0, so flex cells collapse to padding and hide the text.
+  // Pin the bubble to the same 84% cap as speech, in pixels.
+  const hasTable = children.some((item) => item.type === 'table' || item.tag === 'table');
+  const tableWidth = Math.round((windowWidth - 28) * 0.84);
+
   const body = (
-    <View>
+    <View style={hasTable ? styles.tableBody : undefined}>
       {children.map((item, index) => {
         if (item.type === 'break' || item.tag === 'b') return null;
         return (
@@ -126,7 +133,13 @@ const GlowingBubble = ({
 
   return (
     <View style={styles.row} onLayout={onLayout}>
-      <View style={[styles.stack, { alignSelf: left ? 'flex-start' : 'flex-end' }]}>
+      <View
+        style={[
+          styles.stack,
+          { alignSelf: left ? 'flex-start' : 'flex-end' },
+          hasTable && { width: tableWidth, maxWidth: tableWidth },
+        ]}
+      >
         {hasTail && !!sourceName && (
           <View style={[styles.meta, { alignItems: left ? 'flex-start' : 'flex-end' }]}>
             <Text
@@ -142,13 +155,19 @@ const GlowingBubble = ({
             )}
           </View>
         )}
-        <View style={{ alignSelf: left ? 'flex-start' : 'flex-end', maxWidth: '100%', overflow: 'visible' }}>
+        <View
+          style={[
+            { alignSelf: left ? 'flex-start' : 'flex-end', maxWidth: '100%', overflow: 'visible' },
+            hasTable && { alignSelf: 'stretch', width: tableWidth, maxWidth: tableWidth },
+          ]}
+        >
           <EmojiHandler block={block} blockIndex={bIndex} hasTail={hasTail} onLongPress={onLongPress}>
             <Animated.View
               style={[
                 styles.bubble,
                 radius,
                 bubbleStyle,
+                hasTable && { alignSelf: 'stretch', width: tableWidth, maxWidth: tableWidth },
                 { borderWidth: isGlowing || isTarget ? 2 : StyleSheet.hairlineWidth },
                 isGlowing && {
                   shadowColor: glow,
@@ -222,6 +241,9 @@ const styles = StyleSheet.create({
       web: { boxShadow: 'none' },
       default: {},
     }),
+  },
+  tableBody: {
+    width: '100%',
   },
 });
 

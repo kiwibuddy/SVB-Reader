@@ -14,6 +14,14 @@ interface BibleInlineProps {
   bodyLineHeight?: number;
 }
 
+const TABLE_INLINE_TAGS = ['table', 'tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'];
+const TABLE_LEAF_TAGS = ['tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'];
+
+function leafHasTableTag(tag: unknown): boolean {
+  const tags = Array.isArray(tag) ? tag : typeof tag === 'string' ? [tag] : [];
+  return tags.some((t) => TABLE_LEAF_TAGS.includes(t));
+}
+
 const BibleInlineComponent: React.FC<BibleInlineProps> = ({
   inline,
   textColor,
@@ -36,15 +44,9 @@ const BibleInlineComponent: React.FC<BibleInlineProps> = ({
   // Remove lineHeight from inline styles to prevent inconsistent spacing
   const { lineHeight, ...inlineStyle } = originalInlineStyle as any;
   
-  // Check if this is a table element
-  const isTableElement = tag && ['table', 'tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(tag);
-  
-  
-  // Check if this inline contains table content
-  const hasTableContent = children.some(leaf => 
-    leaf && typeof leaf === 'object' && 
-    leaf.tag && Array.isArray(leaf.tag) && 
-    leaf.tag.some(tag => ['tr', 'th', 'tc', 'th1', 'th2', 'th3', 'tc1', 'tc2', 'tc3'].includes(tag))
+  const isTableElement = !!tag && TABLE_INLINE_TAGS.includes(tag);
+  const hasTableContent = children.some((leaf) =>
+    leaf && typeof leaf === 'object' && leafHasTableTag(leaf.tag)
   );
 
   const renderedChildren = children.map((leaf, index) => {
@@ -296,12 +298,12 @@ const styles = StyleSheet.create({
   },
   table: {
     width: "100%",
-    display: "flex", // Use flex instead of 'display: table'
-    flexDirection: "column", // Flex direction for table-like layout
+    alignSelf: "stretch",
+    flexDirection: "column",
   },
   tr: {
-    display: "flex", // Each row is a flex container
-    flexDirection: "row", // Rows flow horizontally
+    width: "100%",
+    flexDirection: "row",
   },
   th: {
     fontStyle: "italic",
@@ -412,6 +414,8 @@ const styles = StyleSheet.create({
     // fontWeight: "100",
   },
   tableWrapper: {
+    width: "100%",
+    alignSelf: "stretch",
     marginVertical: 8,
   },
 });
