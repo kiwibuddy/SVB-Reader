@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 import Animated, {
   Extrapolation,
@@ -49,6 +50,7 @@ import { openSegment } from '@/utils/openSegment';
 import { findCatalogItem, getLocalizedPlanText, nextUnreadStory } from '@/utils/planCatalog';
 import { findPlanItem } from '@/api/userPlans';
 import { shortStoryId } from '@/utils/threadProgress';
+import { isWrittenStory } from '@/utils/writtenVoices';
 import { BookBead, StoryBead, ThreadKnot } from '@/components/thread/ThreadBead';
 
 type Scope = 'all' | 'voices' | 'books' | 'stories';
@@ -75,6 +77,11 @@ type VisibleRow = ThreadRow & {
 const conv = conversations as ConversationsFile;
 const titles = SegmentTitles as Record<string, { title?: string; ref?: string; book?: string[] }>;
 const books = Books as Record<string, { bookName: string; segments: string[] }>;
+const INTRO_ICON = 'information-circle-outline' as const;
+
+function introIdForBook(bookId: string): string | undefined {
+  return (books[bookId]?.segments || []).find((id) => id.startsWith('I'));
+}
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -410,7 +417,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
     openSegment(router, id, extra || storyNav);
   };
 
-  const toggleDivision = (id: number, firstBookId?: string) => {
+  const toggleDivision = (id: number) => {
     void hapticSelection();
     if (openDivision === id) {
       setOpenDivision(0);
@@ -418,9 +425,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
       return;
     }
     setOpenDivision(id);
-    const currentBook = currentId ? titles[currentId]?.book?.[0] : null;
-    const currentDiv = currentId ? divisionForStory(currentId)?.id : null;
-    setOpenBook(currentDiv === id && currentBook ? currentBook : firstBookId || null);
+    setOpenBook(null);
   };
 
   const toggleBook = (id: string) => {
@@ -673,7 +678,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
                 return (
                   <ThreadRevealRow key={row.key} index={index} total={visibleRows.length} progress={progress}>
                     <Pressable
-                      onPress={() => toggleDivision(row.division!.id, entry?.books[0]?.id)}
+                      onPress={() => toggleDivision(row.division!.id)}
                       style={[styles.threadRow, { height: row.height }]}
                     >
                       <ThreadKnot x={mark.x} rowHeight={row.height} open={open} palette={palette} />
@@ -694,9 +699,21 @@ const ThreadList: React.FC<ThreadListProps> = ({
               }
               if (row.kind === 'book') {
                 const open = openBook === row.bookId;
-                const bookStories = divisions
+                const bookEntry = divisions
                   .find((item) => item.division.id === row.division?.id)
-                  ?.books.find((book) => book.id === row.bookId)?.stories.length;
+                  ?.books.find((book) => book.id === row.bookId);
+                const storyIds = bookEntry?.stories || [];
+                const storyCount = storyIds.length;
+                const written = storyCount > 0 && storyIds.every(isWrittenStory);
+                const countNoun = written
+                  ? storyCount === 1
+                    ? t('UI.thread.letter')
+                    : t('UI.thread.stories')
+                  : storyCount === 1
+                    ? t('UI.thread.storySingular')
+                    : t('UI.thread.stories');
+                const bookLabel = localizeBookName(row.bookId || '', row.bookName || '', language);
+                const introId = row.bookId ? introIdForBook(row.bookId) : undefined;
                 return (
                   <ThreadRevealRow key={row.key} index={index} total={visibleRows.length} progress={progress}>
                     <Pressable
@@ -705,11 +722,27 @@ const ThreadList: React.FC<ThreadListProps> = ({
                     >
                       <BookBead x={mark.x} rowHeight={row.height} open={open} palette={palette} />
                       <View style={[styles.rowBody, { paddingLeft: DEPTH_X[1] + 16 }]}>
-                        <Text style={[styles.bookTitle, { color: palette.ink }]}>
-                          {localizeBookName(row.bookId || '', row.bookName || '', language)}
+                        <Text style={[styles.bookTitle, { color: palette.ink }]} numberOfLines={1}>
+                          {bookLabel}
+                          {storyCount > 0 ? (
+                            <Text style={[styles.bookCount, { color: palette.mute }]}>
+                              {' · '}
+                              {storyCount} {countNoun.toLocaleLowerCase()}
+                            </Text>
+                          ) : null}
                         </Text>
                       </View>
-                      <Text style={[styles.divisionCount, { color: palette.mute }]}>{bookStories}</Text>
+                      {introId ? (
+                        <Pressable
+                          onPress={() => openStory(introId)}
+                          hitSlop={12}
+                          accessibilityRole="button"
+                          accessibilityLabel={t('UI.thread.bookIntro', { book: bookLabel })}
+                          style={[styles.introRing, { borderColor: palette.thread }]}
+                        >
+                          <Ionicons name={INTRO_ICON} size={15} color={palette.ink} />
+                        </Pressable>
+                      ) : null}
                     </Pressable>
                   </ThreadRevealRow>
                 );
@@ -808,6 +841,15 @@ const styles = StyleSheet.create({
   divisionBooks: { fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', marginTop: 2 },
   divisionCount: { fontSize: 10, fontVariant: ['tabular-nums'] },
   bookTitle: { fontSize: 14, fontWeight: '500' },
+  bookCount: { fontSize: 13, fontWeight: '400' },
+  introRing: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   storyText: { flex: 1, paddingVertical: 6 },
   storyTitle: { fontSize: 14 },
   storyNow: { fontSize: 18, fontWeight: '600' },
