@@ -292,8 +292,7 @@ const PlanScreen = () => {
     () =>
       buildThread(
         visibleRows.map(({ key, depth, height, markOffset }) => ({ key, depth, height, markOffset })),
-        // Same language as Cast: enter from off-screen left, exit off-screen right.
-        { width: windowWidth, entry: 'left', exit: 'right' }
+        { width: windowWidth, entry: 'left', exit: 'full' }
       ),
     [visibleRows, windowWidth]
   );
@@ -302,7 +301,7 @@ const PlanScreen = () => {
     () =>
       buildThread(
         userStoryRows.map(({ key, depth, height, markOffset }) => ({ key, depth, height, markOffset })),
-        { width: windowWidth, entry: 'left', exit: 'right' }
+        { width: windowWidth, entry: 'left', exit: 'full' }
       ),
     [userStoryRows, windowWidth]
   );
@@ -622,10 +621,7 @@ const PlanScreen = () => {
                             <View
                               style={[
                                 styles.rowBody,
-                                {
-                                  paddingLeft:
-                                    (item.chronologicalOrder ? DEPTH_X[1] : DEPTH_X[0]) + 18,
-                                },
+                                { paddingLeft: DEPTH_X[0] + 16 },
                               ]}
                             >
                               <Text style={[styles.planTitle, { color: palette.ink }]} numberOfLines={2}>

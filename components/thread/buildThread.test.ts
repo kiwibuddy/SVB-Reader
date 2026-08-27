@@ -33,8 +33,8 @@ describe('buildThread depth steps', () => {
     const { d, height } = buildThread(
       [
         { key: 'voice', depth: 0, height: 56 },
-        { key: 's1', depth: 2, height: ROW_HEIGHT.story },
-        { key: 's2', depth: 2, height: ROW_HEIGHT.story },
+        { key: 's1', depth: 1, height: ROW_HEIGHT.story },
+        { key: 's2', depth: 1, height: ROW_HEIGHT.story },
       ],
       { width, entry: 'left', exit: 'right' }
     );
@@ -42,5 +42,18 @@ describe('buildThread depth steps', () => {
     expect(d).toContain(`H ${width + 32}`);
     const rowsBottom = 56 + ROW_HEIGHT.story * 2;
     expect(height).toBe(rowsBottom + 6 + 16 + 16);
+  });
+
+  it('exits on a full-width horizontal off both screen edges', () => {
+    const width = 390;
+    const { d } = buildThread(
+      [
+        { key: 'plan', depth: 0, height: 80 },
+        { key: 'plan2', depth: 0, height: 80 },
+      ],
+      { width, entry: 'left', exit: 'full' }
+    );
+    expect(d).toContain('H -32');
+    expect(d).toContain(`H ${width + 32}`);
   });
 });

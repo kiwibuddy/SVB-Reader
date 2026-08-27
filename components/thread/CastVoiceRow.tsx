@@ -55,7 +55,7 @@ export function CastVoiceRow({
       expanded
         ? [
             { key: voice.name, depth: 0 as const, height: VOICE_ROW },
-            ...voice.storyIds.map((id) => ({ key: id, depth: 2 as const, height: ROW_HEIGHT.story })),
+            ...voice.storyIds.map((id) => ({ key: id, depth: 1 as const, height: ROW_HEIGHT.story })),
           ]
         : [],
     [expanded, voice.name, voice.storyIds]
@@ -168,7 +168,7 @@ export function CastVoiceRow({
           >
             <Pressable onPress={() => openVoiceStory(id)} style={[styles.storyRow, { height: ROW_HEIGHT.story }]} hitSlop={8}>
               <StoryBead x={mark.x} rowHeight={ROW_HEIGHT.story} done={false} palette={palette} />
-              <View style={[styles.storyText, { paddingLeft: DEPTH_X[2] + 16 }]}>
+              <View style={[styles.storyText, { paddingLeft: DEPTH_X[1] + 16 }]}>
                 <Text style={[styles.storyTitle, { color: palette.ink }]} numberOfLines={1}>
                   {localizeStoryTitle(id, info?.title || id, language)}
                 </Text>

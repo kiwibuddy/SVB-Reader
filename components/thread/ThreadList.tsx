@@ -738,9 +738,9 @@ const ThreadList: React.FC<ThreadListProps> = ({
                           hitSlop={12}
                           accessibilityRole="button"
                           accessibilityLabel={t('UI.thread.bookIntro', { book: bookLabel })}
-                          style={[styles.introRing, { borderColor: palette.thread }]}
+                          style={styles.introBtn}
                         >
-                          <Ionicons name={INTRO_ICON} size={15} color={palette.ink} />
+                          <Ionicons name={INTRO_ICON} size={20} color={palette.mute} />
                         </Pressable>
                       ) : null}
                     </Pressable>
@@ -842,11 +842,9 @@ const styles = StyleSheet.create({
   divisionCount: { fontSize: 10, fontVariant: ['tabular-nums'] },
   bookTitle: { fontSize: 14, fontWeight: '500' },
   bookCount: { fontSize: 13, fontWeight: '400' },
-  introRing: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1.5,
+  introBtn: {
+    width: 28,
+    height: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },

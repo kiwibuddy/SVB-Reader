@@ -76,7 +76,7 @@ function stepMidY(prev: PathMark, next: PathMark, r: number): number {
  */
 export function buildThread(
   rows: ThreadRow[],
-  opts?: { width?: number; exit?: 'left' | 'right' | 'none'; entry?: 'left' | 'none' },
+  opts?: { width?: number; exit?: 'left' | 'right' | 'none' | 'full'; entry?: 'left' | 'none' },
 ) {
   const width = Math.max(opts?.width ?? 390, 200);
   const exitSide = opts?.exit ?? 'left';
@@ -193,6 +193,15 @@ export function buildThread(
     const exitX = width + THREAD_OVERHANG;
     d += ` H ${exitX}`;
     length += exitX - (prev.x + R);
+  } else if (exitSide === 'full') {
+    d += ` A ${R} ${R} 0 0 1 ${prev.x - R} ${exitTurnY + R}`;
+    length += (Math.PI / 2) * R;
+    const leftX = -THREAD_OVERHANG;
+    const rightX = width + THREAD_OVERHANG;
+    d += ` H ${leftX}`;
+    length += prev.x - R - leftX;
+    d += ` H ${rightX}`;
+    length += rightX - leftX;
   } else {
     d += ` A ${R} ${R} 0 0 1 ${prev.x - R} ${exitTurnY + R}`;
     length += (Math.PI / 2) * R;
