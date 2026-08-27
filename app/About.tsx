@@ -668,11 +668,22 @@ const About = () => {
 
           <Text style={styles.heading2}>{t('UI.about.howItWorks')}</Text>
 
+          <Pressable
+            style={styles.subtleLinkContainer}
+            onPress={() => router.push('/onboarding?from=about')}
+          >
+            <Text style={styles.subtleLinkText}>{t('UI.onboarding.howSourceViewWorks')}</Text>
+          </Pressable>
+          <Text style={[styles.paragraph, { marginTop: 4 }]}>{t('UI.about.guideLinkHint')}</Text>
+
           <View style={styles.stepContainer}>
-            <Text style={styles.stepTitle}>{t('UI.about.step1Title')}</Text>
-            <Text style={styles.stepDescription}>
-              {t('UI.about.step1Desc')}
-            </Text>
+            <Text style={styles.stepTitle}>{t('UI.about.guideStoriesTitle')}</Text>
+            <Text style={styles.stepDescription}>{t('UI.about.guideStoriesDesc')}</Text>
+          </View>
+
+          <View style={styles.stepContainer}>
+            <Text style={styles.stepTitle}>{t('UI.about.guideVoicesTitle')}</Text>
+            <Text style={styles.stepDescription}>{t('UI.about.guideVoicesDesc')}</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
               <View style={[styles.colorBadge, { backgroundColor: '#E5E5E5' }]}>
                 <Text style={[styles.colorBadgeText, { color: '#555' }]}>{t('UI.about.colorGray')}</Text>
@@ -690,17 +701,23 @@ const About = () => {
           </View>
 
           <View style={styles.stepContainer}>
-            <Text style={styles.stepTitle}>{t('UI.about.step2Title')}</Text>
-            <Text style={styles.stepDescription}>
-              {t('UI.about.step2Desc')}
-            </Text>
+            <Text style={styles.stepTitle}>{t('UI.about.guideFriendsTitle')}</Text>
+            <Text style={styles.stepDescription}>{t('UI.about.guideFriendsDesc')}</Text>
           </View>
 
           <View style={styles.stepContainer}>
-            <Text style={styles.stepTitle}>{t('UI.about.step3Title')}</Text>
-            <Text style={styles.stepDescription}>
-              {t('UI.about.step3Desc')}
-            </Text>
+            <Text style={styles.stepTitle}>{t('UI.about.guideHabitTitle')}</Text>
+            <Text style={styles.stepDescription}>{t('UI.about.guideHabitDesc')}</Text>
+          </View>
+
+          <View style={styles.stepContainer}>
+            <Text style={styles.stepTitle}>{t('UI.about.guideCastTitle')}</Text>
+            <Text style={styles.stepDescription}>{t('UI.about.guideCastDesc')}</Text>
+          </View>
+
+          <View style={styles.stepContainer}>
+            <Text style={styles.stepTitle}>{t('UI.about.guideKeepTitle')}</Text>
+            <Text style={styles.stepDescription}>{t('UI.about.guideKeepDesc')}</Text>
             <View style={{ marginTop: 8 }}>
               <View style={styles.emojiContainer}>
                 <Text style={styles.emojiText}>❤️</Text>
@@ -723,6 +740,27 @@ const About = () => {
                 <Text style={styles.emojiDescription}>{t('UI.about.emojiNotes')}</Text>
               </View>
             </View>
+          </View>
+
+          <View style={styles.stepContainer}>
+            <Text style={styles.stepTitle}>{t('UI.about.step1Title')}</Text>
+            <Text style={styles.stepDescription}>
+              {t('UI.about.step1Desc')}
+            </Text>
+          </View>
+
+          <View style={styles.stepContainer}>
+            <Text style={styles.stepTitle}>{t('UI.about.step2Title')}</Text>
+            <Text style={styles.stepDescription}>
+              {t('UI.about.step2Desc')}
+            </Text>
+          </View>
+
+          <View style={styles.stepContainer}>
+            <Text style={styles.stepTitle}>{t('UI.about.step3Title')}</Text>
+            <Text style={styles.stepDescription}>
+              {t('UI.about.step3Desc')}
+            </Text>
             <Text style={[styles.stepDescription, { marginTop: 8 }]}>
               {t('UI.about.step3Desc2')}
             </Text>

@@ -167,33 +167,35 @@ export default function OnboardingScreen() {
     const demoProps = { active, token: active ? token : 0, palette, isDarkMode, language, t };
     return (
       <View style={[styles.page, { width, paddingTop: insets.top + 8, paddingBottom: insets.bottom + 16 }]}>
-        <View style={styles.top}>
-          <Pressable onPress={() => void finish(false)} hitSlop={12} style={styles.skipHit}>
-            <Text style={[styles.skip, { color: palette.mute }]}>{t('UI.onboarding.skip')}</Text>
-          </Pressable>
+        <View style={styles.chrome}>
+          <View style={styles.top}>
+            <Pressable onPress={() => void finish(false)} hitSlop={12} style={styles.skipHit}>
+              <Text style={[styles.skip, { color: palette.mute }]}>{t('UI.onboarding.skip')}</Text>
+            </Pressable>
+          </View>
+          <Animated.Text
+            key={`h-${page}-${active ? token : 0}`}
+            entering={reduced ? undefined : FadeInDown.springify().damping(SPRING.damping).stiffness(SPRING.stiffness).mass(SPRING.mass)}
+            style={[styles.headline, { color: palette.ink, fontSize: Math.round((sizes.body / 16) * 28) }]}
+          >
+            {t(item.title)}
+          </Animated.Text>
+          <Animated.Text
+            key={`b-${page}-${active ? token : 0}`}
+            entering={
+              reduced
+                ? undefined
+                : FadeInDown.springify()
+                    .damping(SPRING.damping)
+                    .stiffness(SPRING.stiffness)
+                    .mass(SPRING.mass)
+                    .delay(60)
+            }
+            style={[styles.body, { color: palette.mute, fontSize: sizes.body, lineHeight: Math.round(sizes.body * 1.4) }]}
+          >
+            {t(item.body)}
+          </Animated.Text>
         </View>
-        <Animated.Text
-          key={`h-${page}-${active ? token : 0}`}
-          entering={reduced ? undefined : FadeInDown.springify().damping(SPRING.damping).stiffness(SPRING.stiffness).mass(SPRING.mass)}
-          style={[styles.headline, { color: palette.ink, fontSize: Math.round((sizes.body / 16) * 28) }]}
-        >
-          {t(item.title)}
-        </Animated.Text>
-        <Animated.Text
-          key={`b-${page}-${active ? token : 0}`}
-          entering={
-            reduced
-              ? undefined
-              : FadeInDown.springify()
-                  .damping(SPRING.damping)
-                  .stiffness(SPRING.stiffness)
-                  .mass(SPRING.mass)
-                  .delay(60)
-          }
-          style={[styles.body, { color: palette.mute, fontSize: sizes.body, lineHeight: Math.round(sizes.body * 1.4) }]}
-        >
-          {t(item.body)}
-        </Animated.Text>
         <View style={styles.demo}>
           <LinearGradient
             pointerEvents="none"
@@ -204,26 +206,28 @@ export default function OnboardingScreen() {
           />
           <View style={styles.demoInner}>{renderDemo(page, demoProps)}</View>
         </View>
-        <View style={styles.footer}>
-          <View style={styles.dots}>
-            {SCREENS.map((_, dot) => (
-              <Dot key={dot} active={dot === index} palette={palette} />
-            ))}
+        <View style={styles.footerPad}>
+          <View style={styles.footer}>
+            <View style={styles.dots}>
+              {SCREENS.map((_, dot) => (
+                <Dot key={dot} active={dot === index} palette={palette} />
+              ))}
+            </View>
+            <AnimatedPressable
+              onPress={goNext}
+              onPressIn={() => {
+                ctaScale.value = withSpring(0.97, POP_SPRING);
+              }}
+              onPressOut={() => {
+                ctaScale.value = withSpring(1, POP_SPRING);
+              }}
+              style={[styles.cta, { backgroundColor: palette.acc }, ctaAnimStyle]}
+            >
+              <Text style={[styles.ctaLabel, { color: palette.bg }]}>
+                {page === SCREENS.length - 1 ? t('UI.onboarding.startReading') : t('UI.onboarding.next')}
+              </Text>
+            </AnimatedPressable>
           </View>
-          <AnimatedPressable
-            onPress={goNext}
-            onPressIn={() => {
-              ctaScale.value = withSpring(0.97, POP_SPRING);
-            }}
-            onPressOut={() => {
-              ctaScale.value = withSpring(1, POP_SPRING);
-            }}
-            style={[styles.cta, { backgroundColor: palette.acc }, ctaAnimStyle]}
-          >
-            <Text style={[styles.ctaLabel, { color: palette.bg }]}>
-              {page === SCREENS.length - 1 ? t('UI.onboarding.startReading') : t('UI.onboarding.next')}
-            </Text>
-          </AnimatedPressable>
         </View>
       </View>
     );
@@ -264,7 +268,9 @@ const styles = StyleSheet.create({
   boot: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   // Do not put overflow:'hidden' on page — it clips FadeInDown entrances and
   // can collapse horizontal FlatList item layout on iOS after an OTA reload.
-  page: { flex: 1, paddingHorizontal: 28 },
+  // Title/body/footer stay padded; the demo slot is full-bleed.
+  page: { flex: 1 },
+  chrome: { paddingHorizontal: 28 },
   top: { minHeight: 44, alignItems: 'flex-end', justifyContent: 'center' },
   skipHit: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 4 },
   skip: { fontSize: 15 },
@@ -274,10 +280,11 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 18,
     justifyContent: 'center',
-    overflow: 'visible',
-    borderRadius: 16,
+    overflow: 'hidden',
+    borderRadius: 0,
   },
   demoInner: { flex: 1, justifyContent: 'center' },
+  footerPad: { paddingHorizontal: 28 },
   footer: { gap: 14 },
   dots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3 },

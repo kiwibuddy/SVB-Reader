@@ -3,13 +3,21 @@ import { bibleLoader } from '@/services/BibleLoader';
 import { getSegmentWordCount } from '@/utils/readingTime';
 import conversations from '@/assets/data/conversations.json';
 import type { ConversationsFile } from '@/types/conversations';
-import { DIVISIONS } from '@/constants/divisions';
+import { DIVISIONS, storyIdFromNumber } from '@/constants/divisions';
+import SegmentTitles from '@/assets/data/SegmentTitles.json';
+import Books from '@/assets/data/BookChapterList.json';
 
 const DEMO_STORY_ID = 'S008';
+const LUKE_STORY_ID = 'S290';
 const FEATURED_VOICES = ['The Narrator', 'God', 'Abraham', 'Sarah', 'Isaac'] as const;
 const conv = conversations as ConversationsFile;
-const CAST_DEMO_VOICE = 'David';
-const HABIT_DEMO_DIVISION = DIVISIONS[0]; // "The Beginning" — contains the S008 demo story
+const titles = SegmentTitles as Record<string, { title?: string; ref?: string; book?: string[] }>;
+const books = Books as Record<string, { bookName: string; segments: string[] }>;
+
+export const CAST_FAN_VOICES = ['Jesus', 'Samuel', 'David'] as const;
+export const HABIT_DEMO_STORIES = 146;
+export const HABIT_DEMO_VOICES = 310;
+export const HABIT_DEMO_STREAK = 25;
 
 function walkText(node: unknown): string {
   if (!node) return '';
@@ -52,13 +60,17 @@ type StorySegment = {
   colors?: { black?: number; red?: number; green?: number; blue?: number; total?: number };
 };
 
+function bibleData(bible?: Record<string, StorySegment>): Record<string, StorySegment> | undefined {
+  return bible || (bibleLoader.getCurrentBible() as Record<string, StorySegment> | undefined);
+}
+
 export function getDemoStory(bible?: Record<string, StorySegment>) {
-  const data = bible || (bibleLoader.getCurrentBible() as Record<string, StorySegment> | undefined);
+  const data = bibleData(bible);
   return data?.[DEMO_STORY_ID] || null;
 }
 
 export function getAbrahamExchange(bible?: Record<string, StorySegment>): BibleBlock[] {
-  const found = findAbrahamExchange(bible || (bibleLoader.getCurrentBible() as Record<string, StorySegment> | undefined));
+  const found = findAbrahamExchange(bibleData(bible));
   if (found.length) return found;
   return findAbrahamExchange(bibleLoader.getCurrentBible('en') as Record<string, StorySegment> | undefined);
 }
@@ -87,45 +99,49 @@ function findAbrahamExchange(data?: Record<string, StorySegment>): BibleBlock[] 
   return [narrator, content[godIndex], abraham].filter(Boolean) as BibleBlock[];
 }
 
+/** Luke 9:54–58 from S290 — disciples, narrator, Someone Along the Road, Jesus. */
+export function getLukeVoiceExchange(bible?: Record<string, StorySegment>): BibleBlock[] {
+  const found = findLukeVoiceExchange(bibleData(bible));
+  if (found.length) return found;
+  return findLukeVoiceExchange(bibleLoader.getCurrentBible('en') as Record<string, StorySegment> | undefined);
+}
+
+function findLukeVoiceExchange(data?: Record<string, StorySegment>): BibleBlock[] {
+  const content = data?.[LUKE_STORY_ID]?.content || [];
+  const fire = content.findIndex((block) => /call down fire from heaven/i.test(blockText(block)));
+  if (fire < 0) return [];
+  const slice = content.slice(fire, fire + 5);
+  // Keep the exchange compact: drop empty / break-only blocks
+  return slice.filter((block) => blockText(block).length > 0);
+}
+
 export function getShareDemoBlock(bible?: Record<string, StorySegment>): BibleBlock | null {
   return getKeepDemoItems(bible)[0]?.block || null;
 }
 
-/** Two Saved-tab style items for the Keep onboarding screen. */
+/** Backdrop bubble for the Keep / long-press modal demo. */
 export function getKeepDemoItems(bible?: Record<string, StorySegment>): {
   block: BibleBlock;
   emoji: string;
   noteKey: 'sampleNote' | 'sampleNote2' | null;
   storyId: string;
 }[] {
+  const luke = getLukeVoiceExchange(bible);
+  const jesus = luke.find((b) => b.source?.sourceName === 'Jesus');
+  if (jesus) {
+    return [{ block: jesus, emoji: '🙏', noteKey: 'sampleNote', storyId: LUKE_STORY_ID }];
+  }
   const content = getDemoStory(bible)?.content || [];
   const takeSon = content.find((item) => /Take your son, your only son/i.test(blockText(item)));
-  const hereIAm = content.find(
-    (item) => item.source?.sourceName === 'Abraham' && /Here I am/i.test(blockText(item))
-  );
-  const items: {
-    block: BibleBlock;
-    emoji: string;
-    noteKey: 'sampleNote' | 'sampleNote2' | null;
-    storyId: string;
-  }[] = [];
-  if (takeSon) {
-    items.push({
+  if (!takeSon) return [];
+  return [
+    {
       block: keepLeaves(takeSon, (text) => /Take your son|only son/i.test(text) && !/^\d+$/.test(text.trim())),
       emoji: '🙏',
       noteKey: 'sampleNote',
       storyId: DEMO_STORY_ID,
-    });
-  }
-  if (hereIAm) {
-    items.push({
-      block: hereIAm,
-      emoji: '❤️',
-      noteKey: 'sampleNote2',
-      storyId: DEMO_STORY_ID,
-    });
-  }
-  return items;
+    },
+  ];
 }
 
 export function getCallSheetDemo(bible?: Record<string, StorySegment>) {
@@ -150,35 +166,69 @@ export function getCallSheetDemo(bible?: Record<string, StorySegment>) {
 
 export const ONBOARDING_STORY_IDS = ['S001', 'S002', 'S003'] as const;
 
-/** Illustrative habit demo: a streak + a plan mid-way through, and one real
- * discussion question in the app's voice. Not the user's real progress —
- * onboarding runs before anyone has read anything — same as the other
- * demos, this is curated, deterministic, and never hits the DB. */
+/** Books in The Beginning for the ShapeDemo expand loop. */
+export function booksForDivision(divisionId: number) {
+  const division = DIVISIONS.find((d) => d.id === divisionId);
+  if (!division) return [];
+  const inDivision = new Set(
+    Array.from({ length: division.end - division.start + 1 }, (_, i) => storyIdFromNumber(division.start + i))
+  );
+  return Object.entries(books)
+    .map(([id, info]) => ({
+      id,
+      name: info.bookName,
+      stories: (info.segments || []).filter((storyId) => storyId.startsWith('S') && inDivision.has(storyId)),
+    }))
+    .filter((book) => book.stories.length > 0);
+}
+
+/** Curated habit demo (~40% of the Bible + a 25-day streak). */
 export function getHabitDemo() {
+  const completedIds = new Set<string>();
+  for (let n = 1; n <= HABIT_DEMO_STORIES; n += 1) {
+    completedIds.add(storyIdFromNumber(n));
+  }
   return {
-    streakDays: 12,
-    storiesDone: 42,
-    voicesMet: 128,
-    plan: {
-      title: HABIT_DEMO_DIVISION.titleEn,
-      done: 24,
-      total: HABIT_DEMO_DIVISION.end - HABIT_DEMO_DIVISION.start + 1,
-    },
+    streakDays: HABIT_DEMO_STREAK,
+    storiesDone: HABIT_DEMO_STORIES,
+    voicesMet: HABIT_DEMO_VOICES,
+    completedIds,
   };
 }
 
-/** Real Cast data for the demo voice, pulled from the same precomputed
- * conversations.json the live Cast tab reads. No invented numbers. */
-export function getCastDemo() {
-  const voice = conv.voices[CAST_DEMO_VOICE];
+export type CastDemoData = {
+  name: string;
+  color: string;
+  rank: number;
+  total: number;
+  words: number;
+  turns: number;
+  storyCount: number;
+  bookIds: string[];
+  topPartner: { name: string; count: number; color: string } | null;
+  longestSpeech: { words: number; storyId: string; storyTitle: string } | null;
+};
+
+/** Real Cast data for a voice from conversations.json. */
+export function getCastDemo(voiceName: string = 'David'): CastDemoData | null {
+  const voice = conv.voices[voiceName];
   if (!voice) return null;
   const speaking = Object.values(conv.voices).filter((item) => item.group !== 'narration');
   const rank =
     speaking
       .slice()
       .sort((a, b) => b.words - a.words)
-      .findIndex((item) => item.name === CAST_DEMO_VOICE) + 1;
+      .findIndex((item) => item.name === voiceName) + 1;
   const partner = voice.spokeWith[0];
+  const bookIds: string[] = [];
+  const seen = new Set<string>();
+  for (const id of voice.storyIds) {
+    const bookId = titles[id]?.book?.[0];
+    if (bookId && !seen.has(bookId)) {
+      seen.add(bookId);
+      bookIds.push(bookId);
+    }
+  }
   return {
     name: voice.name,
     color: voice.color,
@@ -187,6 +237,7 @@ export function getCastDemo() {
     words: voice.words,
     turns: voice.turns,
     storyCount: voice.storyIds.length,
+    bookIds,
     topPartner: partner
       ? {
           name: partner.name,
@@ -196,4 +247,8 @@ export function getCastDemo() {
       : null,
     longestSpeech: voice.longestSpeech,
   };
+}
+
+export function bookNameForId(bookId: string): string {
+  return books[bookId]?.bookName || bookId;
 }

@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, Platform, ScrollView } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Text, StyleSheet, Platform, useWindowDimensions } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeInDown,
   useAnimatedProps,
@@ -10,39 +9,42 @@ import Animated, {
   useSharedValue,
   withDelay,
   withSpring,
-  withTiming,
 } from 'react-native-reanimated';
 import { DEPTH_X, ROW_HEIGHT, buildThread } from '@/components/thread/buildThread';
-import { DUR, RM, SPRING, STAGGER, timing } from '@/constants/Motion';
+import { DUR, RM, SPRING, STAGGER } from '@/constants/Motion';
 import { fillHex, inkHex } from '@/constants/Colors';
 import { getColors, getBubbleTextColorSafe } from '@/scripts/getColors';
 import BibleInlineComponent from '@/components/Bible/Inline';
-import SavedBubble from '@/components/thread/SavedBubble';
-import StoryColorMix from '@/components/thread/StoryColorMix';
 import StatRing from '@/components/thread/StatRing';
+import StoryHeatmap from '@/components/thread/StoryHeatmap';
+import EmojiPicker from '@/components/EmojiPicker';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
-import { localizeStoryTitle, localizeVoiceName, formatCount } from '@/utils/localize';
+import { DIVISIONS } from '@/constants/divisions';
+import { localizeBookName, localizeStoryTitle, localizeVoiceName, formatCount } from '@/utils/localize';
 import { formatReadingMinutes, getSegmentReadingTime } from '@/utils/readingTime';
 import { inkLabel, isLeftVoice, roleFill, type Ink } from '@/utils/ink';
 import { hapticImpactLight } from '@/utils/haptics';
-import { readerSlots } from '@/utils/readerParts';
 import type { BibleBlock } from '@/types';
 import type { ThreadPalette } from '@/constants/Colors';
 import {
-  ONBOARDING_STORY_IDS,
-  getAbrahamExchange,
-  getCallSheetDemo,
+  booksForDivision,
+  bookNameForId,
   getCastDemo,
   getHabitDemo,
   getKeepDemoItems,
+  getLukeVoiceExchange,
+  type CastDemoData,
 } from '@/utils/onboardingDemo';
 
 const spring = (value: number) => withSpring(value, { ...SPRING, ...RM });
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const titles = SegmentTitles as Record<string, { title?: string; ref?: string; book?: string[] }>;
-const BUBBLE_GAP = 280;
+const BUBBLE_GAP = 220;
 const CREAM = '#F2EAE0';
+const BEGINNING_ID = DIVISIONS[0].id;
+const GENESIS_BOOK_ID = 'Gen';
+const PHASE_HOLD_MS = 1600;
 
 type DemoProps = {
   active: boolean;
@@ -127,71 +129,156 @@ function DemoBubble({
   );
 }
 
+type ShapePhase = 0 | 1 | 2;
+
 export function ShapeDemo({ active, token, palette, language }: DemoProps) {
   const reduced = useReducedMotion();
+  const { width } = useWindowDimensions();
   const progress = useSharedValue(reduced ? 1 : 0);
-  const rows = ONBOARDING_STORY_IDS.map((id) => ({
-    key: id,
-    depth: 0 as const,
-    height: ROW_HEIGHT.story,
-  }));
-  const thread = useMemo(() => buildThread(rows, { width: 280 }), []);
-  const beadX = DEPTH_X[0];
+  const [phase, setPhase] = useState<ShapePhase>(reduced ? 2 : 0);
 
   useEffect(() => {
     if (!active) return;
     if (reduced) {
+      setPhase(2);
       progress.value = 1;
       return;
     }
+    setPhase(0);
     progress.value = 0;
     progress.value = spring(1);
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const advance = (next: ShapePhase) => {
+      timer = setTimeout(() => {
+        if (cancelled) return;
+        setPhase(next);
+        progress.value = 0;
+        progress.value = spring(1);
+        if (next === 0) advance(1);
+        else if (next === 1) advance(2);
+        else advance(0);
+      }, PHASE_HOLD_MS);
+    };
+    advance(1);
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, [active, progress, reduced, token]);
+
+  const openDivision = phase >= 1 ? BEGINNING_ID : 0;
+  const openBook = phase >= 2 ? GENESIS_BOOK_ID : null;
+  const beginningBooks = useMemo(() => booksForDivision(BEGINNING_ID), []);
+
+  const rows = useMemo(() => {
+    const list: { key: string; depth: 0 | 1 | 2; height: number; kind: 'division' | 'book' | 'story'; label: string; sub?: string }[] = [];
+    const langFr = language.startsWith('fr');
+    for (const division of DIVISIONS) {
+      list.push({
+        key: `d-${division.id}`,
+        depth: 0,
+        height: ROW_HEIGHT.division,
+        kind: 'division',
+        label: langFr ? division.titleFr : division.titleEn,
+        sub: langFr ? division.booksFr : division.booksEn,
+      });
+      if (openDivision !== division.id) continue;
+      for (const book of beginningBooks) {
+        list.push({
+          key: `b-${book.id}`,
+          depth: 1,
+          height: ROW_HEIGHT.book,
+          kind: 'book',
+          label: localizeBookName(book.id, book.name, language),
+          sub: `${book.stories.length}`,
+        });
+        if (openBook !== book.id) continue;
+        for (const id of book.stories) {
+          const info = titles[id];
+          const minutes = getSegmentReadingTime(id);
+          list.push({
+            key: id,
+            depth: 2,
+            height: ROW_HEIGHT.story,
+            kind: 'story',
+            label: localizeStoryTitle(id, info?.title || id, language),
+            sub: [info?.book?.[0], info?.ref, minutes ? formatReadingMinutes(minutes) : '']
+              .filter(Boolean)
+              .join(' · '),
+          });
+        }
+      }
+    }
+    return list;
+  }, [beginningBooks, language, openBook, openDivision]);
+
+  const thread = useMemo(
+    () => buildThread(
+      rows.map(({ key, depth, height }) => ({ key, depth, height })),
+      { width }
+    ),
+    [rows, width]
+  );
 
   const pathProps = useAnimatedProps(() => ({
     strokeDashoffset: thread.length * (1 - progress.value),
   }));
 
   return (
-    <View style={[styles.card, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
-      <View style={{ height: thread.height, position: 'relative' }}>
-        <Svg pointerEvents="none" style={StyleSheet.absoluteFill} width="100%" height={thread.height}>
-          <AnimatedPath
-            d={thread.d}
-            fill="none"
-            stroke={palette.thread}
-            strokeWidth={1.5}
-            strokeDasharray={thread.length}
-            animatedProps={pathProps}
-          />
-        </Svg>
-        {rows.map((row, index) => {
-          const mark = thread.marks[index];
-          const info = titles[row.key];
-          const minutes = getSegmentReadingTime(row.key);
-          const title = localizeStoryTitle(row.key, info?.title || row.key, language);
-          return (
-            <View key={row.key} style={[styles.storyRow, { height: row.height }]}>
-              <View
-                style={[
-                  styles.bead,
-                  {
-                    left: (mark?.x || beadX) - 4,
-                    borderColor: palette.thread,
-                    backgroundColor: palette.bg,
-                  },
-                ]}
-              />
-              <View style={{ paddingLeft: beadX + 16, flex: 1 }}>
-                <Text style={[styles.storyTitle, { color: palette.ink }]}>{title}</Text>
-                <Text style={[styles.storyRef, { color: palette.mute }]}>
-                  {info?.book?.[0]} {info?.ref}
-                  {minutes ? ` · ${formatReadingMinutes(minutes)}` : ''}
-                </Text>
+    <View style={styles.fillBleed} pointerEvents="none">
+      <View style={[styles.threadClip, { height: '100%' }]}>
+        <View style={{ height: thread.height, position: 'relative', minWidth: width }}>
+          <Svg pointerEvents="none" style={StyleSheet.absoluteFill} width="100%" height={thread.height}>
+            <AnimatedPath
+              d={thread.d}
+              fill="none"
+              stroke={palette.thread}
+              strokeWidth={1.5}
+              strokeDasharray={thread.length}
+              animatedProps={pathProps}
+            />
+          </Svg>
+          {rows.map((row, index) => {
+            const mark = thread.marks[index];
+            const pad = DEPTH_X[row.depth] + 16;
+            return (
+              <View key={row.key} style={[styles.storyRow, { height: row.height }]}>
+                <View
+                  style={[
+                    styles.bead,
+                    {
+                      left: (mark?.x || DEPTH_X[row.depth]) - 4,
+                      top: row.height / 2 - 4,
+                      borderColor: palette.thread,
+                      backgroundColor: palette.bg,
+                      borderRadius: row.kind === 'division' ? 2 : 4,
+                    },
+                  ]}
+                />
+                <View style={{ paddingLeft: pad, flex: 1, paddingRight: 16 }}>
+                  <Text
+                    style={[
+                      row.kind === 'story' ? styles.storyTitle : styles.divisionTitle,
+                      { color: palette.ink },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {row.label}
+                    {row.kind === 'book' && row.sub ? (
+                      <Text style={[styles.storyRef, { color: palette.mute }]}>{` · ${row.sub}`}</Text>
+                    ) : null}
+                  </Text>
+                  {row.kind !== 'book' && row.sub ? (
+                    <Text style={[styles.storyRef, { color: palette.mute }]} numberOfLines={1}>
+                      {row.sub}
+                    </Text>
+                  ) : null}
+                </View>
               </View>
-            </View>
-          );
-        })}
+            );
+          })}
+        </View>
       </View>
     </View>
   );
@@ -199,7 +286,7 @@ export function ShapeDemo({ active, token, palette, language }: DemoProps) {
 
 export function VoicesDemo({ active, token, palette, isDarkMode, language, t }: DemoProps) {
   const reduced = useReducedMotion();
-  const blocks = useMemo(() => getAbrahamExchange(), []);
+  const blocks = useMemo(() => getLukeVoiceExchange(), []);
   const legend = [
     { ink: 'black', label: t('UI.onboarding.narratorLabel'), body: t('UI.onboarding.narratorRoleDescription') },
     { ink: 'red', label: t('UI.onboarding.godLabel'), body: t('UI.onboarding.godRoleDescription') },
@@ -214,12 +301,12 @@ export function VoicesDemo({ active, token, palette, isDarkMode, language, t }: 
   }, [active, blocks, reduced, token]);
 
   return (
-    <View style={styles.demoStack}>
-      <View style={{ gap: 8 }}>
+    <View style={[styles.fillBleed, styles.voicesPad]} pointerEvents="none">
+      <View style={styles.legendBlock}>
         {legend.map((item, index) => (
           <Animated.View
             key={`${token}-leg-${item.ink}`}
-            entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 3 * index)}
+            entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 2 * index)}
             style={styles.legendRow}
           >
             <View
@@ -237,99 +324,66 @@ export function VoicesDemo({ active, token, palette, isDarkMode, language, t }: 
         ))}
       </View>
       <View style={[styles.sectionRule, { backgroundColor: palette.hair }]} />
-      <View style={styles.exchange}>
-        {blocks.map((block, index) => (
-          <DemoBubble
-            key={`${token}-${index}`}
-            block={block}
-            index={reduced ? 0 : index}
-            reduced={reduced || !active}
-            isDarkMode={isDarkMode}
-            language={language}
-            palette={palette}
-          />
+      <View style={styles.exchangeClip}>
+        <View style={styles.exchange}>
+          {blocks.map((block, index) => (
+            <DemoBubble
+              key={`${token}-${index}`}
+              block={block}
+              index={reduced ? 0 : index}
+              reduced={reduced || !active}
+              isDarkMode={isDarkMode}
+              language={language}
+              palette={palette}
+            />
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+export function FriendsDemo({ active, token, palette, t }: DemoProps) {
+  const reduced = useReducedMotion();
+  const parts = [
+    { ink: 'black', label: t('UI.onboarding.narratorLabel'), body: t('UI.onboarding.narratorPartDescription') },
+    { ink: 'red', label: t('UI.onboarding.godLabel'), body: t('UI.onboarding.godRoleDescription') },
+    { ink: 'green', label: t('UI.onboarding.mainCharactersLabel'), body: t('UI.onboarding.mainCharacterRoleDescription') },
+    { ink: 'blue', label: t('UI.onboarding.everyoneElseLabel'), body: t('UI.onboarding.otherVoicesRoleDescription') },
+  ];
+
+  return (
+    <View style={[styles.fillBleed, styles.partsPad]} pointerEvents="none">
+      <View style={styles.partsStack}>
+        {parts.map((item, index) => (
+          <Animated.View
+            key={`${token}-part-${item.ink}`}
+            entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 3 * index)}
+            style={styles.partRow}
+          >
+            <View
+              style={[
+                styles.partBox,
+                {
+                  backgroundColor: fillHex(item.ink, palette),
+                  borderColor: inkHex(item.ink, palette),
+                },
+              ]}
+            />
+            <View style={styles.partText}>
+              <Text style={[styles.partLabel, { color: palette.ink }]}>{item.label}</Text>
+              <Text style={[styles.partBody, { color: palette.mute }]}>{item.body}</Text>
+            </View>
+          </Animated.View>
         ))}
       </View>
     </View>
   );
 }
 
-export function FriendsDemo({ active, token, palette, language, t }: DemoProps) {
-  const reduced = useReducedMotion();
-  const demo = useMemo(() => getCallSheetDemo(), []);
-  const grow = useSharedValue(reduced ? 1 : 0);
-  const names = useSharedValue(reduced ? 1 : 0);
-  const title = localizeStoryTitle(demo.storyId, titles[demo.storyId]?.title || demo.storyId, language);
-  const info = titles[demo.storyId];
-  const minutes = getSegmentReadingTime(demo.storyId);
-  const num = demo.storyId.replace(/^S/i, '');
-  const meta = [num, info?.book?.[0] && info?.ref ? `${info.book[0]} ${info.ref}` : '', minutes ? formatReadingMinutes(minutes) : '']
-    .filter(Boolean)
-    .join(' · ');
-  const slots = useMemo(() => readerSlots(demo.readers, demo.colors), [demo.readers, demo.colors]);
-
-  useEffect(() => {
-    if (!active) return;
-    if (reduced) {
-      grow.value = 1;
-      names.value = 1;
-      return;
-    }
-    grow.value = 0;
-    names.value = 0;
-    grow.value = spring(1);
-    names.value = withDelay(DUR.base, withTiming(1, timing(DUR.quick)));
-  }, [active, grow, names, reduced, token]);
-
-  const barStyle = useAnimatedStyle(() => ({
-    opacity: grow.value,
-    transform: [{ scaleX: grow.value }],
-  }));
-  const namesStyle = useAnimatedStyle(() => ({ opacity: names.value }));
-
-  return (
-    <View style={styles.demoStack}>
-      <Text style={[styles.segmentTitle, { color: palette.ink }]}>{title}</Text>
-      <Text style={[styles.segmentMeta, { color: palette.mute }]}>{meta}</Text>
-      <Animated.View style={[{ transformOrigin: 'left' as const }, barStyle]}>
-        <StoryColorMix colors={demo.colors} palette={palette} style={{ marginTop: 10 }} />
-      </Animated.View>
-      <Text style={[styles.pickPrompt, { color: palette.mute }]}>{t('UI.thread.pickCastPrompt')}</Text>
-      <View style={[styles.callWrap, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
-        <View style={styles.callTop}>
-          <View style={styles.boxes}>
-            {slots.map((slot) => (
-              <View
-                key={slot.index}
-                style={[
-                  styles.box,
-                  {
-                    backgroundColor: fillHex(slot.ink, palette),
-                    borderColor: inkHex(slot.ink, palette),
-                  },
-                ]}
-              />
-            ))}
-          </View>
-          <Text style={[styles.voiceCount, { color: palette.ink }]}>
-            {demo.voices.length} {t('UI.thread.scopeVoices').toUpperCase()}
-          </Text>
-        </View>
-        <Animated.View style={namesStyle}>
-          <Text style={[styles.callLine, { color: palette.mute }]}>
-            {demo.voices.map((voice) => `${localizeVoiceName(voice.name, language)} ${voice.words}`).join(' · ')}
-          </Text>
-          <Text style={[styles.four, { color: palette.mute }]}>{t('UI.onboarding.fourReaders')}</Text>
-        </Animated.View>
-      </View>
-    </View>
-  );
-}
-
-export function HabitDemo({ active, token, palette, t }: DemoProps) {
+export function HabitDemo({ active, token, palette, isDarkMode, language, t }: DemoProps) {
   const reduced = useReducedMotion();
   const demo = useMemo(() => getHabitDemo(), []);
-  const pct = demo.plan.total > 0 ? demo.plan.done / demo.plan.total : 0;
 
   useEffect(() => {
     if (!active || reduced) return;
@@ -338,7 +392,15 @@ export function HabitDemo({ active, token, palette, t }: DemoProps) {
   }, [active, reduced, token]);
 
   return (
-    <View style={styles.demoStack}>
+    <View style={[styles.fillBleed, styles.habitPad]} pointerEvents="none">
+      <View style={styles.habitHeat}>
+        <StoryHeatmap
+          completedIds={demo.completedIds}
+          currentId={null}
+          isDarkMode={isDarkMode}
+          language={language}
+        />
+      </View>
       <View style={styles.habitRings}>
         <StatRing
           size={72}
@@ -380,206 +442,253 @@ export function HabitDemo({ active, token, palette, t }: DemoProps) {
           replayToken={active ? token + 2 : 0}
         />
       </View>
-      <View style={[styles.planCard, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.callMeta, { color: palette.mute }]}>{t('UI.thread.yourPlan')}</Text>
-          <Text style={[styles.callTitle, { color: palette.ink }]}>{demo.plan.title}</Text>
-          <Text style={[styles.callMeta, { color: palette.mute }]}>
-            {demo.plan.done}/{demo.plan.total} {t('UI.thread.stories').toLowerCase()}
-          </Text>
+    </View>
+  );
+}
+
+function CastCardFace({
+  demo,
+  language,
+  t,
+  style,
+}: {
+  demo: CastDemoData;
+  language: string;
+  t: DemoProps['t'];
+  style?: object;
+}) {
+  const lang = language.startsWith('fr') ? 'fr' : 'en';
+  const field = roleFill(demo.color);
+  const rankLabel = `${inkLabel(demo.color as Ink, lang)} · ${String(demo.rank).padStart(3, '0')} ${t('UI.thread.of')} ${demo.total}`;
+  const nameSize = demo.name.length > 14 ? 32 : 40;
+
+  return (
+    <View style={[styles.castCard, { backgroundColor: field }, style]}>
+      <Text style={[styles.castRank, { color: CREAM }]} numberOfLines={1}>
+        {rankLabel}
+      </Text>
+      <Text
+        style={[
+          styles.castName,
+          {
+            color: CREAM,
+            fontSize: nameSize,
+            lineHeight: Math.round(nameSize * 1.15),
+          },
+        ]}
+        numberOfLines={1}
+      >
+        {localizeVoiceName(demo.name, language)}
+      </Text>
+      <Text style={[styles.castSentence, { color: CREAM }]} numberOfLines={2}>
+        {t('UI.thread.castSentence', {
+          words: formatCount(demo.words),
+          turns: formatCount(demo.turns),
+          stories: demo.storyCount,
+        })}
+      </Text>
+      {demo.bookIds.length > 0 ? (
+        <View style={styles.books}>
+          {demo.bookIds.slice(0, 5).map((id) => (
+            <Text key={id} style={[styles.bookChip, { color: CREAM, borderColor: 'rgba(242,234,224,0.35)' }]}>
+              {localizeBookName(id, bookNameForId(id), language).toUpperCase()}
+            </Text>
+          ))}
         </View>
-        <StatRing
-          size={64}
-          strokeWidth={5}
-          progress={pct}
-          centerPrimary={`${Math.round(pct * 100)}%`}
-          centerSecondary={`${demo.plan.done}/${demo.plan.total}`}
-          trackColor={palette.hair}
-          accentColor={palette.acc}
-          centerPrimaryColor={palette.ink}
-          centerSecondaryColor={palette.mute}
-          label=""
-          replayToken={active ? token + 3 : 0}
-        />
-      </View>
-      <Animated.View entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 4)} style={styles.habitQuestion}>
-        <Text style={[styles.kicker, { color: palette.mute }]}>{t('UI.thread.talkAboutIt')}</Text>
-        <Text style={[styles.habitQuestionText, { color: palette.ink }]}>{t('UI.onboarding.sampleQuestion')}</Text>
+      ) : null}
+    </View>
+  );
+}
+
+export function CastDemo({ active, token, language, t }: DemoProps) {
+  const reduced = useReducedMotion();
+  const jesus = useMemo(() => getCastDemo('Jesus'), []);
+  const samuel = useMemo(() => getCastDemo('Samuel'), []);
+  const david = useMemo(() => getCastDemo('David'), []);
+  const fan = useSharedValue(reduced ? 1 : 0);
+
+  useEffect(() => {
+    if (!active) return;
+    if (reduced) {
+      fan.value = 1;
+      return;
+    }
+    fan.value = 0;
+    fan.value = withDelay(80, spring(1));
+    const timer = setTimeout(() => void hapticImpactLight(), DUR.base);
+    return () => clearTimeout(timer);
+  }, [active, fan, reduced, token]);
+
+  const leftStyle = useAnimatedStyle(() => ({
+    opacity: 0.55 + fan.value * 0.35,
+    transform: [
+      { translateX: -28 * fan.value },
+      { translateY: 18 * fan.value },
+      { rotate: `${-8 * fan.value}deg` },
+      { scale: 0.92 + fan.value * 0.02 },
+    ],
+  }));
+  const rightStyle = useAnimatedStyle(() => ({
+    opacity: 0.55 + fan.value * 0.35,
+    transform: [
+      { translateX: 28 * fan.value },
+      { translateY: 18 * fan.value },
+      { rotate: `${8 * fan.value}deg` },
+      { scale: 0.92 + fan.value * 0.02 },
+    ],
+  }));
+  const topStyle = useAnimatedStyle(() => ({
+    opacity: fan.value,
+    transform: [{ translateY: (1 - fan.value) * 16 }, { scale: 0.96 + fan.value * 0.04 }],
+  }));
+
+  if (!jesus || !samuel || !david) return null;
+
+  return (
+    <View style={[styles.fillBleed, styles.fanStage]} pointerEvents="none">
+      <Animated.View style={[styles.fanCard, styles.fanBack, leftStyle]}>
+        <CastCardFace demo={jesus} language={language} t={t} />
+      </Animated.View>
+      <Animated.View style={[styles.fanCard, styles.fanBack, rightStyle]}>
+        <CastCardFace demo={samuel} language={language} t={t} />
+      </Animated.View>
+      <Animated.View style={[styles.fanCard, styles.fanFront, topStyle]}>
+        <CastCardFace demo={david} language={language} t={t} />
       </Animated.View>
     </View>
   );
 }
 
-export function CastDemo({ active, token, palette, language, t }: DemoProps) {
+export function KeepDemo({ active, token, palette, isDarkMode, language }: DemoProps) {
   const reduced = useReducedMotion();
-  const demo = useMemo(() => getCastDemo(), []);
+  const items = useMemo(() => getKeepDemoItems(), []);
+  const block = items[0]?.block;
+  const pop = useSharedValue(reduced ? 1 : 0);
 
   useEffect(() => {
-    if (!active || reduced || !demo?.longestSpeech) return;
-    const timer = setTimeout(() => void hapticImpactLight(), STAGGER.bar * 4);
+    if (!active) return;
+    if (reduced) {
+      pop.value = 1;
+      return;
+    }
+    pop.value = 0;
+    pop.value = withDelay(DUR.quick, spring(1));
+    const timer = setTimeout(() => void hapticImpactLight(), DUR.base);
     return () => clearTimeout(timer);
-  }, [active, demo, reduced, token]);
+  }, [active, pop, reduced, token]);
 
-  if (!demo) return null;
-  const field = roleFill(demo.color);
-  const lang = language.startsWith('fr') ? 'fr' : 'en';
-  const rankLabel = `${inkLabel(demo.color as Ink, lang)} · ${String(demo.rank).padStart(3, '0')} ${t('UI.thread.of')} ${demo.total}`;
-  const partnerFill = roleFill(demo.topPartner?.color || 'blue');
+  const popStyle = useAnimatedStyle(() => ({
+    opacity: pop.value,
+    transform: [{ scale: 0.92 + pop.value * 0.08 }, { translateY: (1 - pop.value) * 12 }],
+  }));
+
+  if (!block) return null;
 
   return (
-    <View style={[styles.castField, { backgroundColor: field }]}>
-      <ScrollView
-        pointerEvents="none"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.castPad}
-      >
-        <Text style={[styles.castRank, { color: CREAM }]}>{rankLabel}</Text>
-        <Text style={[styles.castName, { color: CREAM }]}>{localizeVoiceName(demo.name, language)}</Text>
-        <Text style={[styles.castSentence, { color: CREAM }]}>
-          {t('UI.thread.castSentence', {
-            words: formatCount(demo.words),
-            turns: formatCount(demo.turns),
-            stories: demo.storyCount,
-          })}
-        </Text>
-        {demo.topPartner && (
-          <Animated.View
-            key={`${token}-partner`}
-            entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 2)}
-            style={styles.castSpoke}
-          >
-            <Text style={[styles.castKicker, { color: CREAM }]}>{t('UI.thread.spokeWith')}</Text>
-            <View style={styles.castSpokeRow}>
-              <View style={[styles.castIcon, { backgroundColor: partnerFill, borderColor: CREAM }]}>
-                <Ionicons name="person" size={12} color={CREAM} />
-              </View>
-              <Text style={[styles.castSpokeName, { color: CREAM }]}>
-                {localizeVoiceName(demo.topPartner.name, language)}
-              </Text>
-              <Text style={[styles.castSpokeCount, { color: CREAM }]}>{demo.topPartner.count}</Text>
-            </View>
-          </Animated.View>
-        )}
-        {demo.longestSpeech && (
-          <Animated.View
-            key={`${token}-speech`}
-            entering={entering(reduced || !active, reduced ? 0 : STAGGER.bar * 4)}
-            style={styles.castPull}
-          >
-            <Text style={[styles.castKicker, { color: CREAM }]}>{t('UI.thread.longestSpeech')}</Text>
-            <Text style={[styles.castPullBody, { color: CREAM }]}>
-              {formatCount(demo.longestSpeech.words)} {t('UI.thread.words').toLowerCase()}
-            </Text>
-            <Text style={[styles.castPullStory, { color: CREAM }]}>
-              {localizeStoryTitle(demo.longestSpeech.storyId, demo.longestSpeech.storyTitle, language)}
-            </Text>
-          </Animated.View>
-        )}
-      </ScrollView>
+    <View style={[styles.fillBleed, styles.keepPad]} pointerEvents="none">
+      <View style={styles.keepBackdrop}>
+        <DemoBubble
+          block={block}
+          index={0}
+          reduced={reduced || !active}
+          isDarkMode={isDarkMode}
+          language={language}
+          palette={palette}
+        />
+      </View>
+      <Animated.View style={[styles.keepModalWrap, popStyle]}>
+        <EmojiPicker
+          onEmojiSelect={() => {}}
+          onNoteSelect={() => {}}
+          onShare={() => {}}
+          onCopy={() => {}}
+          onClose={() => {}}
+          position={{ x: 0, y: 0 }}
+          existingEmoji="🙏"
+        />
+      </Animated.View>
     </View>
   );
 }
 
-export function KeepDemo({ active, token, palette, t }: DemoProps) {
-  const reduced = useReducedMotion();
-  const items = useMemo(() => getKeepDemoItems(), []);
-  if (!items.length) return null;
-  const info = titles[items[0].storyId];
-
-  return (
-    <ScrollView
-      style={styles.demoStack}
-      contentContainerStyle={{ gap: 4, paddingBottom: 8 }}
-      showsVerticalScrollIndicator={false}
-      pointerEvents="none"
-    >
-      {items.map((item, index) => (
-        <Animated.View
-          key={`${token}-keep-${index}`}
-          entering={entering(reduced || !active, reduced ? 0 : 80 * index)}
-          style={styles.savedCard}
-        >
-          <SavedBubble
-            block={item.block}
-            index={index}
-            segmentId={item.storyId}
-            citationBook={info?.book?.[0]}
-            storyTitle={info?.title}
-            emoji={item.emoji}
-          />
-          {item.noteKey ? (
-            <Text style={[styles.savedNote, { color: palette.mute, borderTopColor: palette.hair }]}>
-              {t(`UI.onboarding.${item.noteKey}`)}
-            </Text>
-          ) : null}
-        </Animated.View>
-      ))}
-    </ScrollView>
-  );
-}
-
 const styles = StyleSheet.create({
-  card: { borderWidth: 1, borderRadius: 14, padding: 12, overflow: 'hidden' },
-  demoStack: { width: '100%' },
-  sectionRule: { height: StyleSheet.hairlineWidth, marginVertical: 14, opacity: 0.9 },
-  kicker: { fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', fontWeight: '600' },
-  habitRings: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  planCard: {
-    marginTop: 14,
-    borderWidth: 1,
+  fillBleed: { flex: 1, width: '100%' },
+  threadClip: { overflow: 'hidden', paddingTop: 8 },
+  voicesPad: { paddingHorizontal: 16, paddingTop: 4 },
+  legendBlock: { gap: 6 },
+  sectionRule: { height: StyleSheet.hairlineWidth, marginVertical: 10, opacity: 0.9 },
+  exchangeClip: { flex: 1, overflow: 'hidden' },
+  exchange: { gap: 8, paddingBottom: 8 },
+  partsPad: { paddingHorizontal: 28, justifyContent: 'center' },
+  partsStack: { gap: 14 },
+  partRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  partBox: {
+    width: 48,
+    height: 48,
     borderRadius: 12,
-    paddingVertical: 10,
-    paddingLeft: 12,
-    paddingRight: 6,
+    borderTopLeftRadius: 4,
+    borderWidth: 1.5,
+  },
+  partText: { flex: 1, gap: 2 },
+  partLabel: { fontSize: 16, fontWeight: '600' },
+  partBody: { fontSize: 13, lineHeight: 18 },
+  habitPad: { paddingTop: 4, justifyContent: 'flex-end', paddingBottom: 8 },
+  habitHeat: { flex: 1, overflow: 'hidden', minHeight: 0 },
+  habitRings: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: 16,
+    marginTop: 10,
+  },
+  fanStage: {
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
   },
-  habitQuestion: {
-    marginTop: 14,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(0,0,0,0.08)',
-    gap: 4,
+  fanCard: {
+    position: 'absolute',
+    width: '86%',
+    maxWidth: 360,
   },
-  habitQuestionText: { fontSize: 14, lineHeight: 20, fontStyle: 'italic' },
-  castField: { flex: 1, borderRadius: 16, overflow: 'hidden', minHeight: 280 },
-  castPad: { padding: 16, paddingBottom: 20 },
+  fanBack: { zIndex: 1 },
+  fanFront: { zIndex: 3 },
+  castCard: {
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 18,
+    minHeight: 168,
+    overflow: 'hidden',
+  },
   castRank: { fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.85 },
   castName: {
-    fontSize: 40,
     fontWeight: '600',
     letterSpacing: -1,
-    marginTop: 6,
+    marginTop: 4,
     fontFamily: Platform.OS === 'ios' ? 'Didot' : 'serif',
     ...Platform.select({ android: { includeFontPadding: false }, default: {} }),
   },
-  castSentence: { fontSize: 13, lineHeight: 18, marginTop: 8, opacity: 0.92 },
-  castKicker: { fontSize: 8, letterSpacing: 1.6, textTransform: 'uppercase', opacity: 0.75, marginBottom: 6 },
-  castSpoke: { marginTop: 16 },
-  castSpokeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  castIcon: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
+  castSentence: { fontSize: 13, lineHeight: 18, marginTop: 6, opacity: 0.92 },
+  books: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
+  bookChip: {
+    fontSize: 9,
+    letterSpacing: 0.8,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    overflow: 'hidden',
   },
-  castSpokeName: { flex: 1, fontSize: 13 },
-  castSpokeCount: { fontSize: 10, opacity: 0.85, fontVariant: ['tabular-nums'] },
-  castPull: {
-    marginTop: 14,
-    paddingTop: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(242,234,224,0.28)',
+  keepPad: { paddingHorizontal: 20, justifyContent: 'center', alignItems: 'center' },
+  keepBackdrop: { width: '100%', opacity: 0.55, marginBottom: 8 },
+  keepModalWrap: {
+    position: 'relative',
+    width: '100%',
+    maxWidth: 320,
+    alignSelf: 'center',
+    height: 160,
   },
-  castPullBody: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-  },
-  castPullStory: { fontSize: 12, lineHeight: 16, opacity: 0.85, marginTop: 2 },
   storyRow: { flexDirection: 'row', alignItems: 'center' },
   bead: {
     position: 'absolute',
@@ -587,32 +696,11 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     borderWidth: 1.5,
-    top: ROW_HEIGHT.story / 2 - 4,
   },
+  divisionTitle: { fontSize: 15, fontWeight: '600' },
   storyTitle: { fontSize: 14, fontWeight: '600' },
   storyRef: { fontSize: 10, letterSpacing: 0.6, marginTop: 2, textTransform: 'uppercase' },
-  segmentTitle: { fontSize: 22, fontWeight: '600', letterSpacing: -0.3 },
-  segmentMeta: { fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', marginTop: 6 },
-  pickPrompt: { fontSize: 14, lineHeight: 20, marginTop: 12, marginBottom: 2 },
-  callWrap: { borderWidth: 1, borderRadius: 12, marginTop: 8, paddingBottom: 12 },
-  callTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-  },
-  boxes: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  box: {
-    width: 42,
-    height: 42,
-    borderRadius: 11,
-    borderTopLeftRadius: 4,
-    borderWidth: 1,
-  },
-  voiceCount: { fontSize: 12, letterSpacing: 1.1, fontWeight: '700' },
-  exchange: { gap: 8 },
-  bubbleStack: { maxWidth: '84%' },
+  bubbleStack: { maxWidth: '88%' },
   who: {
     fontSize: 9,
     letterSpacing: 1.4,
@@ -631,17 +719,4 @@ const styles = StyleSheet.create({
   swatch: { width: 13, height: 13, borderRadius: 5, borderTopLeftRadius: 2, borderWidth: 1 },
   legendLabel: { fontSize: 13, fontWeight: '600', minWidth: 108 },
   legendBody: { flex: 1, fontSize: 12 },
-  callTitle: { fontSize: 15, fontWeight: '600' },
-  callMeta: { fontSize: 11, marginTop: 4 },
-  callLine: { fontSize: 11, marginTop: 4, lineHeight: 16, paddingHorizontal: 14 },
-  four: { fontSize: 10, textAlign: 'center', marginTop: 8 },
-  savedCard: { paddingBottom: 6 },
-  savedNote: {
-    marginTop: 8,
-    marginHorizontal: 8,
-    paddingTop: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    fontSize: 14,
-    lineHeight: 20,
-  },
 });
