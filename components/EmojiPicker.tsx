@@ -21,6 +21,7 @@ interface EmojiPickerProps {
   onClose: () => void;
   position?: { x: number; y: number };
   onLayout?: (width: number, height: number) => void;
+  existingEmoji?: string | null;
   existingNote?: string | null;
 }
 
@@ -34,6 +35,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
   onClose, 
   position = { x: screenWidth / 2, y: screenHeight / 2 },
   onLayout,
+  existingEmoji,
   existingNote
 }) => {
   const { t } = useTranslation();
@@ -89,7 +91,8 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({
               key={index}
               style={[
                 styles.emojiButton,
-                { backgroundColor: `${item.color}15` }
+                { backgroundColor: `${item.color}15` },
+                existingEmoji === item.emoji && styles.emojiButtonSelected,
               ]}
               onPress={() => handleEmojiPress(item.emoji)}
               activeOpacity={0.7}
@@ -185,7 +188,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.4)',
-    // Add subtle shadow
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -194,6 +196,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+  },
+  emojiButtonSelected: {
+    borderColor: 'rgba(0, 0, 0, 0.28)',
+    borderWidth: 2,
   },
   emojiText: {
     fontSize: 24,

@@ -1,12 +1,11 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import logger from '@/utils/logger';
-import { View, Pressable, Text, StyleSheet, Modal, Platform, TouchableOpacity, useWindowDimensions, Alert } from 'react-native';
-import { LongPressGestureHandler, State, Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { runOnJS } from 'react-native-reanimated';
+import { View, Pressable, Text, StyleSheet, Modal, Platform, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { BibleBlock } from '@/types';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
-import { addEmoji, deleteEmoji, getEmoji } from '@/api/sqlite';
+import { addEmoji, deleteEmoji } from '@/api/sqlite';
 import EmojiPicker from './EmojiPicker';
 import NoteInput from './NoteInput';
 import ShareCard from '@/components/thread/ShareCard';
@@ -33,6 +32,9 @@ const POSITIONING_CONSTANTS = {
   MIN_SCREEN_WIDTH: 320, // Minimum expected screen width
   MIN_SCREEN_HEIGHT: 400, // Minimum expected screen height
 } as const;
+
+// iOS drops touches if one Modal is swapped for another in the same tick.
+const MODAL_HANDOFF_MS = 80;
 
 // Reaction badge sits on the bubble's top border: half above, half below.
 const REACTION_EMOJI_SIZE = 22;
@@ -82,9 +84,8 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   
   // CRITICAL: Track if component is mounted to prevent state updates after unmount
   const isMountedRef = useRef(true);
-  
-  // CRITICAL: Track gesture state to prevent multiple simultaneous gestures
-  const gestureInProgressRef = useRef(false);
+  const noteOpenedFromPickerRef = useRef(false);
+  const modalHandoffTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Platform-specific gesture configuration
   const gestureConfig = getPlatformGestureConfig();
@@ -102,6 +103,9 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
+      if (modalHandoffTimerRef.current) {
+        clearTimeout(modalHandoffTimerRef.current);
+      }
     };
   }, []);
 
@@ -114,14 +118,28 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     setExistingNote(null);
     setShowPicker(false);
     setShowNoteInput(false);
+    noteOpenedFromPickerRef.current = false;
     
     logger.info('🔍 [EmojiHandler] Reset state for new segment:', { segmentId: state.segmentId, blockId });
   }, [state.segmentId]);
 
+  const clearModalHandoff = useCallback(() => {
+    if (modalHandoffTimerRef.current) {
+      clearTimeout(modalHandoffTimerRef.current);
+      modalHandoffTimerRef.current = null;
+    }
+  }, []);
+
+  const afterModalHandoff = useCallback((fn: () => void) => {
+    clearModalHandoff();
+    modalHandoffTimerRef.current = setTimeout(() => {
+      modalHandoffTimerRef.current = null;
+      if (isMountedRef.current) fn();
+    }, MODAL_HANDOFF_MS);
+  }, [clearModalHandoff]);
+
   // CRITICAL: Enhanced position calculation with comprehensive validation
   const getCenteredPosition = useCallback((absoluteY: number) => {
-    'worklet';
-    
     // CRITICAL: Validate input parameters
     if (typeof absoluteY !== 'number' || isNaN(absoluteY)) {
       logger.error('🔍 [EmojiHandler] ERROR: Invalid absoluteY:', absoluteY);
@@ -258,106 +276,86 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     }
   }, [pickerWidth, showPicker, screenWidth, screenHeight, pickerPosition.y]);
 
-  // CRITICAL: Enhanced emoji selection with validation
+  const openPicker = useCallback((absoluteY?: number) => {
+    if (!isMountedRef.current) return;
+
+    const y = typeof absoluteY === 'number' && !isNaN(absoluteY)
+      ? absoluteY
+      : screenHeight / 2;
+    setPickerPosition(getCenteredPosition(y));
+    setShowNoteInput(false);
+    noteOpenedFromPickerRef.current = false;
+
+    // Present after the originating gesture finishes so RNGH can finalize,
+    // and so this bubble can be selected again after cancel.
+    afterModalHandoff(() => setShowPicker(true));
+
+    if (onLongPress) {
+      onLongPress(block, blockIndex);
+    }
+  }, [afterModalHandoff, block, blockIndex, getCenteredPosition, onLongPress, screenHeight]);
+
+  const handlePickerClose = useCallback(() => {
+    if (!isMountedRef.current) return;
+    clearModalHandoff();
+    noteOpenedFromPickerRef.current = false;
+    setShowPicker(false);
+  }, [clearModalHandoff]);
+
+  const removeEmoji = useCallback(async () => {
+    if (!state.segmentId || !blockId) return;
+
+    const db = await import('@/api/database-manager').then(m => m.databaseManager.getDatabase());
+    if (existingNote && existingNote.trim().length > 0) {
+      await db.runAsync(
+        `UPDATE emojis SET emoji = NULL WHERE segmentID = ? AND blockID = ?`,
+        state.segmentId,
+        blockId
+      );
+    } else {
+      await deleteEmoji(state.segmentId, blockId);
+    }
+
+    if (isMountedRef.current) {
+      setExistingEmoji(null);
+      setShowPicker(false);
+      updateEmojiActions(state.emojiActions + 1);
+    }
+  }, [blockId, existingNote, state.emojiActions, state.segmentId, updateEmojiActions]);
+
   const handleEmojiSelect = useCallback(async (emoji: string) => {
     if (!isMountedRef.current) return;
-    
+
     try {
       if (!state.segmentId || !blockId || !emoji) {
         logger.error('🔍 [EmojiHandler] Missing required data for emoji selection:', { segmentId: state.segmentId, blockId, emoji });
         return;
       }
-      
+
+      if (emoji === existingEmoji) {
+        await removeEmoji();
+        return;
+      }
+
       await addEmoji(state.segmentId, blockId, block, emoji);
-      
+
       if (isMountedRef.current) {
         setExistingEmoji(emoji);
         setShowPicker(false);
-        
-        // Update context to trigger re-renders
         updateEmojiActions(state.emojiActions + 1);
       }
     } catch (error) {
       logger.error('🔍 [EmojiHandler] Error adding emoji:', error);
     }
-  }, [state.segmentId, blockId, block, state.emojiActions, updateEmojiActions]);
+  }, [block, blockId, existingEmoji, removeEmoji, state.emojiActions, state.segmentId, updateEmojiActions]);
 
-  // CRITICAL: Enhanced emoji deletion with confirmation and note preservation
-  const handleEmojiDelete = useCallback(async () => {
-    if (!isMountedRef.current) return;
-    
-    try {
-      if (!state.segmentId || !blockId) {
-        logger.error('🔍 [EmojiHandler] Missing required data for emoji deletion:', { segmentId: state.segmentId, blockId });
-        return;
-      }
-      
-      // Show confirmation alert
-      Alert.alert(
-        'Remove Emoji',
-        existingNote 
-          ? 'Remove this emoji? Your note will be preserved.' 
-          : 'Remove this emoji reaction?',
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel',
-          },
-          {
-            text: 'Remove',
-            style: 'destructive',
-            onPress: async () => {
-              try {
-                const db = await import('@/api/database-manager').then(m => m.databaseManager.getDatabase());
-                
-                // If there's a note, keep the reaction but remove the emoji
-                if (existingNote && existingNote.trim().length > 0) {
-                  await db.runAsync(`
-                    UPDATE emojis 
-                    SET emoji = NULL 
-                    WHERE segmentID = ? AND blockID = ?
-                  `, state.segmentId, blockId);
-                } else {
-                  // No note exists, delete the entire reaction
-                  await deleteEmoji(state.segmentId, blockId);
-                }
-                
-                if (isMountedRef.current) {
-                  setExistingEmoji(null);
-                  
-                  // Update context to trigger re-renders
-                  updateEmojiActions(state.emojiActions + 1);
-                }
-              } catch (error) {
-                logger.error('🔍 [EmojiHandler] Error deleting emoji:', error);
-              }
-            },
-          },
-        ],
-        { cancelable: true }
-      );
-    } catch (error) {
-      logger.error('🔍 [EmojiHandler] Error in handleEmojiDelete:', error);
-    }
-  }, [state.segmentId, blockId, existingNote, state.emojiActions, updateEmojiActions]);
-
-  // CRITICAL: Enhanced picker close with validation
-  const handlePickerClose = useCallback(() => {
-    if (!isMountedRef.current) return;
-    
-    setShowPicker(false);
-    gestureInProgressRef.current = false;
-  }, []);
-
-  // Handle note selection - show note input
   const handleNoteSelect = useCallback(() => {
     if (!isMountedRef.current) return;
-    
+    noteOpenedFromPickerRef.current = true;
     setShowPicker(false);
-    setShowNoteInput(true);
-  }, []);
+    afterModalHandoff(() => setShowNoteInput(true));
+  }, [afterModalHandoff]);
 
-  // Save note (with or without emoji)
   const handleNoteSave = useCallback(async (noteText: string) => {
     if (!isMountedRef.current) return;
     
@@ -369,7 +367,6 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
       
       const db = await import('@/api/database-manager').then(m => m.databaseManager.getDatabase());
       
-      // Save note with existing emoji (or null if no emoji)
       await db.runAsync(`
         INSERT OR REPLACE INTO emojis (
           segmentID,
@@ -381,10 +378,9 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
       `, state.segmentId, blockId, JSON.stringify(block), existingEmoji, noteText);
       
       if (isMountedRef.current) {
+        noteOpenedFromPickerRef.current = false;
         setExistingNote(noteText);
         setShowNoteInput(false);
-        
-        // Update context to trigger re-renders
         updateEmojiActions(state.emojiActions + 1);
       }
     } catch (error) {
@@ -392,22 +388,27 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
     }
   }, [state.segmentId, blockId, block, existingEmoji, state.emojiActions, updateEmojiActions]);
 
-  // Cancel note input
   const handleNoteCancel = useCallback(() => {
     if (!isMountedRef.current) return;
-    
+
+    const reopenPicker = noteOpenedFromPickerRef.current;
+    noteOpenedFromPickerRef.current = false;
     setShowNoteInput(false);
-  }, []);
+
+    if (reopenPicker) {
+      afterModalHandoff(() => setShowPicker(true));
+    }
+  }, [afterModalHandoff]);
 
   const handleCopy = useCallback(async () => {
     try {
       await hapticImpactMedium();
       await copyTurn(state.segmentId || '', block);
-      setShowPicker(false);
+      handlePickerClose();
     } catch (error) {
       logger.error('Copy turn failed:', error);
     }
-  }, [block, state.segmentId]);
+  }, [block, handlePickerClose, state.segmentId]);
 
   const handleShare = useCallback(async () => {
     try {
@@ -427,74 +428,32 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         speaker: localizeVoiceName(block.source?.sourceName || '', language),
         imageUri,
       });
-      setShowPicker(false);
+      handlePickerClose();
     } catch (error) {
       logger.error('Share turn failed:', error);
     }
-  }, [block, language, state.segmentId]);
+  }, [block, handlePickerClose, language, state.segmentId]);
 
-  // CRITICAL: Enhanced gesture handler with comprehensive validation
-  const handleGestureTrigger = useCallback((event: any, gestureType: 'doubleTap' | 'longPress') => {
-    'worklet';
-    
-    // CRITICAL: Validate event object
-    if (!event || typeof event.absoluteY !== 'number' || isNaN(event.absoluteY)) {
-      logger.error('🔍 [EmojiHandler] ERROR: Invalid gesture event:', event);
-      return;
-    }
-    
-    // CRITICAL: Prevent multiple simultaneous gestures
-    if (gestureInProgressRef.current) {
-      return;
-    }
-    
-    // CRITICAL: Calculate position with validation
-    const position = getCenteredPosition(event.absoluteY);
-    
-    // CRITICAL: Set gesture in progress flag
-    gestureInProgressRef.current = true;
-    
-    // CRITICAL: Update state with validation
-    runOnJS(setShowPicker)(true);
-    runOnJS(setPickerPosition)(position);
-    
-    // CRITICAL: Call parent's onLongPress if provided
-    if (onLongPress) {
-      runOnJS(onLongPress)(block, blockIndex);
-    }
-  }, [getCenteredPosition, onLongPress, block, blockIndex]);
-
-  // CRITICAL: Create double tap gesture with platform-specific optimization
-  const doubleTapGesture = Gesture.Tap()
-    .numberOfTaps(2)
-    .maxDistance(gestureConfig.maxDistance)
-    .onStart((event) => {
-      handleGestureTrigger(event, 'doubleTap');
-    });
-
-  // CRITICAL: Create long press gesture with platform-specific optimization
-  const longPressGesture = Gesture.LongPress()
-    .minDuration(gestureConfig.longPressDuration)
-    .maxDistance(gestureConfig.maxDistance)
-    .onStart((event) => {
-      handleGestureTrigger(event, 'longPress');
-    });
-
-  // CRITICAL: Combine gestures with platform-specific timeout
-  const gesture = Gesture.Race(doubleTapGesture, longPressGesture);
-
-  // CRITICAL: Reset gesture state after timeout
-  useEffect(() => {
-    if (gestureInProgressRef.current) {
-      const timeout = setTimeout(() => {
-        if (isMountedRef.current) {
-          gestureInProgressRef.current = false;
-        }
-      }, gestureConfig.gestureTimeout);
-      
-      return () => clearTimeout(timeout);
-    }
-  }, [gestureInProgressRef.current, gestureConfig.gestureTimeout]);
+  const gesture = useMemo(
+    () =>
+      Gesture.Race(
+        Gesture.Tap()
+          .numberOfTaps(2)
+          .maxDistance(gestureConfig.maxDistance)
+          .runOnJS(true)
+          .onStart((event) => {
+            openPicker(event.absoluteY);
+          }),
+        Gesture.LongPress()
+          .minDuration(gestureConfig.longPressDuration)
+          .maxDistance(gestureConfig.maxDistance)
+          .runOnJS(true)
+          .onStart((event) => {
+            openPicker(event.absoluteY);
+          })
+      ),
+    [gestureConfig.longPressDuration, gestureConfig.maxDistance, openPicker]
+  );
 
   return (
     <View style={styles.container}>
@@ -511,7 +470,12 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
       {(existingEmoji || existingNote) && (
         <View style={[styles.reactionContainer, { top: REACTION_TOP_OFFSET }, emojiAlignment]}>
           {existingEmoji && (
-            <Pressable onPress={handleEmojiDelete}>
+            <Pressable
+              onPress={() => openPicker()}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Change reaction"
+            >
               <Text
                 allowFontScaling={false}
                 style={styles.reactionText}
@@ -539,22 +503,27 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         visible={showPicker}
         transparent={true}
         animationType="none"
+        presentationStyle="overFullScreen"
         onRequestClose={handlePickerClose}
       >
-        <EmojiPicker
-          onEmojiSelect={handleEmojiSelect}
-          onNoteSelect={handleNoteSelect}
-          onShare={handleShare}
-          onCopy={handleCopy}
-          onClose={handlePickerClose}
-          position={pickerPosition}
-          existingNote={existingNote}
-          onLayout={(width, height) => {
-            if (isMountedRef.current && width > 0) {
-              setPickerWidth(width);
-            }
-          }}
-        />
+        <View style={styles.pickerRoot}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={handlePickerClose} />
+          <EmojiPicker
+            onEmojiSelect={handleEmojiSelect}
+            onNoteSelect={handleNoteSelect}
+            onShare={handleShare}
+            onCopy={handleCopy}
+            onClose={handlePickerClose}
+            position={pickerPosition}
+            existingEmoji={existingEmoji}
+            existingNote={existingNote}
+            onLayout={(width, height) => {
+              if (isMountedRef.current && width > 0) {
+                setPickerWidth(width);
+              }
+            }}
+          />
+        </View>
       </Modal>
 
       {/* Modal for note input */}
@@ -562,6 +531,7 @@ const EmojiHandler: React.FC<EmojiHandlerProps> = ({
         visible={showNoteInput}
         transparent={true}
         animationType="slide"
+        presentationStyle="overFullScreen"
         onRequestClose={handleNoteCancel}
       >
         <View style={styles.noteInputContainer}>
@@ -632,6 +602,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: -4000,
     top: 0,
+  },
+  pickerRoot: {
+    flex: 1,
   },
 });
 
