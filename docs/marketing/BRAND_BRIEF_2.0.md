@@ -42,7 +42,7 @@ do — progress, reactions, notes — in a database on the device.
 | | |
 | --- | --- |
 | Stories | 365, plus 66 book introductions |
-| Attributed words | 747,039 across the 365 stories |
+| Attributed words | about 747,000 across the 365 stories — 46% narration, 24% divine, 16% principals, 13% everyone else |
 | Distinct voices | 773 — 4 narration, 5 divine, 90 principals, 674 supporting |
 | Average story | 2,047 words · about 10 minutes read silently, nearer 15 read aloud |
 | Story length range | 2 to 14 minutes; over half fall between 8 and 12 |
@@ -325,7 +325,7 @@ each with the impact it was engineered to produce. Most of them are *removals*.
 **1 · Attribution is the substrate, not a feature.**
 The Bible data itself is attributed word by word to 773 sources. Everything visible — colours, Cast, the
 word mix in You, the conversation graph — is a view onto that one asset. This is why the product cannot be
-imitated with a theme: the work is in the data, and it was done once, exhaustively, across 747,039 words.
+imitated with a theme: the work is in the data, and it was done once, exhaustively, across roughly 747,000 words.
 
 **2 · The layout makes a claim, deliberately.**
 Narration and divine speech read down one side; named principals and everyone else read down the other. The
@@ -379,7 +379,7 @@ overstate it: crash diagnostics go to Sentry, and that is the only thing that le
 **Verified — safe to publish** (read from the shipping data files on 28 August 2026):
 
 - 365 stories; 66 book introductions alongside them
-- 747,039 attributed words across the stories
+- About 747,000 attributed words across the stories: narration 344,331 · divine 182,598 · principals 122,436 · everyone else 97,613
 - 773 distinct voices: 4 narration, 5 divine, 90 principals, 674 supporting
 - Average story 2,047 words; estimated 10 minutes silent, range 2–14 minutes
 - The Narrator 334,842 words in 336 stories · God 140,659 in 186 · Jesus 41,239 in 47 · Moses 30,310 in 33
@@ -401,6 +401,7 @@ overstate it: crash diagnostics go to Sentry, and that is the only thing that le
 - **"Fifteen to twenty minutes per story."** The data says a median of 10 minutes read silently. Read aloud
   with pauses, fifteen is fair; twenty is not. Recommend standardising on *"about fifteen minutes read out
   loud."*
+- **The exact word total.** The shipped voice data sums to 746,978; the design document records 747,039. Say “about 747,000” in public until the 61-word difference is reconciled.
 - Any voice's speaking count quoted in a post — read it off the Cast screen first.
 
 **Never claim:** download, user or church numbers we can't cite; that the app contains the complete text of
@@ -429,7 +430,7 @@ Campaign hook  Look who's talking.
 
 Channel rules: **store** is factual and keyword-honest; **social** leads with the screen and says one thing;
 **partnerships** lead with the room, the clock and the prep time; **press and podcasts** lead with the
-craft — 747,039 words attributed one at a time.
+craft — three quarters of a million words attributed one at a time.
 
 ---
 
