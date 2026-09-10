@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>SourceView Together — the Bible, coloured by who is speaking</title>
+    <meta
+      name="description"
+      content="Every line in the Bible was said by someone. SourceView Together colours all 365 stories by speaker, so a passage can be read out loud in parts. Free, no accounts, works offline."
+    />
+    <meta name="theme-color" content="#F3F5F2" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="The Bible, coloured by who is speaking" />
+    <meta
+      property="og:description"
+      content="365 complete stories. 769 speakers, each in their own colour. Read it out loud in parts."
+    />
+    <meta property="og:image" content="icon.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="icon.png" />
+    <link rel="apple-touch-icon" href="icon.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <a class="brand" href="#top">
+        <img src="icon.png" alt="" width="36" height="36" />
+        <span>SourceView Together</span>
+      </a>
+      <nav>
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#groups">For groups</a>
+        <a class="btn btn-sm" href="#get">Get the app</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <!-- ── hero ─────────────────────────────────────────────────────────── -->
+      <section class="hero">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">Free · no accounts · works offline</p>
+          <h1>Every line in the Bible was said by <em>someone</em>.</h1>
+          <p class="lede">
+            Ordinary Bibles do not tell you who. SourceView Together colours all 365 stories by
+            speaker, so a passage reads as a conversation you can hand out in parts.
+          </p>
+          <div class="cta-row">
+            <a class="btn" href="#get">Download free</a>
+            <a class="btn btn-ghost" href="#how">See how it reads</a>
+          </div>
+        </div>
+
+        <!-- The demo is the argument. Everything else on this page is a footnote
+             to what happens when someone presses "Colour it". -->
+        <figure class="demo reveal" id="demo">
+          <figcaption class="demo-head">
+            <span class="demo-ref">Genesis 3 · New Living Translation</span>
+            <div class="seg" role="group" aria-label="How to display the passage">
+              <button type="button" data-view="wall" class="on">As most Bibles</button>
+              <button type="button" data-view="colour">Colour it</button>
+            </div>
+          </figcaption>
+
+          <div class="demo-body">
+            <p class="wall" id="wall">
+              Then the Lord God called to the man, “Where are you?” He replied, “I heard you
+              walking in the garden, so I hid. I was afraid because I was naked.” “Who told you
+              that you were naked?” the Lord God asked. “Have you eaten from the tree whose fruit
+              I commanded you not to eat?” The man replied, “It was the woman you gave me who
+              gave me the fruit, and I ate it.” Then the Lord God asked the woman, “What have you
+              done?” “The serpent deceived me,” she replied. “That’s why I ate it.”
+            </p>
+
+            <div class="script" id="script" hidden>
+              <div class="bub narr"><b>The Narrator</b>Then the Lord God called to the man,</div>
+              <div class="bub divine"><b>God</b>“Where are you?”</div>
+              <div class="bub chor">
+                <b>Adam</b>“I heard you walking in the garden, so I hid. I was afraid because I
+                was naked.”
+              </div>
+              <div class="bub divine"><b>God</b>“Who told you that you were naked?”</div>
+              <div class="bub chor">
+                <b>Adam</b>“It was the woman you gave me who gave me the fruit, and I ate it.”
+              </div>
+              <div class="bub divine"><b>God</b>“What have you done?”</div>
+              <div class="bub chor"><b>Eve</b>“The serpent deceived me,”</div>
+            </div>
+          </div>
+
+          <div class="demo-foot" id="picker" hidden>
+            <span class="demo-hint">Take a colour, the way a reader does:</span>
+            <div class="chips" role="group" aria-label="Take a colour">
+              <button type="button" data-take="narr">Narrator</button>
+              <button type="button" data-take="divine">God</button>
+              <button type="button" data-take="chor">Everyone else</button>
+              <button type="button" data-take="none" class="on">Show all</button>
+            </div>
+          </div>
+        </figure>
+      </section>
+
+      <!-- ── the four colours ─────────────────────────────────────────────── -->
+      <section id="how" class="band">
+        <div class="wrap">
+          <h2 class="reveal">Four colours, and nothing to learn</h2>
+          <p class="sub reveal">
+            Every word of all 365 stories is attributed to the voice that spoke it. Nobody has to
+            work out whose turn it is — it is the colour in front of them.
+          </p>
+          <div class="grid-4">
+            <div class="role narr reveal">
+              <h3>Narrator</h3>
+              <p>Carries the story between the speeches.</p>
+            </div>
+            <div class="role divine reveal">
+              <h3>God</h3>
+              <p>Divine speech, including the words of Jesus.</p>
+            </div>
+            <div class="role prin reveal">
+              <h3>Named people</h3>
+              <p>Moses, Ruth, Peter, Paul — anyone the text names.</p>
+            </div>
+            <div class="role chor reveal">
+              <h3>Everyone else</h3>
+              <p>Crowds, soldiers, servants, unnamed voices.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── numbers ──────────────────────────────────────────────────────── -->
+      <section class="figures">
+        <div class="wrap grid-4">
+          <div class="fig reveal"><b>365</b><span>complete stories, Genesis to Revelation</span></div>
+          <div class="fig reveal"><b>10 min</b><span>the median story; the longest is 14</span></div>
+          <div class="fig reveal"><b>769</b><span>people who speak, each with their own page</span></div>
+          <div class="fig reveal"><b>100%</b><span>of the text — nothing skipped or abridged</span></div>
+        </div>
+      </section>
+
+      <!-- ── features ─────────────────────────────────────────────────────── -->
+      <section id="features" class="band">
+        <div class="wrap">
+          <h2 class="reveal">What you get</h2>
+          <div class="grid-3">
+            <article class="card reveal">
+              <h3>Stories, not chapters</h3>
+              <p>
+                Chapter numbers were added centuries after the fact and cut stories in half. The
+                Bible is divided into 365 readings that end where the story ends.
+              </p>
+            </article>
+            <article class="card reveal">
+              <h3>Take a colour</h3>
+              <p>
+                Four people, one story, read out loud. Your turns light up and everything else
+                dims, so you always know when to speak.
+              </p>
+            </article>
+            <article class="card reveal">
+              <h3>A page for every voice</h3>
+              <p>
+                Over 700 people speak. See how much each one says, which stories they appear in,
+                and who they spoke with most.
+              </p>
+            </article>
+            <article class="card reveal">
+              <h3>Questions already written</h3>
+              <p>
+                Four discussion questions for every story, written three times over — for a
+                family, a classroom and a small group.
+              </p>
+            </article>
+            <article class="card reveal">
+              <h3>A finish line you'll reach</h3>
+              <p>
+                Plans and challenges from seven stories to all 365, including one shaped around
+                an academic year.
+              </p>
+            </article>
+            <article class="card reveal">
+              <h3>The year on one screen</h3>
+              <p>
+                Every story you finish fills in on a single map of the whole Bible, so progress is
+                something you can look at rather than a number.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── groups ───────────────────────────────────────────────────────── -->
+      <section id="groups" class="band alt">
+        <div class="wrap two">
+          <div class="reveal">
+            <h2>Reading it with a room</h2>
+            <p class="sub" style="margin-left: 0">
+              The app was built for the table and the classroom as much as for one person on a
+              sofa. If you lead a group, the guide tells you everything you need — including what
+              to hand your IT and safeguarding leads.
+            </p>
+            <div class="cta-row">
+              <a class="btn" href="leader-guide-schools.html">The schools guide</a>
+              <a class="btn btn-ghost" href="../print/leader-flyer-schools.html">Printable flyer</a>
+            </div>
+            <p class="caption-inline">
+              Running a YWAM DTS? There is a
+              <a href="../print/leader-flyer-dts.html">one-page sheet for that too</a> — the Old
+              and New Testament plans line up with lecture phase and outreach.
+            </p>
+          </div>
+          <ul class="ticks reveal">
+            <li><b>Nothing to join.</b> No codes, no accounts, no waiting for people to connect.</li>
+            <li><b>No preparation.</b> Open the story, hand out colours, read, discuss.</li>
+            <li><b>A story fits a period.</b> Ten minutes to read, twenty to talk about it.</li>
+            <li><b>Lower social risk.</b> Reading a part is an easier ask than sharing an opinion.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ── honesty ──────────────────────────────────────────────────────── -->
+      <section class="band">
+        <div class="wrap">
+          <h2 class="reveal">What it doesn't do</h2>
+          <p class="sub reveal">
+            Worth knowing before you download it rather than after.
+          </p>
+          <div class="grid-4">
+            <div class="plain reveal">
+              <h3>No audio</h3>
+              <p>You do the reading. That is the format, but it is not a listen-along Bible.</p>
+            </div>
+            <div class="plain reveal">
+              <h3>No accounts, so no sync</h3>
+              <p>Progress and notes stay on the device they were made on.</p>
+            </div>
+            <div class="plain reveal">
+              <h3>English only</h3>
+              <p>French is planned, but is not in the current release.</p>
+            </div>
+            <div class="plain reveal">
+              <h3>One translation</h3>
+              <p>The New Living Translation. It is the text, not a commentary.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── get ──────────────────────────────────────────────────────────── -->
+      <section id="get" class="get">
+        <div class="wrap reveal">
+          <img src="icon.png" alt="" width="88" height="88" />
+          <h2>Open story one tonight.</h2>
+          <p>Free. No account. The English Bible is inside the app, so it works on a plane.</p>
+          <div class="cta-row center">
+            <a class="btn btn-invert" href="#">Download on the App Store</a>
+            <a class="btn btn-invert" href="#">Get it on Google Play</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <div class="rule"><i></i><i></i><i></i><i></i></div>
+        <p>
+          Scripture quotations are taken from the Holy Bible, New Living Translation.
+          <br />SourceView Together · <a href="#top">Back to top</a>
+        </p>
+      </div>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>

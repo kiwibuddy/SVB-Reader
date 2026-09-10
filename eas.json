@@ -74,7 +74,8 @@
     "production": {
       "ios": {
         "appleId": "nathanieldbaldock@gmail.com",
-        "appleTeamId": "J9GABH822W"
+        "appleTeamId": "J9GABH822W",
+        "ascAppId": "6748708102"
       }
     },
     "production-android": {

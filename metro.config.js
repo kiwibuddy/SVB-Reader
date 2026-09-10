@@ -17,6 +17,9 @@ config.resolver.platforms = ['ios', 'android', 'native', 'web'];
 // Block Node.js-only packages from being bundled
 config.resolver.blockList = [
   /node_modules\/sqlite3\/.*/,
+  // Marketing/ holds browser-only ad source (JSX + HTML). Nothing in the app
+  // imports it; blocking it keeps it out of the module graph and the watcher.
+  /Marketing\/.*/,
 ];
 
 // Ensure JSON files are properly resolved

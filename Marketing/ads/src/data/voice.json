@@ -1,0 +1,31 @@
+{
+  "name": "Stephen",
+  "color": "blue",
+  "group": "chorus",
+  "rank": 25,
+  "rankOf": 769,
+  "words": 1281,
+  "turns": 4,
+  "storyCount": 1,
+  "stories": [
+    {
+      "id": "S310",
+      "title": "Multiplication & Martyrdom",
+      "ref": "Act 5:12-8:4",
+      "minutes": 12
+    }
+  ],
+  "partners": [
+    {
+      "name": "Annas the High Priest",
+      "count": 1,
+      "color": "blue"
+    }
+  ],
+  "longestSpeech": {
+    "words": 1294,
+    "storyId": "S310",
+    "storyTitle": "Multiplication & Martyrdom"
+  },
+  "longestExchange": null
+}

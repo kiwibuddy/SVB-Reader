@@ -1,0 +1,363 @@
+/*
+ * Additions for the long-form guide. Loaded after styles.css, which already
+ * carries the palette, the nav, the buttons, the bands, .role, .card, .bub,
+ * .ticks and the reveal-on-scroll behaviour.
+ *
+ * Only the things a document needs and a landing page does not live here.
+ */
+
+.doc-hero {
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: clamp(40px, 6vw, 76px) 24px clamp(32px, 4vw, 56px);
+}
+
+.doc-hero h1 {
+  max-width: 15em;
+}
+
+.doc-hero .lede {
+  max-width: 36em;
+}
+
+/* Anchored contents, so a leader can go straight to the part they were sent
+   the link for. */
+.toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 34px;
+}
+
+.toc a {
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--mute);
+  border: 1px solid var(--hair);
+  background: var(--surf);
+  border-radius: 999px;
+  padding: 8px 15px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.toc a:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+/* Section headings sit left in a document, unlike the centred landing page. */
+.band.doc {
+  text-align: left;
+}
+
+.band.doc .sub {
+  margin-left: 0;
+}
+
+.eyebrow-sm {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--mute);
+  margin: 0 0 14px;
+}
+
+/* ── the three problems ───────────────────────────────────────────────────── */
+
+.prob {
+  border-top: 3px solid var(--divine);
+  padding-top: 18px;
+}
+
+.prob h3 {
+  margin-bottom: 10px;
+}
+
+.prob p {
+  margin: 0;
+  font-size: 15.5px;
+  color: var(--mute);
+}
+
+/* ── numbered steps ───────────────────────────────────────────────────────── */
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 40px;
+  counter-reset: step;
+}
+
+@media (max-width: 900px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+.step {
+  counter-increment: step;
+}
+
+.step::before {
+  content: counter(step);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--acc);
+  color: #fff;
+  font-weight: 800;
+  font-size: 16px;
+  margin-bottom: 14px;
+}
+
+.step h3 {
+  margin-bottom: 8px;
+}
+
+.step p {
+  margin: 0;
+  font-size: 15.5px;
+  color: var(--mute);
+}
+
+/* ── dark pull-quote slab ─────────────────────────────────────────────────── */
+
+.slab {
+  background: var(--narr);
+  color: var(--cream);
+  border-radius: var(--r);
+  padding: clamp(26px, 4vw, 40px);
+  margin-top: 44px;
+}
+
+.slab h3 {
+  color: var(--cream);
+  opacity: 0.62;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.slab p {
+  margin: 0;
+  font-size: clamp(17px, 2vw, 20px);
+  line-height: 1.5;
+}
+
+.slab p strong {
+  color: #fff;
+}
+
+.slab.loud p {
+  font-size: clamp(21px, 3vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.8px;
+  line-height: 1.25;
+}
+
+/* ── reading-time histogram ───────────────────────────────────────────────── */
+
+.hist {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 150px;
+  margin-top: 36px;
+}
+
+.hist div {
+  flex: 1;
+  background: var(--prin);
+  border-radius: 5px 5px 0 0;
+  position: relative;
+  min-height: 3px;
+  transform-origin: bottom;
+  animation: grow 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+.hist div span {
+  position: absolute;
+  bottom: -26px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mute);
+}
+
+.hist-note {
+  margin: 40px 0 0;
+  font-size: 14px;
+  color: var(--mute);
+}
+
+@keyframes grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+/* ── tables ───────────────────────────────────────────────────────────────── */
+
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 36px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15.5px;
+  min-width: 540px;
+}
+
+th {
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--mute);
+  padding: 0 12px 12px 0;
+  border-bottom: 2px solid var(--ink);
+}
+
+td {
+  padding: 14px 12px 14px 0;
+  border-bottom: 1px solid var(--hair);
+  vertical-align: top;
+  color: var(--mute);
+}
+
+td:first-child {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+td.num,
+th.num {
+  text-align: right;
+  padding-right: 0;
+  white-space: nowrap;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+tr.total td {
+  border-top: 2px solid var(--ink);
+  border-bottom: none;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* ── question sets ────────────────────────────────────────────────────────── */
+
+.qset {
+  border-left: 4px solid var(--acc);
+  padding: 2px 0 2px 20px;
+  margin-top: 22px;
+}
+
+.qset b {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--acc);
+  margin-bottom: 7px;
+}
+
+.qset p {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+/* An ordered list that keeps the app's four-question shape visible. */
+.shape {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: q;
+}
+
+.shape li {
+  counter-increment: q;
+  position: relative;
+  padding-left: 40px;
+  margin-bottom: 20px;
+}
+
+.shape li:last-child {
+  margin-bottom: 0;
+}
+
+.shape li::before {
+  content: counter(q);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--acc);
+  color: var(--acc);
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shape b {
+  display: block;
+  font-size: 16.5px;
+  line-height: 1.4;
+}
+
+.shape span {
+  display: block;
+  font-size: 14px;
+  color: var(--mute);
+  margin-top: 4px;
+}
+
+/* ── misc ─────────────────────────────────────────────────────────────────── */
+
+.script.doc-script {
+  max-width: 560px;
+}
+
+.caption {
+  font-size: 13.5px;
+  color: var(--mute);
+  margin: 14px 0 0;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: 18px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--mute);
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hist div {
+    animation: none;
+  }
+}

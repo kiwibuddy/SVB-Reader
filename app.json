@@ -12,7 +12,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sourceview.together",
-      "buildNumber": "25",
+      "buildNumber": "26",
       "icon": {
         "light": "./assets/images/icon.png",
         "dark": "./assets/images/icon-dark.png",
@@ -39,7 +39,7 @@
         "android.permission.POST_NOTIFICATIONS"
       ],
       "package": "com.sourceview.together",
-      "versionCode": 23,
+      "versionCode": 25,
       "allowBackup": true,
       "icon": "./assets/images/icon.png"
     },

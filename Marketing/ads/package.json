@@ -1,0 +1,24 @@
+{
+  "name": "sourceview-ads",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Meta (Facebook/Instagram) ad creative for SourceView Together. Renders to MP4 via Remotion. Not part of the React Native app.",
+  "scripts": {
+    "dev": "remotion studio",
+    "render": "remotion render",
+    "render:all": "node scripts/render-all.mjs",
+    "still": "remotion still"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.409",
+    "@remotion/google-fonts": "4.0.409",
+    "@remotion/media-utils": "4.0.409",
+    "remotion": "4.0.409",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.0",
+    "typescript": "5.7.3"
+  }
+}

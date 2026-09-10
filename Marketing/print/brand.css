@@ -1,0 +1,452 @@
+/*
+ * Shared print styling for the leader-facing documents.
+ *
+ * Colours mirror Marketing/ads/src/theme.ts, which in turn mirrors the app's
+ * constants/Colors.ts. If the app palette changes, change it there first, then
+ * the ads theme, then here — a leader who prints this and then opens the app
+ * should see the same four colours.
+ *
+ * Print from a browser: File > Print > A4, margins None, "Background graphics"
+ * ON. Chrome gives the most reliable result.
+ */
+
+@font-face {
+  font-family: 'ManropeFallback';
+  src: local('Manrope'), local('Manrope-Regular');
+}
+
+:root {
+  --bg: #f3f5f2;
+  --surf: #ffffff;
+  --ink: #101619;
+  --mute: #5e6b70;
+  --hair: #dfe5e0;
+  --narr: #3a4550;
+  --divine: #c0261a;
+  --prin: #0e6b4c;
+  --chor: #1d46a8;
+  --acc: #0e6b4c;
+  --div-fill: #fbedeb;
+  --prin-fill: #e9f4ef;
+  --chor-fill: #ebeffa;
+  --cream: #f2eae0;
+  --thread: #b4c0b8;
+
+  --sans: 'ManropeFallback', Manrope, -apple-system, 'SF Pro Text', 'Helvetica Neue',
+    Helvetica, Arial, sans-serif;
+  --serif: Didot, 'Bodoni 72', 'Hoefler Text', Georgia, serif;
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #e7e9e6;
+  font-family: var(--sans);
+  color: var(--ink);
+}
+
+.page {
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  margin: 0 auto 8mm;
+  padding: 14mm 15mm 12mm;
+  background: var(--bg);
+  overflow: hidden;
+  page-break-after: always;
+  break-after: page;
+}
+
+.page:last-child {
+  page-break-after: auto;
+  break-after: auto;
+  margin-bottom: 0;
+}
+
+@media print {
+  html,
+  body {
+    background: none;
+  }
+  .page {
+    margin: 0;
+    box-shadow: none;
+  }
+}
+
+@media screen {
+  .page {
+    box-shadow: 0 2mm 8mm rgba(16, 22, 25, 0.14);
+  }
+  body {
+    padding: 8mm 0;
+  }
+}
+
+/* ── masthead ─────────────────────────────────────────────────────────────── */
+
+.masthead {
+  display: flex;
+  align-items: center;
+  gap: 4mm;
+}
+
+.masthead img {
+  width: 13mm;
+  height: 13mm;
+  border-radius: 2.9mm;
+  display: block;
+}
+
+.masthead .name {
+  font-size: 15pt;
+  font-weight: 700;
+  letter-spacing: -0.3pt;
+  line-height: 1.15;
+}
+
+.masthead .sub {
+  font-size: 8.5pt;
+  color: var(--mute);
+  letter-spacing: 0.3pt;
+  margin-top: 0.6mm;
+}
+
+.masthead .flag {
+  margin-left: auto;
+  font-size: 8pt;
+  font-weight: 600;
+  letter-spacing: 1.4pt;
+  text-transform: uppercase;
+  color: var(--mute);
+  text-align: right;
+}
+
+/* The four source colours as a rule — the brand's most recognisable mark. */
+.rule {
+  display: flex;
+  gap: 1.2mm;
+  height: 1.5mm;
+  margin: 4mm 0 0;
+}
+.rule i {
+  flex: 1;
+  border-radius: 0.8mm;
+}
+.rule i:nth-child(1) {
+  background: var(--narr);
+}
+.rule i:nth-child(2) {
+  background: var(--divine);
+}
+.rule i:nth-child(3) {
+  background: var(--prin);
+}
+.rule i:nth-child(4) {
+  background: var(--chor);
+}
+
+/* ── type ─────────────────────────────────────────────────────────────────── */
+
+h1 {
+  font-size: 30pt;
+  line-height: 1.06;
+  letter-spacing: -1.1pt;
+  font-weight: 700;
+  margin: 7mm 0 0;
+}
+
+h2 {
+  font-size: 17pt;
+  line-height: 1.15;
+  letter-spacing: -0.5pt;
+  font-weight: 700;
+  margin: 0 0 3mm;
+}
+
+h3 {
+  font-size: 8pt;
+  font-weight: 600;
+  letter-spacing: 1.6pt;
+  text-transform: uppercase;
+  color: var(--mute);
+  margin: 0 0 3mm;
+}
+
+p {
+  font-size: 10.5pt;
+  line-height: 1.5;
+  margin: 3mm 0 0;
+}
+
+.lede {
+  font-size: 12pt;
+  line-height: 1.45;
+  color: var(--narr);
+  margin-top: 4mm;
+}
+
+.small {
+  font-size: 8.5pt;
+  line-height: 1.4;
+  color: var(--mute);
+}
+
+/* ── components ───────────────────────────────────────────────────────────── */
+
+.roles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3mm;
+}
+
+.role {
+  border: 0.5mm solid;
+  border-radius: 3mm;
+  padding: 3.5mm 3.5mm 4mm;
+}
+.role .who {
+  font-size: 10.5pt;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.role .what {
+  font-size: 8.5pt;
+  line-height: 1.35;
+  margin-top: 1.5mm;
+  color: var(--mute);
+}
+.role.narr {
+  border-color: var(--hair);
+  background: var(--surf);
+}
+.role.narr .who {
+  color: var(--narr);
+}
+.role.divine {
+  border-color: var(--divine);
+  background: var(--div-fill);
+}
+.role.divine .who {
+  color: var(--divine);
+}
+.role.prin {
+  border-color: var(--prin);
+  background: var(--prin-fill);
+}
+.role.prin .who {
+  color: var(--prin);
+}
+.role.chor {
+  border-color: var(--chor);
+  background: var(--chor-fill);
+}
+.role.chor .who {
+  color: var(--chor);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3mm;
+}
+.stat {
+  border-top: 0.6mm solid var(--ink);
+  padding-top: 2.5mm;
+}
+.stat .n {
+  font-size: 21pt;
+  font-weight: 700;
+  letter-spacing: -0.8pt;
+  line-height: 1;
+}
+.stat .l {
+  font-size: 8.5pt;
+  line-height: 1.35;
+  color: var(--mute);
+  margin-top: 1.5mm;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4mm;
+  counter-reset: step;
+}
+.step {
+  counter-increment: step;
+}
+.step::before {
+  content: counter(step);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 7mm;
+  height: 7mm;
+  border-radius: 50%;
+  background: var(--acc);
+  color: var(--surf);
+  font-size: 10pt;
+  font-weight: 700;
+  margin-bottom: 2.5mm;
+}
+.step .t {
+  font-size: 11pt;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.step .b {
+  font-size: 9pt;
+  line-height: 1.45;
+  color: var(--mute);
+  margin-top: 1.5mm;
+}
+
+.slab {
+  background: var(--narr);
+  color: var(--cream);
+  border-radius: 4mm;
+  padding: 6mm 7mm;
+}
+.slab h3 {
+  color: var(--cream);
+  opacity: 0.68;
+}
+.slab p {
+  color: var(--cream);
+}
+
+.card {
+  background: var(--surf);
+  border: 0.4mm solid var(--hair);
+  border-radius: 3.5mm;
+  padding: 5mm 5.5mm;
+}
+
+.bul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bul li {
+  font-size: 10pt;
+  line-height: 1.45;
+  padding-left: 6mm;
+  position: relative;
+  margin-bottom: 2.2mm;
+}
+.bul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 1.7mm;
+  width: 2.4mm;
+  height: 2.4mm;
+  border-radius: 50%;
+  background: var(--acc);
+}
+.bul li:last-child {
+  margin-bottom: 0;
+}
+
+/* A rendered speech turn, matching the reader's bubbles. */
+.bubble {
+  border-radius: 4mm;
+  padding: 3mm 4mm;
+  font-size: 10pt;
+  line-height: 1.45;
+  border: 0.4mm solid;
+  margin-bottom: 2.5mm;
+  max-width: 84%;
+}
+.bubble .sp {
+  font-size: 7pt;
+  font-weight: 700;
+  letter-spacing: 1.4pt;
+  text-transform: uppercase;
+  margin-bottom: 1.2mm;
+}
+.bubble.narr {
+  border-color: var(--hair);
+  background: var(--surf);
+  color: var(--ink);
+  max-width: 100%;
+}
+.bubble.narr .sp {
+  color: var(--narr);
+}
+.bubble.divine {
+  border-color: var(--divine);
+  background: var(--div-fill);
+  color: var(--divine);
+  border-top-left-radius: 1.2mm;
+}
+.bubble.chor {
+  border-color: var(--chor);
+  background: var(--chor-fill);
+  color: var(--chor);
+  border-top-right-radius: 1.2mm;
+  margin-left: auto;
+}
+.bubble.prin {
+  border-color: var(--prin);
+  background: var(--prin-fill);
+  color: var(--prin);
+  border-top-right-radius: 1.2mm;
+  margin-left: auto;
+}
+
+.foot {
+  position: absolute;
+  left: 15mm;
+  right: 15mm;
+  bottom: 10mm;
+  display: flex;
+  align-items: flex-end;
+  gap: 6mm;
+  border-top: 0.4mm solid var(--hair);
+  padding-top: 4mm;
+}
+
+.store {
+  display: flex;
+  gap: 2.5mm;
+}
+.chip {
+  border: 0.5mm solid var(--ink);
+  border-radius: 2.5mm;
+  padding: 2mm 3.5mm;
+  font-size: 9.5pt;
+  font-weight: 700;
+  letter-spacing: -0.2pt;
+  white-space: nowrap;
+}
+.chip small {
+  display: block;
+  font-size: 6.5pt;
+  font-weight: 500;
+  letter-spacing: 0.8pt;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.pagenum {
+  position: absolute;
+  right: 15mm;
+  bottom: 6mm;
+  font-size: 7.5pt;
+  color: var(--mute);
+  letter-spacing: 0.6pt;
+}
