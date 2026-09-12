@@ -20,9 +20,15 @@ const schoolQ = read('assets/data/SchoolQuestions.json').SchoolQuestions;
 const familyQ = read('assets/data/FamilyQuestions.json').FamilyQuestions;
 const groupQ = read('assets/data/SmallGroupQuestions.json').SmallGroupQuestions;
 
-// Luke 5:1-6:49. The calling of Simon Peter opens it, and that scene carries all
-// four source colours inside twelve turns, which is what the spread has to show.
-export const SPREAD_ID = 'S287';
+// Two real passages, both rendered from the app's own text.
+//
+// The cover runs the calling of Simon Peter, Luke 5:4-5, because it is the
+// exchange the old flyer showed and it reads warmly cold.
+// The page 2 spread runs Luke 18:26-28, which is the tightest four-colour window
+// anywhere in the 365: crowd, narrator, Jesus and a named principal in six short
+// turns, with no jump and nothing spliced.
+export const COVER = { id: 'S287', from: 2, to: 6, ref: 'Luke 5:4\u20135' };
+export const SPREAD = { id: 'S294', from: 48, to: 54, ref: 'Luke 18:26\u201328' };
 
 // ---------------------------------------------------------------------------
 // Ink. Light mode only; a port of scripts/getColors.ts.
@@ -199,8 +205,8 @@ function renderInline(inline) {
  * authority left, humanity right, speaker label above, asymmetric corner where
  * the voice changes.
  */
-export function spreadTurns(from = 0, to = 9) {
-  const seg = bible[SPREAD_ID];
+export function spreadTurns({ id, from, to }) {
+  const seg = bible[id];
   const blocks = splitIntoParagraphs(JSON.parse(JSON.stringify(seg.content))).slice(from, to);
   let previous = null;
   const out = [];
@@ -229,14 +235,14 @@ export function spreadTurns(from = 0, to = 9) {
 }
 
 /** The story's own cast and voice share, for the caption under the spread. */
-export function spreadMeta() {
-  const seg = bible[SPREAD_ID];
-  const t = times[SPREAD_ID];
+export function spreadMeta({ id }) {
+  const seg = bible[id];
+  const t = times[id];
   const totals = { black: 0, red: 0, green: 0, blue: 0 };
   for (const v of Object.values(seg.sources)) totals[v.color] += v.words;
   const total = Object.values(totals).reduce((a, b) => a + b, 0);
   const cast = Object.entries(seg.sources)
     .map(([name, v]) => ({ name, ...v }))
     .sort((a, b) => b.words - a.words);
-  return { title: t.title, reference: `Luke ${t.reference}`, minutes: t.estimatedReadingTimeMinutes, totals, total, cast };
+  return { title: t.title, minutes: t.estimatedReadingTimeMinutes, totals, total, cast };
 }

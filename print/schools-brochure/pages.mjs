@@ -1,9 +1,12 @@
 // The four A4 pages. Fixed composition, no paginator: every page is authored to
 // its own height, which is what lets a four-page piece hold its rhythm.
+//
+// Copy rule for this document: it is written to the person holding it, a teacher
+// or a chaplain, not about them. "Your class", not "a class".
 
 import {
   INK, ROLES, stats, plans, featuredPlans, questionSets,
-  spreadTurns, spreadMeta, openingWeeks,
+  spreadTurns, spreadMeta, openingWeeks, COVER, SPREAD,
 } from './content.mjs';
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -30,8 +33,7 @@ const device = (shot, cap, note) => `
 // PAGE 1 · COVER
 // ===========================================================================
 export function coverPage() {
-  // Luke 5:4-5, contiguous, straight out of the app's own Bible data.
-  const stage = spreadTurns(2, 6).join('\n');
+  const stage = spreadTurns(COVER).join('\n');
   return `
 <section class="page cover">
   <div class="wash">
@@ -42,13 +44,14 @@ export function coverPage() {
         </linearGradient>
       </defs>
       <rect width="210" height="297" fill="url(#g1)"/>
-      <!-- The thread: the app's spine motif, run through the band the type leaves
-           empty between the sample exchange and the headline. -->
-      <path d="M-10 132 C 44 120, 66 156, 112 148 S 178 104, 224 116"
+      <!-- The thread: the app's spine motif, run through the narrow band the type
+           leaves empty between the sample exchange and the headline. Keep every
+           point inside y 126-142 or it collides with one of them. -->
+      <path d="M-10 134 C 40 128, 90 126, 150 133 S 210 140, 224 137"
             fill="none" stroke="#F2EAE0" stroke-opacity="0.12" stroke-width="0.5"/>
-      <path d="M-10 141 C 38 130, 74 164, 120 155 S 182 114, 224 125"
+      <path d="M-10 139 C 44 133, 94 131, 152 138 S 212 142, 224 140"
             fill="none" stroke="#F2EAE0" stroke-opacity="0.06" stroke-width="0.5"/>
-      <circle cx="112" cy="148" r="1.6" fill="#8FE3C0" fill-opacity="0.55"/>
+      <circle cx="150" cy="133" r="1.6" fill="#8FE3C0" fill-opacity="0.55"/>
     </svg>
   </div>
   <div class="cover-body">
@@ -64,23 +67,24 @@ export function coverPage() {
 
     <div class="cover-stage">
       ${stage}
-      <div class="ref">Luke 5:4–5 · Story 287 of 365 · Rendered from the app</div>
+      <div class="ref">${COVER.ref} · Story 287 of 365 · Rendered from the app</div>
     </div>
 
     <div class="cover-title">
-      <h1>Everyone in the room<br>has a <em>part</em>.</h1>
+      <h1>365 new adventures.<br>The whole Bible in <em>speech bubbles</em>.</h1>
+      <div class="deck">A new Bible reading experience for your class.</div>
       <div class="say">
-        A Bible reading app that sets Scripture out as the conversation it already is.
-        Four source colours, four readers, and a complete story your class can read
-        out loud inside one chapel period.
+        Not one word has been added, moved or removed. This is the complete New Living
+        Translation, all 66 books, set out so that every word carries the colour of
+        whoever said it. Hand four colours to four students and the story reads itself.
       </div>
     </div>
 
     <div class="cover-facts">
-      <div><b>${n(stats.stories)}</b><span>Stories, Genesis to Revelation</span></div>
+      <div><b>66</b><span>Books, complete</span></div>
+      <div><b>${n(stats.stories)}</b><span>Stories to read aloud</span></div>
       <div><b>${n(stats.voices)}</b><span>Voices, each in its colour</span></div>
-      <div><b>${ROLES.length}</b><span>Source colours to hand out</span></div>
-      <div><b>${plans.total}</b><span>Reading plans and challenges</span></div>
+      <div><b>${ROLES.length}</b><span>Colours to hand out</span></div>
     </div>
 
     <div class="cover-foot">
@@ -101,7 +105,7 @@ export function coverPage() {
 // PAGE 2 · HOW IT WORKS
 // ===========================================================================
 export function readingPage(shots = {}) {
-  const meta = spreadMeta();
+  const meta = spreadMeta(SPREAD);
   const share = ROLES.map(
     (r) => `<i style="width:${(meta.totals[r.color] / meta.total) * 100}%;background:${INK[r.color].bar}"></i>`
   ).join('');
@@ -114,38 +118,53 @@ export function readingPage(shots = {}) {
       <span class="n">${n(r.count)} ${r.count === 1 ? 'voice' : 'voices'}</span>
     </div>`).join('');
 
+  const era = (yr, wh, now = false) => `
+    <div class="tl${now ? ' is-now' : ''}">
+      <span class="yr">${esc(yr)}</span>
+      <span class="wh">${esc(wh)}</span>
+      ${now ? `<span class="swatches">${ROLES.map((r) => `<i style="background:${INK[r.color].bar}"></i>`).join('')}</span>` : ''}
+    </div>`;
+
   return `
 <section class="page">
   <div class="page-body">
     ${sec('01', 'The reading')}
-    <h2 class="head" style="font-size:22.5pt">A class disengages the moment<br>it cannot tell who is speaking.</h2>
+    <h2 class="head" style="font-size:22.5pt">Red letters gave one voice a colour.<br>This gives all ${n(stats.voices)}.</h2>
     <p class="lede">
-      Open a printed Bible at the valley of Elah and the words of God, of Goliath and of a
-      terrified army all arrive in the same black type. Reading aloud becomes a chore nobody
-      volunteers for. SourceView Together colours every word by the voice that said it:
-      <b>${n(stats.voices)} voices across ${n(stats.stories)} stories</b>, in four colours.
+      You already know how this works. A publisher put the words of Jesus in red, and one
+      voice in your Bible has looked different ever since. SourceView Together does that for
+      <b>every speaker in Scripture</b>: God and Jesus red, the narrator black, the main
+      character green, everyone else blue.
     </p>
+
+    <div class="timeline">
+      ${era('c. 1227', 'Chapters')}
+      ${era('1551', 'Verse numbers')}
+      ${era('1899', 'Red letters')}
+      ${era('Now', 'Four colours', true)}
+    </div>
+    <p class="tl-note">Langton gave you chapters, Estienne the verse numbers, Klopsch the
+    red letters. Each one made Scripture easier to find your way around.</p>
 
     <div class="cols2" style="margin-top:6.5mm;">
       <div style="width:80mm; display:flex; flex-direction:column;">
-        <h4 class="min">The four colours a class hands out</h4>
+        <h4 class="min">The four colours you hand out</h4>
         <div class="keys">${keys}</div>
 
-        <h4 class="min" style="margin-top:9mm">How a class reads a story</h4>
+        <h4 class="min" style="margin-top:5.5mm">How your class reads a story</h4>
         <ol class="steps">
-          <li><b>Open the same story.</b> Each student on their own device, or one
-            device passed along a row. Nobody signs in and nothing needs setting up.</li>
-          <li><b>Take a colour.</b> Four readers, one colour each. You read your colour
-            out loud when it comes round, and the layout tells you when that is.</li>
-          <li><b>Talk about it.</b> Four questions written for students sit at the end
-            of every story, ready to go.</li>
+          <li><b>Open the same story.</b> Everyone on their own device, or pass one phone
+            along a row. Nobody signs in and there is nothing to set up.</li>
+          <li><b>Take a colour.</b> Four readers, one each. Each student reads their colour
+            out loud when it comes round, and the layout tells them when.</li>
+          <li><b>Talk about it.</b> Four questions are already waiting at the end. Fifteen
+            to twenty minutes covers the lot, which is a chapel slot.</li>
         </ol>
 
-        <div class="panel" style="margin-top:6mm">
-          <p><b>Timing.</b> Stories run ${stats.minMinutes} to ${stats.maxMinutes} minutes
-          of reading, about ${stats.medianMinutes} for most. Allow fifteen to twenty for a
-          group reading aloud with the questions afterwards, which is a chapel slot or the
-          back half of a period.</p>
+        <div class="pullout">
+          <h5>Leviticus is almost entirely red.<br>Esther has none at all.</h5>
+          <p>Red is God speaking, so one book is <b>88 per cent his voice</b> and the other
+          never quotes him once. Your students can see that from across the room.</p>
         </div>
       </div>
 
@@ -153,11 +172,9 @@ export function readingPage(shots = {}) {
         <div class="spread">
           <div class="spread-head">
             <span class="t">${esc(meta.title)}</span>
-            <span class="r">${esc(meta.reference.split(':')[0])} · ${meta.minutes} min</span>
+            <span class="r">${esc(SPREAD.ref)} · ${meta.minutes} min story</span>
           </div>
-          ${spreadTurns(2, 6).join('\n')}
-          <div class="spread-break">Later in the same story · Luke 5:12</div>
-          ${spreadTurns(16, 17).join('\n')}
+          ${spreadTurns(SPREAD).join('\n')}
           <div class="spread-foot">
             <span class="sharebar">${share}</span>
             <span>Who does the talking in this story</span>
@@ -165,24 +182,22 @@ export function readingPage(shots = {}) {
         </div>
         <p class="body" style="margin-top:3.4mm; font-size:7.6pt">
           Set from the app's own text and colours. Narration and divine speech sit left,
-          everyone else right, so the shape of a conversation is visible before a word
-          is read.
+          everyone else right, so you see the shape of a conversation before you read it.
         </p>
       </div>
     </div>
 
-
     <div class="shotband">
       <div class="why">
         <h4 class="min">On the phone</h4>
-        <p>Five tabs, and a school only needs four of them. <b>Read</b> holds the year as
-        one thread, so the whole Bible sits on a screen. <b>Cast</b> keeps every voice a
-        student has heard. <b>Saved</b> holds the lines they reacted to.</p>
+        <p>Five tabs, and you will only need four. <b>Read</b> holds the year as one thread,
+        so the whole Bible sits on a screen. <b>Cast</b> keeps every voice your students have
+        heard, and <b>Saved</b> holds the lines they reacted to.</p>
       </div>
       ${device(shots.thread, 'Read', 'The year on one thread')}
-      ${device(shots.reader, 'The reader', 'A story in four colours')}
-      ${device(shots.plan, 'Plan', 'Pick one, or build one')}
-      ${device(shots.questions, 'Talk about it', 'Four questions, three sets')}
+      ${device(shots.reader, 'Reader', 'A story in four colours')}
+      ${device(shots.plan, 'Plan', 'Pick one or build one')}
+      ${device(shots.questions, 'Questions', 'Three sets, four each')}
     </div>
   </div>
   ${folio('SourceView Together · For schools', '2')}
@@ -192,7 +207,7 @@ export function readingPage(shots = {}) {
 // ===========================================================================
 // PAGE 3 · IN THE CLASSROOM
 // ===========================================================================
-export function classroomPage(shots = {}) {
+export function classroomPage() {
   const q = questionSets;
   const set = (cls, tag, nm, dsc, items) => `
     <div class="qset ${cls}">
@@ -223,14 +238,15 @@ export function classroomPage(shots = {}) {
     ${sec('02', 'After the reading')}
     <h2 class="head">One story, three sets of questions.</h2>
     <p class="lede">
-      Every story ends with four questions, written three times over for three different
-      rooms. Below is story one, <b>${esc(q.story)}</b>, in all three.
+      Every story ends with four questions, written three times over so you can pick the
+      set that matches the room you are in. Here is story one, <b>${esc(q.story)}</b>, in
+      all three.
     </p>
 
     <div class="qsets" style="margin-top:7mm">
-      ${set('is-lead', 'For schools', 'School', 'Middle and high school. Aimed at how a student sees the corridor on Monday.', q.school)}
-      ${set('', 'For families', 'Family', 'Younger readers at the table. Shorter, plainer, asked as "we".', q.family)}
-      ${set('', 'For small groups', 'Small group', 'Older students and staff. Room for a longer answer.', q.group)}
+      ${set('is-lead', 'For your classroom', 'School', 'Middle and high school. Pointed at how your students treat each other on Monday morning.', q.school)}
+      ${set('', 'For families', 'Family', 'Younger readers around a table. Shorter, plainer, and asked as "we".', q.family)}
+      ${set('', 'For small groups', 'Small group', 'Senior students, youth group, or your staff. Room for a longer answer.', q.group)}
     </div>
 
     <div class="samples">
@@ -242,7 +258,7 @@ export function classroomPage(shots = {}) {
     <div class="hair"></div>
 
     ${sec('03', 'The plans')}
-    <h2 class="head" style="font-size:21pt">Built to fit a term, not a calendar year.</h2>
+    <h2 class="head" style="font-size:21pt">Plans that fit your term.</h2>
     <div class="cols2" style="margin-top:4mm; align-items:flex-start; gap:10mm;">
       <div style="flex:1">
         <table class="plans">
@@ -252,13 +268,14 @@ export function classroomPage(shots = {}) {
       </div>
       <div style="width:72mm">
         <div class="panel is-quiet">
-          <p><b>${plans.total} plans and challenges</b> ship with the app, Advent and Lent
-          among them. A class can also build its own from any stories it likes.</p>
-          <p>Progress carries across a break, so a plan survives the holidays, and a
-          student who joins in week six starts where the class is.</p>
+          <p><b>${plans.total} plans and challenges</b> come with the app, Advent and Lent
+          among them, and you can build your own out of any stories you like.</p>
+          <p>Progress carries across a break, so a plan survives the holidays and a student
+          who joins you in week six starts where your class is.</p>
         </div>
       </div>
     </div>
+
     <div class="weeks">
       <h4 class="min">Term one of Bible in 1 School Year, as it actually falls</h4>
       <div class="weeks-grid">
@@ -285,31 +302,31 @@ export function runningPage(qrSvg) {
 <section class="page">
   <div class="page-body">
     ${sec('04', 'Running it')}
-    <h2 class="head">Three ways schools use it.</h2>
+    <h2 class="head">Three ways to run it.</h2>
 
     <div class="cols3" style="margin-top:7mm">
-      ${way('Chapel', `Four readers on stage with the story on their phones, the rest of the
-        year level following on theirs. Rotate the colours weekly so the reading is never
-        the same four students. Senior students can run it for junior grades without a
-        staff member scripting it.`)}
-      ${way('Small groups', `A group of four is exactly the shape of the app. One story, one
-        colour each, then the school questions. It works in a form room at lunch, in a
-        boarding house after dinner, or with staff before the day starts.`)}
-      ${way('Classroom', `Religious education, character or ethics. The colours make the
-        source of a claim visible, which is a useful habit well beyond this text. Set a
-        story as reading, then run the discussion questions in class.`)}
+      ${way('In chapel', `Put four readers on stage with the story on their phones and let
+        the year level follow on theirs. Rotate the colours weekly so it is never the same
+        four students. Your seniors can run it for junior grades without you scripting
+        anything for them.`)}
+      ${way('In small groups', `A group of four is exactly the shape of the app. One story,
+        one colour each, then the questions. It works in a form room at lunch, in a boarding
+        house after dinner, or with your staff before the day starts.`)}
+      ${way('In class', `Religious education, character, or ethics. The colours make the
+        source of a claim visible, which is a habit worth having well beyond this text. Set
+        a story as reading, then run the questions with your class.`)}
     </div>
 
     <div class="hair"></div>
 
-    ${sec('05', 'What a school is agreeing to')}
+    ${sec('05', 'What you are agreeing to')}
     <div class="cols2" style="align-items:flex-start; margin-top:4mm">
       <div style="flex:1">
-        <h2 class="head" style="font-size:20pt">Nothing about a student<br>leaves their device.</h2>
+        <h2 class="head" style="font-size:17.5pt">Nothing about your students<br>leaves their device.</h2>
         <p class="body" style="max-width:86mm">
-          There are no accounts to create, so there is no student roll to hand over and no
-          password for a fourteen year old to forget. A phone that never had the app can
-          be handed to a student and used inside a minute.
+          There are no accounts to create, so you have no student roll to hand over and no
+          password for a fourteen year old to forget. Give a student a phone that has never
+          had the app on it and they are reading inside a minute.
         </p>
         <div class="reqs">
           <h4 class="min">What a device needs</h4>
@@ -321,16 +338,16 @@ export function runningPage(qrSvg) {
       </div>
       <div style="width:88mm">
         <ul class="ticks">
-          <li><b>No accounts, no sign-in, no email address.</b> A student opens the app and reads.</li>
-          <li><b>No advertising and no in-app purchases.</b> The app is free, and free is the whole model.</li>
+          <li><b>No accounts, no sign-in, no email address.</b> Your students open the app and read.</li>
+          <li><b>No advertising and no in-app purchases.</b> It is free, and free is the whole model.</li>
           <li><b>No behavioural analytics.</b> Progress, notes and reactions are written to a database on the phone and stay there.</li>
           <li><b>Works offline.</b> Useful on camp, on a bus, and in a hall where the wifi gives up.</li>
           <li><b>Optional reminders</b> are scheduled by the phone itself. No notification server, no tokens leaving the device.</li>
-          <li><b>English and French</b>, both offline, for a bilingual or immersion setting.</li>
+          <li><b>English and French</b>, both offline, if you have a bilingual or immersion class.</li>
         </ul>
         <p class="body" style="font-size:8pt; color:#7A857D">
-          Crash reports may be sent if the app fails. They carry the device model and the
-          error, never notes, reactions or reading history.
+          If the app crashes, a diagnostic report may reach us. It carries the device model
+          and the error, never a student's notes, reactions or reading history.
         </p>
       </div>
     </div>
@@ -338,9 +355,10 @@ export function runningPage(qrSvg) {
     <div class="close">
       <h3>Try it with one group of eight before you take it to a staff meeting.</h3>
       <p>
-        Download it, hand four colours to four students, and read one story. That is the whole
-        trial, and it takes a lunchtime. If it works, I will help you plan the term or the year
-        around it, at no cost. <b>Book a setup call and we will map it to your chapel calendar.</b>
+        Download it, hand four colours to four students, and read one story together. That is
+        the whole trial and it costs you a lunchtime. If it works, I will help you plan the
+        term or the year around it, at no cost. <b>Book a setup call and we will map it to
+        your chapel calendar.</b>
       </p>
       <div class="close-grid">
         <div class="who">
@@ -361,8 +379,8 @@ export function runningPage(qrSvg) {
     </div>
 
     <div class="colophon">
-      <div><b>SourceView Together ${'1.3.0'}</b> · New Living Translation · iOS 16.4+ or Android 8+</div>
-      <div>${n(stats.stories)} stories · ${n(stats.voices)} voices · ${n(stats.words)} attributed words</div>
+      <div><b>SourceView Together 1.3.0</b> · New Living Translation · iOS 16.4+ or Android 8+</div>
+      <div>66 books · ${n(stats.stories)} stories · ${n(stats.voices)} voices</div>
     </div>
   </div>
   ${folio('SourceView Together · For schools', '4')}

@@ -79,7 +79,7 @@ const html = `<!doctype html>
 <main id="doc">
 ${coverPage()}
 ${readingPage(shots)}
-${classroomPage(shots)}
+${classroomPage()}
 ${runningPage(qrSvg)}
 </main>
 </body>
