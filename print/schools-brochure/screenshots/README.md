@@ -1,17 +1,18 @@
-# Drop App Store screenshots here
+# App Store screenshots
 
-The build looks for these four names. Anything missing renders as a labelled
-placeholder at the exact final size, so the layout is finished without them.
+All four are present. To replace one, drop a new file over the old name and re-run
+`node print/schools-brochure/build.mjs`.
 
 | File | Screen |
 | --- | --- |
-| `cast.png` | Cast, a single voice. Moses for preference (green field, "spoke with God 82 times"); Jesus works too |
+| `cast.png` | Cast, a single voice. Currently Moses |
 | `reader.png` | The reader: a story mid-scroll, several colours visible |
-| `plan.png` | Plan: the plan list, or a plan open |
-| `talk-about-it.png` | Talk about it: the four questions after a story |
+| `plan.png` | Plan: the plan list |
+| `talk-about-it.png` | The four questions at the end of a story |
 
-`.png` or `.jpg`, portrait, App Store 6.7" (1290 × 2796) ideal. Light mode.
-The frame crops with `object-fit: cover`, so the very top and bottom of a tall
-screenshot may be trimmed.
+`.png` or `.jpg`, portrait, light mode. 1170 x 2532 or 1290 x 2796 both work; the
+frame clips with `object-fit: cover` from the top.
 
-Then: `node print/schools-brochure/build.mjs`
+`talk-about-it.png` is not the raw capture. Its top 8.5 per cent was replaced with
+a flat `#F3F5F2` strip because the reading screen has no status-bar background and
+the clock rendered on top of scripture. See the main README.

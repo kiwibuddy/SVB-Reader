@@ -42,34 +42,46 @@ unprintable band only clips cover colour.
 
 ## Screenshots
 
-Four device frames on page 2 read from `screenshots/`. Anything missing renders
-as a labelled slot at the exact final size, so the layout is finished either way
-and the files can arrive later.
+All four are in `screenshots/` and embedded at build time. Captures are
+1170 x 2532 (iPhone 12/13/14 class).
 
-| File | Screen | What it should show |
+| File | Screen | Shows |
 | --- | --- | --- |
-| `screenshots/cast.png` | Cast, one voice | **Moses** for preference: green field, "spoke with God 82 times" |
-| `screenshots/reader.png` | Reader | A story mid-scroll, several source colours visible |
-| `screenshots/plan.png` | Plan | The plan list, or a plan open with its ring |
-| `screenshots/talk-about-it.png` | Talk about it | The four questions at the end of a story |
+| `cast.png` | Cast, Moses | Green field, 30,310 words, spoke with God 21 times in shared stories |
+| `reader.png` | Reader | "The Sixth Sign", John 9, the four-part picker and coloured bubbles |
+| `plan.png` | Plan | Two plans in progress, the three plan groups, a custom plan |
+| `talk-about-it.png` | End of a story | The DONE ring and the Talk about it card, School tab selected |
 
-Portrait, `.png` or `.jpg`, App Store 6.7" (1290 x 2796) is ideal. Anything at
-that aspect ratio works; the frame crops with `object-fit: cover`, so avoid
-screenshots with a status-bar carrier name you would rather not print. Light mode,
-to match the document. Drop the files in and re-run `build.mjs`.
+To replace any of them, drop a new file over the old one and re-run `build.mjs`.
+Portrait, light mode, `.png` or `.jpg`.
 
-**Why Cast rather than Read.** The Read tab is the home screen, but it argues
-nothing on a page whose case is that the app knows who said what, and its thread
-is a hairline drawing that turns to mush at 34 mm. A Cast voice page renders
-full-bleed in that voice's own ink with the name at 64 pt, so it reads as a
-colour block and holds up small. Moses over Jesus because the page 2 headline
-says red letters already gave Jesus a colour; a green voice is what proves the
-other 773.
+### The frame
 
-The frames sit at 34 mm tall, which is as large as four across can be on a page
-already carrying the timeline, the colour key, the pull-out and the spread. If a
-printed proof shows them too small to read, the thing to cut is the pull-out,
-which frees about 39 mm.
+The phone is drawn in CSS, not dropped in as a mockup image, so it stays sharp at
+any print size and the screenshot is the only bitmap on the page. It carries a
+brushed rail gradient, a clipped screen at `1170/2532`, three side buttons on the
+left and one on the right, all positioned in percentages so they track `--dev-h`.
+
+The captures are from a notched device. The frame draws a **Dynamic Island**
+instead, which sits in the gap the status bar already leaves and reads as current
+rather than as a five-year-old handset. That is a deliberate modernisation, not
+an accident.
+
+### `talk-about-it.png` was edited, and why
+
+The reading screen draws no status-bar background, so on a scrolled capture the
+system clock renders directly on top of scripture. The raw screenshot has "1:02"
+sitting across a line of Matthew 28. The top 8.5 per cent was cropped away and
+replaced with a flat strip of `#F3F5F2`, sampled from the screen itself rather
+than guessed, which restores the original aspect so nothing is cropped
+horizontally.
+
+**That is an app bug, not a capture mistake.** Worth fixing in the reader: the
+status bar needs a background, or the scroll view needs top inset.
+
+Consequence for the page: three phones show a clock (12:55, 12:59, 12:56) and the
+fourth shows a clean strip. Normalising all four to one time would mean editing
+pixels in screenshots of a real app, so it has been left alone.
 
 ## Where the numbers come from
 
@@ -123,10 +135,13 @@ range with `spreadTurns({id, from:0, to:200})` before changing either.
 
 ### The format timeline
 
-Page 2 dates chapters to Stephen Langton around 1227, verse numbers to Robert
-Estienne in 1551, and red letters to Louis Klopsch in 1899. These are standard
-attributions but they are the only figures in the document not drawn from the
-repo, so they carry the ordinary risk of any historical claim.
+Page 2 dates chapters to around 1227, verse numbers to 1551 and red letters to
+1899. The strip prints the years only. The attributions are **Stephen Langton**
+for chapters, **Robert Estienne** for verse numbers and **Louis Klopsch** for red
+letters; they were dropped from the page to give the phone frames another 6 mm,
+and are recorded here instead. These are standard attributions, but they are the
+only figures in the document not drawn from the repo, so they carry the ordinary
+risk of any historical claim.
 
 Note that red letters make the stronger cover claim ("only format change since
 chapter and verse") untrue, which is why the page uses the red-letter lineage as

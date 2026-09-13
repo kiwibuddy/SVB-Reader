@@ -21,11 +21,14 @@ const sec = (no, label) =>
 /** An iPhone frame. Falls back to a labelled slot until the screenshot lands. */
 const device = (shot, cap, note) => `
 <div class="shot">
-  <div class="device"><div class="notch"></div><div class="glass">
-    ${shot
-      ? `<img src="${shot}" alt="${esc(cap)}">`
-      : `<div class="slot"><b>${esc(cap)}</b><span>${esc(note)}</span></div>`}
-  </div></div>
+  <div class="device">
+    <div class="screen">
+      ${shot
+        ? `<img src="${shot}" alt="${esc(cap)}">`
+        : `<div class="slot"><b>${esc(cap)}</b><span>${esc(note)}</span></div>`}
+    </div>
+    <span class="island"></span>
+  </div>
   <div class="cap">${esc(cap)}<span>${esc(note)}</span></div>
 </div>`;
 
@@ -143,8 +146,6 @@ export function readingPage(shots = {}) {
       ${era('1899', 'Red letters')}
       ${era('Now', 'Four colours', true)}
     </div>
-    <p class="tl-note">Langton gave you chapters, Estienne the verse numbers, Klopsch the
-    red letters. Each one made Scripture easier to find your way around.</p>
 
     <div class="cols2" style="margin-top:6.5mm;">
       <div style="width:80mm; display:flex; flex-direction:column;">

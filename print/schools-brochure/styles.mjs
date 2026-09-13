@@ -245,31 +245,61 @@ p.body b, p.lede b{color:var(--body); font-weight:700;}
 .sharebar i + i{box-shadow:-.25mm 0 0 rgba(255,255,255,.9);}
 
 /* ================= DEVICE FRAMES ================= */
+/* A phone drawn in CSS rather than dropped in as an image, so it stays sharp at
+   any print size and the shot inside is the only bitmap on the page.
+   Aspect is 1170x2532, the resolution the screenshots were captured at. */
 .shots{display:flex; gap:6mm; align-items:flex-start;}
 .shot{display:flex; flex-direction:column;}
+
 .device{
-  position:relative; height:var(--dev-h,58mm); aspect-ratio:1290/2796;
-  border-radius:3.6mm; background:#0B0F14; padding:.9mm;
-  box-shadow:0 1.4mm 4mm rgba(16,22,25,.16);
+  position:relative;
+  height:var(--dev-h,44mm);
+  aspect-ratio:1170/2532;
+  border-radius:2.4mm;
+  /* Brushed rail: light on the outer corners, dark along the flats. */
+  background:linear-gradient(148deg,
+    #9AA2A9 0%, #6E767E 9%, #454C54 26%, #3A4149 50%,
+    #454C54 74%, #6E767E 91%, #9AA2A9 100%);
+  padding:.34mm;
+  box-shadow:
+    0 .8mm 2.2mm rgba(16,22,25,.20),
+    0 .15mm .4mm rgba(16,22,25,.16);
 }
-.device .glass{
-  position:absolute; inset:.9mm; border-radius:2.9mm; overflow:hidden; background:var(--tint);
-  display:flex; align-items:center; justify-content:center;
+
+/* The black glass sits under the rail and clips the screenshot. */
+.device .screen{
+  position:absolute; inset:.34mm;
+  border-radius:2.1mm; overflow:hidden;
+  background:#0B0F14;
 }
-.device .glass img{width:100%; height:100%; object-fit:cover; display:block;}
-.device .notch{
-  position:absolute; top:1.9mm; left:50%; transform:translateX(-50%);
-  width:9mm; height:1.9mm; border-radius:.95mm; background:#0B0F14; z-index:2;
+.device .screen img{
+  width:100%; height:100%; display:block;
+  object-fit:cover; object-position:top;
 }
-.shot .cap{margin-top:2.2mm; width:var(--cap-w,30mm); font-size:6.2pt; font-weight:800; letter-spacing:.15em; text-transform:uppercase; color:var(--muted);}
+
+/* Dynamic Island. The captures are from a notched device, so this is a
+   deliberate modernisation: it sits in the gap the status bar already leaves. */
+.device .island{
+  position:absolute; top:1.5%; left:50%; transform:translateX(-50%);
+  width:30%; height:2.9%; border-radius:1mm; background:#080A0D; z-index:2;
+}
+
+/* Side buttons. One pseudo-element each side; the left stacks three with
+   box-shadow so the silent switch and both volume keys come free. */
+.device::before{
+  content:''; position:absolute; left:-.22mm; top:15.5%;
+  width:.24mm; height:3.4%; border-radius:.12mm; background:#7B838B;
+  box-shadow:0 .9mm 0 #7B838B, 0 2.1mm 0 #7B838B;
+}
+.device::after{
+  content:''; position:absolute; right:-.22mm; top:21%;
+  width:.24mm; height:7.4%; border-radius:.12mm; background:#7B838B;
+}
+
+.shot .cap{margin-top:2.4mm; width:var(--cap-w,30mm); font-size:6.2pt; font-weight:800; letter-spacing:.15em; text-transform:uppercase; color:var(--muted);}
 .shot .cap span{display:block; margin-top:.8mm; font-size:6.8pt; font-weight:500; letter-spacing:0; text-transform:none; color:var(--soft); line-height:1.36;}
 
-/* The screenshot band that closes page 2. */
-.shotband{display:flex; align-items:flex-start; gap:4.5mm; margin-top:auto; padding-top:4mm; border-top:.3mm solid var(--rule-soft); --dev-h:34mm; --cap-w:20mm;}
-.shotband .why{flex:1;}
-.shotband .why p{margin:2.2mm 0 0; font-size:8pt; line-height:1.48; color:var(--soft);}
-.shotband .why b{color:var(--body); font-weight:700;}
-
+/* Placeholder, for a slot whose screenshot has not landed yet. */
 .slot{
   position:absolute; inset:0; display:flex; flex-direction:column;
   align-items:center; justify-content:center; gap:1.4mm; text-align:center;
@@ -278,6 +308,12 @@ p.body b, p.lede b{color:var(--body); font-weight:700;}
 }
 .slot b{font-size:6.4pt; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#7E8A80;}
 .slot span{font-size:5.6pt; font-weight:600; color:#95A098; line-height:1.4;}
+
+/* The screenshot band that closes page 2. */
+.shotband{display:flex; align-items:flex-start; gap:5mm; margin-top:auto; padding-top:4mm; border-top:.3mm solid var(--rule-soft); --dev-h:40mm; --cap-w:22mm;}
+.shotband .why{flex:1;}
+.shotband .why p{margin:2.2mm 0 0; font-size:8pt; line-height:1.48; color:var(--soft);}
+.shotband .why b{color:var(--body); font-weight:700;}
 
 /* ================= NUMBERED STEPS ================= */
 .steps{margin:0; padding:0; list-style:none; counter-reset:step;}
