@@ -152,7 +152,7 @@ export function readingPage(shots = {}) {
         <h4 class="min">The four colours you hand out</h4>
         <div class="keys">${keys}</div>
 
-        <h4 class="min" style="margin-top:5.5mm">How your class reads a story</h4>
+        <h4 class="min" style="margin-top:4mm">How your class reads a story</h4>
         <ol class="steps">
           <li><b>Open the same story.</b> Everyone on their own device, or pass one phone
             along a row. Nobody signs in and there is nothing to set up.</li>
@@ -164,8 +164,8 @@ export function readingPage(shots = {}) {
 
         <div class="pullout">
           <h5>Leviticus is almost entirely red.<br>Esther has none at all.</h5>
-          <p>Red is God speaking, so one book is <b>88 per cent his voice</b> and the other
-          never quotes him once. Your students can see that from across the room.</p>
+          <p>Red is God speaking. One book is <b>88 per cent his voice</b>, the other never
+          quotes him once, and your students can see it from across the room.</p>
         </div>
       </div>
 
@@ -182,8 +182,8 @@ export function readingPage(shots = {}) {
           </div>
         </div>
         <p class="body" style="margin-top:3.4mm; font-size:7.6pt">
-          Set from the app's own text and colours. Narration and divine speech sit left,
-          everyone else right, so you see the shape of a conversation before you read it.
+          Set from the app's own text and colours. Divine speech sits left, everyone else
+          right, so the conversation has a shape before you read it.
         </p>
       </div>
     </div>

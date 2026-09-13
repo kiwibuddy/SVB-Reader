@@ -166,17 +166,17 @@ p.body b, p.lede b{color:var(--body); font-weight:700;}
   background:var(--ink-red-fill); border-radius:0 3mm 3mm 0; padding:3.4mm 4.2mm;
 }
 .pullout h5{
-  margin:0; font-size:10pt; font-weight:800; letter-spacing:-.02em;
+  margin:0; font-size:9.6pt; font-weight:800; letter-spacing:-.02em;
   line-height:1.18; color:var(--ink-red-text);
 }
 .pullout p{margin:2.2mm 0 0; font-size:7.8pt; line-height:1.44; color:#8A382F;}
 .pullout p b{color:var(--ink-red-text); font-weight:700;}
 
 /* ================= COLOUR KEY ================= */
-.keys{display:flex; flex-direction:column; gap:1.8mm; margin-top:3.8mm;}
+.keys{display:flex; flex-direction:column; gap:1.4mm; margin-top:3.4mm;}
 .key{
   display:flex; align-items:center; gap:3mm;
-  border-radius:3mm; padding:2.4mm 3.4mm;
+  border-radius:3mm; padding:2.2mm 3.4mm;
 }
 .key .dot{width:4.6mm; height:4.6mm; border-radius:50%; flex:none;}
 .key .who{font-size:9.4pt; font-weight:800; letter-spacing:-.015em; white-space:nowrap;}
@@ -207,8 +207,8 @@ p.body b, p.lede b{color:var(--body); font-weight:700;}
 }
 .spread-break::before, .spread-break::after{content:''; flex:1; height:.25mm; background:var(--rule-soft);}
 
-.turn{margin-bottom:1.5mm;}
-.turn.has-tail{margin-top:2.2mm;}
+.turn{margin-bottom:1.3mm;}
+.turn.has-tail{margin-top:2mm;}
 .turn:first-child{margin-top:0;}
 .speaker{font-size:6pt; font-weight:800; letter-spacing:.18em; text-transform:uppercase; margin-bottom:1.1mm;}
 .speaker--right{text-align:right;}
@@ -264,9 +264,6 @@ p.body b, p.lede b{color:var(--body); font-weight:700;}
     #9AA2A9 0%, #6E767E 9%, #454C54 26%, #3A4149 50%,
     #454C54 74%, #6E767E 91%, #9AA2A9 100%);
   padding:.34mm;
-  box-shadow:
-    0 .8mm 2.2mm rgba(16,22,25,.20),
-    0 .15mm .4mm rgba(16,22,25,.16);
 }
 
 /* The screen carries the aspect, and the rail pads around it. Sizing the rail
@@ -317,7 +314,7 @@ p.body b, p.lede b{color:var(--body); font-weight:700;}
 .slot span{font-size:5.6pt; font-weight:600; color:#95A098; line-height:1.4;}
 
 /* The screenshot band that closes page 2. */
-.shotband{display:flex; align-items:flex-start; gap:6mm; margin-top:auto; padding-top:3.2mm; border-top:.3mm solid var(--rule-soft); --dev-h:40.5mm;}
+.shotband{display:flex; align-items:flex-start; gap:6mm; margin-top:auto; padding-top:8.5mm; border-top:.3mm solid var(--rule-soft); --dev-h:40.5mm;}
 /* A narrow measure here is deliberate: the text runs to more lines and fills the
    band's height, instead of sitting wide and short with a hole underneath it. */
 .shotband .why{width:52mm; flex:none;}
@@ -330,7 +327,7 @@ p.body b, p.lede b{color:var(--body); font-weight:700;}
 
 /* ================= NUMBERED STEPS ================= */
 .steps{margin:0; padding:0; list-style:none; counter-reset:step;}
-.steps li{position:relative; padding-left:9.5mm; margin-bottom:3mm; font-size:8.6pt; line-height:1.46; color:var(--soft);}
+.steps li{position:relative; padding-left:9.5mm; margin-bottom:2.6mm; font-size:8.5pt; line-height:1.44; color:var(--soft);}
 .steps li:last-child{margin-bottom:0;}
 .steps li::before{
   counter-increment:step; content:counter(step);
