@@ -40,21 +40,17 @@ export function coverPage() {
   return `
 <section class="page cover">
   <div class="wash">
+    <!-- No background rect: the cover field is bare paper, so a press lays almost
+         no ink on it. Only the thread and the type print. -->
     <svg viewBox="0 0 210 297" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="g1" x1="0" y1="0" x2="0.4" y2="1">
-          <stop offset="0" stop-color="#1E2833"/><stop offset="1" stop-color="#151C24"/>
-        </linearGradient>
-      </defs>
-      <rect width="210" height="297" fill="url(#g1)"/>
       <!-- The thread: the app's spine motif, run through the narrow band the type
            leaves empty between the sample exchange and the headline. Keep every
            point inside y 126-142 or it collides with one of them. -->
       <path d="M-10 134 C 40 128, 90 126, 150 133 S 210 140, 224 137"
-            fill="none" stroke="#F2EAE0" stroke-opacity="0.12" stroke-width="0.5"/>
-      <path d="M-10 139 C 44 133, 94 131, 152 138 S 212 142, 224 140"
-            fill="none" stroke="#F2EAE0" stroke-opacity="0.06" stroke-width="0.5"/>
-      <circle cx="150" cy="133" r="1.6" fill="#8FE3C0" fill-opacity="0.55"/>
+            fill="none" stroke="#0E6B4C" stroke-opacity="0.30" stroke-width="0.32"/>
+      <path d="M-10 141 C 44 134, 94 130, 152 139 S 212 146, 224 143"
+            fill="none" stroke="#0E6B4C" stroke-opacity="0.13" stroke-width="0.32"/>
+      <circle cx="150" cy="133" r="1.5" fill="#0E6B4C" fill-opacity="0.85"/>
     </svg>
   </div>
   <div class="cover-body">

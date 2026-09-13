@@ -37,8 +37,38 @@ and print are identical.
 ## Printing
 
 Four pages. Two duplex A4 sheets, or one A3 folded. No bleed is set and covers
-run to the trim edge; interior type sits 14–16 mm in, so a typical 5 mm
+run to the trim edge; interior type sits 14-16 mm in, so a typical 5 mm
 unprintable band only clips cover colour.
+
+### Ink coverage
+
+The cover was originally a dark flood, which is expensive to print at any volume.
+It now prints on bare paper: the SVG lays down no background rect at all, so only
+the thread and the type mark the sheet. Measured mean coverage per page:
+
+| Page | Dark cover | Now |
+| --- | --- | --- |
+| 1 cover | 78.7% | **4.5%** |
+| 2 reading | 4.9% | 4.9% |
+| 3 classroom | 3.9% | 3.9% |
+| 4 running it | 25.0% | 25.0% |
+| **All four** | **28.1%** | **9.6%** |
+
+**Page 4 is the remaining ink block.** Its closing panel is still a dark field and
+accounts for essentially all of that 25%. Lightening it the same way would take
+the document to roughly 4% across the board. It has been left dark deliberately:
+it is the call to action, and it is the only thing anchoring the foot of the last
+page. Change it if volume printing matters more than the emphasis.
+
+### Bubble colours on the cover
+
+The cover bubbles use the app's **light**-mode fills, which is what they always
+used, even when the cover was dark. That is deliberate and worth recording,
+because "match the app's dark mode" sounds right and is not: dark-mode fills are
+`#251217`, `#0D2620` and `#111C31`, all near-black, and three of those on a white
+cover would print darker than the flood that was just removed. The only bubble
+that changed is the narrator, which was a translucent cream that disappears on
+paper and is now the app's light narrator, white with a `#DFE5E0` hairline.
 
 ## Screenshots
 

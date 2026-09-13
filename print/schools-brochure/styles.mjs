@@ -75,7 +75,9 @@ p.body b, p.lede b{color:var(--body); font-weight:700;}
 .hair--soft{background:var(--rule-soft);}
 
 /* ================= PAGE 1 · COVER ================= */
-.cover{background:var(--deep); color:var(--cream);}
+/* The cover prints on bare paper: no flood, so almost no ink on an A4 field.
+   Bubble fills stay exactly as they were, which is the app's light-mode set. */
+.cover{background:var(--paper); color:var(--body);}
 .cover .wash{position:absolute; inset:0;}
 .cover .wash svg{width:100%; height:100%; display:block;}
 .cover-body{position:absolute; inset:0; padding:18mm 16mm 15mm; display:flex; flex-direction:column;}
@@ -84,10 +86,10 @@ p.body b, p.lede b{color:var(--body); font-weight:700;}
 .brandmark{display:flex; align-items:center; gap:3mm;}
 .brandmark .dots{display:flex; gap:1.4mm;}
 .brandmark .dots i{width:2.6mm; height:2.6mm; border-radius:50%; display:block;}
-.brandmark .nm{font-size:8pt; font-weight:800; letter-spacing:.2em; text-transform:uppercase; color:var(--cream);}
+.brandmark .nm{font-size:8pt; font-weight:800; letter-spacing:.2em; text-transform:uppercase; color:var(--body);}
 .cover-top .free{
   font-size:7pt; font-weight:800; letter-spacing:.22em; text-transform:uppercase;
-  color:#8FE3C0; border:.35mm solid rgba(143,227,192,.45); border-radius:20mm; padding:1.6mm 4mm;
+  color:var(--acc); border:.35mm solid rgba(14,107,76,.38); border-radius:20mm; padding:1.6mm 4mm;
 }
 
 .cover-stage{margin-top:16mm;}
@@ -98,48 +100,52 @@ p.body b, p.lede b{color:var(--body); font-weight:700;}
 }
 .cover-stage .speaker{
   font-size:6.6pt; font-weight:800; letter-spacing:.2em; text-transform:uppercase;
-  margin-bottom:1.4mm; color:rgba(242,234,224,.62);
+  margin-bottom:1.4mm;
 }
+.cover-stage .turn--black .speaker{color:var(--ink-black-text);}
+.cover-stage .turn--red .speaker{color:var(--ink-red-text);}
+.cover-stage .turn--green .speaker{color:var(--ink-green-text);}
+.cover-stage .turn--blue .speaker{color:var(--ink-blue-text);}
 .cover-stage .turn--left .bubble{margin-right:auto; border-top-left-radius:1.6mm;}
 .cover-stage .turn--right .bubble{margin-left:auto; border-top-right-radius:1.6mm;}
 .cover-stage .turn--right .speaker{text-align:right;}
-.cover-stage .turn--black .bubble{background:rgba(242,234,224,.09); color:rgba(242,234,224,.74);}
+.cover-stage .turn--black .bubble{background:var(--ink-black-fill); color:var(--ink-black-text); box-shadow:inset 0 0 0 .3mm var(--ink-black-edge);}
 .cover-stage .turn--red .bubble{background:var(--ink-red-fill); color:var(--ink-red-text);}
 .cover-stage .turn--green .bubble{background:var(--ink-green-fill); color:var(--ink-green-text);}
 .cover-stage .turn--blue .bubble{background:var(--ink-blue-fill); color:var(--ink-blue-text);}
 .cover-stage .ref{
   margin-top:3.5mm; font-size:6.6pt; font-weight:700; letter-spacing:.2em;
-  text-transform:uppercase; color:rgba(242,234,224,.45); text-align:right;
+  text-transform:uppercase; color:#A9B0AA; text-align:right;
 }
 
 .cover-title{margin-top:auto;}
 .cover-title h1{
   margin:0; font-size:45pt; font-weight:800; line-height:.96;
-  letter-spacing:-.038em; color:var(--cream); max-width:175mm;
+  letter-spacing:-.038em; color:var(--body); max-width:175mm;
 }
-.cover-title h1 em{font-style:normal; color:#8FE3C0;}
+.cover-title h1 em{font-style:normal; color:var(--acc);}
 .cover-title .deck{
   margin-top:5mm; font-size:15pt; font-weight:700; line-height:1.3;
-  letter-spacing:-.015em; color:#8FE3C0; max-width:140mm;
+  letter-spacing:-.015em; color:var(--acc); max-width:140mm;
 }
 .cover-title .say{
   margin-top:4mm; font-size:11.5pt; font-weight:500; line-height:1.5;
-  color:rgba(242,234,224,.8); max-width:136mm;
+  color:var(--soft); max-width:136mm;
 }
-.cover-title .say b{color:var(--cream); font-weight:700;}
+.cover-title .say b{color:var(--body); font-weight:700;}
 
-.cover-facts{display:flex; gap:9mm; margin-top:11mm; padding-top:7mm; border-top:.35mm solid rgba(242,234,224,.22);}
+.cover-facts{display:flex; gap:9mm; margin-top:11mm; padding-top:7mm; border-top:.35mm solid var(--rule);}
 .cover-facts div{display:flex; flex-direction:column;}
-.cover-facts b{font-size:22pt; font-weight:800; letter-spacing:-.03em; line-height:1; color:var(--cream);}
+.cover-facts b{font-size:22pt; font-weight:800; letter-spacing:-.03em; line-height:1; color:var(--body);}
 .cover-facts span{
   margin-top:1.8mm; font-size:6.4pt; font-weight:700; letter-spacing:.17em;
-  text-transform:uppercase; color:rgba(242,234,224,.58); max-width:26mm; line-height:1.4;
+  text-transform:uppercase; color:var(--muted); max-width:26mm; line-height:1.4;
 }
 .cover-foot{
   margin-top:9mm; display:flex; align-items:flex-end; justify-content:space-between;
-  font-size:8pt; line-height:1.5; color:rgba(242,234,224,.66);
+  font-size:8pt; line-height:1.5; color:var(--muted);
 }
-.cover-foot b{color:var(--cream); font-weight:700;}
+.cover-foot b{color:var(--body); font-weight:700;}
 
 /* ============ FORMAT TIMELINE ============ */
 .timeline{
