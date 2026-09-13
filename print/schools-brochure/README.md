@@ -48,7 +48,7 @@ and the files can arrive later.
 
 | File | Screen | What it should show |
 | --- | --- | --- |
-| `screenshots/read.png` | Read | The year as one thread, divisions collapsed |
+| `screenshots/cast.png` | Cast, one voice | **Moses** for preference: green field, "spoke with God 82 times" |
 | `screenshots/reader.png` | Reader | A story mid-scroll, several source colours visible |
 | `screenshots/plan.png` | Plan | The plan list, or a plan open with its ring |
 | `screenshots/talk-about-it.png` | Talk about it | The four questions at the end of a story |
@@ -57,6 +57,14 @@ Portrait, `.png` or `.jpg`, App Store 6.7" (1290 x 2796) is ideal. Anything at
 that aspect ratio works; the frame crops with `object-fit: cover`, so avoid
 screenshots with a status-bar carrier name you would rather not print. Light mode,
 to match the document. Drop the files in and re-run `build.mjs`.
+
+**Why Cast rather than Read.** The Read tab is the home screen, but it argues
+nothing on a page whose case is that the app knows who said what, and its thread
+is a hairline drawing that turns to mush at 34 mm. A Cast voice page renders
+full-bleed in that voice's own ink with the name at 64 pt, so it reads as a
+colour block and holds up small. Moses over Jesus because the page 2 headline
+says red letters already gave Jesus a colour; a green voice is what proves the
+other 773.
 
 The frames sit at 34 mm tall, which is as large as four across can be on a page
 already carrying the timeline, the colour key, the pull-out and the spread. If a

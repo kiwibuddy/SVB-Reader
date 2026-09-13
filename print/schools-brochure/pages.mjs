@@ -190,11 +190,12 @@ export function readingPage(shots = {}) {
     <div class="shotband">
       <div class="why">
         <h4 class="min">On the phone</h4>
-        <p>Five tabs, and you will only need four. <b>Read</b> holds the year as one thread,
-        so the whole Bible sits on a screen. <b>Cast</b> keeps every voice your students have
-        heard, and <b>Saved</b> holds the lines they reacted to.</p>
+        <p>Every one of the ${n(stats.voices)} voices has a page of its own: what they say,
+        where they turn up, and who they speak with most. Moses talks with God 82 times.
+        <b>Read</b> holds the year as one thread and <b>Saved</b> keeps the lines your
+        students reacted to.</p>
       </div>
-      ${device(shots.thread, 'Read', 'The year on one thread')}
+      ${device(shots.cast, 'Cast', 'Who each voice speaks with')}
       ${device(shots.reader, 'Reader', 'A story in four colours')}
       ${device(shots.plan, 'Plan', 'Pick one or build one')}
       ${device(shots.questions, 'Questions', 'Three sets, four each')}

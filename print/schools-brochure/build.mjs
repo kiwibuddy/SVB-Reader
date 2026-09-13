@@ -37,7 +37,7 @@ const fontFaces = FACES.map(([file, weight]) => {
 // missing renders as a labelled slot at the exact final size, so the layout is
 // finished either way.
 const SHOTS = {
-  thread: 'read',
+  cast: 'cast',
   reader: 'reader',
   plan: 'plan',
   questions: 'talk-about-it',
