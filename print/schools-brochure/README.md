@@ -116,6 +116,21 @@ stories cover "major events, teachings, and themes in complete story arcs". That
 reads as an abridgement. The data says otherwise, and the store copy is
 underselling the product.
 
+### A number that does not mean what it looks like
+
+`conversations.json` stores `spokeWith[].count` as an **adjacency turn count**:
+Moses and God have 82 of them. The Cast screen renders
+`partner.shared.length || partner.count`, which is the number of **stories the
+two both appear in**: for Moses and God that is 21. Both quantities print under
+the same "SPOKE WITH" heading, one in the data and one on screen.
+
+This bit. An earlier draft of the page 2 caption said "Moses talks with God 82
+times" while the screenshot 30 mm away printed 21. The caption now says Moses
+speaks in 33 stories and that God is the voice he speaks with most, both of which
+match what the printed screenshot shows.
+
+Worth resolving in the app: either label the two differently, or render `count`.
+
 ### The two passages on the page
 
 Both are rendered from `newBibleNLT1.json` through a port of the app reader, so

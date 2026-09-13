@@ -249,12 +249,15 @@ p.body b, p.lede b{color:var(--body); font-weight:700;}
    any print size and the shot inside is the only bitmap on the page.
    Aspect is 1170x2532, the resolution the screenshots were captured at. */
 .shots{display:flex; gap:6mm; align-items:flex-start;}
-.shot{display:flex; flex-direction:column;}
+.shot{display:flex; flex-direction:column; align-items:flex-start;}
+/* Inside the page 2 band the shots share the row evenly, so the gaps between
+   phones stay equal instead of being whatever the text column leaves over. */
+.shotband .shot{flex:1;}
+.shotband .shot .cap{width:100%;}
 
 .device{
   position:relative;
-  height:var(--dev-h,44mm);
-  aspect-ratio:1170/2532;
+  display:inline-block;
   border-radius:2.4mm;
   /* Brushed rail: light on the outer corners, dark along the flats. */
   background:linear-gradient(148deg,
@@ -266,9 +269,13 @@ p.body b, p.lede b{color:var(--body); font-weight:700;}
     0 .15mm .4mm rgba(16,22,25,.16);
 }
 
-/* The black glass sits under the rail and clips the screenshot. */
+/* The screen carries the aspect, and the rail pads around it. Sizing the rail
+   instead left the screen box very slightly narrower than 1170/2532, which
+   object-fit:cover paid for by shaving the foot off every screenshot. */
 .device .screen{
-  position:absolute; inset:.34mm;
+  position:relative;
+  height:var(--dev-h,44mm);
+  aspect-ratio:1170/2532;
   border-radius:2.1mm; overflow:hidden;
   background:#0B0F14;
 }
@@ -296,7 +303,7 @@ p.body b, p.lede b{color:var(--body); font-weight:700;}
   width:.24mm; height:7.4%; border-radius:.12mm; background:#7B838B;
 }
 
-.shot .cap{margin-top:2.4mm; width:var(--cap-w,30mm); font-size:6.2pt; font-weight:800; letter-spacing:.15em; text-transform:uppercase; color:var(--muted);}
+.shot .cap{margin-top:2mm; width:var(--cap-w,30mm); font-size:6.2pt; font-weight:800; letter-spacing:.15em; text-transform:uppercase; color:var(--muted);}
 .shot .cap span{display:block; margin-top:.8mm; font-size:6.8pt; font-weight:500; letter-spacing:0; text-transform:none; color:var(--soft); line-height:1.36;}
 
 /* Placeholder, for a slot whose screenshot has not landed yet. */
@@ -310,9 +317,15 @@ p.body b, p.lede b{color:var(--body); font-weight:700;}
 .slot span{font-size:5.6pt; font-weight:600; color:#95A098; line-height:1.4;}
 
 /* The screenshot band that closes page 2. */
-.shotband{display:flex; align-items:flex-start; gap:5mm; margin-top:auto; padding-top:4mm; border-top:.3mm solid var(--rule-soft); --dev-h:40mm; --cap-w:22mm;}
-.shotband .why{flex:1;}
-.shotband .why p{margin:2.2mm 0 0; font-size:8pt; line-height:1.48; color:var(--soft);}
+.shotband{display:flex; align-items:flex-start; gap:6mm; margin-top:auto; padding-top:3.2mm; border-top:.3mm solid var(--rule-soft); --dev-h:40.5mm;}
+/* A narrow measure here is deliberate: the text runs to more lines and fills the
+   band's height, instead of sitting wide and short with a hole underneath it. */
+.shotband .why{width:52mm; flex:none;}
+.shotband .why p{
+  margin:2.2mm 0 0; font-size:8pt; line-height:1.48; color:var(--soft);
+  /* Narrow measure, so let the browser pull a word down rather than strand one. */
+  text-wrap:pretty;
+}
 .shotband .why b{color:var(--body); font-weight:700;}
 
 /* ================= NUMBERED STEPS ================= */

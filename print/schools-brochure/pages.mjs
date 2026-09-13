@@ -192,9 +192,9 @@ export function readingPage(shots = {}) {
       <div class="why">
         <h4 class="min">On the phone</h4>
         <p>Every one of the ${n(stats.voices)} voices has a page of its own: what they say,
-        where they turn up, and who they speak with most. Moses talks with God 82 times.
-        <b>Read</b> holds the year as one thread and <b>Saved</b> keeps the lines your
-        students reacted to.</p>
+        where they turn up, and who they speak with most. Moses speaks in 33 stories, and
+        the voice he speaks with most is God. <b>Read</b> holds the year as one thread and
+        <b>Saved</b> keeps the lines your students reacted to.</p>
       </div>
       ${device(shots.cast, 'Cast', 'Who each voice speaks with')}
       ${device(shots.reader, 'Reader', 'A story in four colours')}
