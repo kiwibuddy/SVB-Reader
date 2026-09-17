@@ -67,6 +67,8 @@ h3{font-size:30px;line-height:1.14;letter-spacing:-.02em;font-weight:800;}
 
 /* cover and closer run edge to edge instead */
 .slide.pad{padding:70px 96px 86px;justify-content:flex-start;}
+/* A pad slide that still carries the section rule needs to clear it. */
+.slide.pad.withsec{padding-top:150px;}
 .sec i{flex:1;height:1px;background:var(--hair);}
 
 /* ---------------- chrome ---------------- */
@@ -105,10 +107,11 @@ h3{font-size:30px;line-height:1.14;letter-spacing:-.02em;font-weight:800;}
 .barrow{display:flex;align-items:center;gap:22px;}
 .barrow .lab{width:290px;font-size:19px;font-weight:700;color:var(--ink);text-align:right;flex:none;}
 .barrow .track{flex:1;height:32px;background:#E7EBE6;border-radius:6px;overflow:hidden;}
-.barrow .fill{height:100%;width:0;background:var(--acc);border-radius:6px;
+.barrow .fill{display:block;height:100%;width:0;background:var(--acc);border-radius:6px;
   transition:width var(--d-slow) var(--ease);}
 .slide.on .barrow .fill{width:var(--w);transition-delay:calc(var(--bi,0) * ${MOTION.stagger.bar}ms);}
-.barrow .val{width:92px;font-size:21px;font-weight:800;color:var(--acc);font-variant-numeric:tabular-nums;}
+.barrow .val{flex:none;white-space:nowrap;font-size:21px;font-weight:800;color:var(--acc);
+  font-variant-numeric:tabular-nums;}
 
 /* ---------------- the phone ---------------- */
 .phone{
@@ -150,8 +153,8 @@ h3{font-size:30px;line-height:1.14;letter-spacing:-.02em;font-weight:800;}
 .tabs{display:flex;border-top:1px solid var(--hair);background:var(--surf);padding:9px 6px 16px;}
 .tabs div{flex:1;text-align:center;font-size:10px;font-weight:600;color:var(--mute);}
 .tabs div.on{color:var(--acc);font-weight:800;}
-.tabs div b{display:block;width:19px;height:19px;margin:0 auto 4px;border-radius:5px;
-  border:1.8px solid currentColor;opacity:.85;}
+.tabs div b{display:block;width:19px;height:19px;margin:0 auto 4px;}
+.tabs div b svg{display:block;width:19px;height:19px;}
 
 /* ---------------- bubbles (geometry ported from the reader) ---------------- */
 .turn{margin-bottom:9px;}
@@ -247,6 +250,17 @@ h3{font-size:30px;line-height:1.14;letter-spacing:-.02em;font-weight:800;}
 .qrbox .n{margin-top:18px;font-size:19px;font-weight:800;letter-spacing:.04em;}
 .qrbox .u{margin-top:7px;font-size:14px;color:var(--mute);}
 .slide.dark .qrbox .u{color:rgba(242,234,224,.62);}
+
+/* ---------------- the precedent grid ---------------- */
+.precedent{border-top:1px solid var(--hair);}
+.precedent .ph,.precedent .pr,.precedent .pf{display:grid;grid-template-columns:186px 1fr 1fr;gap:34px;}
+.precedent .ph{padding:14px 0 12px;border-bottom:1px solid var(--hair);}
+.precedent .ph span{font-size:13px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--acc);}
+.precedent .pr{padding:16px 0;border-bottom:1px solid var(--rule-soft);align-items:start;}
+.precedent .bt{font-size:15px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--mute);padding-top:2px;}
+.precedent .pc{font-size:18px;line-height:1.46;color:var(--soft);}
+.precedent .pf{padding:13px 0 0;}
+.precedent .pf span{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#A9B0AA;}
 
 /* ---------------- runsheet ---------------- */
 .run{display:flex;flex-direction:column;gap:0;}

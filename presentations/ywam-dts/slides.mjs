@@ -13,6 +13,8 @@ const n = (x) => x.toLocaleString('en-NZ');
 const S = D.stats();
 const jonah = D.story(D.JONAH);
 const jTurns = D.turns(D.JONAH);
+const jos = D.story('S123');
+const neh = D.story('S151');
 const OT = D.plan('Old Testament Journey');
 const NT = D.plan('New Testament Journey');
 
@@ -32,13 +34,19 @@ const counter = (c) => `
   </div>`;
 
 const bars = (rows, unit) => {
-  const max = Math.max(...rows.map((r) => r.value));
-  return `<div class="bars">${rows.map((r, i) => `
+  // Percentages are drawn against a full 100, so a 43 never looks like a 75.
+  const peak = Math.max(...rows.map((r) => r.value));
+  const max = String(unit).trim() === '%' ? 100 : peak;
+  return `<div class="bars">${rows.map((r, i) => {
+    const tint = r.color ? `background:var(--k-${r.color});` : '';
+    const ink = r.color ? `color:var(--k-${r.color});` : '';
+    return `
     <div class="barrow" style="--bi:${i}">
       <span class="lab">${esc(r.label)}</span>
-      <span class="track"><span class="fill" style="--w:${(r.value / max) * 100}%"></span></span>
-      <span class="val">${r.value}${unit}</span>
-    </div>`).join('')}</div>`;
+      <span class="track"><span class="fill" style="--w:${(r.value / max) * 100}%;${tint}"></span></span>
+      <span class="val" style="${ink}">${r.value}${unit}</span>
+    </div>`;
+  }).join('')}</div>`;
 };
 
 const qr = (k, name) => `
@@ -164,9 +172,8 @@ export function slides() {
   // ---- 16-25 THE ARGUMENT -------------------------------------------------
   add('dark', `
     ${sec('02', 'The habit we built')}
-    ${a(`<h2 style="margin-top:auto">Access is solved.<br><em>Formation</em> is not.</h2>`)}
+    ${a(`<h2>Access is solved.<br><em>Formation</em> is not.</h2>`)}
     ${a(`<div class="lede" style="margin-top:32px;max-width:1020px">A billion installs, and a Bible on every phone in this call. Whatever the problem is now, it is not that people cannot get to the text.</div>`)}
-    <div style="margin-top:auto"></div>
   `, 'Slow down. This is the turn from data to argument.');
 
   add('', `
@@ -189,17 +196,49 @@ export function slides() {
     ${a(`<div class="body" style="margin-top:34px;max-width:1080px">So when the Bible arrives on that same device, inside that same posture, it inherits the posture. Reading becomes one more thing done alone, at speed, between other things done alone.</div>`)}
   `, 'This is the heart of it. Your own AI and discipleship material sits underneath this slide.');
 
+  add('', `
+    ${sec('02', 'It has happened before')}
+    ${a(`<h2>Twice the book was found, read out loud to everyone,<br>and the <em>society</em> changed.</h2>`)}
+    ${a(`<div class="precedent" style="margin-top:34px">
+      <div class="ph"><span></span><span>Josiah</span><span>Nehemiah</span></div>
+      ${[
+        ['Found',
+         'Hilkiah the priest finds the Book of the Law in the Temple during repairs.',
+         'The people ask Ezra to bring out the Book of the Law of Moses.'],
+        ['Read aloud',
+         'The king goes up with all the people of Judah and Jerusalem and reads them the entire Book of the Covenant.',
+         'Read at the Water Gate from early morning until noon, to everyone old enough to understand.'],
+        ['Understood together',
+         'Josiah tears his clothes, then sends to Huldah the prophetess to ask what it means.',
+         'The Levites move through the crowd explaining it, so the people grasp what is being read.'],
+        ['Then the society moves',
+         'The altars come down, the practices stop, and Passover is kept as it had not been in centuries.',
+         'The assembly renews the covenant in writing and signs it.'],
+      ].map(([beat, j, n2]) => `
+        <div class="pr">
+          <span class="bt">${beat}</span>
+          <span class="pc">${j}</span>
+          <span class="pc">${n2}</span>
+        </div>`).join('')}
+      <div class="pf">
+        <span></span>
+        <span>Story ${jos.id.replace('S','')} &nbsp;·&nbsp; ${esc(jos.book)} ${esc(jos.reference)} &nbsp;·&nbsp; ${jos.minutes} min &nbsp;·&nbsp; ${jos.cast.length} voices</span>
+        <span>Story ${neh.id.replace('S','')} &nbsp;·&nbsp; ${esc(neh.book)} ${esc(neh.reference)} &nbsp;·&nbsp; ${neh.minutes} min &nbsp;·&nbsp; ${neh.cast.length} voices</span>
+      </div>
+    </div>`)}
+    ${a(`<div class="body" style="margin-top:26px">Neither of them handed out scrolls. The reading was the public event, and the reform followed it.</div>`)}
+  `, 'Your slide to talk over. The point is that reading aloud to a gathered people is the oldest pattern, not a new format.');
+
   add('dark', `
     ${sec('02', 'The counter-move')}
-    ${a(`<h2 style="margin-top:auto">Make the Bible the <em>reason</em><br>people are in a room together.</h2>`)}
+    ${a(`<h2>Make the Bible the <em>reason</em><br>people are in a room together.</h2>`)}
     ${a(`<div class="lede" style="margin-top:32px;max-width:1040px">Not a warm-up before the real thing. Not homework you did separately and now discuss. The reading itself is the shared act, and it needs other people present to happen at all.</div>`)}
-    <div style="margin-top:auto"></div>
   `, 'Say it as a thesis, not a suggestion.');
 
   add('', `
     ${sec('02', 'Why it matters')}
     ${a(`<h2>Some revelation only arrives in the <em>room</em>.</h2>`)}
-    ${a(`<div class="lede" style="margin-top:26px">Read Jonah on your own and you meet a reluctant prophet. Read it with three other people, one of them holding God's lines and one of them holding Jonah's, and someone in the group hears the last question of the book pointed straight at them.</div>`)}
+    ${a(`<div class="lede" style="margin-top:26px">Read Jonah on your own and you meet a reluctant prophet. Read it with three other people, one of them holding God's lines and one of them holding Jonah’s, and someone in the group hears the last question of the book pointed straight at them.</div>`)}
     ${a(`<ol class="steps" style="margin-top:40px">
       <li><b>You hear it in someone else's voice.</b> The text stops sounding like your own interior monologue, which is the version you have already agreed with.</li>
       <li><b>You have to keep up.</b> Your part is coming, so you are reading forward rather than skimming.</li>
@@ -325,7 +364,7 @@ export function slides() {
   `, 'Read one of the questions out loud so they hear the register.');
 
   // ---- 42-57 THE EXERCISE -------------------------------------------------
-  add('dark pad', `
+  add('dark pad withsec', `
     ${sec('06', 'Your turn')}
     ${a(`<h2 style="font-size:78px;margin-top:10px">Breakout rooms.<br>Fifteen minutes.</h2>`)}
     ${a(`<div style="display:flex;gap:56px;margin-top:44px">
@@ -356,7 +395,7 @@ export function slides() {
     ${a(`<h2>Jonah, by the numbers.</h2>`)}
     ${a(`<div class="lede" style="margin-top:20px">If your group is deciding who takes which colour, this is how much each part actually speaks.</div>`)}
     ${a(`<div style="margin-top:34px">${bars(
-      jonah.cast.map((c)=>({ label: c.name, value: c.words })), ' words'
+      jonah.cast.map((c)=>({ label: c.name, value: c.words, color: c.color })), ' words'
     )}</div>`)}
     ${a(`<div class="small" style="margin-top:20px">Blue is shared across ${jonah.cast.filter((c)=>c.color==='blue').length} speakers, so one reader covers all of them.</div>`)}
   `, 'Useful if a group stalls on who takes what.');

@@ -65,8 +65,8 @@ export const STATS = {
     head: 'AI has already arrived in how people handle Scripture.',
     bars: [
       { label: 'Pastors', value: 94 },
-      { label: 'US adults', value: 74 },
       { label: 'Practicing Christians', value: 83 },
+      { label: 'US adults', value: 74 },
       { label: 'Millennials', value: 44 },
       { label: 'Gen Z', value: 39 },
     ],
