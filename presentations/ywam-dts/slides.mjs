@@ -65,38 +65,6 @@ export function slides() {
   const out = [];
   const add = (html, note) => { reset(); out.push({ html, note }); };
 
-  // ---- BEFORE WE START · GET THE APP --------------------------------------
-  // One code per slide, as big as the stage allows, so the back row can scan
-  // it. Leave each one up while people find it.
-  const getApp = (key, store, device, note) => `
-    <div class="sl sl-deep"><div class="sl-pad">
-      ${label('Before we start &nbsp;·&nbsp; download it now')}
-      <div class="getbig">
-        <div class="side">
-          ${a(`<div class="appname">
-            <span class="appicon" role="img" aria-label="SourceView Together app icon"></span>
-            <div><h2 class="t-h2" style="line-height:1.02">SourceView<br>Together</h2></div>
-          </div>`)}
-          ${a(`<div class="store">${store}</div>`)}
-          ${a(`<p class="t-body">${note}</p>`)}
-          ${a(`<div class="src-note" style="margin-top:calc(1 * var(--u))">${esc(QR[key].short)}</div>`)}
-        </div>
-        ${a(`<div class="bigcode">
-          <div class="code">${QR[key].svg}</div>
-          <div class="cap">${device}</div>
-        </div>`)}
-      </div>
-      ${foot('Before we start')}
-    </div></div>`;
-
-  add(getApp('ios', 'App Store', 'iPhone and iPad',
-    'Point your camera at the code. It is free, there is no account to make, and it works offline once a story is open.'),
-    'Leave this up while people arrive and scan. Do not move on until most of the room has it.');
-
-  add(getApp('android', 'Google Play', 'Android',
-    'Android is the next code. Same app, same plans, nothing to sign up for.'),
-    'Second code. Wait here too. Search SourceView Together in the store if a camera will not scan off the screen.');
-
   // ---- MOVEMENT 1 · THE NUMBERS -------------------------------------------
   const R = STATS.resurgence;
   add(`
@@ -197,6 +165,39 @@ export function slides() {
     'Hold up your phone here if you have it. The whole Bible, not a selection. Nothing added, moved or removed.');
 
   // ---- MOVEMENT 3 · FOUR COLOURS ------------------------------------------
+  // ---- GET IT ON YOUR PHONE ------------------------------------------------
+  // One code per slide, as big as the stage allows, so the back row can scan
+  // it. Leave each one up while people find it: nothing later in the hour
+  // works if the room cannot open a story.
+  const getApp = (key, store, device, note) => `
+    <div class="sl sl-deep"><div class="sl-pad">
+      ${label('Movement 3 &nbsp;·&nbsp; get it on your phone')}
+      <div class="getbig">
+        <div class="side">
+          ${a(`<div class="appname">
+            <span class="appicon" role="img" aria-label="SourceView Together app icon"></span>
+            <div><h2 class="t-h2" style="line-height:1.02">SourceView<br>Together</h2></div>
+          </div>`)}
+          ${a(`<div class="store">${store}</div>`)}
+          ${a(`<p class="t-body">${note}</p>`)}
+          ${a(`<div class="src-note" style="margin-top:calc(1 * var(--u))">${esc(QR[key].short)}</div>`)}
+        </div>
+        ${a(`<div class="bigcode">
+          <div class="code">${QR[key].svg}</div>
+          <div class="cap">${device}</div>
+        </div>`)}
+      </div>
+      ${foot('Movement 3 &nbsp;·&nbsp; Four colours')}
+    </div></div>`;
+
+  add(getApp('ios', 'App Store', 'iPhone and iPad',
+    'Point your camera at the code. Free, no account to make, and it works offline once a story is open.'),
+    'Stop here and let them scan. Nothing later in the hour works if the room cannot open a story.');
+
+  add(getApp('android', 'Google Play', 'Android',
+    'Same app, same plans, nothing to sign up for.'),
+    'Second code, wait here too. Search SourceView Together in the store if a camera will not scan off a shared screen.');
+
   add(`
     <div class="sl"><div class="sl-pad">
       ${label('Movement 3 &nbsp;·&nbsp; a simple format')}

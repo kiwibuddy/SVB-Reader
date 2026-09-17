@@ -31,21 +31,21 @@ room asks where a number came from.
 
 | Time | Slides | |
 | --- | --- | --- |
-| before | 1-2 | Get the app: one store code per slide |
-| 00-08 | 3-4 | Movement 1: where we are, and access |
-| 08-20 | 5-7 | Movement 2: the practices, the pattern, the invitation |
-| 20-29 | 8-11 | Movement 3: the tool, and four colours |
-| 29-33 | 12 | Movement 4: two DTS rhythms |
-| 33-49 | 13-14 | Movement 5: breakouts, read Jonah |
-| 49-60 | 15-17 | Close: reflect, take the resource, questions |
+| 00-08 | 1-2 | Movement 1: where we are, and access |
+| 08-20 | 3-5 | Movement 2: the practices, the pattern, the invitation |
+| 20-31 | 6-11 | Movement 3: the tool, the codes, and four colours |
+| 31-35 | 12 | Movement 4: two DTS rhythms |
+| 35-50 | 13-14 | Movement 5: breakouts, read Jonah |
+| 50-60 | 15-17 | Close: reflect, take the resource, questions |
 
-Slides 1 and 2 are the download codes, one store per slide, each code at 40u
+Slides 7 and 8 are the download codes, one store per slide, each code at 40u
 square. That is about 70% of the stage height, which is what makes it scannable
-from the back of a room rather than only from the front two rows. Leave each
-one up until most of the room has it; the session does not work if people
-cannot open a story in the breakout.
+from the back of a room rather than only from the front two rows. They sit
+straight after the app is introduced, so the name is on screen before the code
+is. Stop on each one until most of the room has it: nothing later in the hour
+works if people cannot open a story.
 
-Slide 8 introduces the app itself, with the real icon read from
+Slide 6 introduces the app itself, with the real icon read from
 `assets/images/icon.png` and downscaled to 420px, carried once as the
 `--appicon` CSS token so the blob is not repeated per use.
 
@@ -53,7 +53,7 @@ Slide 13 is the breakout brief. Leave it up, press `T`, open rooms of four.
 Slide 14 is a back-pocket slide: only put it up if a room stalls on who takes
 which colour.
 
-Slide 6 is the Josiah and Nehemiah precedent, four beats down the side with
+Slide 4 is the Josiah and Nehemiah precedent, four beats down the side with
 the two stories as parallel columns. It carries no argument of its own on
 purpose: it is there to talk over, with the story numbers along the foot so
 they can be opened in the app if anyone asks.
