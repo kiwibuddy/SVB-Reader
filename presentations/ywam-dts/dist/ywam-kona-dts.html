@@ -570,7 +570,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 <main id="deck">
 
-<section class="slide" data-note="Every card opens its source, including what is still unconfirmed. Do not oversell the reading figures: they are self-reported.">
+<section class="slide" data-note="Every card opens its source with a link. Do not oversell the reading figures: they are self-reported. The third card is Barna and Gloo, same study as the first two.">
 
     <div class="sl"><div class="sl-pad">
       <span class="t-label a">Movement 1 · where we are</span>
@@ -589,13 +589,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
     <div class="click-hint">Tap for source</div>
   </button>
   <button class="card stat-card d4" data-modal="r3">
-    <span class="stat-num"><span class="counter" data-target="21" data-suffix="%">0%</span></span>
-    <p>UK young men at church monthly</p>
-    <div class="stat-src">Up from 4%</div>
+    <span class="stat-num"><span class="counter" data-target="50" data-suffix="%">0%</span></span>
+    <p>Millennials reading weekly</p>
+    <div class="stat-src">Up 16 points</div>
     <div class="click-hint">Tap for source</div>
   </button></div></div>
       <div class="a d2"><p class="t-body" style="margin-top:1.4rem">That is encouraging. People are opening Scripture. The question for a DTS is not only how much Scripture students encounter, but what kind of people our practices are forming them to become.</p></div>
-      <div class="a d3"><div class="src-note" style="margin-top:1rem">Bible resurgence compilation, July 2026. Reading figures and UK attendance are separate surveys.</div></div>
+      <div class="a d3"><div class="src-note" style="margin-top:1rem">Barna Group and Gloo · State of the Church · November 2025</div></div>
       <div class="slide-foot"><span>Reading Scripture Together &nbsp;·&nbsp; YWAM Kona</span><span>Movement 1 &nbsp;·&nbsp; The numbers</span></div>
     </div></div>
 </section>
@@ -609,7 +609,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   <button class="card stat-card d2" data-modal="d1">
     <span class="stat-num"><span class="counter" data-target="1" data-suffix="bn">0bn</span></span>
     <p>YouVersion installs</p>
-    <div class="stat-src">Lifetime</div>
+    <div class="stat-src">Since 2008</div>
     <div class="click-hint">Tap for source</div>
   </button>
   <button class="card stat-card d3" data-modal="d2">
@@ -619,7 +619,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
     <div class="click-hint">Tap for source</div>
   </button></div></div>
       <div class="a d2"><p class="t-body-lg" style="margin-top:1.5rem">A billion installs. Millions opening the Bible in a single day. More access to Scripture than any generation before us. So the question becomes: what practices help students encounter God through His Word, together?</p></div>
-      <div class="a d3"><div class="src-note" style="margin-top:1rem">YouVersion, via the Bible resurgence compilation, July 2026</div></div>
+      <div class="a d3"><div class="src-note" style="margin-top:1rem">YouVersion (Life.Church) · 2025 to 2026</div></div>
       <div class="slide-foot"><span>Reading Scripture Together &nbsp;·&nbsp; YWAM Kona</span><span>Movement 1 &nbsp;·&nbsp; The numbers</span></div>
     </div></div>
 </section>
@@ -1252,51 +1252,37 @@ const SOURCES = {
   "r1": {
     "stat": "42%",
     "title": "Weekly Bible reading, 30% to 42%",
-    "body": "A rise in the share reporting they read the Bible at least weekly. The population and the two survey years still need pinning down before this goes on a slide anywhere else.\n\nChecked against its linked source in July 2026. The compilation asks that figures be re-checked before republication after October 2026.",
-    "source": "Bible resurgence compilation, July 2026. Reading figures and UK attendance are separate surveys.",
-    "link": "https://kiwibuddy.github.io/bible-resurgence/"
+    "body": "In 2025, 42% of US adults said they read the Bible at least once a week, up from 30% in 2024, which was the lowest level in fifteen years. Younger adults led the rebound.",
+    "source": "Barna Group and Gloo, State of the Church, November 2025",
+    "link": "https://www.barna.com/trends/bible-reading-trends/"
   },
   "r2": {
     "stat": "49%",
-    "title": "Gen Z weekly reading, 30% to 49%",
-    "body": "The steepest movement in the compilation. Same open question: which population, and across which two years.\n\nChecked against its linked source in July 2026. The compilation asks that figures be re-checked before republication after October 2026.",
-    "source": "Bible resurgence compilation, July 2026. Reading figures and UK attendance are separate surveys.",
-    "link": "https://kiwibuddy.github.io/bible-resurgence/"
+    "title": "Gen Z weekly Bible reading, 30% to 49%",
+    "body": "Weekly Bible reading among Gen Z rose from 30% to 49% in a single year, a 19 point jump and the largest of any generation in the study.",
+    "source": "Barna Group and Gloo, State of the Church, November 2025",
+    "link": "https://www.barna.com/trends/bible-reading-trends/"
   },
   "r3": {
-    "stat": "21%",
-    "title": "UK young men attending monthly, 4% to 21%",
-    "body": "This one counts attendance rather than self-reported reading, which is why it is here beside the reading figures rather than on its own. Sample size 13,146. Survey name and the two years are still to be confirmed.\n\nChecked against its linked source in July 2026. The compilation asks that figures be re-checked before republication after October 2026.",
-    "source": "Bible resurgence compilation, July 2026. Reading figures and UK attendance are separate surveys.",
-    "link": "https://kiwibuddy.github.io/bible-resurgence/"
-  },
-  "u1": {
-    "stat": "12%",
-    "title": "Monthly church attendance, 8% to 12%",
-    "body": "Attendance rather than self-reported reading, which is why it carries more weight than the reading figures. Survey name and the two years are still to be confirmed.\n\nChecked against its linked source in July 2026. The compilation asks that figures be re-checked before republication after October 2026.",
-    "source": "Bible resurgence compilation, July 2026",
-    "link": "https://kiwibuddy.github.io/bible-resurgence/"
-  },
-  "u2": {
-    "stat": "21%",
-    "title": "Young men attending monthly, 4% to 21%",
-    "body": "The same age and gender pattern as the reading figures, on a different measure and in a different country. Survey name and years still to be confirmed.\n\nChecked against its linked source in July 2026. The compilation asks that figures be re-checked before republication after October 2026.",
-    "source": "Bible resurgence compilation, July 2026",
-    "link": "https://kiwibuddy.github.io/bible-resurgence/"
+    "stat": "50%",
+    "title": "Millennial weekly Bible reading, 34% to 50%",
+    "body": "Millennials rose 16 points in a single year to 50% reading weekly, the largest one-year increase the study recorded for that generation.",
+    "source": "Barna Group and Gloo, State of the Church, November 2025",
+    "link": "https://www.barna.com/trends/bible-reading-trends/"
   },
   "d1": {
     "stat": "1bn",
     "title": "YouVersion, one billion installs",
-    "body": "Lifetime installs of a single free Bible app. Whatever the problem is now, it is not that people cannot reach the text.\n\nChecked against its linked source in July 2026. The compilation asks that figures be re-checked before republication after October 2026.",
-    "source": "YouVersion, via the Bible resurgence compilation, July 2026",
-    "link": "https://kiwibuddy.github.io/bible-resurgence/"
+    "body": "In October 2025 YouVersion’s Bible App passed one billion installs since it launched in 2008. It is now available in more than 2,300 languages.",
+    "source": "YouVersion (Life.Church), October 2025",
+    "link": "https://www.youversion.com/news/bible-app-reaches-one-billion-installs"
   },
   "d2": {
     "stat": "22.2m",
-    "title": "22.2 million users on one day",
-    "body": "A single-day figure from 4 January 2026, which is the January reading-plan spike. It is the clearest number in the set for how normal a phone Bible has become.\n\nChecked against its linked source in July 2026. The compilation asks that figures be re-checked before republication after October 2026.",
-    "source": "YouVersion, via the Bible resurgence compilation, July 2026",
-    "link": "https://kiwibuddy.github.io/bible-resurgence/"
+    "title": "22.2 million in a single day",
+    "body": "On Sunday 4 January 2026, more than 22.2 million people used YouVersion’s apps and website in one day, its highest day of engagement on record, during the New Year reading-plan surge.",
+    "source": "YouVersion (Life.Church), January 2026",
+    "link": "https://www.youversion.com/news/record-breaking-millions-turn-to-scripture-in-the-new-year"
   }
 };
 

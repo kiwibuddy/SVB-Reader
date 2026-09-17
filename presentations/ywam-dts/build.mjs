@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { slides } from './slides.mjs';
 import { css } from './styles.mjs';
 import { js } from './runtime.mjs';
-import { STATS, REACH, TRANSLATION, sourceMap } from './stats.mjs';
+import { STATS, sourceMap } from './stats.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const out = path.join(here, 'dist');
@@ -83,24 +83,16 @@ console.log('wrote', path.relative(path.resolve(here, '../..'), file),
   Math.round(html.length / 1024) + 'KB');
 console.log('slides:', list.length);
 
-// Anything still marked `confirm` is printed on every build so a blank cannot
-// ship by accident. Blocks that no longer reach a slide are listed apart, so
-// the live list stays short enough to actually work through.
-const ONSTAGE = new Set(['resurgence', 'digital']);
-const open = [], parked = [];
-for (const [k, v] of Object.entries(STATS)) {
-  const bin = ONSTAGE.has(k) ? open : parked;
-  if (v.confirm) bin.push([k, v.confirm]);
-  (v.counters || []).forEach((c, i) => c.confirm && bin.push([`${k} card ${i + 1}`, c.confirm]));
-}
-if (REACH.confirm) parked.push(['reach', REACH.confirm]);
-if (TRANSLATION.confirm) parked.push(['translation', TRANSLATION.confirm]);
-if (open.length) {
-  console.log('\nON A SLIDE, STILL TO CONFIRM:');
-  open.forEach(([k, c]) => console.log('  - ' + k + ': ' + c));
-}
-if (parked.length) {
-  console.log('\nCut from the deck, so not blocking: ' + parked.map(([k]) => k).join(', '));
+// Every clickable stat card must open a source with a real link, since this
+// deck gets sent to people who read the cards on their own. The build fails
+// loudly if any live figure is missing its source or link.
+const cards = Object.entries(sourceMap());
+const unsourced = cards.filter(([, d]) => !d.source || !/^https?:\/\//.test(d.link || ''));
+console.log('\nSOURCES  ' + cards.length + ' stat cards, each with a link:');
+cards.forEach(([id, d]) => console.log('  ' + id + '  ' + d.stat + '  ' + d.source));
+if (unsourced.length) {
+  console.log('\n  MISSING a source or link: ' + unsourced.map(([id]) => id).join(', ') +
+    '  <-- fix before sending');
 }
 
 // brand-strategy/voice-rules.md is binding on anything in Nathaniel's voice, so

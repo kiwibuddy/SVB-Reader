@@ -76,7 +76,7 @@ export function slides() {
       ${a(`<div class="src-note" style="margin-top:1rem">${esc(R.source)}</div>`)}
       ${foot('Movement 1 &nbsp;·&nbsp; The numbers')}
     </div></div>`,
-    'Every card opens its source, including what is still unconfirmed. Do not oversell the reading figures: they are self-reported.');
+    'Every card opens its source with a link. Do not oversell the reading figures: they are self-reported. The third card is Barna and Gloo, same study as the first two.');
 
   const G = STATS.digital;
   add(`
