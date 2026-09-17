@@ -124,6 +124,29 @@ just in this file.
 cannot ship by accident. Percentage bars draw against a full 100 rather than
 against the tallest bar, so a 43 never reads as a 75.
 
+## Sized for a projector
+
+The house type ramp is built for a laptop or a web essay. This deck is shared
+to a projector in front of about 150 people, so the back row sets the minimum
+and everything in `styles.mjs` under PROJECTION SCALE overrides it. `theme.mjs`
+stays untouched.
+
+The whole stage is one unit. `--u` is a hundredth of the board, taken from
+whichever axis is tighter:
+
+```css
+:root{ --u: min(1vw, 1.78vh) }
+```
+
+Nothing in that block carries a `rem` cap, and that is the point. A cap makes
+type proportionally *larger* on a small screen than on a big one, which is how
+a slide that fits at 1600 overflows at 1366. With no caps the entire stage
+scales together, so if it fits once it fits everywhere. Checked at 1024x768,
+1280x720, 1366x768, 1600x900, 1920x1080 and 2560x1440.
+
+1u is 16px on a 1600-wide screen, so the numbers in that block read like rem.
+Body copy lands near 29px there and grows with the screen.
+
 ## Voice
 
 `brand-strategy/voice-rules.md` is binding on everything here that is in

@@ -71,7 +71,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .nav button{width:38px;height:38px;border-radius:50%;border:1px solid var(--fog);
   background:rgba(15,16,20,.65);color:var(--ink);cursor:pointer;backdrop-filter:blur(8px)}
 .nav button:hover{border-color:var(--gold);color:var(--gold)}
-#clock{position:fixed;right:1rem;bottom:3.7rem;z-index:22;font-family:var(--mono);font-size:.78rem;
+#clock{position:fixed;right:1rem;top:1rem;z-index:22;font-family:var(--mono);font-size:.78rem;
   font-weight:500;letter-spacing:.1em;color:var(--dim);border:1px solid var(--fog);border-radius:999px;
   padding:.4rem .8rem;background:rgba(15,16,20,.65)}
 #clock.run{color:var(--lime);border-color:rgba(124,204,30,.5)}
@@ -262,12 +262,12 @@ const parts = `
 /* the format lineage strip */
 .line{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--fog);
   margin-top:1.3rem}
-.line div{padding:.95rem 1rem;border-right:1px solid var(--fog)}
-.line div:last-child{border-right:0;background:rgba(124,204,30,.08)}
+.line>div{padding:.95rem 1rem;border-right:1px solid var(--fog)}
+.line>div:last-child{border-right:0;background:rgba(124,204,30,.08)}
 .line .y{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;color:var(--dim)}
 .line .w{font-family:var(--display);margin-top:.3rem;font-size:clamp(1rem,1.5vw,1.3rem);
   font-weight:600;color:var(--ink)}
-.line div:last-child .y,.line div:last-child .w{color:var(--lime)}
+.line>div:last-child .y,.line>div:last-child .w{color:var(--lime)}
 
 .qr{display:flex;gap:clamp(1.2rem,2.6vw,2.4rem);align-items:flex-start}
 .qrbox{text-align:center}
@@ -291,4 +291,121 @@ const parts = `
 }
 `;
 
-export const css = theme + engine + parts;
+const projection = `
+/* ===========================================================================
+   PROJECTION SCALE
+   This deck is shared to a projector in front of about 150 people, so the back
+   row sets the minimum. The house ramp is sized for a laptop and is too small.
+
+   Everything here is one unit: --u is a hundredth of the stage, taken from
+   whichever axis is tighter. Nothing carries a rem cap, because a cap makes
+   type proportionally larger on a small screen than on a big one, which is how
+   a slide that fits at 1600 overflows at 1366. With no caps the whole stage
+   scales together, so if it fits once it fits everywhere.
+
+   1u == 16px on a 1600-wide screen, so these numbers read like rem.
+   theme.mjs stays untouched; this is an override on top of it.
+   =========================================================================== */
+:root{--u:min(1vw,1.78vh)}
+
+.t-label{font-size:calc(1.05 * var(--u));letter-spacing:.22em;margin-bottom:calc(.9 * var(--u))}
+.t-h1{font-size:calc(6.2 * var(--u));line-height:1.02}
+.t-h2{font-size:calc(5.4 * var(--u));line-height:1.05}
+.t-h3{font-size:calc(4 * var(--u));line-height:1.08}
+.t-body{font-size:calc(1.8 * var(--u));line-height:1.55;max-width:calc(74 * var(--u))}
+.t-body-lg{font-size:calc(2.2 * var(--u));line-height:1.44;max-width:calc(80 * var(--u))}
+.callout{font-size:calc(1.68 * var(--u));line-height:1.44;
+  padding:calc(1.45 * var(--u)) calc(1.75 * var(--u));border-left-width:calc(.3 * var(--u))}
+.rule{width:calc(3.5 * var(--u));height:calc(.19 * var(--u))}
+.accent{font-style:italic}
+
+.grid{gap:calc(1.15 * var(--u))}
+.card{padding:calc(1.85 * var(--u)) calc(2 * var(--u));border-radius:calc(1.1 * var(--u))}
+.card h3{font-size:calc(2.3 * var(--u));margin-bottom:calc(.8 * var(--u))}
+.card p{font-size:calc(1.58 * var(--u));line-height:1.44}
+
+.stat-card{min-height:calc(18 * var(--u))}
+.stat-num{font-size:calc(6.8 * var(--u));margin-bottom:calc(.7 * var(--u))}
+.stat-num.small{font-size:calc(4.4 * var(--u))}
+.stat-src{font-size:calc(.8 * var(--u));letter-spacing:.12em;margin-top:calc(.85 * var(--u))}
+.click-hint{font-size:calc(.78 * var(--u));margin-top:calc(.6 * var(--u))}
+.click-hint::before{width:calc(.32 * var(--u));height:calc(.32 * var(--u))}
+
+.chart-wrap{gap:calc(.95 * var(--u));margin-top:calc(1.7 * var(--u))}
+.bar-row{grid-template-columns:calc(16.5 * var(--u)) 1fr calc(7.5 * var(--u));
+  gap:calc(1.1 * var(--u))}
+.bar-label{font-size:calc(1.14 * var(--u));letter-spacing:.05em}
+.bar-track{height:calc(1.65 * var(--u))}
+.bar-val{font-size:calc(1.3 * var(--u))}
+
+.steps{gap:calc(1.35 * var(--u))}
+.steps li{padding-left:calc(4.2 * var(--u));font-size:calc(1.85 * var(--u));line-height:1.4}
+.steps li::before{width:calc(2.95 * var(--u));height:calc(2.95 * var(--u));
+  font-size:calc(1.1 * var(--u));top:calc(-.1 * var(--u))}
+
+.keys{gap:calc(.85 * var(--u))}
+.key{padding:calc(1.5 * var(--u)) calc(1.85 * var(--u));gap:calc(1.5 * var(--u));
+  border-radius:calc(.9 * var(--u))}
+.key .dot{width:calc(1.7 * var(--u));height:calc(1.7 * var(--u))}
+.key .who{font-size:calc(2.55 * var(--u))}
+.key .what{font-size:calc(1.42 * var(--u))}
+.key .n{font-size:calc(1.05 * var(--u));width:calc(9.2 * var(--u));
+  padding-left:calc(1.5 * var(--u));margin-left:calc(1.5 * var(--u))}
+
+.plan{padding:calc(1.9 * var(--u));border-radius:calc(1 * var(--u))}
+.plan .ph{font-size:calc(.8 * var(--u))}
+.plan h3{font-size:calc(2.55 * var(--u));margin-top:calc(.5 * var(--u))}
+.plan .cnt{margin-top:calc(.7 * var(--u))}
+.plan .cnt b{font-size:calc(4.6 * var(--u))}
+.plan .cnt span{font-size:calc(.78 * var(--u))}
+.plan p{font-size:calc(1.52 * var(--u));line-height:1.4;margin-top:calc(.7 * var(--u))}
+.plan .fit{font-size:calc(1.52 * var(--u));line-height:1.36;
+  margin-top:calc(1 * var(--u));padding-top:calc(.95 * var(--u))}
+
+.precedent{column-gap:calc(2.3 * var(--u))}
+.precedent .hd{font-size:calc(.86 * var(--u));padding-bottom:calc(.8 * var(--u))}
+.precedent .bt{font-size:calc(.86 * var(--u));padding:calc(1.15 * var(--u)) 0;letter-spacing:.14em}
+.precedent .cl{font-size:calc(1.45 * var(--u));line-height:1.38;padding:calc(1.15 * var(--u)) 0}
+.precedent .ref{font-size:calc(.76 * var(--u));padding:calc(.8 * var(--u)) 0}
+
+.line{margin-top:calc(1.3 * var(--u))}
+.line>div{padding:calc(1.6 * var(--u)) calc(1.3 * var(--u))}
+.line .y{font-size:calc(.82 * var(--u))}
+.line .w{font-size:calc(2.2 * var(--u));margin-top:calc(.3 * var(--u))}
+
+.qr{gap:calc(2.3 * var(--u))}
+.qrbox .q{width:calc(12.6 * var(--u));height:calc(12.6 * var(--u));
+  border-radius:calc(.85 * var(--u));padding:calc(.55 * var(--u))}
+.qrbox .n{font-size:calc(1.28 * var(--u));margin-top:calc(.7 * var(--u))}
+.qrbox .u{font-size:calc(.72 * var(--u))}
+
+.disc-label{font-size:calc(.95 * var(--u));margin-bottom:calc(1.1 * var(--u))}
+.discussion .q{font-size:calc(5.4 * var(--u));line-height:1.05;max-width:none}
+.src-note{font-size:calc(.8 * var(--u));letter-spacing:.1em}
+.slide-foot{font-size:calc(.78 * var(--u));bottom:max(1.05rem,calc(1.1 * var(--u)));
+  left:calc(2.6 * var(--u));right:calc(2.6 * var(--u))}
+#clock{font-size:calc(1 * var(--u));padding:calc(.45 * var(--u)) calc(.95 * var(--u));
+  top:calc(1.4 * var(--u));right:calc(1.4 * var(--u))}
+#notes{font-size:calc(1.1 * var(--u))}
+.nav button{width:calc(2.7 * var(--u));height:calc(2.7 * var(--u));font-size:calc(1 * var(--u))}
+
+/* The mockup is the evidence on its slide, so it gets the height it needs. */
+.phone .screen{height:min(80vh,calc(48 * var(--u)))}
+.sl-split{grid-template-columns:1fr minmax(calc(20 * var(--u)),36%);gap:calc(2.6 * var(--u))}
+
+/* Tighter margins, because the room needs the pixels more than the page does. */
+.sl-pad,.sl-split,.discussion{
+  padding:calc(2.9 * var(--u)) calc(3.4 * var(--u)) calc(4 * var(--u))}
+
+/* The entry cover is read from the same seats. */
+.entry-inner{max-width:calc(84 * var(--u))}
+.entry-label{font-size:calc(.92 * var(--u));margin-bottom:calc(1.6 * var(--u))}
+.entry-duration{font-size:calc(.78 * var(--u));margin-bottom:calc(1.5 * var(--u))}
+.entry-title{font-size:calc(6.2 * var(--u))}
+.entry-sub{font-size:calc(1.6 * var(--u));max-width:calc(52 * var(--u));
+  margin:calc(1.5 * var(--u)) auto calc(2.1 * var(--u))}
+.entry-cta{font-size:calc(.86 * var(--u));padding:calc(.95 * var(--u)) calc(1.6 * var(--u))}
+.entry-author{font-size:calc(.76 * var(--u));bottom:calc(2 * var(--u))}
+`;
+
+export const css = theme + engine + parts + projection;

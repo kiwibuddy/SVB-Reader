@@ -34,7 +34,7 @@ export const STATS = {
         confirm: 'population + years',
         modal: { title: 'Gen Z weekly reading, 30% to 49%',
           body: 'The steepest movement in the compilation. Same open question: which population, and across which two years.' } },
-      { id: 'r3', from: 4, to: 21, suffix: '%', label: 'UK young men at church monthly', note: 'Up from 4%',
+      { id: 'r3', from: 4, to: 21, suffix: '%', label: 'UK young men at church', note: 'Monthly, up from 4%',
         confirm: 'survey name + years',
         modal: { title: 'UK young men attending monthly, 4% to 21%',
           body: 'This one counts attendance rather than self-reported reading, which is why it is here beside the reading figures rather than on its own. Sample size 13,146. Survey name and the two years are still to be confirmed.' } },

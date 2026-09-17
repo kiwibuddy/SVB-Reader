@@ -112,27 +112,26 @@ export function slides() {
         <span class="hd"></span><span class="hd">Josiah</span><span class="hd">Nehemiah</span>
         ${[
           ['Found',
-           'Hilkiah finds the Book of the Law during Temple repairs, and Shaphan reads it to the king.',
+           'Hilkiah finds it during Temple repairs. Shaphan reads it to the king.',
            'The people ask Ezra to bring out the Book of the Law of Moses.'],
           ['Read to everyone',
-           'The king summons the elders and goes up to the Temple with all the people of Judah and Jerusalem, from the least to the greatest, and reads them the entire Book of the Covenant.',
+           'The king gathers all Judah and Jerusalem, from the least to the greatest, and reads them the whole Book of the Covenant.',
            'Read at the Water Gate from early morning until noon, to everyone old enough to understand.'],
           ['Understood together',
-           'Beside the pillar the king renews the covenant, and all the people pledge themselves to it with him.',
-           'The Levites move through the crowd explaining it, so the people grasp what is being read.'],
+           'Beside the pillar the king renews the covenant, and all the people pledge themselves with him.',
+           'The Levites move through the crowd explaining it, so the people grasp what they are hearing.'],
           ['Then society changed',
-           'Baal and Asherah stripped out of the Temple, the pagan shrines defiled from Geba to Beersheba, and Passover kept as it had not been since the judges.',
-           'They keep the Festival of Shelters for the first time since Joshua, then sign a binding agreement: no intermarriage, nothing bought on the Sabbath, debts cancelled every seventh year, the Temple funded.'],
+           'Baal and Asherah out of the Temple. The shrines defiled from Geba to Beersheba. Passover kept as it had not been since the judges.',
+           'The Festival of Shelters kept for the first time since Joshua. Then a signed agreement: no intermarriage, nothing bought on the Sabbath, debts cancelled every seventh year.'],
         ].map(([beat, j, n2]) => `
           <span class="bt">${beat}</span><span class="cl">${j}</span><span class="cl">${n2}</span>`).join('')}
         <span class="ref"></span>
         <span class="ref">Story ${jos.id.replace('S','')} &nbsp;·&nbsp; ${esc(jos.book)} ${esc(jos.reference)} &nbsp;·&nbsp; ${jos.minutes} min &nbsp;·&nbsp; ${jos.cast.length} voices</span>
         <span class="ref">Story ${neh.id.replace('S','')} &nbsp;·&nbsp; ${esc(neh.book)} ${esc(neh.reference)} &nbsp;·&nbsp; ${neh.minutes} min &nbsp;·&nbsp; ${neh.cast.length} voices</span>
       </div>`)}
-      ${a(`<p class="t-body" style="margin-top:1rem;max-width:1020px">Neither of them handed out scrolls. The reading was the public event, and the reform came after it.</p>`)}
       ${foot('Movement 2 &nbsp;·&nbsp; The habit we built')}
     </div></div>`,
-    'Your slide to talk over. Reading aloud to a gathered people is the oldest pattern here, not a new format.');
+    'Your slide to talk over. Neither of them handed out scrolls: the reading was the public event, and the reform came after it. Reading aloud to a gathered people is the oldest pattern here, not a new format.');
 
   add(`
     <div class="sl sl-deep"><div class="sl-pad">
