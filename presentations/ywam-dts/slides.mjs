@@ -298,6 +298,7 @@ export function slides() {
         ${a(`<h2 style="font-size:52px">Every voice, counted.</h2>`)}
         ${a(`<div class="lede" style="margin-top:24px;font-size:23px">Tap any name and you get their page: what they say across the whole Bible, which books they turn up in, and who they speak with most.</div>`)}
         ${a(`<div class="body" style="margin-top:26px">Moses speaks in 33 stories, and the voice he speaks with most is God. That is not a devotional thought, it is what the text does when you count it.</div>`)}
+        ${a(`<div class="src" style="margin-top:26px">Colour comes from a word-level tagging of the whole Bible by speaker, audience and role, built with David Joel Hamilton and the Overcommitted team</div>`)}
       </div>
       <div class="a" style="--i:1">${P.phone(P.callSheet(jonah), 574, '9:43')}</div>
     </div>
