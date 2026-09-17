@@ -31,15 +31,19 @@ room asks where a number came from.
 
 | Time | Slides | |
 | --- | --- | --- |
-| 00-08 | 1-2 | Movement 1: the numbers |
-| 08-20 | 3-5 | Movement 2: the habit we built, and Josiah and Nehemiah |
-| 20-28 | 6-8 | Movement 3: four colours |
-| 28-32 | 9 | Movement 4: two plans for the DTS |
-| 32-48 | 10-11 | Movement 5: breakouts, read Jonah |
-| 48-60 | 12-14 | Close: back together, download, questions |
+| 00-08 | 1-2 | Movement 1: where we are, and access |
+| 08-20 | 3-5 | Movement 2: the practices, the pattern, the invitation |
+| 20-29 | 6-9 | Movement 3: the tool, and four colours |
+| 29-33 | 10 | Movement 4: two DTS rhythms |
+| 33-49 | 11-12 | Movement 5: breakouts, read Jonah |
+| 49-60 | 13-15 | Close: reflect, take the resource, questions |
 
-Slide 10 is the breakout brief. Leave it up, press `T`, open rooms of four.
-Slide 11 is a back-pocket slide: only put it up if a room stalls on who takes
+Slide 6 introduces the app itself, with the real icon read from
+`assets/images/icon.png` and downscaled to 420px, carried once as the
+`--appicon` CSS token so the blob is not repeated per use.
+
+Slide 11 is the breakout brief. Leave it up, press `T`, open rooms of four.
+Slide 12 is a back-pocket slide: only put it up if a room stalls on who takes
 which colour.
 
 Slide 4 is the Josiah and Nehemiah precedent, four beats down the side with
@@ -49,7 +53,7 @@ they can be opened in the app if anyone asks.
 
 ## What was cut, and why
 
-Fourteen slides, down from twenty-six. Roughly twenty-five minutes of talking,
+Fifteen slides, down from twenty-six. Roughly twenty-five minutes of talking,
 fifteen of breakout, ten back together, and room to run over.
 
 | Cut | Why |
@@ -147,6 +151,11 @@ scales together, so if it fits once it fits everywhere. Checked at 1024x768,
 1u is 16px on a 1600-wide screen, so the numbers in that block read like rem.
 Body copy lands near 29px there and grows with the screen.
 
+Nothing in a slide may carry a px width either, for the same reason. A
+`max-width:960px` left inline kept one paragraph in a small box on a big
+screen, so it wrapped to twice the lines and pushed the slide over. Widths are
+`calc(N * var(--u))` or nothing. Checked up to 3840x2160.
+
 ## Voice
 
 `brand-strategy/voice-rules.md` is binding on everything here that is in
@@ -181,7 +190,7 @@ node presentations/ywam-dts/build.mjs
 | `data.mjs` | app palette, motion, the reader port, corpus totals, plans |
 | `stats.mjs` | every research figure, its source card, and its open questions |
 | `phone.mjs` | the live phone screens |
-| `slides.mjs` | the 14 slides |
+| `slides.mjs` | the 15 slides |
 | `runtime.mjs` | nav, counters, source cards, the reading animation, the countdown |
 | `qr.json` | App Store, Google Play and research QR codes as inline SVG |
 

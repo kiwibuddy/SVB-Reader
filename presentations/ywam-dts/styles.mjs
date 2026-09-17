@@ -248,6 +248,19 @@ const parts = `
 .precedent .ref{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;
   text-transform:uppercase;color:var(--dim);padding:.7rem 0;border-top:1px solid var(--fog)}
 
+/* the SourceView intro slide */
+.intro{display:flex;align-items:center;gap:clamp(1.6rem,3.2vw,3.2rem)}
+.appicon{display:block;width:clamp(130px,17vw,240px);aspect-ratio:1;border-radius:22%;
+  flex:none;background:var(--appicon) center/cover no-repeat;
+  box-shadow:0 30px 70px -22px rgba(0,0,0,.9)}
+.qrbox .appicon.sm{width:clamp(120px,15vw,168px);box-shadow:none}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1.8rem;
+  border-top:1px solid var(--fog);padding-top:1.4rem}
+.facts b{display:block;font-family:var(--display);font-weight:700;letter-spacing:-.03em;
+  color:var(--gold-l);line-height:1}
+.facts span{display:block;font-family:var(--mono);letter-spacing:.18em;text-transform:uppercase;
+  color:var(--dim);margin-top:.45rem}
+
 /* the running order on the opening slide */
 .run{display:grid;gap:0}
 .run .r{display:grid;grid-template-columns:5.5rem 1fr auto;align-items:baseline;gap:1.1rem;
@@ -379,6 +392,12 @@ const projection = `
 .qrbox .n{font-size:calc(1.28 * var(--u));margin-top:calc(.7 * var(--u))}
 .qrbox .u{font-size:calc(.72 * var(--u))}
 
+.intro{gap:calc(3 * var(--u))}
+.appicon{width:calc(15 * var(--u))}
+.qrbox .appicon.sm{width:calc(12.6 * var(--u))}
+.facts{margin-top:calc(1.9 * var(--u));padding-top:calc(1.5 * var(--u));gap:calc(1 * var(--u))}
+.facts b{font-size:calc(3.6 * var(--u))}
+.facts span{font-size:calc(.78 * var(--u))}
 .disc-label{font-size:calc(.95 * var(--u));margin-bottom:calc(1.1 * var(--u))}
 .discussion .q{font-size:calc(5.4 * var(--u));line-height:1.05;max-width:none}
 .src-note{font-size:calc(.8 * var(--u));letter-spacing:.1em}

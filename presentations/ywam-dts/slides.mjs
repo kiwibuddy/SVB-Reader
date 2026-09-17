@@ -8,6 +8,9 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const QR = JSON.parse(fs.readFileSync(path.join(here, 'qr.json'), 'utf8'));
 
+// The icon is carried once as a CSS token (see build.mjs) rather than inlined
+// at each use, so the base64 blob appears in the file a single time.
+
 const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const n = (x) => x.toLocaleString('en-NZ');
 const S = D.stats();
@@ -69,7 +72,7 @@ export function slides() {
       ${label(R.eyebrow)}
       ${a(`<h2 class="t-h3">${R.head}</h2>`)}
       ${a(`<div class="grid grid-3" style="margin-top:1.6rem">${R.counters.map((c, i) => statCard(c, `d${i + 2}`)).join('')}</div>`)}
-      ${a(`<p class="t-body" style="margin-top:1.4rem;max-width:1000px">The third one is the number I did not expect. It counts turning up at a church rather than what people say about themselves, which makes it harder to argue with.</p>`)}
+      ${a(`<p class="t-body" style="margin-top:1.4rem">That is encouraging. People are opening Scripture. The question for a DTS is not only how much Scripture students encounter, but what kind of people our practices are forming them to become.</p>`)}
       ${a(`<div class="src-note" style="margin-top:1rem">${esc(R.source)}</div>`)}
       ${foot('Movement 1 &nbsp;·&nbsp; The numbers')}
     </div></div>`,
@@ -80,8 +83,8 @@ export function slides() {
     <div class="sl sl-deep"><div class="sl-pad">
       ${label(G.eyebrow)}
       ${a(`<h2 class="t-h2">${G.head}</h2>`)}
-      ${a(`<div class="grid grid-2" style="margin-top:1.6rem;max-width:820px">${G.counters.map((c, i) => statCard(c, `d${i + 2}`)).join('')}</div>`)}
-      ${a(`<p class="t-body-lg" style="margin-top:1.5rem;max-width:960px">${esc(G.kicker)}</p>`)}
+      ${a(`<div class="grid grid-2" style="margin-top:1.6rem;max-width:calc(52 * var(--u))">${G.counters.map((c, i) => statCard(c, `d${i + 2}`)).join('')}</div>`)}
+      ${a(`<p class="t-body-lg" style="margin-top:1.5rem">${esc(G.kicker)}</p>`)}
       ${a(`<div class="src-note" style="margin-top:1rem">${esc(G.source)}</div>`)}
       ${foot('Movement 1 &nbsp;·&nbsp; The numbers')}
     </div></div>`,
@@ -90,15 +93,15 @@ export function slides() {
   // ---- MOVEMENT 2 · THE HABIT WE BUILT ------------------------------------
   add(`
     <div class="sl"><div class="sl-pad">
-      ${label('Movement 2 &nbsp;·&nbsp; what the numbers do not show')}
-      ${a(`<h2 class="t-h3">Almost every Bible habit we teach is a <span class="accent">solo</span> habit.</h2>`)}
-      ${a(`<div class="grid grid-2" style="margin-top:1.6rem">
-        <div class="card"><h3>What we hand people</h3>
-          <p>A quiet time. A reading plan on their own phone. A study method. A journal. A streak.</p>
-          <p style="margin-top:.8rem">Every one of those is good. But every one of them can be done without ever speaking to another person.</p></div>
-        <div class="card"><h3>What it forms</h3>
-          <p>A private reader with a private interpretation, and nobody in the room to push back, fill in, or notice what got skipped.</p>
-          <p style="margin-top:.8rem">Then we wonder why discipleship feels thin.</p></div>
+      ${label('Movement 2 &nbsp;·&nbsp; the practices we give students')}
+      ${a(`<h2 class="t-h3">Many of the Bible practices we give students are practices they can do <span class="accent">alone</span>.</h2>`)}
+      ${a(`<div class="grid grid-2" style="margin-top:1.5rem">
+        <div class="card"><h3>What we already give them</h3>
+          <p>A quiet time. A reading plan on their own phone. A study method. A journal. A way to keep showing up.</p>
+          <p style="margin-top:.8rem">These are valuable. They help students build a personal life with God and learn to open Scripture for themselves.</p></div>
+        <div class="card"><h3>What community adds</h3>
+          <p>Other people help us hear what we might miss, ask questions we would not ask alone, and notice what we have overlooked.</p>
+          <p style="margin-top:.8rem">So the question is not whether students should read alone. Of course they should. Have we also given them ways to encounter Scripture together?</p></div>
       </div>`)}
       ${foot('Movement 2 &nbsp;·&nbsp; The habit we built')}
     </div></div>`,
@@ -106,8 +109,8 @@ export function slides() {
 
   add(`
     <div class="sl"><div class="sl-pad">
-      ${label('Movement 2 &nbsp;·&nbsp; it has happened before')}
-      ${a(`<h2 class="t-h3">Twice the book was found, read out loud to everyone, and the <span class="accent">society</span> changed.</h2>`)}
+      ${label('Movement 2 &nbsp;·&nbsp; a biblical pattern')}
+      ${a(`<h2 class="t-h3">There is an older pattern: God's people hearing His Word <span class="accent">together</span>.</h2>`)}
       ${a(`<div class="precedent">
         <span class="hd"></span><span class="hd">Josiah</span><span class="hd">Nehemiah</span>
         ${[
@@ -135,19 +138,38 @@ export function slides() {
 
   add(`
     <div class="sl sl-deep"><div class="sl-pad">
-      ${label('Movement 2 &nbsp;·&nbsp; the counter-move')}
-      ${a(`<h2 class="t-h2">Make the Bible the <span class="accent">reason</span> people are in a room together.</h2>`)}
-      ${a(`<p class="t-body-lg" style="margin-top:1.3rem;max-width:1000px">The reading itself is the shared act. It needs other people present to happen at all.</p>`)}
+      ${label('Movement 2 &nbsp;·&nbsp; the invitation')}
+      ${a(`<h2 class="t-h2">What if Scripture became one of the ways we form disciples <span class="accent">together</span>?</h2>`)}
+      ${a(`<p class="t-body-lg" style="margin-top:1.3rem">Make the Bible one of the reasons people are in a room together. The reading itself becomes the shared act: everyone hears, everyone participates, everyone has a part to play.</p>`)}
       ${foot('Movement 2 &nbsp;·&nbsp; The habit we built')}
     </div></div>`,
-    'Say it as a thesis, not a suggestion. Then stop talking.');
+    'Say it as an invitation, not a rebuke. Then stop talking and introduce the tool.');
+
+  // ---- MOVEMENT 3 · THE TOOL ----------------------------------------------
+  add(`
+    <div class="sl sl-deep"><div class="sl-pad">
+      ${label('Movement 3 &nbsp;·&nbsp; the tool')}
+      ${a(`<div class="intro">
+        <span class="appicon" role="img" aria-label="SourceView Together app icon"></span>
+        <div>
+          <h2 class="t-h2" style="line-height:1.02">SourceView<br>Together</h2>
+          <p class="t-body-lg" style="margin-top:1rem">A free Bible app that gives every speaker in Scripture a colour, so a group can read a story out loud in parts.</p>
+        </div>
+      </div>`)}
+      ${a(`<div class="facts">
+        ${[[n(S.books), 'books'], [n(S.stories), 'stories'], [n(S.voices), 'voices'], ['0', 'accounts']].map(([v, l]) => `
+          <div><b>${v}</b><span>${l}</span></div>`).join('')}
+      </div>`)}
+      ${foot('Movement 3 &nbsp;·&nbsp; Four colours')}
+    </div></div>`,
+    'Hold up your phone here if you have it. The whole Bible, not a selection. Nothing added, moved or removed.');
 
   // ---- MOVEMENT 3 · FOUR COLOURS ------------------------------------------
   add(`
     <div class="sl"><div class="sl-pad">
-      ${label('Movement 3 &nbsp;·&nbsp; the format change')}
-      ${a(`<h2 class="t-h3">Red letters gave one voice a colour. This gives all <span class="accent">${n(S.voices)}</span>.</h2>`)}
-      ${a(`<p class="t-body-lg" style="margin-top:1rem">A publisher put the words of Jesus in red in 1899, and one voice in your Bible has looked different ever since. This does it for every speaker. No word added, moved or removed.</p>`)}
+      ${label('Movement 3 &nbsp;·&nbsp; a simple format')}
+      ${a(`<h2 class="t-h3">Red letters gave one voice a colour. This gives <span class="accent">every</span> voice a part.</h2>`)}
+      ${a(`<p class="t-body-lg" style="margin-top:1rem">A publisher put the words of Jesus in red in 1899, and one voice in your Bible has looked different ever since. This applies the same idea across the whole Bible, so a group can read Scripture as a conversation. No word is added, moved or removed.</p>`)}
       ${a(`<div class="line">${[['c. 1227','Chapters'],['1551','Verse numbers'],['1899','Red letters'],['Now','Four colours']].map(([y, w]) => `
         <div><div class="y">${y}</div><div class="w">${w}</div></div>`).join('')}</div>`)}
       ${a(`<div class="src-note" style="margin-top:1.2rem">Colour comes from a word-level tagging of the whole Bible by speaker, audience and role, built with David Joel Hamilton and the Overcommitted team</div>`)}
@@ -163,8 +185,8 @@ export function slides() {
   ];
   add(`
     <div class="sl"><div class="sl-pad">
-      ${label('Movement 3 &nbsp;·&nbsp; the four colours')}
-      ${a(`<h2 class="t-h3">Everything anyone says gets a colour, and there are only four.</h2>`)}
+      ${label('Movement 3 &nbsp;·&nbsp; everyone has a part')}
+      ${a(`<h2 class="t-h3">Four colours. Four ways to take part.</h2>`)}
       ${a(`<div class="keys" style="margin-top:1.6rem">${roles.map(([c, who, what, cnt]) => `
         <div class="key">
           <span class="dot" style="background:${D.INK[c].bar}"></span>
@@ -179,9 +201,9 @@ export function slides() {
   add(`
     <div class="sl"><div class="sl-split">
       <div class="stack">
-        ${label('Movement 3 &nbsp;·&nbsp; the reader')}
-        ${a(`<h2 class="t-h3">This is Jonah, running live.</h2>`)}
-        ${a(`<p class="t-body-lg" style="margin-top:1rem">Every word carries the colour of whoever said it. Narration and God on the left, everyone else on the right, so you can see the shape of the conversation before you read a line.</p>`)}
+        ${label('Movement 3 &nbsp;·&nbsp; see it in practice')}
+        ${a(`<h2 class="t-h3">This is Jonah, read as a conversation.</h2>`)}
+        ${a(`<p class="t-body-lg" style="margin-top:1rem">Every word carries the colour of whoever said it. You can see the shape of the conversation before you read a line, then hear it as four people share the story.</p>`)}
         ${a(`<div class="callout sage" style="margin-top:1.2rem"><b>${jonah.cast.length} voices in this story.</b> ${jonah.cast.slice(0, 3).map((c) => esc(c.name)).join(', ')}, and three more.</div>`)}
         ${a(`<div class="src-note" style="margin-top:1.1rem">Press <span class="mono-em">R</span> to replay the reading</div>`)}
       </div>
@@ -193,8 +215,8 @@ export function slides() {
   // ---- MOVEMENT 4 · TWO PLANS ---------------------------------------------
   add(`
     <div class="sl"><div class="sl-pad">
-      ${label('Movement 4 &nbsp;·&nbsp; two plans')}
-      ${a(`<h2 class="t-h3">Two plans already in the app, one for each half of the school.</h2>`)}
+      ${label('Movement 4 &nbsp;·&nbsp; possible DTS rhythms')}
+      ${a(`<h2 class="t-h3">Two simple rhythms for making shared Scripture part of DTS.</h2>`)}
       ${a(`<div class="grid grid-2" style="margin-top:1.6rem">
         <div class="plan">
           <div class="ph">Lecture phase</div><h3>${esc(OT.title)}</h3>
@@ -209,7 +231,7 @@ export function slides() {
           <div class="fit">One story per weekday of a ten week outreach.</div>
         </div>
       </div>`)}
-      ${a(`<p class="t-body" style="margin-top:1.2rem">Nothing to set up, and progress carries across the break, so a student who joins in week six starts where the school is.</p>`)}
+      ${a(`<p class="t-body" style="margin-top:1.2rem">Nothing to set up, and progress carries across the break. The point is not another programme. It is a simple shared practice that can sit inside the formation you are already doing.</p>`)}
       ${foot('Movement 4 &nbsp;·&nbsp; Two plans')}
     </div></div>`,
     'Check the phase lengths against Kona before you say the weekday line.');
@@ -217,14 +239,14 @@ export function slides() {
   // ---- MOVEMENT 5 · YOUR TURN ---------------------------------------------
   add(`
     <div class="sl"><div class="discussion">
-      <div class="disc-label a">Movement 5 &nbsp;·&nbsp; your turn</div>
-      ${a(`<div class="q t-h2">Breakout rooms. Fifteen minutes.</div>`)}
+      <div class="disc-label a">Movement 5 &nbsp;·&nbsp; experience it</div>
+      ${a(`<div class="q t-h2">Do not just hear about it. Try it.</div>`)}
       ${a(`<div style="display:flex;gap:clamp(1.6rem,3.4vw,3.4rem);margin-top:1.8rem;align-items:flex-start">
         <ol class="steps" style="flex:1">
           <li><b>Open the app</b> and find story ${jonah.id.replace('S','')}, <b>${esc(jonah.title)}</b>. It is the book of Jonah, all four chapters.</li>
           <li><b>Take a colour each.</b> If you are three, one person takes narrator and everyone else. If you are five, two of you share blue.</li>
           <li><b>Read it out loud, in parts.</b> You read your colour and only your colour. About ${jonah.minutes} minutes.</li>
-          <li><b>Work the four questions</b> at the end together. They are already there, under Talk about it. Have fun with it!</li>
+          <li><b>Work the four questions</b> at the end together. They are already there, under Talk about it.</li>
         </ol>
         <div style="width:clamp(230px,24vw,310px);flex:none">
           <div class="card">
@@ -246,9 +268,9 @@ export function slides() {
 
   add(`
     <div class="sl"><div class="sl-pad">
-      ${label('Movement 5 &nbsp;·&nbsp; who reads what')}
-      ${a(`<h2 class="t-h3">Jonah, by the numbers.</h2>`)}
-      ${a(`<p class="t-body-lg" style="margin-top:.9rem">If your group stalls on who takes which colour, this is how much each part actually speaks.</p>`)}
+      ${label('Movement 5 &nbsp;·&nbsp; everyone gets a part')}
+      ${a(`<h2 class="t-h3">Everyone gets a part.</h2>`)}
+      ${a(`<p class="t-body-lg" style="margin-top:.9rem">If your group stalls on who takes which colour, here is the rough distribution in Jonah. The goal is not equal word counts. The goal is that everyone helps carry the story.</p>`)}
       ${a(`<div style="margin-top:1.6rem">${bars(
         jonah.cast.map((c) => ({ label: c.name, value: c.words, color: c.color })), ' words'
       )}</div>`)}
@@ -260,31 +282,30 @@ export function slides() {
   // ---- CLOSE --------------------------------------------------------------
   add(`
     <div class="sl"><div class="discussion">
-      <div class="disc-label a">Close &nbsp;·&nbsp; back together</div>
-      ${a(`<div class="q t-h2">What happened in your room?</div>`)}
-      ${a(`<div class="grid grid-3" style="margin-top:1.8rem">
-        <div class="card"><div class="t-label" style="margin-bottom:.7rem">Ask first</div><p style="font-size:clamp(.95rem,1.25vw,1.1rem)">What did you notice reading it out loud that you would have missed reading it silently?</p></div>
-        <div class="card"><div class="t-label" style="margin-bottom:.7rem">Then</div><p style="font-size:clamp(.95rem,1.25vw,1.1rem)">Did holding one voice for the whole story change how you heard that character?</p></div>
-        <div class="card"><div class="t-label" style="margin-bottom:.7rem">Then</div><p style="font-size:clamp(.95rem,1.25vw,1.1rem)">Where would this fit in your school, and what would stop it working?</p></div>
+      <div class="disc-label a">Close &nbsp;·&nbsp; reflect together</div>
+      ${a(`<div class="q t-h2">What did you experience together?</div>`)}
+      ${a(`<div class="grid grid-3" style="margin-top:1.6rem">
+        <div class="card"><div class="t-label" style="margin-bottom:.7rem">First</div><p>What did you notice hearing it out loud that you might have missed reading it silently?</p></div>
+        <div class="card"><div class="t-label" style="margin-bottom:.7rem">Then</div><p>Did carrying one voice through the story change how you heard that character, or the whole story?</p></div>
+        <div class="card"><div class="t-label" style="margin-bottom:.7rem">Finally</div><p>Where could a shared Scripture rhythm fit into your DTS, and what would help or hinder it?</p></div>
       </div>`)}
-      ${a(`<p class="t-body" style="margin-top:1.5rem">That last one is the one worth writing down. If this ends up running at Kona it will be staff who make it run.</p>`)}
+      ${a(`<p class="t-body" style="margin-top:1.4rem">If this becomes part of DTS it will not be because of the app. It will be because staff make space for Scripture to form students together.</p>`)}
       ${foot('Close')}
     </div></div>`,
     'Take three rooms, not ten. Keep four minutes for questions.');
 
   add(`
     <div class="sl sl-deep"><div class="sl-pad">
-      ${label('Close &nbsp;·&nbsp; get it')}
-      ${a(`<h2 class="t-h3">Free. No ads, no accounts, nothing leaves the phone.</h2>`)}
-      ${a(`<div class="qr" style="margin-top:1.8rem">
+      ${label('Close &nbsp;·&nbsp; take the resource')}
+      ${a(`<h2 class="t-h3">If this could serve your DTS, the resource is free.</h2>`)}
+      ${a(`<div class="qr" style="margin-top:1.7rem">
+        <div class="qrbox"><span class="appicon sm" role="img" aria-label="SourceView Together app icon"></span><div class="n">SourceView Together</div><div class="u">free &nbsp;·&nbsp; no accounts</div></div>
         ${qr('ios', 'App Store')}
         ${qr('android', 'Google Play')}
-        ${qr('research', 'The research')}
         <div style="flex:1;padding-left:.6rem">
-          <p class="t-body">Search <b style="color:var(--ink)">SourceView Together</b> in either store if the code will not scan off a shared screen. All three links are in the chat.</p>
-          <p class="t-body" style="margin-top:.9rem">The third code is every figure I used tonight, with its original source and the date it was last checked.</p>
-          <p class="t-body" style="margin-top:.9rem">Email me if you want the two DTS plans set up for your school, or the printable booklets for groups without devices.</p>
-          <div style="margin-top:1rem;font-family:var(--mono);font-size:.9rem;color:var(--lime)">sourceviewbible@gmail.com</div>
+          <p class="t-body">Search <b style="color:var(--ink)">SourceView Together</b> in either store if the code will not scan off a shared screen. Both links are in the chat, along with the research behind tonight's figures.</p>
+          <p class="t-body" style="margin-top:.9rem">Email me if you want the two DTS plans set up for your school, or printable booklets for groups without devices.</p>
+          <div style="margin-top:1rem;font-family:var(--mono);font-size:calc(1 * var(--u));color:var(--lime)">sourceviewbible@gmail.com</div>
         </div>
       </div>`)}
       ${foot('Close')}
@@ -295,7 +316,7 @@ export function slides() {
     <div class="sl sl-deep"><div class="sl-pad">
       ${label('Close &nbsp;·&nbsp; questions')}
       ${a(`<h2 class="t-h2">The Bible was a conversation before it was a <span class="accent">book</span>.</h2>`)}
-      ${a(`<p class="t-body-lg" style="margin-top:1.3rem;max-width:960px">Ezra read the law out loud to a square full of people who had never heard it. Paul wrote letters expecting a room. Reading it quietly on your own is the recent habit, and it is the one your students arrive with.</p>`)}
+      ${a(`<p class="t-body-lg" style="margin-top:1.3rem">Ezra read the law out loud to a gathered people. Paul wrote letters expecting them to be heard in a room. Personal reading matters. So does learning to hear, understand and respond to Scripture together. If we want students to know God, live His Word and make Him known, the practices we give them matter.</p>`)}
       ${a(`<div class="src-note" style="margin-top:1.8rem">Nathaniel Baldock &nbsp;·&nbsp; Tauranga, New Zealand &nbsp;·&nbsp; sourceviewbible@gmail.com</div>`)}
       ${foot('Close')}
     </div></div>`,

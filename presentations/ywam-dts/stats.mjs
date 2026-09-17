@@ -23,8 +23,8 @@ export const COMPILATION = {
 
 export const STATS = {
   resurgence: {
-    eyebrow: 'Movement 1 · the numbers',
-    head: 'Bible reading is going up, and the sharpest rise is among the youngest.',
+    eyebrow: 'Movement 1 · where we are',
+    head: 'Bible engagement is rising, especially among younger people.',
     counters: [
       { id: 'r1', from: 30, to: 42, suffix: '%', label: 'read the Bible weekly', note: 'Up from 30%',
         confirm: 'population + years',
@@ -34,7 +34,7 @@ export const STATS = {
         confirm: 'population + years',
         modal: { title: 'Gen Z weekly reading, 30% to 49%',
           body: 'The steepest movement in the compilation. Same open question: which population, and across which two years.' } },
-      { id: 'r3', from: 4, to: 21, suffix: '%', label: 'UK young men at church', note: 'Monthly, up from 4%',
+      { id: 'r3', from: 4, to: 21, suffix: '%', label: 'UK young men at church monthly', note: 'Up from 4%',
         confirm: 'survey name + years',
         modal: { title: 'UK young men attending monthly, 4% to 21%',
           body: 'This one counts attendance rather than self-reported reading, which is why it is here beside the reading figures rather than on its own. Sample size 13,146. Survey name and the two years are still to be confirmed.' } },
@@ -77,8 +77,8 @@ export const STATS = {
   },
 
   digital: {
-    eyebrow: 'Movement 2 · the scale of it',
-    head: 'A billion installs of one Bible app.',
+    eyebrow: 'Movement 1 · access is not the issue',
+    head: 'Access to Scripture has never been easier.',
     counters: [
       { id: 'd1', to: 1, suffix: 'bn', label: 'YouVersion installs', note: 'Lifetime',
         modal: { title: 'YouVersion, one billion installs',
@@ -87,7 +87,7 @@ export const STATS = {
         modal: { title: '22.2 million users on one day',
           body: 'A single-day figure from 4 January 2026, which is the January reading-plan spike. It is the clearest number in the set for how normal a phone Bible has become.' } },
     ],
-    kicker: 'So access is not the problem. Access has never been better in the history of the world. The question is what we are forming while all of that reading happens on our own.',
+    kicker: 'A billion installs. Millions opening the Bible in a single day. More access to Scripture than any generation before us. So the question becomes: what practices help students encounter God through His Word, together?',
     source: 'YouVersion, via the ' + COMPILATION.short,
   },
 

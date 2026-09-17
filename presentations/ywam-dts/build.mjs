@@ -15,6 +15,11 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const out = path.join(here, 'dist');
 fs.mkdirSync(out, { recursive: true });
 
+// The app icon, downscaled from the 1024px original because it never renders
+// larger, carried once as a token so the blob is not repeated per use.
+const icon = fs.readFileSync(path.join(here, 'icon-420.png')).toString('base64');
+const iconVar = `:root{--appicon:url(data:image/png;base64,${icon})}`;
+
 const list = slides();
 const body = list.map((s) => `
 <section class="slide" data-note="${(s.note || '').replace(/"/g, '&quot;')}">
@@ -30,7 +35,8 @@ const html = `<!DOCTYPE html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz@0,6..72,300;0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Instrument+Serif:ital@1&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>${css}</style>
+<style>${iconVar}
+${css}</style>
 </head>
 <body>
 
