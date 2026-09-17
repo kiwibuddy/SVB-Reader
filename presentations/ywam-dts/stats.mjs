@@ -23,8 +23,8 @@ export const COMPILATION = {
 
 export const STATS = {
   resurgence: {
-    eyebrow: 'Movement 1 · the turn',
-    head: 'Bible reading is going up. And the people driving it are <em>younger</em> than you would guess.',
+    eyebrow: 'Movement 1 · the numbers',
+    head: 'Bible reading is going up, and the sharpest rise is among the youngest.',
     counters: [
       { id: 'r1', from: 30, to: 42, suffix: '%', label: 'read the Bible weekly', note: 'Up from 30%',
         confirm: 'population + years',
@@ -34,14 +34,17 @@ export const STATS = {
         confirm: 'population + years',
         modal: { title: 'Gen Z weekly reading, 30% to 49%',
           body: 'The steepest movement in the compilation. Same open question: which population, and across which two years.' } },
-      { id: 'r3', to: 50, suffix: '%', label: 'Millennials reading weekly', note: 'Single year',
-        confirm: 'population + year',
-        modal: { title: 'Millennials reading weekly, 50%',
-          body: 'A single-year figure rather than a change over time. The year and the population are still to be confirmed.' } },
+      { id: 'r3', from: 4, to: 21, suffix: '%', label: 'UK young men at church monthly', note: 'Up from 4%',
+        confirm: 'survey name + years',
+        modal: { title: 'UK young men attending monthly, 4% to 21%',
+          body: 'This one counts attendance rather than self-reported reading, which is why it is here beside the reading figures rather than on its own. Sample size 13,146. Survey name and the two years are still to be confirmed.' } },
     ],
-    source: COMPILATION.short,
+    source: COMPILATION.short + '. Reading figures and UK attendance are separate surveys.',
   },
 
+  // CUT from the deck. A 54/46 split does not carry "young men are driving
+  // this", and the AI percentages have no stated denominator yet. Both are one
+  // slide away from returning once the methodology is pinned down.
   men: {
     eyebrow: 'Movement 1 · who is driving it',
     head: 'It is young men, which is not what anyone predicted.',

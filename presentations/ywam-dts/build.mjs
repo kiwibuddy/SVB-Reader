@@ -78,17 +78,23 @@ console.log('wrote', path.relative(path.resolve(here, '../..'), file),
 console.log('slides:', list.length);
 
 // Anything still marked `confirm` is printed on every build so a blank cannot
-// ship by accident.
-const open = [];
+// ship by accident. Blocks that no longer reach a slide are listed apart, so
+// the live list stays short enough to actually work through.
+const ONSTAGE = new Set(['resurgence', 'digital']);
+const open = [], parked = [];
 for (const [k, v] of Object.entries(STATS)) {
-  if (v.confirm) open.push([k, v.confirm]);
-  (v.counters || []).forEach((c, i) => c.confirm && open.push([`${k}.counters.${i}`, c.confirm]));
+  const bin = ONSTAGE.has(k) ? open : parked;
+  if (v.confirm) bin.push([k, v.confirm]);
+  (v.counters || []).forEach((c, i) => c.confirm && bin.push([`${k} card ${i + 1}`, c.confirm]));
 }
-if (REACH.confirm) open.push(['reach', REACH.confirm]);
-if (TRANSLATION.confirm) open.push(['translation', TRANSLATION.confirm]);
+if (REACH.confirm) parked.push(['reach', REACH.confirm]);
+if (TRANSLATION.confirm) parked.push(['translation', TRANSLATION.confirm]);
 if (open.length) {
-  console.log('\nSTATS STILL TO CONFIRM BEFORE PRESENTING:');
+  console.log('\nON A SLIDE, STILL TO CONFIRM:');
   open.forEach(([k, c]) => console.log('  - ' + k + ': ' + c));
+}
+if (parked.length) {
+  console.log('\nCut from the deck, so not blocking: ' + parked.map(([k]) => k).join(', '));
 }
 
 // brand-strategy/voice-rules.md is binding on anything in Nathaniel's voice, so

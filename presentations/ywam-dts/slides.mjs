@@ -1,5 +1,5 @@
 import * as D from './data.mjs';
-import { STATS, REACH } from './stats.mjs';
+import { STATS } from './stats.mjs';
 import * as P from './phone.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -64,105 +64,38 @@ export function slides() {
 
   // ---- OPENING ------------------------------------------------------------
   const run = [
-    ['00-04', 'Open', 'Where this goes'],
-    ['04-16', 'What is happening', 'The research, and who is driving it'],
-    ['16-26', 'The habit we built', 'And an older one we stopped using'],
-    ['26-33', 'Four colours', 'The format change'],
-    ['33-38', 'Two plans', 'Lecture phase and outreach'],
-    ['38-42', 'How four people read', 'The mechanic'],
-    ['42-57', 'Breakouts: read Jonah', 'You do it, not me'],
-    ['57-60', 'Back together', 'Feedback and questions'],
+    ['00-03', 'Open', 'Where this goes'],
+    ['03-11', 'The numbers', 'What is actually happening'],
+    ['11-22', 'The habit we built', 'And an older one we stopped using'],
+    ['22-30', 'Four colours', 'The format change'],
+    ['30-34', 'Two plans', 'Lecture phase and outreach'],
+    ['34-50', 'Breakouts: read Jonah', 'You do it, not me'],
+    ['50-60', 'Back together', 'Feedback and questions'],
   ];
   add(`
     <div class="sl"><div class="sl-pad">
       ${label('Opening &nbsp;·&nbsp; where this goes')}
-      ${a(`<h2 class="t-h3">You are going to end up in a breakout room reading Jonah out loud with three other people.</h2>`)}
+      ${a(`<h2 class="t-h3">In about half an hour you will be in a breakout room reading Jonah out loud with three other people.</h2>`)}
       ${a(`<div class="run" style="margin-top:1.4rem">${run.map(([t, ti, no], i) => `
-        <div class="r${i === 6 ? ' now' : ''}"><span class="tm">${t}</span><span class="ti">${ti}</span><span class="no">${no}</span></div>`).join('')}</div>`)}
-      ${a(`<p class="t-body" style="margin-top:1.2rem;max-width:960px">Everything before that green row exists to get you into that room. So keep a phone within reach.</p>`)}
+        <div class="r${i === 5 ? ' now' : ''}"><span class="tm">${t}</span><span class="ti">${ti}</span><span class="no">${no}</span></div>`).join('')}</div>`)}
+      ${a(`<p class="t-body" style="margin-top:1.2rem;max-width:960px">Everything before that is there to get you into the room. Keep a phone within reach.</p>`)}
       ${foot('Opening')}
     </div></div>`,
     'Flag the breakout now so nobody is surprised. Ask them to have a phone within reach.');
 
-  // ---- MOVEMENT 1 · WHAT IS HAPPENING -------------------------------------
+  // ---- MOVEMENT 1 · THE NUMBERS -------------------------------------------
   const R = STATS.resurgence;
   add(`
     <div class="sl"><div class="sl-pad">
       ${label(R.eyebrow)}
       ${a(`<h2 class="t-h3">${R.head}</h2>`)}
       ${a(`<div class="grid grid-3" style="margin-top:1.6rem">${R.counters.map((c, i) => statCard(c, `d${i + 2}`)).join('')}</div>`)}
-      ${a(`<div class="src-note" style="margin-top:1.3rem">${esc(R.source)}</div>`)}
-      ${foot('Movement 1 &nbsp;·&nbsp; What is happening')}
+      ${a(`<p class="t-body" style="margin-top:1.4rem;max-width:1000px">The third one is the number I did not expect. It counts turning up at a church rather than what people say about themselves, which makes it harder to argue with.</p>`)}
+      ${a(`<div class="src-note" style="margin-top:1rem">${esc(R.source)}</div>`)}
+      ${foot('Movement 1 &nbsp;·&nbsp; The numbers')}
     </div></div>`,
-    'Do not rush this. The direction of travel is the point, not the decimal. Every card opens its source.');
+    'Every card opens its source, including what is still unconfirmed. Do not oversell the reading figures: they are self-reported.');
 
-  const M = STATS.men;
-  add(`
-    <div class="sl"><div class="sl-pad">
-      ${label(M.eyebrow)}
-      ${a(`<h2 class="t-h3">${M.head}</h2>`)}
-      ${a(`<p class="t-body-lg" style="margin-top:.9rem">${esc(M.lede)}</p>`)}
-      ${a(`<div style="margin-top:1.6rem">${bars(M.bars, M.unit)}</div>`)}
-      ${a(`<div class="src-note" style="margin-top:1.3rem">${esc(M.source)}</div>`)}
-      ${foot('Movement 1 &nbsp;·&nbsp; What is happening')}
-    </div></div>`,
-    'This is the slide that usually gets a reaction. Let it land before moving on.');
-
-  const U = STATS.uk;
-  add(`
-    <div class="sl"><div class="sl-pad">
-      ${label(U.eyebrow)}
-      ${a(`<h2 class="t-h3">${U.head}</h2>`)}
-      ${a(`<div class="grid grid-2" style="margin-top:1.6rem;max-width:840px">${U.counters.map((c, i) => statCard(c, `d${i + 2}`)).join('')}</div>`)}
-      ${a(`<div class="callout blue" style="margin-top:1.4rem;max-width:840px">Sample size 13,146. Not a small poll, and the same age and gender pattern as the reading figures.</div>`)}
-      ${a(`<div class="src-note" style="margin-top:1rem">${esc(U.source)}</div>`)}
-      ${foot('Movement 1 &nbsp;·&nbsp; What is happening')}
-    </div></div>`,
-    'The UK number is useful because it counts attendance, not self-reported reading.');
-
-  const A = STATS.ai;
-  add(`
-    <div class="sl"><div class="sl-pad">
-      ${label(A.eyebrow)}
-      ${a(`<h2 class="t-h3">${A.head}</h2>`)}
-      ${a(`<div style="margin-top:1.6rem">${bars(A.bars, A.unit)}</div>`)}
-      ${a(`<p class="t-body" style="margin-top:1.3rem">I am not going to moralise about any of that. I just want it sitting on the table before we talk about what happens when people read together.</p>`)}
-      ${a(`<div class="src-note" style="margin-top:1rem">${esc(A.source)}</div>`)}
-      ${foot('Movement 1 &nbsp;·&nbsp; What is happening')}
-    </div></div>`,
-    'Show it, do not preach it. The argument comes later.');
-
-  add(`
-    <div class="sl"><div class="sl-pad">
-      ${label(REACH.eyebrow)}
-      ${a(`<h2 class="t-h3">${REACH.head}</h2>`)}
-      ${a(`<p class="t-body-lg" style="margin-top:.9rem">${esc(REACH.lede)}</p>`)}
-      ${a(`<div class="grid grid-2" style="margin-top:1.6rem">
-        <div class="card"><div class="t-label" style="margin-bottom:.8rem">Long-form conversation</div>
-          <div>${REACH.items.slice(0, 3).map((i) => `<div style="padding:.6rem 0;border-bottom:1px solid var(--fog);color:var(--mid)">${esc(i)}</div>`).join('')}</div></div>
-        <div class="card"><div class="t-label" style="margin-bottom:.8rem">&nbsp;</div>
-          <div>${REACH.items.slice(3).map((i) => `<div style="padding:.6rem 0;border-bottom:1px solid var(--fog);color:var(--mid)">${esc(i)}</div>`).join('')}</div></div>
-      </div>`)}
-      ${foot('Movement 1 &nbsp;·&nbsp; What is happening')}
-    </div></div>`,
-    'View counts, not survey data. Say that out loud so nobody quotes you wrongly.');
-
-  add(`
-    <div class="sl"><div class="sl-pad">
-      ${label('Movement 1 &nbsp;·&nbsp; the whole compilation')}
-      ${a(`<h2 class="t-h3">I put all of it in one place, with the links.</h2>`)}
-      ${a(`<div style="margin-top:1.6rem;display:flex;gap:clamp(1.6rem,3.4vw,3.4rem);align-items:flex-start">
-        ${qr('research', 'The research')}
-        <div style="flex:1">
-          <p class="t-body">Every number on the last five slides came from here, with its original source and the date it was last checked. Scan it, or grab the link out of the chat.</p>
-          <div class="callout" style="margin-top:1.2rem">It says each figure was checked against its source in July 2026, and it asks that they be checked again before anyone republishes after October. So treat it as working research rather than settled fact.</div>
-        </div>
-      </div>`)}
-      ${foot('Movement 1 &nbsp;·&nbsp; What is happening')}
-    </div></div>`,
-    'Paste the link in Zoom chat now.');
-
-  // ---- MOVEMENT 2 · THE HABIT WE BUILT ------------------------------------
   const G = STATS.digital;
   add(`
     <div class="sl sl-deep"><div class="sl-pad">
@@ -171,10 +104,11 @@ export function slides() {
       ${a(`<div class="grid grid-2" style="margin-top:1.6rem;max-width:820px">${G.counters.map((c, i) => statCard(c, `d${i + 2}`)).join('')}</div>`)}
       ${a(`<p class="t-body-lg" style="margin-top:1.5rem;max-width:960px">${esc(G.kicker)}</p>`)}
       ${a(`<div class="src-note" style="margin-top:1rem">${esc(G.source)}</div>`)}
-      ${foot('Movement 2 &nbsp;·&nbsp; The habit we built')}
+      ${foot('Movement 1 &nbsp;·&nbsp; The numbers')}
     </div></div>`,
-    'This is the hinge of the whole hour. Access is solved. Say it plainly and pause.');
+    'The hinge of the hour. Access is solved. Say it plainly and pause.');
 
+  // ---- MOVEMENT 2 · THE HABIT WE BUILT ------------------------------------
   add(`
     <div class="sl"><div class="sl-pad">
       ${label('Movement 2 &nbsp;·&nbsp; what the numbers do not show')}
@@ -193,13 +127,13 @@ export function slides() {
 
   add(`
     <div class="sl"><div class="sl-pad">
-      ${label('Movement 2 &nbsp;·&nbsp; the device problem')}
-      ${a(`<h2 class="t-h3">The same phone that carries the text is the one pulling them <span class="accent">away</span> from the room.</h2>`)}
-      ${a(`<p class="t-body-lg" style="margin-top:1.1rem">Social platforms promise connection and hand you an audience. AI promises a conversation partner and hands you a mirror. Both are very good at making a person feel accompanied while they are, in fact, on their own.</p>`)}
-      ${a(`<p class="t-body" style="margin-top:1.2rem;max-width:1020px">So when the Bible turns up on that same device, inside that same posture, it picks the posture up. Reading becomes one more thing done alone, at speed, in between other things done alone.</p>`)}
+      ${label('Movement 2 &nbsp;·&nbsp; the device')}
+      ${a(`<h2 class="t-h3">The Bible now arrives on the same device as everything else.</h2>`)}
+      ${a(`<p class="t-body-lg" style="margin-top:1.1rem">Social platforms promise connection and hand you an audience. AI does the same thing with conversation. Both are good at making a person feel accompanied while they are on their own.</p>`)}
+      ${a(`<p class="t-body" style="margin-top:1.2rem;max-width:1020px">Reading picks up the posture of the thing it arrives on. One more task, done at speed, in between other things done alone.</p>`)}
       ${foot('Movement 2 &nbsp;·&nbsp; The habit we built')}
     </div></div>`,
-    'The heart of it. Your own AI and discipleship material sits underneath this slide.');
+    'Your own AI and discipleship material sits underneath this slide. Do not reach for a doom register.');
 
   add(`
     <div class="sl"><div class="sl-pad">
@@ -235,33 +169,20 @@ export function slides() {
     <div class="sl sl-deep"><div class="sl-pad">
       ${label('Movement 2 &nbsp;·&nbsp; the counter-move')}
       ${a(`<h2 class="t-h2">Make the Bible the <span class="accent">reason</span> people are in a room together.</h2>`)}
-      ${a(`<p class="t-body-lg" style="margin-top:1.3rem;max-width:1000px">The reading itself is the shared act. It needs other people present to happen at all, the way a play needs more than one person holding the script.</p>`)}
+      ${a(`<p class="t-body-lg" style="margin-top:1.3rem;max-width:1000px">The reading itself is the shared act. It needs other people present to happen at all.</p>`)}
       ${foot('Movement 2 &nbsp;·&nbsp; The habit we built')}
     </div></div>`,
-    'Say it as a thesis, not a suggestion.');
-
-  add(`
-    <div class="sl"><div class="sl-pad">
-      ${label('Movement 2 &nbsp;·&nbsp; why it matters')}
-      ${a(`<h2 class="t-h3">Some revelation only arrives in the <span class="accent">room</span>.</h2>`)}
-      ${a(`<p class="t-body-lg" style="margin-top:1rem">Read Jonah on your own and you meet a reluctant prophet. Read it with three other people, one of them holding God's lines and one of them holding Jonah's, and somebody in that group hears the last question of the book pointed straight at them.</p>`)}
-      ${a(`<ol class="steps" style="margin-top:1.6rem">
-        <li><b>You hear it in someone else's voice.</b> The text stops sounding like your own interior monologue, which is the version you have already agreed with.</li>
-        <li><b>You have to keep up.</b> Your part is coming, so you read forward instead of skimming.</li>
-        <li><b>Someone notices what you missed.</b> Four readers produce four readings, and the gaps between them are where the conversation starts.</li>
-      </ol>`)}
-      ${foot('Movement 2 &nbsp;·&nbsp; The habit we built')}
-    </div></div>`,
-    'Three reasons, not ten. Leave room for the exercise to prove it.');
+    'Say it as a thesis, not a suggestion. Then stop talking.');
 
   // ---- MOVEMENT 3 · FOUR COLOURS ------------------------------------------
   add(`
     <div class="sl"><div class="sl-pad">
       ${label('Movement 3 &nbsp;·&nbsp; the format change')}
       ${a(`<h2 class="t-h3">Red letters gave one voice a colour. This gives all <span class="accent">${n(S.voices)}</span>.</h2>`)}
-      ${a(`<p class="t-body-lg" style="margin-top:1rem">A publisher put the words of Jesus in red back in 1899, and one voice in your Bible has looked different ever since. This does the same thing for every speaker in Scripture. Not one word added, moved or removed.</p>`)}
+      ${a(`<p class="t-body-lg" style="margin-top:1rem">A publisher put the words of Jesus in red in 1899, and one voice in your Bible has looked different ever since. This does it for every speaker. No word added, moved or removed.</p>`)}
       ${a(`<div class="line">${[['c. 1227','Chapters'],['1551','Verse numbers'],['1899','Red letters'],['Now','Four colours']].map(([y, w]) => `
         <div><div class="y">${y}</div><div class="w">${w}</div></div>`).join('')}</div>`)}
+      ${a(`<div class="src-note" style="margin-top:1.2rem">Colour comes from a word-level tagging of the whole Bible by speaker, audience and role, built with David Joel Hamilton and the Overcommitted team</div>`)}
       ${foot('Movement 3 &nbsp;·&nbsp; Four colours')}
     </div></div>`,
     'Langton, Estienne, Klopsch. Every change to the page made Scripture easier to find your way around.');
@@ -275,7 +196,7 @@ export function slides() {
   add(`
     <div class="sl"><div class="sl-pad">
       ${label('Movement 3 &nbsp;·&nbsp; the four colours')}
-      ${a(`<h2 class="t-h3">Everything anyone says gets a colour, and there are only four of them.</h2>`)}
+      ${a(`<h2 class="t-h3">Everything anyone says gets a colour, and there are only four.</h2>`)}
       ${a(`<div class="keys" style="margin-top:1.6rem">${roles.map(([c, who, what, cnt]) => `
         <div class="key">
           <span class="dot" style="background:${D.INK[c].bar}"></span>
@@ -292,28 +213,14 @@ export function slides() {
       <div class="stack">
         ${label('Movement 3 &nbsp;·&nbsp; the reader')}
         ${a(`<h2 class="t-h3">This is Jonah, running live.</h2>`)}
-        ${a(`<p class="t-body-lg" style="margin-top:1rem">Every word carries the colour of whoever said it. Narration and God sit left, everyone else right, so you can see the shape of the conversation before you read a line of it.</p>`)}
+        ${a(`<p class="t-body-lg" style="margin-top:1rem">Every word carries the colour of whoever said it. Narration and God on the left, everyone else on the right, so you can see the shape of the conversation before you read a line.</p>`)}
         ${a(`<div class="callout sage" style="margin-top:1.2rem"><b>${jonah.cast.length} voices in this story.</b> ${jonah.cast.slice(0, 3).map((c) => esc(c.name)).join(', ')}, and three more.</div>`)}
         ${a(`<div class="src-note" style="margin-top:1.1rem">Press <span class="mono-em">R</span> to replay the reading</div>`)}
       </div>
       <div class="dev a d1">${P.phone(P.reader(jonah, jTurns, { id: 'rd1' }), '9:41')}</div>
       ${foot('Movement 3 &nbsp;·&nbsp; Four colours')}
     </div></div>`,
-    'Let it run. Do not talk over the first few turns.');
-
-  add(`
-    <div class="sl"><div class="sl-split">
-      <div class="stack">
-        ${label('Movement 3 &nbsp;·&nbsp; who is in it')}
-        ${a(`<h2 class="t-h3">Every voice, counted.</h2>`)}
-        ${a(`<p class="t-body-lg" style="margin-top:1rem">Tap any name and you get their page. What they say across the whole Bible, which books they turn up in, who they speak with most.</p>`)}
-        ${a(`<p class="t-body" style="margin-top:1.1rem">Moses speaks in 33 stories, and the voice he speaks with most is God. You can count it.</p>`)}
-        ${a(`<div class="src-note" style="margin-top:1.2rem">Colour comes from a word-level tagging of the whole Bible by speaker, audience and role, built with David Joel Hamilton and the Overcommitted team</div>`)}
-      </div>
-      <div class="dev a d1">${P.phone(P.callSheet(jonah), '9:43')}</div>
-      ${foot('Movement 3 &nbsp;·&nbsp; Four colours')}
-    </div></div>`,
-    'Cast is the thing no other Bible app has. Dwell here for a moment.');
+    'Let it run. Do not talk over the first few turns. Tap Cast live if anyone asks who is in a story.');
 
   // ---- MOVEMENT 4 · TWO PLANS ---------------------------------------------
   add(`
@@ -334,65 +241,22 @@ export function slides() {
           <div class="fit">One story per weekday of a ten week outreach.</div>
         </div>
       </div>`)}
-      ${a(`<p class="t-body" style="margin-top:1.2rem">Progress carries across the break, so a student who joins in week six starts where the school is.</p>`)}
+      ${a(`<p class="t-body" style="margin-top:1.2rem">Nothing to set up, and progress carries across the break, so a student who joins in week six starts where the school is.</p>`)}
       ${foot('Movement 4 &nbsp;·&nbsp; Two plans')}
     </div></div>`,
     'Check the phase lengths against Kona before you say the weekday line.');
 
-  add(`
-    <div class="sl"><div class="sl-split">
-      <div class="stack">
-        ${label('Movement 4 &nbsp;·&nbsp; on the phone')}
-        ${a(`<h2 class="t-h3">Start it once and it keeps your place.</h2>`)}
-        ${a(`<p class="t-body-lg" style="margin-top:1rem">A plan is just a list of stories with a bookmark in it. ${D.planCount} plans and challenges ship with the app, and a school can build its own out of any stories it likes.</p>`)}
-      </div>
-      <div class="dev a d1">${P.phone(P.planScreen(OT, NT), '9:45')}</div>
-      ${foot('Movement 4 &nbsp;·&nbsp; Two plans')}
-    </div></div>`,
-    '');
-
-  // ---- MOVEMENT 5 · HOW FOUR PEOPLE READ ----------------------------------
-  add(`
-    <div class="sl"><div class="sl-pad">
-      ${label('Movement 5 &nbsp;·&nbsp; the mechanic')}
-      ${a(`<h2 class="t-h3">How four people read one story.</h2>`)}
-      ${a(`<ol class="steps" style="margin-top:1.6rem">
-        <li><b>Get into a group of four.</b> Everyone opens the same story on their own phone. Nobody signs in and there is nothing to set up.</li>
-        <li><b>Take a colour each.</b> Narrator, God, main character, everyone else. The layout tells you when your part is coming.</li>
-        <li><b>Read it out loud.</b> About ${jonah.minutes} minutes for Jonah. You read your colour and only your colour.</li>
-        <li><b>Talk about it.</b> Four questions are already waiting at the end, in three versions. Pick the one that fits the room.</li>
-      </ol>`)}
-      ${foot('Movement 5 &nbsp;·&nbsp; How four people read')}
-    </div></div>`,
-    'Say step three twice. People default to reading everything.');
-
-  add(`
-    <div class="sl"><div class="sl-split">
-      <div class="stack">
-        ${label('Movement 5 &nbsp;·&nbsp; after the reading')}
-        ${a(`<h2 class="t-h3">Three sets of questions, on all ${n(S.stories)} stories.</h2>`)}
-        ${a(`<p class="t-body-lg" style="margin-top:1rem">Same story, three times over for three different rooms. For a DTS you want the small group set.</p>`)}
-        ${a(`<div class="card" style="margin-top:1.2rem;border-color:rgba(124,204,30,.28);background:rgba(124,204,30,.06)">
-          <div class="t-label" style="margin-bottom:.7rem;color:var(--lime)">For a DTS &nbsp;·&nbsp; small group</div>
-          <ol style="padding-left:1.1rem;color:var(--mid);line-height:1.6">${jonah.questions.group.map((q) => `<li style="margin-bottom:.4rem">${esc(q)}</li>`).join('')}</ol>
-        </div>`)}
-      </div>
-      <div class="dev a d1">${P.phone(P.talkAbout(jonah, 'group'), '9:52')}</div>
-      ${foot('Movement 5 &nbsp;·&nbsp; How four people read')}
-    </div></div>`,
-    'Read one of the questions out loud so they hear the register.');
-
-  // ---- MOVEMENT 6 · YOUR TURN ---------------------------------------------
+  // ---- MOVEMENT 5 · YOUR TURN ---------------------------------------------
   add(`
     <div class="sl"><div class="discussion">
-      <div class="disc-label a">Movement 6 &nbsp;·&nbsp; your turn</div>
+      <div class="disc-label a">Movement 5 &nbsp;·&nbsp; your turn</div>
       ${a(`<div class="q t-h2">Breakout rooms. Fifteen minutes.</div>`)}
       ${a(`<div style="display:flex;gap:clamp(1.6rem,3.4vw,3.4rem);margin-top:1.8rem;align-items:flex-start">
         <ol class="steps" style="flex:1">
           <li><b>Open the app</b> and find story ${jonah.id.replace('S','')}, <b>${esc(jonah.title)}</b>. It is the book of Jonah, all four chapters.</li>
           <li><b>Take a colour each.</b> If you are three, one person takes narrator and everyone else. If you are five, two of you share blue.</li>
-          <li><b>Read it out loud, in parts.</b> About ${jonah.minutes} minutes.</li>
-          <li><b>Work the four small group questions</b> at the end together. Have fun with it!</li>
+          <li><b>Read it out loud, in parts.</b> You read your colour and only your colour. About ${jonah.minutes} minutes.</li>
+          <li><b>Work the four questions</b> at the end together. They are already there, under Talk about it. Have fun with it!</li>
         </ol>
         <div style="width:clamp(230px,24vw,310px);flex:none">
           <div class="card">
@@ -408,22 +272,22 @@ export function slides() {
           <div class="src-note" style="margin-top:.9rem">Press <span class="mono-em">T</span> to start the countdown</div>
         </div>
       </div>`)}
-      ${foot('Movement 6 &nbsp;·&nbsp; Your turn')}
+      ${foot('Movement 5 &nbsp;·&nbsp; Your turn')}
     </div></div>`,
     'Open breakouts of four. Leave this slide up. Press T to run the timer.');
 
   add(`
     <div class="sl"><div class="sl-pad">
-      ${label('Movement 6 &nbsp;·&nbsp; who reads what')}
+      ${label('Movement 5 &nbsp;·&nbsp; who reads what')}
       ${a(`<h2 class="t-h3">Jonah, by the numbers.</h2>`)}
       ${a(`<p class="t-body-lg" style="margin-top:.9rem">If your group stalls on who takes which colour, this is how much each part actually speaks.</p>`)}
       ${a(`<div style="margin-top:1.6rem">${bars(
         jonah.cast.map((c) => ({ label: c.name, value: c.words, color: c.color })), ' words'
       )}</div>`)}
       ${a(`<div class="src-note" style="margin-top:1.2rem">Blue is shared across ${jonah.cast.filter((c) => c.color === 'blue').length} speakers, so one reader covers all of them</div>`)}
-      ${foot('Movement 6 &nbsp;·&nbsp; Your turn')}
+      ${foot('Movement 5 &nbsp;·&nbsp; Your turn')}
     </div></div>`,
-    'Useful if a group stalls on who takes what.');
+    'Back-pocket slide. Only put it up if a room stalls on who takes what.');
 
   // ---- CLOSE --------------------------------------------------------------
   add(`
@@ -447,22 +311,23 @@ export function slides() {
       ${a(`<div class="qr" style="margin-top:1.8rem">
         ${qr('ios', 'App Store')}
         ${qr('android', 'Google Play')}
+        ${qr('research', 'The research')}
         <div style="flex:1;padding-left:.6rem">
-          <p class="t-body">Search <b style="color:var(--ink)">SourceView Together</b> in either store if the code will not scan off a shared screen. Both links are in the chat.</p>
-          <p class="t-body" style="margin-top:.9rem">English and French, iOS 16.4 or later, Android 8 or later, and it works offline once the text is down.</p>
+          <p class="t-body">Search <b style="color:var(--ink)">SourceView Together</b> in either store if the code will not scan off a shared screen. All three links are in the chat.</p>
+          <p class="t-body" style="margin-top:.9rem">The third code is every figure I used tonight, with its original source and the date it was last checked.</p>
           <p class="t-body" style="margin-top:.9rem">Email me if you want the two DTS plans set up for your school, or the printable booklets for groups without devices.</p>
           <div style="margin-top:1rem;font-family:var(--mono);font-size:.9rem;color:var(--lime)">sourceviewbible@gmail.com</div>
         </div>
       </div>`)}
       ${foot('Close')}
     </div></div>`,
-    'Paste both store links in Zoom chat. Scanning off a shared screen is unreliable.');
+    'Paste all three links in Zoom chat. Scanning off a shared screen is unreliable.');
 
   add(`
     <div class="sl sl-deep"><div class="sl-pad">
       ${label('Close &nbsp;·&nbsp; questions')}
       ${a(`<h2 class="t-h2">The Bible was a conversation before it was a <span class="accent">book</span>.</h2>`)}
-      ${a(`<p class="t-body-lg" style="margin-top:1.3rem;max-width:960px">Ezra read the law out loud to a square full of people who had never heard it. Paul wrote letters expecting a room. Reading it quietly on our own is the recent habit, and it is the one your students have inherited.</p>`)}
+      ${a(`<p class="t-body-lg" style="margin-top:1.3rem;max-width:960px">Ezra read the law out loud to a square full of people who had never heard it. Paul wrote letters expecting a room. Reading it quietly on your own is the recent habit, and it is the one your students arrive with.</p>`)}
       ${a(`<div class="src-note" style="margin-top:1.8rem">Nathaniel Baldock &nbsp;·&nbsp; Tauranga, New Zealand &nbsp;·&nbsp; sourceviewbible@gmail.com</div>`)}
       ${foot('Close')}
     </div></div>`,

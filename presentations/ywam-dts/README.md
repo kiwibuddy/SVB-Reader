@@ -31,21 +31,45 @@ room asks where a number came from.
 
 | Time | Slides | |
 | --- | --- | --- |
-| 00-04 | 1 | Open, and the shape of the hour |
-| 04-16 | 2-7 | Movement 1: what is happening |
-| 16-26 | 8-13 | Movement 2: the habit we built, and Josiah and Nehemiah |
-| 26-33 | 14-17 | Movement 3: four colours |
-| 33-38 | 18-19 | Movement 4: two plans for the DTS |
-| 38-42 | 20-21 | Movement 5: how four people read |
-| 42-57 | 22-23 | Movement 6: breakouts, read Jonah |
-| 57-60 | 24-26 | Close: back together, download, questions |
+| 00-03 | 1 | Open, and the shape of the hour |
+| 03-11 | 2-3 | Movement 1: the numbers |
+| 11-22 | 4-7 | Movement 2: the habit we built, and Josiah and Nehemiah |
+| 22-30 | 8-10 | Movement 3: four colours |
+| 30-34 | 11 | Movement 4: two plans for the DTS |
+| 34-50 | 12-13 | Movement 5: breakouts, read Jonah |
+| 50-60 | 14-16 | Close: back together, download, questions |
 
-Slide 22 is the breakout brief. Leave it up, press `T`, open rooms of four.
+Slide 12 is the breakout brief. Leave it up, press `T`, open rooms of four.
+Slide 13 is a back-pocket slide: only put it up if a room stalls on who takes
+which colour.
 
-Slide 11 is the Josiah and Nehemiah precedent, four beats down the side with
+Slide 6 is the Josiah and Nehemiah precedent, four beats down the side with
 the two stories as parallel columns. It carries no argument of its own on
 purpose: it is there to talk over, with the story numbers along the foot so
 they can be opened in the app if anyone asks.
+
+## What was cut, and why
+
+Sixteen slides, down from twenty-six. Roughly twenty-five minutes of talking,
+fifteen of breakout, ten back together, and room to run over.
+
+| Cut | Why |
+| --- | --- |
+| Young men 54/46 bar chart | A 54 to 46 split does not carry "young men are driving this". The UK 4% to 21% attendance figure makes the same point on firmer ground, so it moved onto the numbers slide instead. |
+| UK attendance as its own slide | Folded into the numbers slide as the third card. |
+| AI usage bar chart | The percentages have no stated denominator yet. The device slide makes the AI argument without leaning on an unmeasured number. |
+| Podcast view counts | Labelled "not a statistic" on its own slide, which is a sign it did not need to be there. |
+| Research QR as its own slide | Moved to the download slide as a third code. |
+| "Some revelation only arrives in the room" | Told the room what the breakout was about to prove. Let the breakout prove it. |
+| Cast screen | A feature tour, not part of the argument. Demo it live if someone asks. |
+| Plan screen mockup | The two-plans slide already carries it. |
+| "How four people read" four steps | The breakout brief has the same four steps, ten minutes later. |
+| Talk about it screen | The questions are named in the breakout brief where they are actually needed. |
+
+Every cut block is still in `stats.mjs` or in git, so restoring one is a slide
+rather than a rewrite. The build lists parked figures separately from the ones
+that still need confirming, which is why the outstanding list is three items
+rather than eight.
 
 ## The phones are not screenshots
 
@@ -94,6 +118,16 @@ own punctuation, so they are not judged.
 
 The deck spends its one permitted antithesis on the cover.
 
+Five more rules on top, from Nathaniel:
+
+1. Direct, not dramatic. Say the uncomfortable thing without inflating it.
+2. Evidence first, interpretation second. No headline claims more than the
+   number under it. Where a reading is Nathaniel's rather than the data's, the
+   slide says so.
+3. Talk to people like adults. Clear, never dumbed down.
+4. Do not sound like a Bible study or like personal devotions.
+5. Keep the punchy lines.
+
 ## Rebuild
 
 ```bash
@@ -107,7 +141,7 @@ node presentations/ywam-dts/build.mjs
 | `data.mjs` | app palette, motion, the reader port, corpus totals, plans |
 | `stats.mjs` | every research figure, its source card, and its open questions |
 | `phone.mjs` | the live phone screens |
-| `slides.mjs` | the 26 slides |
+| `slides.mjs` | the 16 slides |
 | `runtime.mjs` | nav, counters, source cards, the reading animation, the countdown |
 | `qr.json` | App Store, Google Play and research QR codes as inline SVG |
 
