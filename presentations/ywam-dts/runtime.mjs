@@ -1,39 +1,34 @@
 import { MOTION } from './data.mjs';
 
+// Deck engine per the nb-presentation skill (entry cover, keyed slides,
+// counters, source modals), plus the three things this deck adds: the reader
+// that plays turn by turn, the four-part picker, and the breakout countdown.
 export const js = `
 (function(){
-  var board = document.getElementById('board');
   var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
-  var bar = document.getElementById('bar');
-  var num = document.getElementById('num');
-  var phase = document.getElementById('phase');
-  var clock = document.getElementById('clock');
-  var notesEl = document.getElementById('notes');
-  var i = 0, notesOn = false;
-
-  // ---- fit the fixed board into whatever window it is shared from ---------
-  function fit(){
-    var s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
-    board.style.transform = 'scale(' + s + ')';
-  }
-  window.addEventListener('resize', fit); fit();
+  var entry  = document.getElementById('entry');
+  var prog   = document.getElementById('prog');
+  var clock  = document.getElementById('clock');
+  var notesEl= document.getElementById('notes');
+  var modal  = document.getElementById('modal');
+  var i = 0, started = false, notesOn = false;
 
   // ---- counters -----------------------------------------------------------
   function runCounters(slide){
-    slide.querySelectorAll('[data-count]').forEach(function(el){
-      var to = parseFloat(el.dataset.count);
-      var dec = parseInt(el.dataset.dec || '0', 10);
+    slide.querySelectorAll('.counter').forEach(function(el){
+      if (el.dataset.done) return; el.dataset.done = '1';
+      var to = parseFloat(el.dataset.target || '0');
+      var dec = String(el.dataset.target).indexOf('.') > -1 ? 1 : 0;
       var suffix = el.dataset.suffix || '';
       var dur = ${MOTION.dur.slow + 340}, t0 = null;
       function step(ts){
         if (!t0) t0 = ts;
         var p = Math.min((ts - t0) / dur, 1);
-        // same decelerate curve the app uses
         var e = 1 - Math.pow(1 - p, 3);
-        el.textContent = (to * e).toFixed(dec) + suffix;
+        var v = to * e;
+        el.textContent = (dec ? v.toFixed(dec) : Math.round(v).toLocaleString('en-NZ')) + suffix;
         if (p < 1) requestAnimationFrame(step);
       }
-      el.textContent = (0).toFixed(dec) + suffix;
       requestAnimationFrame(step);
     });
   }
@@ -50,14 +45,13 @@ export const js = `
     turns.forEach(function(t){ t.classList.remove('in'); t.classList.add('pend'); });
     scroll.style.transform = 'translateY(0)';
 
-    var PACE = 460;              // one turn at a time, readable
+    var PACE = 460;
     var STAGGER = ${MOTION.stagger.turn};
     turns.forEach(function(turn, k){
       readerTimers.push(setTimeout(function(){
         turn.classList.remove('pend');
         turn.classList.add('in');
-        // keep the newest turn in frame, the way a thumb would
-        var over = (turn.offsetTop + turn.offsetHeight) - (view.clientHeight - 28);
+        var over = (turn.offsetTop + turn.offsetHeight) - (view.clientHeight - 24);
         if (over > 0) scroll.style.transform = 'translateY(' + (-over) + 'px)';
       }, k * PACE + (k % ${MOTION.stagger.max}) * STAGGER));
     });
@@ -82,16 +76,12 @@ export const js = `
   function show(next){
     if (next < 0 || next >= slides.length) return;
     stopReader(); clearInterval(pickTimer);
-    slides[i].classList.remove('on');
+    slides[i].classList.remove('active');
     i = next;
     var s = slides[i];
-    s.classList.add('on');
-    bar.style.width = ((i + 1) / slides.length * 100) + '%';
-    num.textContent = String(i + 1).padStart(2,'0') + ' / ' + slides.length;
-    phase.textContent = s.dataset.phase || '';
+    s.classList.add('active');
+    prog.style.width = ((i + 1) / slides.length * 100) + '%';
     notesEl.textContent = s.dataset.note || '';
-    document.body.classList.toggle('dark-chrome', s.classList.contains('dark'));
-    // let the slide become visible before anything animates inside it
     setTimeout(function(){
       runCounters(s);
       playReader(s.querySelector('.scroller[id$="-scroll"]'));
@@ -100,21 +90,59 @@ export const js = `
     try { location.hash = String(i + 1); } catch(e){}
   }
 
+  function begin(){
+    if (started) return;
+    started = true;
+    entry.classList.add('out');
+    slides[i].classList.add('active');
+    prog.style.width = ((i + 1) / slides.length * 100) + '%';
+    notesEl.textContent = slides[i].dataset.note || '';
+    setTimeout(function(){
+      runCounters(slides[i]);
+      playReader(slides[i].querySelector('.scroller[id$="-scroll"]'));
+      playPicker(slides[i]);
+    }, 240);
+  }
+  entry.addEventListener('click', begin);
+  document.getElementById('next').onclick = function(){ started ? show(i + 1) : begin(); };
+  document.getElementById('prev').onclick = function(){ if (started) show(i - 1); };
+
   document.addEventListener('keydown', function(e){
-    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); show(i + 1); }
-    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
+    if (!started) {
+      if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault(); begin(); return;
+      }
+    }
+    if (modal.classList.contains('open')) { if (e.key === 'Escape') closeModal(); return; }
+    if (['ArrowRight','ArrowDown',' ','PageDown'].indexOf(e.key) > -1) { e.preventDefault(); show(i + 1); }
+    else if (['ArrowLeft','ArrowUp','PageUp'].indexOf(e.key) > -1) { e.preventDefault(); show(i - 1); }
     else if (e.key === 'Home') show(0);
     else if (e.key === 'End') show(slides.length - 1);
-    else if (e.key === 'r' || e.key === 'R') { playReader(slides[i].querySelector('.scroller[id$="-scroll"]')); }
+    else if (e.key === 'r' || e.key === 'R') playReader(slides[i].querySelector('.scroller[id$="-scroll"]'));
     else if (e.key === 'n' || e.key === 'N') { notesOn = !notesOn; notesEl.style.display = notesOn ? 'block' : 'none'; }
-    else if (e.key === 't' || e.key === 'T') { toggleTimer(); }
+    else if (e.key === 't' || e.key === 'T') toggleTimer();
     else if (e.key === 'f' || e.key === 'F') {
-      if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen();
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
     }
   });
-  board.addEventListener('click', function(e){
-    if (e.clientX < window.innerWidth * 0.25) show(i - 1); else show(i + 1);
+
+  // ---- source modals ------------------------------------------------------
+  function openModal(id){
+    var d = SOURCES[id]; if (!d) return;
+    document.getElementById('m-stat').textContent = d.stat;
+    document.getElementById('m-title').textContent = d.title;
+    document.getElementById('m-body').textContent = d.body;
+    document.getElementById('m-src').innerHTML = 'Source: ' + d.source +
+      (d.link ? '<br><a href="' + d.link + '" target="_blank" rel="noopener">View source &rarr;</a>' : '');
+    modal.classList.add('open');
+  }
+  function closeModal(){ modal.classList.remove('open'); }
+  document.querySelectorAll('[data-modal]').forEach(function(el){
+    el.addEventListener('click', function(){ openModal(el.dataset.modal); });
   });
+  document.getElementById('m-close').onclick = closeModal;
+  modal.addEventListener('click', function(e){ if (e.target.id === 'modal') closeModal(); });
 
   // ---- breakout countdown -------------------------------------------------
   var tRun = null, tLeft = 15 * 60;
@@ -132,14 +160,13 @@ export const js = `
   }
   paint();
 
-  // jumping by hash, so a deep link or a nudge from the console lands right
   window.addEventListener('hashchange', function(){
     var h = parseInt((location.hash || '').replace('#',''), 10);
-    if (!isNaN(h) && h - 1 !== i) show(Math.min(Math.max(h - 1, 0), slides.length - 1));
+    if (!isNaN(h) && h - 1 !== i) { if (!started) begin(); show(Math.min(Math.max(h - 1, 0), slides.length - 1)); }
   });
-  window.goTo = function(k){ show(k - 1); };
+  window.goTo = function(k){ if (!started) begin(); show(k - 1); };
 
   var start = parseInt((location.hash || '').replace('#',''), 10);
-  show(isNaN(start) ? 0 : Math.min(Math.max(start - 1, 0), slides.length - 1));
+  if (!isNaN(start)) { i = Math.min(Math.max(start - 1, 0), slides.length - 1); begin(); }
 })();
 `;
