@@ -248,6 +248,17 @@ const parts = `
 .precedent .ref{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;
   text-transform:uppercase;color:var(--dim);padding:.7rem 0;border-top:1px solid var(--fog)}
 
+/* the two get-the-app slides: one code per slide, as big as the stage allows */
+.getbig{display:flex;align-items:center;gap:3rem;flex:1;min-height:0}
+.getbig .side{flex:1;min-width:0}
+.appname{display:flex;align-items:center;gap:1.4rem}
+.store{font-family:var(--display);font-weight:600;color:var(--lime);letter-spacing:-.01em}
+.bigcode{flex:none;text-align:center}
+.bigcode .code{background:#fff;border-radius:1.4rem;padding:1.1rem;display:block}
+.bigcode .code svg{display:block;width:100%;height:100%}
+.bigcode .cap{font-family:var(--mono);letter-spacing:.2em;text-transform:uppercase;
+  color:var(--dim);margin-top:.9rem}
+
 /* the SourceView intro slide */
 .intro{display:flex;align-items:center;gap:clamp(1.6rem,3.2vw,3.2rem)}
 .appicon{display:block;width:clamp(130px,17vw,240px);aspect-ratio:1;border-radius:22%;
@@ -392,6 +403,14 @@ const projection = `
 .qrbox .n{font-size:calc(1.28 * var(--u));margin-top:calc(.7 * var(--u))}
 .qrbox .u{font-size:calc(.72 * var(--u))}
 
+.getbig{gap:calc(3.4 * var(--u))}
+.appname{gap:calc(1.5 * var(--u))}
+.getbig .appicon{width:calc(9 * var(--u))}
+.store{font-size:calc(3 * var(--u));margin-top:calc(1.5 * var(--u))}
+.getbig .t-body{margin-top:calc(1.1 * var(--u))}
+.bigcode .code{width:calc(40 * var(--u));height:calc(40 * var(--u));
+  border-radius:calc(1.3 * var(--u));padding:calc(1.1 * var(--u))}
+.bigcode .cap{font-size:calc(.9 * var(--u));margin-top:calc(.9 * var(--u))}
 .intro{gap:calc(3 * var(--u))}
 .appicon{width:calc(15 * var(--u))}
 .qrbox .appicon.sm{width:calc(12.6 * var(--u))}

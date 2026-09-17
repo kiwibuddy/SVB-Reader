@@ -31,29 +31,36 @@ room asks where a number came from.
 
 | Time | Slides | |
 | --- | --- | --- |
-| 00-08 | 1-2 | Movement 1: where we are, and access |
-| 08-20 | 3-5 | Movement 2: the practices, the pattern, the invitation |
-| 20-29 | 6-9 | Movement 3: the tool, and four colours |
-| 29-33 | 10 | Movement 4: two DTS rhythms |
-| 33-49 | 11-12 | Movement 5: breakouts, read Jonah |
-| 49-60 | 13-15 | Close: reflect, take the resource, questions |
+| before | 1-2 | Get the app: one store code per slide |
+| 00-08 | 3-4 | Movement 1: where we are, and access |
+| 08-20 | 5-7 | Movement 2: the practices, the pattern, the invitation |
+| 20-29 | 8-11 | Movement 3: the tool, and four colours |
+| 29-33 | 12 | Movement 4: two DTS rhythms |
+| 33-49 | 13-14 | Movement 5: breakouts, read Jonah |
+| 49-60 | 15-17 | Close: reflect, take the resource, questions |
 
-Slide 6 introduces the app itself, with the real icon read from
+Slides 1 and 2 are the download codes, one store per slide, each code at 40u
+square. That is about 70% of the stage height, which is what makes it scannable
+from the back of a room rather than only from the front two rows. Leave each
+one up until most of the room has it; the session does not work if people
+cannot open a story in the breakout.
+
+Slide 8 introduces the app itself, with the real icon read from
 `assets/images/icon.png` and downscaled to 420px, carried once as the
 `--appicon` CSS token so the blob is not repeated per use.
 
-Slide 11 is the breakout brief. Leave it up, press `T`, open rooms of four.
-Slide 12 is a back-pocket slide: only put it up if a room stalls on who takes
+Slide 13 is the breakout brief. Leave it up, press `T`, open rooms of four.
+Slide 14 is a back-pocket slide: only put it up if a room stalls on who takes
 which colour.
 
-Slide 4 is the Josiah and Nehemiah precedent, four beats down the side with
+Slide 6 is the Josiah and Nehemiah precedent, four beats down the side with
 the two stories as parallel columns. It carries no argument of its own on
 purpose: it is there to talk over, with the story numbers along the foot so
 they can be opened in the app if anyone asks.
 
 ## What was cut, and why
 
-Fifteen slides, down from twenty-six. Roughly twenty-five minutes of talking,
+Seventeen slides, down from twenty-six, two of which are the download codes. Roughly twenty-five minutes of talking,
 fifteen of breakout, ten back together, and room to run over.
 
 | Cut | Why |
@@ -112,7 +119,7 @@ nothing inside `.screen` reads the deck's theme tokens. Every size in there is
 a share of the screen width (app px ÷ 2.865, the 1170/2532 aspect), so the
 whole mockup scales with the slide rather than with the viewport.
 
-Slide 8 plays the reading turn by turn and scrolls to follow, the way a thumb
+The reader slide plays the reading turn by turn and scrolls to follow, the way a thumb
 would.
 
 ## Statistics
@@ -190,7 +197,7 @@ node presentations/ywam-dts/build.mjs
 | `data.mjs` | app palette, motion, the reader port, corpus totals, plans |
 | `stats.mjs` | every research figure, its source card, and its open questions |
 | `phone.mjs` | the live phone screens |
-| `slides.mjs` | the 15 slides |
+| `slides.mjs` | the 17 slides |
 | `runtime.mjs` | nav, counters, source cards, the reading animation, the countdown |
 | `qr.json` | App Store, Google Play and research QR codes as inline SVG |
 
