@@ -25,7 +25,7 @@ const reset = () => { ai = 0; };
 
 const label = (t) => `<span class="t-label a">${t}</span>`;
 const foot = (movement) =>
-  `<div class="slide-foot"><span>Reading together &nbsp;·&nbsp; YWAM Kona</span><span>${movement}</span></div>`;
+  `<div class="slide-foot"><span>Reading Scripture Together &nbsp;·&nbsp; YWAM Kona</span><span>${movement}</span></div>`;
 
 const statCard = (c, cls) => `
   <button class="card stat-card ${cls}" ${c.modal ? `data-modal="${c.id}"` : ''}>
@@ -61,27 +61,6 @@ const qr = (k, name) => `
 export function slides() {
   const out = [];
   const add = (html, note) => { reset(); out.push({ html, note }); };
-
-  // ---- OPENING ------------------------------------------------------------
-  const run = [
-    ['00-03', 'Open', 'Where this goes'],
-    ['03-11', 'The numbers', 'What is actually happening'],
-    ['11-22', 'The habit we built', 'And an older one we stopped using'],
-    ['22-30', 'Four colours', 'The format change'],
-    ['30-34', 'Two plans', 'Lecture phase and outreach'],
-    ['34-50', 'Breakouts: read Jonah', 'You do it, not me'],
-    ['50-60', 'Back together', 'Feedback and questions'],
-  ];
-  add(`
-    <div class="sl"><div class="sl-pad">
-      ${label('Opening &nbsp;·&nbsp; where this goes')}
-      ${a(`<h2 class="t-h3">In about half an hour you will be in a breakout room reading Jonah out loud with three other people.</h2>`)}
-      ${a(`<div class="run" style="margin-top:1.4rem">${run.map(([t, ti, no], i) => `
-        <div class="r${i === 5 ? ' now' : ''}"><span class="tm">${t}</span><span class="ti">${ti}</span><span class="no">${no}</span></div>`).join('')}</div>`)}
-      ${a(`<p class="t-body" style="margin-top:1.2rem;max-width:960px">Everything before that is there to get you into the room. Keep a phone within reach.</p>`)}
-      ${foot('Opening')}
-    </div></div>`,
-    'Flag the breakout now so nobody is surprised. Ask them to have a phone within reach.');
 
   // ---- MOVEMENT 1 · THE NUMBERS -------------------------------------------
   const R = STATS.resurgence;
@@ -127,33 +106,23 @@ export function slides() {
 
   add(`
     <div class="sl"><div class="sl-pad">
-      ${label('Movement 2 &nbsp;·&nbsp; the device')}
-      ${a(`<h2 class="t-h3">The Bible now arrives on the same device as everything else.</h2>`)}
-      ${a(`<p class="t-body-lg" style="margin-top:1.1rem">Social platforms promise connection and hand you an audience. AI does the same thing with conversation. Both are good at making a person feel accompanied while they are on their own.</p>`)}
-      ${a(`<p class="t-body" style="margin-top:1.2rem;max-width:1020px">Reading picks up the posture of the thing it arrives on. One more task, done at speed, in between other things done alone.</p>`)}
-      ${foot('Movement 2 &nbsp;·&nbsp; The habit we built')}
-    </div></div>`,
-    'Your own AI and discipleship material sits underneath this slide. Do not reach for a doom register.');
-
-  add(`
-    <div class="sl"><div class="sl-pad">
       ${label('Movement 2 &nbsp;·&nbsp; it has happened before')}
       ${a(`<h2 class="t-h3">Twice the book was found, read out loud to everyone, and the <span class="accent">society</span> changed.</h2>`)}
       ${a(`<div class="precedent">
         <span class="hd"></span><span class="hd">Josiah</span><span class="hd">Nehemiah</span>
         ${[
           ['Found',
-           'Hilkiah the priest finds the Book of the Law in the Temple during repairs.',
+           'Hilkiah finds the Book of the Law during Temple repairs, and Shaphan reads it to the king.',
            'The people ask Ezra to bring out the Book of the Law of Moses.'],
-          ['Read aloud',
-           'The king goes up with all the people of Judah and Jerusalem and reads them the entire Book of the Covenant.',
+          ['Read to everyone',
+           'The king summons the elders and goes up to the Temple with all the people of Judah and Jerusalem, from the least to the greatest, and reads them the entire Book of the Covenant.',
            'Read at the Water Gate from early morning until noon, to everyone old enough to understand.'],
           ['Understood together',
-           'Josiah tears his clothes, then sends to Huldah the prophetess to ask what it means.',
+           'Beside the pillar the king renews the covenant, and all the people pledge themselves to it with him.',
            'The Levites move through the crowd explaining it, so the people grasp what is being read.'],
-          ['Then the society moves',
-           'The altars come down, the practices stop, and Passover is kept as it had not been in centuries.',
-           'The assembly renews the covenant in writing and signs it.'],
+          ['Then society changed',
+           'Baal and Asherah stripped out of the Temple, the pagan shrines defiled from Geba to Beersheba, and Passover kept as it had not been since the judges.',
+           'They keep the Festival of Shelters for the first time since Joshua, then sign a binding agreement: no intermarriage, nothing bought on the Sabbath, debts cancelled every seventh year, the Temple funded.'],
         ].map(([beat, j, n2]) => `
           <span class="bt">${beat}</span><span class="cl">${j}</span><span class="cl">${n2}</span>`).join('')}
         <span class="ref"></span>

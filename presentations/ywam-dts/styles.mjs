@@ -79,8 +79,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   padding:.9rem clamp(1.6rem,3vw,3rem);font-size:.92rem;line-height:1.55;display:none;z-index:40;
   border-top:1px solid var(--fog)}
 .click-hint{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--lime);margin-top:.5rem;opacity:0;transition:opacity .2s}
+  color:var(--lime);margin-top:.6rem;opacity:.5;transition:opacity .2s}
+.click-hint::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;
+  background:currentColor;margin-right:.45em;vertical-align:.12em}
 .stat-card:hover .click-hint{opacity:1}
+.stat-card{border-color:rgba(124,204,30,.22)}
 `;
 
 // Components this deck needs beyond the house set: the live phone, the ported

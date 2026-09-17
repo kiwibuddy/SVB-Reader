@@ -26,7 +26,7 @@ const html = `<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reading together · YWAM Kona DTS staff training</title>
+<title>Reading Scripture Together · YWAM Kona DTS staff training</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz@0,6..72,300;0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Instrument+Serif:ital@1&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -38,8 +38,8 @@ const html = `<!DOCTYPE html>
   <div class="entry-inner">
     <div class="entry-label">YWAM Kona &nbsp;·&nbsp; DTS staff training</div>
     <div class="entry-duration"><span class="dot"></span>60 minutes &nbsp;·&nbsp; one breakout</div>
-    <h1 class="entry-title">The Bible is coming back.<br><em>And we are still reading it alone.</em></h1>
-    <p class="entry-sub">One hour on what the research is showing, why the habit we have built works against it, and a tool that puts four people around one story. You will read Jonah in a breakout before the end.</p>
+    <h1 class="entry-title">Reading <em>Scripture</em> together.</h1>
+    <p class="entry-sub">How reading Scripture together can become part of forming students who know God, live His Word and make Him known.</p>
     <div class="entry-cta">Click or press space to begin</div>
   </div>
   <div class="entry-author">Nathaniel Baldock &nbsp;·&nbsp; Tauranga, New Zealand</div>
