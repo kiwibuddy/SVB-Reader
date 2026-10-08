@@ -7,14 +7,15 @@
 <style>
   @page { size: A4; margin: 0; }
   :root {
-    --navy: #14284B;
-    --navy-2: #1C3560;
-    --text: #2E3D57;
-    --muted: #5B6B82;
-    --teal: #1895B2;
-    --sky: #E4F0F8;
-    --mint: #EEF5E5;
-    --hair: #C9D6E2;
+    --navy: #101619;
+    --navy-2: #3A4550;
+    --text: #3A4550;
+    --muted: #5E6B70;
+    --teal: #0E6B4C;
+    --sky: #F3F5F2;
+    --mint: #E9F4EF;
+    --hair: #DFE5E0;
+    --thread: #B4C0B8;
     --k-black: #3A4550; --k-red: #C0261A; --k-green: #0E6B4C; --k-blue: #1D46A8;
     --f-red: #FBEDEB;
     --display: "Inter Display", Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -22,7 +23,7 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { background: #D9DEE5; font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+  body { background: #DFE5E0; font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
   .page { width: 210mm; height: 297mm; margin: 10mm auto; background: #fff; position: relative; overflow: hidden; }
   @media print { body { background: none; } .page { margin: 0; } }
   svg.i { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; display: block; }
@@ -44,8 +45,6 @@
   /* ---------- one story, four colours ---------- */
   .story { position: relative; margin: 5.4mm 12mm 0; background: var(--sky); border-radius: 4mm; padding: 5.4mm 64mm 5mm 8mm; }
   .story h2 { font-size: 15.5pt; line-height: 1.1; font-weight: 900; text-transform: uppercase; color: var(--navy); letter-spacing: -.005em; }
-  .story h2 .fc span:nth-child(4n+1) { color: var(--k-black); } .story h2 .fc span:nth-child(4n+2) { color: var(--k-red); }
-  .story h2 .fc span:nth-child(4n+3) { color: var(--k-green); } .story h2 .fc span:nth-child(4n+4) { color: var(--k-blue); }
   .story p { font-size: 9.8pt; line-height: 1.42; color: var(--text); margin-top: 2.4mm; }
   .story p.note { font-style: italic; color: var(--muted); margin-top: 2mm; }
   .device { position: absolute; right: 15mm; top: 50mm; width: 37mm; z-index: 3; }
@@ -54,13 +53,13 @@
   /* ---------- stats band ---------- */
   .stats { margin: 4.6mm 12mm 0; background: var(--mint); border-radius: 4mm; padding: 4.2mm 5mm 3.4mm; }
   .stat-row { display: grid; grid-template-columns: repeat(5, 1fr); }
-  .stat { padding: 0 3.6mm; border-left: .3mm solid #CBD9BE; }
+  .stat { padding: 0 3.6mm; border-left: .3mm solid var(--thread); }
   .stat:first-child { border-left: 0; padding-left: 2mm; }
-  .stat svg { width: 6.6mm; height: 6.6mm; color: var(--navy); margin-bottom: 1.8mm; }
+  .stat svg { width: 6.6mm; height: 6.6mm; color: var(--k-green); margin-bottom: 1.8mm; }
   .stat b { display: block; white-space: nowrap; font-family: var(--display); font-size: 14pt; font-weight: 800; color: var(--navy); line-height: 1.05; letter-spacing: -.01em; }
   .stat b.sm { font-size: 11.4pt; line-height: 1.14; white-space: normal; }
   .stat span { display: block; font-size: 7.8pt; line-height: 1.3; color: var(--text); margin-top: .8mm; }
-  .fit { border-top: .3mm solid #CBD9BE; margin-top: 3.4mm; padding-top: 2.8mm; text-align: center; font-size: 8.6pt; color: var(--navy-2); }
+  .fit { border-top: .3mm solid var(--thread); margin-top: 3.4mm; padding-top: 2.8mm; text-align: center; font-size: 8.6pt; color: var(--navy-2); }
 
   /* ---------- gather + made for schools ---------- */
   .mid { display: grid; grid-template-columns: 1fr 64mm; gap: 5mm; margin: 5mm 12mm 0; align-items: start; }
@@ -70,33 +69,33 @@
   .place:first-child { border-left: 0; }
   .tile { width: 10.4mm; height: 10.4mm; border-radius: 2.8mm; margin: 0 auto; display: grid; place-items: center; color: #fff; }
   .tile svg { width: 5.8mm; height: 5.8mm; stroke-width: 1.9; }
-  .t1 { background: #12A39A; } .t2 { background: #7A5AC8; } .t3 { background: #2D6BD6; } .t4 { background: #43A047; }
+  .t1 { background: var(--k-black); } .t2 { background: var(--k-red); } .t3 { background: var(--k-green); } .t4 { background: var(--k-blue); }
   .place h3 { font-size: 7.8pt; font-weight: 800; text-transform: uppercase; color: var(--navy); margin-top: 2.4mm; letter-spacing: .02em; }
   .place p { font-size: 7.6pt; line-height: 1.35; color: var(--text); margin-top: 1mm; }
   .made { background: var(--sky); border-radius: 4mm; padding: 3.6mm 4.4mm 3.8mm; }
   .made .hd { display: flex; align-items: center; gap: 2.6mm; }
-  .made .hd svg { width: 6.6mm; height: 6.6mm; color: var(--navy); }
+  .made .hd svg { width: 6.6mm; height: 6.6mm; color: var(--k-green); }
   .made .hd h2 { font-size: 10.6pt; }
   .made ul { list-style: none; margin-top: 1.4mm; }
   .made li { display: grid; grid-template-columns: 4mm 1fr; gap: 2mm; margin-top: 1.5mm; }
-  .made li svg { width: 3.8mm; height: 3.8mm; color: var(--navy); margin-top: .4mm; stroke-width: 2.6; }
+  .made li svg { width: 3.8mm; height: 3.8mm; color: var(--k-green); margin-top: .4mm; stroke-width: 2.6; }
   .made li b { display: block; font-family: var(--display); font-size: 7.8pt; font-weight: 800; color: var(--navy); letter-spacing: .03em; text-transform: uppercase; }
   .made li span { display: block; font-size: 7.3pt; line-height: 1.32; color: var(--text); margin-top: .3mm; }
 
   /* ---------- start with one story + download ---------- */
-  .bottom { position: absolute; left: 0; right: 0; bottom: 2.4mm; height: 58mm; display: grid; grid-template-columns: 1fr 70mm; }
-  .start { position: relative; background: var(--navy); color: #fff; padding: 9mm 6mm 5mm 49mm;
+  .bottom { position: absolute; left: 0; right: 0; bottom: 3.4mm; height: 58mm; display: grid; grid-template-columns: 1fr 70mm; }
+  .start { position: relative; background: var(--k-black); color: #fff; padding: 9mm 6mm 5mm 49mm;
     clip-path: polygon(0 0, 97% 0, 99% 12%, 97.5% 26%, 100% 42%, 98% 58%, 99.5% 74%, 97% 88%, 98.5% 100%, 0 100%); }
-  .start .lbl { font-size: 8.4pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #7FD3E6; }
+  .start .lbl { font-size: 8.4pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #46D9A0; }
   .start h3 { font-size: 19pt; font-weight: 900; text-transform: uppercase; margin-top: 1.6mm; letter-spacing: -.005em; line-height: 1.02; }
-  .start .ref { font-size: 9.4pt; color: #DCE6F2; margin-top: 1.6mm; }
+  .start .ref { font-size: 9.4pt; color: #DFE5E0; margin-top: 1.6mm; }
   .chips { display: flex; align-items: center; margin-top: 3.2mm; font-size: 6.9pt; color: #fff; }
   .chips > span { display: flex; align-items: center; gap: 1mm; padding: 0 1.8mm; border-left: .3mm solid rgba(255,255,255,.35); white-space: nowrap; }
   .chips > span:first-child { padding-left: 0; border-left: 0; }
   .chips svg { width: 3.8mm; height: 3.8mm; color: #fff; }
   .dots { display: inline-flex; gap: .7mm; }
   .dots i { width: 2mm; height: 2mm; border-radius: 50%; display: block; border: .2mm solid rgba(255,255,255,.7); }
-  .start .try { font-size: 8.2pt; color: #E8EEF6; margin-top: 3.2mm; }
+  .start .try { font-size: 8.2pt; color: #E9EDF2; margin-top: 3.2mm; }
 
   /* Jonah, as the app shows it, in the phone */
   .mini { position: absolute; left: 12mm; top: -9mm; width: 31mm; z-index: 2; }
@@ -109,8 +108,8 @@
   .store { width: 20.6mm; text-align: center; }
   .store .qr { background: #fff; border: .3mm solid var(--hair); border-radius: 2mm; padding: .9mm; }
   .store .qr svg { width: 100%; height: auto; display: block; }
-  .store .lab { display: block; background: #111316; color: #fff; border-radius: 1.6mm; padding: .9mm .6mm 1mm; margin-top: 1.2mm; }
-  .store small { display: block; white-space: nowrap; font-size: 3.9pt; letter-spacing: .06em; text-transform: uppercase; color: #C9CDD3; }
+  .store .lab { display: block; background: var(--navy); color: #fff; border-radius: 1.6mm; padding: .9mm .6mm 1mm; margin-top: 1.2mm; }
+  .store small { display: block; white-space: nowrap; font-size: 3.9pt; letter-spacing: .06em; text-transform: uppercase; color: #B4C0B8; }
   .store b { display: block; font-size: 7pt; font-weight: 700; line-height: 1.1; }
   .dl .ask { font-size: 6.9pt; color: var(--text); margin-top: 2mm; line-height: 1.3; }
   .dl .mail { display: flex; align-items: center; gap: 1.4mm; font-size: 7.6pt; font-weight: 700; color: var(--navy); margin-top: 1mm; }
@@ -159,7 +158,7 @@
 </svg></div>
 
   <section class="story">
-    <h2>One story. <span class="fc"><span>F</span><span>O</span><span>U</span><span>R</span> <span>C</span><span>O</span><span>L</span><span>O</span><span>U</span><span>R</span><span>S</span></span>.<br>Every student has a part.</h2>
+    <h2>One story. Four colours.<br>Every student has a part.</h2>
     <p>SourceView Together gives each voice in Scripture a different colour, making it easy for students to read a Bible story aloud together.</p>
     <p>Four students take a colour. The app shows who speaks, so the group can simply follow along.</p>
     <p class="note">No word is added, moved or removed.</p>
