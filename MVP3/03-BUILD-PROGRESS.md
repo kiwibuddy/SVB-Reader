@@ -18,7 +18,7 @@ check `git log` for a partial commit, and carry on.
 | A | W4 After a story: stay put, up-next card, plan-order arrows | done | `1ec87b0` | Browser check: Advent S199 → S257, Bible S199 → S200; Up next card shows after Done |
 | A | W5 Journey view for started plans, plan page in plan order, no long-press start | done | `5686251` | One start flow (`hooks/useStartPlan.ts`); Advent card "See the plan"; reminders open `/plan/adventJourneyChronological` |
 | A | Extra: Old/New Testament progress always 0 | done | `ec501e8` | Found in the browser check; book list bound twice. `api/testamentProgress.test.ts` |
-| A | W6 Onboarding Save demo style helper | pending | | |
+| A | W6 Onboarding Save demo style helper | done | `9b981d2` | RN 0.86 phones lack the helper; web still has it, so check on a device. Guard test in `api/sqlQuoting.test.ts` |
 | B | W7 A streak that forgives | pending | | |
 | B | W8 Reminders that work | pending | | |
 | C | W9 Follow-a-voice plans | pending | | |
@@ -29,13 +29,14 @@ check `git log` for a partial commit, and carry on.
 
 | Release | Ready to publish | Checked in container | Needs a real device |
 | --- | --- | --- | --- |
-| A | no | | |
+| A | **yes** — JS only, no native change | 139 tests pass; `tsc` clean outside `Marketing/`; lint shows only the 6 errors that were already there; browser check of Plan tab, plan page, Read tab card, arrows, Up next, You tab | Onboarding Save demo (last page); late-join "today or Day 1" question (alerts don't show on web); tapping an Advent reminder opens the plan page |
 | B | no | | |
 | C | no | | |
 | D | no | | |
 
 ## Log
 
+- 17 Nov — W6 done. **Release A ready.** Note: the web preview needs a restart to pick up edits (`CI=1` turns off file watching).
 - 17 Nov — W5 done; browser check of Plan tab, plan page, Read tab card, arrows and Up next. Found and fixed testament progress bug.
 - 17 Nov — W4 done (tests, typecheck, lint clean for new code).
 - 17 Nov — W2 typecheck clean; W3 done.
