@@ -22936,16 +22936,44 @@
       },
       "christmas7Chronological": {
         "Ancient Promises": {
-          "title": "Promesses Anciennes",
+          "title": "Promesses anciennes",
           "description": "Promesses prophétiques du Messie à venir, prononcées des siècles avant le Christ"
-        },
-        "Divine Announcements": {
-          "title": "Annonces Divines",
-          "description": "Les anges de Dieu annoncent l'accomplissement des promesses anciennes"
         },
         "The Nativity": {
           "title": "La Nativité",
           "description": "Le Messie tant attendu naît à Bethléem"
+        }
+      },
+      "adventJourneyChronological": {
+        "hope": {
+          "title": "Semaine 1 · Espérance",
+          "description": "La promesse de Dieu, des premières pages de la Bible jusqu'à l'Emmanuel d'Ésaïe"
+        },
+        "peace": {
+          "title": "Semaine 2 · Paix",
+          "description": "Les prophètes consolent le peuple de Dieu et annoncent le Prince de la paix"
+        },
+        "joy": {
+          "title": "Semaine 3 · Joie",
+          "description": "Réjouissez-vous, le Seigneur est proche. Dès le 17 décembre, les antiennes Ô mènent à Noël"
+        },
+        "love": {
+          "title": "Semaine 4 · Amour",
+          "description": "Dieu tient sa promesse : Emmanuel, Dieu avec nous"
+        }
+      },
+      "christmas12Chronological": {
+        "christmas": {
+          "title": "Les fêtes de Noël",
+          "description": "Le jour de Noël et les trois fêtes traditionnelles qui le suivent"
+        },
+        "godWithUs": {
+          "title": "Dieu avec nous",
+          "description": "Ce que signifie que le Fils de Dieu soit devenu l’un de nous"
+        },
+        "epiphany": {
+          "title": "Lumière des nations",
+          "description": "La lumière pour toutes les nations, à la veille de l’Épiphanie"
         }
       }
     },

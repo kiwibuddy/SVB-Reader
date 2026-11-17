@@ -744,143 +744,261 @@
     ]
   },
   "adventJourneyChronological": {
-    "title": "Advent Journey (Chronological)",
-    "description": "16 Stories - 4 Weeks",
-    "longDescription": "Journey through Advent with a chronological flow from ancient prophecies to their fulfillment in Jesus. This focused 4-week plan follows the biblical timeline, showing how God's promises unfold across centuries, culminating in the birth of the Messiah.",
+    "title": "Advent Journey",
+    "description": "26 Stories - 4 Weeks",
+    "longDescription": "Read Advent the way the church has kept it for centuries. Week 1 traces God's promise through Jesus' family tree, week 2 listens to the prophets, and week 3 rejoices. From December 17 the ancient O Antiphons lead day by day to Christmas Eve. Sunday readings include the passage many churches read that day.",
     "segments": [
+      {
+        "segmentId": "S365",
+        "book": "Rev",
+        "title": "The Holy City is Coming",
+        "ref": "20:4-22:21",
+        "phase": "hope",
+        "note": "Advent begins by looking ahead: Jesus will come again (chs. 21–22)",
+        "noteFr": "L'Avent commence par regarder en avant : Jésus reviendra (ch. 21–22)"
+      },
+      {
+        "segmentId": "S002",
+        "book": "Gen",
+        "title": "People Sin",
+        "ref": "3:1-5:32",
+        "phase": "hope",
+        "note": "The first promise of a Rescuer (3:15)",
+        "noteFr": "La première promesse d'un Sauveur (3.15)"
+      },
+      {
+        "segmentId": "S006",
+        "book": "Gen",
+        "title": "God Makes a Covenant with Abraham",
+        "ref": "15:1-18:15",
+        "phase": "hope",
+        "note": "Count the stars: God's promise to Abraham (15:5)",
+        "noteFr": "Compte les étoiles : la promesse de Dieu à Abraham (15.5)"
+      },
+      {
+        "segmentId": "S008",
+        "book": "Gen",
+        "title": "Abraham's Faith Tested",
+        "ref": "20:1-23:20",
+        "phase": "hope",
+        "note": "“God will provide” — Abraham and Isaac (ch. 22)",
+        "noteFr": "« Dieu pourvoira lui-même » — Abraham et Isaac (ch. 22)"
+      },
+      {
+        "segmentId": "S085",
+        "book": "Rut",
+        "title": "A Surprising Love Story",
+        "ref": "1:1-4:22",
+        "phase": "hope",
+        "note": "Bethlehem, and the family line of Jesse and David (4:17)",
+        "noteFr": "Bethléem, et la lignée d'Isaï et de David (4.17)"
+      },
+      {
+        "segmentId": "S090",
+        "book": "1Sa",
+        "title": "God Rejects Saul & Samuel Anoints David",
+        "ref": "15:1-16:23",
+        "phase": "hope",
+        "note": "The Advent moment is in ch. 16: Samuel goes to Jesse in Bethlehem",
+        "noteFr": "Le moment de l'Avent est au ch. 16 : Samuel va chez Isaï à Bethléem"
+      },
       {
         "segmentId": "S191",
         "book": "Isa",
-        "title": "The Promise of Immanuel",
-        "ref": "7:10-16",
-        "phase": "Ancient Promises"
+        "title": "Isaiah Volunteers; God Promises Emmanuel",
+        "ref": "6:1-9:7",
+        "phase": "hope",
+        "note": "Immanuel, and “a child is born” (7:14; 9:6)",
+        "noteFr": "Emmanuel, et « un enfant est né pour nous » (7.14 ; 9.5)"
+      },
+      {
+        "segmentId": "S199",
+        "book": "Isa",
+        "title": "The Gospel Proclaimed; God & Idols Contrasted",
+        "ref": "40:1-41:29",
+        "phase": "peace",
+        "note": "“Comfort, comfort my people” — read in many churches today",
+        "noteFr": "« Réconfortez mon peuple » — lu dans de nombreuses Églises aujourd’hui"
+      },
+      {
+        "segmentId": "S257",
+        "book": "Mic",
+        "title": "No God like Our God",
+        "ref": "4:9-7:20",
+        "phase": "peace",
+        "note": "A ruler from Bethlehem who will be the source of peace (5:2–5)",
+        "noteFr": "Un chef venu de Bethléem : « à lui, nous devrons notre paix » (5.1-4)"
+      },
+      {
+        "segmentId": "S200",
+        "book": "Isa",
+        "title": "First Servant Song; God & Idols Contrasted",
+        "ref": "42:1-44:23",
+        "phase": "peace",
+        "note": "The gentle Servant who won't crush the weakest reed (42:1–4)",
+        "noteFr": "Le Serviteur qui ne brisera pas le roseau qui se ploie (42.1-4)"
+      },
+      {
+        "segmentId": "S202",
+        "book": "Isa",
+        "title": "Two Servant Songs",
+        "ref": "49:1-52:12",
+        "phase": "peace",
+        "note": "“How beautiful… the feet of the messenger” of peace (52:7)",
+        "noteFr": "« Comme il est beau de voir… les pas du messager » de paix (52.7)"
+      },
+      {
+        "segmentId": "S203",
+        "book": "Isa",
+        "title": "A Final Servant Song - God's Way of Salvation",
+        "ref": "52:13-57:21",
+        "phase": "peace",
+        "note": "The suffering Servant of Isaiah 53",
+        "noteFr": "Le Serviteur souffrant d'Ésaïe 53"
+      },
+      {
+        "segmentId": "S215",
+        "book": "Jer",
+        "title": "Letter to Exiles in Babylon: A New Covenant Promised",
+        "ref": "29:1-31:40",
+        "phase": "peace",
+        "note": "“A future and a hope”, and the new covenant (29:11; 31:31)",
+        "noteFr": "Des projets de paix, et la nouvelle alliance (29.11 ; 31.31)"
+      },
+      {
+        "segmentId": "S238",
+        "book": "Eze",
+        "title": "The Good Shepherd Restores His People",
+        "ref": "34:1-36:38",
+        "phase": "peace",
+        "note": "God himself will come and shepherd his sheep (34:11)",
+        "noteFr": "Dieu lui-même va venir s'occuper de son troupeau (34.11)"
+      },
+      {
+        "segmentId": "S204",
+        "book": "Isa",
+        "title": "Preparing for God's Reign & Salvation",
+        "ref": "58:1-62:12",
+        "phase": "joy",
+        "note": "Good news to the poor (61:1) — read in many churches today",
+        "noteFr": "Une bonne nouvelle pour les humiliés (61.1) — lu dans de nombreuses Églises aujourd’hui"
+      },
+      {
+        "segmentId": "S260",
+        "book": "Zep",
+        "title": "From Gloom to Ecstasy",
+        "ref": "1:1-3:20",
+        "phase": "joy",
+        "note": "“He will rejoice over you with joyful songs” (3:17)",
+        "noteFr": "« Il sera transporté de joie à ton sujet » (3.17)"
+      },
+      {
+        "segmentId": "S172",
+        "book": "Psa",
+        "title": "Book 4: God our King & Refuge",
+        "ref": "90:1-100:5",
+        "phase": "joy",
+        "note": "Psalm 98, the song behind “Joy to the World”",
+        "noteFr": "Le Psaume 98 : que toute la terre crie de joie"
+      },
+      {
+        "segmentId": "S339",
+        "book": "Php",
+        "title": "Rejoice!",
+        "ref": "1:1-4:23",
+        "phase": "joy",
+        "note": "“Rejoice!” — the verse Gaudete Sunday is named after (4:4)",
+        "noteFr": "« Réjouissez-vous en tout temps » — le verset du dimanche de Gaudete (4.4)"
+      },
+      {
+        "segmentId": "S298",
+        "book": "Joh",
+        "title": "God Came to Us",
+        "ref": "1:1-1:51",
+        "phase": "joy",
+        "note": "O Antiphon · O Wisdom — the Word became human (1:14)",
+        "noteFr": "Antienne Ô · Ô Sagesse — la Parole est devenue homme (1.14)"
+      },
+      {
+        "segmentId": "S019",
+        "book": "Exo",
+        "title": "Israelites Enslaved & Moses Called",
+        "ref": "1:1-4:31",
+        "phase": "joy",
+        "note": "O Antiphon · O Lord — God speaks from the burning bush (ch. 3)",
+        "noteFr": "Antienne Ô · Ô Seigneur — Dieu parle dans le buisson ardent (ch. 3)"
       },
       {
         "segmentId": "S192",
         "book": "Isa",
-        "title": "A Child is Born",
-        "ref": "9:1-7",
-        "phase": "Ancient Promises"
+        "title": "Judah's Enemies Judged; Emmanuel's Coming Reign",
+        "ref": "9:8-12:6",
+        "phase": "joy",
+        "note": "O Antiphon · O Root of Jesse — a shoot from Jesse's stump (ch. 11)",
+        "noteFr": "Antienne Ô · Ô Rameau de Jessé — un rejeton de la souche d'Isaï (ch. 11)"
       },
       {
-        "segmentId": "S193",
-        "book": "Isa",
-        "title": "A Shoot from Jesse",
-        "ref": "11:1-10",
-        "phase": "Ancient Promises"
+        "segmentId": "S098",
+        "book": "2Sa",
+        "title": "God Makes a Covenant with David",
+        "ref": "6:1-7:29",
+        "phase": "love",
+        "note": "O Antiphon · O Key of David — a throne forever (7:16) · read in many churches today",
+        "noteFr": "Antienne Ô · Ô Clé de David — un trône pour toujours (7.16) · lu dans de nombreuses Églises"
       },
       {
-        "segmentId": "S256",
-        "book": "Mic",
-        "title": "The Ruler from Bethlehem",
-        "ref": "5:1-5",
-        "phase": "Ancient Promises"
+        "segmentId": "S265",
+        "book": "Mal",
+        "title": "Crucial Questions for Spiritual Leaders",
+        "ref": "1:1-4:6",
+        "phase": "love",
+        "note": "O Antiphon · O Dayspring — “the Sun of Righteousness will rise” (4:2)",
+        "noteFr": "Antienne Ô · Ô Soleil levant — « pour vous se lèvera le soleil de justice » (3.20)"
       },
       {
-        "segmentId": "S194",
-        "book": "Isa",
-        "title": "The Servant's Mission",
-        "ref": "42:1-9",
-        "phase": "Messianic Vision"
-      },
-      {
-        "segmentId": "S195",
-        "book": "Isa",
-        "title": "Good News to the Poor",
-        "ref": "61:1-3",
-        "phase": "Messianic Vision"
-      },
-      {
-        "segmentId": "S285",
-        "book": "Luk",
-        "title": "The Birth of John the Baptist Foretold",
-        "ref": "1:5-25",
-        "phase": "Divine Announcements"
-      },
-      {
-        "segmentId": "S286",
-        "book": "Luk",
-        "title": "The Birth of Jesus Foretold",
-        "ref": "1:26-38",
-        "phase": "Divine Announcements"
-      },
-      {
-        "segmentId": "S287",
-        "book": "Luk",
-        "title": "Mary Visits Elizabeth",
-        "ref": "1:39-56",
-        "phase": "Divine Announcements"
+        "segmentId": "S264",
+        "book": "Zec",
+        "title": "The Coming Shepherd King",
+        "ref": "9:1-14:21",
+        "phase": "love",
+        "note": "O Antiphon · O King of the Nations — “your king is coming” (9:9)",
+        "noteFr": "Antienne Ô · Ô Roi des nations — « ton roi vient vers toi » (9.9)"
       },
       {
         "segmentId": "S266",
         "book": "Mat",
-        "title": "The Birth of Jesus",
-        "ref": "1:18-2:23",
-        "phase": "The Nativity"
+        "title": "The Kingdom is Inaugurated",
+        "ref": "1:1-4:25",
+        "phase": "love",
+        "note": "O Antiphon · O Emmanuel — “God is with us” (1:23)",
+        "noteFr": "Antienne Ô · Ô Emmanuel — « Dieu avec nous » (1.23)"
       },
       {
-        "segmentId": "S288",
+        "segmentId": "S285",
         "book": "Luk",
-        "title": "The Birth of Jesus",
-        "ref": "2:1-20",
-        "phase": "The Nativity"
-      },
-      {
-        "segmentId": "S289",
-        "book": "Luk",
-        "title": "Jesus is Presented in the Temple",
-        "ref": "2:21-40",
-        "phase": "The Nativity"
-      },
-      {
-        "segmentId": "S267",
-        "book": "Mat",
-        "title": "John the Baptist Prepares the Way",
-        "ref": "3:1-17",
-        "phase": "Fulfillment Begins"
-      },
-      {
-        "segmentId": "S291",
-        "book": "Luk",
-        "title": "John the Baptist Prepares the Way",
-        "ref": "3:1-20",
-        "phase": "Fulfillment Begins"
-      },
-      {
-        "segmentId": "S292",
-        "book": "Luk",
-        "title": "The Baptism & Genealogy of Jesus",
-        "ref": "3:21-38",
-        "phase": "Fulfillment Begins"
-      },
-      {
-        "segmentId": "S294",
-        "book": "Luk",
-        "title": "Jesus Rejected at Nazareth",
-        "ref": "4:14-30",
-        "phase": "Fulfillment Begins"
+        "title": "Two Miraculous Births",
+        "ref": "1:1-2:40",
+        "phase": "love",
+        "note": "Christmas Eve — “The Savior… has been born today in Bethlehem” (2:11)",
+        "noteFr": "Veille de Noël — « un Sauveur vous est né aujourd’hui » (2.11)"
       }
     ],
     "phases": {
-      "Ancient Promises": {
-        "description": "Prophetic promises of the coming Messiah spoken centuries before Christ",
-        "color": "#8B4513"
+      "hope": {
+        "description": "God's promise, from the first pages of Scripture to Isaiah's Immanuel",
+        "color": "#6A4C93"
       },
-      "Messianic Vision": {
-        "description": "Isaiah's detailed vision of the Messiah's character and mission",
-        "color": "#4169E1"
+      "peace": {
+        "description": "The prophets comfort God’s people and point to the Prince of Peace",
+        "color": "#3F6FB5"
       },
-      "Divine Announcements": {
-        "description": "God's angels announce the fulfillment of ancient promises",
-        "color": "#FFD700"
+      "joy": {
+        "description": "Rejoice, the Lord is near. From Dec 17, the O Antiphons lead to Christmas",
+        "color": "#C2507A"
       },
-      "The Nativity": {
-        "description": "The long-awaited Messiah is born in Bethlehem",
-        "color": "#228B22"
-      },
-      "Fulfillment Begins": {
-        "description": "Jesus begins His earthly ministry, fulfilling prophecy",
-        "color": "#DC143C"
+      "love": {
+        "description": "God keeps his promise: Immanuel, God with us",
+        "color": "#8E3FA0"
       }
     }
   },
@@ -1777,77 +1895,131 @@
     }
   },
   "christmas12Chronological": {
-    "title": "12 Days of Christmas (Chronological)",
-    "description": "6 Stories - 12 Days",
-    "longDescription": "Celebrate the Christmas season with the nativity stories in chronological order. From the angel's announcements to the early events of Jesus' life, experience the wonder and joy of God becoming man to dwell among us during the traditional twelve days of Christmas.",
+    "title": "12 Days of Christmas",
+    "description": "12 Stories - 12 Days",
+    "longDescription": "Celebrate the twelve days of Christmas, December 25 to January 5. Keep the traditional feasts of St Stephen, St John and the Holy Innocents, discover what it means that God's Son became one of us, and end with the light that draws the nations on the eve of Epiphany.",
     "segments": [
       {
         "segmentId": "S285",
         "book": "Luk",
-        "title": "John the Baptist's Birth Foretold",
-        "ref": "1:5-25",
-        "phase": "Divine Announcements",
-        "description": "God breaks centuries of silence with the promise of a forerunner",
-        "color": "#f4b64d"
+        "title": "Two Miraculous Births",
+        "ref": "1:1-2:40",
+        "phase": "christmas",
+        "note": "Christmas Day — “The Savior… has been born today in Bethlehem” (2:11)",
+        "noteFr": "Jour de Noël — « un Sauveur vous est né aujourd’hui » (2.11)"
       },
       {
-        "segmentId": "S286",
-        "book": "Luk",
-        "title": "The Messiah's Birth Foretold",
-        "ref": "1:26-38",
-        "phase": "Divine Announcements",
-        "description": "The angel Gabriel announces God's greatest gift to Mary",
-        "color": "#f4b64d"
+        "segmentId": "S310",
+        "book": "Act",
+        "title": "Multiplication & Martyrdom",
+        "ref": "5:12-8:4",
+        "phase": "christmas",
+        "note": "St Stephen's Day — the first Christian martyr (ch. 7)",
+        "noteFr": "Saint Étienne — le premier martyr chrétien (ch. 7)"
       },
       {
-        "segmentId": "S287",
-        "book": "Luk",
-        "title": "Mary Visits Elizabeth",
-        "ref": "1:39-56",
-        "phase": "Divine Announcements",
-        "description": "Two mothers rejoice in God's miraculous plan",
-        "color": "#f4b64d"
+        "segmentId": "S298",
+        "book": "Joh",
+        "title": "God Came to Us",
+        "ref": "1:1-1:51",
+        "phase": "christmas",
+        "note": "Feast of St John — the Word became human (1:14)",
+        "noteFr": "Fête de saint Jean — la Parole est devenue homme (1.14)"
       },
       {
         "segmentId": "S266",
         "book": "Mat",
-        "title": "Jesus' Birth and Early Years",
-        "ref": "1:18-2:23",
-        "phase": "The Nativity",
-        "description": "The Word becomes flesh and dwells among us",
-        "color": "#f4b64d"
+        "title": "The Kingdom is Inaugurated",
+        "ref": "1:1-4:25",
+        "phase": "christmas",
+        "note": "Holy Innocents — the wise men, and Herod in Bethlehem (ch. 2)",
+        "noteFr": "Saints Innocents — les mages, et Hérode à Bethléem (ch. 2)"
       },
       {
-        "segmentId": "S288",
+        "segmentId": "S286",
         "book": "Luk",
-        "title": "The Birth of Jesus",
-        "ref": "2:1-20",
-        "phase": "The Nativity",
-        "description": "Angels announce good news of great joy to shepherds",
-        "color": "#f4b64d"
+        "title": "Preparing for the Mission in Galilee",
+        "ref": "2:41-4:44",
+        "phase": "godWithUs",
+        "note": "Jesus at twelve: “in my Father’s house” (2:49)",
+        "noteFr": "Jésus à douze ans : « les affaires de mon Père » (2.49)"
       },
       {
-        "segmentId": "S289",
-        "book": "Luk",
-        "title": "Presentation at the Temple",
-        "ref": "2:21-52",
-        "phase": "Early Recognition",
-        "description": "Simeon and Anna recognize the long-awaited Messiah",
-        "color": "#f4b64d"
+        "segmentId": "S347",
+        "book": "Heb",
+        "title": "Better than Angels, Moses & Joshua",
+        "ref": "1:1-4:13",
+        "phase": "godWithUs",
+        "note": "“He has spoken to us through his Son” (1:2)",
+        "noteFr": "« Il nous a parlé par le Fils » (1.2)"
+      },
+      {
+        "segmentId": "S179",
+        "book": "Psa",
+        "title": "Book 5: The Final Hallel",
+        "ref": "146:1-150:6",
+        "phase": "godWithUs",
+        "note": "New Year’s Eve — “Let everything that breathes sing praises to the Lord!” (150:6)",
+        "noteFr": "Saint-Sylvestre — « Que tout ce qui vit loue donc l’Eternel ! » (150.6)"
+      },
+      {
+        "segmentId": "S336",
+        "book": "Gal",
+        "title": "Foundation & Fruit of the Gospel",
+        "ref": "3:1-6:18",
+        "phase": "godWithUs",
+        "note": "New Year’s Day — “when the right time came, God sent his Son” (4:4)",
+        "noteFr": "Jour de l’An — « le moment fixé par Dieu est arrivé » : il a envoyé son Fils (4.4)"
+      },
+      {
+        "segmentId": "S340",
+        "book": "Col",
+        "title": "Fully God & Fully Human",
+        "ref": "1:1-4:18",
+        "phase": "godWithUs",
+        "note": "“The visible image of the invisible God” (1:15)",
+        "noteFr": "« L’image du Dieu que nul ne voit » (1.15)"
+      },
+      {
+        "segmentId": "S337",
+        "book": "Eph",
+        "title": "Adopted into God's Family",
+        "ref": "1:1-3:21",
+        "phase": "godWithUs",
+        "note": "Adopted into God's family (1:5)",
+        "noteFr": "Adoptés dans la famille de Dieu (1.5)"
+      },
+      {
+        "segmentId": "S355",
+        "book": "1Jn",
+        "title": "Eternal Life Through Jesus",
+        "ref": "1:1-5:21",
+        "phase": "godWithUs",
+        "note": "“God showed how much he loved us” by sending his Son (4:9)",
+        "noteFr": "« Voici comment Dieu a manifesté son amour pour nous » (4.9)"
+      },
+      {
+        "segmentId": "S204",
+        "book": "Isa",
+        "title": "Preparing for God's Reign & Salvation",
+        "ref": "58:1-62:12",
+        "phase": "epiphany",
+        "note": "Twelfth Night — “All nations will come to your light” (60:3)",
+        "noteFr": "Veille de l’Épiphanie — « Lève-toi, resplendis, car voici ta lumière » (60.1)"
       }
     ],
     "phases": {
-      "Divine Announcements": {
-        "description": "God's messengers prepare the world for the Messiah's arrival",
-        "color": "#f4b64d"
+      "christmas": {
+        "description": "Christmas Day and the three traditional feasts that follow it",
+        "color": "#B03A2E"
       },
-      "The Nativity": {
-        "description": "The miraculous birth of God's Son in human flesh",
-        "color": "#f4b64d"
+      "godWithUs": {
+        "description": "What it means that God's Son became one of us",
+        "color": "#B8860B"
       },
-      "Early Recognition": {
-        "description": "Faithful people recognize and worship the newborn King",
-        "color": "#f4b64d"
+      "epiphany": {
+        "description": "Light for every nation, on the eve of Epiphany",
+        "color": "#2E7D9A"
       }
     }
   },
@@ -2992,66 +3164,76 @@
   "christmas7Chronological": {
     "title": "7 Days of Christmas Story",
     "description": "7 Stories - 1 Week",
-    "longDescription": "This short chronological Christmas reading plan begins with Isaiah's promises and leads families through the angelic announcements and the birth of Jesus on Christmas Eve and Christmas Day.",
+    "longDescription": "Seven stories from the prophets' promises to the birth of Jesus. Start on December 19 and you'll read the birth of Jesus on Christmas Day. Designed for families, youth and small groups reading together.",
     "segments": [
       {
         "segmentId": "S191",
         "book": "Isa",
-        "title": "The Promise of Immanuel",
-        "ref": "7:10-16",
-        "phase": "Ancient Promises"
+        "title": "Isaiah Volunteers; God Promises Emmanuel",
+        "ref": "6:1-9:7",
+        "phase": "Ancient Promises",
+        "note": "Immanuel, and “a child is born” (7:14; 9:6)",
+        "noteFr": "Emmanuel, et « un enfant est né pour nous » (7.14 ; 9.5)"
       },
       {
         "segmentId": "S192",
         "book": "Isa",
-        "title": "A Child is Born",
-        "ref": "9:1-7",
-        "phase": "Ancient Promises"
+        "title": "Judah's Enemies Judged; Emmanuel's Coming Reign",
+        "ref": "9:8-12:6",
+        "phase": "Ancient Promises",
+        "note": "A shoot from Jesse's stump (ch. 11)",
+        "noteFr": "Un rejeton de la souche d'Isaï (ch. 11)"
       },
       {
-        "segmentId": "S285",
-        "book": "Luk",
-        "title": "The Birth of John the Baptist Foretold",
-        "ref": "1:5-25",
-        "phase": "Divine Announcements"
+        "segmentId": "S257",
+        "book": "Mic",
+        "title": "No God like Our God",
+        "ref": "4:9-7:20",
+        "phase": "Ancient Promises",
+        "note": "A ruler from Bethlehem (5:2)",
+        "noteFr": "Un chef venu de Bethléem (5.1)"
       },
       {
-        "segmentId": "S286",
-        "book": "Luk",
-        "title": "The Birth of Jesus Foretold",
-        "ref": "1:26-38",
-        "phase": "Divine Announcements"
+        "segmentId": "S265",
+        "book": "Mal",
+        "title": "Crucial Questions for Spiritual Leaders",
+        "ref": "1:1-4:6",
+        "phase": "Ancient Promises",
+        "note": "“I am sending my messenger, and he will prepare the way” (3:1)",
+        "noteFr": "« Je vais envoyer mon messager » pour préparer la route (3.1)"
       },
       {
-        "segmentId": "S287",
-        "book": "Luk",
-        "title": "Mary Visits Elizabeth",
-        "ref": "1:39-56",
-        "phase": "Divine Announcements"
-      },
-      {
-        "segmentId": "S288",
-        "book": "Luk",
-        "title": "The Birth of Jesus",
-        "ref": "2:1-20",
-        "phase": "The Nativity"
+        "segmentId": "S298",
+        "book": "Joh",
+        "title": "God Came to Us",
+        "ref": "1:1-1:51",
+        "phase": "The Nativity",
+        "note": "The Word became human and lived among us (1:14)",
+        "noteFr": "La Parole est devenue homme et a vécu parmi nous (1.14)"
       },
       {
         "segmentId": "S266",
         "book": "Mat",
-        "title": "The Birth of Jesus",
-        "ref": "1:18-2:23",
-        "phase": "The Nativity"
+        "title": "The Kingdom is Inaugurated",
+        "ref": "1:1-4:25",
+        "phase": "The Nativity",
+        "note": "Immanuel — “God is with us” — and the wise men (chs. 1–2)",
+        "noteFr": "Emmanuel — « Dieu avec nous » — et les mages (ch. 1–2)"
+      },
+      {
+        "segmentId": "S285",
+        "book": "Luk",
+        "title": "Two Miraculous Births",
+        "ref": "1:1-2:40",
+        "phase": "The Nativity",
+        "note": "Christmas — “The Savior… has been born today in Bethlehem” (2:11)",
+        "noteFr": "Noël — « un Sauveur vous est né aujourd’hui » (2.11)"
       }
     ],
     "phases": {
       "Ancient Promises": {
         "description": "Prophetic promises of the coming Messiah spoken centuries before Christ",
-        "color": "#C41E3A"
-      },
-      "Divine Announcements": {
-        "description": "God's angels announce the fulfillment of ancient promises",
-        "color": "#FFD700"
+        "color": "#B03A2E"
       },
       "The Nativity": {
         "description": "The long-awaited Messiah is born in Bethlehem",

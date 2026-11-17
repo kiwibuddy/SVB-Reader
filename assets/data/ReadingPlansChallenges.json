@@ -1954,53 +1954,133 @@
       "id": "adventJourneyChronological",
       "title": "Advent Journey",
       "titleFr": "Parcours de l'Avent",
-      "description": "16 Stories - 4 Weeks",
-      "descriptionFr": "16 récits — 4 semaines",
+      "description": "26 Stories - 4 Weeks",
+      "descriptionFr": "26 récits — 4 semaines",
       "image": "island",
-      "longDescription": "Prepare your heart for Christmas with this chronological Advent journey. Follow God's promises from ancient prophecies through their fulfillment in Jesus' birth. Perfect for the Christmas season (December - January).",
-      "longDescriptionFr": "Préparez votre cœur pour Noël avec ce parcours chronologique de l'Avent. Suivez les promesses de Dieu depuis les prophéties anciennes jusqu'à leur accomplissement dans la naissance de Jésus. Idéal pour la période de Noël (décembre – janvier).",
+      "longDescription": "Read Advent the way the church has kept it for centuries. Week 1 traces God's promise through Jesus' family tree, week 2 listens to the prophets, and week 3 rejoices. From December 17 the ancient O Antiphons lead day by day to Christmas Eve. Sunday readings include the passage many churches read that day.",
+      "longDescriptionFr": "Vivez l'Avent comme l'Église le vit depuis des siècles. La semaine 1 suit la promesse de Dieu à travers l'arbre généalogique de Jésus, la semaine 2 écoute les prophètes et la semaine 3 se réjouit. Dès le 17 décembre, les anciennes antiennes Ô mènent jour après jour à la veille de Noël. Les lectures du dimanche contiennent le passage lu ce jour-là dans de nombreuses Églises.",
       "chronologicalOrder": true,
       "chronologicalMapping": "adventJourneyChronological",
       "segments": {
+        "Rev": {
+          "segments": [
+            "I066",
+            "S365"
+          ]
+        },
+        "Gen": {
+          "segments": [
+            "I001",
+            "S002",
+            "S006",
+            "S008"
+          ]
+        },
+        "Rut": {
+          "segments": [
+            "I008",
+            "S085"
+          ]
+        },
+        "1Sa": {
+          "segments": [
+            "I009",
+            "S090"
+          ]
+        },
         "Isa": {
           "segments": [
             "I023",
             "S191",
-            "S192",
-            "S193",
-            "S194",
-            "S195"
+            "S199",
+            "S200",
+            "S202",
+            "S203",
+            "S204",
+            "S192"
           ]
         },
         "Mic": {
           "segments": [
             "I033",
-            "S256"
+            "S257"
+          ]
+        },
+        "Jer": {
+          "segments": [
+            "I024",
+            "S215"
+          ]
+        },
+        "Eze": {
+          "segments": [
+            "I026",
+            "S238"
+          ]
+        },
+        "Zep": {
+          "segments": [
+            "I036",
+            "S260"
+          ]
+        },
+        "Psa": {
+          "segments": [
+            "I019",
+            "S172"
+          ]
+        },
+        "Php": {
+          "segments": [
+            "I050",
+            "S339"
+          ]
+        },
+        "Joh": {
+          "segments": [
+            "I043",
+            "S298"
+          ]
+        },
+        "Exo": {
+          "segments": [
+            "I002",
+            "S019"
+          ]
+        },
+        "2Sa": {
+          "segments": [
+            "I010",
+            "S098"
+          ]
+        },
+        "Mal": {
+          "segments": [
+            "I039",
+            "S265"
+          ]
+        },
+        "Zec": {
+          "segments": [
+            "I038",
+            "S264"
           ]
         },
         "Mat": {
           "segments": [
             "I040",
-            "S266",
-            "S267"
+            "S266"
           ]
         },
         "Luk": {
           "segments": [
             "I042",
-            "S285",
-            "S286",
-            "S287",
-            "S288",
-            "S289",
-            "S291",
-            "S292",
-            "S294"
+            "S285"
           ]
         }
       },
-      "shortDescription": "Prepare your heart for Christmas with prophecy and fulfillment. Perfect for the holiday season.",
-      "shortDescriptionFr": "Préparez votre cœur pour Noël avec prophéties et accomplissement. Idéal pour les fêtes."
+      "shortDescription": "From promise to manger in four weeks of Hope, Peace, Joy and Love. One story a day to Christmas Eve.",
+      "shortDescriptionFr": "De la promesse à la crèche en quatre semaines : espérance, paix, joie et amour. Un récit par jour jusqu'à la veille de Noël."
     },
     {
       "id": "lentenReflectionChronological",
@@ -2063,14 +2143,122 @@
       "id": "christmas12",
       "title": "12 Days of Christmas",
       "titleFr": "Les 12 jours de Noël",
-      "description": "6 Stories - 12 Days",
-      "descriptionFr": "6 récits — 12 jours",
+      "description": "12 Stories - 12 Days",
+      "descriptionFr": "12 récits — 12 jours",
       "image": "island",
-      "longDescription": "Celebrate the Christmas season with the nativity stories in chronological order. From the angel's announcements to the early events of Jesus' life, experience the wonder and joy of God becoming man to dwell among us during the traditional twelve days of Christmas.",
-      "longDescriptionFr": "Célébrez le temps de Noël avec les récits de la Nativité dans l'ordre chronologique. Des annonces de l'ange aux premiers événements de la vie de Jésus, vivez l'émerveillement et la joie de Dieu fait homme venu habiter parmi nous durant les douze jours traditionnels de Noël.",
+      "longDescription": "Celebrate the twelve days of Christmas, December 25 to January 5. Keep the traditional feasts of St Stephen, St John and the Holy Innocents, discover what it means that God's Son became one of us, and end with the light that draws the nations on the eve of Epiphany.",
+      "longDescriptionFr": "Célébrez les douze jours de Noël, du 25 décembre au 5 janvier. Suivez les fêtes traditionnelles de saint Étienne, de saint Jean et des saints Innocents, découvrez ce que signifie que le Fils de Dieu soit devenu l'un de nous, et terminez avec la lumière qui attire les nations à la veille de l'Épiphanie.",
       "chronologicalOrder": true,
       "chronologicalMapping": "christmas12Chronological",
       "segments": {
+        "Luk": {
+          "segments": [
+            "I042",
+            "S285",
+            "S286"
+          ]
+        },
+        "Act": {
+          "segments": [
+            "I044",
+            "S310"
+          ]
+        },
+        "Joh": {
+          "segments": [
+            "I043",
+            "S298"
+          ]
+        },
+        "Mat": {
+          "segments": [
+            "I040",
+            "S266"
+          ]
+        },
+        "Heb": {
+          "segments": [
+            "I058",
+            "S347"
+          ]
+        },
+        "Psa": {
+          "segments": [
+            "I019",
+            "S179"
+          ]
+        },
+        "Gal": {
+          "segments": [
+            "I048",
+            "S336"
+          ]
+        },
+        "Col": {
+          "segments": [
+            "I051",
+            "S340"
+          ]
+        },
+        "Eph": {
+          "segments": [
+            "I049",
+            "S337"
+          ]
+        },
+        "1Jn": {
+          "segments": [
+            "I062",
+            "S355"
+          ]
+        },
+        "Isa": {
+          "segments": [
+            "I023",
+            "S204"
+          ]
+        }
+      },
+      "shortDescription": "One story for each of the twelve days of Christmas, from Christmas Day to Twelfth Night.",
+      "shortDescriptionFr": "Un récit pour chacun des douze jours de Noël, du jour de Noël à la veille de l'Épiphanie."
+    },
+    {
+      "id": "christmas7",
+      "title": "🎄 7 Days of Christmas Story 🌟",
+      "titleFr": "🎄 L'histoire de Noël en 7 jours 🌟",
+      "description": "7 Stories - 1 Week",
+      "descriptionFr": "7 récits — 1 semaine",
+      "image": "island",
+      "longDescription": "Seven stories from the prophets' promises to the birth of Jesus. Start on December 19 and you'll read the birth of Jesus on Christmas Day. Designed for families, youth and small groups reading together.",
+      "longDescriptionFr": "Sept récits, des promesses des prophètes à la naissance de Jésus. Commencez le 19 décembre et vous lirez la naissance de Jésus le jour de Noël. Conçu pour les familles, les jeunes et les petits groupes qui lisent ensemble.",
+      "chronologicalOrder": true,
+      "chronologicalMapping": "christmas7Chronological",
+      "segments": {
+        "Isa": {
+          "segments": [
+            "I023",
+            "S191",
+            "S192"
+          ]
+        },
+        "Mic": {
+          "segments": [
+            "I033",
+            "S257"
+          ]
+        },
+        "Mal": {
+          "segments": [
+            "I039",
+            "S265"
+          ]
+        },
+        "Joh": {
+          "segments": [
+            "I043",
+            "S298"
+          ]
+        },
         "Mat": {
           "segments": [
             "I040",
@@ -2080,41 +2268,12 @@
         "Luk": {
           "segments": [
             "I042",
-            "S285",
-            "S286",
-            "S287",
-            "S288",
-            "S289"
+            "S285"
           ]
         }
       },
-      "shortDescription": "Celebrate Christ's birth with nativity stories and reflections. Tradition meets scripture.",
-      "shortDescriptionFr": "Célébrez la naissance du Christ avec les récits de la Nativité. La tradition rencontre l'Écriture."
-    },
-    {
-      "id": "christmas7",
-      "title": "🎄 7 Days of Christmas Story 🌟",
-      "titleFr": "🎄 L'histoire de Noël en 7 jours 🌟",
-      "description": "7 Stories - 1 Week",
-      "descriptionFr": "7 récits — 1 semaine",
-      "image": "island",
-      "longDescription": "Journey through the Christmas story chronologically in just seven days. Begin with the ancient prophecies of Isaiah, move through the angelic announcements, and finish with the birth of Jesus on Christmas Eve and Christmas Day. Designed for families, youth, and small groups reading together.",
-      "longDescriptionFr": "Parcourez l'histoire de Noël dans l'ordre chronologique en seulement sept jours. Commencez par les prophéties anciennes d'Ésaïe, poursuivez avec les annonces angéliques et terminez avec la naissance de Jésus la veille et le jour de Noël. Conçu pour les familles, les jeunes et les petits groupes de lecture.",
-      "chronologicalOrder": true,
-      "chronologicalMapping": "christmas7Chronological",
-      "segments": {
-        "Isa": {
-          "segments": ["S191", "S192"]
-        },
-        "Luk": {
-          "segments": ["S285", "S286", "S287", "S288"]
-        },
-        "Mat": {
-          "segments": ["S266"]
-        }
-      },
-      "shortDescription": "Experience the Christmas story in a fresh way through prophecy, promise, and Jesus' birth. Perfect for the week before Christmas.",
-      "shortDescriptionFr": "Vivez l'histoire de Noël d'une manière nouvelle à travers prophéties, promesses et naissance de Jésus. Idéal pour la semaine avant Noël."
+      "shortDescription": "The Christmas story in seven days. Start on December 19 to read the birth of Jesus on Christmas Day.",
+      "shortDescriptionFr": "L'histoire de Noël en sept jours. Commencez le 19 décembre pour lire la naissance de Jésus le jour de Noël."
     }
   ]
 }

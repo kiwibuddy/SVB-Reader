@@ -3,10 +3,11 @@
 /**
  * Publish an EAS Update to a store binary's runtime, not the local fingerprint.
  *
- * TestFlight 2.0.0 (25) is baked with runtime f9d9eb63…. A plain
- * `eas update` from this repo fingerprints to 7fd8cc0b…, which that
- * binary ignores. This script pins app.json.runtimeVersion for the
- * publish only, then restores fingerprint policy.
+ * Store binaries are baked with the runtime EAS fingerprinted at build time
+ * (see scripts/ota-targets.json). A plain `eas update` from a local checkout
+ * fingerprints differently, so those binaries would ignore it. This script
+ * pins app.json.runtimeVersion for the publish only, then restores
+ * fingerprint policy.
  */
 
 const fs = require('fs');
@@ -101,8 +102,7 @@ Publish an OTA that ${opts.platform} ${target.label} will actually install.
   npm run update:production -- -m "what changed"
 
 Do not run eas update / npx eas-cli update directly while app.json uses
-fingerprint policy — this machine fingerprints to 7fd8cc0b…, which
-TestFlight 2.0.0 (25) ignores.
+fingerprint policy — a local fingerprint will not match ${target.label}.
 
 Target runtime: ${target.runtimeVersion}
 `);
@@ -157,7 +157,7 @@ Target runtime: ${target.runtimeVersion}
   }
   if (publishedRuntime !== target.runtimeVersion) {
     throw new Error(
-      `Published runtime ${publishedRuntime} does not match ${target.runtimeVersion}. TestFlight 2.0.0 (25) will ignore this update.`
+      `Published runtime ${publishedRuntime} does not match ${target.runtimeVersion}. ${target.label} will ignore this update.`
     );
   }
 

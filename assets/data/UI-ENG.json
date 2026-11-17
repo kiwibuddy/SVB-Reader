@@ -588,25 +588,21 @@
         }
       },
       "adventJourneyChronological": {
-        "Ancient Promises": {
-          "title": "Ancient Promises",
-          "description": "Prophetic promises of the coming Messiah spoken centuries before Christ"
+        "hope": {
+          "title": "Week 1 · Hope",
+          "description": "God's promise, from the first pages of Scripture to Isaiah's Immanuel"
         },
-        "Messianic Vision": {
-          "title": "Messianic Vision",
-          "description": "Isaiah's detailed vision of the Messiah's character and mission"
+        "peace": {
+          "title": "Week 2 · Peace",
+          "description": "The prophets comfort God’s people and point to the Prince of Peace"
         },
-        "Divine Announcements": {
-          "title": "Divine Announcements",
-          "description": "God's angels announce the fulfillment of ancient promises"
+        "joy": {
+          "title": "Week 3 · Joy",
+          "description": "Rejoice, the Lord is near. From Dec 17, the O Antiphons lead to Christmas"
         },
-        "The Nativity": {
-          "title": "The Nativity",
-          "description": "The long-awaited Messiah is born in Bethlehem"
-        },
-        "Fulfillment Begins": {
-          "title": "Fulfillment Begins",
-          "description": "Jesus begins His earthly ministry, fulfilling prophecy"
+        "love": {
+          "title": "Week 4 · Love",
+          "description": "God keeps his promise: Immanuel, God with us"
         }
       },
       "lentenReflectionChronological": {
@@ -726,17 +722,17 @@
         }
       },
       "christmas12Chronological": {
-        "Divine Announcements": {
-          "title": "Divine Announcements",
-          "description": "God's messengers prepare the world for the Messiah's arrival"
+        "christmas": {
+          "title": "The Feasts of Christmas",
+          "description": "Christmas Day and the three traditional feasts that follow it"
         },
-        "The Nativity": {
-          "title": "The Nativity",
-          "description": "The miraculous birth of God's Son in human flesh"
+        "godWithUs": {
+          "title": "God With Us",
+          "description": "What it means that God's Son became one of us"
         },
-        "Early Recognition": {
-          "title": "Early Recognition",
-          "description": "Faithful people recognize and worship the newborn King"
+        "epiphany": {
+          "title": "Light to the Nations",
+          "description": "Light for every nation, on the eve of Epiphany"
         }
       },
       "newTestamentJourneyChronological": {
@@ -919,10 +915,6 @@
         "Ancient Promises": {
           "title": "Ancient Promises",
           "description": "Prophetic promises of the coming Messiah spoken centuries before Christ"
-        },
-        "Divine Announcements": {
-          "title": "Divine Announcements",
-          "description": "God's angels announce the fulfillment of ancient promises"
         },
         "The Nativity": {
           "title": "The Nativity",
