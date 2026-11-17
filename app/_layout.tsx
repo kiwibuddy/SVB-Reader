@@ -2,7 +2,7 @@ import logger from '@/utils/logger';
 import { StatusBar } from "expo-status-bar";
 import { SQLiteGlobalProvider } from '@/context/SQLiteGlobalContext';
 import { useFonts } from 'expo-font';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useState, useEffect } from 'react';
 import { AppState, View, Text } from 'react-native';
@@ -17,9 +17,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SimpleLoadingScreen } from '@/components/SimpleLoadingScreen';
 import '../config/i18n'; // Import this to initialize i18next
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { rescheduleReadingReminders } from '@/utils/readingReminders';
+import { addNotificationTapListener, rescheduleReadingReminders } from '@/utils/readingReminders';
+import { loadPlanStartIndexes } from '@/utils/planStartIndex';
+import { refreshSeasonalProgress } from '@/utils/seasonalProgress';
 import { initSentry } from '@/utils/sentry';
-import { applyPendingOtaOnColdStart, fetchOtaInBackground } from '@/utils/otaUpdates';
+import { applyPendingOtaOnColdStart, fetchOtaInBackground, fetchOtaOnForeground } from '@/utils/otaUpdates';
 
 initSentry();
 
@@ -63,11 +65,35 @@ function AppContent() {
 
   useEffect(() => {
     if (!dbReady) return;
-    void rescheduleReadingReminders();
+    let alive = true;
+    let removeTapListener: (() => void) | undefined;
+    (async () => {
+      await loadPlanStartIndexes();
+      await refreshSeasonalProgress();
+      await rescheduleReadingReminders();
+      const remove = await addNotificationTapListener((url) => {
+        // Let the first screen mount before navigating from a cold start.
+        setTimeout(() => {
+          try {
+            router.push(url as never);
+          } catch (error) {
+            logger.warn('Could not open notification link', error);
+          }
+        }, 600);
+      });
+      if (alive) removeTapListener = remove;
+      else remove();
+    })();
     const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active') void rescheduleReadingReminders();
+      if (state !== 'active') return;
+      void refreshSeasonalProgress().then(() => rescheduleReadingReminders());
+      void fetchOtaOnForeground();
     });
-    return () => sub.remove();
+    return () => {
+      alive = false;
+      sub.remove();
+      removeTapListener?.();
+    };
   }, [dbReady]);
   
   if (dbError) {

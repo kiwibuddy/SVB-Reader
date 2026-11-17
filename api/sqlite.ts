@@ -930,6 +930,55 @@ export async function resumeChallenge(challengeID: string): Promise<void> {
   }
 }
 
+/**
+ * Forget a challenge's progress from before `cutoff` (local YYYY-MM-DD), so a
+ * seasonal plan starts fresh each year instead of showing last year's ticks.
+ * Returns true if anything was removed.
+ */
+export async function purgeChallengeProgressBefore(challengeID: string, cutoff: string): Promise<boolean> {
+  try {
+    const db = await databaseManager.ensureDatabase();
+    const stale = await db.getFirstAsync<{ count: number }>(
+      `SELECT
+         (SELECT COUNT(*) FROM reading_challenge_progress WHERE challengeID = ? AND completionDate < ?) +
+         (SELECT COUNT(*) FROM plan_challenge_status WHERE itemID = ? AND itemType = 'challenge' AND startDate < ?)
+       AS count`,
+      [challengeID, cutoff, challengeID, cutoff]
+    );
+    if (!stale?.count) return false;
+    await db.runAsync(
+      'DELETE FROM reading_challenge_progress WHERE challengeID = ? AND completionDate < ?',
+      [challengeID, cutoff]
+    );
+    await db.runAsync(
+      `DELETE FROM segment_completion WHERE challengeID = ? AND completionType = 'challenge' AND completionDate < ?`,
+      [challengeID, cutoff]
+    );
+    await db.runAsync(
+      `DELETE FROM plan_challenge_status WHERE itemID = ? AND itemType = 'challenge' AND startDate < ?`,
+      [challengeID, cutoff]
+    );
+    logger.info(`[Plans] Cleared ${challengeID} progress from before ${cutoff}`);
+    return true;
+  } catch (error) {
+    logger.error('Error clearing earlier-season challenge progress:', error);
+    return false;
+  }
+}
+
+/** Update a challenge's start date (used when a seasonal plan is started for a new season). */
+export async function setChallengeStartDate(challengeID: string, isoDate: string): Promise<void> {
+  try {
+    const db = await databaseManager.ensureDatabase();
+    await db.runAsync(
+      `UPDATE plan_challenge_status SET startDate = ? WHERE itemID = ? AND itemType = 'challenge'`,
+      [isoDate, challengeID]
+    );
+  } catch (error) {
+    logger.error('Error setting challenge start date:', error);
+  }
+}
+
 export async function endChallenge(challengeID: string): Promise<void> {
   try {
     const db = databaseManager.getDatabase();

@@ -7,6 +7,9 @@ type SegmentDef = {
   title?: string;
   ref?: string;
   phase: string;
+  /** One line shown under the story in the plan: why this reading, or where to look in it. */
+  note?: string;
+  noteFr?: string;
 };
 
 export type ChronologicalMapping = {
@@ -38,6 +41,18 @@ export function chronologicalStoryIds(mappingId?: string | null): string[] {
   return mapping.segments
     .map((segment) => segment.segmentId)
     .filter((id) => typeof id === 'string' && id.startsWith('S'));
+}
+
+/** The plan's one-line note for a story, in the reader's language, if it has one. */
+export function getStoryNote(
+  mappingId: string | undefined | null,
+  storyId: string,
+  language: string
+): string | undefined {
+  const segment = getChronologicalMapping(mappingId)?.segments.find((s) => s.segmentId === storyId);
+  if (!segment) return undefined;
+  if (language.startsWith('fr') && segment.noteFr) return segment.noteFr;
+  return segment.note || undefined;
 }
 
 export function getChronologicalPhases(

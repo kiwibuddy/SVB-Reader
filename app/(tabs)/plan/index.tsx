@@ -22,8 +22,6 @@ import { formatReadingMinutes, getSegmentReadingTime } from '@/utils/readingTime
 import {
   getPlanProgress,
   getChallengeProgress,
-  startPlan,
-  startChallenge,
   pausePlan,
   resumePlan,
   endPlan,
@@ -36,7 +34,8 @@ import {
 } from '@/api/sqlite';
 import { shortStoryId } from '@/utils/threadProgress';
 import {
-  getCatalogItems,
+  getAllCatalogItems,
+  isCatalogItemOffered,
   itemsByGroup,
   PLAN_GROUPS,
   nextUnreadStory,
@@ -45,7 +44,21 @@ import {
   type CatalogItem,
   type PlanGroupId,
 } from '@/utils/planCatalog';
-import { getChronologicalPhases, type ChronologicalPhase } from '@/utils/chronologicalPlans';
+import { getChronologicalPhases, getStoryNote, type ChronologicalPhase } from '@/utils/chronologicalPlans';
+import {
+  ADVENT_PLAN_ID,
+  datedWindow,
+  dateForDay,
+  formatDateRange,
+  formatLongDate,
+  formatShortDate,
+  todayIndex,
+} from '@/utils/seasonalPlans';
+import { getPlanStartIndex, loadPlanStartIndexes, planStartIndexesLoaded } from '@/utils/planStartIndex';
+import { refreshSeasonalProgress } from '@/utils/seasonalProgress';
+import { lateJoinIndex, startCatalogPlan } from '@/utils/planActions';
+import { readableOn } from '@/utils/contrast';
+import AdventInvite from '@/components/thread/AdventInvite';
 import { openSegment } from '@/utils/openSegment';
 import { findPlanItem, listUserPlanCatalogItems, deleteUserPlan } from '@/api/userPlans';
 import { isUserPlanId } from '@/utils/userPlans';
@@ -73,6 +86,32 @@ const GROUP_COLORS: Record<PlanGroupId, string> = {
   monthly: '#FF9800',
   mini: '#E91E63',
 };
+
+/** Approximate glyph widths (px) for estimating wrapped lines in thread rows. */
+const CHAR_W = { title: 7.4, now: 9.8, ref: 6.6, note: 5.9 };
+
+function lineCount(text: string, width: number, charWidth: number): number {
+  if (!text) return 0;
+  return Math.max(1, Math.ceil((text.length * charWidth) / Math.max(width, 80)));
+}
+
+/** Row height for a story that shows a date label or note, so wrapped text doesn't overlap. */
+function storyRowHeight(opts: {
+  title: string;
+  ref: string;
+  note?: string;
+  current: boolean;
+  depth: number;
+  windowWidth: number;
+}): number {
+  const avail = opts.windowWidth - (DEPTH_X[opts.depth] + 16) - 14;
+  const titleLines = lineCount(opts.title, avail, opts.current ? CHAR_W.now : CHAR_W.title);
+  const refLines = lineCount(opts.ref, avail, CHAR_W.ref);
+  const noteLines = opts.note ? Math.min(2, lineCount(opts.note, avail, CHAR_W.note)) : 0;
+  const height =
+    6 + titleLines * (opts.current ? 23 : 18) + 2 + refLines * 12 + (noteLines ? 3 + noteLines * 15 : 0) + 6;
+  return Math.max(opts.current ? ROW_HEIGHT.current : ROW_HEIGHT.story, Math.ceil(height));
+}
 
 type ActivePlanData = {
   catalog: CatalogItem;
@@ -112,12 +151,16 @@ const PlanScreen = () => {
   const [progressById, setProgressById] = useState<Record<string, { done: number; ids: string[] }>>({});
   const loading = useRef(false);
 
-  const catalog = useMemo(() => getCatalogItems(), []);
+  /** Every curated plan, so a seasonal plan someone started stays listed after its season. */
+  const catalog = useMemo(() => getAllCatalogItems(), []);
+  const [loaded, setLoaded] = useState(false);
 
   const loadData = useCallback(async () => {
     if (loading.current) return;
     loading.current = true;
     try {
+      if (!planStartIndexesLoaded()) await loadPlanStartIndexes();
+      await refreshSeasonalProgress();
       const [startedPlans, startedChallenges, userCatalog] = await Promise.all([
         getStartedPlansFromDB(),
         getStartedChallengesFromDB(),
@@ -164,6 +207,7 @@ const PlanScreen = () => {
         list.sort((a, b) => (a.started.isActive ? -1 : 1) - (b.started.isActive ? -1 : 1));
 
       setProgressById(prog);
+      setLoaded(true);
       setActivePlans(sortActive(catalogActive));
       setUserPlans(userCatalog);
       setUserStartedById(userStarted);
@@ -193,7 +237,32 @@ const PlanScreen = () => {
   }, [params.expandedPlan]);
 
   const activeIds = useMemo(() => new Set(activePlans.map((a) => a.catalog.id)), [activePlans]);
-  const grouped = useMemo(() => itemsByGroup(catalog, activeIds), [catalog, activeIds]);
+  const grouped = useMemo(
+    () => itemsByGroup(catalog.filter((item) => isCatalogItemOffered(item)), activeIds),
+    [catalog, activeIds]
+  );
+
+  /** Label, ref line and note for a story row (shared by layout and render). */
+  const storyRowText = useCallback(
+    (item: CatalogItem, storyId: string, done: boolean, current: boolean) => {
+      const info = titles[storyId];
+      const minutes = getSegmentReadingTime(storyId);
+      const window = item.isUserPlan ? null : datedWindow(item.id, item.stories.length);
+      const index = item.stories.indexOf(storyId);
+      const dateLabel = window && index >= 0 ? formatShortDate(dateForDay(window, index), language) : '';
+      const suffix = done ? ` · ${t('UI.thread.read')}` : current ? ` · ${t('UI.thread.continue')}` : '';
+      const ref = `${dateLabel ? `${dateLabel} · ` : ''}${info?.book?.[0] || ''} ${info?.ref || ''}${
+        minutes ? ` · ${formatReadingMinutes(minutes)}` : ''
+      }${suffix}`;
+      return {
+        title: localizeStoryTitle(storyId, info?.title || storyId, language),
+        ref,
+        note: getStoryNote(item.chronologicalMapping, storyId, language),
+        dated: !!dateLabel,
+      };
+    },
+    [language, t]
+  );
 
   // Thread rows for the expanded group (only when a group is open)
   const visibleRows: VisibleRow[] = useMemo(() => {
@@ -212,7 +281,7 @@ const PlanScreen = () => {
       });
       if (openPlanId !== item.id) continue;
       const planDone = new Set(progressById[item.id]?.ids || []);
-      const next = nextUnreadStory(item.stories, planDone);
+      const next = nextUnreadStory(item.stories, planDone, getPlanStartIndex(item.id));
       const phases = getChronologicalPhases(item.chronologicalMapping, (key, field, fallback) =>
         t(`UI.chronologicalPhases.${item.chronologicalMapping}.${key}.${field}`, { defaultValue: fallback })
       );
@@ -220,11 +289,17 @@ const PlanScreen = () => {
       const pushStory = (storyId: string, depth: 1 | 2, phase?: ChronologicalPhase) => {
         const done = planDone.has(storyId);
         const current = !done && next?.storyId === storyId;
+        const text = storyRowText(item, storyId, done, current);
         rows.push({
           key: `${item.id}-${storyId}`,
           kind: 'story',
           depth,
-          height: current ? ROW_HEIGHT.current : ROW_HEIGHT.story,
+          height:
+            text.note || text.dated
+              ? storyRowHeight({ ...text, current, depth, windowWidth })
+              : current
+                ? ROW_HEIGHT.current
+                : ROW_HEIGHT.story,
           storyId,
           current,
           catalogItem: item,
@@ -254,7 +329,7 @@ const PlanScreen = () => {
       }
     }
     return rows;
-  }, [grouped, openGroup, openPlanId, progressById, t]);
+  }, [grouped, openGroup, openPlanId, progressById, storyRowText, t, windowWidth]);
 
   // Stories under the expanded custom plan — depth 0 anchor + depth 1 stories
   // so the thread curves like catalog plan → story (same-depth rows stay vertical).
@@ -340,16 +415,45 @@ const PlanScreen = () => {
     setOpenPlanId((prev) => (prev === id ? null : id));
   };
 
-  const handleStartPlan = async (item: CatalogItem) => {
+  const handleStartPlan = async (item: CatalogItem, chosenStartIndex?: number) => {
     void hapticImpactLight();
-    if (item.type === 'plan') {
-      await startPlan(item.id);
-    } else {
-      await startChallenge(item.id);
+    const window = item.isUserPlan ? null : datedWindow(item.id, item.stories.length);
+    const isAdvent = item.id === ADVENT_PLAN_ID;
+
+    // Joining a dated plan after Day 1: start at today's reading, or catch up from Day 1?
+    if (chosenStartIndex === undefined && window && (progressById[item.id]?.done ?? 0) === 0) {
+      const late = lateJoinIndex(item);
+      if (late !== null) {
+        const date = formatLongDate(window.start, language);
+        Alert.alert(
+          isAdvent ? t('UI.advent.lateTitle', { date }) : t('UI.advent.lateTitleGeneric', { date }),
+          t('UI.advent.lateBody', { n: late + 1 }),
+          [
+            { text: t('UI.alerts.cancel'), style: 'cancel' },
+            { text: t('UI.advent.lateFromStart'), onPress: () => void handleStartPlan(item, 0) },
+            { text: t('UI.advent.lateToday'), onPress: () => void handleStartPlan(item, late) },
+          ]
+        );
+        return;
+      }
     }
+
+    const startIndex = chosenStartIndex ?? 0;
+    await startCatalogPlan(item, startIndex);
     await loadData();
+
+    // Joined before the season starts: Day 1 waits for its day.
+    if (window && todayIndex(window) < 0) {
+      const date = formatLongDate(window.start, language);
+      Alert.alert(
+        isAdvent ? t('UI.advent.joinedTitle') : t('UI.advent.joinedTitleGeneric'),
+        isAdvent ? t('UI.advent.joinedBody', { date }) : t('UI.advent.joinedBodyGeneric', { date })
+      );
+      return;
+    }
+
     const planDone = new Set(progressById[item.id]?.ids || []);
-    const next = nextUnreadStory(item.stories, planDone);
+    const next = nextUnreadStory(item.stories, planDone, startIndex);
     if (next) {
       openSegment(router, next.storyId, {
         planId: item.type === 'plan' ? item.id : undefined,
@@ -463,11 +567,21 @@ const PlanScreen = () => {
     const { catalog: item, started, completed, completedIds: planCompleted } = data;
     const total = item.stories.length;
     const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
-    const next = nextUnreadStory(item.stories, planCompleted);
+    const next = nextUnreadStory(item.stories, planCompleted, getPlanStartIndex(item.id));
     const nextInfo = next ? titles[next.storyId] : null;
     const nextTitle = next && nextInfo
       ? localizeStoryTitle(next.storyId, nextInfo.title || next.storyId, language)
       : null;
+    const nextNote = next ? getStoryNote(item.chronologicalMapping, next.storyId, language) : undefined;
+    const window = item.isUserPlan ? null : datedWindow(item.id, total);
+    const beforeStart = !!window && todayIndex(window) < 0;
+    const dayLabel = !next
+      ? null
+      : beforeStart && window
+        ? t('UI.advent.startsOn', { date: formatShortDate(window.start, language) })
+        : window
+          ? t('UI.advent.dayDate', { n: next.day, date: formatShortDate(dateForDay(window, next.day - 1), language) })
+          : t('UI.thread.day', { n: next.day });
 
     return (
       <Pressable
@@ -488,9 +602,7 @@ const PlanScreen = () => {
           <Text style={[styles.activeKicker, { color: started.isPaused ? palette.mute : palette.acc }]}>
             {started.isPaused
               ? (lang === 'fr' ? 'En pause' : 'Paused')
-              : next
-                ? t('UI.thread.day', { n: next.day })
-                : (lang === 'fr' ? 'Terminé' : 'Complete')}
+              : dayLabel ?? (lang === 'fr' ? 'Terminé' : 'Complete')}
           </Text>
           <Text style={[styles.activeTitle, { color: palette.ink }]}>{getLocalizedPlanText(item, 'title', language)}</Text>
           {!!getLocalizedPlanText(item, 'shortDescription', language) && (
@@ -502,6 +614,11 @@ const PlanScreen = () => {
             <Text style={[styles.activeMeta, { color: palette.mute }]}>
               {nextTitle}
               {nextInfo?.ref ? ` · ${nextInfo.book?.[0]} ${nextInfo.ref}` : ''}
+            </Text>
+          )}
+          {!!nextNote && !started.isPaused && (
+            <Text style={[styles.activeNote, { color: palette.mute }]} numberOfLines={2}>
+              {nextNote}
             </Text>
           )}
           <View style={[styles.prog, { backgroundColor: palette.hair, marginTop: 8 }]}>
@@ -546,6 +663,22 @@ const PlanScreen = () => {
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
+        {loaded && (
+          <AdventInvite
+            palette={palette}
+            language={language}
+            started={activeIds.has(ADVENT_PLAN_ID)}
+            onJoin={(item, startIndex) => handleStartPlan(item, startIndex)}
+            onOpenPlan={() => {
+              const advent = catalog.find((c) => c.id === ADVENT_PLAN_ID);
+              if (!advent) return;
+              void hapticSelection();
+              setOpenGroup(advent.group);
+              setOpenPlanId(advent.id);
+            }}
+          />
+        )}
+
         {/* Catalog plans currently in progress */}
         {activePlans.length > 0 && (
           <View style={styles.activeSection}>
@@ -635,7 +768,11 @@ const PlanScreen = () => {
                               <Text style={[styles.planMeta, { color: palette.mute }]}>
                                 {item.stories.length} {t('UI.thread.stories')}
                                 {done > 0 ? ` · ${done} ${t('UI.thread.read')}` : ''}
-                                {item.chronologicalOrder ? ` · ${t('UI.thread.chronological')}` : ''}
+                                {(() => {
+                                  const window = datedWindow(item.id, item.stories.length);
+                                  if (window) return ` · ${formatDateRange(window, language)}`;
+                                  return item.chronologicalOrder ? ` · ${t('UI.thread.chronological')}` : '';
+                                })()}
                               </Text>
                             </View>
                             <Pressable
@@ -659,7 +796,7 @@ const PlanScreen = () => {
                           <View style={[styles.threadRow, styles.phaseThreadRow, { height: row.height }]}>
                             <ThreadKnot x={mark.x} rowHeight={row.height} open palette={palette} fillColor={phase.color} anchor={PHASE_MARK} />
                             <View style={[styles.rowBody, { paddingLeft: DEPTH_X[1] + 16 }]}>
-                              <Text style={[styles.phaseTitle, { color: phase.color }]} numberOfLines={1}>
+                              <Text style={[styles.phaseTitle, { color: readableOn(phase.color, palette.bg) }]} numberOfLines={1}>
                                 {phase.title}
                               </Text>
                               {!!phase.description && (
@@ -675,12 +812,12 @@ const PlanScreen = () => {
 
                     if (row.kind === 'story' && row.storyId) {
                       const id = row.storyId;
-                      const info = titles[id];
                       const planDone = new Set(progressById[row.catalogItem?.id || '']?.ids || []);
                       const done = planDone.has(id);
                       const current = !!row.current && !done;
-                      const minutes = getSegmentReadingTime(id);
-                      const title = localizeStoryTitle(id, info?.title || id, language);
+                      const text = row.catalogItem
+                        ? storyRowText(row.catalogItem, id, done, current)
+                        : { title: id, ref: '', note: undefined };
                       return (
                         <ThreadRevealRow key={row.key} index={index} total={visibleRows.length} progress={progress}>
                           <Pressable
@@ -711,13 +848,16 @@ const PlanScreen = () => {
                                   current && styles.storyNow,
                                 ]}
                               >
-                                {title}
+                                {text.title}
                               </Text>
                               <Text style={[styles.storyRef, { color: current ? palette.acc : palette.mute }]}>
-                                {info?.book?.[0]} {info?.ref}
-                                {minutes ? ` · ${formatReadingMinutes(minutes)}` : ''}
-                                {done ? ` · ${t('UI.thread.read')}` : current ? ` · ${t('UI.thread.continue')}` : ''}
+                                {text.ref}
                               </Text>
+                              {!!text.note && (
+                                <Text style={[styles.storyNote, { color: palette.mute }]} numberOfLines={2}>
+                                  {text.note}
+                                </Text>
+                              )}
                             </View>
                           </Pressable>
                         </ThreadRevealRow>
@@ -1019,6 +1159,8 @@ const styles = StyleSheet.create({
   storyTitle: { fontSize: 14 },
   storyNow: { fontSize: 18, fontWeight: '600' },
   storyRef: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', marginTop: 2 },
+  storyNote: { fontSize: 11, lineHeight: 15, marginTop: 3 },
+  activeNote: { fontSize: 12, lineHeight: 16, marginTop: 4 },
 });
 
 export default PlanScreen;

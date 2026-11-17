@@ -1,5 +1,6 @@
 import readingPlansData from '@/assets/data/ReadingPlansChallenges.json';
 import { chronologicalStoryIds } from '@/utils/chronologicalPlans';
+import { isSeasonalPlanOffered } from '@/utils/seasonalPlans';
 
 const HIDDEN_PLAN_IDS = new Set(['SchoolYear2', 'SchoolYear3', 'test']);
 
@@ -47,28 +48,22 @@ export function groupForStoryCount(count: number): PlanGroupId {
 }
 
 export function isSeasonalChallengeVisible(challengeId: string, date = new Date()): boolean {
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  switch (challengeId) {
-    case 'lentenReflectionChronological':
-      return month >= 2 && month <= 4;
-    case 'christmas12':
-    case 'christmas7':
-      return month === 12 || (month === 1 && day <= 6);
-    case 'adventJourneyChronological':
-      return month >= 11 && month <= 12;
-    case 'jesusFilm':
-      return false;
-    default:
-      return true;
-  }
+  if (challengeId === 'jesusFilm') return false;
+  return isSeasonalPlanOffered(challengeId, date);
 }
 
+/**
+ * First unread story at or after `startIndex` (a late joiner who chose to
+ * start at today's reading), then any unread story before it.
+ */
 export function nextUnreadStory(
   stories: string[],
-  completedIds: Set<string>
+  completedIds: Set<string>,
+  startIndex = 0
 ): { storyId: string; day: number } | null {
-  const index = stories.findIndex((id) => !completedIds.has(id));
+  const from = Math.max(0, Math.min(startIndex, stories.length));
+  let index = stories.findIndex((id, i) => i >= from && !completedIds.has(id));
+  if (index < 0) index = stories.findIndex((id) => !completedIds.has(id));
   if (index < 0) return null;
   return { storyId: stories[index], day: index + 1 };
 }
@@ -133,19 +128,36 @@ export function getLocalizedPlanText(
   return (item[field] as string) || '';
 }
 
-export function getCatalogItems(): CatalogItem[] {
-  const plans = readingPlansData.plans
-    .filter((plan) => !HIDDEN_PLAN_IDS.has(plan.id))
-    .map((plan) => toCatalogItem(plan as any, 'plan'));
-  const challenges = readingPlansData.challenges
-    .filter((challenge) => isSeasonalChallengeVisible(challenge.id))
-    .map((challenge) => toCatalogItem(challenge as any, 'challenge'));
-  return [...plans, ...challenges];
+let allItemsCache: CatalogItem[] | null = null;
+
+/** Every curated plan, including seasonal plans outside their season. */
+export function getAllCatalogItems(): CatalogItem[] {
+  if (!allItemsCache) {
+    const plans = readingPlansData.plans
+      .filter((plan) => !HIDDEN_PLAN_IDS.has(plan.id))
+      .map((plan) => toCatalogItem(plan as any, 'plan'));
+    const challenges = readingPlansData.challenges
+      .filter((challenge) => challenge.id !== 'jesusFilm')
+      .map((challenge) => toCatalogItem(challenge as any, 'challenge'));
+    allItemsCache = [...plans, ...challenges];
+  }
+  return allItemsCache;
 }
 
+/** Whether a plan is offered to start today (seasonal plans only in season). */
+export function isCatalogItemOffered(item: CatalogItem, date = new Date()): boolean {
+  return item.type !== 'challenge' || isSeasonalChallengeVisible(item.id, date);
+}
+
+/** Plans offered to start today. */
+export function getCatalogItems(date = new Date()): CatalogItem[] {
+  return getAllCatalogItems().filter((item) => isCatalogItemOffered(item, date));
+}
+
+/** Looks up any curated plan, so a seasonal plan someone started stays reachable after its season. */
 export function findCatalogItem(id: string | undefined | null): CatalogItem | undefined {
   if (!id) return undefined;
-  return getCatalogItems().find((item) => item.id === id);
+  return getAllCatalogItems().find((item) => item.id === id);
 }
 
 export function itemsByGroup(

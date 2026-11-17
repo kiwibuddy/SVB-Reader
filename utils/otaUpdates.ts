@@ -3,6 +3,8 @@ import * as Updates from 'expo-updates';
 import logger from '@/utils/logger';
 
 const PENDING_OTA_KEY = 'pendingOtaRestart';
+const FOREGROUND_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
+let lastCheckAt = 0;
 
 export async function applyPendingOtaOnColdStart(): Promise<void> {
   try {
@@ -18,6 +20,7 @@ export async function applyPendingOtaOnColdStart(): Promise<void> {
 }
 
 export async function fetchOtaInBackground(): Promise<void> {
+  lastCheckAt = Date.now();
   try {
     if (__DEV__ || !Updates.isEnabled) {
       logger.info('Skipping OTA update check (development build or updates disabled)');
@@ -33,6 +36,16 @@ export async function fetchOtaInBackground(): Promise<void> {
   } catch (error) {
     logger.error('Update check failed:', error);
   }
+}
+
+/**
+ * Check for an update when the app returns to the foreground, at most every
+ * six hours. iOS keeps apps suspended for days, so checking only on cold start
+ * means many people never pick an update up in time.
+ */
+export async function fetchOtaOnForeground(): Promise<void> {
+  if (Date.now() - lastCheckAt < FOREGROUND_CHECK_INTERVAL_MS) return;
+  await fetchOtaInBackground();
 }
 
 /** Settings row: "binary" until a matching OTA reloads, then a short update id. */
