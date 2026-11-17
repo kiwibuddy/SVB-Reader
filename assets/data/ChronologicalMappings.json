@@ -1420,7 +1420,7 @@
         "segmentId": "S335",
         "book": "Gal",
         "title": "Freedom in Christ - Early Teaching",
-        "ref": "1:1-3:29",
+        "ref": "1:1-2:21",
         "phase": "Early Missionary Letters",
         "description": "Paul's passionate defense of salvation by grace alone",
         "color": "#4df469"
@@ -1429,7 +1429,7 @@
         "segmentId": "S336",
         "book": "Gal",
         "title": "Living by the Spirit",
-        "ref": "4:1-6:18",
+        "ref": "3:1-6:18",
         "phase": "Early Missionary Letters",
         "description": "Practical guidance for Christian liberty",
         "color": "#4df469"
@@ -1465,7 +1465,7 @@
         "segmentId": "S327",
         "book": "1Co",
         "title": "Moral Purity and Christian Conduct",
-        "ref": "5:1-8:13",
+        "ref": "5:1-7:40",
         "phase": "Major Doctrinal Letters",
         "description": "Practical holiness in community life",
         "color": "#4df469"
@@ -1474,7 +1474,7 @@
         "segmentId": "S328",
         "book": "1Co",
         "title": "Christian Liberty and Worship",
-        "ref": "9:1-11:34",
+        "ref": "8:1-11:1",
         "phase": "Major Doctrinal Letters",
         "description": "Balancing freedom with love and order",
         "color": "#4df469"
@@ -1483,7 +1483,7 @@
         "segmentId": "S329",
         "book": "1Co",
         "title": "Spiritual Gifts and Love",
-        "ref": "12:1-14:40",
+        "ref": "11:2-14:40",
         "phase": "Major Doctrinal Letters",
         "description": "The supremacy of love in using spiritual gifts",
         "color": "#4df469"
@@ -1501,7 +1501,7 @@
         "segmentId": "S331",
         "book": "2Co",
         "title": "Ministry Through Suffering",
-        "ref": "1:1-4:18",
+        "ref": "1:1-3:18",
         "phase": "Major Doctrinal Letters",
         "description": "Authentic ministry displayed through weakness",
         "color": "#4df469"
@@ -1510,7 +1510,7 @@
         "segmentId": "S332",
         "book": "2Co",
         "title": "Ambassadors of Reconciliation",
-        "ref": "5:1-7:16",
+        "ref": "4:1-7:16",
         "phase": "Major Doctrinal Letters",
         "description": "The ministry of reconciliation in a broken world",
         "color": "#4df469"
@@ -1537,7 +1537,7 @@
         "segmentId": "S320",
         "book": "Rom",
         "title": "The Gospel Revealed",
-        "ref": "1:1-3:31",
+        "ref": "1:1-3:20",
         "phase": "Theological Masterworks",
         "description": "Universal need for salvation and God's righteousness",
         "color": "#4df469"
@@ -1546,7 +1546,7 @@
         "segmentId": "S321",
         "book": "Rom",
         "title": "Justification by Faith",
-        "ref": "4:1-5:21",
+        "ref": "3:21-5:21",
         "phase": "Theological Masterworks",
         "description": "Abraham's example and the gift of righteousness",
         "color": "#4df469"
@@ -1573,7 +1573,7 @@
         "segmentId": "S324",
         "book": "Rom",
         "title": "Living Sacrifice",
-        "ref": "12:1-14:23",
+        "ref": "12:1-15:13",
         "phase": "Theological Masterworks",
         "description": "Practical righteousness in community life",
         "color": "#4df469"
@@ -1582,7 +1582,7 @@
         "segmentId": "S325",
         "book": "Rom",
         "title": "Unity and Mission",
-        "ref": "15:1-16:27",
+        "ref": "15:14-16:27",
         "phase": "Theological Masterworks",
         "description": "Paul's ministry vision and personal greetings",
         "color": "#4df469"
@@ -1627,7 +1627,7 @@
         "segmentId": "S346",
         "book": "Phm",
         "title": "Reconciliation in Action",
-        "ref": "1:1-25",
+        "ref": "1:1-1:25",
         "phase": "Prison Epistles",
         "description": "A personal appeal demonstrating Christian transformation",
         "color": "#4df469"
@@ -1719,7 +1719,7 @@
         "segmentId": "S004",
         "book": "Gen",
         "title": "The Tower of Babel",
-        "ref": "10:1-11:32",
+        "ref": "10:1-11:26",
         "phase": "Judgment and Mercy",
         "description": "Human pride scattered and God's plan for the nations revealed",
         "color": "#f4944d"
@@ -1728,7 +1728,7 @@
         "segmentId": "S005",
         "book": "Gen",
         "title": "Abraham's Call and Journey",
-        "ref": "12:1-13:18",
+        "ref": "11:27-14:24",
         "phase": "The Covenant Begins",
         "description": "God calls Abram to leave everything and follow Him by faith",
         "color": "#f4944d"
@@ -1737,7 +1737,7 @@
         "segmentId": "S006",
         "book": "Gen",
         "title": "God's Covenant Promise",
-        "ref": "14:1-15:21",
+        "ref": "15:1-18:15",
         "phase": "The Covenant Begins",
         "description": "God establishes His unconditional covenant with Abraham",
         "color": "#f4944d"
@@ -1746,7 +1746,7 @@
         "segmentId": "S007",
         "book": "Gen",
         "title": "Sodom and Gomorrah",
-        "ref": "16:1-19:38",
+        "ref": "18:16-19:38",
         "phase": "The Covenant Begins",
         "description": "Abraham intercedes for the righteous and witnesses God's justice",
         "color": "#f4944d"
@@ -1755,7 +1755,7 @@
         "segmentId": "S008",
         "book": "Gen",
         "title": "The Ultimate Test of Faith",
-        "ref": "20:1-22:24",
+        "ref": "20:1-23:20",
         "phase": "Testing and Triumph",
         "description": "Abraham's faith proven through the offering of Isaac",
         "color": "#f4944d"
@@ -1764,7 +1764,7 @@
         "segmentId": "S009",
         "book": "Gen",
         "title": "Isaac and the Next Generation",
-        "ref": "23:1-26:35",
+        "ref": "24:1-25:26",
         "phase": "Testing and Triumph",
         "description": "God's covenant promise continues through Isaac and Rebekah",
         "color": "#f4944d"
@@ -1773,7 +1773,7 @@
         "segmentId": "S010",
         "book": "Gen",
         "title": "Jacob's Deception and Consequences",
-        "ref": "27:1-28:22",
+        "ref": "25:27-28:9",
         "phase": "Family Struggles",
         "description": "The stolen blessing and God's faithfulness despite human failure",
         "color": "#f4944d"
@@ -1782,7 +1782,7 @@
         "segmentId": "S011",
         "book": "Gen",
         "title": "Jacob's Wives and Growing Family",
-        "ref": "29:1-30:43",
+        "ref": "28:10-30:43",
         "phase": "Family Struggles",
         "description": "God builds the covenant family through complex relationships",
         "color": "#f4944d"
@@ -1827,7 +1827,7 @@
         "segmentId": "S016",
         "book": "Gen",
         "title": "Brothers Reunited",
-        "ref": "42:1-45:28",
+        "ref": "42:1-43:34",
         "phase": "Divine Providence",
         "description": "Joseph tests and forgives his brothers",
         "color": "#f4944d"
@@ -1836,7 +1836,7 @@
         "segmentId": "S017",
         "book": "Gen",
         "title": "Jacob's Family in Egypt",
-        "ref": "46:1-47:31",
+        "ref": "44:1-47:26",
         "phase": "Divine Providence",
         "description": "God's people find refuge and multiply in Egypt",
         "color": "#f4944d"
@@ -1845,7 +1845,7 @@
         "segmentId": "S018",
         "book": "Gen",
         "title": "Final Blessings and Promises",
-        "ref": "48:1-50:26",
+        "ref": "47:27-50:26",
         "phase": "Divine Providence",
         "description": "Jacob blesses his sons and Joseph affirms God's faithfulness",
         "color": "#f4944d"
