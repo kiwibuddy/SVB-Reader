@@ -7,6 +7,7 @@ Feature work deferred past the 2.0 launch cut.
 | Doc | Topic |
 | --- | --- |
 | [`01-CUSTOM-READING-PLANS.md`](./01-CUSTOM-READING-PLANS.md) | User-created reading plans (playlist-style) — **2.1** |
+| [`02-POST-ADVENT-BUILD-PLAN.md`](./02-POST-ADVENT-BUILD-PLAN.md) | Bug fixes, plan journey view, reminders, forgiving streak, voice plans — build plan, Nov 2026 |
 
 ## Other deferred notes
 
