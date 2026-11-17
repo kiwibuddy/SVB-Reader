@@ -58,3 +58,9 @@ export function getOtaDebugLabel(): string {
     : '';
   return at ? `${id} · ${at} UTC` : id;
 }
+
+/** True when Settings should treat the row as an applied OTA (not store binary / dev). */
+export function isOtaApplied(): boolean {
+  if (__DEV__ || !Updates.isEnabled) return false;
+  return !Updates.isEmbeddedLaunch;
+}
