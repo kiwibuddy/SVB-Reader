@@ -308,7 +308,7 @@ async function checkPlanChallengeConflicts(
   // Check active plan
   if (asyncData.activePlan) {
     const sqliteActivePlan = await db.getFirstAsync(
-      'SELECT * FROM plan_challenge_status WHERE itemType = "plan" AND isActive = 1'
+      `SELECT * FROM plan_challenge_status WHERE itemType = 'plan' AND isActive = 1`
     );
     
     if (JSON.stringify(asyncData.activePlan) !== JSON.stringify(sqliteActivePlan)) {
@@ -325,7 +325,7 @@ async function checkPlanChallengeConflicts(
   // Check active challenges
   if (asyncData.activeChallenges) {
     const sqliteActiveChallenges = await db.getAllAsync(
-      'SELECT * FROM plan_challenge_status WHERE itemType = "challenge" AND isActive = 1'
+      `SELECT * FROM plan_challenge_status WHERE itemType = 'challenge' AND isActive = 1`
     );
     
     conflicts.push({

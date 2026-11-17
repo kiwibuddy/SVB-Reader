@@ -370,7 +370,7 @@ export async function getPlanProgress(planID: string): Promise<PlanProgress> {
     }
 
     const completedResult = await db.getAllAsync<{ segmentID: string }>(
-      'SELECT segmentID FROM reading_plan_progress WHERE planID = ? AND isCompleted = 1 AND segmentID NOT LIKE "I%"',
+      `SELECT segmentID FROM reading_plan_progress WHERE planID = ? AND isCompleted = 1 AND segmentID NOT LIKE 'I%'`,
       [planID]
     );
 
@@ -422,7 +422,7 @@ export async function getChallengeProgress(challengeID: string): Promise<Challen
     
     // Get completed segments for this challenge (excluding introduction segments)
     const completedResult = await db.getAllAsync<{ segmentID: string }>(
-      'SELECT segmentID FROM reading_challenge_progress WHERE challengeID = ? AND isCompleted = 1 AND segmentID NOT LIKE "I%"',
+      `SELECT segmentID FROM reading_challenge_progress WHERE challengeID = ? AND isCompleted = 1 AND segmentID NOT LIKE 'I%'`,
       [challengeID]
     );
     
@@ -1014,7 +1014,7 @@ export async function getActivePlan(): Promise<any | null> {
   try {
     const db = databaseManager.getDatabase();
     const result = await db.getFirstAsync<any>(
-      'SELECT * FROM plan_challenge_status WHERE itemType = "plan" AND isActive = 1 LIMIT 1'
+      `SELECT * FROM plan_challenge_status WHERE itemType = 'plan' AND isActive = 1 LIMIT 1`
     );
     return result || null;
   } catch (error) {
@@ -1027,7 +1027,7 @@ export async function getActiveChallenges(): Promise<any[]> {
   try {
     const db = databaseManager.getDatabase();
     const results = await db.getAllAsync<any>(
-      'SELECT * FROM plan_challenge_status WHERE itemType = "challenge" AND isActive = 1'
+      `SELECT * FROM plan_challenge_status WHERE itemType = 'challenge' AND isActive = 1`
     );
     return results || [];
   } catch (error) {
@@ -1198,7 +1198,7 @@ export async function getBookProgress(bookId: string): Promise<BookProgress> {
     async (db) => {
       // Get total segments for this book (excluding introductions)
       const totalResult = await db.getFirstAsync(
-        'SELECT COUNT(*) as count FROM segments WHERE bookID = ? AND segmentID NOT LIKE "I%"',
+        `SELECT COUNT(*) as count FROM segments WHERE bookID = ? AND segmentID NOT LIKE 'I%'`,
         [bookId]
       ) as { count: number } | null;
       
@@ -1206,7 +1206,7 @@ export async function getBookProgress(bookId: string): Promise<BookProgress> {
       const completedCount = await db.getFirstAsync(`
         SELECT COUNT(*) as count FROM completedSegments 
         WHERE segmentID IN (
-          SELECT segmentID FROM segments WHERE bookID = ? AND segmentID NOT LIKE "I%"
+          SELECT segmentID FROM segments WHERE bookID = ? AND segmentID NOT LIKE 'I%'
         ) AND isCompleted = 1
       `, [bookId]) as { count: number } | null;
       
@@ -1249,7 +1249,7 @@ export async function getOldTestamentProgress(): Promise<TestamentProgress> {
     const totalResult = await db.getFirstAsync<{ count: number }>(`
       SELECT COUNT(*) as count FROM segments 
       WHERE bookID IN (${otBooks.map(() => '?').join(',')}) 
-      AND segmentID NOT LIKE "I%"
+      AND segmentID NOT LIKE 'I%'
     `, ...otBooks);
     
     // Count completed stories (excluding introductions) in Old Testament
@@ -1258,7 +1258,7 @@ export async function getOldTestamentProgress(): Promise<TestamentProgress> {
       WHERE segmentID IN (
         SELECT segmentID FROM segments 
         WHERE bookID IN (${otBooks.map(() => '?').join(',')}) 
-        AND segmentID NOT LIKE "I%"
+        AND segmentID NOT LIKE 'I%'
       ) AND isCompleted = 1
     `, ...otBooks, ...otBooks);
     
@@ -1278,7 +1278,7 @@ export async function getNewTestamentProgress(): Promise<TestamentProgress> {
     const totalResult = await db.getFirstAsync<{ count: number }>(`
       SELECT COUNT(*) as count FROM segments 
       WHERE bookID IN (${ntBooks.map(() => '?').join(',')}) 
-      AND segmentID NOT LIKE "I%"
+      AND segmentID NOT LIKE 'I%'
     `, ...ntBooks);
     
     // Count completed stories (excluding introductions) in New Testament
@@ -1287,7 +1287,7 @@ export async function getNewTestamentProgress(): Promise<TestamentProgress> {
       WHERE segmentID IN (
         SELECT segmentID FROM segments 
         WHERE bookID IN (${ntBooks.map(() => '?').join(',')}) 
-        AND segmentID NOT LIKE "I%"
+        AND segmentID NOT LIKE 'I%'
       ) AND isCompleted = 1
     `, ...ntBooks, ...ntBooks);
     
@@ -1588,7 +1588,7 @@ export async function getActivePlanFromDB(): Promise<any | null> {
       completionDate: string | null;
       progressPercentage: number;
     }>(
-      'SELECT * FROM plan_challenge_status WHERE itemType = "plan" AND isActive = 1 LIMIT 1'
+      `SELECT * FROM plan_challenge_status WHERE itemType = 'plan' AND isActive = 1 LIMIT 1`
     );
     
     if (!result) return null;
@@ -1623,7 +1623,7 @@ export async function getActiveChallengesFromDB(): Promise<Record<string, any>> 
       completionDate: string | null;
       progressPercentage: number;
     }>(
-      'SELECT * FROM plan_challenge_status WHERE itemType = "challenge" AND isActive = 1'
+      `SELECT * FROM plan_challenge_status WHERE itemType = 'challenge' AND isActive = 1`
     );
     
     const challenges: Record<string, any> = {};
