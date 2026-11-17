@@ -28,6 +28,7 @@ import { ThreadColors } from '@/constants/Colors';
 import type { ThreadPalette } from '@/constants/Colors';
 import { RM, SPRING } from '@/constants/Motion';
 import { todayStoryId } from '@/utils/continueTarget';
+import { applyPendingUpdate, hasPendingUpdate } from '@/utils/otaUpdates';
 import { hapticSelection, hapticSuccess } from '@/utils/haptics';
 import {
   CastDemo,
@@ -104,13 +105,18 @@ export default function OnboardingScreen() {
       } catch (error) {
         logger.warn('Onboarding mark failed, continuing', error);
       }
-      if (toStory) {
-        router.replace(`/${todayStoryId()}`);
-      } else if (fromAbout) {
-        router.back();
-      } else {
-        router.replace('/Home');
+      if (fromAbout) {
+        if (toStory) router.replace(`/${todayStoryId()}`);
+        else router.back();
+        return;
       }
+      const destination = toStory ? `/${todayStoryId()}` : '/Home';
+      // A new reader has just finished the walkthrough: if an update arrived
+      // meanwhile, apply it now so their first story uses current plans.
+      if (await hasPendingUpdate()) {
+        if (await applyPendingUpdate('end of onboarding', destination)) return;
+      }
+      router.replace(destination as never);
     },
     [fromAbout, markAsLaunched, router]
   );

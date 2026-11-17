@@ -2,9 +2,9 @@ import logger from '@/utils/logger';
 import { StatusBar } from "expo-status-bar";
 import { SQLiteGlobalProvider } from '@/context/SQLiteGlobalContext';
 import { useFonts } from 'expo-font';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider, router } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, router, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AppState, View, Text } from 'react-native';
 // Removed duplicate logger import
 import 'react-native-reanimated';
@@ -22,7 +22,14 @@ import { loadPlanStartIndexes } from '@/utils/planStartIndex';
 import { ensureVoicePlansLoaded } from '@/utils/voicePlans';
 import { refreshSeasonalProgress } from '@/utils/seasonalProgress';
 import { initSentry } from '@/utils/sentry';
-import { applyPendingOtaOnColdStart, fetchOtaInBackground, fetchOtaOnForeground } from '@/utils/otaUpdates';
+import {
+  applyPendingOtaOnColdStart,
+  applyPendingUpdate,
+  fetchOtaInBackground,
+  fetchOtaOnForeground,
+  hasPendingUpdate,
+} from '@/utils/otaUpdates';
+import { shouldApplyOnForeground } from '@/utils/otaPolicy';
 
 initSentry();
 
@@ -31,6 +38,12 @@ SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
   const { isDarkMode, colors } = useSyncAppSettings();
+  // Read inside the AppState listener, which outlives renders.
+  const pathname = usePathname();
+  const pathnameRef = useRef(pathname);
+  useEffect(() => {
+    pathnameRef.current = pathname;
+  }, [pathname]);
   const [dbReady, setDbReady] = useState(false);
   const [dbError] = useState<string | null>(null);
   
@@ -85,10 +98,26 @@ function AppContent() {
       if (alive) removeTapListener = remove;
       else remove();
     })();
+    let backgroundAt: number | null = null;
     const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'background') {
+        backgroundAt = Date.now();
+        return;
+      }
       if (state !== 'active') return;
-      void refreshSeasonalProgress().then(() => rescheduleReadingReminders());
-      void fetchOtaOnForeground();
+      const backgroundMs = backgroundAt == null ? null : Date.now() - backgroundAt;
+      backgroundAt = null;
+      void (async () => {
+        // Back after 30+ minutes with an update waiting, and not mid-story:
+        // apply it now rather than at the next cold start.
+        const pending = await hasPendingUpdate();
+        if (shouldApplyOnForeground({ pending, backgroundMs, pathname: pathnameRef.current })) {
+          if (await applyPendingUpdate('foreground after a break')) return;
+        }
+        await refreshSeasonalProgress();
+        await rescheduleReadingReminders();
+        await fetchOtaOnForeground();
+      })();
     });
     return () => {
       alive = false;

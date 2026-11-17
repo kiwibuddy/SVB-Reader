@@ -5,6 +5,8 @@ import { useFirstLaunch } from '@/hooks/useFirstLaunch';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { ThreadColors } from '@/constants/Colors';
 import logger from '@/utils/logger';
+import { takeAfterReloadRoute } from '@/utils/otaUpdates';
+import { safeAfterReloadRoute } from '@/utils/otaPolicy';
 
 const IndexScreen = () => {
   const router = useRouter();
@@ -19,8 +21,17 @@ const IndexScreen = () => {
       router.replace('/onboarding');
       return;
     }
-    logger.info('🔄 Returning user, redirecting to Home');
-    router.replace('/Home');
+    let alive = true;
+    // After an update reload, land where the reader was heading.
+    void takeAfterReloadRoute().then((saved) => {
+      if (!alive) return;
+      const route = safeAfterReloadRoute(saved) || '/Home';
+      logger.info(`🔄 Returning user, redirecting to ${route}`);
+      router.replace(route as never);
+    });
+    return () => {
+      alive = false;
+    };
   }, [error, isLoading, needsOnboarding, router]);
 
   return (

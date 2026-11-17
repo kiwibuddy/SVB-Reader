@@ -3,6 +3,7 @@ import * as Updates from 'expo-updates';
 import logger from '@/utils/logger';
 
 const PENDING_OTA_KEY = 'pendingOtaRestart';
+const AFTER_RELOAD_ROUTE_KEY = 'svb.afterReloadRoute';
 const FOREGROUND_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 let lastCheckAt = 0;
 
@@ -46,6 +47,50 @@ export async function fetchOtaInBackground(): Promise<void> {
 export async function fetchOtaOnForeground(): Promise<void> {
   if (Date.now() - lastCheckAt < FOREGROUND_CHECK_INTERVAL_MS) return;
   await fetchOtaInBackground();
+}
+
+/** A downloaded update is waiting to be applied. */
+export async function hasPendingUpdate(): Promise<boolean> {
+  try {
+    if (__DEV__ || !Updates.isEnabled) return false;
+    return (await AsyncStorage.getItem(PENDING_OTA_KEY)) === '1';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Apply a downloaded update now. Returns false (and leaves the app running)
+ * if the reload fails. `afterReloadRoute` is where the app should land.
+ */
+export async function applyPendingUpdate(reason: string, afterReloadRoute?: string): Promise<boolean> {
+  try {
+    if (afterReloadRoute) await AsyncStorage.setItem(AFTER_RELOAD_ROUTE_KEY, afterReloadRoute);
+    await AsyncStorage.removeItem(PENDING_OTA_KEY);
+    logger.info(`[OTA] Applying downloaded update (${reason})`);
+    await Updates.reloadAsync();
+    return true;
+  } catch (error) {
+    logger.error('[OTA] Could not apply update now; will apply on next cold start:', error);
+    try {
+      await AsyncStorage.setItem(PENDING_OTA_KEY, '1');
+      await AsyncStorage.removeItem(AFTER_RELOAD_ROUTE_KEY);
+    } catch {
+      // Nothing more to do; the app keeps running.
+    }
+    return false;
+  }
+}
+
+/** Where to land after an update reload (read once). */
+export async function takeAfterReloadRoute(): Promise<string | null> {
+  try {
+    const route = await AsyncStorage.getItem(AFTER_RELOAD_ROUTE_KEY);
+    if (route) await AsyncStorage.removeItem(AFTER_RELOAD_ROUTE_KEY);
+    return route;
+  } catch {
+    return null;
+  }
 }
 
 /** Settings row: "binary" until a matching OTA reloads, then a short update id. */
