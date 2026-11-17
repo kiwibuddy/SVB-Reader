@@ -9,7 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
-import { DEPTH_X, ROW_HEIGHT, buildThread, type ThreadRow } from '@/components/thread/buildThread';
+import { DEPTH_X, buildThread, type ThreadRow } from '@/components/thread/buildThread';
 import { BookBead } from '@/components/thread/ThreadBead';
 import PlanJourney, { buildJourneyRows, renderJourneyRow, type JourneyRow } from '@/components/thread/PlanJourney';
 import { useStartPlan } from '@/hooks/useStartPlan';
@@ -258,17 +258,17 @@ const PlanScreen = () => {
     return rows;
   }, [grouped, openGroup, openPlanId, progressById, t, language, windowWidth]);
 
-  // Stories under the expanded custom plan — depth 0 anchor + depth 1 stories
-  // so the thread curves like catalog plan → story (same-depth rows stay vertical).
+  // Expanded custom / Follow-a-voice plan: plan header is depth 0 in the thread
+  // (same as curated plans). No orphan bead above the first story.
   const userStoryRows: VisibleRow[] = useMemo(() => {
     const rows: VisibleRow[] = [];
     const item = userPlans.find((p) => p.id === openPlanId);
     if (!item) return rows;
     rows.push({
-      key: `up-anchor-${item.id}`,
+      key: `p-${item.id}`,
       kind: 'plan',
       depth: 0,
-      height: ROW_HEIGHT.book,
+      height: PLAN_ROW_HEIGHT,
       markOffset: PLAN_MARK,
       catalogItem: item,
     });
@@ -298,7 +298,8 @@ const PlanScreen = () => {
     () =>
       buildThread(
         userStoryRows.map(({ key, depth, height, markOffset }) => ({ key, depth, height, markOffset })),
-        { width: windowWidth, entry: 'left', exit: 'left' }
+        // Start at the plan bead — no left-entry corridor into a phantom mark.
+        { width: windowWidth, entry: 'none', exit: 'left' }
       ),
     [userStoryRows, windowWidth]
   );
@@ -771,6 +772,134 @@ const PlanScreen = () => {
             const started = userStartedById[item.id];
             const total = item.stories.length;
             const open = openPlanId === item.id;
+            const metaLine = started
+              ? `${done} ${t('UI.thread.of')} ${total}`
+              : `${total} ${t('UI.thread.stories')}`;
+            const pausedBit = started?.isPaused ? ` · ${t('UI.planJourney.paused')}` : '';
+            const actions = (
+              <View style={styles.planActions}>
+                {!started ? (
+                  <Pressable
+                    onPress={() => handleStartPlan(item)}
+                    hitSlop={12}
+                    style={[styles.startBtn, { borderColor: palette.acc }]}
+                  >
+                    <Text style={{ color: palette.acc, fontSize: 9, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase' }}>
+                      {t('UI.planJourney.start')}
+                    </Text>
+                  </Pressable>
+                ) : (
+                  <Pressable
+                    onPress={() => handlePauseResumeUser(item)}
+                    hitSlop={12}
+                    style={[styles.startBtn, { borderColor: started.isPaused ? palette.acc : '#FF9F0A' }]}
+                  >
+                    <Text
+                      style={{
+                        color: started.isPaused ? palette.acc : '#FF9F0A',
+                        fontSize: 9,
+                        fontWeight: '600',
+                        letterSpacing: 0.8,
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {started.isPaused ? t('UI.planJourney.resume') : t('UI.planJourney.pause')}
+                    </Text>
+                  </Pressable>
+                )}
+                <Pressable
+                  onPress={() => (started ? handleEndUserPlan(item) : handleDeleteUserPlan(item))}
+                  hitSlop={12}
+                  style={[styles.startBtn, { borderColor: palette.hair }]}
+                >
+                  <Text style={{ color: palette.mute, fontSize: 9, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase' }}>
+                    {started ? t('UI.planJourney.end') : t('UI.planJourney.delete')}
+                  </Text>
+                </Pressable>
+              </View>
+            );
+
+            // Expanded: plan header is the thread's depth-0 bead (like curated plans).
+            if (open && userStoryThread.length > 0) {
+              return (
+                <View key={item.id} style={[styles.threadWrap, { height: userStoryThread.height }]}>
+                  <Svg
+                    pointerEvents="none"
+                    style={StyleSheet.absoluteFill}
+                    width="100%"
+                    height={userStoryThread.height}
+                  >
+                    <AnimatedPath
+                      d={userStoryThread.d}
+                      fill="none"
+                      stroke={palette.thread}
+                      strokeWidth={1.5}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeDasharray={userStoryThread.length}
+                      animatedProps={userPathProps}
+                    />
+                  </Svg>
+                  {userStoryRows.map((row, index) => {
+                    const mark = userStoryThread.marks[index];
+                    if (!mark) return null;
+
+                    if (row.kind === 'plan') {
+                      return (
+                        <ThreadRevealRow
+                          key={row.key}
+                          index={index}
+                          total={userStoryRows.length}
+                          progress={userProgress}
+                        >
+                          <Pressable
+                            onPress={() => toggleUserPlan(item.id)}
+                            onLongPress={() => handleDeleteUserPlan(item)}
+                            style={[styles.threadRow, styles.planThreadRow, { height: row.height }]}
+                          >
+                            <BookBead
+                              x={mark.x}
+                              rowHeight={row.height}
+                              open
+                              palette={palette}
+                              anchor={PLAN_MARK}
+                            />
+                            <View style={[styles.rowBody, { paddingLeft: DEPTH_X[0] + 16 }]}>
+                              <Text style={[styles.planTitle, { color: palette.ink }]} numberOfLines={2}>
+                                {getLocalizedPlanText(item, 'title', language)}
+                              </Text>
+                              <Text style={[styles.planMeta, { color: palette.mute }]}>
+                                {metaLine}
+                                {pausedBit}
+                              </Text>
+                            </View>
+                            {actions}
+                          </Pressable>
+                        </ThreadRevealRow>
+                      );
+                    }
+
+                    if (row.kind !== 'journey' || !row.journey) return null;
+                    return (
+                      <ThreadRevealRow
+                        key={row.key}
+                        index={index}
+                        total={userStoryRows.length}
+                        progress={userProgress}
+                      >
+                        {renderJourneyRow(row.journey, mark, {
+                          palette,
+                          t,
+                          justCompletedId,
+                          onOpenStory: openStoryIn(item),
+                        })}
+                      </ThreadRevealRow>
+                    );
+                  })}
+                </View>
+              );
+            }
+
             return (
               <View key={item.id}>
                 <Pressable
@@ -784,117 +913,12 @@ const PlanScreen = () => {
                       {getLocalizedPlanText(item, 'title', language)}
                     </Text>
                     <Text style={[styles.groupSub, { color: palette.mute }]}>
-                      {started
-                        ? `${done} ${t('UI.thread.of')} ${total}`
-                        : `${total} ${t('UI.thread.stories')}`}
-                      {started?.isPaused ? ` · ${t('UI.planJourney.paused')}` : ''}
+                      {metaLine}
+                      {pausedBit}
                     </Text>
                   </View>
-                  <View style={styles.planActions}>
-                    {!started ? (
-                      <Pressable
-                        onPress={() => handleStartPlan(item)}
-                        hitSlop={12}
-                        style={[styles.startBtn, { borderColor: palette.acc }]}
-                      >
-                        <Text style={{ color: palette.acc, fontSize: 9, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase' }}>
-                          {t('UI.planJourney.start')}
-                        </Text>
-                      </Pressable>
-                    ) : (
-                      <Pressable
-                        onPress={() => handlePauseResumeUser(item)}
-                        hitSlop={12}
-                        style={[styles.startBtn, { borderColor: started.isPaused ? palette.acc : '#FF9F0A' }]}
-                      >
-                        <Text
-                          style={{
-                            color: started.isPaused ? palette.acc : '#FF9F0A',
-                            fontSize: 9,
-                            fontWeight: '600',
-                            letterSpacing: 0.8,
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          {started.isPaused ? t('UI.planJourney.resume') : t('UI.planJourney.pause')}
-                        </Text>
-                      </Pressable>
-                    )}
-                    <Pressable
-                      onPress={() => (started ? handleEndUserPlan(item) : handleDeleteUserPlan(item))}
-                      hitSlop={12}
-                      style={[styles.startBtn, { borderColor: palette.hair }]}
-                    >
-                      <Text style={{ color: palette.mute, fontSize: 9, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase' }}>
-                        {started ? t('UI.planJourney.end') : t('UI.planJourney.delete')}
-                      </Text>
-                    </Pressable>
-                  </View>
+                  {actions}
                 </Pressable>
-
-                {open && userStoryThread.length > 0 && (
-                  <View style={[styles.threadWrap, { height: userStoryThread.height }]}>
-                    <Svg
-                      pointerEvents="none"
-                      style={StyleSheet.absoluteFill}
-                      width="100%"
-                      height={userStoryThread.height}
-                    >
-                      <AnimatedPath
-                        d={userStoryThread.d}
-                        fill="none"
-                        stroke={palette.thread}
-                        strokeWidth={1.5}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeDasharray={userStoryThread.length}
-                        animatedProps={userPathProps}
-                      />
-                    </Svg>
-                    {userStoryRows.map((row, index) => {
-                      const mark = userStoryThread.marks[index];
-                      if (!mark) return null;
-
-                      if (row.kind === 'plan') {
-                        return (
-                          <ThreadRevealRow
-                            key={row.key}
-                            index={index}
-                            total={userStoryRows.length}
-                            progress={userProgress}
-                          >
-                            <View style={[styles.threadRow, { height: row.height }]}>
-                              <BookBead
-                                x={mark.x}
-                                rowHeight={row.height}
-                                open
-                                palette={palette}
-                                anchor={PLAN_MARK}
-                              />
-                            </View>
-                          </ThreadRevealRow>
-                        );
-                      }
-
-                      if (row.kind !== 'journey' || !row.journey) return null;
-                      return (
-                        <ThreadRevealRow
-                          key={row.key}
-                          index={index}
-                          total={userStoryRows.length}
-                          progress={userProgress}
-                        >
-                          {renderJourneyRow(row.journey, mark, {
-                            palette,
-                            t,
-                            justCompletedId,
-                            onOpenStory: openStoryIn(item),
-                          })}
-                        </ThreadRevealRow>
-                      );
-                    })}
-                  </View>
-                )}
               </View>
             );
           })}

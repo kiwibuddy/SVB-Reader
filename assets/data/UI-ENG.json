@@ -29,7 +29,7 @@
       "jsUpdate": "JS update",
       "jsUpdateSummary": "Follow a voice + faster updates",
       "jsUpdateWhatsNew": "What’s in this update",
-      "jsUpdateDetails": "• Follow a voice plans from a character’s page\n• Updates apply after onboarding or 30+ minutes away (not mid-story)\n• Expanded plan path clears the stories line without a big empty gap\n• Settings → JS update shows what’s in this update\n• Includes streak, smarter reminders, plan journey and Up next from earlier updates",
+      "jsUpdateDetails": "• Follow a voice plans from a character’s page (thread from the plan bead, like curated plans)\n• Updates apply after onboarding or 30+ minutes away (not mid-story)\n• Expanded plan path clears the stories line without a big empty gap\n• Settings → JS update shows what’s in this update\n• Includes streak, smarter reminders, plan journey and Up next from earlier updates",
       "jsUpdateNotAppliedTitle": "Store build only",
       "jsUpdateNotAppliedBody": "No JS update is applied yet. Force-quit the app, open it once, force-quit again, then reopen. This row should show an update id instead of “binary”.",
       "close": "Close",
