@@ -1185,6 +1185,23 @@
       "backToPlan": "Back to plan",
       "backToRead": "Back to Read",
       "backToCast": "Back to Cast"
+    },
+    "planJourney": {
+      "continue": "Continue",
+      "startDay": "Start Day {{n}}",
+      "progress": "{{done}} of {{total}} read · {{pct}}%",
+      "todayIs": "Day {{n}} of {{total}} is today",
+      "seeAll": "See all {{total}} stories",
+      "showJourney": "Journey",
+      "hideJourney": "Hide",
+      "paused": "Paused",
+      "complete": "Complete",
+      "start": "Start",
+      "resume": "Resume",
+      "pause": "Pause",
+      "end": "End",
+      "delete": "Delete",
+      "seePlan": "See the plan"
     }
   },
   "Books": {

@@ -1,20 +1,26 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Alert, ScrollView } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ThreadList from '@/components/thread/ThreadList';
+import PlanJourney from '@/components/thread/PlanJourney';
 import { shortStoryId } from '@/utils/threadProgress';
 import { ThreadColors } from '@/constants/Colors';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useStartPlan } from '@/hooks/useStartPlan';
 import { getSegmentReadingTime, formatReadingMinutes } from '@/utils/readingTime';
-import { getActivePlanFromDB, getPlanProgress, getChallengeProgress } from '@/api/sqlite';
-import { startCatalogPlan } from '@/utils/planActions';
+import {
+  getPlanProgress,
+  getChallengeProgress,
+  getStartedPlansFromDB,
+  getStartedChallengesFromDB,
+} from '@/api/sqlite';
 import { getPlanStartIndex } from '@/utils/planStartIndex';
-import { nextUnreadStory, getLocalizedPlanText, type CatalogItem } from '@/utils/planCatalog';
+import { getLocalizedPlanText, type CatalogItem } from '@/utils/planCatalog';
 import { findPlanItem, deleteUserPlan } from '@/api/userPlans';
 import { openSegment } from '@/utils/openSegment';
-import { hapticImpactLight } from '@/utils/haptics';
+import { datedWindow, formatDateRange, todayIndex } from '@/utils/seasonalPlans';
 
 const PlanDetail = () => {
   const { id, completedSegment } = useLocalSearchParams<{ id: string; completedSegment?: string }>();
@@ -26,7 +32,7 @@ const PlanDetail = () => {
   const [item, setItem] = useState<CatalogItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
-  const [isActive, setIsActive] = useState(false);
+  const [isStarted, setIsStarted] = useState(false);
   const [planDone, setPlanDone] = useState(0);
 
   const storyFilter = useMemo(() => item?.stories || [], [item]);
@@ -48,12 +54,14 @@ const PlanDetail = () => {
           setLoading(false);
           return;
         }
-        const [activePlan, progress] = await Promise.all([
-          getActivePlanFromDB(),
+        const [startedPlans, startedChallenges, progress] = await Promise.all([
+          getStartedPlansFromDB(),
+          getStartedChallengesFromDB(),
           resolved.type === 'plan' ? getPlanProgress(resolved.id) : getChallengeProgress(resolved.id),
         ]);
         if (!alive) return;
-        setIsActive(activePlan?.planId === id || activePlan?.itemID === id);
+        // Plans and challenges both count — the old check only knew about plans.
+        setIsStarted([...startedPlans, ...startedChallenges].some((s) => s.id === resolved.id));
         const ids = new Set((progress?.completedSegmentIds || []).map(shortStoryId));
         setCompletedIds(ids);
         setPlanDone(progress?.completedSegments || 0);
@@ -64,6 +72,8 @@ const PlanDetail = () => {
       };
     }, [id])
   );
+
+  const start = useStartPlan(() => setIsStarted(true));
 
   if (loading) {
     return <View style={{ flex: 1, backgroundColor: palette.bg, paddingTop: insets.top }} />;
@@ -81,19 +91,6 @@ const PlanDetail = () => {
       </View>
     );
   }
-
-  const handleStart = async () => {
-    void hapticImpactLight();
-    await startCatalogPlan(item, getPlanStartIndex(item.id));
-    setIsActive(true);
-    const next = nextUnreadStory(item.stories, completedIds, getPlanStartIndex(item.id));
-    if (next) {
-      openSegment(router, next.storyId, {
-        planId: item.type === 'plan' ? item.id : undefined,
-        challengeId: item.type === 'challenge' ? item.id : undefined,
-      });
-    }
-  };
 
   const handleDelete = () => {
     Alert.alert(
@@ -113,14 +110,18 @@ const PlanDetail = () => {
     );
   };
 
-  const pct = item.stories.length > 0 ? Math.round((planDone / item.stories.length) * 100) : 0;
-  const storyNav =
-    item.type === 'plan'
-      ? { planId: item.id }
-      : { challengeId: item.id };
+  const total = item.stories.length;
+  const pct = total > 0 ? Math.round((planDone / total) * 100) : 0;
+  const storyNav = item.type === 'plan' ? { planId: item.id } : { challengeId: item.id };
+  const window = item.isUserPlan ? null : datedWindow(item.id, total);
+  const today = window ? todayIndex(window) : -1;
+  // Plans with their own reading order (weeks, dated days, notes) show their
+  // journey in that order. Plans that simply walk the Bible keep the Bible
+  // list, which folds 365 stories into divisions.
+  const ownOrder = !!item.chronologicalMapping;
 
-  return (
-    <View style={{ flex: 1, backgroundColor: palette.bg, paddingTop: insets.top }}>
+  const header = (
+    <>
       <View style={styles.topRow}>
         <Pressable onPress={() => router.back()} style={styles.back}>
           <Text style={{ color: palette.mute, letterSpacing: 1.4, textTransform: 'uppercase', fontSize: 11 }}>
@@ -138,23 +139,31 @@ const PlanDetail = () => {
       <Text style={[styles.title, { color: palette.ink }]}>{getLocalizedPlanText(item, 'title', language)}</Text>
       <View style={styles.metaRow}>
         <Text style={[styles.meta, { color: palette.mute }]}>
-          {storyFilter.length} {t('UI.thread.stories')} · {formatReadingMinutes(minutes)}
-          {planDone > 0 ? ` · ${planDone} ${t('UI.thread.read')}` : ''}
-          {item.chronologicalOrder ? ` · ${t('UI.thread.chronological')}` : ''}
+          {total} {t('UI.thread.stories')} · {formatReadingMinutes(minutes)}
+          {window ? ` · ${formatDateRange(window, language)}` : item.chronologicalOrder ? ` · ${t('UI.thread.chronological')}` : ''}
         </Text>
-        {!isActive && (
-          <Pressable onPress={handleStart} style={[styles.startBtn, { borderColor: palette.acc }]}>
+        {!isStarted && (
+          <Pressable
+            onPress={() => start(item, { completedIds })}
+            style={[styles.startBtn, { borderColor: palette.acc }]}
+          >
             <Text style={{ color: palette.acc, fontSize: 10, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase' }}>
               {item.type === 'plan' ? t('UI.startConfirmation.startPlan') : t('UI.startConfirmation.startChallenge')}
             </Text>
           </Pressable>
         )}
       </View>
-      {planDone > 0 && (
+      {(planDone > 0 || isStarted) && (
         <View style={{ paddingHorizontal: 14, paddingBottom: 8 }}>
           <View style={[styles.prog, { backgroundColor: palette.hair }]}>
-            <View style={[styles.progFill, { width: `${pct}%`, backgroundColor: palette.chor }]} />
+            <View style={[styles.progFill, { width: `${pct}%`, backgroundColor: palette.acc }]} />
           </View>
+          <Text style={[styles.progText, { color: palette.mute }]}>
+            {t('UI.planJourney.progress', { done: planDone, total, pct })}
+            {window && today >= 0 && today < window.days
+              ? ` · ${t('UI.planJourney.todayIs', { n: today + 1, total: window.days })}`
+              : ''}
+          </Text>
         </View>
       )}
       {(item.longDescription || item.longDescriptionFr || item.shortDescription || item.shortDescriptionFr) && (
@@ -162,6 +171,32 @@ const PlanDetail = () => {
           {getLocalizedPlanText(item, 'longDescription', language) || getLocalizedPlanText(item, 'shortDescription', language)}
         </Text>
       )}
+    </>
+  );
+
+  if (ownOrder) {
+    return (
+      <View style={{ flex: 1, backgroundColor: palette.bg, paddingTop: insets.top }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 180 }} showsVerticalScrollIndicator={false}>
+          {header}
+          <PlanJourney
+            item={item}
+            completedIds={completedIds}
+            startIndex={getPlanStartIndex(item.id)}
+            palette={palette}
+            t={t}
+            language={language}
+            justCompletedId={focusId}
+            onOpenStory={(storyId) => openSegment(router, storyId, storyNav)}
+          />
+        </ScrollView>
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ flex: 1, backgroundColor: palette.bg, paddingTop: insets.top }}>
+      {header}
       <ThreadList
         completedIds={completedIds}
         currentId={focusId}
@@ -183,6 +218,7 @@ const styles = StyleSheet.create({
   startBtn: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
   prog: { height: 4, borderRadius: 3, overflow: 'hidden' },
   progFill: { height: '100%' },
+  progText: { fontSize: 9, letterSpacing: 0.8, textTransform: 'uppercase', marginTop: 4 },
   desc: { fontSize: 13, lineHeight: 18, paddingHorizontal: 14, paddingBottom: 8 },
 });
 

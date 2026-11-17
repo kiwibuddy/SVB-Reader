@@ -23182,6 +23182,23 @@
       "backToPlan": "Retour au parcours",
       "backToRead": "Retour à Lire",
       "backToCast": "Retour aux voix"
+    },
+    "planJourney": {
+      "continue": "Continuer",
+      "startDay": "Commencer le jour {{n}}",
+      "progress": "{{done}} sur {{total}} lus · {{pct}} %",
+      "todayIs": "Aujourd'hui : jour {{n}} sur {{total}}",
+      "seeAll": "Voir les {{total}} récits",
+      "showJourney": "Parcours",
+      "hideJourney": "Masquer",
+      "paused": "En pause",
+      "complete": "Terminé",
+      "start": "Démarrer",
+      "resume": "Reprendre",
+      "pause": "Pause",
+      "end": "Fin",
+      "delete": "Suppr.",
+      "seePlan": "Voir le parcours"
     }
   }
 }

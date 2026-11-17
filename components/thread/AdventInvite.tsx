@@ -30,8 +30,8 @@ type Props = {
   /** Advent already started (or paused) — the card hides. */
   started: boolean;
   /** Start Advent; `startIndex` is the 0-based story a late joiner chose. */
-  onJoin: (item: CatalogItem, startIndex: number, beforeStart: boolean) => void | Promise<void>;
-  /** Tap on the card body. */
+  onJoin: (item: CatalogItem, startIndex: number) => void | Promise<void>;
+  /** Open the Advent plan page (card body and "See the plan"). */
   onOpenPlan?: () => void;
 };
 
@@ -108,13 +108,13 @@ export default function AdventInvite({ palette, language, started, onJoin, onOpe
         t('UI.advent.lateBody', { n: index + 1 }),
         [
           { text: t('UI.alerts.cancel'), style: 'cancel' },
-          { text: t('UI.advent.lateFromStart'), onPress: () => void onJoin(item, 0, false) },
-          { text: t('UI.advent.lateToday'), onPress: () => void onJoin(item, index, false) },
+          { text: t('UI.advent.lateFromStart'), onPress: () => void onJoin(item, 0) },
+          { text: t('UI.advent.lateToday'), onPress: () => void onJoin(item, index) },
         ]
       );
       return;
     }
-    void onJoin(item, 0, beforeStart);
+    void onJoin(item, 0);
   };
 
   const accent = readableOn(ADVENT_ACCENT, palette.surf);
@@ -150,6 +150,11 @@ export default function AdventInvite({ palette, language, started, onJoin, onOpe
             </Text>
           </Pressable>
         )}
+        {onOpenPlan && (
+          <Pressable onPress={onOpenPlan} hitSlop={8} style={styles.link} accessibilityRole="link">
+            <Text style={[styles.linkText, { color: accent }]}>{t('UI.advent.seePlan')} ›</Text>
+          </Pressable>
+        )}
       </View>
     </Pressable>
   );
@@ -174,4 +179,6 @@ const styles = StyleSheet.create({
   primaryText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' },
   secondary: { borderRadius: 10, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 6 },
   secondaryText: { fontSize: 11, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase' },
+  link: { paddingVertical: 7, paddingHorizontal: 2 },
+  linkText: { fontSize: 11, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase' },
 });

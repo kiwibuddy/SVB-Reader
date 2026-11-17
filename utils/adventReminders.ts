@@ -28,7 +28,7 @@ export const ADVENT_NOTIFICATION_IDS = [
   'svb-advent-christmas-eve',
 ] as const;
 
-export const ADVENT_PLAN_URL = `/plan?expandedPlan=${ADVENT_PLAN_ID}`;
+export const ADVENT_PLAN_URL = `/plan/${ADVENT_PLAN_ID}`;
 
 export type AdventReminderInput = {
   now: Date;

@@ -36,7 +36,7 @@ test('daily-reminder readers who have not joined get three teasers in the evenin
   const plan = planAdventNotifications(input({ dailyEnabled: true }), text);
   expect(summary(plan)).toEqual(['svb-advent-week@11/22 19:00', 'svb-advent-eve@11/28 19:00', 'svb-advent-late@12/6 19:00']);
   expect(plan.dailyOverride).toBeNull();
-  expect(plan.notifications.every((n) => n.url === '/plan?expandedPlan=adventJourneyChronological')).toBe(true);
+  expect(plan.notifications.every((n) => n.url === '/plan/adventJourneyChronological')).toBe(true);
 });
 
 test('teasers move to midday when the daily reminder is already in the evening', () => {

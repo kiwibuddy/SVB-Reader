@@ -318,7 +318,7 @@ export async function rescheduleReadingReminders(): Promise<void> {
       content: {
         title: daily?.title ?? i18next.t('UI.settings.reminderDailyTitle'),
         body: daily?.body ?? i18next.t('UI.settings.reminderDailyBody'),
-        ...(daily ? { data: { url: `/plan?expandedPlan=${ADVENT_PLAN_ID}` } } : {}),
+        ...(daily ? { data: { url: `/plan/${ADVENT_PLAN_ID}` } } : {}),
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DAILY,

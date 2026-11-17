@@ -6,7 +6,6 @@ import {
   StyleSheet,
   ScrollView,
   Keyboard,
-  Alert,
   useWindowDimensions,
 } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
@@ -50,8 +49,8 @@ import { lookupReference, type ReferenceLookup } from '@/utils/reference';
 import { openSegment } from '@/utils/openSegment';
 import { findCatalogItem, getLocalizedPlanText, nextUnreadStory } from '@/utils/planCatalog';
 import { getPlanStartIndex } from '@/utils/planStartIndex';
-import { startCatalogPlan } from '@/utils/planActions';
-import { ADVENT_PLAN_ID, datedWindow, formatLongDate, todayIndex } from '@/utils/seasonalPlans';
+import { useStartPlan } from '@/hooks/useStartPlan';
+import { ADVENT_PLAN_ID } from '@/utils/seasonalPlans';
 import AdventInvite from '@/components/thread/AdventInvite';
 import { findPlanItem } from '@/api/userPlans';
 import { shortStoryId } from '@/utils/threadProgress';
@@ -188,6 +187,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
   }[]>([]);
   const [plansLoaded, setPlansLoaded] = useState(false);
   const [plansReload, setPlansReload] = useState(0);
+  const startPlan = useStartPlan(() => setPlansReload((n) => n + 1));
   const seeded = useRef(false);
 
   const allowed = useMemo(() => (storyFilter ? new Set(storyFilter) : null), [storyFilter]);
@@ -517,21 +517,8 @@ const ThreadList: React.FC<ThreadListProps> = ({
           palette={palette}
           language={language}
           started={startedPlans.some((p) => p.id === ADVENT_PLAN_ID)}
-          onOpenPlan={() => router.push(`/plan?expandedPlan=${ADVENT_PLAN_ID}` as never)}
-          onJoin={async (item, startIndex, beforeStart) => {
-            await startCatalogPlan(item, startIndex);
-            setPlansReload((n) => n + 1);
-            const window = datedWindow(item.id, item.stories.length);
-            if (beforeStart && window && todayIndex(window) < 0) {
-              Alert.alert(
-                t('UI.advent.joinedTitle'),
-                t('UI.advent.joinedBody', { date: formatLongDate(window.start, language) })
-              );
-              return;
-            }
-            const next = nextUnreadStory(item.stories, new Set(), startIndex);
-            if (next) openStory(next.storyId, { challengeId: item.id });
-          }}
+          onOpenPlan={() => router.push(`/plan/${ADVENT_PLAN_ID}` as never)}
+          onJoin={(item, startIndex) => startPlan(item, { chosenStartIndex: startIndex })}
         />
       )}
       {!hideSearch && !searching && startedPlans.length > 0 && startedPlans.map((plan) => (

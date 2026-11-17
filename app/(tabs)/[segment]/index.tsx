@@ -346,7 +346,7 @@ export default function BibleScreen() {
       alive = false;
     };
   }, [planKey, curatedPlan]);
-  const plan: CatalogItem | null = curatedPlan ?? (customPlan?.key === planKey ? customPlan.item : null);
+  const plan: CatalogItem | null = curatedPlan ?? (customPlan && customPlan.key === planKey ? customPlan.item : null);
 
   // Reading order for this context: the plan's own order (week order for
   // Advent), the voice's stories, or the whole Bible. One helper, so the

@@ -7,9 +7,12 @@ import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
 } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 import { DEPTH_X, ROW_HEIGHT, buildThread, type ThreadRow } from '@/components/thread/buildThread';
-import { BookBead, StoryBead, ThreadKnot } from '@/components/thread/ThreadBead';
+import { BookBead } from '@/components/thread/ThreadBead';
+import PlanJourney, { buildJourneyRows, renderJourneyRow, type JourneyRow } from '@/components/thread/PlanJourney';
+import { useStartPlan } from '@/hooks/useStartPlan';
 import { useThreadReveal } from '@/hooks/useThreadReveal';
 import { ThreadRevealRow } from '@/components/thread/ThreadRevealRow';
 import { ThreadColors } from '@/constants/Colors';
@@ -18,7 +21,6 @@ import { localizeStoryTitle } from '@/utils/localize';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { hapticImpactLight, hapticSelection } from '@/utils/haptics';
-import { formatReadingMinutes, getSegmentReadingTime } from '@/utils/readingTime';
 import {
   getPlanProgress,
   getChallengeProgress,
@@ -44,20 +46,17 @@ import {
   type CatalogItem,
   type PlanGroupId,
 } from '@/utils/planCatalog';
-import { getChronologicalPhases, getStoryNote, type ChronologicalPhase } from '@/utils/chronologicalPlans';
+import { getStoryNote } from '@/utils/chronologicalPlans';
 import {
   ADVENT_PLAN_ID,
   datedWindow,
   dateForDay,
   formatDateRange,
-  formatLongDate,
   formatShortDate,
   todayIndex,
 } from '@/utils/seasonalPlans';
 import { getPlanStartIndex, loadPlanStartIndexes, planStartIndexesLoaded } from '@/utils/planStartIndex';
 import { refreshSeasonalProgress } from '@/utils/seasonalProgress';
-import { lateJoinIndex, startCatalogPlan } from '@/utils/planActions';
-import { readableOn } from '@/utils/contrast';
 import AdventInvite from '@/components/thread/AdventInvite';
 import { openSegment } from '@/utils/openSegment';
 import { findPlanItem, listUserPlanCatalogItems, deleteUserPlan } from '@/api/userPlans';
@@ -75,43 +74,18 @@ const GROUP_COPY: Record<PlanGroupId, { title: string; blurb: string }> = {
 
 /** Title + blurb + meta — tight two/three-line list row (not a card). */
 const PLAN_ROW_HEIGHT = 80;
-/** Phase title + up to 2-line blurb; even padding so the depth step sits in the gap. */
-const PHASE_ROW_HEIGHT = 64;
 /** Bead beside the first line of text, not mid-blurb / mid-empty. */
 const PLAN_MARK = 18;
-const PHASE_MARK = 16;
+
+/** Long plans show a window around today's story under their card, plus "See all". */
+const JOURNEY_WINDOW_OVER = 60;
+const JOURNEY_WINDOW = { before: 3, after: 14 } as const;
 
 const GROUP_COLORS: Record<PlanGroupId, string> = {
   year: '#007AFF',
   monthly: '#FF9800',
   mini: '#E91E63',
 };
-
-/** Approximate glyph widths (px) for estimating wrapped lines in thread rows. */
-const CHAR_W = { title: 7.4, now: 9.8, ref: 6.6, note: 5.9 };
-
-function lineCount(text: string, width: number, charWidth: number): number {
-  if (!text) return 0;
-  return Math.max(1, Math.ceil((text.length * charWidth) / Math.max(width, 80)));
-}
-
-/** Row height for a story that shows a date label or note, so wrapped text doesn't overlap. */
-function storyRowHeight(opts: {
-  title: string;
-  ref: string;
-  note?: string;
-  current: boolean;
-  depth: number;
-  windowWidth: number;
-}): number {
-  const avail = opts.windowWidth - (DEPTH_X[opts.depth] + 16) - 14;
-  const titleLines = lineCount(opts.title, avail, opts.current ? CHAR_W.now : CHAR_W.title);
-  const refLines = lineCount(opts.ref, avail, CHAR_W.ref);
-  const noteLines = opts.note ? Math.min(2, lineCount(opts.note, avail, CHAR_W.note)) : 0;
-  const height =
-    6 + titleLines * (opts.current ? 23 : 18) + 2 + refLines * 12 + (noteLines ? 3 + noteLines * 15 : 0) + 6;
-  return Math.max(opts.current ? ROW_HEIGHT.current : ROW_HEIGHT.story, Math.ceil(height));
-}
 
 type ActivePlanData = {
   catalog: CatalogItem;
@@ -120,16 +94,22 @@ type ActivePlanData = {
   completedIds: Set<string>;
 };
 
-type RowKind = 'group' | 'plan' | 'phase' | 'story';
-
+/** A plan row in the catalog, or one row of an expanded plan's journey. */
 type VisibleRow = ThreadRow & {
-  kind: RowKind;
-  groupId?: PlanGroupId;
+  kind: 'plan' | 'journey';
   catalogItem?: CatalogItem;
-  storyId?: string;
-  current?: boolean;
-  phase?: ChronologicalPhase;
+  journey?: JourneyRow;
 };
+
+const asVisible = (item: CatalogItem) => (r: JourneyRow): VisibleRow => ({
+  key: r.key,
+  depth: r.depth,
+  height: r.height,
+  markOffset: r.markOffset,
+  kind: 'journey',
+  journey: r,
+  catalogItem: item,
+});
 
 const PlanScreen = () => {
   const router = useRouter();
@@ -140,7 +120,6 @@ const PlanScreen = () => {
   const { isDarkMode, language } = useSyncAppSettings();
   const { t } = useTranslation();
   const palette: ThreadPalette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
-  const lang = language.startsWith('fr') ? 'fr' : 'en';
 
   const [activePlans, setActivePlans] = useState<ActivePlanData[]>([]);
   /** All user-created plans, shown as expandable catalog-style rows (not detail pages / big cards). */
@@ -148,6 +127,8 @@ const PlanScreen = () => {
   const [userStartedById, setUserStartedById] = useState<Record<string, StartedItem>>({});
   const [openGroup, setOpenGroup] = useState<PlanGroupId | null>(null);
   const [openPlanId, setOpenPlanId] = useState<string | null>(null);
+  /** The in-progress card whose journey is open. */
+  const [openActiveId, setOpenActiveId] = useState<string | null>(null);
   const [progressById, setProgressById] = useState<Record<string, { done: number; ids: string[] }>>({});
   const loading = useRef(false);
 
@@ -231,8 +212,11 @@ const PlanScreen = () => {
     (async () => {
       const item = findCatalogItem(expandId) || (await findPlanItem(expandId));
       if (!item || item.isUserPlan) return;
+      // Older reminders link here; open the plan in the catalog and, if it is
+      // already started, its journey under the active card.
       setOpenGroup(item.group);
       setOpenPlanId(item.id);
+      setOpenActiveId(item.id);
     })();
   }, [params.expandedPlan]);
 
@@ -240,28 +224,6 @@ const PlanScreen = () => {
   const grouped = useMemo(
     () => itemsByGroup(catalog.filter((item) => isCatalogItemOffered(item)), activeIds),
     [catalog, activeIds]
-  );
-
-  /** Label, ref line and note for a story row (shared by layout and render). */
-  const storyRowText = useCallback(
-    (item: CatalogItem, storyId: string, done: boolean, current: boolean) => {
-      const info = titles[storyId];
-      const minutes = getSegmentReadingTime(storyId);
-      const window = item.isUserPlan ? null : datedWindow(item.id, item.stories.length);
-      const index = item.stories.indexOf(storyId);
-      const dateLabel = window && index >= 0 ? formatShortDate(dateForDay(window, index), language) : '';
-      const suffix = done ? ` · ${t('UI.thread.read')}` : current ? ` · ${t('UI.thread.continue')}` : '';
-      const ref = `${dateLabel ? `${dateLabel} · ` : ''}${info?.book?.[0] || ''} ${info?.ref || ''}${
-        minutes ? ` · ${formatReadingMinutes(minutes)}` : ''
-      }${suffix}`;
-      return {
-        title: localizeStoryTitle(storyId, info?.title || storyId, language),
-        ref,
-        note: getStoryNote(item.chronologicalMapping, storyId, language),
-        dated: !!dateLabel,
-      };
-    },
-    [language, t]
   );
 
   // Thread rows for the expanded group (only when a group is open)
@@ -280,56 +242,19 @@ const PlanScreen = () => {
         catalogItem: item,
       });
       if (openPlanId !== item.id) continue;
-      const planDone = new Set(progressById[item.id]?.ids || []);
-      const next = nextUnreadStory(item.stories, planDone, getPlanStartIndex(item.id));
-      const phases = getChronologicalPhases(item.chronologicalMapping, (key, field, fallback) =>
-        t(`UI.chronologicalPhases.${item.chronologicalMapping}.${key}.${field}`, { defaultValue: fallback })
+      rows.push(
+        ...buildJourneyRows(item, {
+          completedIds: new Set(progressById[item.id]?.ids || []),
+          startIndex: getPlanStartIndex(item.id),
+          windowWidth,
+          t,
+          language,
+          baseDepth: 1,
+        }).map(asVisible(item))
       );
-
-      const pushStory = (storyId: string, depth: 1 | 2, phase?: ChronologicalPhase) => {
-        const done = planDone.has(storyId);
-        const current = !done && next?.storyId === storyId;
-        const text = storyRowText(item, storyId, done, current);
-        rows.push({
-          key: `${item.id}-${storyId}`,
-          kind: 'story',
-          depth,
-          height:
-            text.note || text.dated
-              ? storyRowHeight({ ...text, current, depth, windowWidth })
-              : current
-                ? ROW_HEIGHT.current
-                : ROW_HEIGHT.story,
-          storyId,
-          current,
-          catalogItem: item,
-          phase,
-        });
-      };
-
-      if (phases.length) {
-        for (const phase of phases) {
-          rows.push({
-            key: `ph-${item.id}-${phase.key}`,
-            kind: 'phase',
-            depth: 1,
-            height: PHASE_ROW_HEIGHT,
-            markOffset: PHASE_MARK,
-            catalogItem: item,
-            phase,
-          });
-          for (const storyId of phase.storyIds) {
-            pushStory(storyId, 2, phase);
-          }
-        }
-      } else {
-        for (const storyId of item.stories) {
-          pushStory(storyId, 1);
-        }
-      }
     }
     return rows;
-  }, [grouped, openGroup, openPlanId, progressById, storyRowText, t, windowWidth]);
+  }, [grouped, openGroup, openPlanId, progressById, t, language, windowWidth]);
 
   // Stories under the expanded custom plan — depth 0 anchor + depth 1 stories
   // so the thread curves like catalog plan → story (same-depth rows stay vertical).
@@ -345,23 +270,18 @@ const PlanScreen = () => {
       markOffset: PLAN_MARK,
       catalogItem: item,
     });
-    const planDone = new Set(progressById[item.id]?.ids || []);
-    const next = nextUnreadStory(item.stories, planDone);
-    for (const storyId of item.stories) {
-      const done = planDone.has(storyId);
-      const current = !done && next?.storyId === storyId;
-      rows.push({
-        key: `${item.id}-${storyId}`,
-        kind: 'story',
-        depth: 1,
-        height: current ? ROW_HEIGHT.current : ROW_HEIGHT.story,
-        storyId,
-        current,
-        catalogItem: item,
-      });
-    }
+    rows.push(
+      ...buildJourneyRows(item, {
+        completedIds: new Set(progressById[item.id]?.ids || []),
+        startIndex: getPlanStartIndex(item.id),
+        windowWidth,
+        t,
+        language,
+        baseDepth: 1,
+      }).map(asVisible(item))
+    );
     return rows;
-  }, [userPlans, openPlanId, progressById]);
+  }, [userPlans, openPlanId, progressById, t, language, windowWidth]);
 
   const thread = useMemo(
     () =>
@@ -415,52 +335,18 @@ const PlanScreen = () => {
     setOpenPlanId((prev) => (prev === id ? null : id));
   };
 
-  const handleStartPlan = async (item: CatalogItem, chosenStartIndex?: number) => {
-    void hapticImpactLight();
-    const window = item.isUserPlan ? null : datedWindow(item.id, item.stories.length);
-    const isAdvent = item.id === ADVENT_PLAN_ID;
+  const startPlanFlow = useStartPlan(loadData);
+  const handleStartPlan = (item: CatalogItem, chosenStartIndex?: number) =>
+    startPlanFlow(item, {
+      completedIds: new Set(progressById[item.id]?.ids || []),
+      chosenStartIndex,
+    });
 
-    // Joining a dated plan after Day 1: start at today's reading, or catch up from Day 1?
-    if (chosenStartIndex === undefined && window && (progressById[item.id]?.done ?? 0) === 0) {
-      const late = lateJoinIndex(item);
-      if (late !== null) {
-        const date = formatLongDate(window.start, language);
-        Alert.alert(
-          isAdvent ? t('UI.advent.lateTitle', { date }) : t('UI.advent.lateTitleGeneric', { date }),
-          t('UI.advent.lateBody', { n: late + 1 }),
-          [
-            { text: t('UI.alerts.cancel'), style: 'cancel' },
-            { text: t('UI.advent.lateFromStart'), onPress: () => void handleStartPlan(item, 0) },
-            { text: t('UI.advent.lateToday'), onPress: () => void handleStartPlan(item, late) },
-          ]
-        );
-        return;
-      }
-    }
-
-    const startIndex = chosenStartIndex ?? 0;
-    await startCatalogPlan(item, startIndex);
-    await loadData();
-
-    // Joined before the season starts: Day 1 waits for its day.
-    if (window && todayIndex(window) < 0) {
-      const date = formatLongDate(window.start, language);
-      Alert.alert(
-        isAdvent ? t('UI.advent.joinedTitle') : t('UI.advent.joinedTitleGeneric'),
-        isAdvent ? t('UI.advent.joinedBody', { date }) : t('UI.advent.joinedBodyGeneric', { date })
-      );
-      return;
-    }
-
-    const planDone = new Set(progressById[item.id]?.ids || []);
-    const next = nextUnreadStory(item.stories, planDone, startIndex);
-    if (next) {
-      openSegment(router, next.storyId, {
-        planId: item.type === 'plan' ? item.id : undefined,
-        challengeId: item.type === 'challenge' ? item.id : undefined,
-      });
-    }
-  };
+  const openStoryIn = (item: CatalogItem) => (storyId: string) =>
+    openSegment(router, storyId, {
+      planId: item.type === 'plan' ? item.id : undefined,
+      challengeId: item.type === 'challenge' ? item.id : undefined,
+    });
 
   const handlePauseResume = async (data: ActivePlanData) => {
     if (data.started.isPaused) {
@@ -583,26 +469,31 @@ const PlanScreen = () => {
           ? t('UI.advent.dayDate', { n: next.day, date: formatShortDate(dateForDay(window, next.day - 1), language) })
           : t('UI.thread.day', { n: next.day });
 
+    const journeyOpen = openActiveId === item.id;
+    const todayIdx = window ? todayIndex(window) : -1;
+    const continueLabel = beforeStart && window
+      ? t('UI.advent.startsOn', { date: formatShortDate(window.start, language) })
+      : completed > 0
+        ? t('UI.planJourney.continue')
+        : t('UI.planJourney.startDay', { n: next?.day ?? 1 });
+
     return (
+      <View key={item.id}>
       <Pressable
-        key={item.id}
         onPress={() => {
-          if (next) {
-            openSegment(router, next.storyId, {
-              planId: item.type === 'plan' ? item.id : undefined,
-              challengeId: item.type === 'challenge' ? item.id : undefined,
-            });
-          } else {
-            router.push(`/plan/${item.id}`);
-          }
+          void hapticSelection();
+          setOpenActiveId((prev) => (prev === item.id ? null : item.id));
         }}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: journeyOpen }}
+        accessibilityHint={journeyOpen ? t('UI.planJourney.hideJourney') : t('UI.planJourney.showJourney')}
         style={[styles.activeCard, { backgroundColor: palette.surf, borderColor: started.isPaused ? palette.hair : palette.acc }]}
       >
         <View style={{ flex: 1 }}>
           <Text style={[styles.activeKicker, { color: started.isPaused ? palette.mute : palette.acc }]}>
             {started.isPaused
-              ? (lang === 'fr' ? 'En pause' : 'Paused')
-              : dayLabel ?? (lang === 'fr' ? 'Terminé' : 'Complete')}
+              ? t('UI.planJourney.paused')
+              : dayLabel ?? t('UI.planJourney.complete')}
           </Text>
           <Text style={[styles.activeTitle, { color: palette.ink }]}>{getLocalizedPlanText(item, 'title', language)}</Text>
           {!!getLocalizedPlanText(item, 'shortDescription', language) && (
@@ -625,8 +516,33 @@ const PlanScreen = () => {
             <View style={[styles.progFill, { width: `${pct}%`, backgroundColor: palette.acc }]} />
           </View>
           <Text style={[styles.progText, { color: palette.mute }]}>
-            {completed} {t('UI.thread.of')} {total}
+            {t('UI.planJourney.progress', { done: completed, total, pct })}
+            {window && todayIdx >= 0 && todayIdx < window.days
+              ? ` · ${t('UI.planJourney.todayIs', { n: todayIdx + 1, total: window.days })}`
+              : ''}
           </Text>
+          <View style={styles.activeFoot}>
+            {next && !started.isPaused && (
+              <Pressable
+                onPress={(e) => {
+                  e.stopPropagation?.();
+                  void hapticImpactLight();
+                  openStoryIn(item)(next.storyId);
+                }}
+                accessibilityRole="button"
+                hitSlop={8}
+                style={[styles.continueBtn, { backgroundColor: palette.acc }]}
+              >
+                <Text style={[styles.continueText, { color: palette.bg }]}>{continueLabel}</Text>
+              </Pressable>
+            )}
+            <View style={styles.chevron}>
+              <Text style={[styles.chevronText, { color: palette.mute }]}>
+                {journeyOpen ? t('UI.planJourney.hideJourney') : t('UI.planJourney.showJourney')}
+              </Text>
+              <Ionicons name={journeyOpen ? 'chevron-up' : 'chevron-down'} size={14} color={palette.mute} />
+            </View>
+          </View>
         </View>
         <View style={styles.activeActions}>
           <Pressable
@@ -651,6 +567,23 @@ const PlanScreen = () => {
           </Pressable>
         </View>
       </Pressable>
+      {journeyOpen && (
+        <View style={styles.activeJourney}>
+          <PlanJourney
+            item={item}
+            completedIds={planCompleted}
+            startIndex={getPlanStartIndex(item.id)}
+            palette={palette}
+            t={t}
+            language={language}
+            justCompletedId={justCompletedId}
+            limit={item.stories.length > JOURNEY_WINDOW_OVER ? JOURNEY_WINDOW : undefined}
+            onOpenStory={openStoryIn(item)}
+            onSeeAll={() => router.push(`/plan/${item.id}`)}
+          />
+        </View>
+      )}
+      </View>
     );
   };
 
@@ -670,11 +603,8 @@ const PlanScreen = () => {
             started={activeIds.has(ADVENT_PLAN_ID)}
             onJoin={(item, startIndex) => handleStartPlan(item, startIndex)}
             onOpenPlan={() => {
-              const advent = catalog.find((c) => c.id === ADVENT_PLAN_ID);
-              if (!advent) return;
               void hapticSelection();
-              setOpenGroup(advent.group);
-              setOpenPlanId(advent.id);
+              router.push(`/plan/${ADVENT_PLAN_ID}`);
             }}
           />
         )}
@@ -747,7 +677,6 @@ const PlanScreen = () => {
                         <ThreadRevealRow key={row.key} index={index} total={visibleRows.length} progress={progress}>
                           <Pressable
                             onPress={() => togglePlan(item.id)}
-                            onLongPress={() => handleStartPlan(item)}
                             style={[styles.threadRow, styles.planThreadRow, { height: row.height }]}
                           >
                             <BookBead x={mark.x} rowHeight={row.height} open={planOpen} palette={palette} anchor={PLAN_MARK} />
@@ -781,7 +710,7 @@ const PlanScreen = () => {
                               style={[styles.startBtn, { borderColor: palette.acc }]}
                             >
                               <Text style={{ color: palette.acc, fontSize: 9, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase' }}>
-                                {lang === 'fr' ? 'Démarrer' : 'Start'}
+                                {t('UI.planJourney.start')}
                               </Text>
                             </Pressable>
                           </Pressable>
@@ -789,77 +718,16 @@ const PlanScreen = () => {
                       );
                     }
 
-                    if (row.kind === 'phase' && row.phase) {
-                      const phase = row.phase;
+                    if (row.kind === 'journey' && row.journey && row.catalogItem) {
                       return (
                         <ThreadRevealRow key={row.key} index={index} total={visibleRows.length} progress={progress}>
-                          <View style={[styles.threadRow, styles.phaseThreadRow, { height: row.height }]}>
-                            <ThreadKnot x={mark.x} rowHeight={row.height} open palette={palette} fillColor={phase.color} anchor={PHASE_MARK} />
-                            <View style={[styles.rowBody, { paddingLeft: DEPTH_X[1] + 16 }]}>
-                              <Text style={[styles.phaseTitle, { color: readableOn(phase.color, palette.bg) }]} numberOfLines={1}>
-                                {phase.title}
-                              </Text>
-                              {!!phase.description && (
-                                <Text style={[styles.phaseBlurb, { color: palette.mute }]} numberOfLines={2}>
-                                  {phase.description}
-                                </Text>
-                              )}
-                            </View>
-                          </View>
-                        </ThreadRevealRow>
-                      );
-                    }
-
-                    if (row.kind === 'story' && row.storyId) {
-                      const id = row.storyId;
-                      const planDone = new Set(progressById[row.catalogItem?.id || '']?.ids || []);
-                      const done = planDone.has(id);
-                      const current = !!row.current && !done;
-                      const text = row.catalogItem
-                        ? storyRowText(row.catalogItem, id, done, current)
-                        : { title: id, ref: '', note: undefined };
-                      return (
-                        <ThreadRevealRow key={row.key} index={index} total={visibleRows.length} progress={progress}>
-                          <Pressable
-                            onPress={() => {
-                              void hapticImpactLight();
-                              const item = row.catalogItem;
-                              openSegment(router, id, {
-                                planId: item?.type === 'plan' ? item.id : undefined,
-                                challengeId: item?.type === 'challenge' ? item.id : undefined,
-                              });
-                            }}
-                            style={[styles.threadRow, { height: row.height }]}
-                            hitSlop={12}
-                          >
-                            <StoryBead
-                              x={mark.x}
-                              rowHeight={row.height}
-                              done={done}
-                              current={current}
-                              justCompleted={justCompletedId === id}
-                              palette={palette}
-                            />
-                            <View style={[styles.storyText, { paddingLeft: DEPTH_X[row.depth] + 16 }]}>
-                              <Text
-                                style={[
-                                  styles.storyTitle,
-                                  { color: done ? palette.mute : palette.ink },
-                                  current && styles.storyNow,
-                                ]}
-                              >
-                                {text.title}
-                              </Text>
-                              <Text style={[styles.storyRef, { color: current ? palette.acc : palette.mute }]}>
-                                {text.ref}
-                              </Text>
-                              {!!text.note && (
-                                <Text style={[styles.storyNote, { color: palette.mute }]} numberOfLines={2}>
-                                  {text.note}
-                                </Text>
-                              )}
-                            </View>
-                          </Pressable>
+                          {renderJourneyRow(row.journey, mark, {
+                            palette,
+                            t,
+                            justCompletedId,
+                            onOpenStory: openStoryIn(row.catalogItem),
+                            onSeeAll: () => router.push(`/plan/${row.catalogItem!.id}`),
+                          })}
                         </ThreadRevealRow>
                       );
                     }
@@ -917,7 +785,7 @@ const PlanScreen = () => {
                       {started
                         ? `${done} ${t('UI.thread.of')} ${total}`
                         : `${total} ${t('UI.thread.stories')}`}
-                      {started?.isPaused ? ` · ${lang === 'fr' ? 'En pause' : 'Paused'}` : ''}
+                      {started?.isPaused ? ` · ${t('UI.planJourney.paused')}` : ''}
                     </Text>
                   </View>
                   <View style={styles.planActions}>
@@ -928,7 +796,7 @@ const PlanScreen = () => {
                         style={[styles.startBtn, { borderColor: palette.acc }]}
                       >
                         <Text style={{ color: palette.acc, fontSize: 9, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase' }}>
-                          {lang === 'fr' ? 'Démarrer' : 'Start'}
+                          {t('UI.planJourney.start')}
                         </Text>
                       </Pressable>
                     ) : (
@@ -946,11 +814,7 @@ const PlanScreen = () => {
                             textTransform: 'uppercase',
                           }}
                         >
-                          {started.isPaused
-                            ? lang === 'fr'
-                              ? 'Reprendre'
-                              : 'Resume'
-                            : 'Pause'}
+                          {started.isPaused ? t('UI.planJourney.resume') : t('UI.planJourney.pause')}
                         </Text>
                       </Pressable>
                     )}
@@ -960,13 +824,7 @@ const PlanScreen = () => {
                       style={[styles.startBtn, { borderColor: palette.hair }]}
                     >
                       <Text style={{ color: palette.mute, fontSize: 9, fontWeight: '600', letterSpacing: 0.8, textTransform: 'uppercase' }}>
-                        {started
-                          ? lang === 'fr'
-                            ? 'Fin'
-                            : 'End'
-                          : lang === 'fr'
-                            ? 'Suppr.'
-                            : 'Delete'}
+                        {started ? t('UI.planJourney.end') : t('UI.planJourney.delete')}
                       </Text>
                     </Pressable>
                   </View>
@@ -1016,14 +874,7 @@ const PlanScreen = () => {
                         );
                       }
 
-                      if (!row.storyId) return null;
-                      const id = row.storyId;
-                      const info = titles[id];
-                      const planDone = new Set(progressById[item.id]?.ids || []);
-                      const storyDone = planDone.has(id);
-                      const current = !!row.current && !storyDone;
-                      const minutes = getSegmentReadingTime(id);
-                      const title = localizeStoryTitle(id, info?.title || id, language);
+                      if (row.kind !== 'journey' || !row.journey) return null;
                       return (
                         <ThreadRevealRow
                           key={row.key}
@@ -1031,43 +882,12 @@ const PlanScreen = () => {
                           total={userStoryRows.length}
                           progress={userProgress}
                         >
-                          <Pressable
-                            onPress={() => {
-                              void hapticImpactLight();
-                              openSegment(router, id, { planId: item.id });
-                            }}
-                            style={[styles.threadRow, { height: row.height }]}
-                            hitSlop={12}
-                          >
-                            <StoryBead
-                              x={mark.x}
-                              rowHeight={row.height}
-                              done={storyDone}
-                              current={current}
-                              justCompleted={justCompletedId === id}
-                              palette={palette}
-                            />
-                            <View style={[styles.storyText, { paddingLeft: DEPTH_X[1] + 16 }]}>
-                              <Text
-                                style={[
-                                  styles.storyTitle,
-                                  { color: storyDone ? palette.mute : palette.ink },
-                                  current && styles.storyNow,
-                                ]}
-                              >
-                                {title}
-                              </Text>
-                              <Text style={[styles.storyRef, { color: current ? palette.acc : palette.mute }]}>
-                                {info?.book?.[0]} {info?.ref}
-                                {minutes ? ` · ${formatReadingMinutes(minutes)}` : ''}
-                                {storyDone
-                                  ? ` · ${t('UI.thread.read')}`
-                                  : current
-                                    ? ` · ${t('UI.thread.continue')}`
-                                    : ''}
-                              </Text>
-                            </View>
-                          </Pressable>
+                          {renderJourneyRow(row.journey, mark, {
+                            palette,
+                            t,
+                            justCompletedId,
+                            onOpenStory: openStoryIn(item),
+                          })}
                         </ThreadRevealRow>
                       );
                     })}
@@ -1161,6 +981,12 @@ const styles = StyleSheet.create({
   storyRef: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', marginTop: 2 },
   storyNote: { fontSize: 11, lineHeight: 15, marginTop: 3 },
   activeNote: { fontSize: 12, lineHeight: 16, marginTop: 4 },
+  activeFoot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, gap: 10 },
+  continueBtn: { borderRadius: 12, paddingHorizontal: 14, paddingVertical: 7 },
+  continueText: { fontSize: 12, fontWeight: '700' },
+  chevron: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 'auto' },
+  chevronText: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase' },
+  activeJourney: { marginTop: 6, marginBottom: 6 },
 });
 
 export default PlanScreen;
