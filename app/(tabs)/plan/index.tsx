@@ -72,8 +72,8 @@ const GROUP_COPY: Record<PlanGroupId, { title: string; blurb: string }> = {
   mini: { title: 'UI.planCategories.miniStudies', blurb: 'UI.planCategories.miniStudiesBlurb' },
 };
 
-/** Title + blurb + meta — tight two/three-line list row (not a card). */
-const PLAN_ROW_HEIGHT = 80;
+/** Title + blurb + meta — fits one title line without overflowing into the path. */
+const PLAN_ROW_HEIGHT = 88;
 /** Bead beside the first line of text, not mid-blurb / mid-empty. */
 const PLAN_MARK = 18;
 

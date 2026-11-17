@@ -28,6 +28,24 @@ describe('buildThread depth steps', () => {
     expect(d).toContain(`A 16 16 0 0 1 ${DEPTH_X[2]} ${ROW_HEIGHT.book + 16}`);
   });
 
+  it('keeps plan→phase corridor low so it clears the meta, without a tall empty row', () => {
+    const planHeight = 80;
+    const phaseMark = 16;
+    const { d } = buildThread(
+      [
+        { key: 'plan', depth: 0, height: planHeight, markOffset: 18 },
+        { key: 'phase', depth: 1, height: 64, markOffset: phaseMark },
+      ],
+      { entry: 'none', exit: 'none' }
+    );
+    // Row bottom (80) does not fit; fall back to maxMid just above the phase bead.
+    const nextY = planHeight + phaseMark;
+    const maxMid = nextY - 16 - 4;
+    expect(d).toContain(`A 16 16 0 0 0 ${DEPTH_X[0] + 16} ${maxMid}`);
+    expect(maxMid).toBeGreaterThan(70);
+    expect(maxMid).toBeLessThan(planHeight);
+  });
+
   it('enters from the left and exits to the right like Cast', () => {
     const width = 390;
     const { d, height } = buildThread(

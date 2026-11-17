@@ -29,7 +29,7 @@ import ReminderTimeSheet from '@/components/ReminderTimeSheet';
 import { getDisplayVersion } from '@/utils/version-manager';
 import { getWeeklyGoal, setWeeklyGoal } from '@/api/sqlite';
 import { DEFAULT_WEEKLY_GOAL, WEEKLY_GOALS, type WeeklyGoal } from '@/utils/streak';
-import { getOtaDebugLabel } from '@/utils/otaUpdates';
+import { getOtaDebugLabel, isOtaApplied } from '@/utils/otaUpdates';
 
 type FontSizeOption = 'small' | 'medium' | 'large';
 
@@ -407,10 +407,38 @@ export default function SettingsScreen() {
             <Text style={[styles.rowText, { color: palette.ink }]}>{t('UI.settings.version')}</Text>
             <Text style={[styles.rowText, { color: palette.mute }]}>{getDisplayVersion()}</Text>
           </View>
-          <View style={[styles.row, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: palette.hair }]}>
-            <Text style={[styles.rowText, { color: palette.ink }]}>{t('UI.settings.jsUpdate')}</Text>
-            <Text style={[styles.rowText, { color: palette.mute }]}>{getOtaDebugLabel()}</Text>
-          </View>
+          <Pressable
+            style={[styles.row, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: palette.hair }]}
+            onPress={() => {
+              const label = getOtaDebugLabel();
+              if (isOtaApplied()) {
+                Alert.alert(
+                  t('UI.settings.jsUpdateWhatsNew'),
+                  `${label}\n\n${t('UI.settings.jsUpdateDetails')}`,
+                  [{ text: t('UI.settings.close') }]
+                );
+              } else {
+                Alert.alert(
+                  t('UI.settings.jsUpdateNotAppliedTitle'),
+                  `${label}\n\n${t('UI.settings.jsUpdateNotAppliedBody')}`,
+                  [{ text: t('UI.settings.close') }]
+                );
+              }
+            }}
+          >
+            <View style={styles.otaTextCol}>
+              <Text style={[styles.rowText, { color: palette.ink }]}>{t('UI.settings.jsUpdate')}</Text>
+              <Text style={[styles.otaSummary, { color: palette.mute }]} numberOfLines={1}>
+                {t('UI.settings.jsUpdateSummary')}
+              </Text>
+            </View>
+            <View style={styles.otaMetaCol}>
+              <Text style={[styles.otaId, { color: palette.mute }]} numberOfLines={1}>
+                {getOtaDebugLabel()}
+              </Text>
+              <Ionicons name="chevron-forward" size={16} color={palette.mute} />
+            </View>
+          </Pressable>
         </View>
       </ScrollView>
 
@@ -465,6 +493,10 @@ const styles = StyleSheet.create({
     minHeight: 44,
   },
   rowText: { fontSize: 15 },
+  otaTextCol: { flex: 1, paddingVertical: 8, paddingRight: 10 },
+  otaSummary: { fontSize: 12, marginTop: 2 },
+  otaMetaCol: { alignItems: 'flex-end', maxWidth: '46%', gap: 2 },
+  otaId: { fontSize: 11, textAlign: 'right' },
   fontRow: {
     flexDirection: 'row',
     alignItems: 'center',
