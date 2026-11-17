@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import logger from '@/utils/logger';
 import { View, Text, Pressable, StyleSheet, InteractionManager } from 'react-native';
 import * as Haptics from 'expo-haptics';
@@ -21,6 +21,7 @@ import {
   markSegmentComplete,
 } from '@/api/sqlite';
 import CompletionBanner from '@/components/Bible/CompletionBanner';
+import type { StreakEvent } from '@/utils/streak';
 import { getVoicesMetCelebration } from '@/utils/voicesMet';
 import { useTranslation } from '@/hooks/useTranslation';
 import FRA_UI from '@/assets/data/FRA-UI.json';
@@ -41,9 +42,29 @@ interface CheckCircleProps {
   resetVisualStateOnMount?: boolean;
   /** Called once the story is marked read, so the screen can offer what's next. */
   onCompleted?: () => void;
+  /**
+   * Show the celebration at screen level. Without it the banner renders here,
+   * inside this small container, where its top-of-screen overlay is squeezed.
+   */
+  onCelebrate?: (celebration: Celebration) => void;
 }
 
+export type Celebration = { title: string; subtitle: string; voiceNote: string };
+
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+/** One line for the completion banner: a milestone, a rest day earned or used. */
+function streakEventsLine(events: StreakEvent[], t: (key: string, params?: Record<string, string | number>) => string): string {
+  const lines: string[] = [];
+  for (const event of events) {
+    if (event.type === 'milestone') lines.push(t('UI.streak.milestone', { n: event.n }));
+    if (event.type === 'restDaysUsed') {
+      lines.push(event.count === 1 ? t('UI.streak.restUsedOne') : t('UI.streak.restUsedMany'));
+    }
+    if (event.type === 'restDayEarned') lines.push(t('UI.streak.restEarned'));
+  }
+  return lines.join(' · ');
+}
 
 export default function CheckCircle({
   segmentId,
@@ -54,6 +75,7 @@ export default function CheckCircle({
   showCaption = true,
   resetVisualStateOnMount = false,
   onCompleted,
+  onCelebrate,
 }: CheckCircleProps) {
   const { updateLastReadSegment } = useSQLiteGlobalContext();
   const params = useLocalSearchParams();
@@ -70,6 +92,7 @@ export default function CheckCircle({
   const [bannerTitle, setBannerTitle] = useState('');
   const [bannerSubtitle, setBannerSubtitle] = useState('');
   const [bannerVoice, setBannerVoice] = useState('');
+  const hideBanner = useCallback(() => setShowBanner(false), []);
 
   const fill = useSharedValue(0);
   const pulse = useSharedValue(1);
@@ -114,7 +137,7 @@ export default function CheckCircle({
     if (isCompleted || busy.current) return;
     busy.current = true;
     try {
-      await markSegmentComplete(segmentId, context, planId, challengeId);
+      const streakEvents = await markSegmentComplete(segmentId, context, planId, challengeId);
       await updateLastReadSegment(segmentId);
 
       setIsCompleted(true);
@@ -135,15 +158,21 @@ export default function CheckCircle({
       } catch {}
 
       const voices = await getVoicesMetCelebration(segmentId);
-      const title = localizeTitle(voices.title);
-      setBannerTitle(t('UI.completion.storyComplete', { title }));
-      const parts: string[] = [];
-      parts.push(t('UI.completion.voicesCount', { met: voices.metCount, total: voices.totalVoices }));
-      setBannerSubtitle(parts.join(' '));
-      if (voices.firstVoice) {
-        setBannerVoice(t('UI.completion.metVoiceFirstTime', { name: localizeVoice(voices.firstVoice) }));
+      const title = t('UI.completion.storyComplete', { title: localizeTitle(voices.title) });
+      const voicesLine = t('UI.completion.voicesCount', { met: voices.metCount, total: voices.totalVoices });
+      const streakLine = streakEventsLine(streakEvents || [], t);
+      const subtitle = streakLine ? `${voicesLine}\n${streakLine}` : voicesLine;
+      const voiceNote = voices.firstVoice
+        ? t('UI.completion.metVoiceFirstTime', { name: localizeVoice(voices.firstVoice) })
+        : '';
+      if (onCelebrate) {
+        onCelebrate({ title, subtitle, voiceNote });
+      } else {
+        setBannerTitle(title);
+        setBannerSubtitle(subtitle);
+        setBannerVoice(voiceNote);
+        setShowBanner(true);
       }
-      setShowBanner(true);
       onCompleted?.();
 
       try {
@@ -256,7 +285,7 @@ export default function CheckCircle({
         subtitle={bannerSubtitle}
         voiceNote={bannerVoice}
         durationMs={2400}
-        onHide={() => setShowBanner(false)}
+        onHide={hideBanner}
       />
     </View>
   );

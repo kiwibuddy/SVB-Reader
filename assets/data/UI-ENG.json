@@ -1202,6 +1202,22 @@
       "end": "End",
       "delete": "Delete",
       "seePlan": "See the plan"
+    },
+    "streak": {
+      "restSavedOne": "1 rest day saved",
+      "restSavedMany": "{{count}} rest days saved",
+      "restCoveredOne": "Yesterday covered",
+      "restCoveredMany": "{{count}} days covered",
+      "restUsedOne": "A rest day kept your streak going",
+      "restUsedMany": "Rest days kept your streak going",
+      "restEarned": "You earned a rest day",
+      "milestone": "{{n}}-day streak",
+      "weeklyGoal": "Weekly goal",
+      "weeklyGoalHint": "Days a week you'd like to read. Rest days cover a missed day, and you earn one for every 7 days read.",
+      "daysAWeek": "{{n}} days a week",
+      "thisWeek": "{{done}} of {{goal}} this week",
+      "weekStreak": "{{n}}-week streak",
+      "noStreak": "Read today to start"
     }
   },
   "Books": {

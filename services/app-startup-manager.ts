@@ -2,7 +2,7 @@ import { databaseManager } from '@/api/database-manager';
 import { initializeSettingsTable, migrateFromAsyncStorage } from './sync-settings-manager';
 import { migrateEmojiTableForNotes } from '@/api/database-migration';
 import { migrateQuestionsToDatabase } from '@/api/questions-migration';
-import { backfillPlanReadsToOverall, getAppState, setAppState } from '@/api/sqlite';
+import { backfillPlanReadsToOverall, ensureStreakState, getAppState, setAppState } from '@/api/sqlite';
 import { bibleStorageManager } from './BibleStorageManager';
 import logger from '@/utils/logger';
 
@@ -89,6 +89,14 @@ async function runSchemaMigrations(): Promise<void> {
       }
     } catch (error) {
       logger.error('Plan reads backfill failed; will retry next launch:', error);
+    }
+
+    // Forgiving streak: snapshot the current streak with one rest day before
+    // anything reads it, so a day missed after updating is already covered.
+    try {
+      await ensureStreakState();
+    } catch (error) {
+      logger.error('Streak state setup failed; will retry next launch:', error);
     }
 
     // Migrate questions from JSON to SQLite (one-time migration) - run in background to not block startup

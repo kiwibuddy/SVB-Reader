@@ -6,12 +6,22 @@ import { SafeDatabaseWrapper } from './database-safe-wrapper';
 import {
   addLocalCalendarDays,
   daysBetweenLocalDates,
-  displayedStreak,
   isoRangeForLocalDate,
   localCalendarDate,
   localCalendarDateFromISO,
-  nextStreak,
 } from '@/utils/localDate';
+import {
+  initialState as initialStreakState,
+  isStreakState,
+  onRead as streakOnRead,
+  parseWeeklyGoal,
+  view as streakView,
+  weekProgress,
+  type StreakEvent,
+  type StreakState,
+  type StreakView,
+  type WeeklyGoal,
+} from '@/utils/streak';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -84,10 +94,10 @@ export async function markSegmentComplete(
   context: 'main' | 'plan' | 'challenge' | 'today' = 'main',
   planID?: string | null,
   challengeID?: string | null
-): Promise<void> {
+): Promise<StreakEvent[]> {
   // Introduction segments should never be marked as complete
   if (segmentID.startsWith('I')) {
-    return;
+    return [];
   }
   
   try {
@@ -174,11 +184,11 @@ export async function markSegmentComplete(
 
     // Update daily activity and streak
     await updateDailyActivity(segmentID);
-    await updateStreak();
+    const streakEvents = await updateStreak();
     
     // Track reading session
     await incrementSessionCount();
-
+    return streakEvents;
   } catch (error) {
     logger.error("Error marking segment complete:", error);
     
@@ -472,18 +482,136 @@ export async function getStreakLastReadDate(): Promise<string | null> {
 
 export async function getCurrentStreak(): Promise<number> {
   try {
-    const db = databaseManager.getDatabase();
-    const result = await db.getFirstAsync<{ currentStreak: number; lastReadDate: string | null }>(
-      'SELECT currentStreak, lastReadDate FROM streak_data LIMIT 1'
-    );
-    const shown = displayedStreak(result?.currentStreak || 0, result?.lastReadDate);
-    if ((result?.currentStreak || 0) > 0 && shown === 0) {
-      await db.runAsync('UPDATE streak_data SET currentStreak = 0');
+    const today = localCalendarDate();
+    const { state } = await loadStreakState(today);
+    const shown = streakView(state, today).streak;
+    if (shown === 0) {
+      // Keep the legacy row in step for anything that still reads it.
+      const db = databaseManager.getDatabase();
+      await db.runAsync('UPDATE streak_data SET currentStreak = 0 WHERE currentStreak > 0');
     }
     return shown;
   } catch (error) {
     logger.error("Error getting current streak:", error);
     return 0;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Forgiving streak (utils/streak.ts). State lives in app_state as JSON;
+// streak_data is still written so older readers of it keep working.
+// ----------------------------------------------------------------------------
+
+const STREAK_STATE_KEY = 'streak.v2';
+const STREAK_GOAL_FROM_KEY = 'streak.goalFrom';
+const STREAK_WEEKLY_GOAL_KEY = 'streak.weeklyGoal';
+
+async function loadStreakState(today: string): Promise<{ state: StreakState; stored: boolean }> {
+  const raw = await getAppState(STREAK_STATE_KEY);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (isStreakState(parsed)) return { state: parsed, stored: true };
+    } catch {
+      // Fall through to rebuild from the legacy row.
+    }
+  }
+  const db = databaseManager.getDatabase();
+  const legacy = await db.getFirstAsync<{ currentStreak: number; longestStreak: number; lastReadDate: string | null }>(
+    'SELECT currentStreak, longestStreak, lastReadDate FROM streak_data LIMIT 1'
+  );
+  return {
+    state: initialStreakState(
+      {
+        currentStreak: legacy?.currentStreak || 0,
+        longestStreak: legacy?.longestStreak || 0,
+        lastReadDate: legacy?.lastReadDate || null,
+      },
+      today
+    ),
+    stored: false,
+  };
+}
+
+/**
+ * First run of the forgiving streak: snapshot today's streak with one rest
+ * day, and note the date so earlier weeks keep the old week-streak rule.
+ * Idempotent; called from startup.
+ */
+export async function ensureStreakState(): Promise<void> {
+  const today = localCalendarDate();
+  const { state, stored } = await loadStreakState(today);
+  if (!stored) await setAppState(STREAK_STATE_KEY, JSON.stringify(state));
+  if (!(await getAppState(STREAK_GOAL_FROM_KEY))) await setAppState(STREAK_GOAL_FROM_KEY, today);
+}
+
+export async function getWeeklyGoal(): Promise<WeeklyGoal> {
+  return parseWeeklyGoal(await getAppState(STREAK_WEEKLY_GOAL_KEY));
+}
+
+export async function setWeeklyGoal(goal: WeeklyGoal): Promise<void> {
+  await setAppState(STREAK_WEEKLY_GOAL_KEY, String(goal));
+}
+
+/** Local days with at least one story read, from both activity tables. */
+async function getReadDates(): Promise<Set<string>> {
+  const db = databaseManager.getDatabase();
+  const [daily, completions] = await Promise.all([
+    db.getAllAsync<{ date: string }>('SELECT DISTINCT date FROM daily_activity WHERE date IS NOT NULL'),
+    db.getAllAsync<{ completionDate: string }>(
+      'SELECT DISTINCT completionDate FROM segment_completion WHERE completionDate IS NOT NULL'
+    ),
+  ]);
+  const dates = new Set<string>();
+  for (const row of daily || []) if (/^\d{4}-\d{2}-\d{2}$/.test(row.date)) dates.add(row.date);
+  for (const row of completions || []) {
+    const local = localCalendarDateFromISO(row.completionDate);
+    if (local) dates.add(local);
+  }
+  return dates;
+}
+
+export type StreakSummary = StreakView & {
+  longest: number;
+  daysThisWeek: number;
+  goal: WeeklyGoal;
+  weekStreak: number;
+  /** Days a rest day covered, for the heatmap. */
+  restDates: string[];
+};
+
+export async function getStreakSummary(): Promise<StreakSummary> {
+  const today = localCalendarDate();
+  try {
+    const [{ state }, goal, goalFrom, readDates] = await Promise.all([
+      loadStreakState(today),
+      getWeeklyGoal(),
+      getAppState(STREAK_GOAL_FROM_KEY),
+      getReadDates(),
+    ]);
+    const week = weekProgress(readDates, today, goal, goalFrom || today);
+    return {
+      ...streakView(state, today),
+      longest: state.longest,
+      daysThisWeek: week.daysThisWeek,
+      goal,
+      weekStreak: week.weekStreak,
+      restDates: state.restDates,
+    };
+  } catch (error) {
+    logger.error('Error getting streak summary:', error);
+    return {
+      streak: 0,
+      restDays: 0,
+      coveredDays: 0,
+      readToday: false,
+      lastDayToSave: null,
+      longest: 0,
+      daysThisWeek: 0,
+      goal: 5,
+      weekStreak: 0,
+      restDates: [],
+    };
   }
 }
 
@@ -1162,41 +1290,25 @@ export async function getSegmentReadCount(segmentID: string): Promise<number> {
   }
 }
 
-async function updateStreak() {
+async function updateStreak(): Promise<StreakEvent[]> {
   try {
     const db = databaseManager.getDatabase();
     const today = localCalendarDate();
-    
-    const streakData = await db.getFirstAsync<{
-      currentStreak: number;
-      longestStreak: number;
-      lastReadDate: string;
-    }>(`
-      SELECT currentStreak, longestStreak, lastReadDate FROM streak_data LIMIT 1
-    `);
-
-    let currentStreak = streakData?.currentStreak || 0;
-    let longestStreak = streakData?.longestStreak || 0;
-    const lastReadDate = streakData?.lastReadDate;
-
-    const next = nextStreak(currentStreak, lastReadDate, today);
-    if (next.alreadyToday) return;
-    currentStreak = next.streak;
-
-    // Update longest streak if current is longer
-    if (currentStreak > longestStreak) {
-      longestStreak = currentStreak;
-    }
-
+    const { state } = await loadStreakState(today);
+    const { state: next, events } = streakOnRead(state, today);
+    if (next === state) return [];
+    await setAppState(STREAK_STATE_KEY, JSON.stringify(next));
     await db.runAsync(`
       UPDATE streak_data
       SET currentStreak = ?,
           longestStreak = ?,
           lastReadDate = ?
       WHERE id = 1
-    `, currentStreak, longestStreak, today);
+    `, next.streak, next.longest, today);
+    return events;
   } catch (error) {
     logger.error("Error updating streak:", error);
+    return [];
   }
 }
 

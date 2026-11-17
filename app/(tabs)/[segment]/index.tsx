@@ -16,7 +16,8 @@ import Segment from '@/components/Bible/Segment';
 import { SegmentType, IntroType, BibleType, isIntroType, isSegmentType } from "@/types";
 import Intro from '@/components/Bible/Intro';
 import TalkAboutCard from '@/components/thread/TalkAboutCard';
-import CheckCircle from '@/components/CheckCircle';
+import CheckCircle, { type Celebration } from '@/components/CheckCircle';
+import CompletionBanner from '@/components/Bible/CompletionBanner';
 import UpNextCard from '@/components/Bible/UpNextCard';
 import { findCatalogItem, type CatalogItem } from '@/utils/planCatalog';
 import { findPlanItem } from '@/api/userPlans';
@@ -375,6 +376,10 @@ export default function BibleScreen() {
   // Up next appears once this story is finished; keyed by story so it resets
   // when the reader moves on.
   const [finishedId, setFinishedId] = useState<string | null>(null);
+  // Shown at screen level so the banner can sit at the top of the screen.
+  const [celebration, setCelebration] = useState<Celebration | null>(null);
+  // Stable: the banner restarts its hide timer whenever onHide changes.
+  const hideCelebration = useCallback(() => setCelebration(null), []);
   const justFinished = finishedId === segID;
 
   // Show loading state if data isn't ready
@@ -530,6 +535,7 @@ export default function BibleScreen() {
               showCaption={false}
               resetVisualStateOnMount={true}
               onCompleted={() => setFinishedId(segID)}
+              onCelebrate={setCelebration}
             />
           </View>
           {justFinished && (
@@ -559,6 +565,15 @@ export default function BibleScreen() {
       >
         {renderHeader()}
       </ScrollView>
+
+      <CompletionBanner
+        visible={!!celebration}
+        title={celebration?.title}
+        subtitle={celebration?.subtitle}
+        voiceNote={celebration?.voiceNote}
+        durationMs={celebration?.subtitle.includes('\n') ? 3200 : 2400}
+        onHide={hideCelebration}
+      />
 
       <Animated.View style={[
         styles.buttonContainer,

@@ -1,11 +1,9 @@
-import { databaseManager } from '@/api/database-manager';
+import { getStreakSummary } from '@/api/sqlite';
 import { bibleLoader } from '@/services/BibleLoader';
 import conversations from '@/assets/data/conversations.json';
 import { DIVISIONS, storyIdFromNumber, storyNumber } from '@/constants/divisions';
 import { inkHex, ThreadPalette } from '@/constants/Colors';
 import { NARRATION_VOICES } from '@/utils/voicesMet';
-import { addLocalCalendarDays, localCalendarDate, localCalendarDateFromISO } from '@/utils/localDate';
-import logger from '@/utils/logger';
 import type { ConversationsFile } from '@/types/conversations';
 
 const conv = conversations as ConversationsFile;
@@ -54,39 +52,9 @@ function voiceColor(name: string): 'green' | 'blue' | 'red' | 'black' {
   return 'black';
 }
 
+/** Consecutive weeks that met the weekly goal (see utils/streak.ts). */
 export async function getWeekStreak(): Promise<number> {
-  try {
-    const db = await databaseManager.ensureDatabase();
-    const rows = await db.getAllAsync<{ completionDate: string }>(
-      `SELECT DISTINCT completionDate FROM segment_completion WHERE completionDate IS NOT NULL`
-    );
-    const weeks = new Set<string>();
-    for (const row of rows) {
-      const cal = localCalendarDateFromISO(row.completionDate);
-      if (cal) weeks.add(weekStartKey(cal));
-    }
-    if (weeks.size === 0) return 0;
-
-    let streak = 0;
-    let cursor = weekStartKey(localCalendarDate());
-    while (weeks.has(cursor)) {
-      streak += 1;
-      cursor = addLocalCalendarDays(cursor, -7);
-    }
-    return streak;
-  } catch (error) {
-    logger.error('Error computing week streak:', error);
-    return 0;
-  }
-}
-
-/** Monday of the local calendar week containing dateStr (YYYY-MM-DD). */
-export function weekStartKey(dateStr: string): string {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  const dow = date.getDay();
-  const mondayOffset = dow === 0 ? -6 : 1 - dow;
-  return addLocalCalendarDays(dateStr, mondayOffset);
+  return (await getStreakSummary()).weekStreak;
 }
 
 export function getSourceWordMix(completedIds: Set<string>): ColorWordMix {

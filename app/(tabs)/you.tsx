@@ -12,7 +12,7 @@ import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCompletedStoryIds } from '@/utils/threadProgress';
 import {
-  getCurrentStreak,
+  getStreakSummary,
   getLastReadSegment,
   getPlanProgress,
   getChallengeProgress,
@@ -21,12 +21,12 @@ import {
   getOldTestamentProgress,
   getNewTestamentProgress,
   type StartedItem,
+  type StreakSummary,
 } from '@/api/sqlite';
 import { getVoicesMetCount } from '@/utils/voicesMet';
 import { findCatalogItem, getLocalizedPlanText } from '@/utils/planCatalog';
 import { findPlanItem } from '@/api/userPlans';
 import {
-  getWeekStreak,
   getSourceWordMix,
   getVoicesMetByColor,
   getNextUnmetVoices,
@@ -55,8 +55,7 @@ const YouScreen = () => {
 
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [currentId, setCurrentId] = useState<string | null>(null);
-  const [dayStreak, setDayStreak] = useState(0);
-  const [weekStreak, setWeekStreak] = useState(0);
+  const [streak, setStreak] = useState<StreakSummary | null>(null);
   const [voicesMet, setVoicesMet] = useState(0);
   const [voicesByColor, setVoicesByColor] = useState<VoicesByColor>({
     green: 0,
@@ -89,7 +88,6 @@ const YouScreen = () => {
           completed,
           last,
           streakValue,
-          weekValue,
           met,
           otProgress,
           ntProgress,
@@ -98,8 +96,7 @@ const YouScreen = () => {
         ] = await Promise.all([
           getCompletedStoryIds(),
           getLastReadSegment(),
-          getCurrentStreak(),
-          getWeekStreak(),
+          getStreakSummary(),
           getVoicesMetCount(),
           getOldTestamentProgress(),
           getNewTestamentProgress(),
@@ -111,8 +108,7 @@ const YouScreen = () => {
         const lastStoryId = last?.match(/S\d+/i)?.[0] || last;
         setCompletedIds(completed);
         setCurrentId(lastStoryId);
-        setDayStreak(streakValue || 0);
-        setWeekStreak(weekValue || 0);
+        setStreak(streakValue);
         setVoicesMet(met);
         setOt(otProgress);
         setNt(ntProgress);
@@ -146,6 +142,21 @@ const YouScreen = () => {
       };
     }, [language, lang])
   );
+
+  // Under the day ring: a rest day covering a miss beats rest days saved.
+  const daySublabel = !streak
+    ? t('UI.thread.dayStreak')
+    : streak.coveredDays === 1
+      ? t('UI.streak.restCoveredOne')
+      : streak.coveredDays > 1
+        ? t('UI.streak.restCoveredMany', { count: streak.coveredDays })
+        : streak.streak === 0
+          ? t('UI.streak.noStreak')
+          : streak.restDays === 1
+            ? t('UI.streak.restSavedOne')
+            : streak.restDays > 1
+              ? t('UI.streak.restSavedMany', { count: streak.restDays })
+              : t('UI.thread.dayStreak');
 
   const ringLabels = {
     stories: t('UI.thread.stories'),
@@ -212,8 +223,11 @@ const YouScreen = () => {
           nt={nt}
           voicesMet={voicesMet}
           voicesByColor={voicesByColor}
-          dayStreak={dayStreak}
-          weekStreak={weekStreak}
+          dayStreak={streak?.streak ?? 0}
+          daysThisWeek={streak?.daysThisWeek ?? 0}
+          weeklyGoal={streak?.goal ?? 5}
+          daySublabel={daySublabel}
+          weekSublabel={t('UI.streak.weekStreak', { n: streak?.weekStreak ?? 0 })}
           replayToken={replayToken}
           labels={ringLabels}
         />

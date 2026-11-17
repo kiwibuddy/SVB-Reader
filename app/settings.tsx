@@ -27,6 +27,8 @@ import {
   setReminderTime,
 } from '@/utils/readingReminders';
 import { getDisplayVersion } from '@/utils/version-manager';
+import { getWeeklyGoal, setWeeklyGoal } from '@/api/sqlite';
+import { DEFAULT_WEEKLY_GOAL, WEEKLY_GOALS, type WeeklyGoal } from '@/utils/streak';
 import { getOtaDebugLabel } from '@/utils/otaUpdates';
 
 type FontSizeOption = 'small' | 'medium' | 'large';
@@ -49,6 +51,11 @@ export default function SettingsScreen() {
   const [reminderOn, setReminderOn] = useState(false);
   const [reminderHour, setReminderHour] = useState(8);
   const [reminderMinute, setReminderMinute] = useState(0);
+  const [weeklyGoal, setWeeklyGoalState] = useState<WeeklyGoal>(DEFAULT_WEEKLY_GOAL);
+
+  useEffect(() => {
+    void getWeeklyGoal().then(setWeeklyGoalState);
+  }, []);
 
   useEffect(() => {
     void getReminderPrefs().then((prefs) => {
@@ -312,6 +319,38 @@ export default function SettingsScreen() {
           )}
         </View>
 
+        {/* Weekly goal */}
+        <Text style={[styles.sectionLabel, { color: palette.mute }]}>
+          {t('UI.streak.weeklyGoal')}
+        </Text>
+        <View style={[styles.card, { backgroundColor: palette.surf, borderColor: palette.hair }]}>
+          <View style={styles.segmentRow} accessibilityRole="radiogroup">
+            {WEEKLY_GOALS.map((goal) => {
+              const on = goal === weeklyGoal;
+              return (
+                <Pressable
+                  key={goal}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: on }}
+                  onPress={async () => {
+                    setWeeklyGoalState(goal);
+                    await setWeeklyGoal(goal);
+                  }}
+                  style={[
+                    styles.segment,
+                    { borderColor: on ? palette.acc : palette.hair, backgroundColor: on ? palette.acc : 'transparent' },
+                  ]}
+                >
+                  <Text style={[styles.segmentText, { color: on ? palette.bg : palette.ink }]}>
+                    {t('UI.streak.daysAWeek', { n: goal })}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+        <Text style={[styles.hint, { color: palette.mute }]}>{t('UI.streak.weeklyGoalHint')}</Text>
+
         {/* Appearance */}
         <Text style={[styles.sectionLabel, { color: palette.mute }]}>
           {t('UI.settings.appearance')}
@@ -421,4 +460,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   slider: { flex: 1, height: 40 },
+  segmentRow: { flexDirection: 'row', gap: 8, padding: 10 },
+  segment: { flex: 1, borderWidth: 1, borderRadius: 8, paddingVertical: 8, alignItems: 'center' },
+  segmentText: { fontSize: 13, fontWeight: '600' },
+  hint: { fontSize: 12, lineHeight: 16, paddingHorizontal: 18, marginTop: 6 },
 });

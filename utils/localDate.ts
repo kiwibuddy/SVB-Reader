@@ -26,6 +26,13 @@ export function daysBetweenLocalDates(from: string, to: string): number {
   return Math.round((Date.UTC(ty, tm - 1, td) - Date.UTC(fy, fm - 1, fd)) / 86400000);
 }
 
+/** Monday of the local calendar week containing dateStr (YYYY-MM-DD). */
+export function weekStartKey(dateStr: string): string {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dow = new Date(y, m - 1, d).getDay();
+  return addLocalCalendarDays(dateStr, dow === 0 ? -6 : 1 - dow);
+}
+
 /** Inclusive start / exclusive end ISO timestamps covering a local calendar day. */
 export function isoRangeForLocalDate(dateStr: string): { start: string; end: string } {
   const [y, m, d] = dateStr.split('-').map(Number);

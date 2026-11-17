@@ -14,7 +14,13 @@ type YouStatRingsProps = {
   voicesMet: number;
   voicesByColor: VoicesByColor;
   dayStreak: number;
-  weekStreak: number;
+  /** Days read this week, and the weekly goal (3, 5 or 7). */
+  daysThisWeek: number;
+  weeklyGoal: number;
+  /** Under the day ring: rest days saved, or a rest day covering a miss. */
+  daySublabel: string;
+  /** Under the week ring: "6-week streak". */
+  weekSublabel: string;
   replayToken: number;
   labels: {
     stories: string;
@@ -40,7 +46,10 @@ const YouStatRings: React.FC<YouStatRingsProps> = ({
   voicesMet,
   voicesByColor,
   dayStreak,
-  weekStreak,
+  daysThisWeek,
+  weeklyGoal,
+  daySublabel,
+  weekSublabel,
   replayToken,
   labels,
 }) => {
@@ -97,10 +106,12 @@ const YouStatRings: React.FC<YouStatRingsProps> = ({
         progress={
           streakView === 0
             ? Math.min(dayStreak / 30, 1)
-            : Math.min(weekStreak / 12, 1)
+            : weeklyGoal > 0
+              ? Math.min(daysThisWeek / weeklyGoal, 1)
+              : 0
         }
-        centerPrimary={streakView === 0 ? `${dayStreak}` : `${weekStreak}`}
-        centerSecondary={streakView === 0 ? labels.day : labels.week}
+        centerPrimary={streakView === 0 ? `${dayStreak}` : `${daysThisWeek}`}
+        centerSecondary={streakView === 0 ? labels.day : `/ ${weeklyGoal}`}
         trackColor={palette.hair}
         accentColor={palette.acc}
         centerPrimaryColor={palette.ink}
@@ -108,7 +119,7 @@ const YouStatRings: React.FC<YouStatRingsProps> = ({
         labelColor={palette.mute}
         sublabelColor={palette.mute}
         label={labels.streak}
-        sublabel={streakView === 0 ? labels.day : labels.week}
+        sublabel={streakView === 0 ? daySublabel : weekSublabel}
         onPress={() => setStreakView((v) => (v + 1) % 2)}
         replayToken={replayToken + streakView}
       />

@@ -23199,6 +23199,22 @@
       "end": "Fin",
       "delete": "Suppr.",
       "seePlan": "Voir le parcours"
+    },
+    "streak": {
+      "restSavedOne": "1 jour de repos",
+      "restSavedMany": "{{count}} jours de repos",
+      "restCoveredOne": "Hier couvert",
+      "restCoveredMany": "{{count}} jours couverts",
+      "restUsedOne": "Un jour de repos a maintenu votre série",
+      "restUsedMany": "Des jours de repos ont maintenu votre série",
+      "restEarned": "Vous avez gagné un jour de repos",
+      "milestone": "Série de {{n}} jours",
+      "weeklyGoal": "Objectif hebdomadaire",
+      "weeklyGoalHint": "Le nombre de jours par semaine où vous aimeriez lire. Un jour de repos couvre un jour manqué ; vous en gagnez un tous les 7 jours de lecture.",
+      "daysAWeek": "{{n}} jours par semaine",
+      "thisWeek": "{{done}} sur {{goal}} cette semaine",
+      "weekStreak": "Série de {{n}} semaines",
+      "noStreak": "Lisez aujourd'hui pour commencer"
     }
   }
 }
