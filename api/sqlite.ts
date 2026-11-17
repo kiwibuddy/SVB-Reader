@@ -938,10 +938,14 @@ export async function resumeChallenge(challengeID: string): Promise<void> {
 export async function purgeChallengeProgressBefore(challengeID: string, cutoff: string): Promise<boolean> {
   try {
     const db = await databaseManager.ensureDatabase();
+    // A status row belongs to an earlier season when it was last touched before
+    // the cutoff. startDate can't be used: completing a story rewrites the row
+    // without it (see updateChallengeStatus).
     const stale = await db.getFirstAsync<{ count: number }>(
       `SELECT
          (SELECT COUNT(*) FROM reading_challenge_progress WHERE challengeID = ? AND completionDate < ?) +
-         (SELECT COUNT(*) FROM plan_challenge_status WHERE itemID = ? AND itemType = 'challenge' AND startDate < ?)
+         (SELECT COUNT(*) FROM plan_challenge_status
+            WHERE itemID = ? AND itemType = 'challenge' AND COALESCE(lastUpdated, startDate) < ?)
        AS count`,
       [challengeID, cutoff, challengeID, cutoff]
     );
@@ -955,7 +959,8 @@ export async function purgeChallengeProgressBefore(challengeID: string, cutoff: 
       [challengeID, cutoff]
     );
     await db.runAsync(
-      `DELETE FROM plan_challenge_status WHERE itemID = ? AND itemType = 'challenge' AND startDate < ?`,
+      `DELETE FROM plan_challenge_status
+         WHERE itemID = ? AND itemType = 'challenge' AND COALESCE(lastUpdated, startDate) < ?`,
       [challengeID, cutoff]
     );
     logger.info(`[Plans] Cleared ${challengeID} progress from before ${cutoff}`);
