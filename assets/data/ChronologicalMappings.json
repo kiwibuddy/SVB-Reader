@@ -1198,198 +1198,182 @@
       {
         "segmentId": "S002",
         "book": "Gen",
-        "title": "People Sin - Eve's Choice",
+        "title": "People Sin",
         "ref": "3:1-5:32",
         "phase": "The Beginning",
-        "description": "Eve faces the first moral choice in human history",
-        "color": "#9f4df4"
+        "note": "Eve, the mother of all who live (3:20)",
+        "noteFr": "Ève, la mère de toute vie humaine (3.20)"
       },
       {
         "segmentId": "S006",
         "book": "Gen",
-        "title": "God's Covenant - Sarah's Faith",
+        "title": "God Makes a Covenant with Abraham",
         "ref": "15:1-18:15",
         "phase": "The Patriarchs",
-        "description": "Sarah learns to trust God's impossible promises",
-        "color": "#9f4df4"
+        "note": "Sarah and Hagar, and the promise of a son (chs. 16–18)",
+        "noteFr": "Sara et Agar, et la promesse d'un fils (ch. 16-18)"
       },
       {
         "segmentId": "S008",
         "book": "Gen",
-        "title": "Abraham's Test - Sarah's Journey",
+        "title": "Abraham's Faith Tested",
         "ref": "20:1-23:20",
         "phase": "The Patriarchs",
-        "description": "Sarah experiences God's faithfulness through trials",
-        "color": "#9f4df4"
+        "note": "Sarah gives birth to Isaac (ch. 21)",
+        "noteFr": "Sara donne naissance à Isaac (ch. 21)"
       },
       {
         "segmentId": "S009",
         "book": "Gen",
-        "title": "Isaac's Family - Rebecca's Calling",
+        "title": "Isaac: The Family Expands",
         "ref": "24:1-25:26",
         "phase": "The Patriarchs",
-        "description": "Rebecca becomes the chosen mother of God's covenant people",
-        "color": "#9f4df4"
+        "note": "Rebekah's kindness at the well (ch. 24)",
+        "noteFr": "La bonté de Rébecca au puits (ch. 24)"
       },
       {
         "segmentId": "S011",
         "book": "Gen",
-        "title": "Jacob's Family - Rachel & Leah's Legacy",
+        "title": "Jacob: The Family Expands",
         "ref": "28:10-30:43",
         "phase": "The Patriarchs",
-        "description": "Rachel and Leah become mothers of the twelve tribes",
-        "color": "#9f4df4"
+        "note": "Rachel and Leah build Jacob's family (chs. 29–30)",
+        "noteFr": "Rachel et Léa fondent la famille de Jacob (ch. 29-30)"
       },
       {
         "segmentId": "S019",
         "book": "Exo",
-        "title": "Moses is Born - Miriam & Jochebed's Courage",
-        "ref": "1:8-4:31",
+        "title": "Israelites Enslaved & Moses Called",
+        "ref": "1:1-4:31",
         "phase": "The Exodus",
-        "description": "Courageous women preserve Moses, Israel's future deliverer",
-        "color": "#9f4df4"
+        "note": "The midwives, Moses' mother and sister, and Pharaoh's daughter (chs. 1–2)",
+        "noteFr": "Les sages-femmes, la mère et la sœur de Moïse, et la fille du pharaon (ch. 1-2)"
       },
       {
-        "segmentId": "S020",
+        "segmentId": "S023",
         "book": "Exo",
-        "title": "Moses Flees - Pharaoh's Daughter's Compassion",
-        "ref": "5:1-7:13",
+        "title": "Israelites Leave Egypt & Cross the Red Sea",
+        "ref": "13:17-15:21",
         "phase": "The Exodus",
-        "description": "An Egyptian princess shows mercy that changes history",
-        "color": "#9f4df4"
+        "note": "Miriam leads the women in song (15:20–21)",
+        "noteFr": "Miryam conduit les femmes dans le chant (15.20-21)"
+      },
+      {
+        "segmentId": "S069",
+        "book": "Jos",
+        "title": "Preparing to Inherit the Land",
+        "ref": "1:1-5:1",
+        "phase": "The Exodus",
+        "note": "Rahab hides the spies (ch. 2)",
+        "noteFr": "Rahab cache les espions (ch. 2)"
       },
       {
         "segmentId": "S078",
         "book": "Jdg",
-        "title": "Deborah - Judge & Prophetess",
+        "title": "Othniel, Ehud, Shamgar & Deborah",
         "ref": "3:7-5:31",
         "phase": "The Judges",
-        "description": "Deborah leads Israel as both judge and military strategist",
-        "color": "#9f4df4"
+        "note": "Deborah, judge and prophet, and Jael (chs. 4–5)",
+        "noteFr": "Débora, prophétesse et juge, et Yaël (ch. 4-5)"
       },
       {
-        "segmentId": "S082",
+        "segmentId": "S081",
         "book": "Jdg",
-        "title": "Jephthah's Daughter - Ultimate Sacrifice",
-        "ref": "10:6-12:7",
+        "title": "Jephthah, Ibzan, Elon & Abdon",
+        "ref": "10:6-12:15",
         "phase": "The Judges",
-        "description": "A young woman's faithfulness in the face of tragedy",
-        "color": "#9f4df4"
-      },
-      {
-        "segmentId": "I008",
-        "book": "Rut",
-        "title": "Introduction to Ruth",
-        "phase": "The Judges",
-        "description": "Setting the stage for Ruth's remarkable story of loyalty",
-        "color": "#9f4df4"
+        "note": "Jephthah's daughter (ch. 11)",
+        "noteFr": "La fille de Jephté (ch. 11)"
       },
       {
         "segmentId": "S085",
         "book": "Rut",
-        "title": "Ruth - Loyalty Beyond Death",
+        "title": "A Surprising Love Story",
         "ref": "1:1-4:22",
         "phase": "The Judges",
-        "description": "Ruth's devotion leads her into the lineage of Christ",
-        "color": "#9f4df4"
+        "note": "Ruth and Naomi: loyalty beyond loss",
+        "noteFr": "Ruth et Noémi : une fidélité plus forte que le deuil"
       },
       {
         "segmentId": "S086",
         "book": "1Sa",
-        "title": "Samuel is Born - Hannah's Prayer",
-        "ref": "1:1-4:22",
+        "title": "God is with Samuel",
+        "ref": "1:1-4:1a",
         "phase": "The Kingdom",
-        "description": "Hannah's faithful prayer brings forth Israel's great prophet",
-        "color": "#9f4df4"
+        "note": "Hannah's prayer and song (chs. 1–2)",
+        "noteFr": "La prière et le chant d'Anne (ch. 1-2)"
       },
       {
-        "segmentId": "I017",
-        "book": "Est",
-        "title": "Introduction to Esther",
-        "phase": "The Exile",
-        "description": "Setting the stage for Esther's courageous stand",
-        "color": "#9f4df4"
+        "segmentId": "S094",
+        "book": "1Sa",
+        "title": "Saul Decreases & David Increases 4",
+        "ref": "24:1-27:12",
+        "phase": "The Kingdom",
+        "note": "Abigail's wisdom stops David (ch. 25)",
+        "noteFr": "La sagesse d'Abigaïl arrête David (ch. 25)"
       },
       {
-        "segmentId": "S150",
-        "book": "Est",
-        "title": "Esther Becomes Queen",
-        "ref": "1:1-2:23",
-        "phase": "The Exile",
-        "description": "God positions Esther for such a time as this",
-        "color": "#9f4df4"
-      },
-      {
-        "segmentId": "S151",
-        "book": "Est",
-        "title": "Esther's Courage - Part 1",
-        "ref": "3:1-5:14",
-        "phase": "The Exile",
-        "description": "Esther risks everything to approach the king",
-        "color": "#9f4df4"
-      },
-      {
-        "segmentId": "S152",
-        "book": "Est",
-        "title": "Esther's Courage - Part 2",
-        "ref": "6:1-8:17",
-        "phase": "The Exile",
-        "description": "Esther's wisdom saves her people from destruction",
-        "color": "#9f4df4"
+        "segmentId": "S116",
+        "book": "2Ki",
+        "title": "Elisha's Ministry to Individuals",
+        "ref": "4:1-6:7",
+        "phase": "The Kingdom",
+        "note": "The widow's oil and the Shunammite woman (ch. 4)",
+        "noteFr": "L'huile de la veuve et la Sunamite (ch. 4)"
       },
       {
         "segmentId": "S153",
         "book": "Est",
-        "title": "Esther's Victory",
-        "ref": "9:1-10:3",
+        "title": "Esther Becomes Queen",
+        "ref": "1:1-4:17",
         "phase": "The Exile",
-        "description": "Esther's courage becomes Israel's deliverance",
-        "color": "#9f4df4"
+        "note": "Esther becomes queen (chs. 1–4)",
+        "noteFr": "Esther devient reine (ch. 1-4)"
+      },
+      {
+        "segmentId": "S154",
+        "book": "Est",
+        "title": "Esther Saves Her People",
+        "ref": "5:1-10:3",
+        "phase": "The Exile",
+        "note": "Esther's courage saves her people (chs. 5–10)",
+        "noteFr": "Le courage d'Esther sauve son peuple (ch. 5-10)"
       },
       {
         "segmentId": "S285",
         "book": "Luk",
-        "title": "John's Birth Foretold - Elizabeth's Joy",
-        "ref": "1:5-25",
+        "title": "Two Miraculous Births",
+        "ref": "1:1-2:40",
         "phase": "The Messiah",
-        "description": "Elizabeth experiences God's miraculous intervention",
-        "color": "#9f4df4"
+        "note": "Elizabeth, Mary and Anna welcome Jesus (chs. 1–2)",
+        "noteFr": "Élisabeth, Marie et Anne accueillent Jésus (ch. 1-2)"
       },
       {
-        "segmentId": "S286",
-        "book": "Luk",
-        "title": "Jesus Foretold - Mary's Yes",
-        "ref": "1:26-38",
-        "phase": "The Messiah",
-        "description": "Mary's faithful acceptance changes everything",
-        "color": "#9f4df4"
-      },
-      {
-        "segmentId": "S287",
-        "book": "Luk",
-        "title": "Mary Visits Elizabeth",
-        "ref": "1:39-56",
-        "phase": "The Messiah",
-        "description": "Two women celebrate God's miraculous work",
-        "color": "#9f4df4"
-      },
-      {
-        "segmentId": "S288",
-        "book": "Luk",
-        "title": "Jesus is Born - Mary's Wonder",
-        "ref": "2:1-20",
-        "phase": "The Messiah",
-        "description": "Mary treasures the miracle of Jesus' birth in her heart",
-        "color": "#9f4df4"
-      },
-      {
-        "segmentId": "S301",
+        "segmentId": "S299",
         "book": "Joh",
-        "title": "The Samaritan Woman - Bold Witness",
-        "ref": "4:1-42",
+        "title": "The First Sign",
+        "ref": "2:1-4:42",
         "phase": "The Ministry",
-        "description": "A Samaritan woman becomes Jesus' first evangelist",
-        "color": "#9f4df4"
+        "note": "The Samaritan woman at the well (ch. 4)",
+        "noteFr": "La Samaritaine au puits (ch. 4)"
+      },
+      {
+        "segmentId": "S303",
+        "book": "Joh",
+        "title": "The Seventh Sign",
+        "ref": "11:1-12:50",
+        "phase": "The Ministry",
+        "note": "Martha and Mary: “I am the resurrection and the life” (ch. 11)",
+        "noteFr": "Marthe et Marie : « Je suis la résurrection et la vie » (ch. 11)"
+      },
+      {
+        "segmentId": "S307",
+        "book": "Joh",
+        "title": "The Ultimate Sign: Christ's Life-giving Resurrection!",
+        "ref": "20:1-21:25",
+        "phase": "The Ministry",
+        "note": "Mary Magdalene meets the risen Jesus (ch. 20)",
+        "noteFr": "Marie de Magdala rencontre Jésus ressuscité (ch. 20)"
       }
     ],
     "phases": {
@@ -2031,362 +2015,282 @@
       {
         "segmentId": "S285",
         "book": "Luk",
-        "title": "John the Baptist's Birth Foretold",
-        "ref": "1:5-25",
-        "phase": "The Messiah Arrives",
-        "description": "God breaks centuries of silence with the promise of a forerunner",
-        "color": "#4d94f4"
+        "title": "Two Miraculous Births",
+        "ref": "1:1-2:40",
+        "phase": "The Messiah Arrives"
       },
       {
         "segmentId": "S286",
         "book": "Luk",
-        "title": "The Messiah's Birth Foretold",
-        "ref": "1:26-38",
-        "phase": "The Messiah Arrives",
-        "description": "The angel Gabriel announces God's greatest gift to Mary",
-        "color": "#4d94f4"
+        "title": "Preparing for the Mission in Galilee",
+        "ref": "2:41-4:44",
+        "phase": "The Messiah Arrives"
       },
       {
         "segmentId": "S287",
         "book": "Luk",
-        "title": "Mary Visits Elizabeth",
-        "ref": "1:39-56",
-        "phase": "The Messiah Arrives",
-        "description": "Two mothers rejoice in God's miraculous plan",
-        "color": "#4d94f4"
+        "title": "Calling, Healing & Teaching",
+        "ref": "5:1-6:49",
+        "phase": "The Ministry Unfolds"
       },
       {
         "segmentId": "S288",
         "book": "Luk",
-        "title": "The Birth of Jesus",
-        "ref": "2:1-20",
-        "phase": "The Messiah Arrives",
-        "description": "Angels announce good news of great joy to shepherds",
-        "color": "#4d94f4"
+        "title": "Power, Miracles & Faith",
+        "ref": "7:1-8:56",
+        "phase": "The Ministry Unfolds"
       },
       {
         "segmentId": "S289",
         "book": "Luk",
-        "title": "Presentation at the Temple",
-        "ref": "2:21-52",
-        "phase": "The Messiah Arrives",
-        "description": "Simeon and Anna recognize the long-awaited Messiah",
-        "color": "#4d94f4"
+        "title": "The Mission in Galilee Completed",
+        "ref": "9:1-9:50",
+        "phase": "The Ministry Unfolds"
       },
       {
         "segmentId": "S290",
         "book": "Luk",
-        "title": "Jesus Begins His Ministry",
-        "ref": "3:1-4:44",
-        "phase": "The Ministry Unfolds",
-        "description": "Jesus is baptized, tempted, and begins proclaiming the Kingdom",
-        "color": "#4d94f4"
+        "title": "Jesus Set His Face to Jerusalem",
+        "ref": "9:51-11:54",
+        "phase": "The Ministry Unfolds"
       },
       {
         "segmentId": "S291",
         "book": "Luk",
-        "title": "The Call of the Disciples",
-        "ref": "5:1-6:49",
-        "phase": "The Ministry Unfolds",
-        "description": "Jesus calls His followers and teaches Kingdom principles",
-        "color": "#4d94f4"
+        "title": "Teaching on True Discipleship",
+        "ref": "12:1-13:9",
+        "phase": "Growing Opposition"
       },
       {
         "segmentId": "S292",
         "book": "Luk",
-        "title": "Jesus' Power and Compassion",
-        "ref": "7:1-8:56",
-        "phase": "The Ministry Unfolds",
-        "description": "Miracles reveal Jesus' divine authority and heart for people",
-        "color": "#4d94f4"
+        "title": "Power & Parables",
+        "ref": "13:10-15:32",
+        "phase": "Growing Opposition"
       },
       {
         "segmentId": "S293",
         "book": "Luk",
-        "title": "The Mission Expands",
-        "ref": "9:1-10:42",
-        "phase": "The Ministry Unfolds",
-        "description": "Jesus sends out His disciples and reveals His identity",
-        "color": "#4d94f4"
+        "title": "More Teaching on True Discipleship",
+        "ref": "16:1-17:10",
+        "phase": "Growing Opposition"
       },
       {
         "segmentId": "S294",
         "book": "Luk",
-        "title": "Teaching and Opposition",
-        "ref": "11:1-13:35",
-        "phase": "Growing Opposition",
-        "description": "Jesus teaches about prayer, judgment, and the Kingdom",
-        "color": "#4d94f4"
+        "title": "More Power & Parables",
+        "ref": "17:11-19:27",
+        "phase": "Growing Opposition"
       },
       {
         "segmentId": "S295",
         "book": "Luk",
-        "title": "Parables of Grace",
-        "ref": "14:1-16:31",
-        "phase": "Growing Opposition",
-        "description": "Stories reveal God's heart for the lost and marginalized",
-        "color": "#4d94f4"
+        "title": "Jesus Entered Jerusalem",
+        "ref": "19:28-21:38",
+        "phase": "Victory Through Death"
       },
       {
         "segmentId": "S296",
         "book": "Luk",
-        "title": "The Journey to Jerusalem",
-        "ref": "17:1-19:48",
-        "phase": "Growing Opposition",
-        "description": "Jesus heads toward His destiny with determination",
-        "color": "#4d94f4"
+        "title": "Betrayed, Arrested & Denied",
+        "ref": "22:1-22:71",
+        "phase": "Victory Through Death"
       },
       {
         "segmentId": "S297",
         "book": "Luk",
-        "title": "The Cross and Resurrection",
-        "ref": "20:1-24:53",
-        "phase": "Victory Through Death",
-        "description": "Jesus' death and resurrection accomplish salvation",
-        "color": "#4d94f4"
+        "title": "Tried, Crucified & Risen",
+        "ref": "23:1-24:53",
+        "phase": "Victory Through Death"
       },
       {
         "segmentId": "S308",
         "book": "Act",
-        "title": "The Church is Born",
+        "title": "Ascension & Pentecost",
         "ref": "1:1-2:47",
-        "phase": "The Church Begins",
-        "description": "The Holy Spirit comes and the first believers gather",
-        "color": "#4d94f4"
+        "phase": "The Church Begins"
       },
       {
         "segmentId": "S309",
         "book": "Act",
-        "title": "Early Growth and Opposition",
-        "ref": "3:1-5:42",
-        "phase": "The Church Begins",
-        "description": "Miracles, persecution, and bold witness mark the early church",
-        "color": "#4d94f4"
+        "title": "Growth & Persecution",
+        "ref": "3:1-5:11",
+        "phase": "The Church Begins"
       },
       {
         "segmentId": "S310",
         "book": "Act",
-        "title": "Expansion and Martyrdom",
-        "ref": "6:1-8:40",
-        "phase": "The Church Begins",
-        "description": "Stephen's martyrdom scatters believers and spreads the gospel",
-        "color": "#4d94f4"
+        "title": "Multiplication & Martyrdom",
+        "ref": "5:12-8:4",
+        "phase": "The Church Begins"
       },
       {
         "segmentId": "S311",
         "book": "Act",
         "title": "Paul's Conversion",
-        "ref": "9:1-31",
-        "phase": "The Mission Expands",
-        "description": "The greatest persecutor becomes the greatest missionary",
-        "color": "#4d94f4"
+        "ref": "8:5-9:31",
+        "phase": "The Mission Expands"
       },
       {
         "segmentId": "S312",
         "book": "Act",
-        "title": "The Gospel to the Gentiles",
+        "title": "Cornelius' Conversion",
         "ref": "9:32-12:25",
-        "phase": "The Mission Expands",
-        "description": "God opens the door of faith to all nations",
-        "color": "#4d94f4"
+        "phase": "The Mission Expands"
       },
       {
         "segmentId": "S313",
         "book": "Act",
-        "title": "Paul's First Missionary Journey",
+        "title": "First Missionary Journey",
         "ref": "13:1-14:28",
-        "phase": "The Mission Expands",
-        "description": "The gospel reaches Asia Minor despite opposition",
-        "color": "#4d94f4"
+        "phase": "The Mission Expands"
       },
       {
         "segmentId": "S314",
         "book": "Act",
-        "title": "The Jerusalem Council",
-        "ref": "15:1-16:5",
-        "phase": "The Mission Expands",
-        "description": "Church leaders affirm salvation by grace for all people",
-        "color": "#4d94f4"
+        "title": "Council at Jerusalem",
+        "ref": "15:1-15:36",
+        "phase": "The Mission Expands"
       },
       {
         "segmentId": "S315",
         "book": "Act",
-        "title": "Paul's Second Missionary Journey",
-        "ref": "16:6-18:22",
-        "phase": "The Mission Expands",
-        "description": "The gospel enters Europe and establishes key churches",
-        "color": "#4d94f4"
+        "title": "Second Missionary Journey",
+        "ref": "15:37-18:22",
+        "phase": "The Mission Expands"
       },
       {
         "segmentId": "S316",
         "book": "Act",
-        "title": "Paul's Third Missionary Journey",
+        "title": "Third Missionary Journey",
         "ref": "18:23-21:16",
-        "phase": "The Mission Expands",
-        "description": "Paul strengthens churches and faces increasing opposition",
-        "color": "#4d94f4"
+        "phase": "The Mission Expands"
       },
       {
         "segmentId": "S317",
         "book": "Act",
-        "title": "Paul's Arrest and Trials",
-        "ref": "21:17-26:32",
-        "phase": "Witness in Chains",
-        "description": "Even in captivity, Paul boldly proclaims the gospel",
-        "color": "#4d94f4"
+        "title": "Paul Arrested in Jerusalem",
+        "ref": "21:17-23:11",
+        "phase": "Witness in Chains"
       },
       {
         "segmentId": "S318",
         "book": "Act",
-        "title": "The Journey to Rome",
-        "ref": "27:1-28:16",
-        "phase": "Witness in Chains",
-        "description": "God's sovereign plan brings Paul to the heart of the empire",
-        "color": "#4d94f4"
+        "title": "Paul on Trial in Caesarea",
+        "ref": "23:12-26:32",
+        "phase": "Witness in Chains"
       },
       {
         "segmentId": "S319",
         "book": "Act",
-        "title": "Paul's Ministry in Rome",
-        "ref": "28:17-31",
-        "phase": "Witness in Chains",
-        "description": "The gospel reaches Rome and continues spreading",
-        "color": "#4d94f4"
+        "title": "Paul Sent to Rome",
+        "ref": "27:1-28:31",
+        "phase": "Witness in Chains"
       },
       {
         "segmentId": "S320",
         "book": "Rom",
-        "title": "The Gospel Revealed",
-        "ref": "1:1-3:31",
-        "phase": "Apostolic Letters",
-        "description": "Paul's systematic presentation of salvation by faith",
-        "color": "#4d94f4"
+        "title": "Jews & Gentiles Have Sinned",
+        "ref": "1:1-3:20",
+        "phase": "Apostolic Letters"
       },
       {
         "segmentId": "S321",
         "book": "Rom",
-        "title": "Justification by Faith",
-        "ref": "4:1-5:21",
-        "phase": "Apostolic Letters",
-        "description": "Abraham's example and the gift of righteousness",
-        "color": "#4d94f4"
+        "title": "Jews & Gentiles Justified by Faith",
+        "ref": "3:21-5:21",
+        "phase": "Apostolic Letters"
       },
       {
         "segmentId": "S322",
         "book": "Rom",
-        "title": "Freedom from Sin",
+        "title": "God's Children Adopted by the Spirit",
         "ref": "6:1-8:39",
-        "phase": "Apostolic Letters",
-        "description": "Life in the Spirit and assurance of salvation",
-        "color": "#4d94f4"
+        "phase": "Apostolic Letters"
       },
       {
         "segmentId": "S323",
         "book": "Rom",
-        "title": "God's Plan for Israel",
+        "title": "History of Redemptive Mercy",
         "ref": "9:1-11:36",
-        "phase": "Apostolic Letters",
-        "description": "The mystery of Israel's place in salvation history",
-        "color": "#4d94f4"
+        "phase": "Apostolic Letters"
       },
       {
         "segmentId": "S328",
         "book": "1Co",
-        "title": "Christian Liberty and Worship",
-        "ref": "9:1-11:34",
-        "phase": "Apostolic Letters",
-        "description": "Balancing freedom with love and order",
-        "color": "#4d94f4"
+        "title": "Regarding Freedom & Self-control",
+        "ref": "8:1-11:1",
+        "phase": "Apostolic Letters"
       },
       {
         "segmentId": "S329",
         "book": "1Co",
-        "title": "Spiritual Gifts and Love",
-        "ref": "12:1-14:40",
-        "phase": "Apostolic Letters",
-        "description": "The supremacy of love in using spiritual gifts",
-        "color": "#4d94f4"
+        "title": "Regarding Love & Worship",
+        "ref": "11:2-14:40",
+        "phase": "Apostolic Letters"
       },
       {
         "segmentId": "S330",
         "book": "1Co",
-        "title": "The Resurrection Hope",
+        "title": "Regarding the Resurrection & Generosity",
         "ref": "15:1-16:24",
-        "phase": "Apostolic Letters",
-        "description": "The foundation and future of Christian faith",
-        "color": "#4d94f4"
+        "phase": "Apostolic Letters"
       },
       {
         "segmentId": "S337",
         "book": "Eph",
-        "title": "Our Position in Christ",
+        "title": "Adopted into God's Family",
         "ref": "1:1-3:21",
-        "phase": "Apostolic Letters",
-        "description": "The riches of God's grace and unity in Christ",
-        "color": "#4d94f4"
+        "phase": "Apostolic Letters"
       },
       {
         "segmentId": "S338",
         "book": "Eph",
-        "title": "Our Practice as Christians",
+        "title": "Living as God's Family",
         "ref": "4:1-6:24",
-        "phase": "Apostolic Letters",
-        "description": "Walking worthy of our calling and spiritual warfare",
-        "color": "#4d94f4"
+        "phase": "Apostolic Letters"
       },
       {
         "segmentId": "S345",
         "book": "Tit",
-        "title": "Good Works and Sound Doctrine",
+        "title": "The Essential Gospel",
         "ref": "1:1-3:15",
-        "phase": "Apostolic Letters",
-        "description": "Organizing healthy church life in Crete",
-        "color": "#4d94f4"
+        "phase": "Apostolic Letters"
       },
       {
         "segmentId": "S352",
         "book": "Jam",
-        "title": "Faith That Works",
+        "title": "Faith Works",
         "ref": "1:1-5:20",
-        "phase": "General Letters",
-        "description": "Practical wisdom for authentic Christian living",
-        "color": "#4d94f4"
+        "phase": "General Letters"
       },
       {
         "segmentId": "S353",
         "book": "1Pe",
-        "title": "Hope in Suffering",
+        "title": "Do Right No Matter What",
         "ref": "1:1-5:14",
-        "phase": "General Letters",
-        "description": "Encouragement for believers facing persecution",
-        "color": "#4d94f4"
+        "phase": "General Letters"
       },
       {
         "segmentId": "S355",
         "book": "1Jn",
-        "title": "Walking in the Light",
+        "title": "Eternal Life Through Jesus",
         "ref": "1:1-5:21",
-        "phase": "General Letters",
-        "description": "Assurance of salvation and love for one another",
-        "color": "#4d94f4"
+        "phase": "General Letters"
       },
       {
         "segmentId": "S359",
         "book": "Rev",
-        "title": "Letters to the Seven Churches",
+        "title": "Seven Churches",
         "ref": "1:1-3:22",
-        "phase": "The End Revealed",
-        "description": "Christ's messages to His churches through John",
-        "color": "#4d94f4"
+        "phase": "The End Revealed"
       },
       {
         "segmentId": "S365",
         "book": "Rev",
-        "title": "The New Heaven and New Earth",
-        "ref": "21:1-22:21",
-        "phase": "The End Revealed",
-        "description": "God's ultimate victory and eternal dwelling with His people",
-        "color": "#4d94f4"
+        "title": "The Holy City is Coming",
+        "ref": "20:4-22:21",
+        "phase": "The End Revealed"
       }
     ],
     "phases": {
@@ -2482,117 +2386,124 @@
       {
         "segmentId": "S019",
         "book": "Exo",
-        "title": "Moses is Born",
-        "ref": "1:8-4:31",
+        "title": "Israelites Enslaved & Moses Called",
+        "ref": "1:1-4:31",
         "phase": "The Exodus"
       },
       {
-        "segmentId": "S023",
+        "segmentId": "S020",
         "book": "Exo",
-        "title": "Moses Flees",
+        "title": "Moses Returns to Egypt & Faces Pharaoh",
         "ref": "5:1-7:13",
         "phase": "The Exodus"
       },
       {
-        "segmentId": "S025",
+        "segmentId": "S021",
         "book": "Exo",
-        "title": "The Plagues Begin",
+        "title": "The Nine Plagues",
         "ref": "7:14-10:29",
         "phase": "The Exodus"
       },
       {
-        "segmentId": "S030",
+        "segmentId": "S022",
         "book": "Exo",
         "title": "The Passover",
         "ref": "11:1-13:16",
         "phase": "The Exodus"
       },
       {
-        "segmentId": "S032",
+        "segmentId": "S023",
         "book": "Exo",
-        "title": "The Exodus",
+        "title": "Israelites Leave Egypt & Cross the Red Sea",
         "ref": "13:17-15:21",
         "phase": "The Exodus"
       },
       {
-        "segmentId": "S039",
-        "book": "Lev",
-        "title": "The Day of Atonement",
-        "ref": "16:1-34",
+        "segmentId": "S025",
+        "book": "Exo",
+        "title": "The Ten Commandments",
+        "ref": "19:1-20:21",
         "phase": "The Law"
       },
       {
-        "segmentId": "S049",
+        "segmentId": "S038",
+        "book": "Lev",
+        "title": "Atonement & Purification",
+        "ref": "16:1-17:16",
+        "phase": "The Law"
+      },
+      {
+        "segmentId": "S051",
         "book": "Num",
-        "title": "The Bronze Serpent",
-        "ref": "21:4-9",
+        "title": "Provision & Victories in the Desert",
+        "ref": "19:1-21:35",
         "phase": "The Wilderness"
       },
       {
         "segmentId": "S057",
         "book": "Deu",
-        "title": "Moses' Final Words",
-        "ref": "1:1-4:43",
+        "title": "Remembering a 40 Year Journey",
+        "ref": "1:1-3:20",
         "phase": "The Law Renewed"
       },
       {
-        "segmentId": "S058",
+        "segmentId": "S059",
         "book": "Deu",
-        "title": "The Greatest Commandment",
-        "ref": "6:1-25",
+        "title": "The Heart of the Covenant",
+        "ref": "4:44-7:26",
         "phase": "The Law Renewed"
       },
       {
-        "segmentId": "S067",
+        "segmentId": "S066",
         "book": "Deu",
-        "title": "The Covenant Renewed",
+        "title": "Life & Death",
         "ref": "29:1-30:20",
         "phase": "The Law Renewed"
       },
       {
         "segmentId": "S070",
         "book": "Jos",
-        "title": "The Fall of Jericho",
-        "ref": "6:1-27",
+        "title": "Victory at Jericho",
+        "ref": "5:2-6:27",
         "phase": "The Conquest"
       },
       {
         "segmentId": "S076",
         "book": "Jos",
-        "title": "Joshua's Farewell",
+        "title": "Joshua's Farewell Words",
         "ref": "23:1-24:33",
         "phase": "The Conquest"
       },
       {
-        "segmentId": "S077",
+        "segmentId": "S078",
         "book": "Jdg",
-        "title": "Deborah Leads Israel",
-        "ref": "4:1-5:31",
+        "title": "Othniel, Ehud, Shamgar & Deborah",
+        "ref": "3:7-5:31",
         "phase": "The Judges"
       },
       {
-        "segmentId": "S079",
+        "segmentId": "S082",
         "book": "Jdg",
-        "title": "Samson's Strength",
+        "title": "Samson",
         "ref": "13:1-16:31",
         "phase": "The Judges"
       },
       {
         "segmentId": "S085",
         "book": "Rut",
-        "title": "Ruth's Loyalty",
+        "title": "A Surprising Love Story",
         "ref": "1:1-4:22",
         "phase": "The Judges"
       },
       {
-        "segmentId": "S088",
+        "segmentId": "S086",
         "book": "1Sa",
-        "title": "Samuel is Born",
+        "title": "God is with Samuel",
         "ref": "1:1-4:1a",
         "phase": "The Kingdom Begins"
       },
       {
-        "segmentId": "S089",
+        "segmentId": "S087",
         "book": "1Sa",
         "title": "Israel Demands a King",
         "ref": "4:1b-8:22",
@@ -2601,7 +2512,7 @@
       {
         "segmentId": "S091",
         "book": "1Sa",
-        "title": "Saul Decreases & David Increases",
+        "title": "Saul Decreases & David Increases 1",
         "ref": "17:1-18:30",
         "phase": "The Kingdom Begins"
       },
@@ -2613,226 +2524,219 @@
         "phase": "David's Reign"
       },
       {
-        "segmentId": "S106",
+        "segmentId": "S098",
+        "book": "2Sa",
+        "title": "God Makes a Covenant with David",
+        "ref": "6:1-7:29",
+        "phase": "David's Reign"
+      },
+      {
+        "segmentId": "S105",
         "book": "1Ki",
         "title": "Solomon Becomes King",
         "ref": "1:1-2:46",
         "phase": "The Kingdom Divides"
       },
       {
-        "segmentId": "S109",
+        "segmentId": "S106",
         "book": "1Ki",
-        "title": "Solomon's Wisdom",
-        "ref": "3:1-28",
+        "title": "Solomon's Wise Beginning",
+        "ref": "3:1-6:38",
         "phase": "The Kingdom Divides"
       },
       {
-        "segmentId": "S110",
+        "segmentId": "S108",
         "book": "1Ki",
-        "title": "Solomon Builds the Temple",
-        "ref": "5:1-8:66",
+        "title": "Solomon Dedicates The Temple",
+        "ref": "8:1-9:1",
         "phase": "The Kingdom Divides"
       },
       {
-        "segmentId": "S121",
-        "book": "2Ki",
-        "title": "Elijah's Ministry",
-        "ref": "1:1-2:25",
+        "segmentId": "S112",
+        "book": "1Ki",
+        "title": "Elijah the Prophet & Ahab of Israel 1",
+        "ref": "16:29-18:46",
         "phase": "The Kingdom Falls"
       },
       {
         "segmentId": "S124",
         "book": "2Ki",
-        "title": "The Fall of Jerusalem",
-        "ref": "24:1-25:30",
+        "title": "Jehoahaz, Jehoiakim, Jehoiachin & Zedekiah of Judah",
+        "ref": "23:31-25:30",
         "phase": "The Kingdom Falls"
       },
       {
         "segmentId": "S149",
         "book": "Neh",
-        "title": "Nehemiah Rebuilds the Wall",
-        "ref": "1:1-6:19",
+        "title": "Nehemiah Begins Rebuilding the Wall",
+        "ref": "1:1-3:32",
         "phase": "The Return"
       },
       {
-        "segmentId": "S150",
+        "segmentId": "S151",
         "book": "Neh",
-        "title": "The People Renew the Covenant",
-        "ref": "8:1-10:39",
+        "title": "The People Are Restored",
+        "ref": "7:73b-10:39",
         "phase": "The Return"
       },
       {
         "segmentId": "S164",
         "book": "Psa",
-        "title": "Book 1: Songs of Praise & Prayers of Faith 1",
-        "ref": "1:1-22:31",
-        "phase": "Worship & Wisdom"
-      },
-      {
-        "segmentId": "S166",
-        "book": "Psa",
-        "title": "Book 1: Songs of Praise & Prayers of Faith 2",
+        "title": "Book 1: Songs of Praise & Prayers of Faith 3",
         "ref": "23:1-33:22",
         "phase": "Worship & Wisdom"
       },
       {
-        "segmentId": "S172",
+        "segmentId": "S166",
         "book": "Psa",
         "title": "Book 2: Songs of Conflict & Salvation 1",
         "ref": "42:1-51:19",
         "phase": "Worship & Wisdom"
       },
       {
+        "segmentId": "S172",
+        "book": "Psa",
+        "title": "Book 4: God our King & Refuge",
+        "ref": "90:1-100:5",
+        "phase": "Worship & Wisdom"
+      },
+      {
         "segmentId": "S175",
         "book": "Psa",
-        "title": "Book 2: Songs of Conflict & Salvation 2",
-        "ref": "52:1-64:10",
+        "title": "Book 5: The Egyptian Hallel",
+        "ref": "113:1-118:29",
         "phase": "Worship & Wisdom"
       },
       {
         "segmentId": "S177",
         "book": "Psa",
-        "title": "Book 2: Songs of Conflict & Salvation 3",
-        "ref": "65:1-72:20",
+        "title": "Book 5: The Great Hallel",
+        "ref": "120:1-136:26",
         "phase": "Worship & Wisdom"
       },
       {
         "segmentId": "S179",
         "book": "Psa",
-        "title": "Book 2: Songs of Conflict & Salvation 4",
-        "ref": "73:1-89:52",
+        "title": "Book 5: The Final Hallel",
+        "ref": "146:1-150:6",
         "phase": "Worship & Wisdom"
       },
       {
         "segmentId": "S180",
         "book": "Pro",
-        "title": "The Beginning of Wisdom",
-        "ref": "1:1-9:18",
+        "title": "Proverbs Reveal Wisdom & Folly 1",
+        "ref": "1:1-5:23",
         "phase": "Worship & Wisdom"
       },
       {
         "segmentId": "S191",
         "book": "Isa",
-        "title": "The Promise of Immanuel",
-        "ref": "7:10-16",
+        "title": "Isaiah Volunteers; God Promises Emmanuel",
+        "ref": "6:1-9:7",
         "phase": "The Prophets"
       },
       {
         "segmentId": "S192",
         "book": "Isa",
-        "title": "A Child is Born",
-        "ref": "9:1-7",
-        "phase": "The Prophets"
-      },
-      {
-        "segmentId": "S193",
-        "book": "Isa",
-        "title": "A Shoot from Jesse",
-        "ref": "11:1-10",
-        "phase": "The Prophets"
-      },
-      {
-        "segmentId": "S200",
-        "book": "Isa",
-        "title": "The Suffering Servant",
-        "ref": "52:13-53:12",
+        "title": "Judah's Enemies Judged; Emmanuel's Coming Reign",
+        "ref": "9:8-12:6",
         "phase": "The Prophets"
       },
       {
         "segmentId": "S203",
         "book": "Isa",
-        "title": "Good News to the Poor",
-        "ref": "61:1-3",
+        "title": "A Final Servant Song - God's Way of Salvation",
+        "ref": "52:13-57:21",
         "phase": "The Prophets"
       },
       {
         "segmentId": "S204",
         "book": "Isa",
-        "title": "The New Heaven and New Earth",
-        "ref": "65:17-66:24",
+        "title": "Preparing for God's Reign & Salvation",
+        "ref": "58:1-62:12",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S205",
+        "book": "Isa",
+        "title": "Coming Judgment & Salvation 3",
+        "ref": "63:1-66:24",
         "phase": "The Prophets"
       },
       {
         "segmentId": "S206",
         "book": "Jer",
-        "title": "Jeremiah's Call",
-        "ref": "1:1-19",
+        "title": "Jeremiah Called To Prophesy; Judah Called To Repentance",
+        "ref": "1:1-4:2",
         "phase": "The Prophets"
       },
       {
-        "segmentId": "S210",
+        "segmentId": "S215",
         "book": "Jer",
-        "title": "The New Covenant",
-        "ref": "31:31-34",
+        "title": "Letter to Exiles in Babylon: A New Covenant Promised",
+        "ref": "29:1-31:40",
         "phase": "The Prophets"
       },
       {
-        "segmentId": "S211",
+        "segmentId": "S218",
         "book": "Jer",
-        "title": "Jeremiah's Lament",
-        "ref": "31:15-22",
-        "phase": "The Prophets"
-      },
-      {
-        "segmentId": "S219",
-        "book": "Jer",
-        "title": "Jeremiah's Persecution",
-        "ref": "37:1-38:28",
+        "title": "Jeremiah Prophesies & Suffers Persecution 3",
+        "ref": "36:1-38:28",
         "phase": "The Prophets"
       },
       {
         "segmentId": "S227",
         "book": "Eze",
-        "title": "Ezekiel's Vision",
-        "ref": "1:1-3:27",
-        "phase": "The Prophets"
-      },
-      {
-        "segmentId": "S232",
-        "book": "Eze",
-        "title": "The Valley of Dry Bones",
-        "ref": "37:1-14",
+        "title": "A Vision of the Glory of the Lord",
+        "ref": "1:1-3:15",
         "phase": "The Prophets"
       },
       {
         "segmentId": "S239",
         "book": "Eze",
-        "title": "The New Temple",
-        "ref": "40:1-48:35",
+        "title": "Prophecy of Hope & Restoration",
+        "ref": "37:1-39:29",
         "phase": "The Prophets"
       },
       {
-        "segmentId": "S245",
-        "book": "Dan",
-        "title": "Daniel in Babylon",
-        "ref": "1:1-21",
+        "segmentId": "S241",
+        "book": "Eze",
+        "title": "The Glory of the Lord Returns",
+        "ref": "43:1-44:31",
         "phase": "The Prophets"
       },
       {
-        "segmentId": "S246",
+        "segmentId": "S244",
         "book": "Dan",
-        "title": "Daniel's Visions",
-        "ref": "7:1-12:13",
+        "title": "Faithful to God in a Pagan Nation",
+        "ref": "1:1-2:49",
+        "phase": "The Prophets"
+      },
+      {
+        "segmentId": "S247",
+        "book": "Dan",
+        "title": "Three Visions of God's Future Rule",
+        "ref": "7:1-9:27",
         "phase": "The Prophets"
       },
       {
         "segmentId": "S251",
         "book": "Joe",
-        "title": "The Day of the Lord",
+        "title": "The Coming Day of the Lord",
         "ref": "1:1-3:21",
         "phase": "The Prophets"
       },
       {
         "segmentId": "S255",
         "book": "Jon",
-        "title": "Jonah's Mission",
+        "title": "Nineveh Spared!",
         "ref": "1:1-4:11",
         "phase": "The Prophets"
       },
       {
         "segmentId": "S259",
         "book": "Hab",
-        "title": "Habakkuk's Questions",
+        "title": "A Gripping Confrontation with God",
         "ref": "1:1-3:19",
         "phase": "The Prophets"
       }
