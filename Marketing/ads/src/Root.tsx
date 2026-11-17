@@ -9,6 +9,9 @@ import { ScriptAd } from './ads/ScriptAd';
 import { SearchAd } from './ads/SearchAd';
 import { ThreadAd } from './ads/ThreadAd';
 import { YouAd } from './ads/YouAd';
+import { AdventFamilyAd } from './advent/AdventFamilyAd';
+import { AdventGroupsAd } from './advent/AdventGroupsAd';
+import { AT } from './advent/timeline';
 import { T } from './lib/timeline';
 import { FPS, H, W } from './theme';
 
@@ -34,6 +37,23 @@ export const RemotionRoot: React.FC = () => (
         id={id}
         component={component as React.FC<{ showGuides?: boolean }>}
         durationInFrames={T.TOTAL}
+        fps={FPS}
+        width={W}
+        height={H}
+        defaultProps={{ showGuides: false }}
+      />
+    ))}
+
+    {/* Advent 2026: two 30-second ads, families and small groups. See ADVENT.md. */}
+    {([
+      ['AdventFamilyAd', AdventFamilyAd],
+      ['AdventGroupsAd', AdventGroupsAd],
+    ] as const).map(([id, component]) => (
+      <Composition
+        key={id}
+        id={id}
+        component={component as React.FC<{ showGuides?: boolean }>}
+        durationInFrames={AT.TOTAL}
         fps={FPS}
         width={W}
         height={H}

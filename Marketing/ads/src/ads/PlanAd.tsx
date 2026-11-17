@@ -23,7 +23,7 @@ const CHALLENGES: Array<[string, string, number]> = [
   ['In The Beginning', '18 stories · 3 weeks', 18],
   ['Women of the Bible', '20 stories · 4 weeks', 20],
   ['The Gospels', '42 stories · 6 weeks', 42],
-  ['Advent Journey', '16 stories · 4 weeks', 16],
+  ['Advent Journey', '26 stories · 4 weeks', 26],
 ];
 
 const ACTIVE_DONE = 34;
