@@ -1173,6 +1173,18 @@
       "lateTitleGeneric": "This plan began {{date}}",
       "joinedTitleGeneric": "You're in",
       "joinedBodyGeneric": "Day 1 is {{date}}. It will be waiting for you."
+    },
+    "upNext": {
+      "planComplete": "Plan complete",
+      "tomorrow": "Tomorrow · {{date}}",
+      "nextOn": "Next · {{date}}",
+      "nextDay": "Next · Day {{n}}",
+      "nextWith": "Next with {{name}}",
+      "nextStory": "Next story",
+      "readAhead": "Read ahead",
+      "backToPlan": "Back to plan",
+      "backToRead": "Back to Read",
+      "backToCast": "Back to Cast"
     }
   },
   "Books": {

@@ -23170,6 +23170,18 @@
       "lateTitleGeneric": "Ce parcours a commencé {{date}}",
       "joinedTitleGeneric": "C'est parti",
       "joinedBodyGeneric": "Le jour 1 est {{date}}. Il vous attendra."
+    },
+    "upNext": {
+      "planComplete": "Parcours terminé",
+      "tomorrow": "Demain · {{date}}",
+      "nextOn": "Suite · {{date}}",
+      "nextDay": "Suite · Jour {{n}}",
+      "nextWith": "Suite avec {{name}}",
+      "nextStory": "Récit suivant",
+      "readAhead": "Lire en avance",
+      "backToPlan": "Retour au parcours",
+      "backToRead": "Retour à Lire",
+      "backToCast": "Retour aux voix"
     }
   }
 }

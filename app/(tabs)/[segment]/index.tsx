@@ -4,8 +4,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Image, Platform, FlatList, ScrollView, View, TouchableOpacity, Text, StatusBar, Dimensions } from 'react-native';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
 import { bibleLoader } from '@/services/BibleLoader';
-import readingPlansData from "@/assets/data/ReadingPlansChallenges.json";
 import conversations from "@/assets/data/conversations.json";
+import SegmentTitles from "@/assets/data/SegmentTitles.json";
 import { ConversationsFile } from "@/types/conversations";
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter, usePathname, useLocalSearchParams } from "expo-router";
@@ -17,10 +17,16 @@ import { SegmentType, IntroType, BibleType, isIntroType, isSegmentType } from "@
 import Intro from '@/components/Bible/Intro';
 import TalkAboutCard from '@/components/thread/TalkAboutCard';
 import CheckCircle from '@/components/CheckCircle';
+import UpNextCard from '@/components/Bible/UpNextCard';
+import { findCatalogItem, type CatalogItem } from '@/utils/planCatalog';
+import { findPlanItem } from '@/api/userPlans';
+import { canonicalStories, neighbours, storiesInContext } from '@/utils/storyOrder';
 import StickyHeader from '@/components/StickyHeader';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { startReadingSession, updateReadingSession } from '@/api/sqlite';
 import { isLargeScreen, isLandscape, responsivePadding, spacing } from '@/constants/sizes';
+
+const ALL_STORIES = canonicalStories(Object.keys(SegmentTitles));
 
 // Move styles outside component
 const createStyles = (colors: any, isLargeScreen: boolean, isLandscape: boolean) => StyleSheet.create({
@@ -325,64 +331,51 @@ export default function BibleScreen() {
     isVisible.setValue(1);
   }, [segID, isVisible]);
 
-  // Get context-aware navigation segments (MUST be before early return)
-  const { prevSegId, nextSegId } = useMemo(() => {
-    // Make sure language and version are defined
-    if (!state.language || !state.version) {
-      return { prevSegId: null, nextSegId: null };
-    }
+  // The plan this story was opened from. Curated plans resolve at once; custom
+  // plans live in the database, so they arrive a moment later.
+  const planKey = ((planId || challengeId) as string | undefined) || undefined;
+  const curatedPlan = useMemo(() => (planKey ? findCatalogItem(planKey) ?? null : null), [planKey]);
+  const [customPlan, setCustomPlan] = useState<{ key: string; item: CatalogItem | null } | null>(null);
+  useEffect(() => {
+    if (!planKey || curatedPlan) return;
+    let alive = true;
+    findPlanItem(planKey).then((item) => {
+      if (alive) setCustomPlan({ key: planKey, item: item ?? null });
+    });
+    return () => {
+      alive = false;
+    };
+  }, [planKey, curatedPlan]);
+  const plan: CatalogItem | null = curatedPlan ?? (customPlan?.key === planKey ? customPlan.item : null);
 
-    if (planId) {
-      // Get segments from the current plan
-      const plan = readingPlansData.plans.find(p => p.id === planId);
-      const planSegments = plan ? Object.values(plan.segments)
-        .flatMap(book => book?.segments || [])
-        .filter(seg => !seg.startsWith('I')) : [];
-      
-      const currentIndex = planSegments.indexOf(segID);
-      return {
-        prevSegId: currentIndex > 0 ? `${state.language}-${state.version}-${planSegments[currentIndex - 1]}` : null,
-        nextSegId: currentIndex < planSegments.length - 1 ? `${state.language}-${state.version}-${planSegments[currentIndex + 1]}` : null
-      };
-    } 
-    else if (challengeId) {
-      // Get segments from the current challenge
-      const challenge = readingPlansData.challenges.find(c => c.id === challengeId);
-      const challengeSegments = challenge ? Object.values(challenge.segments)
-        .flatMap(book => book?.segments || [])
-        .filter(seg => !seg.startsWith('I')) : [];
-      
-      const currentIndex = challengeSegments.indexOf(segID);
-      return {
-        prevSegId: currentIndex > 0 ? `${state.language}-${state.version}-${challengeSegments[currentIndex - 1]}` : null,
-        nextSegId: currentIndex < challengeSegments.length - 1 ? `${state.language}-${state.version}-${challengeSegments[currentIndex + 1]}` : null
-      };
-    }
-    else if (voiceName) {
-      const conv = conversations as ConversationsFile;
-      const decoded = (() => {
-        try {
-          return decodeURIComponent(voiceName);
-        } catch {
-          return voiceName;
+  // Reading order for this context: the plan's own order (week order for
+  // Advent), the voice's stories, or the whole Bible. One helper, so the
+  // arrows and the Up next card agree with the Plan tab. (MUST be before early return)
+  const readingOrder = useMemo(
+    () =>
+      storiesInContext(
+        { planId: planKey, voice: voiceName },
+        {
+          planStories: () => plan?.stories ?? null,
+          voiceStories: (name) => {
+            const conv = conversations as ConversationsFile;
+            let decoded = name;
+            try {
+              decoded = decodeURIComponent(name);
+            } catch {}
+            return conv.voices[decoded]?.storyIds || conv.voices[name]?.storyIds || [];
+          },
+          allStories: ALL_STORIES,
         }
-      })();
-      const ids = conv.voices[decoded]?.storyIds || conv.voices[voiceName]?.storyIds || [];
-      const currentIndex = ids.indexOf(segID);
-      return {
-        prevSegId: currentIndex > 0 ? `${state.language}-${state.version}-${ids[currentIndex - 1]}` : null,
-        nextSegId: currentIndex >= 0 && currentIndex < ids.length - 1 ? `${state.language}-${state.version}-${ids[currentIndex + 1]}` : null
-      };
-    }
-    else {
-      // Default navigation through all segments
-      const currentSegmentIndex = segIds.indexOf(segID);
-      return {
-        prevSegId: currentSegmentIndex > 0 ? `${state.language}-${state.version}-${segIds[currentSegmentIndex - 1]}` : null,
-        nextSegId: currentSegmentIndex < segIds.length - 1 ? `${state.language}-${state.version}-${segIds[currentSegmentIndex + 1]}` : null
-      };
-    }
-  }, [segID, planId, challengeId, voiceName, state.language, state.version]);
+      ),
+    [planKey, plan, voiceName]
+  );
+  const { prev: prevSegId, next: nextSegId } = useMemo(() => neighbours(readingOrder, segID), [readingOrder, segID]);
+
+  // Up next appears once this story is finished; keyed by story so it resets
+  // when the reader moves on.
+  const [finishedId, setFinishedId] = useState<string | null>(null);
+  const justFinished = finishedId === segID;
 
   // Show loading state if data isn't ready
   if (!segID) {
@@ -536,8 +529,17 @@ export default function BibleScreen() {
               challengeId={challengeId as string || undefined}
               showCaption={false}
               resetVisualStateOnMount={true}
+              onCompleted={() => setFinishedId(segID)}
             />
           </View>
+          {justFinished && (
+            <UpNextCard
+              storyId={segID}
+              order={readingOrder}
+              plan={plan}
+              voice={planKey ? null : voiceName ? String(voiceName) : null}
+            />
+          )}
           <TalkAboutCard segmentId={segID} />
         </>
       )}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import logger from '@/utils/logger';
 import { View, Text, Pressable, StyleSheet, InteractionManager } from 'react-native';
 import * as Haptics from 'expo-haptics';
@@ -13,7 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle as SvgCircle } from 'react-native-svg';
 import { useSQLiteGlobalContext } from '@/context/SQLiteGlobalContext';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import {
   getSegmentReadCount,
   getSegmentCompletionStatus,
@@ -39,6 +39,8 @@ interface CheckCircleProps {
   challengeId?: string;
   showCaption?: boolean;
   resetVisualStateOnMount?: boolean;
+  /** Called once the story is marked read, so the screen can offer what's next. */
+  onCompleted?: () => void;
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -51,11 +53,13 @@ export default function CheckCircle({
   challengeId,
   showCaption = true,
   resetVisualStateOnMount = false,
+  onCompleted,
 }: CheckCircleProps) {
   const { updateLastReadSegment } = useSQLiteGlobalContext();
-  const router = useRouter();
   const params = useLocalSearchParams();
   const { freshStart } = params;
+  // Set before the first await, so a quick second tap can't record the story twice.
+  const busy = useRef(false);
   const { t } = useTranslation();
   const { language, isDarkMode } = useSyncAppSettings();
   const palette = isDarkMode ? ThreadColors.dark : ThreadColors.light;
@@ -106,30 +110,9 @@ export default function CheckCircle({
     return (FRA_UI as any).Titles?.[short || ''] || title;
   };
 
-  const navigateAfterComplete = () => {
-    const short = segmentId.match(/S\d+/i)?.[0] || segmentId;
-    const plan = (planId || params.planId) as string | undefined;
-    const challenge = (challengeId || params.challengeId) as string | undefined;
-    if (plan || challenge) {
-      router.replace({
-        pathname: '/plan/[id]',
-        params: {
-          id: plan || challenge || '',
-          completedSegment: short,
-        },
-      });
-      return;
-    }
-    router.replace({
-      pathname: '/(tabs)/Home',
-      params: {
-        completedSegment: short,
-      },
-    });
-  };
-
   const handlePress = async () => {
-    if (isCompleted) return;
+    if (isCompleted || busy.current) return;
+    busy.current = true;
     try {
       await markSegmentComplete(segmentId, context, planId, challengeId);
       await updateLastReadSegment(segmentId);
@@ -161,6 +144,7 @@ export default function CheckCircle({
         setBannerVoice(t('UI.completion.metVoiceFirstTime', { name: localizeVoice(voices.firstVoice) }));
       }
       setShowBanner(true);
+      onCompleted?.();
 
       try {
         await rescheduleReadingReminders();
@@ -173,9 +157,8 @@ export default function CheckCircle({
         }
         await maybeRequestReview({ streak, completedCount: completed.size });
       } catch {}
-
-      setTimeout(navigateAfterComplete, 3200);
     } catch (error) {
+      busy.current = false;
       logger.error('Error marking segment complete:', error);
     }
   };

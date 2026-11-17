@@ -101,6 +101,10 @@ describe('seasonal plans', () => {
     }
   );
 
+  test.each(['advent', 'upNext'])('%s strings exist in both languages', (section) => {
+    expect(Object.keys((uiFr as any).UI[section]).sort()).toEqual(Object.keys((uiEn as any).UI[section]).sort());
+  });
+
   test('Advent strings exist in both languages', () => {
     const en = (uiEn as any).UI.advent;
     const fr = (uiFr as any).UI.advent;
