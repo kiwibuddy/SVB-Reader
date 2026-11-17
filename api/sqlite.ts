@@ -1076,16 +1076,24 @@ async function updatePlanStatus(planID: string): Promise<void> {
     );
     const progress = await getPlanProgress(planID);
     
+    // Upsert, not INSERT OR REPLACE: a replace deletes the row and loses
+    // isPaused and startDate, so finishing a story would un-pause the plan.
     await db.runAsync(`
-      INSERT OR REPLACE INTO plan_challenge_status (
+      INSERT INTO plan_challenge_status (
         itemID,
         itemType,
         isActive,
+        isPaused,
         isCompleted,
         progressPercentage,
+        startDate,
         lastUpdated
-      ) VALUES (?, 'plan', 1, ?, ?, datetime('now'))
-    `, planID, progress.isCompleted ? 1 : 0, progress.progressPercentage);
+      ) VALUES (?, 'plan', 1, 0, ?, ?, ?, datetime('now'))
+      ON CONFLICT(itemID, itemType) DO UPDATE SET
+        isCompleted = excluded.isCompleted,
+        progressPercentage = excluded.progressPercentage,
+        lastUpdated = excluded.lastUpdated
+    `, planID, progress.isCompleted ? 1 : 0, progress.progressPercentage, new Date().toISOString());
 
     if (progress.isCompleted && !previous?.isCompleted) {
       void maybeRequestReview({ planCompleted: true });
@@ -1100,16 +1108,24 @@ async function updateChallengeStatus(challengeID: string): Promise<void> {
     const db = databaseManager.getDatabase();
     const progress = await getChallengeProgress(challengeID);
     
+    // Upsert, not INSERT OR REPLACE: a replace deletes the row and loses
+    // isPaused and startDate, so finishing a story would un-pause the plan.
     await db.runAsync(`
-      INSERT OR REPLACE INTO plan_challenge_status (
+      INSERT INTO plan_challenge_status (
         itemID,
         itemType,
         isActive,
+        isPaused,
         isCompleted,
         progressPercentage,
+        startDate,
         lastUpdated
-      ) VALUES (?, 'challenge', 1, ?, ?, datetime('now'))
-    `, challengeID, progress.isCompleted ? 1 : 0, progress.progressPercentage);
+      ) VALUES (?, 'challenge', 1, 0, ?, ?, ?, datetime('now'))
+      ON CONFLICT(itemID, itemType) DO UPDATE SET
+        isCompleted = excluded.isCompleted,
+        progressPercentage = excluded.progressPercentage,
+        lastUpdated = excluded.lastUpdated
+    `, challengeID, progress.isCompleted ? 1 : 0, progress.progressPercentage, new Date().toISOString());
   } catch (error) {
     logger.error("Error updating challenge status:", error);
   }
