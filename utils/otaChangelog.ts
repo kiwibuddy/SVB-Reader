@@ -9,4 +9,4 @@
  * The Expo update id (Settings → JS update) proves the OTA applied; the
  * summary/details explain what that bundle contains.
  */
-export const CURRENT_OTA_ID = '2026-11-18-b';
+export const CURRENT_OTA_ID = '2026-11-18-c';
