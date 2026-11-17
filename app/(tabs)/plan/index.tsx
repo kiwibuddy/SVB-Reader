@@ -72,13 +72,8 @@ const GROUP_COPY: Record<PlanGroupId, { title: string; blurb: string }> = {
   mini: { title: 'UI.planCategories.miniStudies', blurb: 'UI.planCategories.miniStudiesBlurb' },
 };
 
-/** Title + blurb + meta — tight two/three-line list row (not a card). */
-const PLAN_ROW_HEIGHT = 80;
-/**
- * When a plan is open the thread steps right at the row bottom. Extra height
- * keeps that horizontal clear of the blurb / "N stories" line.
- */
-const PLAN_ROW_HEIGHT_OPEN = 120;
+/** Title + blurb + meta — fits one title line without overflowing into the path. */
+const PLAN_ROW_HEIGHT = 88;
 /** Bead beside the first line of text, not mid-blurb / mid-empty. */
 const PLAN_MARK = 18;
 
@@ -238,16 +233,15 @@ const PlanScreen = () => {
     if (!items?.length) return [];
     const rows: VisibleRow[] = [];
     for (const item of items) {
-      const planOpen = openPlanId === item.id;
       rows.push({
         key: `p-${item.id}`,
         kind: 'plan',
         depth: 0,
-        height: planOpen ? PLAN_ROW_HEIGHT_OPEN : PLAN_ROW_HEIGHT,
+        height: PLAN_ROW_HEIGHT,
         markOffset: PLAN_MARK,
         catalogItem: item,
       });
-      if (!planOpen) continue;
+      if (openPlanId !== item.id) continue;
       rows.push(
         ...buildJourneyRows(item, {
           completedIds: new Set(progressById[item.id]?.ids || []),

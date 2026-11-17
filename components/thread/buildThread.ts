@@ -49,8 +49,9 @@ function stepRadius(dx: number, dy: number): number {
 }
 
 /**
- * Horizontal corridor Y. Prefer the shared row boundary so titles stay clear;
- * fall back to the bead midpoint when the row is too short.
+ * Horizontal corridor Y. Prefer the shared row boundary so titles stay clear.
+ * When the next bead is too close for that (plan → phase), sit as low as the
+ * next bead allows — not the midpoint, which cut through the plan blurb/meta.
  */
 function stepMidY(prev: PathMark, next: PathMark, r: number): number {
   const dy = next.y - prev.y;
@@ -64,8 +65,7 @@ function stepMidY(prev: PathMark, next: PathMark, r: number): number {
   if (boundary >= minMid && boundary <= maxMid) {
     return boundary;
   }
-  const classic = (prev.y + next.y) / 2;
-  return Math.max(minMid, Math.min(maxMid, classic));
+  return maxMid;
 }
 
 /**
