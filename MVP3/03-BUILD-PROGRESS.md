@@ -23,7 +23,7 @@ check `git log` for a partial commit, and carry on.
 | B | W8 Reminders that work | done | `809290c` | `utils/reminderPlan.ts` + 16 tests; time sheet checked in browser (8:15 PM saved). Advent `dailyOverride` removed, teasers unchanged |
 | C | W9 Follow-a-voice plans | done | `7fb39d4` | `utils/voicePlans.ts` + 6 tests; browser: Moses → "Follow Moses" (33 stories) opens expanded; story opens with `voice=Moses`; "Open your plan" after reload |
 | C | W10 Apply updates sooner | done | `ef72b0d` | `utils/otaPolicy.ts` + 6 tests. Browser: onboarding still lands on today's story, returning user on Home (updates can't run on web). Only helps people who already have this update |
-| D | W11 Bible text out of the update bundle | pending | | Behind a flag, off by default |
+| D | W11 Bible text out of the update bundle | done (flag off) | `e409b9c` | Build-time flag `EXPO_PUBLIC_BIBLE_AS_ASSET=1`. iOS export: 23.5 → 10.1 MB bundle (7.9 → 4.1 MB gzipped). Browser: both modes render text; failed load shows retry |
 
 ## Release readiness
 
@@ -32,10 +32,11 @@ check `git log` for a partial commit, and carry on.
 | A | **yes** — JS only, no native change | 139 tests pass; `tsc` clean outside `Marketing/`; lint shows only the 6 errors that were already there; browser check of Plan tab, plan page, Read tab card, arrows, Up next, You tab | Onboarding Save demo (last page); late-join "today or Day 1" question (alerts don't show on web); tapping an Advent reminder opens the plan page |
 | B | **yes** — JS only, no native change | 182 tests pass; `tsc` clean outside `Marketing/`; lint: only errors that were already there; browser walk of streak across faked days, banner, You ring, weekly goal, time sheet | Set the reminder 2 minutes ahead and check text + tap target in English and French; miss a day and confirm the streak holds; check the 20:00 streak nudge |
 | C | **yes** — JS only, no native change | 195 tests pass; `tsc` clean outside `Marketing/`; lint: only errors that were already there; browser: Follow a voice end to end, onboarding and start-up routes | Publish an update, background the app 30+ minutes on a list screen, return: it should reload; in a story it should not. Finish onboarding with an update waiting |
-| D | no | | |
+| D | **built, flag off** — publishing as-is changes nothing | 196 tests; `tsc` clean; flag-on and flag-off exports measured; browser checks both modes + failure path | Before turning on: a store build bundled with the flag, on a real iPhone and Android phone: cold start time vs today, reader, You tab, onboarding demos, an OTA on top |
 
 ## Log
 
+- 17 Nov — W11 done behind a build-time flag (off). **All four releases built.** Found: `json` in Metro `assetExts` ships every data JSON twice (bundle + asset); left as is.
 - 17 Nov — W10 done. **Release C ready.**
 - 17 Nov — W9 done.
 - 17 Nov — W8 done. **Release B ready.**
