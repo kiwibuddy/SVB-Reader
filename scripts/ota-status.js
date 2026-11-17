@@ -35,15 +35,20 @@ const iosRt = TARGETS.ios.runtimeVersion;
 const androidRt = TARGETS.android.runtimeVersion;
 const wrongIos = new Set(TARGETS.ios.neverPublishRuntimes || []);
 
-console.log('production OTA status (TestFlight 2.0.0 (25) = ' + iosRt.slice(0, 8) + '…)\n');
+const iosLabel = TARGETS.ios.label || 'iOS store build';
+const androidLabel = TARGETS.android.label || 'Android store build';
+
+console.log(
+  `production OTA status (${iosLabel} = ${iosRt.slice(0, 8)}… / ${androidLabel} = ${androidRt.slice(0, 8)}…)\n`
+);
 
 for (const u of data.currentPage || []) {
   const rt = u.runtimeVersion || '';
   let tag = 'other runtime';
-  if (rt === iosRt) tag = 'YES — TestFlight 25';
+  if (rt === iosRt) tag = `YES — ${iosLabel}`;
   else if (wrongIos.has(rt)) tag = 'NO — local fingerprint, phone ignores';
-  else if (rt === androidRt) tag = 'YES — Play 23';
-  else if (String(u.platforms).includes('android')) tag = 'NO — Android fingerprint mismatch';
+  else if (rt === androidRt) tag = `YES — ${androidLabel}`;
+  else if (String(u.platforms).includes('android')) tag = 'NO — Android runtime mismatch';
   console.log(u.message);
   console.log('  ' + u.platforms + '  ' + tag);
   console.log('  ' + rt);
