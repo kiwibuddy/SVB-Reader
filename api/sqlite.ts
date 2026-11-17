@@ -1303,7 +1303,7 @@ export async function getOldTestamentProgress(): Promise<TestamentProgress> {
         WHERE bookID IN (${otBooks.map(() => '?').join(',')}) 
         AND segmentID NOT LIKE 'I%'
       ) AND isCompleted = 1
-    `, ...otBooks, ...otBooks);
+    `, ...otBooks);
     
     return { completed: completedResult?.count || 0, total: totalResult?.count || 0 };
   } catch (error) {
@@ -1332,7 +1332,7 @@ export async function getNewTestamentProgress(): Promise<TestamentProgress> {
         WHERE bookID IN (${ntBooks.map(() => '?').join(',')}) 
         AND segmentID NOT LIKE 'I%'
       ) AND isCompleted = 1
-    `, ...ntBooks, ...ntBooks);
+    `, ...ntBooks);
     
     return { completed: completedResult?.count || 0, total: totalResult?.count || 0 };
   } catch (error) {
