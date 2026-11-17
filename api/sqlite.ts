@@ -572,6 +572,8 @@ async function getReadDates(): Promise<Set<string>> {
 }
 
 export type StreakSummary = StreakView & {
+  /** Last day a story was read (null before the first read). */
+  lastReadDate: string | null;
   longest: number;
   daysThisWeek: number;
   goal: WeeklyGoal;
@@ -592,6 +594,7 @@ export async function getStreakSummary(): Promise<StreakSummary> {
     const week = weekProgress(readDates, today, goal, goalFrom || today);
     return {
       ...streakView(state, today),
+      lastReadDate: state.lastReadDate,
       longest: state.longest,
       daysThisWeek: week.daysThisWeek,
       goal,
@@ -606,6 +609,7 @@ export async function getStreakSummary(): Promise<StreakSummary> {
       coveredDays: 0,
       readToday: false,
       lastDayToSave: null,
+      lastReadDate: null,
       longest: 0,
       daysThisWeek: 0,
       goal: 5,
@@ -1809,6 +1813,7 @@ export type StartedItem = {
   isActive: boolean;
   startDate: string | null;
   progressPercentage: number;
+  lastUpdated?: string | null;
 };
 
 async function getStartedItems(itemType: 'plan' | 'challenge'): Promise<StartedItem[]> {
@@ -1821,8 +1826,9 @@ async function getStartedItems(itemType: 'plan' | 'challenge'): Promise<StartedI
       isPaused: number;
       startDate: string | null;
       progressPercentage: number | null;
+      lastUpdated: string | null;
     }>(
-      `SELECT itemID, itemType, isActive, isPaused, startDate, progressPercentage
+      `SELECT itemID, itemType, isActive, isPaused, startDate, progressPercentage, lastUpdated
        FROM plan_challenge_status
        WHERE itemType = ? AND isCompleted = 0
        ORDER BY datetime(lastUpdated) DESC`,
@@ -1835,6 +1841,7 @@ async function getStartedItems(itemType: 'plan' | 'challenge'): Promise<StartedI
       isActive: row.isActive === 1,
       startDate: row.startDate,
       progressPercentage: row.progressPercentage || 0,
+      lastUpdated: row.lastUpdated || null,
     }));
   } catch (error) {
     logger.error(`Error getting started ${itemType}s:`, error);

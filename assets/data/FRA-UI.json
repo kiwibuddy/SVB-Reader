@@ -23215,6 +23215,25 @@
       "thisWeek": "{{done}} sur {{goal}} cette semaine",
       "weekStreak": "Série de {{n}} semaines",
       "noStreak": "Lisez aujourd'hui pour commencer"
+    },
+    "reminders": {
+      "todayTitle": "Le récit du jour",
+      "planDayTitle": "{{plan}} · Jour {{n}}",
+      "generic1": "Votre prochain récit vous attend, quand vous voulez.",
+      "generic2": "Quelques minutes au calme avec le prochain récit.",
+      "generic3": "Reprenez là où vous en étiez.",
+      "streakTitle": "Gardez votre série de {{n}} jours",
+      "streakBody": "Lisez un récit aujourd'hui pour la poursuivre.",
+      "back1Title": "Votre prochain récit vous attend",
+      "back1Body": "Reprenez là où vous en étiez, quand cela vous convient.",
+      "back2Title": "Toujours là, quand vous voudrez",
+      "back2Body": "Un récit prend environ dix minutes.",
+      "back3Title": "Un récit pour aujourd'hui",
+      "back3Body": "La grande histoire de la Bible, un récit à la fois.",
+      "timeSheetTitle": "Heure du rappel",
+      "timeSheetSave": "Enregistrer",
+      "hour": "Heure",
+      "minute": "Minute"
     }
   }
 }

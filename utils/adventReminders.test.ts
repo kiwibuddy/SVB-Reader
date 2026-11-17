@@ -20,7 +20,6 @@ function input(overrides: Partial<AdventReminderInput>): AdventReminderInput {
     remindMe: false,
     stories: STORIES,
     completedIds: new Set(),
-    nextStoryId: STORIES[0],
     ...overrides,
   };
 }
@@ -29,13 +28,12 @@ const summary = (plan: ReturnType<typeof planAdventNotifications>) =>
   plan.notifications.map((n) => `${n.id}@${n.date.getMonth() + 1}/${n.date.getDate()} ${n.date.getHours()}:${String(n.date.getMinutes()).padStart(2, '0')}`);
 
 test('readers with no reminders and no opt-in get nothing', () => {
-  expect(planAdventNotifications(input({}), text)).toEqual({ notifications: [], dailyOverride: null });
+  expect(planAdventNotifications(input({}), text)).toEqual({ notifications: [] });
 });
 
 test('daily-reminder readers who have not joined get three teasers in the evening', () => {
   const plan = planAdventNotifications(input({ dailyEnabled: true }), text);
   expect(summary(plan)).toEqual(['svb-advent-week@11/22 19:00', 'svb-advent-eve@11/28 19:00', 'svb-advent-late@12/6 19:00']);
-  expect(plan.dailyOverride).toBeNull();
   expect(plan.notifications.every((n) => n.url === '/plan/adventJourneyChronological')).toBe(true);
 });
 
@@ -69,26 +67,20 @@ test('joined readers without daily reminders get the eve, each Sunday and Christ
   expect(plan.notifications[5].body).toContain('title-S026');
 });
 
-test('joined daily-reminder readers get Advent copy on their daily reminder instead of extra notifications', () => {
+test('joined daily-reminder readers get only the eve: their dated daily reminders name each day', () => {
   const before = planAdventNotifications(input({ joined: true, dailyEnabled: true }), text);
   expect(before.notifications.map((n) => n.id)).toEqual(['svb-advent-eve']);
-  expect(before.dailyOverride).toBeNull(); // Nov 20 is before the Advent window
-
   const during = planAdventNotifications(
-    input({ joined: true, dailyEnabled: true, now: new Date(2026, 11, 8, 7), nextStoryId: 'S009' }),
+    input({ joined: true, dailyEnabled: true, now: new Date(2026, 11, 8, 7) }),
     text
   );
   expect(during.notifications).toEqual([]);
-  expect(during.dailyOverride?.body).toContain('title-S009');
-
-  const after = planAdventNotifications(input({ joined: true, dailyEnabled: true, now: new Date(2026, 11, 25, 7) }), text);
-  expect(after.dailyOverride).toBeNull();
 });
 
 test('paused or finished plans get nothing', () => {
   expect(planAdventNotifications(input({ joined: false, paused: true, dailyEnabled: true }), text).notifications).toEqual([]);
   const finished = planAdventNotifications(input({ joined: true, completedIds: new Set(STORIES) }), text);
-  expect(finished).toEqual({ notifications: [], dailyOverride: null });
+  expect(finished).toEqual({ notifications: [] });
 });
 
 test('a plan whose length does not match the season schedules nothing rather than wrong dates', () => {

@@ -9,8 +9,8 @@
  * - Not joined, tapped "Remind me": "starts tomorrow", "begins today", "not too late".
  * - Joined before Advent: "starts tomorrow" with Day 1's story.
  * - Joined, daily reminders off: a reminder each Advent Sunday and Christmas Eve.
- * - Joined, daily reminders on: the daily reminder names the next Advent reading
- *   (no extra notifications, so nobody gets two a day).
+ * - Joined, daily reminders on: no extra notifications. The dated daily
+ *   reminders (utils/reminderPlan.ts) already name each day's Advent story.
  * Paused or finished plans get nothing.
  */
 
@@ -42,8 +42,6 @@ export type AdventReminderInput = {
   remindMe: boolean;
   stories: string[];
   completedIds: Set<string>;
-  /** Next unread story, already resolved with any late-join start index. */
-  nextStoryId: string | null;
 };
 
 export type AdventText = {
@@ -62,11 +60,9 @@ export type PlannedNotification = {
 
 export type AdventReminderPlan = {
   notifications: PlannedNotification[];
-  /** Replacement copy for the repeating daily reminder, if any. */
-  dailyOverride: { title: string; body: string } | null;
 };
 
-const EMPTY: AdventReminderPlan = { notifications: [], dailyOverride: null };
+const EMPTY: AdventReminderPlan = { notifications: [] };
 
 function at(day: Date, hour: number, minute: number): Date {
   return new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour, minute, 0, 0);
@@ -109,7 +105,7 @@ export function planAdventNotifications(input: AdventReminderInput, text: Advent
       add('svb-advent-day1', at(start, hour, minute), t('UI.advent.notifDay1Title'), t('UI.advent.notifDay1Body', { title: day1Title }));
     }
     add('svb-advent-late', at(addDays(start, 7), teaser, 0), t('UI.advent.notifLateTitle'), t('UI.advent.notifLateBody'));
-    return { notifications: out, dailyOverride: null };
+    return { notifications: out };
   }
 
   // Joined.
@@ -120,17 +116,7 @@ export function planAdventNotifications(input: AdventReminderInput, text: Advent
     t('UI.advent.notifJoinedEveBody', { title: day1Title })
   );
 
-  let dailyOverride: AdventReminderPlan['dailyOverride'] = null;
-  if (input.dailyEnabled) {
-    const inSeason = input.now.getTime() >= at(addDays(start, -1), 0, 0).getTime() &&
-      input.now.getTime() < at(addDays(lastDay, 1), 0, 0).getTime();
-    if (inSeason && input.nextStoryId) {
-      dailyOverride = {
-        title: t('UI.advent.notifDailyTitle'),
-        body: t('UI.advent.notifDailyBody', { title: text.storyTitle(input.nextStoryId) }),
-      };
-    }
-  } else {
+  if (!input.dailyEnabled) {
     const sundayIds = ['svb-advent-sun-1', 'svb-advent-sun-2', 'svb-advent-sun-3', 'svb-advent-sun-4'] as const;
     sundayIds.forEach((id, week) => {
       const index = week * 7;
@@ -151,5 +137,5 @@ export function planAdventNotifications(input: AdventReminderInput, text: Advent
       t('UI.advent.notifChristmasEveBody', { title: text.storyTitle(input.stories[window.days - 1]) })
     );
   }
-  return { notifications: out, dailyOverride };
+  return { notifications: out };
 }

@@ -5,22 +5,28 @@ import type * as NotificationsType from 'expo-notifications';
 import i18next from 'i18next';
 import {
   getStreakLastReadDate,
+  getStreakSummary,
+  getStartedPlansFromDB,
   getStartedChallengesFromDB,
   getChallengeProgress,
+  getPlanProgress,
 } from '@/api/sqlite';
+import { findPlanItem } from '@/api/userPlans';
 import { localCalendarDate } from '@/utils/localDate';
 import logger from '@/utils/logger';
-import { findCatalogItem, nextUnreadStory } from '@/utils/planCatalog';
+import { findCatalogItem, getLocalizedPlanText } from '@/utils/planCatalog';
 import { getChronologicalMapping } from '@/utils/chronologicalPlans';
 import { localizeStoryTitle } from '@/utils/localize';
 import { shortStoryId } from '@/utils/threadProgress';
 import { getPlanStartIndex } from '@/utils/planStartIndex';
-import { ADVENT_PLAN_ID, christmasSeasonYear } from '@/utils/seasonalPlans';
+import { ADVENT_PLAN_ID, christmasSeasonYear, datedWindow } from '@/utils/seasonalPlans';
+import { todayStoryId } from '@/utils/continueTarget';
 import {
   ADVENT_NOTIFICATION_IDS,
   planAdventNotifications,
   type AdventReminderPlan,
 } from '@/utils/adventReminders';
+import { ALL_REMINDER_IDS, planReminders, type ActivePlan, type PlannedReminder } from '@/utils/reminderPlan';
 import SegmentTitles from '@/assets/data/SegmentTitles.json';
 
 const ENABLED_KEY = 'svb.reminder.enabled';
@@ -28,18 +34,7 @@ const HOUR_KEY = 'svb.reminder.hour';
 const MINUTE_KEY = 'svb.reminder.minute';
 const PROMPTED_KEY = 'svb.reminder.prompted';
 const ADVENT_REMIND_KEY = 'svb.advent.remindMe';
-const DAILY_ID = 'svb-daily-read';
-const STREAK_ID = 'svb-streak-nudge';
 const CHANNEL_ID = 'reading-reminders';
-
-export const REMINDER_TIMES = [
-  { hour: 7, minute: 0 },
-  { hour: 8, minute: 0 },
-  { hour: 12, minute: 0 },
-  { hour: 18, minute: 0 },
-  { hour: 20, minute: 0 },
-  { hour: 21, minute: 0 },
-] as const;
 
 type NotificationsModule = typeof NotificationsType;
 type ImportedNotifications = NotificationsModule & { default?: NotificationsModule };
@@ -210,7 +205,6 @@ async function planAdventReminders(prefs: ReminderPrefs): Promise<AdventReminder
   const started = (await getStartedChallengesFromDB()).find((s) => s.id === ADVENT_PLAN_ID);
   const progress = started ? await getChallengeProgress(ADVENT_PLAN_ID) : null;
   const completedIds = new Set((progress?.completedSegmentIds || []).map(shortStoryId));
-  const next = nextUnreadStory(item.stories, completedIds, getPlanStartIndex(ADVENT_PLAN_ID));
   const language = i18next.language || 'en';
   const mapping = getChronologicalMapping(item.chronologicalMapping);
   return planAdventNotifications(
@@ -224,7 +218,6 @@ async function planAdventReminders(prefs: ReminderPrefs): Promise<AdventReminder
       remindMe: await getAdventRemindMe(now),
       stories: item.stories,
       completedIds,
-      nextStoryId: next?.storyId ?? null,
     },
     {
       storyTitle: (id) => localizeStoryTitle(id, adventTitles[id]?.title || id, language),
@@ -270,15 +263,66 @@ export async function maybePromptAfterFirstStory(): Promise<void> {
   );
 }
 
+/** Started, not paused plans, most recently used first, with their progress. */
+async function activePlansForReminders(language: string): Promise<ActivePlan[]> {
+  const started = [...(await getStartedPlansFromDB()), ...(await getStartedChallengesFromDB())]
+    .filter((s) => !s.isPaused)
+    .sort((a, b) => String(b.lastUpdated || '').localeCompare(String(a.lastUpdated || '')));
+  const plans: ActivePlan[] = [];
+  for (const s of started) {
+    const item = findCatalogItem(s.id) || (await findPlanItem(s.id));
+    if (!item || item.stories.length === 0) continue;
+    const progress = item.type === 'plan' ? await getPlanProgress(item.id) : await getChallengeProgress(item.id);
+    plans.push({
+      id: item.id,
+      title: getLocalizedPlanText(item, 'title', language),
+      stories: item.stories,
+      completedIds: new Set((progress?.completedSegmentIds || []).map(shortStoryId)),
+      startIndex: getPlanStartIndex(item.id),
+      window: item.isUserPlan ? null : datedWindow(item.id, item.stories.length),
+    });
+  }
+  return plans;
+}
+
+async function planDailyReminders(prefs: ReminderPrefs): Promise<PlannedReminder[]> {
+  const language = i18next.language || 'en';
+  const [legacyLastRead, streak, plans] = await Promise.all([
+    getStreakLastReadDate(),
+    getStreakSummary(),
+    activePlansForReminders(language),
+  ]);
+  const now = new Date();
+  // The streak state knows the real last read. The legacy row is seeded with
+  // the install date, so only trust it for an older day.
+  const lastReadDate =
+    streak.lastReadDate ?? (legacyLastRead && legacyLastRead < localCalendarDate(now) ? legacyLastRead : null);
+  return planReminders(
+    {
+      now,
+      enabled: prefs.enabled,
+      hour: prefs.hour,
+      minute: prefs.minute,
+      lastReadDate,
+      streak: streak.streak,
+      lastDayToSave: streak.lastDayToSave,
+      plans,
+    },
+    {
+      storyTitle: (id) => localizeStoryTitle(id, adventTitles[id]?.title || id, language),
+      storyForDate: (date) => todayStoryId(date),
+      t: (key, params) => i18next.t(key, params),
+    }
+  );
+}
+
 export async function rescheduleReadingReminders(): Promise<void> {
   try {
     const Notifications = await getNotifications();
     if (!Notifications) return;
 
     await ensureAndroidChannel(Notifications);
-    await Notifications.cancelScheduledNotificationAsync(DAILY_ID).catch(() => undefined);
-    await Notifications.cancelScheduledNotificationAsync(STREAK_ID).catch(() => undefined);
-    for (const id of ADVENT_NOTIFICATION_IDS) {
+    for (const id of [...ALL_REMINDER_IDS, ...ADVENT_NOTIFICATION_IDS]) {
       await Notifications.cancelScheduledNotificationAsync(id).catch(() => undefined);
     }
 
@@ -291,20 +335,22 @@ export async function rescheduleReadingReminders(): Promise<void> {
       logger.warn('Could not plan Advent reminders', error);
     }
 
+    const schedule = async (n: { id: string; date: Date; title: string; body: string; url: string }) => {
+      await Notifications.scheduleNotificationAsync({
+        identifier: n.id,
+        content: { title: n.title, body: n.body, data: { url: n.url } },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: n.date,
+          ...(Platform.OS === 'android' ? { channelId: CHANNEL_ID } : {}),
+        },
+      });
+    };
+
     // Advent reminders only go to people who already allow notifications:
     // daily-reminder users, or readers who tapped Join / Remind me.
     if (advent?.notifications.length && (await hasNotificationPermission())) {
-      for (const n of advent.notifications) {
-        await Notifications.scheduleNotificationAsync({
-          identifier: n.id,
-          content: { title: n.title, body: n.body, data: { url: n.url } },
-          trigger: {
-            type: Notifications.SchedulableTriggerInputTypes.DATE,
-            date: n.date,
-            ...(Platform.OS === 'android' ? { channelId: CHANNEL_ID } : {}),
-          },
-        });
-      }
+      for (const n of advent.notifications) await schedule(n);
     }
 
     if (!prefs.enabled) return;
@@ -312,54 +358,17 @@ export async function rescheduleReadingReminders(): Promise<void> {
     const granted = await ensurePermission();
     if (!granted) return;
 
-    const daily = advent?.dailyOverride;
-    await Notifications.scheduleNotificationAsync({
-      identifier: DAILY_ID,
-      content: {
-        title: daily?.title ?? i18next.t('UI.settings.reminderDailyTitle'),
-        body: daily?.body ?? i18next.t('UI.settings.reminderDailyBody'),
-        ...(daily ? { data: { url: `/plan/${ADVENT_PLAN_ID}` } } : {}),
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DAILY,
-        hour: prefs.hour,
-        minute: prefs.minute,
-      },
-    });
-
-    const lastRead = await getStreakLastReadDate();
-    const today = localCalendarDate();
-    if (lastRead === today) return;
-
-    const fire = new Date();
-    fire.setHours(20, 0, 0, 0);
-    if (fire.getTime() <= Date.now()) return;
-
-    await Notifications.scheduleNotificationAsync({
-      identifier: STREAK_ID,
-      content: {
-        title: i18next.t('UI.settings.reminderStreakTitle'),
-        body: i18next.t('UI.settings.reminderStreakBody'),
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: fire,
-      },
-    });
+    for (const n of await planDailyReminders(prefs)) await schedule(n);
   } catch (error) {
     logger.warn('Could not schedule reading reminders', error);
   }
 }
 
-export function formatReminderTime(hour: number, minute: number): string {
+/** "8:00 AM" in English, "08:00" style 24-hour time in French. */
+export function formatReminderTime(hour: number, minute: number, language: string = i18next.language || 'en'): string {
+  const mm = String(minute).padStart(2, '0');
+  if (language.startsWith('fr')) return `${String(hour).padStart(2, '0')}:${mm}`;
   const h = hour % 12 || 12;
   const ampm = hour < 12 ? 'AM' : 'PM';
-  const mm = String(minute).padStart(2, '0');
   return `${h}:${mm} ${ampm}`;
-}
-
-export function nextReminderTime(hour: number, minute: number): { hour: number; minute: number } {
-  const i = REMINDER_TIMES.findIndex((slot) => slot.hour === hour && slot.minute === minute);
-  const next = REMINDER_TIMES[(i + 1) % REMINDER_TIMES.length];
-  return { hour: next.hour, minute: next.minute };
 }

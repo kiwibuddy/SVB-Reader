@@ -1218,6 +1218,25 @@
       "thisWeek": "{{done}} of {{goal}} this week",
       "weekStreak": "{{n}}-week streak",
       "noStreak": "Read today to start"
+    },
+    "reminders": {
+      "todayTitle": "Today's story",
+      "planDayTitle": "{{plan}} · Day {{n}}",
+      "generic1": "Your next story is ready when you are.",
+      "generic2": "A few quiet minutes with the next story.",
+      "generic3": "Pick up where you left off.",
+      "streakTitle": "Keep your {{n}}-day streak",
+      "streakBody": "Read a story today to keep it going.",
+      "back1Title": "Your next story is waiting",
+      "back1Body": "Pick up where you left off, whenever suits you.",
+      "back2Title": "Still here whenever you like",
+      "back2Body": "One story takes about ten minutes.",
+      "back3Title": "A story for today",
+      "back3Body": "The Bible's big story, one story at a time.",
+      "timeSheetTitle": "Reminder time",
+      "timeSheetSave": "Save",
+      "hour": "Hour",
+      "minute": "Minute"
     }
   },
   "Books": {

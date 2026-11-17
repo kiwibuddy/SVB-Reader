@@ -22,10 +22,10 @@ import BibleDownloadModal from '@/components/BibleDownloadModal';
 import {
   formatReminderTime,
   getReminderPrefs,
-  nextReminderTime,
   setReminderEnabled,
   setReminderTime,
 } from '@/utils/readingReminders';
+import ReminderTimeSheet from '@/components/ReminderTimeSheet';
 import { getDisplayVersion } from '@/utils/version-manager';
 import { getWeeklyGoal, setWeeklyGoal } from '@/api/sqlite';
 import { DEFAULT_WEEKLY_GOAL, WEEKLY_GOALS, type WeeklyGoal } from '@/utils/streak';
@@ -52,6 +52,7 @@ export default function SettingsScreen() {
   const [reminderHour, setReminderHour] = useState(8);
   const [reminderMinute, setReminderMinute] = useState(0);
   const [weeklyGoal, setWeeklyGoalState] = useState<WeeklyGoal>(DEFAULT_WEEKLY_GOAL);
+  const [timeSheetOpen, setTimeSheetOpen] = useState(false);
 
   useEffect(() => {
     void getWeeklyGoal().then(setWeeklyGoalState);
@@ -304,20 +305,32 @@ export default function SettingsScreen() {
           {reminderOn && (
             <Pressable
               style={[styles.row, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: palette.hair }]}
-              onPress={async () => {
-                const next = nextReminderTime(reminderHour, reminderMinute);
-                await setReminderTime(next.hour, next.minute);
-                setReminderHour(next.hour);
-                setReminderMinute(next.minute);
-              }}
+              onPress={() => setTimeSheetOpen(true)}
+              accessibilityRole="button"
             >
               <Text style={[styles.rowText, { color: palette.ink }]}>{t('UI.settings.reminderTime')}</Text>
               <Text style={[styles.rowText, { color: palette.mute }]}>
-                {formatReminderTime(reminderHour, reminderMinute)}
+                {formatReminderTime(reminderHour, reminderMinute, language)} ›
               </Text>
             </Pressable>
           )}
         </View>
+        {timeSheetOpen && (
+          <ReminderTimeSheet
+            visible
+            hour={reminderHour}
+            minute={reminderMinute}
+            palette={palette}
+            language={language}
+            onCancel={() => setTimeSheetOpen(false)}
+            onSave={async (hour, minute) => {
+              setTimeSheetOpen(false);
+              setReminderHour(hour);
+              setReminderMinute(minute);
+              await setReminderTime(hour, minute);
+            }}
+          />
+        )}
 
         {/* Weekly goal */}
         <Text style={[styles.sectionLabel, { color: palette.mute }]}>
