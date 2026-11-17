@@ -8,6 +8,7 @@ import {
   type UserPlanRecord,
 } from '@/utils/userPlans';
 import { findCatalogItem, type CatalogItem } from '@/utils/planCatalog';
+import { rememberVoicePlan, voiceForPlan } from '@/utils/voicePlans';
 
 type UserPlanRow = {
   id: string;
@@ -113,6 +114,9 @@ export async function deleteUserPlan(id: string): Promise<void> {
       id,
     ]);
     await db.runAsync(`DELETE FROM user_plans WHERE id = ?`, [id]);
+    // A deleted "Follow a voice" plan frees the voice for a fresh one.
+    const voice = voiceForPlan(id);
+    if (voice) await rememberVoicePlan(voice, null);
   } catch (error) {
     logger.error('Error deleting user plan:', error);
     throw error;

@@ -23234,6 +23234,12 @@
       "timeSheetSave": "Enregistrer",
       "hour": "Heure",
       "minute": "Minute"
+    },
+    "voicePlan": {
+      "follow": "Suivre {{name}}",
+      "count": "{{count}} récits, dans l'ordre",
+      "open": "Ouvrir votre parcours",
+      "created": "Parcours créé"
     }
   }
 }

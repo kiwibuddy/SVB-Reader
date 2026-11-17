@@ -1237,6 +1237,12 @@
       "timeSheetSave": "Save",
       "hour": "Hour",
       "minute": "Minute"
+    },
+    "voicePlan": {
+      "follow": "Follow {{name}}",
+      "count": "{{count}} stories, in order",
+      "open": "Open your plan",
+      "created": "Plan created"
     }
   },
   "Books": {

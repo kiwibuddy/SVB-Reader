@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, Platform } from 'react-native';
 import Animated, { interpolate, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import conversations from '@/assets/data/conversations.json';
@@ -17,6 +17,9 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useGrowOnFocus } from '@/hooks/useGrowOnFocus';
 import { openSegment } from '@/utils/openSegment';
 import { hapticImpactLight, hapticSelection } from '@/utils/haptics';
+import { createUserPlan, getUserPlan } from '@/api/userPlans';
+import { ensureVoicePlansLoaded, planIdForVoice, rememberVoicePlan, voicePlanFor } from '@/utils/voicePlans';
+import { setPendingFocusUserPlan } from '@/utils/pendingPlanUI';
 
 const conv = conversations as ConversationsFile;
 const titles = SegmentTitles as Record<string, { title?: string; book?: string[]; ref?: string }>;
@@ -63,6 +66,48 @@ const VoiceCard = () => {
   const lang = language.startsWith('fr') ? 'fr' : 'en';
   const grow = useGrowOnFocus();
   const [expandedPartner, setExpandedPartner] = useState<string | null>(null);
+  const voicePlan = useMemo(() => voicePlanFor(name), [name]);
+  const [following, setFollowing] = useState(false);
+  // Whether this voice already has a plan (checked on focus: it may have been deleted).
+  const [hasPlan, setHasPlan] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      let alive = true;
+      (async () => {
+        await ensureVoicePlansLoaded();
+        const id = planIdForVoice(name);
+        const exists = id ? !!(await getUserPlan(id)) : false;
+        if (alive) setHasPlan(exists);
+      })();
+      return () => {
+        alive = false;
+      };
+    }, [name])
+  );
+
+  // One plan per voice: open the existing one, or make it, then show it on the Plan tab.
+  const followVoice = async () => {
+    if (following) return;
+    setFollowing(true);
+    void hapticImpactLight();
+    try {
+      let id = planIdForVoice(name);
+      if (id && !(await getUserPlan(id))) id = null;
+      if (!id) {
+        const plan = await createUserPlan(
+          t('UI.voicePlan.follow', { name: localizeVoiceName(name, language) }),
+          voicePlan.storyIds
+        );
+        id = plan.id;
+        await rememberVoicePlan(name, id);
+      }
+      setPendingFocusUserPlan(id, { expand: true });
+      router.navigate('/(tabs)/plan');
+    } finally {
+      setFollowing(false);
+    }
+  };
 
   const rank = useMemo(() => {
     const sorted = Object.values(conv.voices)
@@ -257,6 +302,28 @@ const VoiceCard = () => {
             </View>
           );
         })}
+        {voicePlan.eligible && (
+          <Pressable
+            onPress={() => void followVoice()}
+            accessibilityRole="button"
+            accessibilityLabel={`${t('UI.voicePlan.follow', { name: localizeVoiceName(name, language) })}. ${t('UI.voicePlan.count', { count: voicePlan.storyIds.length })}`}
+            style={styles.pull}
+          >
+            <Text style={[styles.pullLabel, { color: cream }]}>
+              {t('UI.voicePlan.follow', { name: localizeVoiceName(name, language) })}
+            </Text>
+            <View style={styles.pullRow}>
+              <View style={styles.pullCopy}>
+                <Text style={[styles.pullBody, { color: cream }]}>
+                  {hasPlan
+                    ? t('UI.voicePlan.open')
+                    : t('UI.voicePlan.count', { count: voicePlan.storyIds.length })}
+                </Text>
+              </View>
+              <Ionicons name="arrow-forward-circle-outline" size={22} color={cream} />
+            </View>
+          </Pressable>
+        )}
         {data.longestExchange && (
           <Pressable
             onPress={() => {

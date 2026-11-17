@@ -19,6 +19,7 @@ import '../config/i18n'; // Import this to initialize i18next
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { addNotificationTapListener, rescheduleReadingReminders } from '@/utils/readingReminders';
 import { loadPlanStartIndexes } from '@/utils/planStartIndex';
+import { ensureVoicePlansLoaded } from '@/utils/voicePlans';
 import { refreshSeasonalProgress } from '@/utils/seasonalProgress';
 import { initSentry } from '@/utils/sentry';
 import { applyPendingOtaOnColdStart, fetchOtaInBackground, fetchOtaOnForeground } from '@/utils/otaUpdates';
@@ -68,7 +69,7 @@ function AppContent() {
     let alive = true;
     let removeTapListener: (() => void) | undefined;
     (async () => {
-      await loadPlanStartIndexes();
+      await Promise.all([loadPlanStartIndexes(), ensureVoicePlansLoaded()]);
       await refreshSeasonalProgress();
       await rescheduleReadingReminders();
       const remove = await addNotificationTapListener((url) => {

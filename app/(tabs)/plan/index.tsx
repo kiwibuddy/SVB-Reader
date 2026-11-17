@@ -200,9 +200,11 @@ const PlanScreen = () => {
   useFocusEffect(
     useCallback(() => {
       loadData();
-      // After create: stay on list, keep the new plan collapsed (title + meta only)
-      takePendingFocusUserPlan();
+      // After create: stay on the list. A plan made from the Create screen stays
+      // collapsed; a "Follow a voice" plan opens so its stories show.
+      const pending = takePendingFocusUserPlan();
       setOpenGroup(null);
+      if (pending?.expand) setOpenPlanId(pending.id);
     }, [loadData])
   );
 

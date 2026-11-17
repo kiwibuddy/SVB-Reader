@@ -16,6 +16,7 @@ import { getPlanStartIndex } from '@/utils/planStartIndex';
 import { formatReadingMinutes, getSegmentReadingTime } from '@/utils/readingTime';
 import { datedWindow, dateForDay, daysBetween, formatShortDate } from '@/utils/seasonalPlans';
 import { neighbours } from '@/utils/storyOrder';
+import { voiceForPlan } from '@/utils/voicePlans';
 import { shortStoryId } from '@/utils/threadProgress';
 
 const titles = SegmentTitles as Record<string, { title?: string; ref?: string; book?: string[] }>;
@@ -69,9 +70,10 @@ export default function UpNextCard({ storyId, order, plan, voice }: Props) {
 
   if (!done) return null;
 
+  const planVoice = plan ? voiceForPlan(plan.id) : null;
   const ctx = plan
     ? plan.type === 'plan'
-      ? { planId: plan.id }
+      ? { planId: plan.id, ...(planVoice ? { voice: planVoice } : {}) }
       : { challengeId: plan.id }
     : voice
       ? { voice }
