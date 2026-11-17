@@ -8,13 +8,9 @@ import { ThreadColors } from '@/constants/Colors';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getSegmentReadingTime, formatReadingMinutes } from '@/utils/readingTime';
-import {
-  getActivePlanFromDB,
-  startPlan,
-  startChallenge,
-  getPlanProgress,
-  getChallengeProgress,
-} from '@/api/sqlite';
+import { getActivePlanFromDB, getPlanProgress, getChallengeProgress } from '@/api/sqlite';
+import { startCatalogPlan } from '@/utils/planActions';
+import { getPlanStartIndex } from '@/utils/planStartIndex';
 import { nextUnreadStory, getLocalizedPlanText, type CatalogItem } from '@/utils/planCatalog';
 import { findPlanItem, deleteUserPlan } from '@/api/userPlans';
 import { openSegment } from '@/utils/openSegment';
@@ -88,10 +84,9 @@ const PlanDetail = () => {
 
   const handleStart = async () => {
     void hapticImpactLight();
-    if (item.type === 'plan') await startPlan(item.id);
-    else await startChallenge(item.id);
+    await startCatalogPlan(item, getPlanStartIndex(item.id));
     setIsActive(true);
-    const next = nextUnreadStory(item.stories, completedIds);
+    const next = nextUnreadStory(item.stories, completedIds, getPlanStartIndex(item.id));
     if (next) {
       openSegment(router, next.storyId, {
         planId: item.type === 'plan' ? item.id : undefined,

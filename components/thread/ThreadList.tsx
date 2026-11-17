@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   Keyboard,
+  Alert,
   useWindowDimensions,
 } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
@@ -48,6 +49,10 @@ import { getPlanProgress, getStartedPlansFromDB, getStartedChallengesFromDB, get
 import { lookupReference, type ReferenceLookup } from '@/utils/reference';
 import { openSegment } from '@/utils/openSegment';
 import { findCatalogItem, getLocalizedPlanText, nextUnreadStory } from '@/utils/planCatalog';
+import { getPlanStartIndex } from '@/utils/planStartIndex';
+import { startCatalogPlan } from '@/utils/planActions';
+import { ADVENT_PLAN_ID, datedWindow, formatLongDate, todayIndex } from '@/utils/seasonalPlans';
+import AdventInvite from '@/components/thread/AdventInvite';
 import { findPlanItem } from '@/api/userPlans';
 import { shortStoryId } from '@/utils/threadProgress';
 import { isWrittenStory } from '@/utils/writtenVoices';
@@ -181,6 +186,8 @@ const ThreadList: React.FC<ThreadListProps> = ({
     total: number;
     isPaused: boolean;
   }[]>([]);
+  const [plansLoaded, setPlansLoaded] = useState(false);
+  const [plansReload, setPlansReload] = useState(0);
   const seeded = useRef(false);
 
   const allowed = useMemo(() => (storyFilter ? new Set(storyFilter) : null), [storyFilter]);
@@ -205,7 +212,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
               : await getChallengeProgress(item.id);
           if (!alive) return;
           const planDone = new Set((progress?.completedSegmentIds || []).map(shortStoryId));
-          const next = nextUnreadStory(item.stories, planDone);
+          const next = nextUnreadStory(item.stories, planDone, getPlanStartIndex(item.id));
           cards.push({
             id: item.id,
             type: item.type,
@@ -218,6 +225,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
           });
         }
         setStartedPlans(cards);
+        setPlansLoaded(true);
         const first = cards.find((c) => !c.isPaused) || cards[0];
         if (first) {
           setActiveReading({
@@ -238,7 +246,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
     return () => {
       alive = false;
     };
-  }, [hideSearch, completedIds, language]);
+  }, [hideSearch, completedIds, language, plansReload]);
 
   const seedId = justCompletedId || currentId;
   useEffect(() => {
@@ -503,6 +511,28 @@ const ThreadList: React.FC<ThreadListProps> = ({
             <Text style={[styles.continueGo, { color: palette.acc }]}>▶</Text>
           </Pressable>
         </Animated.View>
+      )}
+      {!hideSearch && !searching && plansLoaded && (
+        <AdventInvite
+          palette={palette}
+          language={language}
+          started={startedPlans.some((p) => p.id === ADVENT_PLAN_ID)}
+          onOpenPlan={() => router.push(`/plan?expandedPlan=${ADVENT_PLAN_ID}` as never)}
+          onJoin={async (item, startIndex, beforeStart) => {
+            await startCatalogPlan(item, startIndex);
+            setPlansReload((n) => n + 1);
+            const window = datedWindow(item.id, item.stories.length);
+            if (beforeStart && window && todayIndex(window) < 0) {
+              Alert.alert(
+                t('UI.advent.joinedTitle'),
+                t('UI.advent.joinedBody', { date: formatLongDate(window.start, language) })
+              );
+              return;
+            }
+            const next = nextUnreadStory(item.stories, new Set(), startIndex);
+            if (next) openStory(next.storyId, { challengeId: item.id });
+          }}
+        />
       )}
       {!hideSearch && !searching && startedPlans.length > 0 && startedPlans.map((plan) => (
         <Pressable
