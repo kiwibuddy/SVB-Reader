@@ -12,7 +12,7 @@ check `git log` for a partial commit, and carry on.
 | Release | Item | Status | Commit | Notes |
 | --- | --- | --- | --- | --- |
 | A | W0 Season reset for plans left unfinished last year | done | `130c2c0` | |
-| A | W1 SQL string literals in double quotes | done | (this commit) | 14 queries; `api/sqlQuoting.test.ts` guards it |
+| A | W1 SQL string literals in double quotes | done | `1ab28d0` | 14 queries; `api/sqlQuoting.test.ts` guards it |
 | A | W2 Stories read inside a plan count everywhere | pending | | |
 | A | W3 Finishing a story keeps a plan's status | pending | | |
 | A | W4 After a story: stay put, up-next card, plan-order arrows | pending | | |
