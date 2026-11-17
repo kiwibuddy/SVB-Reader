@@ -35,3 +35,13 @@ test('no SQL string literal uses double quotes', () => {
   }
   expect(offenders).toEqual([]);
 });
+
+// React Native 0.86 removed StyleSheet.absoluteFillObject on iOS and Android
+// (web still has it, so the browser preview hides the break). Spreading the
+// missing helper silently drops position: 'absolute'.
+test('no code uses the removed StyleSheet.absoluteFillObject', () => {
+  const offenders = ['app', 'components', 'hooks', 'utils', 'services', 'context', 'constants']
+    .flatMap(files)
+    .filter((file) => fs.readFileSync(path.join(ROOT, file), 'utf8').includes('StyleSheet.absoluteFillObject'));
+  expect(offenders).toEqual([]);
+});

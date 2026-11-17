@@ -879,6 +879,10 @@ export function KeepDemo({ active, token, palette, isDarkMode, language, t }: De
   );
 }
 
+// Spelled out: React Native 0.86 removed the old absolute-fill spread helper, so the
+// Save demo's backdrop and modal lost their positioning.
+const FILL = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } as const;
+
 const styles = StyleSheet.create({
   fillBleed: { flex: 1, width: '100%' },
   threadClip: { overflow: 'hidden', paddingTop: 8 },
@@ -1011,7 +1015,7 @@ const styles = StyleSheet.create({
   pullStory: { fontSize: 12, lineHeight: 16, opacity: 0.85 },
   keepPad: { flex: 1, paddingHorizontal: 12, justifyContent: 'center', alignItems: 'center' },
   keepBackdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...FILL,
     opacity: 0.4,
     paddingHorizontal: 12,
     paddingTop: 8,
@@ -1020,7 +1024,7 @@ const styles = StyleSheet.create({
   },
   keepBackdropPhone: { opacity: 0.32, paddingHorizontal: 8, paddingTop: 4, gap: 4 },
   keepModalOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...FILL,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 20,
