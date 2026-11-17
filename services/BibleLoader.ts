@@ -6,36 +6,16 @@
  */
 
 import { bibleStorageManager, SupportedBibleLanguage } from './BibleStorageManager';
+import { getEnglishBibleSync, loadEnglishBible as loadEnglishBibleSource } from './englishBibleSource';
 import logger from '@/utils/logger';
 import i18next from 'i18next';
 
-// Static import - Metro bundler will include this in the bundle
-// Using try-catch wrapper to handle gracefully if file is missing
-let EnglishBible: any = null;
-let englishBibleLoadError: Error | null = null;
-
-// Load English Bible at module level so Metro can bundle it
-try {
-  // @ts-ignore - Metro will handle this JSON import
-  EnglishBible = require('@/assets/data/newBibleNLT1.json');
-} catch (error) {
-  englishBibleLoadError = error instanceof Error ? error : new Error(String(error));
-  logger.error('[CRASH] Failed to load English Bible at module level:', error);
-}
-
+// The English Bible: bundled by default, or a file asset when built with
+// EXPO_PUBLIC_BIBLE_AS_ASSET=1 (see englishBibleSource.ts).
 function loadEnglishBible(): any {
-  if (EnglishBible) {
-    return EnglishBible;
-  }
-  
-  if (englishBibleLoadError) {
-    logger.error('❌ English Bible failed to load previously:', englishBibleLoadError);
-    return null;
-  }
-  
-  // Should not reach here if module-level import worked
-  logger.error('[CRASH] English Bible not loaded and no error recorded');
-  return null;
+  const bible = getEnglishBibleSync();
+  if (!bible) logger.error('❌ English Bible is not loaded');
+  return bible;
 }
 
 /**
@@ -47,15 +27,28 @@ class BibleLoader {
   private currentLanguage: SupportedBibleLanguage = 'en';
 
   private constructor() {
-    // Lazy load English Bible - don't crash if it fails to load
+    // Bundled English is ready now; an asset-built app fills it in via
+    // ensureEnglishLoaded() during start-up.
     try {
-      const bible = loadEnglishBible();
+      const bible = getEnglishBibleSync();
       if (bible) {
         this.cachedBibles.set('en', bible);
       }
     } catch (error) {
       logger.error('❌ Failed to initialize English Bible in constructor:', error);
     }
+  }
+
+  /**
+   * Make sure the English Bible is in memory before anything reads it.
+   * Instant when it is bundled; reads the asset when built that way.
+   */
+  public async ensureEnglishLoaded(): Promise<boolean> {
+    if (this.cachedBibles.has('en')) return true;
+    const ok = await loadEnglishBibleSource();
+    const bible = getEnglishBibleSync();
+    if (ok && bible) this.cachedBibles.set('en', bible);
+    return ok && !!bible;
   }
 
   public static getInstance(): BibleLoader {
@@ -324,6 +317,7 @@ export const bibleLoader = {
   preloadBible: (language: SupportedBibleLanguage) => getBibleLoaderInstance().preloadBible(language),
   clearCache: (language?: SupportedBibleLanguage) => getBibleLoaderInstance().clearCache(language),
   getCurrentLanguage: () => getBibleLoaderInstance().getCurrentLanguage(),
+  ensureEnglishLoaded: () => getBibleLoaderInstance().ensureEnglishLoaded(),
 };
 
 // Export default for backwards compatibility

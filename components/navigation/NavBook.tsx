@@ -228,26 +228,6 @@ export const accordionColor = {
   Rev: "#c7dae6",
 };
 
-// Define an interface for the structure of Bible data
-interface BibleData {
-  [key: string]: {
-    id: string;
-    colors: {
-      total: number;
-      black: number;
-      red: number;
-      green: number;
-      blue: number;
-    }; // Adjust the type based on actual structure
-  };
-}
-
-// Import Bible loader for language support
-import { bibleLoader } from '@/services/BibleLoader';
-
-// Get current Bible data (switches based on user language)
-const Bible: BibleData = bibleLoader.getCurrentBible();
-
 export interface AccordionItem {
   djhBook: string;
   bookName: string;

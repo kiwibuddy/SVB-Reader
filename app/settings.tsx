@@ -30,6 +30,7 @@ import { getDisplayVersion } from '@/utils/version-manager';
 import { getWeeklyGoal, setWeeklyGoal } from '@/api/sqlite';
 import { DEFAULT_WEEKLY_GOAL, WEEKLY_GOALS, type WeeklyGoal } from '@/utils/streak';
 import { getOtaDebugLabel } from '@/utils/otaUpdates';
+import { ENGLISH_BIBLE_SOURCE } from '@/services/englishBibleSource';
 
 type FontSizeOption = 'small' | 'medium' | 'large';
 
@@ -409,7 +410,7 @@ export default function SettingsScreen() {
           </View>
           <View style={[styles.row, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: palette.hair }]}>
             <Text style={[styles.rowText, { color: palette.ink }]}>{t('UI.settings.jsUpdate')}</Text>
-            <Text style={[styles.rowText, { color: palette.mute }]}>{getOtaDebugLabel()}</Text>
+            <Text style={[styles.rowText, { color: palette.mute }]}>{getOtaDebugLabel()}{ENGLISH_BIBLE_SOURCE === 'asset' ? ' · Bible asset' : ''}</Text>
           </View>
         </View>
       </ScrollView>

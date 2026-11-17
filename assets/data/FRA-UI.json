@@ -23240,6 +23240,11 @@
       "count": "{{count}} récits, dans l'ordre",
       "open": "Ouvrir votre parcours",
       "created": "Parcours créé"
+    },
+    "bibleLoad": {
+      "title": "Le texte de la Bible ne s'est pas chargé",
+      "body": "Veuillez réessayer. Si le problème persiste, redémarrez l'application.",
+      "retry": "Réessayer"
     }
   }
 }

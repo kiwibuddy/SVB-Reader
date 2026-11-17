@@ -5,7 +5,9 @@ import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider, router, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useState, useEffect, useRef } from 'react';
-import { AppState, View, Text } from 'react-native';
+import { AppState, View, Text, Pressable } from 'react-native';
+import i18next from 'i18next';
+import { bibleLoader } from '@/services/BibleLoader';
 // Removed duplicate logger import
 import 'react-native-reanimated';
 import 'react-native-worklets';
@@ -46,13 +48,23 @@ function AppContent() {
   }, [pathname]);
   const [dbReady, setDbReady] = useState(false);
   const [dbError] = useState<string | null>(null);
+  // Only possible when built with the Bible as a file asset: never show an empty Bible.
+  const [bibleFailed, setBibleFailed] = useState(false);
   
   useEffect(() => {
     const initializeApp = async () => {
       try {
         logger.info('[INIT] Starting app initialization...');
+        // English text: instant when bundled; read from its asset when built that way.
+        const englishReady = bibleLoader.ensureEnglishLoaded().catch(() => false);
         const result = await initializeAppSystems();
         logger.info('[INIT] initializeAppSystems completed:', result.success);
+        if (!(await englishReady)) {
+          logger.error('[CRASH] English Bible could not be loaded');
+          setBibleFailed(true);
+          void fetchOtaInBackground();
+          return;
+        }
         
         if (result.success) {
           setDbReady(true);
@@ -126,6 +138,33 @@ function AppContent() {
     };
   }, [dbReady]);
   
+  if (bibleFailed) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background, padding: 24 }}>
+        <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' }}>
+          {i18next.t('UI.bibleLoad.title', { defaultValue: "The Bible text didn't load" })}
+        </Text>
+        <Text style={{ color: colors.text, textAlign: 'center', marginBottom: 20 }}>
+          {i18next.t('UI.bibleLoad.body', { defaultValue: 'Please try again. If it keeps happening, restart the app.' })}
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={async () => {
+            setBibleFailed(false);
+            const ok = await bibleLoader.ensureEnglishLoaded().catch(() => false);
+            if (ok) setDbReady(true);
+            else setBibleFailed(true);
+          }}
+          style={{ paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: colors.text }}
+        >
+          <Text style={{ color: colors.text, fontWeight: '600' }}>
+            {i18next.t('UI.bibleLoad.retry', { defaultValue: 'Try again' })}
+          </Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   if (dbError) {
     return (
       <View style={{ 

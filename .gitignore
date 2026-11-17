@@ -46,3 +46,6 @@ metadata.json
 # Large development documentation files
 docs/development/cursor_plan_for_adding_french_language.md
 
+
+# Made at bundle time when EXPO_PUBLIC_BIBLE_AS_ASSET=1 (metro.config.js)
+assets/generated/

@@ -1,4 +1,5 @@
 import * as FileSystem from 'expo-file-system/legacy';
+import { getEnglishBibleSync, loadEnglishBible } from './englishBibleSource';
 import logger from '@/utils/logger';
 
 export type SupportedBibleLanguage = 'en' | 'fr' | 'es' | 'pt';
@@ -258,14 +259,9 @@ export class BibleStorageManager {
    */
   async loadBible(language: SupportedBibleLanguage): Promise<any | null> {
     if (language === 'en') {
-      // Load bundled English Bible - use static import so Metro bundles it
-      try {
-        // @ts-ignore - Metro will handle this JSON import
-        return require('@/assets/data/newBibleNLT1.json');
-      } catch (error) {
-        logger.error('❌ Failed to load bundled English Bible:', error);
-        return null;
-      }
+      // English ships with the app (bundled, or as a file asset).
+      await loadEnglishBible();
+      return getEnglishBibleSync();
     }
 
     try {
