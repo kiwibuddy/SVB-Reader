@@ -21,7 +21,7 @@ check `git log` for a partial commit, and carry on.
 | A | W6 Onboarding Save demo style helper | done | `9b981d2` | RN 0.86 phones lack the helper; web still has it, so check on a device. Guard test in `api/sqlQuoting.test.ts` |
 | B | W7 A streak that forgives | done | `f76bc2b` | `utils/streak.ts` + 25 tests; browser walk over faked days (read 14–16 Nov, skip 17th, covered on 18th). Also fixed: first read on install day not counted; completion banner squeezed into the Done button. Heatmap rest marks skipped (heatmap is by story, not date) |
 | B | W8 Reminders that work | done | `809290c` | `utils/reminderPlan.ts` + 16 tests; time sheet checked in browser (8:15 PM saved). Advent `dailyOverride` removed, teasers unchanged |
-| C | W9 Follow-a-voice plans | pending | | |
+| C | W9 Follow-a-voice plans | done | `7fb39d4` | `utils/voicePlans.ts` + 6 tests; browser: Moses → "Follow Moses" (33 stories) opens expanded; story opens with `voice=Moses`; "Open your plan" after reload |
 | C | W10 Apply updates sooner | pending | | |
 | D | W11 Bible text out of the update bundle | pending | | Behind a flag, off by default |
 
@@ -36,6 +36,7 @@ check `git log` for a partial commit, and carry on.
 
 ## Log
 
+- 17 Nov — W9 done.
 - 17 Nov — W8 done. **Release B ready.**
 - 17 Nov — W7 done. Two existing bugs found in the browser walk and fixed (see W7 row).
 - 17 Nov — W6 done. **Release A ready.** Note: the web preview needs a restart to pick up edits (`CI=1` turns off file watching).
