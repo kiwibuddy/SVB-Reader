@@ -120,18 +120,18 @@ export async function markSegmentComplete(
       )
     `, segmentID, segmentID, currentDate);
 
+    // A finished story counts as read everywhere — on Read, on You, in voices
+    // met — whichever plan it was read in. Plans keep their own ticks below.
+    await db.runAsync(`
+      INSERT OR REPLACE INTO completedSegments (
+        segmentID,
+        isCompleted,
+        completionDate
+      ) VALUES (?, 1, ?)
+    `, segmentID, currentDate);
+
     // Handle context-specific completion
-    if (context === 'main') {
-      // Update main context completion (can be repeated)
-      await db.runAsync(`
-        INSERT OR REPLACE INTO completedSegments (
-          segmentID,
-          isCompleted,
-          completionDate
-        ) VALUES (?, 1, ?)
-      `, segmentID, currentDate);
-      
-    } else if (context === 'plan' && planID) {
+    if (context === 'plan' && planID) {
       // Update plan-specific progress (track plan-specific completion count)
       await db.runAsync(`
         INSERT OR REPLACE INTO reading_plan_progress (
@@ -170,15 +170,6 @@ export async function markSegmentComplete(
       
       // Update overall challenge status
       await updateChallengeStatus(challengeID);
-    } else if (context === 'today') {
-      // For today's reading, mark as complete in main context (today's reading is tracked by date)
-      await db.runAsync(`
-        INSERT OR REPLACE INTO completedSegments (
-          segmentID,
-          isCompleted,
-          completionDate
-        ) VALUES (?, 1, ?)
-      `, segmentID, currentDate);
     }
 
     // Update daily activity and streak
@@ -928,6 +919,42 @@ export async function resumeChallenge(challengeID: string): Promise<void> {
   } catch (error) {
     logger.error("Error resuming challenge:", error);
   }
+}
+
+/** Story IDs finished inside any plan or challenge, from every table that recorded them. */
+const PLAN_READS_SQL = `
+  SELECT segmentID, completionDate FROM reading_plan_progress WHERE isCompleted = 1
+  UNION ALL
+  SELECT segmentID, completionDate FROM reading_challenge_progress WHERE isCompleted = 1
+  UNION ALL
+  SELECT segmentID, completionDate FROM segment_completion WHERE completionType IN ('plan', 'challenge')
+`;
+
+/**
+ * One-time repair: before 2.0.x, a story finished inside a plan was never marked
+ * as read overall, so Read, You and voices met ignored it. Mark every such story
+ * read, keeping the earliest date. Safe to run more than once.
+ * Returns the number of stories newly counted.
+ */
+export async function backfillPlanReadsToOverall(): Promise<number> {
+  const db = await databaseManager.ensureDatabase();
+  const before = await db.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(*) AS count FROM completedSegments WHERE isCompleted = 1`
+  );
+  await db.runAsync(`
+    INSERT OR IGNORE INTO completedSegments (segmentID, isCompleted, completionDate)
+    SELECT segmentID, 1, MIN(completionDate) FROM (${PLAN_READS_SQL})
+    WHERE segmentID LIKE 'S%' OR segmentID LIKE '%-S%'
+    GROUP BY segmentID
+  `);
+  await db.runAsync(`
+    UPDATE completedSegments SET isCompleted = 1
+    WHERE isCompleted = 0 AND segmentID IN (SELECT segmentID FROM (${PLAN_READS_SQL}))
+  `);
+  const after = await db.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(*) AS count FROM completedSegments WHERE isCompleted = 1`
+  );
+  return (after?.count || 0) - (before?.count || 0);
 }
 
 /**

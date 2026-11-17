@@ -2,6 +2,7 @@ import { databaseManager } from '@/api/database-manager';
 import { initializeSettingsTable, migrateFromAsyncStorage } from './sync-settings-manager';
 import { migrateEmojiTableForNotes } from '@/api/database-migration';
 import { migrateQuestionsToDatabase } from '@/api/questions-migration';
+import { backfillPlanReadsToOverall, getAppState, setAppState } from '@/api/sqlite';
 import { bibleStorageManager } from './BibleStorageManager';
 import logger from '@/utils/logger';
 
@@ -75,6 +76,19 @@ async function runSchemaMigrations(): Promise<void> {
       }
     } else {
       logger.info('✅ Emoji table already supports notes feature');
+    }
+
+    // Stories finished inside plans used to be missing from overall progress.
+    // Count them once. Runs before the seasonal reset in app/_layout.tsx.
+    try {
+      const BACKFILL_KEY = 'migration.planReadsBackfill.v1';
+      if ((await getAppState(BACKFILL_KEY)) !== 'done') {
+        const added = await backfillPlanReadsToOverall();
+        await setAppState(BACKFILL_KEY, 'done');
+        logger.info(`Counted ${added} stories read in plans as read overall`);
+      }
+    } catch (error) {
+      logger.error('Plan reads backfill failed; will retry next launch:', error);
     }
 
     // Migrate questions from JSON to SQLite (one-time migration) - run in background to not block startup
