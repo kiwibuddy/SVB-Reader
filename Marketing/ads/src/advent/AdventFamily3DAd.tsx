@@ -112,11 +112,12 @@ const JoinScreen: React.FC = () => {
   );
 };
 
-/** Screen B: Luke 1:28–30. Dad, Mum and Leo share the narration; Ana reads Gabriel. */
+/** Screen B: Luke 1:26–38 as the app shows it. Dad, Mum and Leo share the narration; Ana reads Gabriel and Mary. */
 const ReadScreen: React.FC = () => (
   <PartsReader
     story={ANNUNCIATION}
     lines={ANNUNCIATION.lines}
+    readFrom={1}
     names={['Dad', 'Mum', 'Leo', 'Ana']}
     pick={3}
     namesAt={B_START}

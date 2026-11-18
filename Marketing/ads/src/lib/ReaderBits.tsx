@@ -10,20 +10,62 @@ export const LEADING = 46;
 export const BUBBLE_MAX = Math.round(SCREEN_W * 0.79);
 const CHARS_PER_LINE = 34;
 
-export const heightOf = (line: Line) => {
-  const rows = Math.max(1, Math.ceil(line.text.length / CHARS_PER_LINE));
-  return 26 + 10 + rows * LEADING + 44 + 22;
+/** Chapter and verse marks in the text: ⟪6⟫ chapter, ⟦29⟧ verse (scripts/advent-data.mjs). */
+const MARK = /(⟪[^⟫]*⟫|⟦[^⟧]*⟧)/;
+const visibleText = (text: string) => text.replace(/⟪[^⟫]*⟫|⟦[^⟧]*⟧/g, '');
+
+export const heightOf = (line: Line, size: number = BODY) => {
+  const leading = Math.round((size * LEADING) / BODY);
+  const perLine = (CHARS_PER_LINE * BODY) / size;
+  const rows = Math.max(1, Math.ceil(visibleText(line.text).length / perLine));
+  return 26 + 10 + rows * leading + 44 + 22;
 };
+
+/** Text with the app's verse numbers: small raised numerals, chapter numbers inline. */
+const Marked: React.FC<{ text: string; color: string }> = ({ text, color }) => (
+  <>
+    {text.split(MARK).map((part, i) => {
+      if (part.startsWith('⟪')) {
+        return (
+          <span key={i} style={{ fontWeight: 600 }}>
+            {part.slice(1, -1)}
+          </span>
+        );
+      }
+      if (part.startsWith('⟦')) {
+        return (
+          <span key={i} style={{ fontSize: '0.58em', verticalAlign: '0.62em', lineHeight: 0, color, opacity: 0.85 }}>
+            {part.slice(1, -1)}{' '}
+          </span>
+        );
+      }
+      return <React.Fragment key={i}>{part}</React.Fragment>;
+    })}
+  </>
+);
 
 export const Bubble: React.FC<{
   line: Line;
   progress: number;
   dim?: boolean;
   glow?: boolean;
-}> = ({ line, progress, dim, glow }) => {
+  /** Type size; the 2.0 ads use BODY. */
+  size?: number;
+  /** As the app draws it: no outline on narration, a thick outline on your part. */
+  app?: boolean;
+  /** This turn belongs to the part picked on this phone. */
+  mine?: boolean;
+}> = ({ line, progress, dim, glow, size = BODY, app = false, mine = false }) => {
   const left = IS_LEFT[line.color];
   const ink = INK[line.color];
   const narration = line.color === 'black';
+  const leading = Math.round((size * LEADING) / BODY);
+  const border = app
+    ? narration
+      ? `${glow ? 2.5 : 0}px solid ${glow ? `${light.narr}55` : 'transparent'}`
+      : `${mine || glow ? 3.5 : 1.8}px solid ${ink}`
+    : `${glow ? 3 : 1.8}px solid ${narration ? light.hair : ink}`;
+  const indent = app && narration && /^⟪|^⟦/.test(line.text);
   return (
     <div
       style={{
@@ -51,7 +93,7 @@ export const Bubble: React.FC<{
         style={{
           maxWidth: narration ? '100%' : BUBBLE_MAX,
           background: FILL[line.color],
-          border: `${glow ? 3 : 1.8}px solid ${narration ? light.hair : ink}`,
+          border,
           borderRadius: 26,
           borderTopLeftRadius: left ? 8 : 26,
           borderTopRightRadius: left ? 26 : 8,
@@ -59,8 +101,14 @@ export const Bubble: React.FC<{
           boxShadow: glow ? `0 0 0 8px ${ink}1E, 0 12px 30px ${ink}2A` : `0 6px 20px ${ink}12`,
         }}
       >
-        <div style={{ font: `400 ${BODY}px/${LEADING}px ${SANS}`, color: narration ? light.ink : ink }}>
-          {line.text}
+        <div
+          style={{
+            font: `400 ${size}px/${leading}px ${SANS}`,
+            color: narration ? light.ink : ink,
+            textIndent: indent ? '1.3em' : undefined,
+          }}
+        >
+          <Marked text={line.text} color={narration ? light.mute : ink} />
         </div>
       </div>
     </div>

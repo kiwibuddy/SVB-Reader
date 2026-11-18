@@ -1,7 +1,7 @@
 import React from 'react';
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { Line } from '../data/script-gen3';
-import { StatusBar } from '../lib/Phone';
+import { SCREEN_H, StatusBar } from '../lib/Phone';
 import { Bubble, heightOf, StoryHeader } from '../lib/ReaderBits';
 import { FILL, INK, light, SANS, type VoiceColor } from '../theme';
 import { PHASES, ROWS, type PlanRow, type Story } from './data';
@@ -272,11 +272,12 @@ const PartsPicker: React.FC<{
   top: number;
   slots: VoiceColor[];
   names: string[];
+  voices: number;
   namesAt: number;
   pick: number;
   pickAt: number;
   speaking: number;
-}> = ({ top, slots, names, namesAt, pick, pickAt, speaking }) => {
+}> = ({ top, slots, names, voices, namesAt, pick, pickAt, speaking }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const picked = spring({ frame: frame - pickAt, fps, config: { damping: 200 }, durationInFrames: 10 });
@@ -290,11 +291,13 @@ const PartsPicker: React.FC<{
           border: `2px solid ${light.hair}`,
           borderRadius: 24,
           background: light.surf,
-          padding: '22px 22px 16px',
+          padding: '20px 22px 14px',
           display: 'flex',
-          gap: 16,
+          alignItems: 'flex-start',
+          gap: 14,
         }}
       >
+        <div style={{ display: 'flex', gap: 14, flex: '0 0 64%' }}>
         {slots.map((ink, i) => {
           const name = spring({ frame: frame - (namesAt + i * 8), fps, config: { damping: 200 }, durationInFrames: 12 });
           const mine = i === pick && picked > 0.1;
@@ -303,7 +306,7 @@ const PartsPicker: React.FC<{
             <div key={i} style={{ flex: 1, textAlign: 'center' }}>
               <div
                 style={{
-                  height: 84,
+                  height: 72,
                   borderRadius: 18,
                   borderTopLeftRadius: 6,
                   background: FILL[ink],
@@ -340,15 +343,37 @@ const PartsPicker: React.FC<{
             </div>
           );
         })}
+        </div>
+        {/* As in the app: how many voices this story has, beside the four parts. */}
+        <div
+          style={{
+            flex: 1,
+            height: 72,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: 8,
+            font: `700 21px/28px ${SANS}`,
+            letterSpacing: 2.2,
+            textTransform: 'uppercase',
+            color: light.ink,
+          }}
+        >
+          {voices} voices
+          <svg width="22" height="22" viewBox="0 0 24 24">
+            <path d="M6 9l6 6 6-6" fill="none" stroke={light.ink} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
       </div>
     </div>
   );
 };
 
 /**
- * A story open with four people reading. Turns arrive one at a time; the part
- * reading each turn lights up; the picked part's turns stay bright and the
- * rest dim once reading starts — what the reader holding this phone sees.
+ * A story open with four people reading, as the app shows it: the passage fills
+ * the screen (verse numbers, every turn readable), the part picked on this
+ * phone has the thick outline, and the turn being read lights up and scrolls
+ * gently towards the top, the way a group moves down the page.
  */
 export const PartsReader: React.FC<{
   story: Story;
@@ -359,30 +384,35 @@ export const PartsReader: React.FC<{
   pickAt: number;
   readAt: number;
   step: number;
+  /** First turn the group reads; the turns above it stay on screen as context. */
+  readFrom?: number;
   windowTop?: number;
-  windowHeight?: number;
-  restBottom?: number;
-}> = ({ story, lines, names, pick, namesAt, pickAt, readAt, step, windowTop = 500, windowHeight = 560, restBottom = 380 }) => {
+  size?: number;
+}> = ({ story, lines, names, pick, namesAt, pickAt, readAt, step, readFrom = 0, windowTop = 500, size = 30 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
   const slots = partSlots(story.readers);
   const parts = assignParts(lines, slots);
   // A two-line story title pushes everything below it down one line.
   const shift = story.title.length > 32 ? 48 : 0;
 
-  const arrivals = lines.map((_, i) => readAt + i * step);
-  const heights = lines.map(heightOf);
+  const heights = lines.map((l) => heightOf(l, size));
   const cum = (n: number) => heights.slice(0, n).reduce((a, b) => a + b, 0);
-  // Scroll so the newest turn ends near restBottom, but never so far that its
-  // first line leaves the window — a long speech is read from its start.
-  const stackY = interpolate(
-    frame,
-    arrivals,
-    arrivals.map((_, i) => Math.min(0, Math.max(restBottom - cum(i + 1), 40 - cum(i)))),
-    clamp
-  );
-  const current = arrivals.reduce((acc, at, i) => (frame >= at ? i : acc), -1);
-  const dimOn = interpolate(frame, [readAt + 4, readAt + 16], [0, 1], clamp);
+  const windowHeight = SCREEN_H - (windowTop + shift);
+  const maxScroll = Math.max(0, cum(lines.length) - windowHeight + 60);
+  // Keep the turn being read about 150 px below the top of the reading area.
+  const target = (i: number) => -Math.min(maxScroll, Math.max(0, cum(i) - 150));
+
+  const reading = lines.map((_, i) => i).filter((i) => i >= readFrom);
+  const arrivals = reading.map((_, k) => readAt + k * step);
+  const keys: number[] = [];
+  const values: number[] = [];
+  reading.forEach((i, k) => {
+    keys.push(arrivals[k], arrivals[k] + 14);
+    values.push(k === 0 ? target(readFrom) : target(reading[k - 1]), target(i));
+  });
+  const stackY = keys.length ? interpolate(frame, keys, values, { ...clamp, easing: (t) => t * t * (3 - 2 * t) }) : 0;
+  const k = arrivals.reduce((acc, at, j) => (frame >= at ? j : acc), -1);
+  const current = k >= 0 ? reading[k] : -1;
 
   const mix: Array<[string, number]> = INK_ORDER.map((c) => [INK[c], story.mix[c]]).filter(([, w]) => (w as number) > 0) as Array<
     [string, number]
@@ -396,6 +426,7 @@ export const PartsReader: React.FC<{
         top={262 + shift}
         slots={slots}
         names={names}
+        voices={story.voices}
         namesAt={namesAt}
         pick={pick}
         pickAt={pickAt}
@@ -409,23 +440,22 @@ export const PartsReader: React.FC<{
           top: windowTop + shift,
           height: windowHeight,
           overflow: 'hidden',
-          maskImage: 'linear-gradient(to bottom, transparent 0, #000 46px)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0, #000 46px)',
+          maskImage: 'linear-gradient(to bottom, transparent 0, #000 40px)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0, #000 40px)',
         }}
       >
         <div style={{ transform: `translateY(${stackY}px)`, paddingTop: 30 }}>
-          {lines.map((line, i) => {
-            const mine = parts[i] === pick;
-            return (
-              <Bubble
-                key={i}
-                line={line}
-                progress={spring({ frame: frame - arrivals[i], fps, config: { damping: 200 }, durationInFrames: 12 })}
-                dim={!mine && dimOn > 0.5}
-                glow={mine && i === current}
-              />
-            );
-          })}
+          {lines.map((line, i) => (
+            <Bubble
+              key={i}
+              line={line}
+              progress={1}
+              size={size}
+              app
+              mine={parts[i] === pick}
+              glow={i === current}
+            />
+          ))}
         </div>
       </div>
     </AbsoluteFill>

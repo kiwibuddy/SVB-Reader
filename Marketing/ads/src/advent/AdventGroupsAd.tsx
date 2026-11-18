@@ -6,14 +6,15 @@ import { itemHeight, Journey, journeyItems, PartsReader, PlanFrame } from './scr
 import { A_START, AT, B_START } from './timeline';
 
 /**
- * Screen A: Isaiah 6:7–8, verbatim. A small group takes the four parts —
+ * Screen A: Isaiah 6:1–11 as the app shows it, read from 6:7 to "Here I am. Send me." A small group takes the four parts —
  * narrator, God, Isaiah, the seraphim — and this phone is reading Isaiah, so
  * the last turn it lights is "Here I am. Send me."
  */
 const ReadScreen: React.FC = () => (
   <PartsReader
     story={ISAIAH}
-    lines={ISAIAH.lines.slice(5, 10)}
+    lines={ISAIAH.lines}
+    readFrom={5}
     names={['Jo', 'Sam', 'Priya', 'Tom']}
     pick={2}
     namesAt={A_START}

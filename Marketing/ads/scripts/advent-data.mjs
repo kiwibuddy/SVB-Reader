@@ -20,22 +20,31 @@ const plan = read('ChronologicalMappings.json').adventJourneyChronological;
 
 const COLOR = { black: 'black', red: 'red', green: 'green', blue: 'blue' };
 
-/* Same flattening as dump-segment.mjs: verse and chapter numbers and notes dropped. */
+/*
+ * Flatten a block the way the reader shows it: chapter numbers inline, verse
+ * numbers as superscripts and a "*" where a translation note sits. The ad
+ * marks them in the text as ⟪6⟫ (chapter) and ⟦29⟧ (verse); ReaderBits draws them.
+ */
 const flatten = (node) => {
   if (!node || typeof node !== 'object') return '';
   if (Array.isArray(node)) return node.map(flatten).join('');
-  if (node.note) return '';
+  if (node.note) return '*';
   const tags = node.tag ?? [];
-  const own = typeof node.text === 'string' && !tags.includes('c') && !tags.includes('v') ? node.text : '';
+  if (tags.includes('c')) return `⟪${String(node.text ?? '').trim()}⟫` + flatten(node.children);
+  if (tags.includes('v')) return `⟦${String(node.text ?? '').trim()}⟧` + flatten(node.children);
+  const own = typeof node.text === 'string' ? node.text : '';
   return own + flatten(node.children);
 };
+
+/** Text without the chapter and verse marks (for checks). */
+const plain = (text) => text.replace(/⟪[^⟫]*⟫|⟦[^⟧]*⟧/g, '').trim();
 
 function turns(segId) {
   return bible[segId].content.map((block) => ({
     speaker: block.source?.sourceName ?? '',
     color: COLOR[block.source?.color] ?? 'black',
     // Each child is a paragraph or a poetry line; keep them apart.
-    text: (block.children || []).map(flatten).join(' ').replace(/\s+/g, ' ').trim(),
+    text: (block.children || []).map(flatten).join(' ').replace(/\s+/g, ' ').replace(/\s*(⟦)/g, ' $1').replace(/⟫ ⟦/g, '⟫⟦').trim(),
   }));
 }
 
@@ -43,8 +52,8 @@ function turns(segId) {
 function excerpt(segId, from, to, expectStart) {
   const all = turns(segId);
   const out = all.slice(from, to + 1);
-  if (!out[0].text.startsWith(expectStart)) {
-    throw new Error(`${segId}[${from}] starts "${out[0].text.slice(0, 40)}", expected "${expectStart}"`);
+  if (!plain(out[0].text).startsWith(expectStart)) {
+    throw new Error(`${segId}[${from}] starts "${plain(out[0].text).slice(0, 40)}", expected "${expectStart}"`);
   }
   return out;
 }
@@ -94,7 +103,7 @@ const out = {
     readers: readers('S285'),
     mix: mix('S285'),
     voices: voices('S285'),
-    lines: excerpt('S285', 11, 15, '“Greetings, favored woman!'),
+    lines: excerpt('S285', 10, 21, 'In the sixth month of Elizabeth'),
   },
   isaiah: {
     id: 'S191',
@@ -103,7 +112,7 @@ const out = {
     readers: readers('S191'),
     mix: mix('S191'),
     voices: voices('S191'),
-    lines: excerpt('S191', 0, 9, 'It was in the year King Uzziah died'),
+    lines: excerpt('S191', 0, 13, 'It was in the year King Uzziah died'),
   },
 };
 

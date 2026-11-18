@@ -335,19 +335,24 @@ export const ANNUNCIATION: Story = {
   "voices": 11,
   "lines": [
     {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦26⟧In the sixth month of Elizabeth’s pregnancy, God sent the angel Gabriel to Nazareth, a village in Galilee, ⟦27⟧to a virgin named Mary. She was engaged to be married to a man named Joseph, a descendant of King David. ⟦28⟧Gabriel appeared to her and said,"
+    },
+    {
       "speaker": "Gabriel",
       "color": "blue",
-      "text": "“Greetings, favored woman! The Lord is with you!”"
+      "text": "“Greetings,* favored woman! The Lord is with you!*”"
     },
     {
       "speaker": "The Narrator",
       "color": "black",
-      "text": "Confused and disturbed, Mary tried to think what the angel could mean."
+      "text": "⟦29⟧Confused and disturbed, Mary tried to think what the angel could mean."
     },
     {
       "speaker": "Gabriel",
       "color": "blue",
-      "text": "“Don’t be afraid, Mary,”"
+      "text": "⟦30⟧“Don’t be afraid, Mary,”"
     },
     {
       "speaker": "The Narrator",
@@ -357,7 +362,37 @@ export const ANNUNCIATION: Story = {
     {
       "speaker": "Gabriel",
       "color": "blue",
-      "text": "“for you have found favor with God! You will conceive and give birth to a son, and you will name him Jesus. He will be very great and will be called the Son of the Most High. The Lord God will give him the throne of his ancestor David. And he will reign over Israel forever; his Kingdom will never end!”"
+      "text": "“for you have found favor with God! ⟦31⟧You will conceive and give birth to a son, and you will name him Jesus. ⟦32⟧He will be very great and will be called the Son of the Most High. The Lord God will give him the throne of his ancestor David. ⟦33⟧And he will reign over Israel* forever; his Kingdom will never end!”"
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦34⟧Mary asked the angel,"
+    },
+    {
+      "speaker": "Mary Mother of Jesus",
+      "color": "blue",
+      "text": "“But how can this happen? I am a virgin.”"
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦35⟧The angel replied,"
+    },
+    {
+      "speaker": "Gabriel",
+      "color": "blue",
+      "text": "“The Holy Spirit will come upon you, and the power of the Most High will overshadow you. So the baby to be born will be holy, and he will be called the Son of God. ⟦36⟧What’s more, your relative Elizabeth has become pregnant in her old age! People used to say she was barren, but she has conceived a son and is now in her sixth month. ⟦37⟧For the word of God will never fail.*”"
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦38⟧Mary responded,"
+    },
+    {
+      "speaker": "Mary Mother of Jesus",
+      "color": "blue",
+      "text": "“I am the Lord’s servant. May everything you have said about me come true.”"
     }
   ]
 };
@@ -383,7 +418,7 @@ export const ISAIAH: Story = {
     {
       "speaker": "The Narrator",
       "color": "black",
-      "text": "It was in the year King Uzziah died that I saw the Lord. He was sitting on a lofty throne, and the train of his robe filled the Temple. Attending him were mighty seraphim, each having six wings. With two wings they covered their faces, with two they covered their feet, and with two they flew. They were calling out to each other,"
+      "text": "⟪6⟫⟦1⟧It was in the year King Uzziah died* that I saw the Lord. He was sitting on a lofty throne, and the train of his robe filled the Temple. ⟦2⟧Attending him were mighty seraphim, each having six wings. With two wings they covered their faces, with two they covered their feet, and with two they flew. ⟦3⟧They were calling out to each other,"
     },
     {
       "speaker": "Seraphim",
@@ -393,7 +428,7 @@ export const ISAIAH: Story = {
     {
       "speaker": "The Narrator",
       "color": "black",
-      "text": "Their voices shook the Temple to its foundations, and the entire building was filled with smoke. Then I said,"
+      "text": "⟦4⟧Their voices shook the Temple to its foundations, and the entire building was filled with smoke. ⟦5⟧Then I said,"
     },
     {
       "speaker": "Isaiah",
@@ -403,7 +438,7 @@ export const ISAIAH: Story = {
     {
       "speaker": "The Narrator",
       "color": "black",
-      "text": "Then one of the seraphim flew to me with a burning coal he had taken from the altar with a pair of tongs. He touched my lips with it and said,"
+      "text": "⟦6⟧Then one of the seraphim flew to me with a burning coal he had taken from the altar with a pair of tongs. ⟦7⟧He touched my lips with it and said,"
     },
     {
       "speaker": "Seraphim",
@@ -413,7 +448,7 @@ export const ISAIAH: Story = {
     {
       "speaker": "The Narrator",
       "color": "black",
-      "text": "Then I heard the Lord asking,"
+      "text": "⟦8⟧Then I heard the Lord asking,"
     },
     {
       "speaker": "God",
@@ -429,6 +464,26 @@ export const ISAIAH: Story = {
       "speaker": "Isaiah",
       "color": "green",
       "text": "“Here I am. Send me.”"
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦9⟧And he said,"
+    },
+    {
+      "speaker": "God",
+      "color": "red",
+      "text": "“Yes, go, and say to this people, ‘Listen carefully, but do not understand. Watch closely, but learn nothing.’ ⟦10⟧Harden the hearts of these people. Plug their ears and shut their eyes. That way, they will not see with their eyes, nor hear with their ears, nor understand with their hearts and turn to me for healing.”*"
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦11⟧Then I said,"
+    },
+    {
+      "speaker": "Isaiah",
+      "color": "green",
+      "text": "“Lord, how long will this go on?”"
     }
   ]
 };

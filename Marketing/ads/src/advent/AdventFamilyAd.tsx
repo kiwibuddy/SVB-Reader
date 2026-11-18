@@ -28,7 +28,7 @@ const JoinScreen: React.FC = () => {
 };
 
 /**
- * Screen B: Luke 1:28–30, verbatim. A family of four takes the four parts —
+ * Screen B: Luke 1:26–38 as the app shows it, read from Gabriel's greeting. A family of four takes the four parts —
  * three share the narration, one reads the angel — and this phone belongs to
  * the one reading Gabriel.
  */
@@ -36,6 +36,7 @@ const ReadScreen: React.FC = () => (
   <PartsReader
     story={ANNUNCIATION}
     lines={ANNUNCIATION.lines}
+    readFrom={1}
     names={['Dad', 'Mum', 'Gran', 'Ana']}
     pick={3}
     namesAt={B_START}
