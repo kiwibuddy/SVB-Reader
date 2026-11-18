@@ -32,6 +32,8 @@ export type ThreadRow = {
   height: number;
   /** Distance from the top of the row to the bead. Defaults to the vertical center. */
   markOffset?: number;
+  /** Override DEPTH_X[depth] — e.g. custom-plan path starting under the green list dot. */
+  markX?: number;
 };
 
 export type ThreadMark = { key: string; x: number; y: number };
@@ -88,7 +90,7 @@ export function buildThread(
     const rowBottom = y + r.height;
     const mark: PathMark = {
       key: r.key,
-      x: DEPTH_X[r.depth],
+      x: r.markX ?? DEPTH_X[r.depth],
       y: rowTop + markOffset,
       rowTop,
       rowBottom,

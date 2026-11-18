@@ -74,4 +74,19 @@ describe('buildThread depth steps', () => {
     expect(d).toContain('H -32');
     expect(d).toContain(`H ${width + 32}`);
   });
+
+  it('honours markX so a custom-plan path can start under the list dot', () => {
+    const markX = 17;
+    const { marks, d } = buildThread(
+      [
+        { key: 'from', depth: 0, height: 28, markOffset: 0, markX },
+        { key: 'story', depth: 1, height: ROW_HEIGHT.story },
+      ],
+      { entry: 'none', exit: 'none' }
+    );
+    expect(marks[0].x).toBe(markX);
+    expect(marks[0].y).toBe(0);
+    expect(d.startsWith(`M ${markX} 0`)).toBe(true);
+    expect(marks[1].x).toBe(DEPTH_X[1]);
+  });
 });

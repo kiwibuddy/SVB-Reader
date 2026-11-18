@@ -77,6 +77,15 @@ const PLAN_ROW_HEIGHT = 88;
 /** Bead beside the first line of text, not mid-blurb / mid-empty. */
 const PLAN_MARK = 18;
 
+/** Your Plans list dot — smaller than a BookBead / catalog groupDot. */
+const CUSTOM_DOT_SIZE = 6;
+const CUSTOM_DOT_X = 14 + CUSTOM_DOT_SIZE / 2;
+/**
+ * Path stub overlaps the bottom half of the stable groupRow so the line leaves
+ * the green list dot without restyling the title or changing its padding.
+ */
+const CUSTOM_PATH_STUB = 28;
+
 /** Long plans show a window around today's story under their card, plus "See all". */
 const JOURNEY_WINDOW_OVER = 60;
 const JOURNEY_WINDOW = { before: 3, after: 14 } as const;
@@ -258,18 +267,19 @@ const PlanScreen = () => {
     return rows;
   }, [grouped, openGroup, openPlanId, progressById, t, language, windowWidth]);
 
-  // Expanded custom / Follow-a-voice plan: plan header is depth 0 in the thread
-  // (same as curated plans). No orphan bead above the first story.
+  // Expanded custom / Follow-a-voice: header stays a normal list row; the thread
+  // only draws stories, starting under the green list dot (no extra bead, no title restyle).
   const userStoryRows: VisibleRow[] = useMemo(() => {
     const rows: VisibleRow[] = [];
     const item = userPlans.find((p) => p.id === openPlanId);
     if (!item) return rows;
     rows.push({
-      key: `p-${item.id}`,
+      key: `from-${item.id}`,
       kind: 'plan',
       depth: 0,
-      height: PLAN_ROW_HEIGHT,
-      markOffset: PLAN_MARK,
+      height: CUSTOM_PATH_STUB,
+      markOffset: 0,
+      markX: CUSTOM_DOT_X,
       catalogItem: item,
     });
     rows.push(
@@ -297,8 +307,13 @@ const PlanScreen = () => {
   const userStoryThread = useMemo(
     () =>
       buildThread(
-        userStoryRows.map(({ key, depth, height, markOffset }) => ({ key, depth, height, markOffset })),
-        // Start at the plan bead — no left-entry corridor into a phantom mark.
+        userStoryRows.map(({ key, depth, height, markOffset, markX }) => ({
+          key,
+          depth,
+          height,
+          markOffset,
+          markX,
+        })),
         { width: windowWidth, entry: 'none', exit: 'left' }
       ),
     [userStoryRows, windowWidth]
@@ -819,95 +834,15 @@ const PlanScreen = () => {
               </View>
             );
 
-            // Expanded: plan header is the thread's depth-0 bead (like curated plans).
-            if (open && userStoryThread.length > 0) {
-              return (
-                <View key={item.id} style={[styles.threadWrap, { height: userStoryThread.height }]}>
-                  <Svg
-                    pointerEvents="none"
-                    style={StyleSheet.absoluteFill}
-                    width="100%"
-                    height={userStoryThread.height}
-                  >
-                    <AnimatedPath
-                      d={userStoryThread.d}
-                      fill="none"
-                      stroke={palette.thread}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeDasharray={userStoryThread.length}
-                      animatedProps={userPathProps}
-                    />
-                  </Svg>
-                  {userStoryRows.map((row, index) => {
-                    const mark = userStoryThread.marks[index];
-                    if (!mark) return null;
-
-                    if (row.kind === 'plan') {
-                      return (
-                        <ThreadRevealRow
-                          key={row.key}
-                          index={index}
-                          total={userStoryRows.length}
-                          progress={userProgress}
-                        >
-                          <Pressable
-                            onPress={() => toggleUserPlan(item.id)}
-                            onLongPress={() => handleDeleteUserPlan(item)}
-                            style={[styles.threadRow, styles.planThreadRow, { height: row.height }]}
-                          >
-                            <BookBead
-                              x={mark.x}
-                              rowHeight={row.height}
-                              open
-                              palette={palette}
-                              anchor={PLAN_MARK}
-                            />
-                            <View style={[styles.rowBody, { paddingLeft: DEPTH_X[0] + 16 }]}>
-                              <Text style={[styles.planTitle, { color: palette.ink }]} numberOfLines={2}>
-                                {getLocalizedPlanText(item, 'title', language)}
-                              </Text>
-                              <Text style={[styles.planMeta, { color: palette.mute }]}>
-                                {metaLine}
-                                {pausedBit}
-                              </Text>
-                            </View>
-                            {actions}
-                          </Pressable>
-                        </ThreadRevealRow>
-                      );
-                    }
-
-                    if (row.kind !== 'journey' || !row.journey) return null;
-                    return (
-                      <ThreadRevealRow
-                        key={row.key}
-                        index={index}
-                        total={userStoryRows.length}
-                        progress={userProgress}
-                      >
-                        {renderJourneyRow(row.journey, mark, {
-                          palette,
-                          t,
-                          justCompletedId,
-                          onOpenStory: openStoryIn(item),
-                        })}
-                      </ThreadRevealRow>
-                    );
-                  })}
-                </View>
-              );
-            }
-
+            // Header stays a normal groupRow always — only the path + stories appear on expand.
             return (
               <View key={item.id}>
                 <Pressable
                   onPress={() => toggleUserPlan(item.id)}
                   onLongPress={() => handleDeleteUserPlan(item)}
-                  style={[styles.groupRow, { borderBottomColor: palette.hair }]}
+                  style={[styles.groupRow, { borderBottomColor: palette.hair, zIndex: 1 }]}
                 >
-                  <View style={[styles.groupDot, { backgroundColor: palette.acc }]} />
+                  <View style={[styles.customPlanDot, { backgroundColor: palette.acc }]} />
                   <View style={styles.rowBody}>
                     <Text style={[styles.groupTitle, { color: palette.ink }]} numberOfLines={2}>
                       {getLocalizedPlanText(item, 'title', language)}
@@ -919,6 +854,61 @@ const PlanScreen = () => {
                   </View>
                   {actions}
                 </Pressable>
+                {open && userStoryThread.length > 0 ? (
+                  <View style={{ marginTop: -CUSTOM_PATH_STUB }}>
+                    <View style={[styles.threadWrap, { height: userStoryThread.height }]}>
+                      <Svg
+                        pointerEvents="none"
+                        style={StyleSheet.absoluteFill}
+                        width="100%"
+                        height={userStoryThread.height}
+                      >
+                        <AnimatedPath
+                          d={userStoryThread.d}
+                          fill="none"
+                          stroke={palette.thread}
+                          strokeWidth={1.5}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeDasharray={userStoryThread.length}
+                          animatedProps={userPathProps}
+                        />
+                      </Svg>
+                      {userStoryRows.map((row, index) => {
+                        const mark = userStoryThread.marks[index];
+                        if (!mark) return null;
+
+                        // Path origin under the green list dot — no bead, no title.
+                        if (row.kind === 'plan') {
+                          return (
+                            <View
+                              key={row.key}
+                              pointerEvents="none"
+                              style={{ height: row.height }}
+                            />
+                          );
+                        }
+
+                        if (row.kind !== 'journey' || !row.journey) return null;
+                        return (
+                          <ThreadRevealRow
+                            key={row.key}
+                            index={index}
+                            total={userStoryRows.length}
+                            progress={userProgress}
+                          >
+                            {renderJourneyRow(row.journey, mark, {
+                              palette,
+                              t,
+                              justCompletedId,
+                              onOpenStory: openStoryIn(item),
+                            })}
+                          </ThreadRevealRow>
+                        );
+                      })}
+                    </View>
+                  </View>
+                ) : null}
               </View>
             );
           })}
@@ -978,6 +968,7 @@ const styles = StyleSheet.create({
   // Group list (plain, no thread)
   groupRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth },
   groupDot: { width: 8, height: 8, borderRadius: 4 },
+  customPlanDot: { width: CUSTOM_DOT_SIZE, height: CUSTOM_DOT_SIZE, borderRadius: CUSTOM_DOT_SIZE / 2 },
 
   // Thread rows
   threadWrap: { position: 'relative', paddingTop: 0, overflow: 'visible' },
