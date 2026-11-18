@@ -163,6 +163,29 @@ scrolls from Week 1 to Christmas Eve, Sundays lit in their week's colour.
 
 ---
 
+## Music
+
+Each ad has its own original arrangement of "O come, O come, Emmanuel" (VENI
+EMMANUEL, Helmore 1851, public domain), written by `music/veni.py` with the FluidR3
+GM soundfont (MIT licence). The arrangements are ours, so the music can be used
+anywhere, not only inside Meta's apps. (Popular or trending songs cannot be used in
+paid ads.) All three end on "O Israel" at 30.0 s and are normalised for social.
+
+| Ad | Track | Why |
+| --- | --- | --- |
+| `AdventFamily3DAd` | `public/music/advent-music-box.mp3`: music box, strings, cello | Sounds like the felt look; chimes as each candle lights |
+| `AdventFamilyAd` | `public/music/advent-bright.mp3`: glockenspiel, guitar, light beat | Most scroll-stopping; the beat drops as the phone rises |
+| `AdventGroupsAd` | `public/music/advent-piano-cello.mp3`: piano, cello, strings | Reverent and warm, for church leaders |
+
+```bash
+cd Marketing/ads/music        # needs fluidsynth, fluid-soundfont-gm, ffmpeg, mido
+python veni.py music-box   /tmp/a.wav felt && ffmpeg -i /tmp/a.wav -b:a 320k ../public/music/advent-music-box.mp3
+python veni.py bright      /tmp/b.wav 2d   && ffmpeg -i /tmp/b.wav -b:a 320k ../public/music/advent-bright.mp3
+python veni.py piano-cello /tmp/c.wav 2d   && ffmpeg -i /tmp/c.wav -b:a 320k ../public/music/advent-piano-cello.mp3
+```
+
+---
+
 ## Rules carried over from COPY.md
 
 - First sentence of each primary text is under 100 characters; headlines under 40.

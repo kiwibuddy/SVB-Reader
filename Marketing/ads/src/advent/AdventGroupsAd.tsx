@@ -58,6 +58,7 @@ export const AdventGroupsAd: React.FC<{ showGuides?: boolean }> = ({ showGuides 
         Split into fours. Take a part. Read it out loud.
       </Statement>
     }
+    music="music/advent-piano-cello.mp3"
     showGuides={showGuides}
   />
 );

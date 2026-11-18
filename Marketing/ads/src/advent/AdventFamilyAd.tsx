@@ -58,6 +58,7 @@ export const AdventFamilyAd: React.FC<{ showGuides?: boolean }> = ({ showGuides 
         Ten minutes after dinner, every night to Christmas Eve.
       </Statement>
     }
+    music="music/advent-bright.mp3"
     showGuides={showGuides}
   />
 );

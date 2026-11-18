@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
+import { AbsoluteFill, Audio, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { BrandLockup } from '../lib/Brand';
 import { Phone, PHONE_W } from '../lib/Phone';
 import { SafeArea, SafeZones } from '../lib/safe';
@@ -168,6 +168,8 @@ export const AdventFamily3DAd: React.FC<{ showGuides?: boolean }> = ({ showGuide
 
   return (
     <AbsoluteFill style={{ background: light.bg }}>
+      {/* "O come, O come, Emmanuel", music box and strings, timed to this ad (music/veni.py). */}
+      <Audio src={staticFile('music/advent-music-box.mp3')} />
       {/* App section: the phone graphic, exactly where the 3D camera left the felt phone. */}
       {inApp && (
         <Phone x={PHONE_X} y={PHONE_REST_Y + drift}>

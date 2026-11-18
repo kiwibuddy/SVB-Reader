@@ -12,7 +12,10 @@ Timed to AdventFamily3DAd (130 bpm, one chant note per beat):
   21.7 s  "Emmanuel shall come to thee"; chimes as Peace, Joy and Love light
   28.6 s  "O Israel" resolves on the end card; 30.0 s end
 
-  python veni.py music-box|piano-cello|bright out.wav
+  python veni.py music-box|piano-cello|bright out.wav [felt|2d]
+
+Which ad uses which: AdventFamily3DAd music-box (felt), AdventFamilyAd bright (2d),
+AdventGroupsAd piano-cello (2d). Files in ../public/music/.
 Needs: fluidsynth, fluid-soundfont-gm, ffmpeg, and the mido package.
 """
 import os
@@ -52,8 +55,21 @@ CR = [("G", 4), ("Em", 4)]
 C6 = [("Em", 1), ("D", 1), ("C", 1), ("G", 1), ("D", 1), ("G", 1), ("Am", 1), ("G", 1), ("Em", 2), ("C", 1),
       ("Am", 1), ("D", 1), ("Em", 1), ("D", 1), ("E", 3)]
 
-# Section starts, in beats.
+# Section starts, in beats, for each ad's beat map (see use_timing).
 S1, S2, S3, SL, SR, S6, END = 1, 11, 23, 35, 39, 47, 65
+
+
+def use_timing(name):
+    """felt: AdventFamily3DAd (the cut at 5.3 s). 2d: AdventFamilyAd and AdventGroupsAd,
+    whose phone rises at 5.9 s: hold the first line's last note two beats longer and
+    shorten the lift, so "And ransom" lands with the phone and the end stays at 30 s."""
+    global P1, CL, S1, S2, S3, SL, SR, S6, END
+    global C1
+    if name == "2d":
+        P1 = P1[:-1] + [("G4", 3)]
+        C1 = C1[:-1] + [("G", 3)]
+        CL = [("D", 2)]
+        S1, S2, S3, SL, SR, S6, END = 1, 13, 25, 37, 39, 47, 65
 
 
 def sec(s):
@@ -265,7 +281,8 @@ def bright():
 ARRANGEMENTS = {"music-box": music_box, "piano-cello": piano_cello, "bright": bright}
 
 
-def render(name, out_wav):
+def render(name, out_wav, timing="felt"):
+    use_timing(timing)
     song = ARRANGEMENTS[name]()
     with tempfile.TemporaryDirectory() as tmp:
         mid = os.path.join(tmp, "song.mid")
@@ -287,4 +304,4 @@ def render(name, out_wav):
 
 
 if __name__ == "__main__":
-    render(sys.argv[1], sys.argv[2])
+    render(sys.argv[1], sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else "felt")

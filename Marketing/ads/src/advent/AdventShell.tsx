@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import { AbsoluteFill, Audio, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { BrandLockup, DownloadCTA } from '../lib/Brand';
 import { Phone, PHONE_W } from '../lib/Phone';
 import { SafeArea, SafeZones } from '../lib/safe';
@@ -28,8 +28,10 @@ export const AdventShell: React.FC<{
   screenA: React.ReactNode;
   screenB: React.ReactNode;
   statement: React.ReactNode;
+  /** Music in public/music/ (Marketing/ads/music/veni.py, timing "2d"). */
+  music?: string;
   showGuides?: boolean;
-}> = ({ hook1, hook2, kickerA, kickerB, screenA, screenB, statement, showGuides }) => {
+}> = ({ hook1, hook2, kickerA, kickerB, screenA, screenB, statement, music, showGuides }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -72,6 +74,7 @@ export const AdventShell: React.FC<{
 
   return (
     <AbsoluteFill style={{ background: light.bg }}>
+      {music && <Audio src={staticFile(music)} />}
       <SafeArea>
         <BrandLockup morph={morph} boxWidth={SAFE_BOX.width} />
 
