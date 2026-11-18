@@ -39,13 +39,20 @@ const flatten = (node) => {
 /** Text without the chapter and verse marks (for checks). */
 const plain = (text) => text.replace(/⟪[^⟫]*⟫|⟦[^⟧]*⟧/g, '').trim();
 
+const tidy = (t) => t.replace(/\s+/g, ' ').replace(/\s*(⟦)/g, ' $1').replace(/⟫ ⟦/g, '⟫⟦').trim();
+
 function turns(segId) {
-  return bible[segId].content.map((block) => ({
-    speaker: block.source?.sourceName ?? '',
-    color: COLOR[block.source?.color] ?? 'black',
-    // Each child is a paragraph or a poetry line; keep them apart.
-    text: (block.children || []).map(flatten).join(' ').replace(/\s+/g, ' ').replace(/\s*(⟦)/g, ' $1').replace(/⟫ ⟦/g, '⟫⟦').trim(),
-  }));
+  return bible[segId].content.map((block) => {
+    const color = COLOR[block.source?.color] ?? 'black';
+    const paras = (block.children || []).map((c) => tidy(flatten(c))).filter(Boolean);
+    return {
+      speaker: block.source?.sourceName ?? '',
+      color,
+      // Speech keeps its lines together; narration is one bubble per paragraph.
+      paras: color === 'black' ? paras : [paras.join(' ')],
+      text: tidy(paras.join(' ')),
+    };
+  });
 }
 
 /** Consecutive turns [from, to] of a story, checked against the expected opening words. */
@@ -55,7 +62,9 @@ function excerpt(segId, from, to, expectStart) {
   if (!plain(out[0].text).startsWith(expectStart)) {
     throw new Error(`${segId}[${from}] starts "${plain(out[0].text).slice(0, 40)}", expected "${expectStart}"`);
   }
-  return out;
+  return out.flatMap((t) =>
+    t.paras.map((text, i) => ({ speaker: t.speaker, color: t.color, text, ...(i > 0 ? { cont: true } : {}) }))
+  );
 }
 
 /* First Sunday of Advent: the fourth Sunday before Christmas Day. */
@@ -105,6 +114,16 @@ const out = {
     voices: voices('S285'),
     lines: excerpt('S285', 10, 21, 'In the sixth month of Elizabeth'),
   },
+  // Day 1 of the plan: what a family reads after joining (Rev 20:4-21:10).
+  holyCity: {
+    id: 'S365',
+    title: titles.S365.title,
+    meta: `365 · ${titles.S365.book[0]} ${titles.S365.ref} · ${times.S365.estimatedReadingTimeMinutes} min`,
+    readers: readers('S365'),
+    mix: mix('S365'),
+    voices: voices('S365'),
+    lines: excerpt('S365', 0, 11, 'Then I saw thrones'),
+  },
   isaiah: {
     id: 'S191',
     title: titles.S191.title,
@@ -126,6 +145,7 @@ fs.writeFileSync(
     `export const PHASES: Record<PlanRow['week'], { title: string; description: string; color: string }> = ${JSON.stringify(out.phases, null, 2)};\n\n` +
     `export const ROWS: PlanRow[] = ${JSON.stringify(out.rows, null, 2)};\n\n` +
     `export const ANNUNCIATION: Story = ${JSON.stringify(out.annunciation, null, 2)};\n\n` +
+    `export const HOLY_CITY: Story = ${JSON.stringify(out.holyCity, null, 2)};\n\n` +
     `export const ISAIAH: Story = ${JSON.stringify(out.isaiah, null, 2)};\n`
 );
 console.log(`wrote ${path.relative(process.cwd(), file)}`);

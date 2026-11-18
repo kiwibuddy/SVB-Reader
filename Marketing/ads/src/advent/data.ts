@@ -397,6 +397,165 @@ export const ANNUNCIATION: Story = {
   ]
 };
 
+export const HOLY_CITY: Story = {
+  "id": "S365",
+  "title": "The Holy City is Coming",
+  "meta": "365 · Rev 20:4-22:21 · 8 min",
+  "readers": [
+    "black",
+    "black",
+    "red",
+    "blue"
+  ],
+  "mix": {
+    "black": 1239,
+    "red": 247,
+    "green": 0,
+    "blue": 133
+  },
+  "voices": 7,
+  "lines": [
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦4⟧Then I saw thrones, and the people sitting on them had been given the authority to judge. And I saw the souls of those who had been beheaded for their testimony about Jesus and for proclaiming the word of God. They had not worshiped the beast or his statue, nor accepted his mark on their foreheads or their hands. They all came to life again, and they reigned with Christ for a thousand years."
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦5⟧This is the first resurrection. (The rest of the dead did not come back to life until the thousand years had ended.) ⟦6⟧Blessed and holy are those who share in the first resurrection. For them the second death holds no power, but they will be priests of God and of Christ and will reign with him a thousand years.",
+      "cont": true
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦7⟧When the thousand years come to an end, Satan will be let out of his prison. ⟦8⟧He will go out to deceive the nations—called Gog and Magog—in every corner of the earth. He will gather them together for battle—a mighty army, as numberless as sand along the seashore. ⟦9⟧And I saw them as they went up on the broad plain of the earth and surrounded God’s people and the beloved city. But fire from heaven came down on the attacking armies and consumed them.",
+      "cont": true
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦10⟧Then the devil, who had deceived them, was thrown into the fiery lake of burning sulfur, joining the beast and the false prophet. There they will be tormented day and night forever and ever.",
+      "cont": true
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦11⟧And I saw a great white throne and the one sitting on it. The earth and sky fled from his presence, but they found no place to hide. ⟦12⟧I saw the dead, both great and small, standing before God’s throne. And the books were opened, including the Book of Life. And the dead were judged according to what they had done, as recorded in the books. ⟦13⟧The sea gave up its dead, and death and the grave* gave up their dead. And all were judged according to their deeds. ⟦14⟧Then death and the grave were thrown into the lake of fire. This lake of fire is the second death. ⟦15⟧And anyone whose name was not found recorded in the Book of Life was thrown into the lake of fire.",
+      "cont": true
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟪21⟫⟦1⟧Then I saw a new heaven and a new earth, for the old heaven and the old earth had disappeared. And the sea was also gone. ⟦2⟧And I saw the holy city, the new Jerusalem, coming down from God out of heaven like a bride beautifully dressed for her husband.",
+      "cont": true
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦3⟧I heard a loud shout from the throne, saying,",
+      "cont": true
+    },
+    {
+      "speaker": "God",
+      "color": "red",
+      "text": "“Look, God’s home is now among his people! He will live with them, and they will be his people. God himself will be with them.* ⟦4⟧He will wipe every tear from their eyes, and there will be no more death or sorrow or crying or pain. All these things are gone forever.”"
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦5⟧And the one sitting on the throne said,"
+    },
+    {
+      "speaker": "God",
+      "color": "red",
+      "text": "“Look, I am making everything new!”"
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "And then he said to me,"
+    },
+    {
+      "speaker": "God",
+      "color": "red",
+      "text": "“Write this down, for what I tell you is trustworthy and true.”"
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦6⟧And he also said,"
+    },
+    {
+      "speaker": "God",
+      "color": "red",
+      "text": "“It is finished! I am the Alpha and the Omega—the Beginning and the End. To all who are thirsty I will give freely from the springs of the water of life. ⟦7⟧All who are victorious will inherit all these blessings, and I will be their God, and they will be my children. ⟦8⟧“But cowards, unbelievers, the corrupt, murderers, the immoral, those who practice witchcraft, idol worshipers, and all liars—their fate is in the fiery lake of burning sulfur. This is the second death.”"
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦9⟧Then one of the seven angels who held the seven bowls containing the seven last plagues came and said to me,"
+    },
+    {
+      "speaker": "One of the Seven Angels",
+      "color": "blue",
+      "text": "“Come with me! I will show you the bride, the wife of the Lamb.”"
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦10⟧So he took me in the Spirit* to a great, high mountain, and he showed me the holy city, Jerusalem, descending out of heaven from God. ⟦11⟧It shone with the glory of God and sparkled like a precious stone—like jasper as clear as crystal. ⟦12⟧The city wall was broad and high, with twelve gates guarded by twelve angels. And the names of the twelve tribes of Israel were written on the gates. ⟦13⟧There were three gates on each side—east, north, south, and west. ⟦14⟧The wall of the city had twelve foundation stones, and on them were written the names of the twelve apostles of the Lamb."
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦15⟧The angel who talked to me held in his hand a gold measuring stick to measure the city, its gates, and its wall. ⟦16⟧When he measured it, he found it was a square, as wide as it was long. In fact, its length and width and height were each 1,400 miles.* ⟦17⟧Then he measured the walls and found them to be 216 feet thick* (according to the human standard used by the angel).",
+      "cont": true
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦18⟧The wall was made of jasper, and the city was pure gold, as clear as glass. ⟦19⟧The wall of the city was built on foundation stones inlaid with twelve precious stones:* the first was jasper, the second sapphire, the third agate, the fourth emerald, ⟦20⟧the fifth onyx, the sixth carnelian, the seventh chrysolite, the eighth beryl, the ninth topaz, the tenth chrysoprase, the eleventh jacinth, the twelfth amethyst.",
+      "cont": true
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦21⟧The twelve gates were made of pearls—each gate from a single pearl! And the main street was pure gold, as clear as glass.",
+      "cont": true
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦22⟧I saw no temple in the city, for the Lord God Almighty and the Lamb are its temple. ⟦23⟧And the city has no need of sun or moon, for the glory of God illuminates the city, and the Lamb is its light. ⟦24⟧The nations will walk in its light, and the kings of the world will enter the city in all their glory. ⟦25⟧Its gates will never be closed at the end of day because there is no night there. ⟦26⟧And all the nations will bring their glory and honor into the city. ⟦27⟧Nothing evil* will be allowed to enter, nor anyone who practices shameful idolatry and dishonesty—but only those whose names are written in the Lamb’s Book of Life.",
+      "cont": true
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟪22⟫⟦1⟧Then the angel showed me a river with the water of life, clear as crystal, flowing from the throne of God and of the Lamb. ⟦2⟧It flowed down the center of the main street. On each side of the river grew a tree of life, bearing twelve crops of fruit,* with a fresh crop each month. The leaves were used for medicine to heal the nations.",
+      "cont": true
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦3⟧No longer will there be a curse upon anything. For the throne of God and of the Lamb will be there, and his servants will worship him. ⟦4⟧And they will see his face, and his name will be written on their foreheads. ⟦5⟧And there will be no night there—no need for lamps or sun—for the Lord God will shine on them. And they will reign forever and ever.",
+      "cont": true
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦6⟧Then the angel said to me,",
+      "cont": true
+    },
+    {
+      "speaker": "A Guiding Angel",
+      "color": "blue",
+      "text": "“Everything you have heard and seen is trustworthy and true. The Lord God, who inspires his prophets,* has sent his angel to tell his servants what will happen soon.*”"
+    }
+  ]
+};
+
 export const ISAIAH: Story = {
   "id": "S191",
   "title": "Isaiah Volunteers; God Promises Emmanuel",
@@ -428,7 +587,13 @@ export const ISAIAH: Story = {
     {
       "speaker": "The Narrator",
       "color": "black",
-      "text": "⟦4⟧Their voices shook the Temple to its foundations, and the entire building was filled with smoke. ⟦5⟧Then I said,"
+      "text": "⟦4⟧Their voices shook the Temple to its foundations, and the entire building was filled with smoke."
+    },
+    {
+      "speaker": "The Narrator",
+      "color": "black",
+      "text": "⟦5⟧Then I said,",
+      "cont": true
     },
     {
       "speaker": "Isaiah",

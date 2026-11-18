@@ -258,12 +258,14 @@ export function partSlots(readers: VoiceColor[]): VoiceColor[] {
  */
 export function assignParts(lines: Line[], slots: VoiceColor[]): number[] {
   const seen: Record<string, number> = {};
+  let last = -1;
   return lines.map((l) => {
+    if (l.cont) return last; // another paragraph of the same turn
     const holders = slots.map((s, i) => (s === l.color ? i : -1)).filter((i) => i >= 0);
-    if (!holders.length) return -1;
+    if (!holders.length) return (last = -1);
     const k = seen[l.color] ?? 0;
     seen[l.color] = k + 1;
-    return holders[k % holders.length];
+    return (last = holders[k % holders.length]);
   });
 }
 

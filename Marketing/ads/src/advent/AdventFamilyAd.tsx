@@ -1,7 +1,7 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { AdventShell, Statement } from './AdventShell';
-import { ANNUNCIATION } from './data';
+import { HOLY_CITY } from './data';
 import { InviteCard, Journey, journeyItems, PartsReader, PlanFrame } from './screens';
 import { A_START, B_START } from './timeline';
 
@@ -28,21 +28,21 @@ const JoinScreen: React.FC = () => {
 };
 
 /**
- * Screen B: Luke 1:26–38 as the app shows it, read from Gabriel's greeting. A family of four takes the four parts —
- * three share the narration, one reads the angel — and this phone belongs to
- * the one reading Gabriel.
+ * Screen B: Day 1 as the app shows it, The Holy City is Coming (Revelation 20:4–22:21), read from
+ * "Look, I am making everything new!". A family of four takes the four parts — two share the
+ * narration, one reads God, one the angel — and this phone belongs to the one reading the angel.
  */
 const ReadScreen: React.FC = () => (
   <PartsReader
-    story={ANNUNCIATION}
-    lines={ANNUNCIATION.lines}
-    readFrom={1}
+    story={HOLY_CITY}
+    lines={HOLY_CITY.lines}
+    readFrom={9}
     names={['Dad', 'Mum', 'Gran', 'Ana']}
     pick={3}
     namesAt={B_START}
     pickAt={B_START + 26}
     readAt={B_START + 44}
-    step={30}
+    step={23}
   />
 );
 

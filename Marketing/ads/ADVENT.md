@@ -48,16 +48,21 @@ Advent card ("Advent begins Sunday, November 29 · Join Advent · Remind me") an
 Week 1 · Hope beneath it, each day with its date, reference, minutes and note. A tap
 on **Join Advent** turns the card into the in-progress card ("Starts Sun, Nov 29").
 
-**Screen B — kicker "Everyone takes a part."** *Two Miraculous Births*, Luke 1:28–30.
-The app's picker, "Four parts — take one to read in your group", with Dad, Mum, Gran
-and Ana. This story's parts are three narrator parts and one for everyone else
-(`readers: black, black, black, blue`), so three people share the narration and Ana
-reads Gabriel. Her phone is shown: her turns glow, the rest dim.
+**Screen B — kicker "Everyone takes a part."** Day 1, the story just joined:
+*The Holy City is Coming*, Revelation 20:4–22:21, as the app shows it: full passage,
+verse numbers, one bubble per paragraph. The app's picker, "Four parts — take one to
+read in your group", with Dad, Mum, Gran and Ana and "7 voices". This story's parts
+are two narrator parts, one for God and one for everyone else
+(`readers: black, black, red, blue`), so Dad and Mum share the narration, Gran reads
+God and Ana reads the angels. Her phone is shown: her part has the thick outline and
+the turn being read glows.
 
-Verbatim, in order: Gabriel "Greetings, favored woman! The Lord is with you!" ·
-Narrator "Confused and disturbed, Mary tried to think what the angel could mean." ·
-Gabriel "Don't be afraid, Mary," · Narrator "the angel told her," · Gabriel "for you
-have found favor with God! …"
+Read from Revelation 21:5, verbatim, in order: God "Look, I am making everything new!" ·
+Narrator "And then he said to me," · God "Write this down, for what I tell you is
+trustworthy and true." · Narrator "And he also said," · God "It is finished! I am the
+Alpha and the Omega …" · Narrator "Then one of the seven angels …" · Angel "Come with
+me! I will show you the bride, the wife of the Lamb." (Ana's turn, lit just before
+the statement).
 
 **Statement.** "Ten minutes after dinner, every night to Christmas Eve." /
 "Four questions for families follow every story."
@@ -99,7 +104,7 @@ red (Mum), green (Leo), blue (Ana).
 | 0–158 | 0.0–5.3 | 3D: the family at the wreath; the first candle (Hope) lights. Header and hook over the top: "Advent starts Sunday, 29 November." / "Read it together, out loud." The camera then pushes into the phone on the table |
 | 158–170 | 5.3–5.7 | Match cut: the felt phone lands exactly where the app graphic sits and dissolves into it |
 | 170–350 | 5.7–11.7 | Screen A, "One story a day to Christmas Eve.": the Plan tab; a tap on Join Advent |
-| 350–640 | 11.7–21.3 | Screen B, "Everyone takes a part.": Luke 1:28–30 with Dad, Mum, Leo and Ana; Ana reads Gabriel |
+| 350–640 | 11.7–21.3 | Screen B, "Everyone takes a part.": Day 1, The Holy City is Coming, read from Revelation 21:5 with Dad, Mum, Leo and Ana; Leo reads God, Ana reads the angel (her turn lights at frame 594) |
 | 640–780 | 21.3–26.0 | 3D: the other three candles light in turn. "Ten minutes after dinner, every night to Christmas Eve." and Hope · Peace · Joy · Love lighting with them |
 | 780–900 | 26.0–30.0 | End card (shared with Ad A) |
 
@@ -117,6 +122,8 @@ About a minute a frame on four CPU cores at 60% size (upscaled in the ad, under 
 `--res 1 --samples 64` gives full-size frames at roughly four times the time.
 The phone screens in the 3D (`blender/screens/plan.png`, `read.png`) are crops of
 stills of Ad A, so the felt phone shows exactly what the app graphic shows at the cut.
+`read.png` (the phone lying on the table in the candles shot, too small to read) is
+still the earlier Luke 1 screen; replace it and re-render the candles shot to match.
 `advent_felt.py still --out x.png --frame 30` renders one frame for a quick look.
 
 ### Meta copy

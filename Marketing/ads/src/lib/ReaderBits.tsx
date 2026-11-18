@@ -18,7 +18,7 @@ export const heightOf = (line: Line, size: number = BODY) => {
   const leading = Math.round((size * LEADING) / BODY);
   const perLine = (CHARS_PER_LINE * BODY) / size;
   const rows = Math.max(1, Math.ceil(visibleText(line.text).length / perLine));
-  return 26 + 10 + rows * leading + 44 + 22;
+  return (line.cont ? 0 : 26 + 10) + rows * leading + 44 + 22;
 };
 
 /** Text with the app's verse numbers: small raised numerals, chapter numbers inline. */
@@ -77,6 +77,7 @@ export const Bubble: React.FC<{
         transform: `translateY(${(1 - progress) * 26}px)`,
       }}
     >
+      {!line.cont && (
       <div
         style={{
           font: `700 20px/26px ${SANS}`,
@@ -89,6 +90,7 @@ export const Bubble: React.FC<{
       >
         {line.speaker}
       </div>
+      )}
       <div
         style={{
           maxWidth: narration ? '100%' : BUBBLE_MAX,

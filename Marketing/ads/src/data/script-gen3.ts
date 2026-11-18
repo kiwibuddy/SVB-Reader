@@ -4,6 +4,8 @@ export type Line = {
   speaker: string;
   color: VoiceColor;
   text: string;
+  /** Another paragraph of the same turn: no speaker label, same reader. */
+  cont?: boolean;
 };
 
 /**

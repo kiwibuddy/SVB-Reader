@@ -14,7 +14,7 @@ const ReadScreen: React.FC = () => (
   <PartsReader
     story={ISAIAH}
     lines={ISAIAH.lines}
-    readFrom={5}
+    readFrom={6}
     names={['Jo', 'Sam', 'Priya', 'Tom']}
     pick={2}
     namesAt={A_START}

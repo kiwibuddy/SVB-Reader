@@ -6,7 +6,7 @@ import { SafeArea, SafeZones } from '../lib/safe';
 import { ColourRule, RevealLine } from '../lib/Type';
 import { light, SAFE_BOX, SANS, W } from '../theme';
 import { AdventEndCard } from './AdventShell';
-import { ANNUNCIATION } from './data';
+import { HOLY_CITY } from './data';
 import { InviteCard, Journey, journeyItems, PartsReader, PlanFrame } from './screens';
 import { ADVENT, AT } from './timeline';
 
@@ -112,18 +112,22 @@ const JoinScreen: React.FC = () => {
   );
 };
 
-/** Screen B: Luke 1:26–38 as the app shows it. Dad, Mum and Leo share the narration; Ana reads Gabriel and Mary. */
+/**
+ * Screen B: Day 1 as the app shows it, The Holy City is Coming (Revelation 20:4–22:21), read from
+ * "Look, I am making everything new!". Dad and Mum share the narration, Leo reads God, and this
+ * phone is Ana's: she reads the angel.
+ */
 const ReadScreen: React.FC = () => (
   <PartsReader
-    story={ANNUNCIATION}
-    lines={ANNUNCIATION.lines}
-    readFrom={1}
+    story={HOLY_CITY}
+    lines={HOLY_CITY.lines}
+    readFrom={9}
     names={['Dad', 'Mum', 'Leo', 'Ana']}
     pick={3}
     namesAt={B_START}
     pickAt={B_START + 26}
     readAt={B_START + 44}
-    step={34}
+    step={30}
   />
 );
 
