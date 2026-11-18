@@ -53,3 +53,6 @@ assets/generated/
 # Rendered 3D frames for the felt Advent ad (rebuild with Marketing/ads/blender/advent_felt.py)
 Marketing/ads/public/advent3d/
 Marketing/ads/blender/.venv/
+
+# Python bytecode
+__pycache__/
