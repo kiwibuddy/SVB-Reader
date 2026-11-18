@@ -45,14 +45,33 @@ const WEEKS = [
 
 const pad = (n: number) => String(n).padStart(4, '0');
 
+/**
+ * Where the felt phone's screen lands in the last 3D frame (shot.json from
+ * advent_felt.py): x 184–900, y 526–2006. The app graphic's screen is 501–2031,
+ * so the 3D is stretched 3.4% about the screen centre during the dissolve and
+ * the lines of the Plan tab sit on top of each other.
+ */
+const CUT_SCREEN = { centreY: 1266, stretch: 1530 / 1480 } as const;
+
 /** One image of a 3D shot, held for two frames, with grain and a soft vignette. */
-const FeltShot: React.FC<{ shot: 'open' | 'candles'; image: number; opacity?: number }> = ({ shot, image, opacity = 1 }) => {
+const FeltShot: React.FC<{ shot: 'open' | 'candles'; image: number; opacity?: number; stretchY?: number }> = ({
+  shot,
+  image,
+  opacity = 1,
+  stretchY = 1,
+}) => {
   const seed = Math.floor(image);
   return (
     <AbsoluteFill style={{ opacity }}>
       <Img
         src={staticFile(`advent3d/${shot}/${pad(image)}.png`)}
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          transform: `scaleY(${stretchY})`,
+          transformOrigin: `50% ${CUT_SCREEN.centreY}px`,
+        }}
       />
       <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, mixBlendMode: 'overlay', opacity: 0.22 }}>
         <filter id={`grain-${shot}-${seed}`}>
@@ -166,7 +185,12 @@ export const AdventFamily3DAd: React.FC<{ showGuides?: boolean }> = ({ showGuide
       {/* 3D opening, dissolving into the app graphic at the cut. */}
       {inOpen && (
         <>
-          <FeltShot shot="open" image={openImage} opacity={1 - cut} />
+          <FeltShot
+            shot="open"
+            image={openImage}
+            opacity={1 - cut}
+            stretchY={interpolate(frame, [F3.CUT - 14, F3.CUT], [1, CUT_SCREEN.stretch], clamp)}
+          />
           <TopWash to={660} opacity={(1 - cut) * (1 - hookOut * 0.75)} />
         </>
       )}
