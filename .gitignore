@@ -49,3 +49,7 @@ docs/development/cursor_plan_for_adding_french_language.md
 
 # Made at bundle time when EXPO_PUBLIC_BIBLE_AS_ASSET=1 (metro.config.js)
 assets/generated/
+
+# Rendered 3D frames for the felt Advent ad (rebuild with Marketing/ads/blender/advent_felt.py)
+Marketing/ads/public/advent3d/
+Marketing/ads/blender/.venv/

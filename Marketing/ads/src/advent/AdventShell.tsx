@@ -172,7 +172,7 @@ export const Statement: React.FC<{ children: React.ReactNode; sub?: string }> = 
 );
 
 /** Slate end card: what, when, how much, and the download button. */
-const AdventEndCard: React.FC<{ enter: number }> = ({ enter }) => {
+export const AdventEndCard: React.FC<{ enter: number }> = ({ enter }) => {
   const frame = useCurrentFrame();
   const fade = (from: number, to = 0.78) => interpolate(frame, [AT.CTA + from, AT.CTA + from + 12], [0, to], clamp);
   return (

@@ -8,6 +8,7 @@ opening and the end card match the ads people may already have seen.
 | --- | --- | --- |
 | `out/AdventFamilyAd.mp4` | Families | `AdventFamilyAd` |
 | `out/AdventGroupsAd.mp4` | Churches and small groups | `AdventGroupsAd` |
+| `out/AdventFamily3DAd.mp4` | Families, with the felt family in 3D | `AdventFamily3DAd` |
 
 ```bash
 cd Marketing/ads
@@ -67,6 +68,62 @@ have found favor with God! …"
 > family. SourceView Together splits every story into four colour-coded parts, so a
 > child can read the angel while a grandparent narrates — about ten minutes after
 > dinner, with four questions to talk over.
+
+**Headline:** Advent, read aloud as a family
+**CTA:** Install Now
+
+---
+
+## Ad A3 · Families, felt — `AdventFamily3DAd.mp4`
+
+The families ad with a felt family of four (Dad, Mum, Leo, Ana) at the kitchen table
+around an Advent wreath, between the app screens. Chosen after a style test of felt
+against clay: felt sits better with the app's calm cream look, and its fuzz, seams
+and stitched smiles read as made by someone, where smooth glossy clay is now the
+look most often faked with AI video tools.
+
+**What it is, honestly.** Computer 3D built from simple shapes in Blender
+(`blender/advent_felt.py`) and rendered with Cycles. No AI-generated imagery. It is
+not physically handmade, so the copy must not call it "handmade"; "no AI imagery" is
+true if anyone asks.
+
+**Look.** Needle-felt materials (matte wool with a fibre sheen), tufted wool hair,
+cream running-stitch seams at shoulders, cuffs and collars, a felt candle flame,
+shallow focus like a miniature set. The 3D is rendered "on twos" (15 images a second,
+each held two frames) with a little hand-nudged jitter, so it moves like stop-motion.
+Each family member wears one of the app's four reading-part colours: charcoal (Dad),
+red (Mum), green (Leo), blue (Ana).
+
+| Frames | Seconds | Beat |
+| --- | --- | --- |
+| 0–158 | 0.0–5.3 | 3D: the family at the wreath; the first candle (Hope) lights. Header and hook over the top: "Advent starts Sunday, 29 November." / "Read it together, out loud." The camera then pushes into the phone on the table |
+| 158–170 | 5.3–5.7 | Match cut: the felt phone lands exactly where the app graphic sits and dissolves into it |
+| 170–350 | 5.7–11.7 | Screen A, "One story a day to Christmas Eve.": the Plan tab; a tap on Join Advent |
+| 350–640 | 11.7–21.3 | Screen B, "Everyone takes a part.": Luke 1:28–30 with Dad, Mum, Leo and Ana; Ana reads Gabriel |
+| 640–780 | 21.3–26.0 | 3D: the other three candles light in turn. "Ten minutes after dinner, every night to Christmas Eve." and Hope · Peace · Joy · Love lighting with them |
+| 780–900 | 26.0–30.0 | End card (shared with Ad A) |
+
+**Rendering the 3D.** The frames are not committed (about 150 PNGs); rebuild them:
+
+```bash
+cd Marketing/ads/blender
+python3 -m venv .venv && .venv/bin/pip install bpy==5.3.0      # once
+.venv/bin/python advent_felt.py shot open    --res 0.6 --samples 24 --out-dir ../public/advent3d/open
+.venv/bin/python advent_felt.py shot candles --res 0.6 --samples 24 --out-dir ../public/advent3d/candles
+cd .. && npx remotion render AdventFamily3DAd out/AdventFamily3DAd.mp4 --codec=h264 --crf=18
+```
+
+About a minute a frame on four CPU cores at 60% size (upscaled in the ad, under grain).
+`--res 1 --samples 64` gives full-size frames at roughly four times the time.
+The phone screens in the 3D (`blender/screens/plan.png`, `read.png`) are crops of
+stills of Ad A, so the felt phone shows exactly what the app graphic shows at the cut.
+`advent_felt.py still --out x.png --frame 30` renders one frame for a quick look.
+
+### Meta copy
+
+> One Bible story a day from 29 November to Christmas Eve, read out loud as a
+> family. Everyone takes a colour-coded part, so a child can read the angel while
+> Dad narrates. About ten minutes after dinner, with four questions to talk over.
 
 **Headline:** Advent, read aloud as a family
 **CTA:** Install Now

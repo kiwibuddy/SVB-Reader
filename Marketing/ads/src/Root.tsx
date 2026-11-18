@@ -10,6 +10,7 @@ import { SearchAd } from './ads/SearchAd';
 import { ThreadAd } from './ads/ThreadAd';
 import { YouAd } from './ads/YouAd';
 import { AdventFamilyAd } from './advent/AdventFamilyAd';
+import { AdventFamily3DAd } from './advent/AdventFamily3DAd';
 import { AdventGroupsAd } from './advent/AdventGroupsAd';
 import { AT } from './advent/timeline';
 import { T } from './lib/timeline';
@@ -47,6 +48,7 @@ export const RemotionRoot: React.FC = () => (
     {/* Advent 2026: two 30-second ads, families and small groups. See ADVENT.md. */}
     {([
       ['AdventFamilyAd', AdventFamilyAd],
+      ['AdventFamily3DAd', AdventFamily3DAd],
       ['AdventGroupsAd', AdventGroupsAd],
     ] as const).map(([id, component]) => (
       <Composition
