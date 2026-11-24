@@ -167,7 +167,71 @@ def words():
     return s
 
 
-ARRANGEMENTS = {"dark": dark, "words": words}
+# --------------------------------------------------------------------------
+# Come Home to the Story: "Deck the Halls", lo-fi. Electric piano with a
+# lazy swing over soft kick, brushed snare and hats; a soft chime as each
+# message lands; 17.3 s the app, the tune brightens; 23.3 s "Come home to
+# the story."; 26 s end card on C.
+# --------------------------------------------------------------------------
+BEAT = 60 / 84
+DECK = [(G4, 1.5), (F4, 0.5), (E4, 1), (D4, 1), (C4, 1), (D4, 1), (E4, 1), (C4, 1),
+        (D4, 0.5), (E4, 0.5), (F4, 0.5), (D4, 0.5), (E4, 1.5), (D4, 0.5), (C4, 1), (B3, 1), (C4, 2)]  # 16 beats
+DECK_CH = [("C", 4), ("G", 2), ("C", 2), ("G", 2), ("C", 2), ("G", 2), ("C", 2)]
+TRI_C = {"C": [48, 52, 55, 59], "G": [43, 50, 53, 55], "F": [41, 48, 52, 57], "Am": [45, 52, 55, 60]}
+MESSAGES = [52, 88, 190, 228, 276, 340, 400, 446, 478]  # frames, from the film
+MINE = {190, 340, 446}
+
+
+def home():
+    s = Song()
+    RHODES, BASS, CHIME, PIANO = 0, 1, 2, 3
+    for ch, prog in [(RHODES, 4), (BASS, 33), (CHIME, 11), (PIANO, 0)]:
+        s.program(ch, prog)
+    s.cc(RHODES, 91, 80)
+
+    def groove(start, beats, vel=1.0):
+        for k in range(int(beats * 2)):
+            t = start + k * BEAT / 2 + (0.06 if k % 2 else 0)  # swing the off-beats
+            if k % 4 == 0 or k % 8 == 5:
+                s.note(DRUMS, 36, t, 0.1, 58 * vel)
+            if k % 4 == 2:
+                s.note(DRUMS, 38, t, 0.1, 34 * vel)
+            s.note(DRUMS, 42, t, 0.05, (26 if k % 2 else 34) * vel)
+
+    def chords(start, until):
+        t = start
+        while t < until - 0.01:
+            for name, d in DECK_CH:
+                if t >= until - 0.01:
+                    return
+                s.chord(RHODES, TRI_C[name], t, d * BEAT * 0.96, 46, spread=0.03)
+                s.note(BASS, TRI_C[name][0] - 12, t, d * BEAT * 0.9, 62)
+                t += d * BEAT
+
+    # 0-17.3 s: the chat. The tune twice on the electric piano, lazily.
+    line(s, RHODES, DECK, 0.0, BEAT, 58, octave=12)
+    line(s, RHODES, DECK, 16 * BEAT, BEAT, 54, octave=12)
+    chords(0.0, 17.3)
+    groove(0.0, 17.3 / BEAT)
+    for f in MESSAGES:  # a soft chime as each message lands
+        s.note(CHIME, 88 if f in MINE else 84, f / 30, 0.4, 50)
+    # 17.3-23.3 s: the app; brighter, piano doubles the tune.
+    start = 17.3
+    line(s, RHODES, DECK[:8], start, BEAT * 0.9, 60, octave=12)
+    line(s, PIANO, DECK[:8], start, BEAT * 0.9, 52, octave=24)
+    chords(start, 23.3)
+    groove(start, 6.0 / BEAT, 1.15)
+    # 23.3-26 s: "Come home to the story." The last "fa la la la la".
+    line(s, PIANO, DECK[8:], 23.3, BEAT * 0.75, 56, octave=12)
+    s.chord(RHODES, TRI_C["G"], 23.3, 2.4, 44)
+    # 26 s end card: home on C.
+    s.chord(RHODES, [48, 55, 60, 64, 67, 71], 26.0, 4, 56, spread=0.05)
+    s.note(BASS, 36, 26.0, 4, 60)
+    s.note(CHIME, 84, 26.0, 1.5, 46)
+    return s
+
+
+ARRANGEMENTS = {"dark": dark, "words": words, "home": home}
 
 
 def render(name, out_wav):
