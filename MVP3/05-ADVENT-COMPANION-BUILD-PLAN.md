@@ -1,8 +1,28 @@
 # Advent companion — build plan
 
 Written 24 Nov 2026 on branch `claude/advent-reading-plan-review-81kch8`, after the
-ChatGPT review of the Advent plan (`docs/advent/ADVENT-2026-REVIEW-PACK.md`). Owner
-decisions are final; this plan says how to build them. **Not started.**
+ChatGPT review of the Advent plan. Owner decisions are final; this plan says how to build
+them. **Not started.** One plan, built in one go, shipped as two over-the-air updates
+(Release A as soon as it's done, before Day 1; Release B after the owner approves the content).
+
+## Start here (for the builder)
+
+1. Work on branch `claude/advent-reading-plan-review-81kch8`. Pull first. Commit after every
+   step (A1, A2, … B8) with a plain message; push after each commit.
+2. Read, in this order:
+   - this file;
+   - `MVP3/04-PLAN-QUESTIONS.md` (locked decisions);
+   - `docs/advent/ADVENT-2026-REVIEW-PACK.md` (the plan, all 26 days, key verses, how it works in the app);
+   - `docs/advent/chatgpt-review-2026.md` (ChatGPT's draft intros and questions — source
+     material only, with its known errors listed at the top).
+3. Checks before every commit: `npx tsc --noEmit` and `npx jest --watchAll=false` (both must pass).
+4. Publishing (only when the owner says so): `npm run update:production` (iOS) and
+   `npm run update:production:android`. Check with `npm run ota:status`.
+5. **Hard stop at B2.** After writing the content document, stop and wait for the owner's
+   approval. Do not put any intro, question or closing text into the app until approved.
+6. Don't touch marketing files (`Marketing/`), story lists, or the 365-story segmentation.
+7. Scripture: NLT only, word for word from `assets/data/newBibleNLT1.json`. British spelling
+   for app text; keep NLT spelling inside quotes.
 
 ## Owner decisions (24 Nov 2026)
 
@@ -219,10 +239,69 @@ of Advent. Pray it together." Translated by us from the public-domain Latin; no 
 
 ---
 
+## Acceptance checks (a step is done only when every box is true)
+
+**A1**
+- [ ] The Advent home card reads "…one story a day to Christmas Eve." with no minutes.
+- [ ] No `UI.advent.*` string in `UI-ENG.json` or `FRA-UI.json` contains "minute", "min" or "minutes".
+- [ ] The new test fails if a minutes phrase is put back.
+
+**A2**
+- [ ] The plan page (Plans → Advent Journey) shows the new description in English and French.
+- [ ] `ChronologicalMappings.json` and `ReadingPlansChallenges.json` carry identical English text (tested).
+
+**A3**
+- [ ] Days 1, 3, 4, 5, 7, 13 and 18–26 show the new notes; all other days are unchanged (diff shows only those segments).
+- [ ] Day 3's note cites 17:4; "all nations blessed" appears only on Day 4.
+- [ ] Every verse number in an Advent note lies inside that day's story (tested).
+
+**A4**
+- [ ] `npx tsc --noEmit` and `npx jest --watchAll=false` pass.
+- [ ] Committed and pushed; OTA published for iOS and Android; `npm run ota:status` shows it.
+- [ ] Owner confirms on a phone: card text, plan description, Day 1 and Day 19 notes.
+
+**B2 — hard stop**
+- [ ] `docs/advent/ADVENT-COMPANION-CONTENT.md` has all 26 days: intro, key verses, 12 questions, closing; Days 19–25 the antiphon; plus the finish text.
+- [ ] `node scripts/check-companion.mjs` passes: every quoted phrase found word for word in that day's NLT story, every key verse inside the story, every intro ≤ 60 words.
+- [ ] No two fourth questions on consecutive days are the same kind of question.
+- [ ] **Stopped and asked the owner to approve.** Nothing from B1 onward starts until they say yes.
+
+**B1 / B3**
+- [ ] `PlanCompanion.json` holds exactly the approved text from B2 (no rewording during entry).
+- [ ] Days 19–25 hold the B3 antiphon wording exactly; no other day has an antiphon.
+- [ ] Key verses are references only; no Bible text is stored in the file.
+
+**B4**
+- [ ] `getCompanionDay('adventJourneyChronological', 'S006', 2)` returns Day 3.
+- [ ] Any other plan (e.g. Bible in 1 year) returns null.
+- [ ] Tests cover: 26 days, 3 audiences × 4 questions each, intros ≤ 60 words, key verses in range, antiphons on 19–25 only, week colours (Day 1 Hope #6A4C93, Day 8 Peace #3F6FB5, Day 15 Joy #C2507A, Day 22 Love #8E3FA0).
+
+**B5**
+- [ ] Opening Day 3 from the Advent plan shows the intro card in Hope purple with "Week 1 · Hope · Day 3 of 26".
+- [ ] The key verse text matches the reader's NLT text exactly and uses the speaker's colour.
+- [ ] First open: expanded. Second open the same day: one collapsed line that expands on tap.
+- [ ] Opening the same story from the Read tab or search shows no intro card.
+- [ ] Text contrast passes `utils/contrast.ts` for all four week colours.
+
+**B6**
+- [ ] Tapping **Find it in the story** scrolls to the key verse and pulses it for about 2 seconds, on web and phone.
+- [ ] The small marker stays beside the verse in plan context and is absent outside it.
+
+**B7**
+- [ ] In plan context the Advent card (full week colour) replaces Talk about it; outside it, Talk about it is unchanged.
+- [ ] Family, School and Small group chips switch the four questions; the choice is remembered (shared `questionAudience`).
+- [ ] Day 19 shows the O Wisdom prayer with the line "An ancient prayer of the church…"; Day 18 and Day 26 show no prayer.
+- [ ] Bible in 1 year still shows the normal questions with the set toggle for the same story.
+
+**B8**
+- [ ] Completing Day 26 shows the finish title and body (≤ 80 words) and a button that starts 12 Days of Christmas.
+- [ ] Web check of Days 1, 18, 19 and 26 in light and dark themes; screenshots attached to the commit message or PR notes.
+- [ ] Checks pass, committed, pushed, OTA published; owner confirms on a phone.
+
 ## Order of work
 
 1. Release A (A1–A4) — before Sat 28 Nov.
-2. B2 content document — owner approves it.
+2. B2 content document — **hard stop**: the owner approves it before anything else in Release B.
 3. B1, B3, B4 data and loader.
 4. B5–B7 cards and highlight.
 5. B8 finish screen, checks, Release B OTA (before 6 Dec if possible; antiphons before 17 Dec at the latest).
