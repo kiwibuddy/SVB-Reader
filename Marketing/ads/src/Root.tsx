@@ -16,6 +16,7 @@ import { AT } from './advent/timeline';
 import { MonologueAd } from './source/MonologueAd';
 import { WholeStoryAd } from './source/WholeStoryAd';
 import { OutLoudAd } from './source/OutLoudAd';
+import { DarkAd } from './advent26/DarkAd';
 import { T } from './lib/timeline';
 import { FPS, H, W } from './theme';
 
@@ -68,6 +69,11 @@ export const RemotionRoot: React.FC = () => (
 
     {/* Back to the source: three 30-second films. See SOURCE.md. */}
     {([['SourceMonologue', MonologueAd], ['SourceWholeStory', WholeStoryAd], ['SourceOutLoud', OutLoudAd]] as const).map(([id, component]) => (
+      <Composition key={id} id={id} component={component} durationInFrames={900} fps={FPS} width={W} height={H} />
+    ))}
+
+    {/* Advent 2026, second wave: four films. See ADVENT26.md. */}
+    {([['Advent26Dark', DarkAd]] as const).map(([id, component]) => (
       <Composition key={id} id={id} component={component} durationInFrames={900} fps={FPS} width={W} height={H} />
     ))}
 

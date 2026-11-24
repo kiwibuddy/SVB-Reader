@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { continueRender, delayRender, Easing, Img, interpolate, staticFile, useCurrentFrame } from 'remotion';
-import { dark, light } from '../theme';
+import { dark, dark as dark_, light } from '../theme';
 
 /* Fonts ship with the ads (OFL), so a render never falls back to Georgia. */
 export const DISPLAY = '"Instrument Serif", Georgia, serif';
@@ -106,21 +106,32 @@ export const Label: React.FC<{ speaker: string; reference: string; color: string
   );
 };
 
-/** The shared end card: icon, "Back to the source.", the name, four bars, the stores. */
-export const EndCard: React.FC<{ at: number }> = ({ at }) => {
+/**
+ * The shared end card: icon, a line, the name, four bars, the stores.
+ * `line` defaults to the campaign line; `sub` is a small line under it; `dark` for night films.
+ */
+export const EndCard: React.FC<{ at: number; line?: string; sub?: string; dark?: boolean; bg?: string }> = ({
+  at,
+  line = 'Back to the source.',
+  sub,
+  dark = false,
+  bg,
+}) => {
   const frame = useCurrentFrame();
   const t = (d: number) => interpolate(frame, [at + d, at + d + 14], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
   const rise = (d: number): React.CSSProperties => ({ opacity: t(d), transform: `translateY(${(1 - t(d)) * 24}px)` });
-  const bars = [light.narr, light.divine, light.prin, light.chor];
+  const bars = dark ? [dark_.narr, dark_.divine, dark_.prin, dark_.chor] : [light.narr, light.divine, light.prin, light.chor];
+  const ink = dark ? '#F5ECDD' : light.ink;
   return (
-    <div style={{ position: 'absolute', inset: 0, background: light.bg }}>
+    <div style={{ position: 'absolute', inset: 0, background: bg ?? (dark ? '#120C08' : light.bg) }}>
       <div style={{ position: 'absolute', left: 96, right: 96, top: 380, display: 'grid', gap: 40 }}>
         <Img src={staticFile('icon.png')} style={{ width: 168, height: 168, borderRadius: 38, ...rise(0) }} />
-        <div style={{ font: `400 150px/0.98 ${DISPLAY}`, color: light.ink, letterSpacing: -1, ...rise(6) }}>
-          Back to the source.
+        <div style={{ display: 'grid', gap: 18, ...rise(6) }}>
+          <div style={{ font: `400 ${line.length > 22 ? 120 : 150}px/0.98 ${DISPLAY}`, color: ink, letterSpacing: -1 }}>{line}</div>
+          {sub ? <div style={{ font: `500 40px/1.25 ${TEXT}`, color: ink, opacity: 0.72 }}>{sub}</div> : null}
         </div>
         <div style={{ display: 'grid', gap: 22, ...rise(14) }}>
-          <div style={{ font: `650 50px/58px ${TEXT}`, color: light.ink, letterSpacing: -0.5 }}>SourceView Together</div>
+          <div style={{ font: `650 50px/58px ${TEXT}`, color: ink, letterSpacing: -0.5 }}>SourceView Together</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, width: 520 }}>
             {bars.map((c) => (
               <div key={c} style={{ height: 10, borderRadius: 5, background: c }} />
@@ -129,7 +140,7 @@ export const EndCard: React.FC<{ at: number }> = ({ at }) => {
         </div>
         <div style={{ display: 'flex', gap: 20, ...rise(22) }}>
           {['App Store', 'Google Play'].map((s) => (
-            <div key={s} style={{ font: `600 34px/1 ${TEXT}`, color: '#FFFFFF', background: light.ink, padding: '24px 34px', borderRadius: 20 }}>
+            <div key={s} style={{ font: `600 34px/1 ${TEXT}`, color: dark ? '#120C08' : '#FFFFFF', background: ink, padding: '24px 34px', borderRadius: 20 }}>
               {s}
             </div>
           ))}
