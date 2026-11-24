@@ -19,6 +19,7 @@ import { OutLoudAd } from './source/OutLoudAd';
 import { DarkAd } from './advent26/DarkAd';
 import { WordsAd } from './advent26/WordsAd';
 import { HomeAd } from './advent26/HomeAd';
+import { StarsAd } from './advent26/StarsAd';
 import { T } from './lib/timeline';
 import { FPS, H, W } from './theme';
 
@@ -75,7 +76,7 @@ export const RemotionRoot: React.FC = () => (
     ))}
 
     {/* Advent 2026, second wave: four films. See ADVENT26.md. */}
-    {([['Advent26Dark', DarkAd], ['Advent26Words', WordsAd], ['Advent26Home', HomeAd]] as const).map(([id, component]) => (
+    {([['Advent26Dark', DarkAd], ['Advent26Words', WordsAd], ['Advent26Home', HomeAd], ['Advent26Stars', StarsAd]] as const).map(([id, component]) => (
       <Composition key={id} id={id} component={component} durationInFrames={900} fps={FPS} width={W} height={H} />
     ))}
 

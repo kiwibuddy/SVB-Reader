@@ -231,7 +231,58 @@ def home():
     return s
 
 
-ARRANGEMENTS = {"dark": dark, "words": words, "home": home}
+# --------------------------------------------------------------------------
+# Count the Stars: "We Three Kings". 0-8 s the opening line twice on
+# celesta over harp and a low drone (God tells Abraham to count the stars);
+# 8-20 s the 26 stars light, one twinkle each, strings rising E minor to G;
+# 20 s the wise men's star: a swell and bells; 23 s the app; 26 s end on G.
+# --------------------------------------------------------------------------
+Fs4_ = 66
+KINGS = [(B4, 2), (A4, 1), (G4, 2), (E4, 1), (Fs4_, 1), (G4, 1), (Fs4_, 1), (E4, 3)]  # "We three kings of Orient are"
+STAR_FRAMES = [250 + 13 * i for i in range(26)]  # when each day lights, from the film
+
+
+def stars():
+    s = Song()
+    CELESTA, HARP, STR, CHOIR, BELLS, FLUTE, BASS = 0, 1, 2, 3, 4, 5, 6
+    for ch, prog in [(CELESTA, 8), (HARP, 46), (STR, 48), (CHOIR, 52), (BELLS, 14), (FLUTE, 73), (BASS, 32)]:
+        s.program(ch, prog)
+    unit = 0.28
+    em, c, g, d = [52, 55, 59], [48, 52, 55], [43, 47, 50], [50, 54, 57]
+    # 0-8 s: the tune twice, sparse; a low E drone.
+    line(s, CELESTA, KINGS, 0.1, unit, 64, octave=12)
+    line(s, CELESTA, KINGS, 3.5, unit, 60, octave=12)
+    s.note(BASS, 40, 0.0, 7.8, 54)
+    s.chord(STR, em, 0.0, 7.8, 34)
+    for k in range(14):
+        s.note(HARP, em[k % 3] + 12, 0.1 + k * 0.5, 0.5, 36)
+    # 8-20 s: the stars. A twinkle per star, harmony climbing, the flute takes the tune.
+    for i, f in enumerate(STAR_FRAMES):
+        s.note(CELESTA, [83, 88, 86, 91][i % 4] + (12 if i == 24 else 0), f / 30, 0.6, 46 + i)
+    for chord, at in [(em, 8.0), (c, 11.0), (g, 14.0), (d, 17.0)]:
+        s.chord(STR, chord, at, 3.0, 44 + int(at))
+        s.chord(CHOIR, [n + 12 for n in chord], at, 3.0, 30 + int(at))
+        s.note(BASS, chord[0] - 12, at, 3.0, 56)
+        for k in range(12):
+            s.note(HARP, chord[k % 3] + 12 + (12 if k % 6 >= 3 else 0), at + k * 0.25, 0.3, 40)
+    line(s, FLUTE, KINGS, 11.0, unit, 56)
+    line(s, FLUTE, KINGS, 14.5, unit, 60)
+    # 20 s: the wise men's star. G major swells, bells.
+    s.chord(STR, [43, 55, 59, 62, 67], 20.0, 3.0, 70)
+    s.chord(CHOIR, [55, 59, 62, 67], 20.0, 3.0, 54)
+    for at, p in [(20.0, 79), (20.6, 83), (21.2, 86)]:
+        s.note(BELLS, p, at, 2.5, 66)
+    # 23-26 s: the app, the tune once more, gently, in the celesta.
+    line(s, CELESTA, KINGS, 23.0, unit, 56, octave=12)
+    s.chord(STR, [43, 50, 55, 59], 23.0, 3.0, 46)
+    # 26 s end card: home on G.
+    s.chord(HARP, [43, 55, 59, 62, 67, 71], 26.0, 4, 54, spread=0.08)
+    s.chord(STR, [43, 50, 55, 59], 26.0, 4, 50)
+    s.note(BELLS, 79, 26.05, 4, 52)
+    return s
+
+
+ARRANGEMENTS = {"dark": dark, "words": words, "home": home, "stars": stars}
 
 
 def render(name, out_wav):
