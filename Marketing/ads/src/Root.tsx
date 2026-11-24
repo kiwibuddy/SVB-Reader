@@ -13,6 +13,8 @@ import { AdventFamilyAd } from './advent/AdventFamilyAd';
 import { AdventFamily3DAd } from './advent/AdventFamily3DAd';
 import { AdventGroupsAd } from './advent/AdventGroupsAd';
 import { AT } from './advent/timeline';
+import { MonologueAd } from './source/MonologueAd';
+import { WholeStoryAd } from './source/WholeStoryAd';
 import { T } from './lib/timeline';
 import { FPS, H, W } from './theme';
 
@@ -61,6 +63,11 @@ export const RemotionRoot: React.FC = () => (
         height={H}
         defaultProps={{ showGuides: false }}
       />
+    ))}
+
+    {/* Back to the source: three 30-second films. See SOURCE.md. */}
+    {([['SourceMonologue', MonologueAd], ['SourceWholeStory', WholeStoryAd]] as const).map(([id, component]) => (
+      <Composition key={id} id={id} component={component} durationInFrames={900} fps={FPS} width={W} height={H} />
     ))}
 
     {/* Organic weekly post. Choose the voice with scripts/voice-card.mjs first —
