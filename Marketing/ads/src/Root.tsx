@@ -15,6 +15,7 @@ import { AdventGroupsAd } from './advent/AdventGroupsAd';
 import { AT } from './advent/timeline';
 import { MonologueAd } from './source/MonologueAd';
 import { WholeStoryAd } from './source/WholeStoryAd';
+import { OutLoudAd } from './source/OutLoudAd';
 import { T } from './lib/timeline';
 import { FPS, H, W } from './theme';
 
@@ -66,7 +67,7 @@ export const RemotionRoot: React.FC = () => (
     ))}
 
     {/* Back to the source: three 30-second films. See SOURCE.md. */}
-    {([['SourceMonologue', MonologueAd], ['SourceWholeStory', WholeStoryAd]] as const).map(([id, component]) => (
+    {([['SourceMonologue', MonologueAd], ['SourceWholeStory', WholeStoryAd], ['SourceOutLoud', OutLoudAd]] as const).map(([id, component]) => (
       <Composition key={id} id={id} component={component} durationInFrames={900} fps={FPS} width={W} height={H} />
     ))}
 

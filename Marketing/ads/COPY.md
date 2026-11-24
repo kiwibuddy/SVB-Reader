@@ -145,3 +145,41 @@ and not a reason to kill wave two.
 Ad 08 is the odd one out and worth watching separately: it is the only creative
 aimed at an objection rather than a desire, so it should underperform on
 click-through and overperform on the people who do click.
+
+---
+
+## Wave three — Back to the source
+
+Three films, one line ("Back to the source."), each a different kind of video.
+Plan: `docs/superpowers/specs/2026-11-24-back-to-the-source-design.md`; build: `SOURCE.md`.
+
+### Ad 09 · `SourceMonologue.mp4` — Never a Monologue
+
+> Moses asked "Who am I?" Gideon asked why. Thomas wanted proof. The Bible keeps
+> every one of those questions, and SourceView Together colours each voice so you
+> can see who's speaking and read it out loud with others.
+
+**Headline:** The Bible, as a conversation
+**CTA:** Install Now
+
+### Ad 10 · `SourceWholeStory.mp4` — The Whole Story
+
+> You know the verse. Do you know the story? SourceView Together splits the whole
+> Bible into 365 stories, so you can read all of it, one story a day, for a year.
+
+**Headline:** The whole story, one day at a time
+**CTA:** Install Now
+
+### Ad 11 · `SourceOutLoud.mp4` — Out Loud
+
+> For most of history, the Bible was read out loud, together. SourceView Together
+> gives every story four colour-coded parts, so a few friends can read it around a
+> table. Nobody has to lead, and there are questions after every story.
+
+**Headline:** Read it out loud, together
+**CTA:** Install Now
+
+**No reading-time totals in this wave.** The app's minutes are silent-reading
+estimates (about 213 words a minute); read aloud, the whole Bible takes far longer
+(typically quoted as 70 to 100 hours). These films are about reading aloud, so they
+quote neither figure.

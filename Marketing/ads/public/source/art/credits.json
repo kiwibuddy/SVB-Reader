@@ -1,0 +1,47 @@
+{
+  "synagogue": {
+    "file": "source/art/synagogue.jpg",
+    "width": 1200,
+    "height": 690,
+    "artist": "Rembrandt van Rijn",
+    "title": "Jews in the Synagogue",
+    "date": "1648",
+    "place": "Art Institute of Chicago"
+  },
+  "synagogue-tall": {
+    "file": "source/art/synagogue-tall.jpg",
+    "width": 1200,
+    "height": 1235,
+    "artist": "Rembrandt van Rijn",
+    "title": "Jews in the Synagogue",
+    "date": "1648",
+    "place": "Art Institute of Chicago"
+  },
+  "ezra": {
+    "file": "source/art/ezra.jpg",
+    "width": 1200,
+    "height": 1319,
+    "artist": "Gustave Doré",
+    "title": "Ezra Reads the Law to the People",
+    "date": "1866",
+    "place": "Wikimedia Commons"
+  },
+  "paul": {
+    "file": "source/art/paul.jpg",
+    "width": 1000,
+    "height": 748,
+    "artist": "Marcantonio Raimondi, after Raphael",
+    "title": "Saint Paul Preaching at Athens",
+    "date": "c. 1517–20",
+    "place": "Art Institute of Chicago"
+  },
+  "refectory": {
+    "file": "source/art/refectory.jpg",
+    "width": 1200,
+    "height": 831,
+    "artist": "Alphonse Legros",
+    "title": "The Refectory",
+    "date": "1862",
+    "place": "Art Institute of Chicago"
+  }
+}

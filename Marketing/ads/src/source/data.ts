@@ -3,7 +3,7 @@ import type { VoiceColor } from '../theme';
 import type { Story } from '../advent/data';
 
 export type Quote = { text: string; speaker: string; color: VoiceColor; ref: string; seg: string };
-export type QuoteId = 'moses' | 'godWith' | 'gideon' | 'godGo' | 'thomas' | 'jesus' | 'father' | 'jer11' | 'jer4' | 'jer10' | 'neh' | 'luke' | 'col' | 'rev';
+export type QuoteId = 'moses' | 'godWith' | 'gideon' | 'godGo' | 'thomas' | 'jesus' | 'father' | 'jer11' | 'jer4' | 'jer10' | 'neh' | 'luke' | 'col' | 'thess' | 'rev';
 export const QUOTES: Record<QuoteId, Quote> = {
   "moses": {
     "text": "Who am I to appear before Pharaoh?",
@@ -95,6 +95,13 @@ export const QUOTES: Record<QuoteId, Quote> = {
     "color": "black",
     "ref": "Colossians 4:16 NLT",
     "seg": "S340"
+  },
+  "thess": {
+    "text": "I command you in the name of the Lord to read this letter to all the brothers and sisters.",
+    "speaker": "The Narrator",
+    "color": "black",
+    "ref": "1 Thessalonians 5:27 NLT",
+    "seg": "S341"
   },
   "rev": {
     "text": "God blesses the one who reads the words of this prophecy to the church, and he blesses all who listen to its message…",

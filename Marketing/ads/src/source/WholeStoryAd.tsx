@@ -7,7 +7,7 @@ import { AbsoluteFill, Audio, Easing, interpolate, staticFile, useCurrentFrame }
 import { Phone, StatusBar } from '../lib/Phone';
 import { Bubble, StoryHeader } from '../lib/ReaderBits';
 import { INK, light } from '../theme';
-import { MIX, QUOTES, STORIES, TOTAL_MINUTES } from './data';
+import { MIX, QUOTES, STORIES } from './data';
 import { clamp, DISPLAY, EndCard, Grain, INK_PAPER, NIGHT, ON_NIGHT, TEXT, Words } from './kit';
 import { Rose } from './Rose';
 
@@ -15,7 +15,6 @@ import { Rose } from './Rose';
 export const WS = { VERSE: 0, CONTEXT: 75, QUESTION: 180, ROSE: 240, FACTS: 480, APP: 600, END: 780 } as const;
 
 const JER = MIX.findIndex((s) => s.id === 'S215');
-const HOURS = Math.round(TOTAL_MINUTES / 60); // 58
 const ease = Easing.inOut(Easing.cubic);
 
 /** 0–2.5 s: the verse as every "verse of the day" graphic shows it. */
@@ -138,7 +137,8 @@ const Caption: React.FC<{ text: string; from: number; to: number; color?: string
 /** 8–20 s: one spoke, then all 365, then what it adds up to. */
 const RoseScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const fill = interpolate(frame, [WS.ROSE + 36, WS.ROSE + 200], [0, 365], { ...clamp, easing: ease });
+  // Runs past 365 so the last spokes finish growing too (each takes 14 steps to reach full length).
+  const fill = interpolate(frame, [WS.ROSE + 36, WS.ROSE + 200], [0, 380], { ...clamp, easing: ease });
   const grow = (i: number) => {
     if (i === JER) return interpolate(frame, [WS.ROSE, WS.ROSE + 16], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
     return interpolate(fill - i, [0, 14], [0, 1], clamp);
@@ -159,8 +159,8 @@ const RoseScene: React.FC = () => {
       <Caption text="Story 215. Jeremiah's letter." from={WS.ROSE} to={WS.ROSE + 40} />
       <Caption text="365 stories. Genesis to Revelation." from={WS.ROSE + 40} to={WS.ROSE + 140} />
       <Caption text="Each one coloured by who is speaking." from={WS.ROSE + 140} to={WS.FACTS} />
-      <Caption text={`The whole Bible is about ${HOURS} hours of reading.`} from={WS.FACTS} to={WS.FACTS + 62} />
-      <Caption text="Or about ten minutes a day, for a year." from={WS.FACTS + 62} to={WS.APP} color={ON_NIGHT.green} />
+      <Caption text="The whole Bible, in 365 stories." from={WS.FACTS} to={WS.FACTS + 62} />
+      <Caption text="One a day, for a year." from={WS.FACTS + 62} to={WS.APP} color={ON_NIGHT.green} />
       <div style={{ position: 'absolute', left: 65, right: 65, top: 520, display: 'flex', gap: 26, flexWrap: 'wrap', opacity: legend * (frame < WS.FACTS ? 1 : 0) }}>
         {voices.map(([name, c]) => (
           <span key={name} style={{ font: `600 28px/1 ${TEXT}`, color: c, letterSpacing: '0.06em', textTransform: 'uppercase' }}>

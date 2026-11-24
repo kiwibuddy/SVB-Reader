@@ -71,6 +71,7 @@ const QUOTES = {
   neh: ['S151', 0, 'All the people listened closely', 'Book of the Law.', 'The Narrator', 'The Narrator', 'Nehemiah 8:3', '', ''],
   luke: ['S286', 38, 'stood up to read the Scriptures', 'Scriptures.', 'The Narrator', 'The Narrator', 'Luke 4:16', '…', ''],
   col: ['S340', 0, 'After you have read this letter, pass it on', 'pass it on', 'The Narrator', 'The Narrator', 'Colossians 4:16', '', '…'],
+  thess: ['S341', 0, 'I command you in the name of the Lord to read this letter', 'brothers and sisters.', 'The Narrator', 'The Narrator', '1 Thessalonians 5:27', '', ''],
   rev: ['S359', 0, 'God blesses the one who reads', 'its message', 'The Narrator', 'The Narrator', 'Revelation 1:3', '', '…'],
 };
 

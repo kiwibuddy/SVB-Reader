@@ -124,7 +124,7 @@ on night.
 | 2.5–6.0 | The graphic falls away into S215 as the app shows it (Jeremiah, green, turn 1). Highlight "all the captives he has exiled to Babylon" (29:4) and "You will be in Babylon for seventy years." (29:10). Caption "It was written to exiles. Seventy years from home." |
 | 6.0–8.0 | "Do you know the story?" |
 | 8.0–16.0 | Pull back: S215 becomes one spoke; 365 spokes build clockwise. "365 stories. Genesis to Revelation." "Each one coloured by who is speaking." |
-| 16.0–20.0 | Finished rose. "The whole Bible is about 58 hours of reading." then "Or about ten minutes a day, for a year." |
+| 16.0–20.0 | Finished rose. "The whole Bible, in 365 stories." then "One a day, for a year." (No reading-time totals: the app's minutes are silent-reading estimates.) |
 | 20.0–26.0 | The app: the Bible in 1 year plan at Day 1, then S001 opening. "365 stories. One a day." |
 | 26.0–30.0 | End card |
 
@@ -133,7 +133,7 @@ Data: per-story voice mix from `newBibleNLT1.json` `sources[*].words` by
 colour; minutes from `SegmentReadingTimes.json` (total 3,507, mean 9.6).
 Sound: drone and rising arpeggio; an instrument added per division as the
 rose fills (divisions from `constants/divisions.ts`); one bell when it closes.
-Hook B: "The whole Bible takes about 58 hours to read."
+Hook B: "The whole Bible, in 365 stories."
 
 ## Film 3: Out Loud (reading together)
 
@@ -157,8 +157,8 @@ wobbly-ellipse masks multiplied at about 0.7 strength, offset a few pixels.
 | 24.0–26.0 | "Pull up a chair." |
 | 26.0–30.0 | End card |
 
-Sound: original folk arrangement of SLANE (traditional Irish, public domain):
-cello and piano, a second instrument at "Together."
+Sound (as built): an original folk melody in the Advent "bright" style: cello alone, then
+glockenspiel, guitar and a light beat from "Together."
 Hook B: "Much of the Bible was written to be read out loud." over Revelation
 1:3: "God blesses the one who reads the words of this prophecy to the church,
 and he blesses all who listen to its message…" (S359 turn 0, narrator).

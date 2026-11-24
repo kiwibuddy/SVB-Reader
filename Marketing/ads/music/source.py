@@ -3,8 +3,8 @@ Original scores for the "Back to the source" films, written in code.
 
   python source.py monologue|wholestory|outloud out.wav
 
-Instruments: the FluidR3 GM soundfont (MIT licence). Film 3 borrows the old
-Irish melody SLANE (traditional, public domain). Every track is exactly 30.0 s
+Instruments: the FluidR3 GM soundfont (MIT licence). All three melodies are
+original. Every track is exactly 30.0 s
 at -14 LUFS. 120 bpm, so one beat is half a second and every cut in the films
 lands on a beat. Needs: fluidsynth, fluid-soundfont-gm, ffmpeg, mido.
 """
@@ -70,120 +70,188 @@ CH = {  # chord voicings for the felt-piano ostinato (eighth notes), and bass ro
 }
 
 
+def play(s, ch, tune, start, vel, octave=0, until=999, legato=0.95):
+    """A melody as (pitch or None, beats) pairs from `start`."""
+    at = start
+    for p, d in tune:
+        if at >= until:
+            break
+        if p is not None:
+            s.note(ch, p + octave, at, d * legato, vel)
+        at += d
+    return at
+
+
+def broken(s, ch, chords, start, vel, per_beat=2, until=999, pattern=(0, 1, 2, 1)):
+    """Broken chords, Advent piano style: (name, beats) through CHORDS."""
+    at = start
+    for name, d in chords:
+        notes = CHORDS[name]
+        for i in range(int(d * per_beat)):
+            if at + i / per_beat >= until:
+                return
+            s.note(ch, notes[pattern[i % len(pattern)]], at + i / per_beat, 1 / per_beat * 0.92, vel)
+        at += d
+
+
+def pad(s, ch, chords, start, vel, octave=-12, bass_ch=None, bass_vel=52, until=999):
+    at = start
+    for name, d in chords:
+        if at >= until:
+            return
+        notes = CHORDS[name]
+        s.chord(ch, [n + octave for n in notes], at, d, vel)
+        if bass_ch is not None:
+            s.note(bass_ch, notes[0] - 24, at, d, bass_vel)
+        at += d
+
+
+CHORDS = {
+    "Dm": [62, 65, 69], "Bb": [58, 62, 65], "Gm": [55, 58, 62], "C": [60, 64, 67], "F": [60, 65, 69],
+    "A": [57, 61, 64], "D": [62, 66, 69], "G": [55, 59, 62], "Bm": [59, 62, 66], "Em": [52, 55, 59],
+}
+
+
 def monologue():
-    """Film 1. Cuts (s): 0, 2, 3.5, 6.5, 8.5, 11.5, 13.5 | silence | 17.5 turn, 20 app, 26 end card."""
+    """Film 1, piano and cello (the Advent piano-cello style). 120 bpm: every cut is a beat.
+    0-13.5 s questions and answers: the cello sings a D minor tune over broken piano chords;
+    13.5-17.5 s the father: piano alone, very soft; 17.5 s "It was never a monologue." the
+    tune turns to F major; 20 s the app; 26 s the end card resolves on F."""
     s = Song()
-    PIANO, PAD, BASS = 0, 1, 2
-    s.program(PIANO, 0)   # acoustic grand, played soft: the "felt piano"
-    s.program(PAD, 89)    # warm pad
-    s.program(BASS, 32)   # acoustic bass
-    s.cc(PIANO, 91, 70, 0)
-    s.cc(PAD, 7, 70, 0)
-
-    # Questions and answers, 0-13.5 s (beats 0-27): ostinato over a soft pulse.
-    prog = ["Dm", "Dm", "Bb", "Bb", "F", "F", "C", "C"]  # two beats each
-    b = 0
-    i = 0
-    while b < 27:
-        name = prog[i % len(prog)]
-        notes, root = CH[name]
-        for k in range(4):  # four eighths per chord slot (2 beats)
-            at = b + k * 0.5
-            if at >= 27:
-                break
-            s.note(PIANO, notes[k % 4], at, 0.45, 46 if k == 0 else 36)
-        s.note(BASS, root, b, 1.9, 58)
-        if i % 2 == 0:
-            s.chord(PAD, [p - 12 for p in notes[:3]], b, 4, 38)
-        b += 2
-        i += 1
-    for at in range(0, 27):  # pulse: a soft kick on every beat, a lighter one on the off-beat late on
-        s.note(DRUMS, 36, at, 0.2, 52)
-        if at >= 13:
-            s.note(DRUMS, 42, at + 0.5, 0.1, 22)
-    # Every reply lands with a low octave on the piano.
-    for t in [2.0, 6.5, 11.5]:
-        s.chord(PIANO, [D2 + 12, D3 + 12], beat(t), 1.5, 64)
-
-    # 13.5-17.5 s: silence for the father's line, one high note on "unbelief".
-    s.note(PIANO, A5, beat(16.6), 2.0, 34)
-
-    # 17.5 s: "It was never a monologue." Warm, open chords; the pulse returns with the app at 20 s.
-    warm = [("F", 35, 5), ("Bb", 40, 4), ("Dm", 44, 4), ("C", 48, 4)]
-    for name, at, dur in warm:
-        notes, root = CH[name]
-        s.chord(PIANO, notes, at, dur, 52, spread=0.08)
-        s.chord(PAD, [p - 12 for p in notes[:3]], at, dur, 44)
-        s.note(BASS, root, at, dur, 54)
-    for at in range(40, 52):
-        s.note(DRUMS, 36, at, 0.2, 40)
-    for k in range(24):  # light eighths over the app
-        name = ["Bb", "Bb", "Dm", "C"][(k // 8) % 4] if k < 16 else "C"
-        s.note(PIANO, CH[name][0][k % 4] + 12, 44 + k * 0.5 - 4, 0.4, 30)
-    # 26 s end card: resolve on F, ring out.
-    notes, root = CH["F"]
-    s.chord(PIANO, notes + [F5], 52, 8, 56, spread=0.06)
-    s.chord(PAD, [p - 12 for p in notes[:3]], 52, 8, 46)
-    s.note(BASS, root, 52, 8, 56)
+    CELLO, PIANO, STR, BASS = 0, 1, 2, 3
+    for ch, prog in [(CELLO, 42), (PIANO, 0), (STR, 48), (BASS, 32)]:
+        s.program(ch, prog)
+    s.cc(CELLO, 91, 70, 0)
+    QA = [(57, 1), (62, 1), (65, 1), (64, 1), (62, 2), (57, 2),
+          (58, 1), (62, 1), (67, 1), (65, 1), (64, 2), (60, 2),
+          (57, 1), (62, 1), (65, 1), (69, 1), (67, 2), (65, 1), (64, 1),
+          (62, 3)]
+    QA_CH = [("Dm", 4), ("Bb", 2), ("Dm", 2), ("Gm", 2), ("Bb", 2), ("C", 4),
+             ("Dm", 2), ("F", 2), ("Bb", 2), ("C", 2), ("Dm", 3)]
+    play(s, CELLO, QA, 0, 74, octave=-12)
+    broken(s, PIANO, QA_CH, 0, 40, until=27)
+    pad(s, STR, QA_CH, 0, 34, bass_ch=BASS, until=27)
+    # 13.5-17.5 s: the father's line. Piano alone, two soft chords, a high note on "unbelief".
+    s.chord(PIANO, [50, 57, 62, 65], 27, 4, 46, spread=0.12)
+    s.chord(PIANO, [46, 58, 62, 65], 31, 4, 44, spread=0.12)
+    s.chord(STR, [50, 57, 62], 27, 4, 40)
+    s.chord(STR, [46, 53, 58], 31, 4, 40)
+    s.note(PIANO, 81, beat(16.6), 2, 40)
+    # 17.5 s: the turn. The tune in F major, strings join; 20 s the app.
+    LIFT = [(60, 1), (65, 1), (69, 1), (67, 1), (65, 2), (60, 2),
+            (62, 1), (65, 1), (70, 1), (69, 1), (67, 2), (64, 2),
+            (65, 1), (69, 1), (72, 1), (70, 1), (69, 2), (67, 2)]
+    LIFT_CH = [("F", 4), ("Bb", 2), ("C", 2), ("Bb", 2), ("C", 2), ("Dm", 2), ("C", 2), ("Bb", 2), ("C", 2)]
+    play(s, CELLO, LIFT, 35, 78, octave=-12, until=52)
+    broken(s, PIANO, LIFT_CH, 35, 44, until=52)
+    pad(s, STR, LIFT_CH, 35, 44, bass_ch=BASS, until=52)
+    # 26 s end card: home on F.
+    s.chord(PIANO, [53, 60, 65, 69, 72], 52, 8, 56, spread=0.07)
+    s.chord(STR, [41, 53, 60, 65], 52, 8, 50)
+    s.note(CELLO, 41, 52, 8, 64)
     return s
 
 
 def wholestory():
-    """Film 2. 0 verse card (celesta), 2.5 s exiles (drone), 6 question, 8-16 rose fills
-    (harp arpeggio, an instrument per division, bell as it closes at 14.7 s), 16 facts,
-    20 app, 26 end card."""
+    """Film 2, music box and strings (the Advent music-box style). 0-2.5 s the verse card:
+    the music box alone, sweet; 2.5 s the floor drops to low strings and cello; 8-16 s the
+    rose fills: the music-box tune returns over harp and building strings, a bell as it
+    closes; 16-20 s warm; 20 s Day 1; 26 s the end card resolves on D."""
     s = Song()
-    CEL, DRONE, HARP, STR, CHOIR, PIANO, BELL, BASS = 0, 1, 2, 3, 4, 5, 6, 7
-    for ch, prog in [(CEL, 8), (DRONE, 42), (HARP, 46), (STR, 48), (CHOIR, 52), (PIANO, 0), (BELL, 14), (BASS, 32)]:
+    BOX, CELLO, HARP, STR, CHOIR, BELL, BASS = 0, 1, 2, 3, 4, 5, 6
+    for ch, prog in [(BOX, 10), (CELLO, 42), (HARP, 46), (STR, 48), (CHOIR, 52), (BELL, 14), (BASS, 32)]:
         s.program(ch, prog)
-    D = {"D": [62, 66, 69], "G": [55, 59, 62], "A": [57, 61, 64], "Bm": [59, 62, 66], "Em": [52, 55, 59]}
-    # 0-2.5 s: a sweet little tune, like the graphics it imitates.
-    for at, p in [(0, 74), (0.5, 78), (1, 81), (1.5, 78), (2, 76), (3, 74), (3.5, 73), (4, 74)]:
-        s.note(CEL, p, at, 0.5, 58)
-    s.chord(PIANO, D["D"], 0, 4.5, 34)
-    # 2.5-8 s: the floor drops: a low drone under the exiles.
-    s.note(DRONE, 38, 5, 11, 70)
-    s.note(DRONE, 45, 5, 11, 52)
-    s.chord(STR, [50, 57, 62], 5, 7, 40)
-    s.chord(STR, [50, 55, 59], 12, 4, 44)  # "Do you know the story?" hangs on G/D
-    # 8-16 s: the rose fills; harp arpeggio rising, instruments joining.
-    prog = [("D", 4), ("Bm", 4), ("G", 4), ("A", 4)]
-    at = 16
-    for k, (name, dur) in enumerate(prog * 1):
-        notes = D[name]
-        for i in range(dur * 4):
-            p = notes[i % 3] + 12 * (1 + (i // 3) % 2)
-            s.note(HARP, p, at + i * 0.25, 0.3, 50 + k * 6)
-        s.chord(STR, [n - 12 for n in notes], at, dur, 46 + k * 6)
-        s.note(BASS, notes[0] - 24, at, dur, 56)
-        if k >= 1:
-            s.chord(CHOIR, notes, at, dur, 36 + k * 8)
-        at += dur
-    s.note(BELL, 74, beat(14.7), 4, 76)
-    s.note(BELL, 81, beat(15.2), 4, 60)
-    # 16-20 s: the facts, warm and open.
-    for name, a, d in [("G", 32, 4), ("D", 36, 4)]:
-        s.chord(STR, [n - 12 for n in D[name]], a, d, 58)
-        s.chord(CHOIR, D[name], a, d, 44)
-        s.chord(PIANO, D[name] + [D[name][0] + 12], a, d, 46, spread=0.1)
-        s.note(BASS, D[name][0] - 24, a, d, 58)
-    # 20-26 s: Day 1, light piano eighths over strings.
-    for k in range(24):
-        name = ["D", "Bm", "G", "A"][k // 6]
-        s.note(PIANO, D[name][k % 3] + 12, 40 + k * 0.5, 0.45, 40)
-        if k % 6 == 0:
-            s.chord(STR, [n - 12 for n in D[name]], 40 + k * 0.5, 3, 44)
-            s.note(BASS, D[name][0] - 24, 40 + k * 0.5, 3, 52)
-    # 26 s: end card resolves on D, bell once more.
-    s.chord(PIANO, D["D"] + [74, 78], 52, 8, 52, spread=0.07)
-    s.chord(STR, [n - 12 for n in D["D"]], 52, 8, 50)
-    s.chord(CHOIR, D["D"], 52, 8, 40)
+    TUNE = [(74, 1), (78, 1), (81, 1), (86, 1), (85, 2), (81, 2),
+            (83, 1), (81, 1), (78, 1), (76, 1), (74, 4)]
+    play(s, BOX, TUNE[:6], 0, 64)  # 0-4 beats: the cliché, sweet and bright
+    s.chord(HARP, [62, 66, 69], 0, 5, 40, spread=0.1)
+    # 2.5-8 s: exiles; low and still.
+    s.note(CELLO, 38, 5, 7, 66)
+    s.chord(STR, [50, 57, 62], 5, 7, 42)
+    play(s, CELLO, [(57, 2), (55, 2), (54, 3)], 5, 60)
+    s.chord(STR, [47, 55, 59], 12, 4, 44)  # "Do you know the story?" hangs on Em/G
+    s.note(BOX, 83, 13, 2, 40)
+    # 8-16 s: the rose. The tune returns, everything builds.
+    RCH = [("D", 4), ("Bm", 4), ("G", 4), ("A", 4)]
+    play(s, BOX, TUNE + [(None, 0)], 16, 66)
+    play(s, BOX, TUNE[:6], 28, 70)
+    broken(s, HARP, RCH, 16, 46, per_beat=4, pattern=(0, 1, 2, 1))
+    pad(s, STR, RCH, 16, 48, bass_ch=BASS)
+    pad(s, CHOIR, RCH[1:], 20, 34, octave=0)
+    s.note(BELL, 74, beat(14.7), 4, 74)
+    # 16-20 s: warm.
+    pad(s, STR, [("G", 4), ("D", 4)], 32, 56, bass_ch=BASS)
+    pad(s, CHOIR, [("G", 4), ("D", 4)], 32, 40, octave=0)
+    play(s, BOX, [(83, 2), (81, 2), (78, 2), (81, 2)], 32, 60)
+    # 20-26 s: Day 1; the tune once more, lighter.
+    play(s, BOX, TUNE, 40, 58)
+    broken(s, HARP, [("D", 4), ("Bm", 4), ("G", 2), ("A", 2)], 40, 40, per_beat=2)
+    pad(s, STR, [("D", 4), ("Bm", 4), ("G", 2), ("A", 2)], 40, 40, bass_ch=BASS)
+    # 26 s end card.
+    s.chord(HARP, [62, 66, 69, 74], 52, 8, 50, spread=0.08)
+    s.chord(STR, [50, 57, 62, 66], 52, 8, 50)
+    s.note(BOX, 86, 52, 4, 56)
+    s.note(BELL, 74, 52.2, 6, 48)
     s.note(BASS, 38, 52, 8, 54)
-    s.note(BELL, 74, 52.2, 6, 50)
     return s
 
 
-ARRANGEMENTS = {"monologue": monologue, "wholestory": wholestory}
+def outloud():
+    """Film 3, bright (the Advent bright style): glockenspiel, nylon guitar, a light beat.
+    0-4.5 s cello alone; 4.5 s "Together." guitar, glockenspiel and the beat come in;
+    6-14 s the etchings; 14 s the inks lift; 16-24 s the app; 24 s "Pull up a chair." a
+    cadence; 26 s the end card on D."""
+    s = Song()
+    CELLO, GLOCK, GTR, STR, BASS = 0, 1, 2, 3, 4
+    for ch, prog in [(CELLO, 42), (GLOCK, 9), (GTR, 24), (STR, 48), (BASS, 32)]:
+        s.program(ch, prog)
+    TUNE = [(66, 1), (69, 1), (71, 1), (69, 1), (66, 2), (64, 2),
+            (62, 1), (64, 1), (66, 1), (69, 1), (71, 2), (69, 2),
+            (74, 1), (73, 1), (71, 1), (69, 1), (71, 1), (69, 1), (66, 2),
+            (62, 1), (64, 1), (66, 1), (64, 1), (62, 4)]
+    HARM = [("D", 4), ("G", 2), ("A", 2), ("Bm", 2), ("G", 2), ("D", 2), ("A", 2),
+            ("G", 2), ("D", 2), ("Bm", 2), ("A", 2), ("G", 2), ("A", 2), ("D", 4)]
+    play(s, CELLO, TUNE, 0, 72, octave=-12, until=9)
+    s.chord(STR, [50, 57, 62], 0, 9, 30)
+
+    def strum(start, until, vel):
+        at = start
+        for name, d in HARM * 2:
+            if at >= until:
+                return
+            notes = CHORDS[name]
+            for k in range(d):  # down on the beat, up on the "and"
+                if at + k >= until:
+                    break
+                s.chord(GTR, [notes[0] - 12] + notes, at + k, 0.45, vel, spread=0.015)
+                s.chord(GTR, notes, at + k + 0.5, 0.4, vel - 14, spread=0.015)
+            s.note(BASS, notes[0] - 24, at, d * 0.9, 56)
+            at += d
+
+    play(s, GLOCK, TUNE, 9, 66, octave=12, until=32)
+    play(s, CELLO, TUNE, 9, 52, octave=-12, until=32)
+    strum(9, 32, 56)
+    for b in range(9, 48):  # light beat: soft kick on 1 and 3, shaker on the eighths
+        if b % 2 == 1:
+            s.note(DRUMS, 36, b, 0.2, 48)
+        s.note(DRUMS, 70, b, 0.1, 30)
+        s.note(DRUMS, 70, b + 0.5, 0.1, 22)
+    s.chord(STR, [55, 59, 62, 67], 28, 2, 60)  # the inks lift
+    s.chord(STR, [57, 61, 64, 69], 30, 2, 66)
+    play(s, GLOCK, TUNE, 32, 54, octave=12, until=48)
+    strum(32, 48, 48)
+    s.chord(GTR, [45, 57, 61, 64, 67], 48, 4, 54, spread=0.03)  # "Pull up a chair."
+    s.chord(STR, [45, 57, 61, 64], 48, 4, 54)
+    s.note(GLOCK, 81, 48, 2, 50)
+    s.note(GLOCK, 79, 50, 2, 46)
+    s.chord(GTR, [38, 50, 57, 62, 66], 52, 8, 58, spread=0.04)  # end card
+    s.chord(STR, [50, 57, 62, 66], 52, 8, 48)
+    s.note(GLOCK, 86, 52, 4, 54)
+    s.note(CELLO, 38, 52, 8, 56)
+    return s
+
+
+ARRANGEMENTS = {"monologue": monologue, "wholestory": wholestory, "outloud": outloud}
 
 
 def render(name, out_wav):
