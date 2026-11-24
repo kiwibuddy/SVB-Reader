@@ -23245,6 +23245,14 @@
       "count": "{{count}} récits, dans l'ordre",
       "open": "Ouvrir votre parcours",
       "created": "Parcours créé"
+    },
+    "companion": {
+      "kicker": "{{week}} · Jour {{day}} sur {{total}}",
+      "keyVerse": "Verset clé du jour",
+      "findIt": "Le trouver dans le récit",
+      "antiphonLead": "Une ancienne prière de l'Église pour ces derniers jours de l'Avent. Priez-la ensemble.",
+      "startChristmas12": "Commencer les 12 jours de Noël",
+      "openChristmas12": "Ouvrir les 12 jours de Noël"
     }
   }
 }

@@ -1,0 +1,92 @@
+{
+  "adventJourneyChronological": {
+    "version": 1,
+    "days": {
+      "1": {
+        "storyId": "S365",
+        "intro": "Advent begins by looking ahead. Focus on chapters 21 and 22: a world made new. The Bible ends with a prayer we can make our own.",
+        "keyVerses": ["Rev-22-20"],
+        "questions": {
+          "family": ["Q1", "Q2", "Q3", "Q4"],
+          "school": ["Q1", "Q2", "Q3", "Q4"],
+          "smallgroup": ["Q1", "Q2", "Q3", "Q4"]
+        },
+        "closing": "Come, Lord Jesus.",
+        "antiphon": null
+      },
+      "3": {
+        "storyId": "S006",
+        "intro": "God takes Abram outside and points to the night sky. Count the stars: that is how many descendants he will have, and he will be father of a multitude of nations.",
+        "keyVerses": ["Gen-15-5"],
+        "questions": {
+          "family": ["What did God ask Abram to look at?", "How do you feel when you wait?", "Who keeps promises to you?", "What is one kind thing you can do this week?"],
+          "school": ["S1", "S2", "S3", "S4"],
+          "smallgroup": ["G1", "G2", "G3", "G4"]
+        },
+        "closing": "Hope grows as we learn to trust the One who makes the promises.",
+        "antiphon": null
+      },
+      "8": {
+        "storyId": "S199",
+        "intro": "Comfort for a weary people, and a voice calling in the wilderness.",
+        "keyVerses": ["Isa-40-1"],
+        "questions": {
+          "family": ["Q1", "Q2", "Q3", "Q4"],
+          "school": ["Q1", "Q2", "Q3", "Q4"],
+          "smallgroup": ["Q1", "Q2", "Q3", "Q4"]
+        },
+        "closing": "Peace.",
+        "antiphon": null
+      },
+      "15": {
+        "storyId": "S204",
+        "intro": "Good news to the poor, and many churches sing Mary's song today.",
+        "keyVerses": ["Isa-61-1"],
+        "questions": {
+          "family": ["Q1", "Q2", "Q3", "Q4"],
+          "school": ["Q1", "Q2", "Q3", "Q4"],
+          "smallgroup": ["Q1", "Q2", "Q3", "Q4"]
+        },
+        "closing": "Joy.",
+        "antiphon": null
+      },
+      "19": {
+        "storyId": "S298",
+        "intro": "The Word became human. Tonight's antiphon, O Wisdom, was sung each evening before Mary's song.",
+        "keyVerses": ["Joh-1-14"],
+        "questions": {
+          "family": ["Q1", "Q2", "Q3", "Q4"],
+          "school": ["Q1", "Q2", "Q3", "Q4"],
+          "smallgroup": ["Q1", "Q2", "Q3", "Q4"]
+        },
+        "closing": "Pray it together.",
+        "antiphon": {
+          "title": "O Wisdom",
+          "prayer": "O Wisdom, who came from the mouth of the Most High, reaching from one end of creation to the other and ordering all things with strength and gentleness: come and teach us the way of understanding.",
+          "sources": "Sirach 24:3; Wisdom 8:1; John 1"
+        }
+      },
+      "22": {
+        "storyId": "S098",
+        "intro": "A throne forever. Many churches sing Mary's song today.",
+        "keyVerses": ["2Sa-7-16"],
+        "questions": {
+          "family": ["Q1", "Q2", "Q3", "Q4"],
+          "school": ["Q1", "Q2", "Q3", "Q4"],
+          "smallgroup": ["Q1", "Q2", "Q3", "Q4"]
+        },
+        "closing": "Love.",
+        "antiphon": {
+          "title": "O Key of David",
+          "prayer": "O Key of David, sceptre of the house of Israel, you open and no one can shut, you shut and no one can open: come and lead the prisoners out of the prison house, those who sit in darkness and the shadow of death.",
+          "sources": "Isaiah 22:22; 42:7; Revelation 3:7"
+        }
+      }
+    },
+    "finish": {
+      "title": "God with us",
+      "body": "Over these readings we have followed a story of promise. Jesus has come, Jesus is with us, and Jesus will come again.",
+      "nextPlanId": "christmas12"
+    }
+  }
+}

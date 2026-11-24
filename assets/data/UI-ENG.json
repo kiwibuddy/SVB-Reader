@@ -1248,6 +1248,14 @@
       "count": "{{count}} stories, in order",
       "open": "Open your plan",
       "created": "Plan created"
+    },
+    "companion": {
+      "kicker": "{{week}} · Day {{day}} of {{total}}",
+      "keyVerse": "Today's key verse",
+      "findIt": "Find it in the story",
+      "antiphonLead": "An ancient prayer of the church for these last days of Advent. Pray it together.",
+      "startChristmas12": "Start 12 Days of Christmas",
+      "openChristmas12": "Open 12 Days of Christmas"
     }
   },
   "Books": {
