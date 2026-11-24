@@ -1985,8 +1985,8 @@
       "description": "26 Stories - 4 Weeks",
       "descriptionFr": "26 récits — 4 semaines",
       "image": "island",
-      "longDescription": "Read Advent the way the church has kept it for centuries. Week 1 traces God's promise through Jesus' family tree, week 2 listens to the prophets, and week 3 rejoices. From December 17 the ancient O Antiphons lead day by day to Christmas Eve. Sunday readings include the passage many churches read that day.",
-      "longDescriptionFr": "Vivez l'Avent comme l'Église le vit depuis des siècles. La semaine 1 suit la promesse de Dieu à travers l'arbre généalogique de Jésus, la semaine 2 écoute les prophètes et la semaine 3 se réjouit. Dès le 17 décembre, les anciennes antiennes Ô mènent jour après jour à la veille de Noël. Les lectures du dimanche contiennent le passage lu ce jour-là dans de nombreuses Églises.",
+      "longDescription": "The story of God's promise to be with us, one story a day from the first Sunday of Advent to Christmas Eve. Week 1 traces God's promise through Jesus' family line, week 2 listens to the prophets, and week 3 rejoices. From 17 December, seven ancient prayers of the church, the O Antiphons, lead day by day to Christmas Eve. On three of the four Sundays, the story holds the passage many churches read that day.",
+      "longDescriptionFr": "L'histoire de la promesse de Dieu d'être avec nous, un récit par jour du premier dimanche de l'Avent à la veille de Noël. La semaine 1 suit la promesse de Dieu à travers la lignée de Jésus, la semaine 2 écoute les prophètes et la semaine 3 se réjouit. Dès le 17 décembre, sept anciennes prières de l'Église, les antiennes Ô, mènent jour après jour à la veille de Noël. Sur trois des quatre dimanches, le récit contient le passage que de nombreuses Églises lisent ce jour-là.",
       "chronologicalOrder": true,
       "chronologicalMapping": "adventJourneyChronological",
       "segments": {

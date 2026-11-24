@@ -121,4 +121,12 @@ describe('seasonal plans', () => {
       }
     }
   });
+
+  test('Advent long description matches in both plan data files', () => {
+    const fromMappings = (MAPPINGS.adventJourneyChronological as any).longDescription;
+    const fromPlans = ALL.find((p) => p.id === 'adventJourneyChronological') as any;
+    expect(fromMappings).toBeTruthy();
+    expect(fromPlans?.longDescription).toBe(fromMappings);
+    expect(fromPlans?.longDescriptionFr?.length).toBeGreaterThan(40);
+  });
 });
