@@ -27,6 +27,70 @@ const KNOWN_BROKEN = new Set(['lentenReflectionChronological']);
 
 const usedMappings = ALL.filter((p) => p.chronologicalMapping && !KNOWN_BROKEN.has(p.chronologicalMapping));
 
+/** (chapter, verse) as a comparable pair. Verse 0 means "any verse in the chapter". */
+type ChapVerse = { chapter: number; verse: number };
+
+function cmp(a: ChapVerse, b: ChapVerse): number {
+  return a.chapter - b.chapter || a.verse - b.verse;
+}
+
+/** Expand a story `ref` like `6:1-9:7` or `15:1-18:15` into inclusive endpoints. */
+function refRange(ref: string): { start: ChapVerse; end: ChapVerse } | null {
+  const m = /^(\d+):(\d+)\s*-\s*(\d+):(\d+)$/.exec(ref.trim());
+  if (!m) return null;
+  return {
+    start: { chapter: Number(m[1]), verse: Number(m[2]) },
+    end: { chapter: Number(m[3]), verse: Number(m[4]) },
+  };
+}
+
+function inRange(point: ChapVerse, range: { start: ChapVerse; end: ChapVerse }): boolean {
+  if (point.verse === 0) {
+    return point.chapter >= range.start.chapter && point.chapter <= range.end.chapter;
+  }
+  return cmp(point, range.start) >= 0 && cmp(point, range.end) <= 0;
+}
+
+function pushVerseRange(out: ChapVerse[], chapter: number, from: number, to: number) {
+  for (let v = from; v <= to; v++) out.push({ chapter, verse: v });
+}
+
+/**
+ * Verse citations in an English Advent note: `22:8, 18`, `7:14; 9:6–7`,
+ * `1:46–55`, `ch. 3`.
+ */
+export function citedVerses(note: string): ChapVerse[] {
+  const out: ChapVerse[] = [];
+  const chapterOnly = /\bch(?:apter)?s?\.?\s*(\d+)(?:\s*[–-]\s*(\d+))?/gi;
+  let m: RegExpExecArray | null;
+  while ((m = chapterOnly.exec(note))) {
+    const from = Number(m[1]);
+    const to = m[2] ? Number(m[2]) : from;
+    for (let c = from; c <= to; c++) out.push({ chapter: c, verse: 0 });
+  }
+  // Walk chapter:verse cites; after each, accept same-chapter `, 18` tails.
+  // A trailing number must not be the chapter of a following `n:verse`.
+  const body = note.replace(chapterOnly, ' ');
+  const re =
+    /(\d+)\s*:\s*(\d+)(?:\s*[–-]\s*(\d+))?((?:\s*[,;]\s*\d+\b(?!\s*:)(?:\s*[–-]\s*\d+)?)*)/g;
+  while ((m = re.exec(body))) {
+    const chapter = Number(m[1]);
+    const from = Number(m[2]);
+    const to = m[3] ? Number(m[3]) : from;
+    pushVerseRange(out, chapter, from, to);
+    const tail = m[4] || '';
+    const parts = tail.split(/\s*[,;]\s*/).filter(Boolean);
+    for (const part of parts) {
+      const vm = /^(\d+)(?:\s*[–-]\s*(\d+))?$/.exec(part);
+      if (!vm) continue;
+      const vFrom = Number(vm[1]);
+      const vTo = vm[2] ? Number(vm[2]) : vFrom;
+      pushVerseRange(out, chapter, vFrom, vTo);
+    }
+  }
+  return out;
+}
+
 describe.each(usedMappings.map((p) => [p.id, p] as const))('%s', (_id, plan) => {
   const mapping = MAPPINGS[plan.chronologicalMapping!];
   const listed = Object.values(plan.segments)
@@ -128,5 +192,38 @@ describe('seasonal plans', () => {
     expect(fromMappings).toBeTruthy();
     expect(fromPlans?.longDescription).toBe(fromMappings);
     expect(fromPlans?.longDescriptionFr?.length).toBeGreaterThan(40);
+  });
+
+  test('citedVerses parses the Advent note shapes', () => {
+    expect(citedVerses('blessed (22:8, 18)')).toEqual([
+      { chapter: 22, verse: 8 },
+      { chapter: 22, verse: 18 },
+    ]);
+    expect(citedVerses('throne (7:14; 9:6–7)')).toEqual([
+      { chapter: 7, verse: 14 },
+      { chapter: 9, verse: 6 },
+      { chapter: 9, verse: 7 },
+    ]);
+    expect(citedVerses("Mary's song (1:46–55)")).toEqual(
+      Array.from({ length: 10 }, (_, i) => ({ chapter: 1, verse: 46 + i }))
+    );
+    expect(citedVerses('gives his name (ch. 3)')).toEqual([{ chapter: 3, verse: 0 }]);
+  });
+
+  test('every verse cited in an Advent note lies inside that day\'s story', () => {
+    for (const seg of MAPPINGS.adventJourneyChronological.segments) {
+      if (!seg.note || !seg.ref) continue;
+      const range = refRange(seg.ref);
+      expect(range).not.toBeNull();
+      for (const cite of citedVerses(seg.note)) {
+        expect({
+          day: seg.segmentId,
+          note: seg.note,
+          cite,
+          ref: seg.ref,
+          ok: inRange(cite, range!),
+        }).toEqual(expect.objectContaining({ ok: true }));
+      }
+    }
   });
 });
