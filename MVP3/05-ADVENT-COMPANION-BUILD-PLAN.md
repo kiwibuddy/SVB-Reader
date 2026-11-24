@@ -1,9 +1,9 @@
 # Advent companion — build plan
 
 Written 24 Nov 2026 after the ChatGPT review of the Advent plan. Owner decisions are final;
-this plan says how to build them. **Not started.** One plan, built in one go, shipped as two
-over-the-air updates (Release A as soon as it's done, before Day 1; Release B after the owner
-approves the content).
+this plan says how to build them. **Shipped on `ota/advent` (25 Nov 2026):** Release A and
+Release B OTAs are live on App Store 2.0.0 (26) and Play 2.0.0 (25). Content in
+`docs/advent/ADVENT-COMPANION-CONTENT.md` still awaits a careful owner read-through on a phone.
 
 Built on branch `ota/advent` (cut from `ota/release-c`, what phones run now). Corrections of
 25 Nov 2026 are folded in below. Every OTA for this work must come from `ota/advent` or a
