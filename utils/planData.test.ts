@@ -110,4 +110,15 @@ describe('seasonal plans', () => {
     const fr = (uiFr as any).UI.advent;
     expect(Object.keys(fr).sort()).toEqual(Object.keys(en).sort());
   });
+
+  test('Advent UI strings never claim a reading time in minutes', () => {
+    const minutes = /\bmin(ute)?s?\b/i;
+    for (const ui of [uiEn, uiFr] as any[]) {
+      for (const [key, value] of Object.entries(ui.UI.advent)) {
+        if (typeof value === 'string') {
+          expect({ key, value }).toEqual({ key, value: expect.not.stringMatching(minutes) });
+        }
+      }
+    }
+  });
 });

@@ -1144,7 +1144,7 @@
     "advent": {
       "cardKicker": "Advent begins {{date}}",
       "cardKickerLive": "Advent · Day {{n}} is today",
-      "cardBody": "26 days from promise to manger, one story a day to Christmas Eve. About 10 minutes a day.",
+      "cardBody": "26 days from promise to manger, one story a day to Christmas Eve.",
       "join": "Join Advent",
       "remindMe": "Remind me",
       "reminderSet": "Reminder set",
@@ -1161,7 +1161,7 @@
       "notificationsOffTitle": "Notifications are off",
       "notificationsOffBody": "To get Advent reminders, allow notifications for SourceView in Settings.",
       "notifWeekTitle": "Advent starts next Sunday",
-      "notifWeekBody": "Join 26 days of readings from promise to manger. About 10 minutes a day.",
+      "notifWeekBody": "Join 26 days of readings from promise to manger, one story a day.",
       "notifEveTitle": "Advent starts tomorrow",
       "notifEveBody": "Join the Advent Journey and read Day 1 on Sunday.",
       "notifJoinedEveBody": "Day 1 is ready: {{title}}",

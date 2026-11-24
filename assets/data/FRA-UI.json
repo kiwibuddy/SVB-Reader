@@ -23141,7 +23141,7 @@
     "advent": {
       "cardKicker": "L'Avent commence {{date}}",
       "cardKickerLive": "Avent · c'est le jour {{n}}",
-      "cardBody": "26 jours de la promesse à la crèche, un récit par jour jusqu'à la veille de Noël. Environ 10 minutes par jour.",
+      "cardBody": "26 jours de la promesse à la crèche, un récit par jour jusqu'à la veille de Noël.",
       "join": "Rejoindre l'Avent",
       "remindMe": "Me le rappeler",
       "reminderSet": "Rappel programmé",
@@ -23158,7 +23158,7 @@
       "notificationsOffTitle": "Notifications désactivées",
       "notificationsOffBody": "Pour recevoir les rappels de l'Avent, autorisez les notifications de SourceView dans Réglages.",
       "notifWeekTitle": "L'Avent commence dimanche prochain",
-      "notifWeekBody": "Rejoignez 26 jours de lectures, de la promesse à la crèche. Environ 10 minutes par jour.",
+      "notifWeekBody": "Rejoignez 26 jours de lectures, de la promesse à la crèche, un récit par jour.",
       "notifEveTitle": "L'Avent commence demain",
       "notifEveBody": "Rejoignez le parcours de l'Avent et lisez le jour 1 dimanche.",
       "notifJoinedEveBody": "Le jour 1 est prêt : {{title}}",
