@@ -50,7 +50,7 @@ Fonts: Instrument Serif, Inter, Pinyon Script, Monoton (all SIL OFL, in `public/
 ### Advent Starts in the Dark
 > Not everyone feels Christmassy this year. Advent was never meant to pretend: it
 > starts in the dark and waits for the light. SourceView Together walks through 26
-> Bible stories to Christmas, about ten minutes a night, alone or out loud together.
+> Bible stories to Christmas, one a night, alone or out loud together.
 
 **Headline:** Advent starts in the dark · **CTA:** Install Now
 
@@ -62,8 +62,7 @@ Fonts: Instrument Serif, Inter, Pinyon Script, Monoton (all SIL OFL, in `public/
 **Headline:** Give the words their weight back · **CTA:** Install Now
 
 ### Come Home to the Story
-> December is when everyone comes home. This year, try ten minutes after dinner with
-> the Advent readings: SourceView Together gives everyone a part, so the whole family
+> December is when everyone comes home. This year, try the Advent readings after dinner: SourceView Together gives everyone a part, so the whole family
 > reads the story together, from the first promise to Christmas Eve.
 
 **Headline:** Come home to the story · **CTA:** Install Now

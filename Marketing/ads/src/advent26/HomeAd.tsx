@@ -32,7 +32,7 @@ export const THREAD: Msg[] = [
   { at: 118, typing: ME, until: 150 },
   { at: 160, typing: ME, until: 188 },
   { at: 190, from: ME, text: 'like when we were kids?' },
-  { at: 228, from: 'Mum', text: 'It’s on an app now. Everyone gets a part, four colours. 10 minutes after dinner.' },
+  { at: 228, from: 'Mum', text: 'It’s on an app now. Everyone gets a part, four colours. One story after dinner.' },
   { at: 276, from: 'Jess', text: 'Sam you can read whoever argues with God' },
   { at: 312, typing: ME, until: 338 },
   { at: 340, from: ME, text: '…ok fine. I’m in.', react: [356, '❤️'] },
