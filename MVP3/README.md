@@ -8,6 +8,8 @@ Feature work deferred past the 2.0 launch cut.
 | --- | --- |
 | [`01-CUSTOM-READING-PLANS.md`](./01-CUSTOM-READING-PLANS.md) | User-created reading plans (playlist-style) — **2.1** |
 | [`02-POST-ADVENT-BUILD-PLAN.md`](./02-POST-ADVENT-BUILD-PLAN.md) | Bug fixes, plan journey view, reminders, forgiving streak, voice plans — build plan, Nov 2026 |
+| [`05-ADVENT-COMPANION-BUILD-PLAN.md`](./05-ADVENT-COMPANION-BUILD-PLAN.md) | Advent fixes before Day 1, then intro card, key verse, plan questions and O Antiphon prayers — build plan, not started |
+| [`04-PLAN-QUESTIONS.md`](./04-PLAN-QUESTIONS.md) | Plan-specific discussion questions — decisions locked, not built (Advent pilot first) |
 
 ## Other deferred notes
 
