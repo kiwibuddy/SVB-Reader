@@ -110,7 +110,64 @@ def dark():
     return s
 
 
-ARRANGEMENTS = {"dark": dark}
+# --------------------------------------------------------------------------
+# Heavy Words: "Joy to the World". 0-3 s the shop version (synth brass,
+# glockenspiel, tambourine); 3-5 s "Advent gives them their weight back":
+# silence but one chord; each word section opens on a one-second tacky sting
+# for its costume, then the tune plain on piano with strings growing each week;
+# 23-26 s the four words stack, warm; 26 s end card on D.
+# --------------------------------------------------------------------------
+A3_, B3_, Cs4, D4_, E4_, Fs4, G4_, A4_, B4_, Cs5, D5_ = 57, 59, 61, 62, 64, 66, 67, 69, 71, 73, 74
+JOY_1 = [(D5_, 2), (Cs5, 1.5), (B4_, 0.5), (A4_, 3), (G4_, 1), (Fs4, 2), (E4_, 2), (D4_, 3)]   # "Joy to the world, the Lord is come"
+JOY_2 = [(A4_, 1), (B4_, 3), (B4_, 1), (Cs5, 3), (Cs5, 1), (D5_, 5)]                            # "Let earth receive her King"
+TRIAD = {"D": [62, 66, 69], "G": [55, 59, 62], "A": [57, 61, 64], "Bm": [59, 62, 66], "Em": [52, 55, 59]}
+
+
+def words():
+    s = Song()
+    BRASS, GLOCK, PIANO, STR, BASS, BELLS = 0, 1, 2, 3, 4, 5
+    for ch, prog in [(BRASS, 62), (GLOCK, 9), (PIANO, 0), (STR, 48), (BASS, 33), (BELLS, 14)]:
+        s.program(ch, prog)
+
+    def tacky(start, dur, phrase=JOY_1, unit=0.16):
+        line(s, BRASS, phrase, start, unit, 74)
+        line(s, GLOCK, phrase, start, unit, 70, octave=12)
+        t = start
+        while t < start + dur - 0.01:  # oom-pah and tambourine
+            s.note(BASS, 38 if int((t - start) / 0.32) % 2 == 0 else 45, t, 0.15, 70)
+            s.note(DRUMS, 54, t, 0.1, 66)
+            s.note(DRUMS, 81, t + 0.16, 0.1, 50)
+            t += 0.32
+
+    # 0-3 s: the shop version.
+    tacky(0.0, 2.9)
+    s.chord(BRASS, [62, 66, 69, 74], 2.4, 0.5, 80)
+    # 3-5 s: the turn. One soft chord.
+    s.chord(PIANO, [50, 57, 62, 66], 3.1, 1.9, 40, spread=0.08)
+    # Word sections: a one-second sting, then the tune plain.
+    sections = [(5.0, JOY_1, 30), (9.5, JOY_2, 36), (14.0, JOY_1, 42), (18.5, JOY_2, 48)]
+    for start, phrase, str_vel in sections:
+        tacky(start, 0.9, phrase=phrase[:3], unit=0.16)
+        end = line(s, PIANO, phrase, start + 1.4, 0.24, 56)
+        harm = [("D", 1.2), ("A", 1.2), ("D", 1.4)] if phrase is JOY_1 else [("A", 1.4), ("A", 1.4), ("D", 1.0)]
+        t = start + 1.4
+        for name, d in harm:
+            s.chord(PIANO, [n - 12 for n in TRIAD[name]], t, d, 38)
+            s.chord(STR, [n - 12 for n in TRIAD[name]], t, d, str_vel)
+            t += d
+    # 23-26 s: the four words stack, warm and full.
+    line(s, PIANO, JOY_1, 23.0, 0.2, 60)
+    line(s, STR, JOY_1, 23.0, 0.2, 52)
+    for name, at in [("D", 23.0), ("G", 24.0), ("A", 24.8)]:
+        s.chord(STR, [n - 12 for n in TRIAD[name]], at, 1.0, 50)
+    # 26 s end card: home on D, a bell.
+    s.chord(PIANO, [38, 50, 57, 62, 66, 69], 26.0, 4, 56, spread=0.06)
+    s.chord(STR, [38, 50, 57, 62], 26.0, 4, 50)
+    s.note(BELLS, 74, 26.05, 4, 56)
+    return s
+
+
+ARRANGEMENTS = {"dark": dark, "words": words}
 
 
 def render(name, out_wav):

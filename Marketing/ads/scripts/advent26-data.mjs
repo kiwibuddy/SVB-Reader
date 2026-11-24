@@ -19,6 +19,7 @@ const QUOTES = {
   joy: ['S260', 27, 'He will rejoice over you with joyful songs.', 'joyful songs.', 'Zephaniah the Prophet', 'Zephaniah', 'Zephaniah 3:17', '', ''],
   peace: ['S257', 8, 'And he will be the source of peace.', 'source of peace.', 'The Narrator', 'The Narrator', 'Micah 5:5', '', ''],
   love: ['S266', 4, 'Look! The virgin will conceive a child!', 'God is with us.’', 'The Narrator', 'The Narrator', 'Matthew 1:23', '', ''],
+  immanuel: ['S266', 4, 'they will call him Immanuel', 'God is with us.’', 'The Narrator', 'The Narrator', 'Matthew 1:23', '…', ''],
   savior: ['S285', 38, 'The Savior', 'the city of David!', 'An Angel', 'An angel', 'Luke 2:11', '', ''],
 };
 

@@ -16,13 +16,17 @@ if (typeof document !== 'undefined' && !document.getElementById('source-fonts'))
   css.textContent = `
     @font-face { font-family: 'Instrument Serif'; font-style: normal; font-weight: 400; src: url(${staticFile('fonts/InstrumentSerif-400.woff2')}) format('woff2'); }
     @font-face { font-family: 'Instrument Serif'; font-style: italic; font-weight: 400; src: url(${staticFile('fonts/InstrumentSerif-400i.woff2')}) format('woff2'); }
-    @font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; src: url(${staticFile('fonts/Inter.woff2')}) format('woff2'); }`;
+    @font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; src: url(${staticFile('fonts/Inter.woff2')}) format('woff2'); }
+    @font-face { font-family: 'Pinyon Script'; font-style: normal; font-weight: 400; src: url(${staticFile('fonts/PinyonScript.woff2')}) format('woff2'); }
+    @font-face { font-family: 'Monoton'; font-style: normal; font-weight: 400; src: url(${staticFile('fonts/Monoton.woff2')}) format('woff2'); }`;
   document.head.appendChild(css);
   const handle = delayRender('Loading Instrument Serif and Inter', { timeoutInMilliseconds: 120000, retries: 2 });
   Promise.all([
     document.fonts.load('400 100px "Instrument Serif"'),
     document.fonts.load('italic 400 100px "Instrument Serif"'),
     document.fonts.load('600 100px Inter'),
+    document.fonts.load('400 100px "Pinyon Script"'),
+    document.fonts.load('400 100px Monoton'),
   ]).then(
     () => continueRender(handle),
     (err) => {
