@@ -1,7 +1,9 @@
 # Plan-specific discussion questions — decisions
 
 Agreed with the owner on 24 Nov 2026. **Nothing is built yet.** When the owner says
-**"begin building the Advent questions"**, start from this file.
+**"begin building the Advent questions"**, follow the build plan in
+`MVP3/05-ADVENT-COMPANION-BUILD-PLAN.md` (questions, intro card, key-verse highlight,
+O Antiphon prayers), which supersedes the open points below.
 
 ## The idea
 
