@@ -10,6 +10,9 @@ interface BibleBlockProps {
   isGlowing: boolean;
   onLongPress: (block: BibleBlock, index: number) => void;
   isTarget?: boolean;
+  pulseKey?: number;
+  isKeyVerse?: boolean;
+  keyVerseColour?: string;
   dimmed?: boolean;
   onLayout?: ViewProps['onLayout'];
 }
@@ -21,6 +24,9 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({
   isGlowing,
   onLongPress,
   isTarget,
+  pulseKey,
+  isKeyVerse,
+  keyVerseColour,
   dimmed,
   onLayout,
 }) => {
@@ -32,6 +38,9 @@ const BibleBlockComponent: React.FC<BibleBlockProps> = ({
       isGlowing={isGlowing}
       onLongPress={onLongPress}
       isTarget={isTarget}
+      pulseKey={pulseKey}
+      isKeyVerse={isKeyVerse}
+      keyVerseColour={keyVerseColour}
       dimmed={dimmed}
       onLayout={onLayout}
     />

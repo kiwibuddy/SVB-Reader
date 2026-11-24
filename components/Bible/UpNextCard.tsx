@@ -11,8 +11,10 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { getStoryNote } from '@/utils/chronologicalPlans';
 import { hapticImpactLight } from '@/utils/haptics';
 import { localizeStoryTitle, localizeVoiceName } from '@/utils/localize';
-import { getLocalizedPlanText, nextUnreadStory, type CatalogItem } from '@/utils/planCatalog';
+import { findCatalogItem, getLocalizedPlanText, nextUnreadStory, type CatalogItem } from '@/utils/planCatalog';
 import { getPlanStartIndex } from '@/utils/planStartIndex';
+import { startCatalogPlan } from '@/utils/planActions';
+import { getCompanionFinish } from '@/utils/planCompanion';
 import { formatReadingMinutes, getSegmentReadingTime } from '@/utils/readingTime';
 import { datedWindow, dateForDay, daysBetween, formatShortDate } from '@/utils/seasonalPlans';
 import { neighbours } from '@/utils/storyOrder';
@@ -36,6 +38,8 @@ type Choice = {
   title: string;
   meta?: string;
   note?: string;
+  /** Finish reflections need more than two lines. */
+  noteLines?: number;
   primary: { label: string; go: () => void };
   secondary?: { label: string; go: () => void };
 };
@@ -102,11 +106,38 @@ export default function UpNextCard({ storyId, order, plan, voice }: Props) {
     return `${info?.book?.[0] || ''} ${info?.ref || ''}${minutes ? ` · ${formatReadingMinutes(minutes)}` : ''}`;
   };
 
+  const openOrStartNextPlan = async (nextPlanId: string) => {
+    void hapticImpactLight();
+    const nextItem = findCatalogItem(nextPlanId);
+    if (!nextItem) {
+      router.replace({ pathname: '/plan/[id]', params: { id: nextPlanId } });
+      return;
+    }
+    await startCatalogPlan(nextItem, 0);
+    router.replace({ pathname: '/plan/[id]', params: { id: nextItem.id } });
+  };
+
   let choice: Choice | null = null;
   if (plan) {
     const next = nextUnreadStory(order, done, getPlanStartIndex(plan.id));
     const planTitle = getLocalizedPlanText(plan, 'title', language);
-    if (!next) {
+    const finish = !next ? getCompanionFinish(plan.id) : null;
+    if (!next && finish) {
+      const fr = language.startsWith('fr');
+      choice = {
+        kicker: t('UI.upNext.planComplete'),
+        title: (fr && finish.titleFr) || finish.title || planTitle,
+        note: (fr && finish.bodyFr) || finish.body,
+        noteLines: 8,
+        primary: {
+          label: t('UI.companion.startChristmas12'),
+          go: () => {
+            void openOrStartNextPlan(finish.nextPlanId);
+          },
+        },
+        secondary: { label: t('UI.upNext.backToPlan'), go: backToPlan },
+      };
+    } else if (!next) {
       choice = {
         kicker: t('UI.upNext.planComplete'),
         title: planTitle,
@@ -165,7 +196,7 @@ export default function UpNextCard({ storyId, order, plan, voice }: Props) {
       <Text style={[styles.title, { color: palette.ink }]}>{choice.title}</Text>
       {!!choice.meta && <Text style={[styles.meta, { color: palette.mute }]}>{choice.meta}</Text>}
       {!!choice.note && (
-        <Text style={[styles.note, { color: palette.mute }]} numberOfLines={2}>
+        <Text style={[styles.note, { color: palette.mute }]} numberOfLines={choice.noteLines ?? 2}>
           {choice.note}
         </Text>
       )}

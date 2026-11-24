@@ -30,6 +30,11 @@ interface SegmentProps {
   challengeId?: string;
   targetVerse?: number;
   targetChapter?: number;
+  /** Bumps to re-scroll and re-pulse when the same verse is found again. */
+  targetNonce?: number;
+  /** Refs like Gen-15-5 that stay marked while in plan companion context. */
+  keyVerseRefs?: string[];
+  keyVerseColour?: string;
   targetVoice?: string;
   targetPartner?: string;
   locate?: 'speech' | 'exchange';
@@ -59,6 +64,9 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   challengeId,
   targetVerse,
   targetChapter,
+  targetNonce = 0,
+  keyVerseRefs,
+  keyVerseColour,
   targetVoice,
   targetPartner,
   locate,
@@ -206,7 +214,7 @@ const SegmentComponent: React.FC<SegmentProps> = ({
   useEffect(() => {
     reportedRef.current = false;
     targetTopRef.current = null;
-  }, [targetIndex, segID]);
+  }, [targetIndex, segID, targetNonce]);
 
   const reportIfLocated = useCallback(() => {
     if (reportedRef.current || targetIndex < 0) return;
@@ -216,6 +224,30 @@ const SegmentComponent: React.FC<SegmentProps> = ({
     reportedRef.current = true;
     onVerseLocated?.(segmentTop + targetTop);
   }, [onVerseLocated, targetIndex]);
+
+  // When the same verse is requested again, re-report the known layout.
+  useEffect(() => {
+    if (targetNonce <= 0 || targetIndex < 0) return;
+    reportedRef.current = false;
+    reportIfLocated();
+  }, [targetNonce, targetIndex, reportIfLocated]);
+
+  const keyVerseIndexes = useMemo(() => {
+    if (!keyVerseRefs?.length) return new Set<number>();
+    const indexes = new Set<number>();
+    for (const ref of keyVerseRefs) {
+      const m = /^([A-Za-z0-9]+)-(\d+)-(\d+)$/.exec(ref);
+      if (!m) continue;
+      const idx = findVerseBlockIndex(
+        memoizedContent,
+        bookCodesForSegment(segID),
+        Number(m[2]),
+        Number(m[3])
+      );
+      if (idx >= 0) indexes.add(idx);
+    }
+    return indexes;
+  }, [keyVerseRefs, memoizedContent, segID]);
 
   const computedSources = useMemo(() => {
     const inkLabels: Record<string, string> = {
@@ -537,6 +569,9 @@ const styles = StyleSheet.create({
             isGlowing={!isEditorial && mine}
             onLongPress={handleLongPress}
             isTarget={index === targetIndex}
+            pulseKey={index === targetIndex ? targetNonce : 0}
+            isKeyVerse={keyVerseIndexes.has(index)}
+            keyVerseColour={keyVerseColour}
             dimmed={!isEditorial && selectedReader !== null && !mine}
             onLayout={
               index === targetIndex

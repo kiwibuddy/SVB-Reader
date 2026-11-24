@@ -16,6 +16,8 @@ import Segment from '@/components/Bible/Segment';
 import { SegmentType, IntroType, BibleType, isIntroType, isSegmentType } from "@/types";
 import Intro from '@/components/Bible/Intro';
 import TalkAboutCard from '@/components/thread/TalkAboutCard';
+import PlanIntroCard from '@/components/thread/PlanIntroCard';
+import PlanQuestionsCard from '@/components/thread/PlanQuestionsCard';
 import CheckCircle, { type Celebration } from '@/components/CheckCircle';
 import CompletionBanner from '@/components/Bible/CompletionBanner';
 import UpNextCard from '@/components/Bible/UpNextCard';
@@ -26,6 +28,7 @@ import StickyHeader from '@/components/StickyHeader';
 import { useSyncAppSettings } from '@/context/SyncAppSettingsContext';
 import { startReadingSession, updateReadingSession } from '@/api/sqlite';
 import { isLargeScreen, isLandscape, responsivePadding, spacing } from '@/constants/sizes';
+import { getCompanionDay } from '@/utils/planCompanion';
 
 const ALL_STORIES = canonicalStories(Object.keys(SegmentTitles));
 
@@ -138,6 +141,10 @@ export default function BibleScreen() {
   const locateKind = (Array.isArray(locate) ? locate[0] : locate) as 'speech' | 'exchange' | undefined;
   const flatListRef = useRef<ScrollView>(null);
   const { isVisible } = useBottomNavAnimation();
+
+  // Find-it-in-the-story: local override of the route verse params, with a
+  // nonce so tapping the same verse again re-scrolls and re-pulses.
+  const [keyFind, setKeyFind] = useState<{ chapter: number; verse: number; nonce: number } | null>(null);
   
   // State to track when Bible is loaded (moved before useMemo to fix TS error)
   const [bibleLoadingKey, setBibleLoadingKey] = useState(0);
@@ -298,7 +305,7 @@ export default function BibleScreen() {
   // reference sent us here, in which case these resets would land on top of
   // the scroll to that verse and win.
   useEffect(() => {
-    if ((verse && chapter) || locateKind) return;
+    if ((verse && chapter) || locateKind || keyFind) return;
 
     const scrollToTop = () => {
       flatListRef.current?.scrollTo({ y: 0, animated: false });
@@ -314,7 +321,7 @@ export default function BibleScreen() {
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [segID, verse, chapter, locateKind]);
+  }, [segID, verse, chapter, locateKind, keyFind]);
 
   const handleVerseLocated = useCallback((y: number) => {
     flatListRef.current?.scrollTo({ y: Math.max(0, y - 90), animated: true });
@@ -348,6 +355,27 @@ export default function BibleScreen() {
     };
   }, [planKey, curatedPlan]);
   const plan: CatalogItem | null = curatedPlan ?? (customPlan && customPlan.key === planKey ? customPlan.item : null);
+
+  const companionDay = useMemo(
+    () => (planKey ? getCompanionDay(planKey, segID, language) : null),
+    [planKey, segID, language]
+  );
+
+  useEffect(() => {
+    setKeyFind(null);
+  }, [segID]);
+
+  const targetChapter = keyFind?.chapter ?? (chapter ? parseInt(chapter as string, 10) : undefined);
+  const targetVerse = keyFind?.verse ?? (verse ? parseInt(verse as string, 10) : undefined);
+  const targetNonce = keyFind?.nonce ?? 0;
+
+  const findKeyVerse = useCallback((ch: number, v: number) => {
+    setKeyFind((prev) => ({
+      chapter: ch,
+      verse: v,
+      nonce: (prev && prev.chapter === ch && prev.verse === v ? prev.nonce : 0) + 1,
+    }));
+  }, []);
 
   // Reading order for this context: the plan's own order (week order for
   // Advent), the voice's stories, or the whole Bible. One helper, so the
@@ -513,13 +541,23 @@ export default function BibleScreen() {
       )}
       {segID[0] === "S" && isSegmentType(segmentData) && (
         <>
+          {companionDay && (
+            <PlanIntroCard
+              day={companionDay}
+              content={segmentData.content}
+              onFindInStory={findKeyVerse}
+            />
+          )}
           <Segment 
             segmentData={segmentData}
             context={planId ? 'plan' : challengeId ? 'challenge' : 'main'}
             planId={planId as string}
             challengeId={challengeId as string}
-            targetVerse={verse ? parseInt(verse as string) : undefined}
-            targetChapter={chapter ? parseInt(chapter as string) : undefined}
+            targetVerse={targetVerse}
+            targetChapter={targetChapter}
+            targetNonce={targetNonce}
+            keyVerseRefs={companionDay?.keyVerses}
+            keyVerseColour={companionDay?.colour}
             targetVoice={voiceName ? String(voiceName) : undefined}
             targetPartner={partnerName ? String(partnerName) : undefined}
             locate={locateKind === 'speech' || locateKind === 'exchange' ? locateKind : undefined}
@@ -546,7 +584,11 @@ export default function BibleScreen() {
               voice={planKey ? null : voiceName ? String(voiceName) : null}
             />
           )}
-          <TalkAboutCard segmentId={segID} />
+          {companionDay ? (
+            <PlanQuestionsCard day={companionDay} />
+          ) : (
+            <TalkAboutCard segmentId={segID} />
+          )}
         </>
       )}
     </View>

@@ -28,6 +28,11 @@ interface BibleBlockProps {
   onLongPress?: (block: BibleBlock, index: number) => void;
   /** True for the turn a verse reference resolved to. Drives the arrival pulse. */
   isTarget?: boolean;
+  /** Bumps to re-fire the pulse when the same verse is found again. */
+  pulseKey?: number;
+  /** Persistent marker while reading a plan companion key verse. */
+  isKeyVerse?: boolean;
+  keyVerseColour?: string;
   dimmed?: boolean;
   showMeta?: boolean;
   onLayout?: ViewProps['onLayout'];
@@ -40,6 +45,9 @@ const GlowingBubble = ({
   isGlowing,
   onLongPress,
   isTarget = false,
+  pulseKey = 0,
+  isKeyVerse = false,
+  keyVerseColour,
   dimmed,
   showMeta = false,
   onLayout,
@@ -82,9 +90,9 @@ const GlowingBubble = ({
     if (!isTarget) return;
     pulse.value = withDelay(
       300,
-      withSequence(withTiming(1, timing(DUR.base)), withTiming(0, timing(900)))
+      withSequence(withTiming(1, timing(DUR.base)), withTiming(0, timing(1600)))
     );
-  }, [isTarget, pulse]);
+  }, [isTarget, pulseKey, pulse]);
 
   const bubbleStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -133,6 +141,19 @@ const GlowingBubble = ({
 
   return (
     <View style={styles.row} onLayout={onLayout}>
+      {isKeyVerse && (
+        <View
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+          style={[
+            styles.keyMarker,
+            {
+              backgroundColor: keyVerseColour || palette.acc,
+              [left ? 'left' : 'right']: 2,
+            },
+          ]}
+        />
+      )}
       <View
         style={[
           styles.stack,
@@ -244,6 +265,13 @@ const styles = StyleSheet.create({
   },
   tableBody: {
     width: '100%',
+  },
+  keyMarker: {
+    position: 'absolute',
+    top: 18,
+    width: 4,
+    height: 22,
+    borderRadius: 2,
   },
 });
 

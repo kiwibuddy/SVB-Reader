@@ -1,4 +1,5 @@
 import bible from '@/assets/data/newBibleNLT1.json';
+import planCompanion from '@/assets/data/PlanCompanion.json';
 import fixture from '@/utils/__fixtures__/planCompanion.fixture.json';
 import { keyVerseSpans, parseKeyVerseRef } from '@/utils/keyVerse';
 import {
@@ -7,9 +8,11 @@ import {
   weekColour,
 } from '@/utils/planCompanion';
 import { contrastRatio } from '@/utils/contrast';
+import { findCatalogItem } from '@/utils/planCatalog';
 
 type BibleFile = Record<string, { content?: any[] }>;
 const BIBLE = bible as unknown as BibleFile;
+const REAL = planCompanion as Record<string, any>;
 
 describe('getCompanionDay', () => {
   test('resolves Advent day 3 (S006) from the fixture', () => {
@@ -76,5 +79,45 @@ describe('keyVerseSpans', () => {
 
   test('parseKeyVerseRef reads Gen-15-5', () => {
     expect(parseKeyVerseRef('Gen-15-5')).toEqual({ book: 'Gen', chapter: 15, verse: 5 });
+  });
+});
+
+describe('PlanCompanion.json (real data)', () => {
+  const plan = REAL.adventJourneyChronological;
+  const stories = findCatalogItem('adventJourneyChronological')!.stories;
+
+  test('has 26 days, each with 3 audiences × 4 questions', () => {
+    expect(plan).toBeTruthy();
+    expect(Object.keys(plan.days)).toHaveLength(26);
+    for (let d = 1; d <= 26; d++) {
+      const day = plan.days[String(d)];
+      expect(day.storyId).toBe(stories[d - 1]);
+      for (const aud of ['family', 'school', 'smallgroup'] as const) {
+        expect(day.questions[aud]).toHaveLength(4);
+      }
+      expect(day.intro.trim().split(/\s+/).length).toBeLessThanOrEqual(60);
+    }
+  });
+
+  test('antiphons only on days 19–25', () => {
+    for (let d = 1; d <= 26; d++) {
+      const has = !!plan.days[String(d)].antiphon;
+      expect(has).toBe(d >= 19 && d <= 25);
+    }
+  });
+
+  test('key verses resolve inside their story content', () => {
+    for (let d = 1; d <= 26; d++) {
+      const day = plan.days[String(d)];
+      const content = BIBLE[day.storyId]?.content;
+      for (const ref of day.keyVerses) {
+        expect(keyVerseSpans(content, ref).length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  test('finish points at 12 Days of Christmas', () => {
+    expect(plan.finish?.nextPlanId).toBe('christmas12');
+    expect(plan.finish?.body.trim().split(/\s+/).length).toBeLessThanOrEqual(80);
   });
 });
