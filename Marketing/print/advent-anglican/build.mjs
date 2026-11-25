@@ -1,7 +1,8 @@
-// Advent 2026 promo for Anglican parishes: an A4 sheet, cover on the front,
-// the plan and how a parish can use it on the back.
+// Advent 2026 for Anglican parishes: a two-sided A4 sheet in a restrained
+// editorial style. White paper, Cormorant Garamond headings with Manrope,
+// one motif (a stained-glass star in the four week colours).
 //   node Marketing/print/advent-anglican/build.mjs
-// Writes advent-anglican.pdf (2 pages) and PNG previews of each side.
+// Writes advent-anglican.pdf and PNG previews of each side. Fails on overflow.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -9,7 +10,6 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
 import { DAYS, WEEKS, esc } from '../../../print/advent-book/content.mjs';
-import { DEFS, candleRow, sky, star } from '../../../print/advent-book/art.mjs';
 import { fontFaces } from '../../../print/advent-book/build.mjs';
 
 const require = createRequire(import.meta.url);
@@ -18,160 +18,211 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../../..');
 const qr = (f) => fs.readFileSync(path.join(root, 'Marketing/print', f), 'utf8');
 
+const serifFaces = fs.readFileSync(path.join(here, 'fonts/cormorant.css'), 'utf8').replace(
+  /url\(https:\/\/fonts\.gstatic\.com\/[^)]*\/([^/)]+\.woff2)\)/g,
+  (_, f) => `url(data:font/woff2;base64,${fs.readFileSync(path.join(here, 'fonts', f)).toString('base64')})`
+);
+
+const PLUM = '#463449';
+const GOLD = '#B69A62';
 const W = 210;
 const H = 297;
 
-function coverArt() {
-  return `<svg viewBox="0 0 ${W} ${H}" width="${W}mm" height="${H}mm" aria-hidden="true">
-    ${DEFS}
-    <defs>
-      <linearGradient id="season" x1="0" y1="0" x2="0.35" y2="1">
-        <stop offset="0%" stop-color="#1E1638"/>
-        <stop offset="34%" stop-color="#2E3B78"/>
-        <stop offset="62%" stop-color="#4E3C86"/>
-        <stop offset="84%" stop-color="#7A3F86"/>
-        <stop offset="100%" stop-color="#A2486F"/>
-      </linearGradient>
-      <radialGradient id="dawn" cx="50%" cy="92%" r="60%">
-        <stop offset="0%" stop-color="#F7C35F" stop-opacity="0.28"/>
-        <stop offset="100%" stop-color="#F7C35F" stop-opacity="0"/>
-      </radialGradient>
-    </defs>
-    <rect width="${W}" height="${H}" fill="url(#season)"/>
-    <rect width="${W}" height="${H}" fill="url(#dawn)"/>
-    ${sky(W, 200, { seed: 41, count: 300, top: 0, bottom: 200, avoid: [[16, 74, 178, 96]] })}
-    ${star(160, 40, 18)}
-    ${candleRow(105, 250, 1.5, 4, { label: false })}
+// Liturgical names for the Sundays, for the schedule.
+const SUNDAYS = { 1: 'Advent Sunday', 8: 'Advent 2', 15: 'Advent 3', 22: 'Advent 4' };
+
+// One motif: an eight-pointed star in leaded-glass facets. The four long rays
+// carry the week colours (Hope at the top, then clockwise); the short rays are
+// antique gold. Fine engraved rays sit behind it.
+function star(r = 50) {
+  const c = r + 20;
+  const pt = (a, d) => [c + Math.sin(a) * d, c - Math.cos(a) * d];
+  const f = (p) => p.map((v) => v.toFixed(2)).join(' ');
+  const rays = [];
+  for (let i = 0; i < 8; i++) {
+    const a = (i * Math.PI) / 4;
+    const long = i % 2 === 0;
+    const len = long ? r : r * 0.6;
+    const half = long ? 0.2 : 0.26;
+    const base = long ? r * 0.2 : r * 0.17;
+    const color = long ? WEEKS[i / 2].color : GOLD;
+    const tip = pt(a, len);
+    const left = pt(a - half, base);
+    const right = pt(a + half, base);
+    const mid = [c, c];
+    rays.push(`
+      <path d="M ${f(mid)} L ${f(left)} L ${f(tip)} Z" fill="${color}" opacity="${long ? 0.62 : 0.5}"/>
+      <path d="M ${f(mid)} L ${f(right)} L ${f(tip)} Z" fill="${color}"/>
+      <path d="M ${f(mid)} L ${f(left)} L ${f(tip)} L ${f(right)} Z M ${f(mid)} L ${f(tip)}" fill="none" stroke="${PLUM}" stroke-width="0.55" stroke-linejoin="round"/>`);
+  }
+  let hair = '';
+  for (let i = 0; i < 120; i++) {
+    const a = (i * Math.PI) / 60;
+    const [x1, y1] = pt(a, r * 0.32);
+    const [x2, y2] = pt(a, r + 16 + (i % 3) * 3);
+    hair += `<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"/>`;
+  }
+  return `<svg viewBox="0 0 ${c * 2} ${c * 2}" width="${c * 2}mm" height="${c * 2}mm" aria-hidden="true">
+    <g stroke="${GOLD}" stroke-width="0.18" opacity="0.55">${hair}</g>
+    <circle cx="${c}" cy="${c}" r="${r + 9}" fill="none" stroke="${GOLD}" stroke-width="0.3" opacity="0.7"/>
+    <circle cx="${c}" cy="${c}" r="${r + 10.6}" fill="none" stroke="${GOLD}" stroke-width="0.15" opacity="0.7"/>
+    ${rays.join('')}
+    <circle cx="${c}" cy="${c}" r="${r * 0.11}" fill="#FBF6EC" stroke="${PLUM}" stroke-width="0.55"/>
   </svg>`;
 }
 
+const weekRange = (w) => {
+  const days = DAYS.filter((d) => d.week.key === w.key);
+  const a = days[0].date.short.split(' ');
+  const b = days[days.length - 1].date.short.split(' ');
+  return a[2] === b[2] ? `${a[1]} – ${b[1]} ${b[2]}` : `${a[1]} ${a[2]} – ${b[1]} ${b[2]}`;
+};
+
+const head = (right) => `<div class="runhead"><span>SourceView Together</span><span>${right}</span></div>`;
+
 const cover = `
 <section class="sheet cover">
-  <div class="art">${coverArt()}</div>
-  <div class="cover-top">SourceView Together <span>·</span> Advent 2026</div>
-  <div class="bubble-title">
-    <div class="kick">A reading plan for the parish</div>
+  ${head('Advent 2026')}
+  <div class="motif">${star(40)}</div>
+  <div class="title-block">
+    <div class="kicker">A parish reading journey</div>
     <h1>From promise<br>to manger</h1>
-    <p>26 Bible stories to read aloud together, one a day from Advent Sunday to Christmas Eve, in the free SourceView Together app.</p>
+    <p class="sub">26 Bible stories. One unfolding story. A journey towards Christmas.</p>
+    <p class="intro">Read aloud together, one story a day from Advent Sunday to Christmas Eve, in the free SourceView Together app.</p>
   </div>
-  <div class="chips">
-    ${WEEKS.map((w) => {
-      const d = DAYS.find((x) => x.week.key === w.key);
-      return `<div class="chip" style="background:${w.color}"><b>${w.name}</b><span>from ${d.date.short.replace(/^\w+ /, '')}</span></div>`;
-    }).join('')}
+  <div class="weeks">
+    ${WEEKS.map((w) => `
+      <div class="wk" style="--c:${w.color}">
+        <div class="wk-no">0${w.n}</div>
+        <div class="wk-name">${w.name}</div>
+        <div class="wk-dates">${weekRange(w)}</div>
+      </div>`).join('')}
   </div>
+  <div class="foot"><span>29 November – 24 December 2026</span><span>Free on the App Store and Google Play</span></div>
 </section>`;
 
-function planTable() {
+function schedule() {
   return WEEKS.map((w) => `
-    <div class="wk-head" style="background:${w.color}">Week ${w.n} · ${w.name}</div>
-    ${DAYS.filter((d) => d.week.key === w.key).map((d) => `
-      <div class="row${d.date.long.startsWith('Sunday') ? ' sun' : ''}">
-        <span class="dt">${d.date.short}</span>
-        <span class="ttl">${esc(d.title)}${d.antiphon ? ` <em>· ${esc(d.antiphon[0])}</em>` : ''}</span>
-        <span class="rf">${esc(d.shortRef)}</span>
-      </div>`).join('')}`).join('');
+    <div class="s-week" style="--c:${w.color}">
+      <div class="s-head"><span class="s-no">0${w.n}</span><span class="s-name">${w.name}</span><span class="s-dates">${weekRange(w)}</span></div>
+      ${DAYS.filter((d) => d.week.key === w.key).map((d) => `
+        <div class="s-row${SUNDAYS[d.n] ? ' sun' : ''}">
+          <span class="s-day">${d.n}</span>
+          <span class="s-date">${d.date.short.replace(/^(\w+) /, '$1 ')}</span>
+          <span class="s-title">${esc(d.title)}${SUNDAYS[d.n] ? `<span class="tag sun-tag">${SUNDAYS[d.n]}</span>` : ''}${d.antiphon ? `<span class="tag ant-tag">${esc(d.antiphon[0])}</span>` : ''}</span>
+          <span class="s-ref">${esc(d.ref.replace(/(\d+):\d+–(\d+):\d+$/, '$1–$2').replace(/(\d+):\d+–\d+$/, '$1'))}</span>
+        </div>`).join('')}
+    </div>`).join('');
 }
 
 const back = `
 <section class="sheet back">
+  ${head('Advent 2026 · For parishes')}
+  <h2>A parish journey through Scripture, prayer and the story of Christ’s coming.</h2>
   <div class="cols">
     <div class="left">
-      <div class="eyebrow">For parishes · Advent 2026</div>
-      <h2>Read Advent<br>together, out loud.</h2>
-      <p class="lede">The Advent Journey is a daily Bible reading plan in the free SourceView Together app: one complete story a day from Advent Sunday, 29 November, to Christmas Eve. It follows God’s promise from Genesis, through Abraham, Ruth, David and the prophets, to the manger.</p>
-
-      <h3>Shaped by the Church’s year</h3>
-      <ul>
-        <li><b>Advent Sunday</b> begins with Christ’s coming in glory (Revelation 21–22), in the spirit of the Collect: “that we may cast away the works of darkness, and put upon us the armour of light”.</li>
-        <li><b>Advent 2, 3 and 4:</b> the day’s story holds the Old Testament reading set in the Revised Common Lectionary, Year B: Isaiah 40, Isaiah 61 and 2 Samuel 7. Check against your own lectionary.</li>
-        <li><b>17–23 December:</b> each day’s story sits behind one of the O Antiphons, traditionally sung with the Magnificat at Evening Prayer, with the prayer printed in the companion booklet.</li>
-        <li><b>Christmas Eve:</b> Luke 1–2, with the Magnificat and the birth of Jesus.</li>
-      </ul>
-
-      <h3>Four voices</h3>
-      <p class="small">Every word is coloured by the voice that speaks it, so four people can share a story aloud.</p>
-      <div class="keys">
-        <span class="k k-black">Narration</span><span class="k k-red">God speaking</span><span class="k k-green">Main characters</span><span class="k k-blue">Everyone else</span>
+      <div class="block">
+        <div class="b-no">01</div><h3>The journey</h3>
+        <p>One complete Bible story a day, from Advent Sunday to Christmas Eve. Readers follow God’s promise from Genesis, through Abraham, Ruth, David and the prophets, to the birth of Jesus in Bethlehem.</p>
       </div>
-
-      <h3>In the parish</h3>
-      <ul class="tight">
-        <li><b>Home groups</b> read the week’s Sunday story in fours, with small group questions in the app.</li>
-        <li><b>Households</b> read after supper, lighting the week’s candles.</li>
-        <li><b>Schools and youth</b> use the school questions, written for mixed beliefs.</li>
-        <li><b>Sunday worship:</b> read the Old Testament lesson with four voices.</li>
-      </ul>
-
+      <div class="block">
+        <div class="b-no">02</div><h3>Shaped by the Church’s year</h3>
+        <p><b>Advent Sunday</b> looks to Christ’s coming in glory (Revelation 21–22), in the spirit of the Collect:</p>
+        <p class="collect">“Almighty God, give us grace that we may cast away the works of darkness, and put upon us the armour of light.”<span>Book of Common Prayer</span></p>
+        <p><b>Advent 2, 3 and 4:</b> the day’s story holds the Old Testament reading set in the Revised Common Lectionary, Year B: Isaiah 40, Isaiah 61 and 2 Samuel 7.</p>
+        <p><b>17–23 December:</b> each story sits behind one of the O Antiphons, the Church’s historic Advent prayers, traditionally sung with the Magnificat at Evening Prayer.</p>
+        <p><b>Christmas Eve:</b> Luke 1–2, with the Magnificat.</p>
+      </div>
+      <div class="block">
+        <div class="b-no">03</div><h3>Four voices</h3>
+        <p>Every word is coloured by the voice that speaks it, so four people can share a story aloud.</p>
+        <div class="voices">
+          <span><i style="background:#3A4550"></i>Narration</span><span><i style="background:#C0261A"></i>God speaking</span>
+          <span><i style="background:#0E6B4C"></i>Main characters</span><span><i style="background:#1D46A8"></i>Everyone else</span>
+        </div>
+      </div>
+      <div class="block">
+        <div class="b-no">04</div><h3>Part of parish life</h3>
+        <p><b>Households</b> read after supper and light the week’s candle. <b>Home groups</b> read the Sunday story in four voices. <b>Sunday worship</b> shares the Old Testament reading in four voices. <span class="muted">Schools and youth groups have questions written for mixed beliefs.</span></p>
+      </div>
       <div class="join">
         <div class="qr">${qr('qr-app-store.svg')}<span>App Store</span></div>
         <div class="qr">${qr('qr-google-play.svg')}<span>Google Play</span></div>
-        <p><b>Join in three taps.</b> Download SourceView Together, open the Plan tab, tap <b>Join Advent</b>. Free, with no account or sign-in. A printable companion booklet is available for each household.</p>
+        <p><b>To join:</b> download SourceView Together, open the Plan tab and tap Join Advent. Free, no account needed.</p>
       </div>
     </div>
     <div class="right">
-      <div class="eyebrow">The 26 stories</div>
-      ${planTable()}
-      <p class="foot-note">Sundays in bold. Scripture quotations from the Holy Bible, New Living Translation, © 1996, 2004, 2007 by Tyndale House Foundation. Used by permission. The Collect is from the Book of Common Prayer.</p>
+      <div class="s-top"><span>The 26 stories</span></div>
+      ${schedule()}
     </div>
   </div>
+  <div class="foot small">Scripture quotations from the Holy Bible, New Living Translation, © 1996, 2004, 2007 by Tyndale House Foundation. Used by permission. Collect from the Book of Common Prayer.</div>
 </section>`;
 
 const css = `
 @page{ size:${W}mm ${H}mm; margin:0; }
 *{ box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-html,body{ margin:0; padding:0; background:#fff; font-family:'Manrope',sans-serif; color:#101619; }
-.sheet{ position:relative; width:${W}mm; height:${H}mm; overflow:hidden; page-break-after:always; }
+html,body{ margin:0; padding:0; background:#fff; }
+body{ font-family:'Manrope',sans-serif; color:#2B2530; font-variant-numeric:lining-nums; }
+.sheet{ position:relative; width:${W}mm; height:${H}mm; overflow:hidden; background:#fff; padding:15mm 18mm 12mm; display:flex; flex-direction:column; page-break-after:always; }
 .sheet:last-child{ page-break-after:auto; }
-.cover .art{ position:absolute; inset:0; }
-.cover .art svg{ display:block; }
-.cover-top{ position:absolute; top:16mm; left:18mm; font-size:8.6pt; font-weight:700; letter-spacing:.26em; text-transform:uppercase; color:rgba(255,248,236,.86); }
-.cover-top span{ opacity:.6; padding:0 .4em; }
-.bubble-title{ position:absolute; left:18mm; right:18mm; top:74mm; background:#FBF6EC; border-radius:10mm; border-top-left-radius:3mm; padding:11mm 11mm 10mm; }
-.bubble-title .kick{ font-size:8pt; font-weight:800; letter-spacing:.22em; text-transform:uppercase; color:#8E3FA0; }
-.bubble-title h1{ margin:3mm 0 0; padding-bottom:2.4mm; font-size:46pt; line-height:1; letter-spacing:-.035em; font-weight:800;
-  background:linear-gradient(90deg,#6A4C93 0%,#3F6FB5 40%,#C2507A 75%,#8E3FA0 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
-.bubble-title p{ margin:5mm 0 0; font-size:12pt; line-height:1.42; font-weight:600; color:#3E3350; max-width:150mm; }
-.chips{ position:absolute; left:18mm; right:18mm; bottom:14mm; display:flex; gap:3mm; }
-.chip{ flex:1; border-radius:3mm; padding:3mm 3.4mm; color:#fff; display:flex; flex-direction:column; gap:.6mm; box-shadow:0 0 0 .4mm rgba(255,255,255,.35) inset; }
-.chip b{ font-size:11pt; font-weight:800; }
-.chip span{ font-size:7.6pt; font-weight:700; letter-spacing:.12em; text-transform:uppercase; opacity:.9; }
+.serif, h1, h2, h3, .sub, .wk-name, .s-name, .s-top, .collect, .s-ref{ font-family:'Cormorant Garamond', Georgia, serif; }
+.runhead{ display:flex; justify-content:space-between; padding-bottom:2.6mm; border-bottom:.35mm solid ${PLUM}; font-size:7.6pt; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:${PLUM}; }
 
-.back{ padding:13mm 13mm 11mm; }
-.cols{ display:flex; gap:8mm; height:100%; }
-.left{ width:86mm; flex:none; display:flex; flex-direction:column; }
-.right{ flex:1; display:flex; flex-direction:column; }
-.eyebrow{ font-size:7pt; font-weight:800; letter-spacing:.24em; text-transform:uppercase; color:#8E3FA0; }
-h2{ margin:2mm 0 0; font-size:22pt; line-height:1.04; letter-spacing:-.025em; font-weight:800; }
-h3{ margin:5mm 0 1.6mm; font-size:10pt; font-weight:800; color:#3F6FB5; }
-.lede{ margin:3mm 0 0; font-size:9pt; line-height:1.5; color:#3E474D; }
-ul{ margin:0; padding-left:4mm; }
-li{ font-size:8.2pt; line-height:1.45; color:#3E474D; margin-bottom:1.6mm; }
-li b{ color:#101619; }
-ul.tight li{ margin-bottom:1mm; }
-.small{ margin:0 0 2mm; font-size:8.2pt; line-height:1.45; color:#3E474D; }
-.keys{ display:flex; gap:1.4mm; }
-.k{ flex:1; text-align:center; font-size:6.8pt; font-weight:700; padding:1.8mm 0; border-radius:1.6mm; }
-.k-black{ background:#fff; color:#3A4550; box-shadow:inset 0 0 0 .3mm #DFE5E0; } .k-red{ background:#FBEDEB; color:#C0261A; }
-.k-green{ background:#E9F4EF; color:#0E6B4C; } .k-blue{ background:#EBEFFA; color:#1D46A8; }
-.join{ margin-top:auto; display:flex; gap:3mm; align-items:center; background:#F3F0F7; border-radius:3mm; padding:3.4mm; }
-.join .qr{ display:flex; flex-direction:column; align-items:center; gap:1mm; font-size:5.8pt; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#5E6B70; }
-.join .qr svg{ width:17mm; height:17mm; display:block; }
-.join p{ margin:0; font-size:7.6pt; line-height:1.42; color:#3E474D; }
-.join p b{ color:#101619; }
-.right .eyebrow{ margin-bottom:2mm; }
-.wk-head{ color:#fff; font-size:7.6pt; font-weight:800; letter-spacing:.14em; text-transform:uppercase; padding:1.3mm 2.4mm; border-radius:1.4mm; margin-top:1.8mm; }
-.row{ display:flex; gap:2mm; align-items:baseline; padding:1.05mm 1mm; border-bottom:.25mm solid #E4E8E5; font-size:7.8pt; }
-.row .dt{ width:17mm; flex:none; white-space:nowrap; color:#5E6B70; font-weight:600; }
-.row .ttl{ flex:1; color:#101619; font-weight:600; }
-.row .ttl em{ font-style:normal; color:#9A6B12; font-weight:700; }
-.row .rf{ color:#5E6B70; white-space:nowrap; }
-.row.sun .dt, .row.sun .ttl{ font-weight:800; }
-.foot-note{ margin-top:auto; padding-top:2mm; font-size:6.4pt; line-height:1.4; color:#8A9296; }
+/* cover */
+.motif{ position:absolute; right:14mm; top:24mm; }
+.title-block{ margin-top:auto; max-width:150mm; }
+.kicker{ font-size:9pt; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#765676; }
+h1{ margin:3mm 0 0; font-weight:600; font-size:62pt; line-height:.9; letter-spacing:-.01em; color:${PLUM}; }
+.sub{ margin:5mm 0 0; font-style:italic; font-weight:500; font-size:17pt; line-height:1.2; color:#765676; }
+.intro{ margin:5mm 0 0; font-size:10pt; line-height:1.55; color:#4A4250; max-width:120mm; }
+.weeks{ margin-top:13mm; display:grid; grid-template-columns:repeat(4,1fr); gap:5mm; }
+.wk{ border-top:1.2mm solid var(--c); padding-top:3mm; }
+.wk-no{ font-size:7.6pt; font-weight:700; color:#8A8290; }
+.wk-name{ font-size:22pt; font-weight:600; line-height:1; margin-top:1mm; color:var(--c); }
+.wk-dates{ font-size:8pt; color:#6B6370; margin-top:1.6mm; }
+.foot{ margin-top:9mm; padding-top:2.6mm; border-top:.25mm solid #CFC7D3; display:flex; justify-content:space-between; font-size:8pt; color:#6B6370; }
+.foot.small{ margin-top:auto; font-size:6.6pt; display:block; }
+
+/* back */
+h2{ margin:5mm 0 0; font-weight:600; font-size:21pt; line-height:1.08; color:${PLUM}; max-width:160mm; }
+.cols{ margin-top:5mm; display:flex; gap:7mm; flex:1; min-height:0; }
+.left{ width:64mm; flex:none; display:flex; flex-direction:column; }
+.right{ flex:1; min-width:0; }
+.block{ margin-bottom:3.4mm; }
+.b-no{ font-size:7.6pt; font-weight:800; color:${GOLD}; }
+h3{ margin:.2mm 0 1.2mm; font-size:13pt; font-weight:600; color:${PLUM}; line-height:1.1; }
+.block p{ margin:0 0 1.3mm; font-size:7.7pt; line-height:1.45; color:#4A4250; }
+.block p b{ color:#2B2530; font-weight:700; }
+.collect{ font-style:italic; font-size:10pt !important; line-height:1.32 !important; color:${PLUM} !important; border-left:.6mm solid ${GOLD}; padding-left:3mm; }
+.collect span{ display:block; font-family:'Manrope',sans-serif; font-style:normal; font-size:6.8pt; color:#8A8290; margin-top:1mm; }
+.voices{ display:grid; grid-template-columns:1fr 1fr; gap:1.4mm 3mm; margin-top:1mm; }
+.voices span{ display:flex; align-items:center; gap:1.8mm; font-size:8pt; color:#2B2530; font-weight:600; }
+.voices i{ width:5mm; height:2.2mm; border-radius:.6mm; display:block; }
+.muted{ color:#8A8290; }
+.join{ margin-top:auto; border:.3mm solid #CFC7D3; padding:3mm; display:flex; gap:2.6mm; align-items:center; }
+.join .qr{ display:flex; flex-direction:column; align-items:center; gap:.8mm; font-size:5.6pt; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#8A8290; }
+.join .qr svg{ width:15mm; height:15mm; display:block; }
+.join p{ margin:0; font-size:7.4pt; line-height:1.45; color:#4A4250; }
+.s-top{ font-size:14pt; font-weight:600; color:${PLUM}; padding-bottom:1.6mm; }
+.s-week{ margin-top:2.2mm; }
+.s-head{ display:flex; align-items:baseline; gap:2mm; border-bottom:.5mm solid var(--c); padding-bottom:1mm; }
+.s-no{ font-size:7pt; font-weight:800; color:#8A8290; }
+.s-name{ font-size:15pt; font-weight:600; color:var(--c); line-height:1; }
+.s-dates{ margin-left:auto; font-size:7.2pt; color:#6B6370; }
+.s-row{ display:flex; align-items:baseline; gap:2mm; padding:.8mm 0; border-bottom:.2mm solid #ECE7EE; }
+.s-day{ width:4.5mm; flex:none; text-align:right; font-size:7.4pt; font-weight:700; color:#8A8290; }
+.s-date{ width:13.5mm; flex:none; font-size:7.4pt; color:#6B6370; white-space:nowrap; }
+.s-title{ flex:1; min-width:0; font-size:7.6pt; line-height:1.3; color:#2B2530; }
+.s-ref{ flex:none; font-style:italic; font-size:9pt; color:#6B6370; white-space:nowrap; }
+.sun .s-title, .sun .s-date, .sun .s-day{ font-weight:800; color:#2B2530; }
+.tag{ display:inline-block; margin-left:1.6mm; font-size:6.2pt; font-weight:700; padding:.2mm 1.2mm; border-radius:.6mm; vertical-align:.25mm; }
+.sun-tag{ color:${PLUM}; background:#EFE9F1; }
+.ant-tag{ color:#7A6232; background:#F3ECDD; }
 `;
 
 const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Advent 2026 for parishes</title>
-<style>${fontFaces}</style><style>${css}</style></head><body>${cover}${back}</body></html>`;
+<style>${fontFaces}${serifFaces}</style><style>${css}</style></head><body>${cover}${back}</body></html>`;
 
 const file = path.join(here, 'advent-anglican.html');
 fs.writeFileSync(file, html);
@@ -181,12 +232,12 @@ await page.goto('file://' + file);
 await page.evaluate(() => document.fonts.ready);
 const over = await page.evaluate(() => {
   const out = [];
-  for (const col of document.querySelectorAll('.left, .right')) {
-    const kids = [...col.children];
-    const last = kids[kids.length - 1];
-    if (col.scrollHeight > col.clientHeight + 1) out.push(col.className);
-    void last;
-  }
+  document.querySelectorAll('.sheet').forEach((s, i) => {
+    if (s.scrollHeight > s.clientHeight + 1) out.push(`sheet ${i + 1}`);
+    s.querySelectorAll('.left, .right').forEach((c) => {
+      if (c.scrollHeight > c.clientHeight + 1) out.push(`sheet ${i + 1} ${c.className}`);
+    });
+  });
   return out;
 });
 console.log('overflow:', over);
