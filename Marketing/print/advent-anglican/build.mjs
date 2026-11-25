@@ -221,29 +221,72 @@ h3{ margin:.2mm 0 1.2mm; font-size:13pt; font-weight:600; color:${PLUM}; line-he
 .ant-tag{ color:#7A6232; background:#F3ECDD; }
 `;
 
-const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Advent 2026 for parishes</title>
-<style>${fontFaces}${serifFaces}</style><style>${css}</style></head><body>${cover}${back}</body></html>`;
+// The photograph version: a real candlelit Advent wreath (CC0, Wikimedia
+// Commons, see photo/SOURCE.md) bleeding off the top of the cover.
+const photo = fs.readFileSync(path.join(here, 'photo/advent-wreath-2600.jpg')).toString('base64');
+const photoCover = `
+<section class="sheet cover photo-cover">
+  <div class="photo" style="background-image:url(data:image/jpeg;base64,${photo})"></div>
+  <div class="runhead light"><span>SourceView Together</span><span>Advent 2026</span></div>
+  <div class="photo-title">
+    <div class="kicker">A parish reading journey</div>
+    <h1>From promise<br>to manger</h1>
+    <p class="sub">26 Bible stories. One unfolding story. A journey towards Christmas.</p>
+  </div>
+  <div class="weeks">
+    ${WEEKS.map((w) => `
+      <div class="wk" style="--c:${w.color}">
+        <div class="wk-no">0${w.n}</div>
+        <div class="wk-name">${w.name}</div>
+        <div class="wk-dates">${weekRange(w)}</div>
+      </div>`).join('')}
+  </div>
+  <div class="foot"><span>Read aloud together, one story a day, in the free SourceView Together app</span><span>29 Nov – 24 Dec 2026</span></div>
+</section>`;
+const photoCss = `
+.photo-cover{ padding-top:0; }
+.photo-cover .photo{ position:absolute; left:0; right:0; top:0; height:168mm; background-size:cover; background-position:50% 62%; }
+.photo-cover .photo::after{ content:''; position:absolute; inset:0; background:linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,0) 30%); }
+.runhead.light{ position:relative; z-index:1; margin-top:15mm; color:rgba(255,255,255,.9); border-bottom-color:rgba(255,255,255,.55); }
+.photo-title{ margin-top:auto; }
+.photo-title h1{ font-size:54pt; line-height:.95; margin-top:2.6mm; }
+.photo-title .sub{ font-size:15.5pt; margin-top:3.6mm; }
+.photo-cover .weeks{ margin-top:10mm; }
+.photo-cover .foot{ margin-top:7mm; }
+`;
+const photoCredit = 'Cover photograph: Advent wreath, Wikimedia Commons, CC0. ';
 
-const file = path.join(here, 'advent-anglican.html');
-fs.writeFileSync(file, html);
+const versions = [
+  { name: 'advent-anglican', cover, back, extraCss: '' },
+  { name: 'advent-anglican-photo', cover: photoCover, back: back.replace('<div class="foot small">', `<div class="foot small">${photoCredit}`), extraCss: photoCss },
+];
+
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 900, height: 1300 } });
-await page.goto('file://' + file);
-await page.evaluate(() => document.fonts.ready);
-const over = await page.evaluate(() => {
-  const out = [];
-  document.querySelectorAll('.sheet').forEach((s, i) => {
-    if (s.scrollHeight > s.clientHeight + 1) out.push(`sheet ${i + 1}`);
-    s.querySelectorAll('.left, .right').forEach((c) => {
-      if (c.scrollHeight > c.clientHeight + 1) out.push(`sheet ${i + 1} ${c.className}`);
+let failed = false;
+for (const v of versions) {
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Advent 2026 for parishes</title>
+<style>${fontFaces}${serifFaces}</style><style>${css}${v.extraCss}</style></head><body>${v.cover}${v.back}</body></html>`;
+  const file = path.join(here, `${v.name}.html`);
+  fs.writeFileSync(file, html);
+  await page.goto('file://' + file);
+  await page.evaluate(() => document.fonts.ready);
+  const over = await page.evaluate(() => {
+    const out = [];
+    document.querySelectorAll('.sheet').forEach((s, i) => {
+      if (s.scrollHeight > s.clientHeight + 1) out.push(`sheet ${i + 1}`);
+      s.querySelectorAll('.left, .right').forEach((c) => {
+        if (c.scrollHeight > c.clientHeight + 1) out.push(`sheet ${i + 1} ${c.className}`);
+      });
     });
+    return out;
   });
-  return out;
-});
-console.log('overflow:', over);
-await page.pdf({ path: path.join(here, 'advent-anglican.pdf'), width: `${W}mm`, height: `${H}mm`, printBackground: true, preferCSSPageSize: true });
-const sheets = await page.$$('.sheet');
-await sheets[0].screenshot({ path: path.join(here, 'advent-anglican-front.png') });
-await sheets[1].screenshot({ path: path.join(here, 'advent-anglican-back.png') });
+  console.log(v.name, 'overflow:', over);
+  if (over.length) failed = true;
+  await page.pdf({ path: path.join(here, `${v.name}.pdf`), width: `${W}mm`, height: `${H}mm`, printBackground: true, preferCSSPageSize: true });
+  const sheets = await page.$$('.sheet');
+  await sheets[0].screenshot({ path: path.join(here, `${v.name}-front.png`) });
+  await sheets[1].screenshot({ path: path.join(here, `${v.name}-back.png`) });
+}
 await browser.close();
-if (over.length) process.exit(1);
+if (failed) process.exit(1);

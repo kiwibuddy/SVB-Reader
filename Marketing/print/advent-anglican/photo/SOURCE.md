@@ -1,0 +1,1 @@
+advent-wreath.jpg: "Advent-wreath-560643 1920.jpg", Wikimedia Commons, Category:Advent wreaths, CC0 (public domain dedication). 3840px thumbnail; advent-wreath-2600.jpg is the resized copy embedded in the sheet.
