@@ -163,9 +163,9 @@ export function candleRow(cx, base, s, lit = 4, opts = {}) {
 // A small candle set for interior pages: on white, with dark labels.
 export function candleStrip(lit, { width = 60, label = true } = {}) {
   const s = width / 72;
-  const h = 44 * s;
+  const h = 49 * s;
   return `<svg viewBox="0 0 ${width} ${h}" width="${width}mm" height="${h}mm" aria-hidden="true">
     ${DEFS}
-    ${candleRow(width / 2, h - 9 * s, s, lit, { label, labelColor: '#5E6B70', garland: { dark: '#2E6A4E', light: '#4E8C6A' } })}
+    ${candleRow(width / 2, h - 12.5 * s, s, lit, { label, labelColor: '#5E6B70', garland: { dark: '#2E6A4E', light: '#4E8C6A' } })}
   </svg>`;
 }

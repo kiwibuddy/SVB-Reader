@@ -175,7 +175,7 @@ export function weekPage(w) {
       <div class="eyebrow" style="color:${w.color}">Week ${w.n} of 4 · from ${days[0].date.long}</div>
       <h1 class="wk-big">${w.name}</h1>
       <p class="wk-lede">${esc(w.line)}.</p>
-      <div class="wk-candles">${candleStrip(w.n, { width: 92 })}</div>
+      <div class="wk-candles">${candleStrip(w.n, { width: 80 })}</div>
       <div class="wk-table">
         ${days.map((d) => `<div class="wk-row"><b>Day ${d.n}</b><span>${d.date.short}</span><em>${esc(d.title)}</em></div>`).join('')}
       </div>

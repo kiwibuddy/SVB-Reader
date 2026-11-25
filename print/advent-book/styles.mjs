@@ -45,7 +45,7 @@ export const css = (cover) => jonahCss(cover) + `
 /* ---------- week divider ---------- */
 .wk-big{ margin:2mm 0 0; font-size:64pt; line-height:.95; font-weight:800; letter-spacing:-.045em; color:var(--wk); }
 .wk-lede{ margin:4mm 0 0; font-size:12pt; line-height:1.4; font-weight:600; color:#3E474D; max-width:105mm; }
-.wk-candles{ margin:10mm 0 8mm; display:flex; justify-content:center; }
+.wk-candles{ margin:7mm 0 6mm; display:flex; justify-content:center; }
 .wk-table{ margin-top:auto; border-top:.35mm solid var(--rule); }
 .wk-row{ display:flex; gap:3mm; align-items:baseline; padding:2.2mm 0; border-bottom:.3mm solid var(--rule); font-size:8.6pt; }
 .wk-row b{ width:12mm; color:var(--wk); font-weight:800; flex:none; }

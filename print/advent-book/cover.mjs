@@ -22,14 +22,16 @@ function frontArt(pad = 0) {
   </svg>`;
 }
 
-export function frontCoverInner(cover) {
+export function frontCoverInner(cover, opts = {}) {
+  const kicker = opts.kicker || 'An Advent journey · 2026';
+  const line = opts.line || '26 Bible stories to read aloud together, one a day from 29 November to Christmas Eve';
   return `
   <div class="cover-inner advent-cover">
     <div class="cover-kicker">SourceView Together</div>
     <div class="title-bubble advent-title">
-      <div class="story-no">An Advent journey · 2026</div>
+      <div class="story-no">${kicker}</div>
       <h1>From promise<br>to manger</h1>
-      <div class="ref">26 Bible stories to read aloud together, one a day from 29 November to Christmas Eve</div>
+      <div class="ref">${line}</div>
     </div>
     <div class="cover-swatches">${swatchRow(cover.key)}</div>
   </div>`;
@@ -42,11 +44,11 @@ function swatchRow(active) {
   </div>`;
 }
 
-export function frontCoverPage(cover) {
+export function frontCoverPage(cover, opts = {}) {
   return `
 <section class="page cover advent-front">
   <div class="art">${frontArt(0)}</div>
-  ${frontCoverInner(cover)}
+  ${frontCoverInner(cover, opts)}
 </section>`;
 }
 

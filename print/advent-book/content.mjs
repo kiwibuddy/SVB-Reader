@@ -242,7 +242,7 @@ function storyFlow(segId) {
 }
 
 // Plain text of one verse, with the voice that speaks it.
-function verse(segId, ref) {
+export function verse(segId, ref) {
   let text = '';
   let voice = null;
   const walk = (n, src) => {
@@ -283,6 +283,34 @@ function share(segId) {
   const totals = { black: 0, red: 0, green: 0, blue: 0 };
   for (const v of Object.values(bible[segId].sources)) totals[v.color] += v.words;
   return { totals, total: Object.values(totals).reduce((a, b) => a + b, 0) };
+}
+
+// A short run of verses rendered as voice bubbles, for sample pages.
+export function excerpt(segId, refs) {
+  const footnotes = [];
+  const renderInline = makeInlineRenderer(makeLeafRenderer(footnotes));
+  const keep = new Set(refs);
+  const content = JSON.parse(JSON.stringify(bible[segId].content));
+  const out = [];
+  let prev = null;
+  for (const block of splitIntoParagraphs(content)) {
+    if (typeof block.source === 'string') continue;
+    extractChapter(block);
+    const children = block.children
+      .map((inl) => ({ ...inl, children: (inl.children || []).filter((l) => !l.note && l.ref && keep.has(l.ref[0])) }))
+      .filter((inl) => inl.children.length);
+    const paras = children.map(renderInline).filter(Boolean).join('');
+    if (!paras) continue;
+    const color = block.source?.color || 'black';
+    const name = block.source?.sourceName || '';
+    const side = color === 'black' || color === 'red' ? 'left' : 'right';
+    const tail = name !== prev;
+    prev = name;
+    out.push(`<div class="turn turn--${color} turn--${side}${tail ? ' has-tail' : ''}">` +
+      (tail ? `<div class="speaker speaker--${side}">${esc(name.toUpperCase())}</div>` : '') +
+      `<div class="bubble">${paras}</div></div>`);
+  }
+  return out.join('');
 }
 
 export const DAYS = plan.segments.map((s, i) => {
