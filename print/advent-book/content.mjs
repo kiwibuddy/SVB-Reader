@@ -303,8 +303,8 @@ export const DAYS = plan.segments.map((s, i) => {
     readers: bible[s.segmentId].readers,
     cast: cast(s.segmentId),
     share: share(s.segmentId),
-    // Set 2: set 1 of the family questions is mismatched for several of these
-    // stories in the app's data (e.g. Isaiah 6–9 gets questions on Proverbs).
+    // Set 2, as printed in the first edition. (Set 1 was mismatched for many
+    // stories until the 25 Nov 2026 fix; see docs/questions-fix-2026-11.md.)
     questions: questionBank[s.segmentId].family.set2,
     antiphon: ANTIPHONS[n] || null,
     words: bible[s.segmentId].colors.total,

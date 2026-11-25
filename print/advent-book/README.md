@@ -61,9 +61,9 @@ page carries the app's NLT notice.
 - Day notes: the 2026 wording from `MVP3/05-ADVENT-COMPANION-BUILD-PLAN.md` (A3).
 - Key verses: `docs/advent/ADVENT-2026-REVIEW-PACK.md`.
 - Antiphons: the owner-approved translation (MVP3/05, B3).
-- Questions: the app's family questions, **set 2**. Set 1 does not match several
-  of these stories in the app's data (Isaiah 6–9 gets questions on Proverbs,
-  Luke 1–2 on the cross).
+- Questions: the app's family questions, **set 2**. (Set 1 was mismatched for
+  many stories when the book was made; fixed on 25 Nov 2026, see
+  `docs/questions-fix-2026-11.md`.)
 
 ## Typography
 
