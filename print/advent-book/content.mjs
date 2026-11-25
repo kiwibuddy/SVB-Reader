@@ -345,3 +345,47 @@ export const TOTALS = {
   words: DAYS.reduce((a, d) => a + d.words, 0),
   speakers: new Set(DAYS.flatMap((d) => d.cast.map((c) => c.name))).size,
 };
+
+// ---------------------------------------------------------------------------
+// Any seasonal plan, for the companion booklets: days with dates, the plan's
+// phases (in place of Advent's weeks), notes, key verses and family questions.
+const uiPhases = read('assets/data/UI-ENG.json').UI.chronologicalPhases;
+const allMappings = read('assets/data/ChronologicalMappings.json');
+
+function tint(hex, keep = 0.12) {
+  const n = parseInt(hex.slice(1), 16);
+  const mix = (c) => Math.round(255 - (255 - c) * keep);
+  return `#${[n >> 16, (n >> 8) & 255, n & 255].map((c) => mix(c).toString(16).padStart(2, '0')).join('')}`;
+}
+
+export function planDays(mappingKey, { start, keyVerses, notes = {}, antiphons = {} }) {
+  const m = allMappings[mappingKey];
+  const names = uiPhases[mappingKey] || {};
+  const phases = Object.entries(m.phases).map(([key, p], i) => ({
+    key, n: i + 1, name: names[key]?.title || key, color: p.color, tint: tint(p.color), line: names[key]?.description || p.description,
+  }));
+  const t0 = Date.UTC(...start);
+  const days = m.segments.map((s, i) => {
+    const d = new Date(t0 + i * 86400000);
+    const n = i + 1;
+    return {
+      n,
+      seg: s.segmentId,
+      title: titles[s.segmentId].title,
+      ref: prettyRef(s.segmentId),
+      shortRef: `${fullBookName(titles[s.segmentId].book[0])} ${titles[s.segmentId].ref.split(/[-:]/)[0]}`,
+      date: {
+        long: `${DAY_NAMES[d.getUTCDay()]} ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`,
+        short: `${DAY_NAMES[d.getUTCDay()].slice(0, 3)} ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()].slice(0, 3)}`,
+      },
+      week: phases.find((p) => p.key === s.phase),
+      note: notes[n] || s.note,
+      keyVerses: keyVerses[n].map((r) => verse(s.segmentId, r)),
+      readers: bible[s.segmentId].readers,
+      questions: questionBank[s.segmentId].family.set2,
+      antiphon: antiphons[n] || null,
+      sources: Object.keys(bible[s.segmentId].sources).length,
+    };
+  });
+  return { title: m.title, phases, days, speakers: new Set(days.flatMap((d) => Object.keys(bible[d.seg].sources))).size };
+}

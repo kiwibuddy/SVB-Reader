@@ -150,22 +150,32 @@ export const DEFS = `
   </defs>`;
 
 // The four candles in a row, the Hope candle first. `lit` is how many burn.
+// `opts.christ`: add the white Christ candle in the middle, the one lit on
+// Christmas Day ('lit' or 'unlit').
+export const CHRIST = { name: 'Christ', color: '#D9A441' };
 export function candleRow(cx, base, s, lit = 4, opts = {}) {
+  const garlandOpts = opts.garland === false ? null : opts.garland || {};
+  if (opts.christ) {
+    const gap = 13.5 * s;
+    const set = [[WEEKS[0], 23], [WEEKS[1], 21], [CHRIST, 31], [WEEKS[2], 19], [WEEKS[3], 17]];
+    return `
+    ${set.map(([w, h], i) => candle(cx + (i - 2) * gap, base, h * s, s, w, w === CHRIST ? opts.christ === 'lit' : WEEKS.indexOf(w) < lit, opts)).join('')}
+    ${garlandOpts ? garland(cx - gap * 2.75, cx + gap * 2.75, base + 0.6 * s, s, 5, garlandOpts) : ''}`;
+  }
   const gap = 15 * s;
   const heights = [27, 24.5, 22, 19.5].map((h) => h * s);
   const xs = [-1.5, -0.5, 0.5, 1.5].map((k) => cx + k * gap);
-  const garlandOpts = opts.garland === false ? null : opts.garland || {};
   return `
     ${xs.map((x, i) => candle(x, base, heights[i], s, WEEKS[i], i < lit, opts)).join('')}
     ${garlandOpts ? garland(cx - gap * 2.3, cx + gap * 2.3, base + 0.6 * s, s, 5, garlandOpts) : ''}`;
 }
 
 // A small candle set for interior pages: on white, with dark labels.
-export function candleStrip(lit, { width = 60, label = true } = {}) {
+export function candleStrip(lit, { width = 60, label = true, christ = null } = {}) {
   const s = width / 72;
   const h = 49 * s;
   return `<svg viewBox="0 0 ${width} ${h}" width="${width}mm" height="${h}mm" aria-hidden="true">
     ${DEFS}
-    ${candleRow(width / 2, h - 12.5 * s, s, lit, { label, labelColor: '#5E6B70', garland: { dark: '#2E6A4E', light: '#4E8C6A' } })}
+    ${candleRow(width / 2, h - 12.5 * s, s, lit, { label, christ, labelColor: '#5E6B70', garland: { dark: '#2E6A4E', light: '#4E8C6A' } })}
   </svg>`;
 }

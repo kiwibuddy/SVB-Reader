@@ -10,7 +10,7 @@ export const BLEED = 3; // mm
 
 // The front artwork in a 148 x 210 frame. `pad` extends the drawing into the
 // bleed on the outer edges.
-function frontArt(pad = 0) {
+function frontArt(pad = 0, art = {}) {
   const W = 148;
   const H = 210;
   return `<svg viewBox="${-0} ${-pad} ${W + pad} ${H + pad * 2}" width="${W + pad}mm" height="${H + pad * 2}mm" preserveAspectRatio="xMinYMid slice" aria-hidden="true">
@@ -18,7 +18,7 @@ function frontArt(pad = 0) {
     <rect x="-10" y="-10" width="${W + 20}" height="${H + 20}" fill="url(#warm)"/>
     ${sky(W + pad, 150, { seed: 11, count: 190, top: -pad, bottom: 150, avoid: [[11, 52, 126, 78]] })}
     ${star(112, 30, 13)}
-    <g transform="translate(0 0)">${candleRow(74, 172, 1.05, 4, { labelColor: 'rgba(242,234,224,0.86)' })}</g>
+    <g transform="translate(0 0)">${candleRow(74, 172, art.christ ? 0.98 : 1.05, 4, { labelColor: 'rgba(242,234,224,0.86)', christ: art.christ })}</g>
   </svg>`;
 }
 
@@ -30,7 +30,7 @@ export function frontCoverInner(cover, opts = {}) {
     <div class="cover-kicker">SourceView Together</div>
     <div class="title-bubble advent-title">
       <div class="story-no">${kicker}</div>
-      <h1>From promise<br>to manger</h1>
+      <h1>${opts.title || 'From promise<br>to manger'}</h1>
       <div class="ref">${line}</div>
     </div>
     <div class="cover-swatches">${swatchRow(cover.key)}</div>
@@ -47,7 +47,7 @@ function swatchRow(active) {
 export function frontCoverPage(cover, opts = {}) {
   return `
 <section class="page cover advent-front">
-  <div class="art">${frontArt(0)}</div>
+  <div class="art">${frontArt(0, opts.art)}</div>
   ${frontCoverInner(cover, opts)}
 </section>`;
 }
