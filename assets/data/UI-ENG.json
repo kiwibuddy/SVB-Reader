@@ -1058,64 +1058,6 @@
       "speaker": "Speaker",
       "noSpeakersAvailable": "No speakers available"
     },
-    "plans": {
-      "Bible1Year": {
-        "title": "Bible in 1 Year",
-        "description": "365 Stories"
-      },
-      "SchoolYear1": {
-        "title": "School Year Bible",
-        "description": "180 Stories"
-      },
-      "NT100Days": {
-        "title": "New Testament in 100 Days",
-        "description": "100 Stories"
-      },
-      "godsStory7Day": {
-        "title": "God's Story: The Good News",
-        "description": "7 Stories - 1 Week"
-      },
-      "oldTestamentJourney": {
-        "title": "Old Testament Journey",
-        "description": "57 Stories - 11 Weeks"
-      },
-      "newTestamentJourney": {
-        "title": "New Testament Journey",
-        "description": "40 Stories - 8 Weeks"
-      },
-      "inTheBeginning": {
-        "title": "In the Beginning",
-        "description": "18 Stories - 3 Weeks"
-      },
-      "theGospels": {
-        "title": "The Gospels",
-        "description": "42 Stories - 6 Weeks"
-      },
-      "paulsLetters": {
-        "title": "Paul's Letters",
-        "description": "35 Stories - 7 Weeks"
-      },
-      "womenOfTheBible": {
-        "title": "Women of the Bible",
-        "description": "20 Stories - 4 Weeks"
-      },
-      "davidsLife": {
-        "title": "David's Life",
-        "description": "35 Stories - 7 Weeks"
-      },
-      "adventJourneyChronological": {
-        "title": "Advent Journey",
-        "description": "16 Stories - 4 Weeks"
-      },
-      "lentenReflectionChronological": {
-        "title": "Lenten Reflection",
-        "description": "21 Stories - 3 Weeks"
-      },
-      "christmas12": {
-        "title": "12 Days of Christmas",
-        "description": "6 Stories - 12 Days"
-      }
-    },
     "noteActions": {
       "edit": "Edit",
       "copy": "Copy",

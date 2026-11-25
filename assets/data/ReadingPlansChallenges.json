@@ -2174,8 +2174,8 @@
       "description": "12 Stories - 12 Days",
       "descriptionFr": "12 récits — 12 jours",
       "image": "island",
-      "longDescription": "Celebrate the twelve days of Christmas, December 25 to January 5. Keep the traditional feasts of St Stephen, St John and the Holy Innocents, discover what it means that God's Son became one of us, and end with the light that draws the nations on the eve of Epiphany.",
-      "longDescriptionFr": "Célébrez les douze jours de Noël, du 25 décembre au 5 janvier. Suivez les fêtes traditionnelles de saint Étienne, de saint Jean et des saints Innocents, découvrez ce que signifie que le Fils de Dieu soit devenu l'un de nous, et terminez avec la lumière qui attire les nations à la veille de l'Épiphanie.",
+      "longDescription": "Celebrate the twelve days of Christmas, December 25 to January 5. Keep the feasts of St Stephen, St John and the Holy Innocents, as many churches do, discover what it means that God's Son became one of us, and end with the light that draws the nations on the eve of Epiphany.",
+      "longDescriptionFr": "Célébrez les douze jours de Noël, du 25 décembre au 5 janvier. Suivez les fêtes de saint Étienne, de saint Jean et des saints Innocents, comme le font de nombreuses Églises, découvrez ce que signifie que le Fils de Dieu soit devenu l'un de nous, et terminez avec la lumière qui attire les nations à la veille de l'Épiphanie.",
       "chronologicalOrder": true,
       "chronologicalMapping": "christmas12Chronological",
       "segments": {
@@ -2252,8 +2252,8 @@
     },
     {
       "id": "christmas7",
-      "title": "🎄 7 Days of Christmas Story 🌟",
-      "titleFr": "🎄 L'histoire de Noël en 7 jours 🌟",
+      "title": "7 Days of Christmas",
+      "titleFr": "7 jours de Noël",
       "description": "7 Stories - 1 Week",
       "descriptionFr": "7 récits — 1 semaine",
       "image": "island",

@@ -1881,7 +1881,7 @@
   "christmas12Chronological": {
     "title": "12 Days of Christmas",
     "description": "12 Stories - 12 Days",
-    "longDescription": "Celebrate the twelve days of Christmas, December 25 to January 5. Keep the traditional feasts of St Stephen, St John and the Holy Innocents, discover what it means that God's Son became one of us, and end with the light that draws the nations on the eve of Epiphany.",
+    "longDescription": "Celebrate the twelve days of Christmas, December 25 to January 5. Keep the feasts of St Stephen, St John and the Holy Innocents, as many churches do, discover what it means that God's Son became one of us, and end with the light that draws the nations on the eve of Epiphany.",
     "segments": [
       {
         "segmentId": "S285",
@@ -3066,7 +3066,7 @@
     }
   },
   "christmas7Chronological": {
-    "title": "7 Days of Christmas Story",
+    "title": "7 Days of Christmas",
     "description": "7 Stories - 1 Week",
     "longDescription": "Seven stories from the prophets' promises to the birth of Jesus. Start on December 19 and you'll read the birth of Jesus on Christmas Day. Designed for families, youth and small groups reading together.",
     "segments": [

@@ -22846,68 +22846,6 @@
       "almostReady": "Presque prêt...",
       "complete": "Bienvenue sur SourceView Ensemble !"
     },
-    "plans": {
-      "Bible1Year": {
-        "title": "Bible en 1 an",
-        "description": "Complétez toute la Bible en un an avec ce plan de lecture complet. Parfait pour développer votre littératie biblique."
-      },
-      "SchoolYear1": {
-        "title": "Bible scolaire en un an",
-        "description": "Histoires essentielles de la Bible sélectionnées pour un parcours scolaire significatif. Idéal pour les étudiants et les salles de classe."
-      },
-      "NT100Days": {
-        "title": "Nouveau Testament en 100 jours",
-        "description": "Découvrez le Nouveau Testament à travers 100 histoires soigneusement sélectionnées. Excellent pour les nouveaux croyants."
-      },
-      "godsStory7Day": {
-        "title": "L'histoire de Dieu : La Bonne Nouvelle",
-        "description": "Découvrez l'Évangile en sept moments clés de la rédemption. Aperçu rapide du plan de Dieu."
-      },
-      "oldTestamentJourney": {
-        "title": "Voyage dans l'Ancien Testament",
-        "description": "Explorez la relation d'alliance de Dieu depuis la Création jusqu'aux prophètes. Fondamental pour comprendre le Christ."
-      },
-      "newTestamentJourney": {
-        "title": "Voyage dans le Nouveau Testament",
-        "description": "Suivez Jésus et l'Église primitive à travers les livres clés du Nouveau Testament. Bâtit une base solide de discipleship."
-      },
-      "inTheBeginning": {
-        "title": "Au commencement",
-        "description": "Témoignez des origines de l'humanité et des premières promesses d'alliance de Dieu. Point de départ pour l'étude biblique."
-      },
-      "theGospels": {
-        "title": "Les Évangiles",
-        "description": "Parcourez la vie, le ministère, la mort et la résurrection de Jésus. Cœur de la foi chrétienne."
-      },
-      "paulsLetters": {
-        "title": "Les lettres de Paul",
-        "description": "Étudiez les enseignements de l'apôtre sur la foi, la grâce et la vie chrétienne. Transformant pour la croissance spirituelle."
-      },
-      "womenOfTheBible": {
-        "title": "Femmes de la Bible",
-        "description": "Rencontrez des femmes remarquables qui ont façonné l'histoire biblique. Histoires inspirantes de foi et de courage."
-      },
-      "davidsLife": {
-        "title": "La vie de David",
-        "description": "Suivez le plus grand roi d'Israël du berger au trône. Leçons sur le leadership et l'adoration."
-      },
-      "adventJourneyChronological": {
-        "title": "Voyage de l'Avent",
-        "description": "Préparez votre cœur pour Noël avec la prophétie et l'accomplissement. Parfait pour la période des fêtes."
-      },
-      "lentenReflectionChronological": {
-        "title": "Réflexion du Carême",
-        "description": "Marchez avec Jésus à travers ses dernières semaines et sa résurrection. Significatif pour la préparation de Pâques."
-      },
-      "christmas12": {
-        "title": "12 Jours de Noël",
-        "description": "Célébrez la naissance du Christ avec des histoires de la nativité et des réflexions. La tradition rencontre les Écritures."
-      },
-      "christmas7": {
-        "title": "🎄 7 Jours de l'Histoire de Noël 🌟",
-        "description": "Vivez l'histoire de Noël d'une manière nouvelle à travers la prophétie, la promesse et la naissance de Jésus. Parfait pour la semaine précédant Noël."
-      }
-    },
     "chronologicalPhases": {
       "godsStory7DayChronological": {
         "Creation": {
